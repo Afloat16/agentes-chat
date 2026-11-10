@@ -1,13 +1,16 @@
 import { useApps } from "@agenteschat/client";
-import { aiAppImport, appsSettingsUrl } from "@agenteschat/client/lib/apps";
+import { aiAppImport } from "@agenteschat/client/lib/apps";
 import {
   bundleOrigin,
   cardName,
+  defaultMethod,
   IMPORT_CARDS,
   type ImportCard,
+  type ImportMethod,
   importApplyErrorText,
   importFailureText,
   kindsLine,
+  mcpClient,
   retryable,
   todoLine,
 } from "@agenteschat/client/lib/import/flow";
@@ -16,10 +19,9 @@ import * as Clipboard from "expo-clipboard";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
 import { Image } from "expo-image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
-import { serverUrl } from "@/lib/server";
 import {
   ACT_LINE,
   AgentAvatar,
@@ -30,13 +32,14 @@ import {
   LineIcon,
   Locked,
   LogoMark,
+  Segmented,
   Text,
   Toggle,
   useTheme,
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { openPage } from "../ai/parts";
-import { tapHaptic } from "../shared/parts";
+import { copyText, MONO, tapHaptic } from "../shared/parts";
 import { TextArea } from "../shared/TextArea";
 import { fullLook } from "./edit";
 import {
@@ -57,80 +60,7 @@ import type { AgentImport } from "./useAgentImport";
  * files or paste its reply; the plan shows the agents found and what comes with them. The footer's button imports.
  */
 export function ImportAgents({ imp, orgId }: { imp: AgentImport; orgId: string }) {
-  return imp.planned ? (
-    <Preview imp={imp} orgId={orgId} />
-  ) : (
-    <>
-      <AiAppImport orgId={orgId} />
-      <Picker imp={imp} />
-    </>
-  );
-}
-
-/**
- * "Do seu app de IA" (ADR 0119): the person connects their AI app to this server and asks it to create here what it
- * has, the most reliable way. Where apps on the internet can't reach this server, one line says why instead.
- */
-export function AiAppImport({ orgId }: { orgId: string }) {
-  const { t } = useTranslation();
-  const { colors: c } = useTheme();
-  const option = aiAppImport(t, useApps(orgId).data);
-  const [copied, setCopied] = useState<"ok" | "failed" | null>(null);
-  if (!option) return null;
-  if (!option.available) return <Note icon="info">{t("onboarding.import.aiApp.private")}</Note>;
-  return (
-    <Card>
-      <View style={styles.request}>
-        <View style={styles.previewHead}>
-          <View style={[styles.tile, { width: 34, height: 34, backgroundColor: c.sunken, borderColor: c.line }]}>
-            <Icon name="agent" size={18} color={c.muted} />
-          </View>
-          <Text variant="body" style={[styles.bold, styles.fill]} accessibilityRole="header">
-            {t("onboarding.import.aiApp.title")}
-          </Text>
-        </View>
-        <Text variant="footnote" tone="muted">
-          {t("onboarding.import.aiApp.lead")}
-        </Text>
-        <Text variant="footnote" tone="ink2">
-          {`1. ${t("onboarding.import.aiApp.connect")} ${option.url}`}
-        </Text>
-        <Button
-          variant="secondary"
-          size="sm"
-          label={t("onboarding.import.aiApp.howTo")}
-          onPress={() => openPage(appsSettingsUrl(serverUrl(), orgId))}
-        />
-        <Text variant="footnote" tone="ink2">
-          {`2. ${t("onboarding.import.aiApp.allow")}`}
-        </Text>
-        <Text variant="footnote" tone="ink2">
-          {`3. ${t("onboarding.import.aiApp.paste")}`}
-        </Text>
-        {/* Flat in the card, never a plate in a card: the words to paste, selectable. */}
-        <Text selectable variant="footnote" tone="ink2">
-          {option.prompt}
-        </Text>
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={copied === "ok" ? "check" : "copy"}
-          label={copied === "ok" ? t("common.copied") : t("onboarding.import.aiApp.copy")}
-          onPress={() =>
-            void Clipboard.setStringAsync(option.prompt).then(
-              () => setCopied("ok"),
-              () => setCopied("failed"),
-            )
-          }
-        />
-        {copied ? (
-          <Text variant="footnote" tone="muted" accessibilityLiveRegion="polite">
-            {copied === "ok" ? t("onboarding.import.aiApp.copied") : t("mobile.newAgent.import.copyFailed")}
-          </Text>
-        ) : null}
-      </View>
-    </Card>
-  );
+  return imp.planned ? <Preview imp={imp} orgId={orgId} /> : <Picker imp={imp} orgId={orgId} />;
 }
 
 /** A source's mark in its row. */
@@ -161,9 +91,12 @@ function SourceMark({ card, size = MARK }: { card: ImportCard; size?: number }) 
   );
 }
 
-function Picker({ imp }: { imp: AgentImport }) {
+function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
+  const mcp = aiAppImport(t, useApps(orgId).data);
+  const method = imp.card && mcp ? (imp.methods[imp.card] ?? defaultMethod(imp.card, mcp.available)) : null;
+  const viaMcp = method === "mcp";
   const [text, setText] = useState("");
   const [archive, setArchive] = useState(false);
   const busy = imp.busy !== null;
@@ -219,7 +152,7 @@ function Picker({ imp }: { imp: AgentImport }) {
                   </Text>
                   {on ? <Icon name="checkc" size={24} color={c.ink} /> : null}
                 </Pressable>
-                {on && !isRequestCard(card) ? (
+                {on && !isRequestCard(card) && !viaMcp ? (
                   <View style={styles.where}>
                     <Note icon="info">{t(`mobile.newAgent.import.where.${card}`)}</Note>
                   </View>
@@ -230,7 +163,7 @@ function Picker({ imp }: { imp: AgentImport }) {
         </Card>
       </Locked>
 
-      {isRequestCard(imp.card) ? <RequestSteps key={imp.card} card={imp.card} /> : null}
+      {imp.card ? <SourceSteps key={imp.card} card={imp.card} imp={imp} mcp={mcp} method={method} /> : null}
 
       {busy ? (
         <View style={styles.reading}>
@@ -242,7 +175,7 @@ function Picker({ imp }: { imp: AgentImport }) {
             <Button variant="secondary" size="sm" label={t("common.cancel")} onPress={imp.cancel} />
           </View>
         </View>
-      ) : takesFiles(imp.card) ? (
+      ) : takesFiles(imp.card) && !viaMcp ? (
         <Button
           variant="secondary"
           icon="file"
@@ -251,51 +184,55 @@ function Picker({ imp }: { imp: AgentImport }) {
         />
       ) : null}
 
-      <Text variant="footnote" tone="faint" style={styles.gapTop}>
-        {t("mobile.newAgent.import.pasteTitle")}
-      </Text>
-      <Locked when={busy}>
-        <TextArea
-          value={text}
-          onChangeText={setText}
-          autoCapitalize="none"
-          autoCorrect={false}
-          spellCheck={false}
-          placeholder={t("onboarding.import.pastePlaceholder")}
-          accessibilityLabel={t("mobile.newAgent.import.pasteTitle")}
-          minHeight={160}
-          style={styles.paste}
-        />
-      </Locked>
-      <View style={styles.actions}>
-        <Button
-          variant="secondary"
-          size="sm"
-          icon="copy"
-          label={t("mobile.newAgent.import.paste")}
-          disabled={busy}
-          onPress={() =>
-            void Clipboard.getStringAsync()
-              .catch(() => "")
-              .then((v) => {
-                const how = pasteAction(v);
-                if (how === "field") setText(v.trim());
-                else if (how === "read") {
-                  setText("");
-                  setArchive(false);
-                  void imp.read({ text: v });
-                }
-              })
-          }
-        />
-        <Button
-          variant="primary"
-          size="sm"
-          label={t("mobile.newAgent.import.read")}
-          disabled={busy || !text.trim()}
-          onPress={submit}
-        />
-      </View>
+      {viaMcp ? null : (
+        <>
+          <Text variant="footnote" tone="faint" style={styles.gapTop}>
+            {t("mobile.newAgent.import.pasteTitle")}
+          </Text>
+          <Locked when={busy}>
+            <TextArea
+              value={text}
+              onChangeText={setText}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              placeholder={t("onboarding.import.pastePlaceholder")}
+              accessibilityLabel={t("mobile.newAgent.import.pasteTitle")}
+              minHeight={160}
+              style={styles.paste}
+            />
+          </Locked>
+          <View style={styles.actions}>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="copy"
+              label={t("mobile.newAgent.import.paste")}
+              disabled={busy}
+              onPress={() =>
+                void Clipboard.getStringAsync()
+                  .catch(() => "")
+                  .then((v) => {
+                    const how = pasteAction(v);
+                    if (how === "field") setText(v.trim());
+                    else if (how === "read") {
+                      setText("");
+                      setArchive(false);
+                      void imp.read({ text: v });
+                    }
+                  })
+              }
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              label={t("mobile.newAgent.import.read")}
+              disabled={busy || !text.trim()}
+              onPress={submit}
+            />
+          </View>
+        </>
+      )}
 
       {archive ? <ErrorText text={t("mobile.newAgent.import.archive")} /> : null}
       {imp.failure ? (
@@ -306,8 +243,176 @@ function Picker({ imp }: { imp: AgentImport }) {
           ) : null}
         </View>
       ) : null}
-      <Note icon="lock">{t("mobile.newAgent.import.privacy")}</Note>
+      {viaMcp ? null : <Note icon="lock">{t("mobile.newAgent.import.privacy")}</Note>}
     </>
+  );
+}
+
+/**
+ * The picked source's two ways in, as on the web: MCP first where the app takes it and apps reach this server.
+ * Everything the MCP steps need is copied or opened from the phone; a step that can't be done there says so in the
+ * app's own notes (ChatGPT's plugins are added on the web).
+ */
+function SourceSteps({
+  card,
+  imp,
+  mcp,
+  method,
+}: {
+  card: ImportCard;
+  imp: AgentImport;
+  mcp: ReturnType<typeof aiAppImport>;
+  method: ImportMethod | null;
+}) {
+  const { t } = useTranslation();
+  const prompt = isRequestCard(card) ? <RequestSteps card={card} /> : null;
+  if (!mcpClient(card)) return prompt;
+  if (!mcp || !method) return null;
+  if (!mcp.available)
+    return (
+      <>
+        {prompt}
+        <Note icon="info">{t("onboarding.import.aiApp.private")}</Note>
+      </>
+    );
+  return (
+    <>
+      <Segmented
+        wide
+        items={[
+          { key: "mcp", label: t("onboarding.import.method.mcp") },
+          {
+            key: "prompt",
+            label: isRequestCard(card) ? t("onboarding.import.method.prompt") : t("onboarding.import.method.file"),
+          },
+        ]}
+        value={method}
+        onChange={(m) => imp.setMethod(card, m as ImportMethod)}
+      />
+      {method === "mcp" ? <McpSteps card={card} imp={imp} url={mcp.url} prompt={mcp.prompt} /> : prompt}
+    </>
+  );
+}
+
+/** The guide's words as plain text: the phone shows its code and paths whole, copied from under the step. */
+const plain = (words: string) => words.replace(/<\/?code>/g, "");
+
+/** Connect the app (its own steps, shared with the web), allow it, paste the request, then the agents as they arrive. */
+function McpSteps({ card, imp, url, prompt }: { card: ImportCard; imp: AgentImport; url: string; prompt: string }) {
+  const { t } = useTranslation();
+  const client = mcpClient(card);
+  if (!client) return null;
+  const guide = client.guide(url);
+  const steps: { text: string; open?: string; copy?: string }[] = [
+    ...guide.steps.map((s) => ({
+      text: plain(t(`apps.dialog.${s.text}`, s.vars)),
+      open: s.open,
+      copy: s.address ? url : s.code,
+    })),
+    { text: t("onboarding.import.aiApp.allow") },
+    { text: t("onboarding.import.aiApp.paste"), copy: prompt },
+  ];
+  return (
+    <Card>
+      <View style={styles.request}>
+        <Text variant="footnote" tone="muted">
+          {card === "other"
+            ? t("onboarding.import.aiApp.leadAny")
+            : t("onboarding.import.aiApp.lead", { app: cardName(t, card) })}
+          {card === "chatgpt-dots" ? ` ${t("onboarding.import.aiApp.dots")}` : ""}
+        </Text>
+        {steps.map((s, i) => (
+          <View key={s.text} style={styles.step}>
+            <Text variant="footnote" tone="ink2">{`${i + 1}. ${s.text}`}</Text>
+            {s.open ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="globe"
+                label={t("apps.dialog.open", { app: client.name ?? "" })}
+                onPress={() => openPage(s.open as string)}
+              />
+            ) : null}
+            {s.copy ? <CopyText text={s.copy} /> : null}
+          </View>
+        ))}
+        {guide.notes.map((n) => (
+          <Note key={n.text} icon="info">
+            {plain(t(`apps.dialog.${n.text}`))}
+          </Note>
+        ))}
+        <Arrivals imp={imp} />
+      </View>
+    </Card>
+  );
+}
+
+/** Words to paste elsewhere, selectable whole, and their Copiar button. */
+function CopyText({ text }: { text: string }) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState<"ok" | "failed" | null>(null);
+  return (
+    <>
+      <Text selectable variant="footnote" tone="ink2" style={{ fontFamily: MONO }}>
+        {text}
+      </Text>
+      <Button
+        variant="secondary"
+        size="sm"
+        icon={copied === "ok" ? "check" : "copy"}
+        label={copied === "ok" ? t("common.copied") : t("common.copy")}
+        onPress={() => void copyText(text).then((ok) => setCopied(ok ? "ok" : "failed"))}
+      />
+      {copied === "failed" ? (
+        <Text variant="footnote" tone="muted" accessibilityLiveRegion="polite">
+          {t("mobile.newAgent.import.copyFailed")}
+        </Text>
+      ) : null}
+    </>
+  );
+}
+
+/** The agents the app creates, as they arrive: waiting (and what to check), then each one, to its page. */
+function Arrivals({ imp }: { imp: AgentImport }) {
+  const { t } = useTranslation();
+  const { colors: c } = useTheme();
+  const { watch, arrived } = imp;
+  useEffect(watch, [watch]);
+  if (arrived.length === 0)
+    return (
+      <View style={styles.arrivals}>
+        <View style={styles.waiting}>
+          <ActivityIndicator color={c.muted} />
+          <Text variant="footnote" tone="ink2" accessibilityLiveRegion="polite" style={styles.fill}>
+            {t("onboarding.import.aiApp.waiting")}
+          </Text>
+        </View>
+        <Text variant="footnote" tone="muted">
+          {t("onboarding.import.aiApp.stuck")}
+        </Text>
+      </View>
+    );
+  return (
+    <View style={styles.arrivals}>
+      <Text variant="footnote" style={styles.bold} accessibilityLiveRegion="polite">
+        {t("onboarding.import.aiApp.arrived", { count: arrived.length })}
+      </Text>
+      {arrived.map((a) => (
+        <Pressable
+          key={a.id}
+          onPress={() => router.push(`/agent/${a.id}`)}
+          accessibilityRole="link"
+          accessibilityLabel={a.name}
+          style={({ pressed }) => [styles.arrived, pressed && { backgroundColor: c.sunken }]}
+        >
+          <AgentAvatar agent={fullLook(a.appearance)} size={32} name={a.name} live={false} />
+          <Text variant="body" style={styles.fill}>
+            {a.name}
+          </Text>
+          <Icon name="right" size={16} color={c.faint} />
+        </Pressable>
+      ))}
+    </View>
   );
 }
 
@@ -551,6 +656,10 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: 8 },
   failure: { gap: 8, alignItems: "flex-start" },
   request: { gap: 8, padding: CARD_PAD, alignItems: "flex-start" },
+  step: { gap: 8, alignSelf: "stretch", alignItems: "flex-start" },
+  arrivals: { gap: 8, alignSelf: "stretch", marginTop: 6 },
+  waiting: { flexDirection: "row", alignItems: "center", gap: 8 },
+  arrived: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 },
   previewHead: { flexDirection: "row", alignItems: "center", gap: 12 },
   // Words and their button past the lead: the button under the words once they take more than their line.
   line: { flex: 1, minWidth: 0, alignItems: "center", columnGap: 16, rowGap: 8 },

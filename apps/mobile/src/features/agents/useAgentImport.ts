@@ -1,5 +1,6 @@
-import { type ImportItemResult, keys, type MigrationBundle, useApi } from "@agenteschat/client";
+import { type ImportItemResult, keys, type MigrationBundle, useAgents, useApi } from "@agenteschat/client";
 import {
+  agentsSince,
   applyInChunks,
   blockedItems,
   bundleOrigin,
@@ -7,6 +8,7 @@ import {
   githubRoot,
   type ImportCard,
   type ImportFailure,
+  type ImportMethod,
   isGithubLink,
   itemId,
   NOT_GITHUB,
@@ -14,7 +16,8 @@ import {
 } from "@agenteschat/client/lib/import/flow";
 import { type ImportFile, parseImport } from "@agenteschat/client/lib/import/index";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMeId } from "../shared/hooks";
 import { planIn } from "./import";
 
 /** What the phone reads: picked files (already text), a GitHub link, or a pasted reply. */
@@ -43,6 +46,20 @@ export function useAgentImport(orgId: string) {
   const done = useRef(new Map<string, ImportItemResult>());
   const run = useRef(0);
   const last = useRef<PhoneImportInput | null>(null);
+  // Connect with MCP or Prompt only, per source, once the person picks one (until then, the source's default).
+  const [methods, setMethods] = useState<Partial<Record<ImportCard, ImportMethod>>>({});
+  // The workspace's agents when the MCP steps first showed (no read in flight): only the ones made after arrived.
+  const [watching, setWatching] = useState(false);
+  const [seen, setSeen] = useState<ReadonlySet<string> | null>(null);
+  const me = useMeId();
+  const agents = useAgents(orgId);
+  const settled = watching && !agents.isFetching ? agents.data : undefined;
+  useEffect(() => {
+    if (!seen && settled) setSeen(new Set(settled.map((a) => a.id)));
+  }, [seen, settled]);
+  const arrived = seen && me && agents.data ? agentsSince(agents.data, seen, me) : [];
+  /** Starts watching for the agents an AI app creates through MCP (`arrived`). */
+  const watch = useCallback(() => setWatching(true), []);
 
   const read = async (input: PhoneImportInput) => {
     const mine = ++run.current;
@@ -110,6 +127,10 @@ export function useAgentImport(orgId: string) {
   return {
     card,
     setCard,
+    methods,
+    setMethod: (c: ImportCard, method: ImportMethod) => setMethods((m) => ({ ...m, [c]: method })),
+    watch,
+    arrived,
     busy,
     failure,
     planned,
