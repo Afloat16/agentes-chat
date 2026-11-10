@@ -816,20 +816,19 @@
         "file": "Dosyadan"
       },
       "aiApp": {
-        "lead": "{{app}} ajanları burada kendisi oluşturur. Geldikçe aşağıda görünürler.",
-        "leadAny": "Yapay zeka uygulamanız ajanları burada kendisi oluşturur. Geldikçe aşağıda görünürler.",
-        "dots": "Dot'unuz ChatGPT'de bağladığınız eklentileri kullanır, bu yüzden onu orada bağlayın.",
+        "lead": "MCP, {{app}} uygulamasının bu çalışma alanına erişmesini sağlar, böylece ajanları burada kendisi oluşturur.",
+        "leadAny": "MCP, yapay zeka uygulamanızın bu çalışma alanına erişmesini sağlar, böylece ajanları burada kendisi oluşturur.",
+        "leadDots": "MCP, dot'unuzun ChatGPT'de eklediğiniz bir eklenti üzerinden bu çalışma alanına erişmesini sağlar, böylece ajanları burada kendisi oluşturur.",
         "howTo": "Uygulama uygulama nasıl bağlanır",
-        "allow": "İzin sayfasında Ajan, rutin ve beceri oluşturma ve düzenleme'yi seçin.",
         "paste": "Sonra bu isteği uygulamaya yapıştırın:",
-        "prompt": "Az önce bağladığın agentes MCP sunucusunu ({{url}}) kullanarak sahip olduklarını agentes.chat'e taşı. Önce orada zaten ne olduğunu görmek ve hiçbir şeyi çoğaltmamak için import_summary'yi çağır. Sonra sahip olduğun her ajan, talimat, beceri ve rutin için create_agent, create_skill ve create_routine ile karşılığını oluştur ve her ajanın hatırlaması gerekenleri add_memory ile kaydet.",
+        "prompt": "Az önce bağladığın agentes.chat MCP sunucusunu ({{url}}) kullanarak sahip olduklarını agentes.chat'e taşı. Önce orada zaten ne olduğunu görmek ve hiçbir şeyi çoğaltmamak için import_summary'yi çağır. Sonra sahip olduğun her ajan, talimat, beceri ve rutin için create_agent, create_skill ve create_routine ile karşılığını oluştur ve her ajanın hatırlaması gerekenleri add_memory ile kaydet.",
         "promptLabel": "Yapay zeka uygulamanız için istek",
         "copy": "İsteği kopyala",
         "copied": "Şimdi yapay zeka uygulamanıza yapıştırın.",
         "waiting": "Ajanların gelmesi bekleniyor…",
         "arrived_one": "{{count}} ajan geldi",
         "arrived_other": "{{count}} ajan geldi",
-        "stuck": "Birkaç dakika sonra hâlâ bir şey yok mu? Uygulamanın Ajan, rutin ve beceri oluşturma ve düzenleme erişimine ihtiyacı var. Yeniden bağlayın, bunu seçin ve isteği tekrar gönderin.",
+        "stuck": "Birkaç dakika sonra hâlâ bir şey yok mu? Uygulamayı yeniden bağlayın, {{access}} seçeneğini seçin ve isteği yeniden gönderin.",
         "private": "MCP ile bağlan bu sunucuda kullanılamıyor, çünkü internetteki uygulamalar yalnızca herkese açık bir https adresine ulaşabilir."
       },
       "otherName": "Başka bir uygulama",
@@ -13546,6 +13545,8 @@
         "loginRun": "Giriş yapmak için <code>{{command}}</code> komutunu çalıştırın.",
         "loginType": "Giriş yapmak için uygulamada <code>{{command}}</code> yazın.",
         "signIn": "Açılan sayfada agentes.chat hesabınızla giriş yapın.",
+        "signInManage": "Açılan sayfada agentes.chat hesabınızla giriş yapın ve {{access}} seçeneğini seçin.",
+        "mention": "Sohbette <code>@</code> yazın ve <code>{{name}}</code> seçeneğini seçin.",
         "signInFirst": "Uygulama, ilk kullandığınızda giriş yapmanızı ister.",
         "token": "Kişisel bir token oluşturup {{placeholder}} yerine koyun.",
         "install": "{{app}} uygulamasına ekle"
@@ -13561,8 +13562,7 @@
         "leChatAdmin": "Team planında bağlayıcıyı bir admin ekler.",
         "raycastPro": "Yalnızca Raycast Pro'da.",
         "visualStudio": "Visual Studio 2022 17.14 veya daha yenisi, GitHub Copilot ile.",
-        "continueAgent": "Yalnızca Agent modunda çalışır.",
-        "openclawGateway": "Giriş, Gateway durdurulmuşken yapılır. Bittiğinde yeniden başlatın."
+        "continueAgent": "Yalnızca Agent modunda çalışır."
       }
     },
     "consent": {

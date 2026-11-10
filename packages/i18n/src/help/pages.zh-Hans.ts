@@ -146,6 +146,21 @@ export const helpZhHans: Partial<Record<HelpSlug, HelpDocument>> = {
         ],
       },
       {
+        id: "mcp",
+        heading: "通过 MCP 连接",
+        blocks: [
+          "MCP 让你的 AI 应用能访问本工作区，它会自己在这里创建智能体，连同它们的指令、技能和例行工作。选择你的应用，保持 **通过 MCP 连接**，然后：",
+          {
+            list: [
+              "按该应用自己的步骤，连接这一步显示的地址。[逐个应用的连接方法](/help/apps-de-ia#connect)",
+              "在登录页面选择 **创建和编辑智能体、例行工作和技能**。",
+              "把请求粘贴到应用中。智能体到达后会显示在这一步中。",
+            ],
+          },
+          "如果应用无法连接，请选择 **仅请求**，并按照 [从其他应用导入](/help/import#other-apps) 操作。",
+        ],
+      },
+      {
         id: "other-apps",
         heading: "从其他应用导入",
         blocks: [

@@ -832,23 +832,24 @@ export const en = {
         file: "From a file",
       },
       aiApp: {
-        /** {{app}}: the source's name, as Grok Bot. */
-        lead: "{{app}} creates the agents here itself. They show up below as they arrive.",
-        leadAny: "Your AI app creates the agents here itself. They show up below as they arrive.",
-        dots: "Your dot uses the plugins you connect in ChatGPT, so connect it there.",
+        /** What connecting does, in a person's words. {{app}}: the source's name, as Grok Bot. */
+        lead: "MCP lets {{app}} reach this workspace, so it creates the agents here itself.",
+        leadAny: "MCP lets your AI app reach this workspace, so it creates the agents here itself.",
+        /** ChatGPT dots: a dot reaches MCP servers only through the plugins added in ChatGPT. */
+        leadDots:
+          "MCP lets your dot reach this workspace through a plugin you add in ChatGPT, so it creates the agents here itself.",
         howTo: "How to connect, app by app",
-        allow: "On the permission page, pick Create and edit agents, routines and skills.",
         paste: "Then paste this request into the app:",
         prompt:
-          "Use the agentes MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory.",
+          "Use the agentes.chat MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory.",
         promptLabel: "Request for your AI app",
         copy: "Copy the request",
         copied: "Now paste it into your AI app.",
         waiting: "Waiting for the agents to arrive…",
         arrived_one: "{{count}} agent arrived",
         arrived_other: "{{count}} agents arrived",
-        stuck:
-          "Nothing after a few minutes? The app needs the Create and edit agents, routines and skills access. Connect it again, pick that one and send the request again.",
+        /** Shown after a few minutes with nothing. {{access}}: the consent page's option, as it reads there. */
+        stuck: "Nothing after a few minutes? Connect the app again, pick {{access}}, then send the request again.",
         private:
           "Connect with MCP isn't available on this server, because apps on the internet only reach a public https address.",
       },
@@ -13466,6 +13467,10 @@ export const en = {
         loginRun: "To sign in, run <code>{{command}}</code>.",
         loginType: "To sign in, type <code>{{command}}</code> in the app.",
         signIn: "Sign in with your agentes.chat account on the page that opens.",
+        /** {{access}}: the consent page's option, as it reads there. */
+        signInManage: "Sign in with your agentes.chat account on the page that opens, and pick {{access}}.",
+        /** Grok Bot uses a connected server only once it is attached to the message. */
+        mention: "In the chat, type <code>@</code> and pick <code>{{name}}</code>.",
         signInFirst: "The app asks you to sign in the first time you use it.",
         /** {{placeholder}} is the spot in the config above where the token goes. */
         token: "Create a personal token and put it in place of {{placeholder}}.",
@@ -13487,7 +13492,6 @@ export const en = {
         raycastPro: "Only on Raycast Pro.",
         visualStudio: "Visual Studio 2022 17.14 or newer, with GitHub Copilot.",
         continueAgent: "Works in Agent mode only.",
-        openclawGateway: "The sign-in runs with the Gateway stopped. Start it again when it is done.",
       },
     },
     consent: {

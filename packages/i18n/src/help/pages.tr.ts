@@ -151,6 +151,21 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         ],
       },
       {
+        id: "mcp",
+        heading: "MCP ile bağlan",
+        blocks: [
+          "MCP, yapay zeka uygulamanızın bu çalışma alanına erişmesini sağlar, böylece ajanları talimatları, becerileri ve rutinleriyle birlikte burada kendisi oluşturur. Uygulamanızı seçin, **MCP ile bağlan** seçili kalsın ve sonra:",
+          {
+            list: [
+              "Adımın gösterdiği adresi, uygulamanın kendi adımlarıyla bağlayın. [Uygulama uygulama nasıl bağlanır](/help/apps-de-ia#connect)",
+              "Giriş sayfasında **Ajan, rutin ve beceri oluşturma ve düzenleme** seçeneğini seçin.",
+              "İsteği uygulamaya yapıştırın. Ajanlar geldikçe adımda görünür.",
+            ],
+          },
+          "Bir uygulama bağlanamıyorsa **Yalnızca istek** seçeneğini seçin ve [Başka bir uygulamadan](/help/import#other-apps) bölümünü izleyin.",
+        ],
+      },
+      {
         id: "other-apps",
         heading: "Başka bir uygulamadan",
         blocks: [

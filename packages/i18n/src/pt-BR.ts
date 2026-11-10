@@ -816,22 +816,21 @@ export const ptBR = {
         file: "Por arquivo",
       },
       aiApp: {
-        lead: "O {{app}} cria os agentes aqui sozinho. Eles aparecem abaixo conforme chegam.",
-        leadAny: "O seu app de IA cria os agentes aqui sozinho. Eles aparecem abaixo conforme chegam.",
-        dots: "O seu dot usa os plugins que você conecta no ChatGPT, então conecte lá.",
+        lead: "O MCP deixa o {{app}} acessar este workspace, e ele cria os agentes aqui sozinho.",
+        leadAny: "O MCP deixa o seu app de IA acessar este workspace, e ele cria os agentes aqui sozinho.",
+        leadDots:
+          "O MCP deixa o seu dot acessar este workspace por um plugin que você adiciona no ChatGPT, e ele cria os agentes aqui sozinho.",
         howTo: "Como conectar, app por app",
-        allow: "Na tela de permissão, escolha Criar e editar agentes, rotinas e skills.",
         paste: "Depois cole este pedido no app:",
         prompt:
-          "Use o servidor MCP agentes que você acabou de conectar ({{url}}) para trazer o que você tem para o agentes.chat. Primeiro chame import_summary para ver o que já existe lá e não duplicar nada. Depois, para cada agente, instrução, skill e rotina que você tem, crie o equivalente com create_agent, create_skill e create_routine, e guarde o que cada agente deve lembrar com add_memory.",
+          "Use o servidor MCP do agentes.chat que você acabou de conectar ({{url}}) para trazer o que você tem para o agentes.chat. Primeiro chame import_summary para ver o que já existe lá e não duplicar nada. Depois, para cada agente, instrução, skill e rotina que você tem, crie o equivalente com create_agent, create_skill e create_routine, e guarde o que cada agente deve lembrar com add_memory.",
         promptLabel: "Pedido para o seu app de IA",
         copy: "Copiar o pedido",
         copied: "Agora é só colar no seu app de IA.",
         waiting: "Esperando os agentes chegarem…",
         arrived_one: "{{count}} agente chegou",
         arrived_other: "{{count}} agentes chegaram",
-        stuck:
-          "Nada depois de alguns minutos? O app precisa do acesso Criar e editar agentes, rotinas e skills. Conecte de novo, escolha esse e mande o pedido de novo.",
+        stuck: "Nada depois de alguns minutos? Conecte o app de novo, escolha {{access}} e mande o pedido outra vez.",
         private:
           "Conectar com MCP não está disponível neste servidor, porque apps na internet só alcançam um endereço https público.",
       },
@@ -13552,6 +13551,8 @@ export const ptBR = {
         loginRun: "Para entrar, rode <code>{{command}}</code>.",
         loginType: "Para entrar, digite <code>{{command}}</code> no app.",
         signIn: "Entre com sua conta do agentes.chat na página que abrir.",
+        signInManage: "Entre com sua conta do agentes.chat na página que abrir e escolha {{access}}.",
+        mention: "Na conversa, digite <code>@</code> e escolha <code>{{name}}</code>.",
         signInFirst: "O app pede para você entrar na primeira vez que usar.",
         token: "Crie um token pessoal e coloque no lugar de {{placeholder}}.",
         install: "Adicionar ao {{app}}",
@@ -13571,7 +13572,6 @@ export const ptBR = {
         raycastPro: "Só no Raycast Pro.",
         visualStudio: "Visual Studio 2022 17.14 ou mais novo, com o GitHub Copilot.",
         continueAgent: "Só funciona no modo Agent.",
-        openclawGateway: "O login roda com o Gateway parado. Ligue de novo quando terminar.",
       },
     },
     consent: {

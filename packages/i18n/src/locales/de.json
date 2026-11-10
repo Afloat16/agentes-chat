@@ -816,20 +816,19 @@
         "file": "Aus einer Datei"
       },
       "aiApp": {
-        "lead": "{{app}} legt die Agenten hier selbst an. Sie erscheinen unten, sobald sie ankommen.",
-        "leadAny": "Deine KI-App legt die Agenten hier selbst an. Sie erscheinen unten, sobald sie ankommen.",
-        "dots": "Dein Dot nutzt die Plugins, die du in ChatGPT verbindest, also verbinde es dort.",
+        "lead": "MCP lässt {{app}} auf diesen Workspace zugreifen, damit es die Agenten hier selbst anlegt.",
+        "leadAny": "MCP lässt deine KI-App auf diesen Workspace zugreifen, damit sie die Agenten hier selbst anlegt.",
+        "leadDots": "MCP lässt deinen Dot über ein Plugin, das du in ChatGPT hinzufügst, auf diesen Workspace zugreifen, damit er die Agenten hier selbst anlegt.",
         "howTo": "So verbindest du jede App",
-        "allow": "Wähle auf der Berechtigungsseite Agenten, Routinen und Skills erstellen und bearbeiten.",
         "paste": "Füge dann diese Anfrage in die App ein:",
-        "prompt": "Nutze den MCP-Server agentes, den du gerade verbunden hast ({{url}}), um das, was du hast, zu agentes.chat zu übertragen. Rufe zuerst import_summary auf, um zu sehen, was dort schon existiert, damit nichts doppelt angelegt wird. Lege dann für jeden Agenten, jede Anweisung, jeden Skill und jede Routine, die du hast, das Gegenstück mit create_agent, create_skill und create_routine an, und speichere mit add_memory, was sich jeder Agent merken soll.",
+        "prompt": "Nutze den MCP-Server von agentes.chat, den du gerade verbunden hast ({{url}}), um das, was du hast, zu agentes.chat zu übertragen. Rufe zuerst import_summary auf, um zu sehen, was dort schon existiert, damit nichts doppelt angelegt wird. Lege dann für jeden Agenten, jede Anweisung, jeden Skill und jede Routine, die du hast, das Gegenstück mit create_agent, create_skill und create_routine an, und speichere mit add_memory, was sich jeder Agent merken soll.",
         "promptLabel": "Anfrage für deine KI-App",
         "copy": "Anfrage kopieren",
         "copied": "Füge sie jetzt in deine KI-App ein.",
         "waiting": "Warte auf die Agenten…",
         "arrived_one": "{{count}} Agent ist angekommen",
         "arrived_other": "{{count}} Agenten sind angekommen",
-        "stuck": "Nach ein paar Minuten noch nichts? Die App braucht den Zugriff Agenten, Routinen und Skills erstellen und bearbeiten. Verbinde sie noch einmal, wähle diesen und schick die Anfrage erneut.",
+        "stuck": "Nach ein paar Minuten noch nichts? Verbinde die App noch einmal, wähle {{access}} und schick die Anfrage erneut.",
         "private": "Mit MCP verbinden ist auf diesem Server nicht verfügbar, weil Apps im Internet nur eine öffentliche https-Adresse erreichen."
       },
       "otherName": "Andere App",
@@ -13610,6 +13609,8 @@
         "loginRun": "Zum Anmelden führe <code>{{command}}</code> aus.",
         "loginType": "Zum Anmelden gib in der App <code>{{command}}</code> ein.",
         "signIn": "Melde dich auf der Seite, die sich öffnet, mit deinem agentes.chat-Konto an.",
+        "signInManage": "Melde dich auf der Seite, die sich öffnet, mit deinem agentes.chat-Konto an und wähle {{access}}.",
+        "mention": "Tippe im Chat <code>@</code> und wähle <code>{{name}}</code>.",
         "signInFirst": "Die App bittet dich beim ersten Mal, dich anzumelden.",
         "token": "Erstelle einen persönlichen Token und setze ihn anstelle von {{placeholder}} ein.",
         "install": "Zu {{app}} hinzufügen"
@@ -13625,8 +13626,7 @@
         "leChatAdmin": "Im Team-Abo fügt ein Admin den Konnektor hinzu.",
         "raycastPro": "Nur mit Raycast Pro.",
         "visualStudio": "Visual Studio 2022 17.14 oder neuer, mit GitHub Copilot.",
-        "continueAgent": "Funktioniert nur im Modus Agent.",
-        "openclawGateway": "Die Anmeldung läuft bei gestopptem Gateway. Starte es danach wieder."
+        "continueAgent": "Funktioniert nur im Modus Agent."
       }
     },
     "consent": {

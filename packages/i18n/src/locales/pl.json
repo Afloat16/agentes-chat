@@ -842,13 +842,12 @@
         "file": "Z pliku"
       },
       "aiApp": {
-        "lead": "{{app}} sam utworzy tu agentów. Pojawią się poniżej, gdy dotrą.",
-        "leadAny": "Twoja aplikacja AI sama utworzy tu agentów. Pojawią się poniżej, gdy dotrą.",
-        "dots": "Twoja kropka używa wtyczek połączonych w ChatGPT, więc połącz ją tam.",
+        "lead": "Dzięki MCP {{app}} ma dostęp do tej przestrzeni roboczej i sam utworzy tu agentów.",
+        "leadAny": "Dzięki MCP twoja aplikacja AI ma dostęp do tej przestrzeni roboczej i sama utworzy tu agentów.",
+        "leadDots": "Dzięki MCP twoja kropka ma dostęp do tej przestrzeni roboczej przez wtyczkę dodaną w ChatGPT i sama utworzy tu agentów.",
         "howTo": "Jak połączyć, aplikacja po aplikacji",
-        "allow": "Na stronie uprawnień wybierz Tworzenie i edycja agentów, rutyn i umiejętności.",
         "paste": "Potem wklej tę prośbę do aplikacji:",
-        "prompt": "Użyj serwera MCP agentes, który właśnie połączyłeś ({{url}}), aby przenieść to, co masz, do agentes.chat. Najpierw wywołaj import_summary, aby zobaczyć, co już tam jest, i niczego nie zduplikować. Potem dla każdego agenta, instrukcji, umiejętności i rutyny, które masz, utwórz odpowiednik za pomocą create_agent, create_skill i create_routine, a to, co każdy agent ma zapamiętać, zapisz za pomocą add_memory.",
+        "prompt": "Użyj serwera MCP agentes.chat, który właśnie połączyłeś ({{url}}), aby przenieść to, co masz, do agentes.chat. Najpierw wywołaj import_summary, aby zobaczyć, co już tam jest, i niczego nie zduplikować. Potem dla każdego agenta, instrukcji, umiejętności i rutyny, które masz, utwórz odpowiednik za pomocą create_agent, create_skill i create_routine, a to, co każdy agent ma zapamiętać, zapisz za pomocą add_memory.",
         "promptLabel": "Prośba do twojej aplikacji AI",
         "copy": "Kopiuj prośbę",
         "copied": "Teraz wklej ją do swojej aplikacji AI.",
@@ -857,7 +856,7 @@
         "arrived_few": "Dotarło {{count}} agentów",
         "arrived_many": "Dotarło {{count}} agentów",
         "arrived_other": "Dotarło {{count}} agenta",
-        "stuck": "Nic po kilku minutach? Aplikacja potrzebuje dostępu Tworzenie i edycja agentów, rutyn i umiejętności. Połącz ją ponownie, wybierz ten dostęp i wyślij prośbę jeszcze raz.",
+        "stuck": "Nic po kilku minutach? Połącz aplikację jeszcze raz, wybierz {{access}} i wyślij prośbę ponownie.",
         "private": "Połącz przez MCP nie jest dostępne na tym serwerze, bo aplikacje w internecie docierają tylko do publicznego adresu https."
       },
       "otherName": "Inna aplikacja",
@@ -14546,6 +14545,8 @@
         "loginRun": "Aby się zalogować, uruchom <code>{{command}}</code>.",
         "loginType": "Aby się zalogować, wpisz w aplikacji <code>{{command}}</code>.",
         "signIn": "Zaloguj się kontem agentes.chat na stronie, która się otworzy.",
+        "signInManage": "Zaloguj się kontem agentes.chat na stronie, która się otworzy, i wybierz {{access}}.",
+        "mention": "Na czacie wpisz <code>@</code> i wybierz <code>{{name}}</code>.",
         "signInFirst": "Przy pierwszym użyciu aplikacja poprosi cię o zalogowanie.",
         "token": "Utwórz token osobisty i wstaw go w miejsce {{placeholder}}.",
         "install": "Dodaj do {{app}}"
@@ -14561,8 +14562,7 @@
         "leChatAdmin": "W planie Team konektor dodaje admin.",
         "raycastPro": "Tylko w Raycast Pro.",
         "visualStudio": "Visual Studio 2022 17.14 lub nowszy, z GitHub Copilot.",
-        "continueAgent": "Działa tylko w trybie Agent.",
-        "openclawGateway": "Logowanie działa przy zatrzymanym Gateway. Uruchom go ponownie, gdy skończysz."
+        "continueAgent": "Działa tylko w trybie Agent."
       }
     },
     "consent": {
