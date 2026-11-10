@@ -73,7 +73,7 @@ export function appCreatedLine(t: TFunction, n: Pick<AppNotification, "latest">)
 }
 
 /**
- * The import's "From your AI app" option: the address to connect and the request to paste, or unavailable where
+ * The import's "Connect with MCP" way in: the address to connect and the request to paste, or unavailable where
  * apps that call from their own servers can't reach this one (a self-hosted server on a private host). Null while
  * loading.
  */
