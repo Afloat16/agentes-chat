@@ -796,18 +796,27 @@
       "title": "すでに別のアプリでエージェントを使っていますか？",
       "lead": "指示、スキル、ルーティン、メモリごと移行できます。",
       "sourcesLabel": "エージェントの移行元",
+      "method": {
+        "label": "取り込み方",
+        "mcp": "MCPで接続",
+        "prompt": "リクエストのみ",
+        "file": "ファイルから"
+      },
       "aiApp": {
-        "title": "AIアプリから（最も確実）",
-        "lead": "AIアプリにあるエージェント、指示、スキル、ルーティンを、AIアプリがここに一つずつ作成します。",
-        "connect": "アプリをこのアドレスに接続してください:",
+        "lead": "{{app}}がここにエージェントを自分で作成します。届いたものから下に表示されます。",
+        "leadAny": "AIアプリがここにエージェントを自分で作成します。届いたものから下に表示されます。",
+        "dots": "dotはChatGPTで接続したプラグインを使うので、ChatGPTで接続してください。",
         "howTo": "アプリごとの接続方法",
         "allow": "権限のページで「エージェント、ルーティン、スキルの作成と編集」を選んでください。",
         "paste": "次に、このリクエストをアプリに貼り付けてください:",
-        "prompt": "{{url}}に接続して、あなたが持っているすべてのエージェント、指示、スキル、ルーティンについて、agentes.chatに同等のものを作成してください。重複しないように、まずそこにすでにあるものを一覧にしてください。",
+        "prompt": "いま接続したMCPサーバーagentes（{{url}}）を使って、あなたが持っているものをagentes.chatに移してください。まずimport_summaryを呼び出して、すでにあるものを確認し、重複させないでください。次に、あなたが持っている各エージェント、指示、スキル、ルーティンについて、create_agent、create_skill、create_routineで同じものを作成し、各エージェントが覚えておくべきことをadd_memoryで保存してください。",
         "promptLabel": "AIアプリへのリクエスト",
         "copy": "リクエストをコピー",
         "copied": "AIアプリに貼り付けてください。",
-        "private": "AIアプリから: このサーバーでは利用できません。ClaudeやChatGPTなどのアプリは、公開されたhttpsアドレスにしか接続できないためです。"
+        "waiting": "エージェントの到着を待っています…",
+        "arrived_other": "{{count}}件のエージェントが届きました",
+        "stuck": "数分たっても何も届かない場合は、アプリに「エージェント、ルーティン、スキルの作成と編集」のアクセスが必要です。もう一度接続してそれを選び、リクエストを送り直してください。",
+        "private": "このサーバーでは「MCPで接続」を使えません。インターネット上のアプリは公開されたhttpsアドレスにしか届かないためです。"
       },
       "otherName": "別のアプリ",
       "agenteschatName": "agentes.chat",
@@ -13096,6 +13105,8 @@
         "orFile": "または<code>{{file}}</code>に貼り付け:",
         "pasteConfig": "貼り付け:",
         "mode": "チャットで{{mode}}モードに切り替えます。",
+        "sendInChat": "ボットとのチャットで次を送信します。",
+        "reload": "次に、チャットで<code>{{command}}</code>と入力します。",
         "loginRun": "ログインするには<code>{{command}}</code>を実行します。",
         "loginType": "ログインするには、アプリで<code>{{command}}</code>と入力します。",
         "signIn": "開いたページでagentes.chatのアカウントにログインします。",
@@ -13114,7 +13125,8 @@
         "leChatAdmin": "Teamプランでは、管理者がコネクタを追加します。",
         "raycastPro": "Raycast Proのみ。",
         "visualStudio": "Visual Studio 2022 17.14以降とGitHub Copilotが必要です。",
-        "continueAgent": "Agentモードでのみ動作します。"
+        "continueAgent": "Agentモードでのみ動作します。",
+        "openclawGateway": "ログインはGatewayを停止した状態で行います。終わったら再び起動してください。"
       }
     },
     "consent": {

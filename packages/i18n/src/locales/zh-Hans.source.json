@@ -1937,14 +1937,26 @@
   "onboarding.import.sourcesLabel": {
     "value": "Where the agents come from"
   },
-  "onboarding.import.aiApp.title": {
-    "value": "From your AI app (most reliable)"
+  "onboarding.import.method.label": {
+    "value": "How to bring them"
+  },
+  "onboarding.import.method.mcp": {
+    "value": "Connect with MCP"
+  },
+  "onboarding.import.method.prompt": {
+    "value": "Prompt only"
+  },
+  "onboarding.import.method.file": {
+    "value": "From a file"
   },
   "onboarding.import.aiApp.lead": {
-    "value": "Your AI app creates here each agent, instruction, skill and routine you have in it."
+    "value": "{{app}} creates the agents here itself. They show up below as they arrive."
   },
-  "onboarding.import.aiApp.connect": {
-    "value": "Connect the app to this address:"
+  "onboarding.import.aiApp.leadAny": {
+    "value": "Your AI app creates the agents here itself. They show up below as they arrive."
+  },
+  "onboarding.import.aiApp.dots": {
+    "value": "Your dot uses the plugins you connect in ChatGPT, so connect it there."
   },
   "onboarding.import.aiApp.howTo": {
     "value": "How to connect, app by app"
@@ -1956,7 +1968,7 @@
     "value": "Then paste this request into the app:"
   },
   "onboarding.import.aiApp.prompt": {
-    "value": "Connect {{url}} and, for every agent, instruction, skill and routine you have, create the equivalent in agentes.chat. First list what already exists there so nothing is duplicated."
+    "value": "Use the agentes MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory."
   },
   "onboarding.import.aiApp.promptLabel": {
     "value": "Request for your AI app"
@@ -1967,8 +1979,20 @@
   "onboarding.import.aiApp.copied": {
     "value": "Now paste it into your AI app."
   },
+  "onboarding.import.aiApp.waiting": {
+    "value": "Waiting for the agents to arrive…"
+  },
+  "onboarding.import.aiApp.arrived": {
+    "value": {
+      "one": "{{count}} agent arrived",
+      "other": "{{count}} agents arrived"
+    }
+  },
+  "onboarding.import.aiApp.stuck": {
+    "value": "Nothing after a few minutes? The app needs the Create and edit agents, routines and skills access. Connect it again, pick that one and send the request again."
+  },
   "onboarding.import.aiApp.private": {
-    "value": "From your AI app: not available on this server, because apps like Claude and ChatGPT only connect to a public https address."
+    "value": "Connect with MCP isn't available on this server, because apps on the internet only reach a public https address."
   },
   "onboarding.import.otherName": {
     "value": "Another app"
@@ -32919,6 +32943,12 @@
   "apps.dialog.step.mode": {
     "value": "In the chat, switch to {{mode}} mode."
   },
+  "apps.dialog.step.sendInChat": {
+    "value": "In the chat with your bot, send:"
+  },
+  "apps.dialog.step.reload": {
+    "value": "Then type <code>{{command}}</code> in the chat."
+  },
   "apps.dialog.step.loginRun": {
     "value": "To sign in, run <code>{{command}}</code>."
   },
@@ -32969,6 +32999,9 @@
   },
   "apps.dialog.note.continueAgent": {
     "value": "Works in Agent mode only."
+  },
+  "apps.dialog.note.openclawGateway": {
+    "value": "The sign-in runs with the Gateway stopped. Start it again when it is done."
   },
   "apps.consent.title.verified": {
     "value": "<b>{{name}}</b> wants to access your account"

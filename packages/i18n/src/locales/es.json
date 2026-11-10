@@ -822,18 +822,29 @@
       "title": "¿Ya usas agentes en otra app?",
       "lead": "Llegan con sus instrucciones, habilidades, rutinas y memoria.",
       "sourcesLabel": "De dónde vienen los agentes",
+      "method": {
+        "label": "Cómo traerlos",
+        "mcp": "Conectar con MCP",
+        "prompt": "Solo el pedido",
+        "file": "Desde un archivo"
+      },
       "aiApp": {
-        "title": "Desde tu app de IA (lo más confiable)",
-        "lead": "Tu app de IA crea aquí cada agente, instrucción, habilidad y rutina que tengas en ella.",
-        "connect": "Conecta la app a esta dirección:",
+        "lead": "{{app}} crea los agentes aquí por sí solo. Aparecen abajo a medida que llegan.",
+        "leadAny": "Tu app de IA crea los agentes aquí por sí sola. Aparecen abajo a medida que llegan.",
+        "dots": "Tu dot usa los plugins que conectas en ChatGPT, así que conéctalo allí.",
         "howTo": "Cómo conectar, app por app",
         "allow": "En la página de permisos, elige Crear y editar agentes, rutinas y habilidades.",
         "paste": "Luego pega este pedido en la app:",
-        "prompt": "Conecta {{url}} y, por cada agente, instrucción, habilidad y rutina que tengas, crea su equivalente en agentes.chat. Primero lista lo que ya existe ahí para no duplicar nada.",
+        "prompt": "Usa el servidor MCP agentes que acabas de conectar ({{url}}) para traer lo que tienes a agentes.chat. Primero llama a import_summary para ver lo que ya existe allí y no duplicar nada. Después, por cada agente, instrucción, habilidad y rutina que tengas, crea el equivalente con create_agent, create_skill y create_routine, y guarda lo que cada agente debe recordar con add_memory.",
         "promptLabel": "Pedido para tu app de IA",
         "copy": "Copiar el pedido",
         "copied": "Ahora pégalo en tu app de IA.",
-        "private": "Desde tu app de IA: no disponible en este servidor, porque apps como Claude y ChatGPT solo se conectan a una dirección https pública."
+        "waiting": "Esperando a que lleguen los agentes…",
+        "arrived_one": "Llegó {{count}} agente",
+        "arrived_many": "Llegaron {{count}} agentes",
+        "arrived_other": "Llegaron {{count}} agentes",
+        "stuck": "¿Nada después de unos minutos? La app necesita el acceso Crear y editar agentes, rutinas y habilidades. Conéctala de nuevo, elige ese y envía el pedido otra vez.",
+        "private": "Conectar con MCP no está disponible en este servidor, porque las apps en internet solo llegan a una dirección https pública."
       },
       "otherName": "Otra app",
       "agenteschatName": "agentes.chat",
@@ -13989,6 +14000,8 @@
         "orFile": "O pega en <code>{{file}}</code>:",
         "pasteConfig": "Pega:",
         "mode": "En el chat, cambia al modo {{mode}}.",
+        "sendInChat": "En el chat con tu bot, envía:",
+        "reload": "Luego escribe <code>{{command}}</code> en el chat.",
         "loginRun": "Para iniciar sesión, ejecuta <code>{{command}}</code>.",
         "loginType": "Para iniciar sesión, escribe <code>{{command}}</code> en la app.",
         "signIn": "Inicia sesión con tu cuenta de agentes.chat en la página que se abre.",
@@ -14007,7 +14020,8 @@
         "leChatAdmin": "En el plan Team, un admin agrega el conector.",
         "raycastPro": "Solo en Raycast Pro.",
         "visualStudio": "Visual Studio 2022 17.14 o más reciente, con GitHub Copilot.",
-        "continueAgent": "Funciona solo en el modo Agent."
+        "continueAgent": "Funciona solo en el modo Agent.",
+        "openclawGateway": "El inicio de sesión funciona con el Gateway detenido. Vuelve a iniciarlo cuando termine."
       }
     },
     "consent": {

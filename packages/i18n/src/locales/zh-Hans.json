@@ -796,18 +796,27 @@
       "title": "已经在其他应用中使用智能体了？",
       "lead": "它们会连同指令、技能、例行工作和记忆一起迁移过来。",
       "sourcesLabel": "智能体来自哪里",
+      "method": {
+        "label": "导入方式",
+        "mcp": "通过 MCP 连接",
+        "prompt": "仅请求",
+        "file": "从文件导入"
+      },
       "aiApp": {
-        "title": "从你的 AI 应用导入（最可靠）",
-        "lead": "你的 AI 应用会在这里逐一创建你在其中拥有的每个智能体、指令、技能和例行工作。",
-        "connect": "把应用连接到这个地址：",
+        "lead": "{{app}} 会自己在这里创建智能体。它们到达后会显示在下方。",
+        "leadAny": "你的 AI 应用会自己在这里创建智能体。它们到达后会显示在下方。",
+        "dots": "你的 dot 使用你在 ChatGPT 中连接的插件，所以请在那里连接。",
         "howTo": "逐个应用的连接方法",
         "allow": "在授权页面上，选择“创建和编辑智能体、例行工作和技能”。",
         "paste": "然后把这段请求粘贴到应用中：",
-        "prompt": "连接 {{url}}，为你拥有的每个智能体、指令、技能和例行工作，在 agentes.chat 中创建对应的内容。先列出那里已有的内容，以免重复。",
+        "prompt": "使用你刚连接的 MCP 服务器 agentes（{{url}}），把你拥有的内容迁移到 agentes.chat。先调用 import_summary 查看那里已有的内容，避免重复。然后，对你拥有的每个智能体、指令、技能和例行工作，用 create_agent、create_skill 和 create_routine 创建对应的内容，并用 add_memory 保存每个智能体应记住的内容。",
         "promptLabel": "给你的 AI 应用的请求",
         "copy": "复制请求",
         "copied": "现在把它粘贴到你的 AI 应用中。",
-        "private": "从你的 AI 应用导入：此服务器不支持，因为 Claude 和 ChatGPT 等应用只能连接公开的 https 地址。"
+        "waiting": "正在等待智能体到达…",
+        "arrived_other": "已到达 {{count}} 个智能体",
+        "stuck": "几分钟后仍然没有？应用需要“创建和编辑智能体、例行工作和技能”的权限。重新连接并选择它，然后再次发送请求。",
+        "private": "此服务器无法使用“通过 MCP 连接”，因为互联网上的应用只能访问公开的 https 地址。"
       },
       "otherName": "其他应用",
       "agenteschatName": "agentes.chat",
@@ -13159,6 +13168,8 @@
         "orFile": "或粘贴到 <code>{{file}}</code>：",
         "pasteConfig": "粘贴：",
         "mode": "在聊天中切换到 {{mode}} 模式。",
+        "sendInChat": "在与你的机器人的聊天中发送：",
+        "reload": "然后在聊天中输入 <code>{{command}}</code>。",
         "loginRun": "要登录，请运行 <code>{{command}}</code>。",
         "loginType": "要登录，请在应用中输入 <code>{{command}}</code>。",
         "signIn": "在打开的页面中用你的 agentes.chat 账号登录。",
@@ -13177,7 +13188,8 @@
         "leChatAdmin": "在 Team 套餐中，由管理员添加连接器。",
         "raycastPro": "仅限 Raycast Pro。",
         "visualStudio": "需要 Visual Studio 2022 17.14 或更新版本，以及 GitHub Copilot。",
-        "continueAgent": "仅在 Agent 模式下可用。"
+        "continueAgent": "仅在 Agent 模式下可用。",
+        "openclawGateway": "登录需要在 Gateway 停止时进行。完成后再重新启动它。"
       }
     },
     "consent": {

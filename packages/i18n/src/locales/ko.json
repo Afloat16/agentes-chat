@@ -796,18 +796,27 @@
       "title": "이미 다른 앱에서 에이전트를 쓰고 있나요?",
       "lead": "지침, 스킬, 루틴, 메모리가 함께 와요.",
       "sourcesLabel": "에이전트를 가져올 곳",
+      "method": {
+        "label": "가져오는 방법",
+        "mcp": "MCP로 연결",
+        "prompt": "요청만",
+        "file": "파일에서"
+      },
       "aiApp": {
-        "title": "AI 앱에서(가장 확실해요)",
-        "lead": "AI 앱이 그 안에 있는 에이전트, 지침, 스킬, 루틴을 하나씩 여기에 만들어요.",
-        "connect": "앱을 이 주소에 연결하세요:",
+        "lead": "{{app}}이 여기에 에이전트를 직접 만들어요. 도착하는 대로 아래에 표시돼요.",
+        "leadAny": "AI 앱이 여기에 에이전트를 직접 만들어요. 도착하는 대로 아래에 표시돼요.",
+        "dots": "dot은 ChatGPT에서 연결한 플러그인을 쓰니, ChatGPT에서 연결하세요.",
         "howTo": "앱별 연결 방법",
         "allow": "권한 페이지에서 에이전트, 루틴, 스킬 만들기 및 수정을 고르세요.",
         "paste": "그다음 이 요청을 앱에 붙여넣으세요:",
-        "prompt": "{{url}}에 연결하고, 내가 가진 모든 에이전트, 지침, 스킬, 루틴에 대해 agentes.chat에 같은 것을 만들어 줘. 중복되지 않도록 먼저 그곳에 이미 있는 것을 나열해 줘.",
+        "prompt": "방금 연결한 MCP 서버 agentes({{url}})를 사용해 가지고 있는 것을 agentes.chat으로 옮겨 주세요. 먼저 import_summary를 호출해 이미 있는 것을 확인하고 중복되지 않게 하세요. 그다음 가지고 있는 각 에이전트, 지침, 스킬, 루틴마다 create_agent, create_skill, create_routine으로 같은 것을 만들고, 각 에이전트가 기억해야 할 내용은 add_memory로 저장하세요.",
         "promptLabel": "AI 앱에 보낼 요청",
         "copy": "요청 복사",
         "copied": "이제 AI 앱에 붙여넣으세요.",
-        "private": "AI 앱에서 가져오기: Claude나 ChatGPT 같은 앱은 공개 https 주소에만 연결되기 때문에 이 서버에서는 사용할 수 없어요."
+        "waiting": "에이전트가 도착하기를 기다리는 중…",
+        "arrived_other": "에이전트 {{count}}개가 도착했어요",
+        "stuck": "몇 분이 지나도 아무것도 없나요? 앱에 에이전트, 루틴, 스킬 만들기 및 편집 권한이 필요해요. 다시 연결해서 그 권한을 고르고 요청을 다시 보내세요.",
+        "private": "이 서버에서는 MCP로 연결을 쓸 수 없어요. 인터넷의 앱은 공개 https 주소에만 닿기 때문이에요."
       },
       "otherName": "다른 앱",
       "agenteschatName": "agentes.chat",
@@ -13088,6 +13097,8 @@
         "orFile": "또는 <code>{{file}}</code>에 붙여넣으세요:",
         "pasteConfig": "붙여넣으세요:",
         "mode": "채팅에서 {{mode}} 모드로 바꾸세요.",
+        "sendInChat": "봇과의 채팅에서 이렇게 보내세요:",
+        "reload": "그다음 채팅에 <code>{{command}}</code>를 입력하세요.",
         "loginRun": "로그인하려면 <code>{{command}}</code> 명령을 실행하세요.",
         "loginType": "로그인하려면 앱에서 <code>{{command}}</code> 명령을 입력하세요.",
         "signIn": "열린 페이지에서 agentes.chat 계정으로 로그인하세요.",
@@ -13106,7 +13117,8 @@
         "leChatAdmin": "Team 요금제에서는 관리자가 커넥터를 추가해요.",
         "raycastPro": "Raycast Pro에서만 돼요.",
         "visualStudio": "Visual Studio 2022 17.14 이상과 GitHub Copilot이 필요해요.",
-        "continueAgent": "Agent 모드에서만 작동해요."
+        "continueAgent": "Agent 모드에서만 작동해요.",
+        "openclawGateway": "로그인은 Gateway를 멈춘 상태에서 진행돼요. 끝나면 다시 시작하세요."
       }
     },
     "consent": {

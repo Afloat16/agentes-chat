@@ -796,18 +796,27 @@
       "title": "Sudah memakai agen di aplikasi lain?",
       "lead": "Agen datang bersama instruksi, skill, rutinitas, dan memorinya.",
       "sourcesLabel": "Asal agen",
+      "method": {
+        "label": "Cara membawanya",
+        "mcp": "Hubungkan dengan MCP",
+        "prompt": "Hanya permintaan",
+        "file": "Dari file"
+      },
       "aiApp": {
-        "title": "Dari aplikasi AI-mu (paling andal)",
-        "lead": "Aplikasi AI-mu membuat di sini setiap agen, instruksi, skill, dan rutinitas yang kamu punya di sana.",
-        "connect": "Hubungkan aplikasi ke alamat ini:",
+        "lead": "{{app}} membuat agen di sini sendiri. Agen muncul di bawah begitu tiba.",
+        "leadAny": "Aplikasi AI-mu membuat agen di sini sendiri. Agen muncul di bawah begitu tiba.",
+        "dots": "Dot-mu memakai plugin yang kamu hubungkan di ChatGPT, jadi hubungkan di sana.",
         "howTo": "Cara menghubungkan, per aplikasi",
         "allow": "Di halaman izin, pilih Buat dan edit agen, rutinitas, dan skill.",
         "paste": "Lalu tempel permintaan ini di aplikasi:",
-        "prompt": "Hubungkan {{url}} dan, untuk setiap agen, instruksi, skill, dan rutinitas yang kamu punya, buat padanannya di agentes.chat. Pertama, tampilkan daftar yang sudah ada di sana agar tidak ada yang terduplikasi.",
+        "prompt": "Gunakan server MCP agentes yang baru kamu hubungkan ({{url}}) untuk memindahkan yang kamu punya ke agentes.chat. Pertama panggil import_summary untuk melihat apa yang sudah ada di sana, agar tidak ada yang ganda. Lalu, untuk setiap agen, instruksi, skill, dan rutinitas yang kamu punya, buat padanannya dengan create_agent, create_skill, dan create_routine, dan simpan apa yang harus diingat setiap agen dengan add_memory.",
         "promptLabel": "Permintaan untuk aplikasi AI-mu",
         "copy": "Salin permintaan",
         "copied": "Sekarang tempel di aplikasi AI-mu.",
-        "private": "Dari aplikasi AI-mu: tidak tersedia di server ini, karena aplikasi seperti Claude dan ChatGPT hanya terhubung ke alamat https publik."
+        "waiting": "Menunggu agen tiba…",
+        "arrived_other": "{{count}} agen tiba",
+        "stuck": "Belum ada apa-apa setelah beberapa menit? Aplikasi perlu akses Buat dan edit agen, rutinitas, dan skill. Hubungkan lagi, pilih akses itu, dan kirim permintaannya lagi.",
+        "private": "Hubungkan dengan MCP tidak tersedia di server ini, karena aplikasi di internet hanya bisa menjangkau alamat https publik."
       },
       "otherName": "Aplikasi lain",
       "agenteschatName": "agentes.chat",
@@ -13150,6 +13159,8 @@
         "orFile": "Atau tempel di <code>{{file}}</code>:",
         "pasteConfig": "Tempel:",
         "mode": "Di chat, beralih ke mode {{mode}}.",
+        "sendInChat": "Di chat dengan bot-mu, kirim:",
+        "reload": "Lalu ketik <code>{{command}}</code> di chat.",
         "loginRun": "Untuk masuk, jalankan <code>{{command}}</code>.",
         "loginType": "Untuk masuk, ketik <code>{{command}}</code> di aplikasi.",
         "signIn": "Masuk dengan akun agentes.chat-mu di halaman yang terbuka.",
@@ -13168,7 +13179,8 @@
         "leChatAdmin": "Di paket Team, admin yang menambahkan konektor.",
         "raycastPro": "Hanya di Raycast Pro.",
         "visualStudio": "Visual Studio 2022 17.14 atau lebih baru, dengan GitHub Copilot.",
-        "continueAgent": "Hanya berfungsi di mode Agent."
+        "continueAgent": "Hanya berfungsi di mode Agent.",
+        "openclawGateway": "Proses masuk berjalan saat Gateway dihentikan. Jalankan lagi setelah selesai."
       }
     },
     "consent": {

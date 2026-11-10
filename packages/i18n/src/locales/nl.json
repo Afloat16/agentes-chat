@@ -809,18 +809,28 @@
       "title": "Gebruik je al agents in een andere app?",
       "lead": "Ze komen mee met hun instructies, skills, routines en geheugen.",
       "sourcesLabel": "Waar de agents vandaan komen",
+      "method": {
+        "label": "Hoe je ze ophaalt",
+        "mcp": "Verbinden met MCP",
+        "prompt": "Alleen het verzoek",
+        "file": "Uit een bestand"
+      },
       "aiApp": {
-        "title": "Vanuit je AI-app (het betrouwbaarst)",
-        "lead": "Je AI-app maakt hier elke agent, instructie, skill en routine aan die je erin hebt.",
-        "connect": "Koppel de app aan dit adres:",
+        "lead": "{{app}} maakt de agents hier zelf aan. Ze verschijnen hieronder zodra ze binnenkomen.",
+        "leadAny": "Je AI-app maakt de agents hier zelf aan. Ze verschijnen hieronder zodra ze binnenkomen.",
+        "dots": "Je dot gebruikt de plugins die je in ChatGPT koppelt, dus koppel hem daar.",
         "howTo": "Zo koppel je het, per app",
         "allow": "Kies op de toestemmingspagina Agents, routines en skills maken en bewerken.",
         "paste": "Plak daarna dit verzoek in de app:",
-        "prompt": "Koppel {{url}} en maak voor elke agent, instructie, skill en routine die je hebt het equivalent aan in agentes.chat. Toon eerst wat daar al bestaat, zodat er niets dubbel komt.",
+        "prompt": "Gebruik de MCP-server agentes die je net hebt gekoppeld ({{url}}) om wat je hebt naar agentes.chat over te zetten. Roep eerst import_summary aan om te zien wat er al is, zodat niets dubbel wordt. Maak daarna voor elke agent, instructie, skill en routine die je hebt het equivalent met create_agent, create_skill en create_routine, en sla met add_memory op wat elke agent moet onthouden.",
         "promptLabel": "Verzoek voor je AI-app",
         "copy": "Het verzoek kopiëren",
         "copied": "Plak het nu in je AI-app.",
-        "private": "Vanuit je AI-app: niet beschikbaar op deze server, omdat apps zoals Claude en ChatGPT alleen met een openbaar https-adres verbinden."
+        "waiting": "Wachten tot de agents binnenkomen…",
+        "arrived_one": "{{count}} agent binnengekomen",
+        "arrived_other": "{{count}} agents binnengekomen",
+        "stuck": "Na een paar minuten nog niets? De app heeft de toegang Agents, routines en skills maken en bewerken nodig. Koppel hem opnieuw, kies die en stuur het verzoek nog eens.",
+        "private": "Verbinden met MCP is niet beschikbaar op deze server, omdat apps op internet alleen een openbaar https-adres bereiken."
       },
       "otherName": "Een andere app",
       "agenteschatName": "agentes.chat",
@@ -13658,6 +13668,8 @@
         "orFile": "Of plak in <code>{{file}}</code>:",
         "pasteConfig": "Plak:",
         "mode": "Schakel in de chat over naar de modus {{mode}}.",
+        "sendInChat": "Stuur in de chat met je bot:",
+        "reload": "Typ daarna <code>{{command}}</code> in de chat.",
         "loginRun": "Voer <code>{{command}}</code> uit om in te loggen.",
         "loginType": "Typ <code>{{command}}</code> in de app om in te loggen.",
         "signIn": "Log in met je agentes.chat-account op de pagina die opent.",
@@ -13676,7 +13688,8 @@
         "leChatAdmin": "Op het Team-abonnement voegt een admin de connector toe.",
         "raycastPro": "Alleen op Raycast Pro.",
         "visualStudio": "Visual Studio 2022 17.14 of nieuwer, met GitHub Copilot.",
-        "continueAgent": "Werkt alleen in de modus Agent."
+        "continueAgent": "Werkt alleen in de modus Agent.",
+        "openclawGateway": "Het inloggen werkt met de Gateway gestopt. Start hem daarna weer."
       }
     },
     "consent": {
