@@ -1,4 +1,5 @@
 import { type AgentStyle, keys, useAiAccounts, useSetAgentStyle, useSetShowActivity } from "@agenteschat/client";
+import { appIconNameKey } from "@agenteschat/client/lib/app-icons";
 import { authErrorText, emailChangeErrorText, errorText } from "@agenteschat/client/lib/errors";
 import { browserTimezone, isTimeZone, timezoneName, zoneDisplayName } from "@agenteschat/client/lib/routines";
 import { isEmail } from "@agenteschat/client/lib/text";
@@ -28,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import type { AuthResult } from "@/auth/client";
 import { useAuth } from "@/auth/context";
+import { AppIconDialog, AppIconPicture, useAppIcon } from "@/components/AppIconPicker";
 import { ChangeAvatarDialog } from "@/components/AvatarBuilder";
 import { ChatLookSettings } from "@/components/ChatLookSettings";
 import { DeleteWorkspaceDialog } from "@/components/DeleteWorkspace";
@@ -38,6 +40,7 @@ import { MyFace } from "@/components/ProfilePhoto";
 import { ZoneSelect } from "@/components/ZoneSelect";
 import { useDirectory } from "@/hooks/useDirectory";
 import { localePatch, rememberLocale } from "@/i18n";
+import { picksAppIcon } from "@/lib/app-icon";
 import { type MenuLook, menuLook, onMenuLookChange, setMenuLook } from "@/lib/context-menu";
 import { inDesktopApp } from "@/lib/desktop";
 import { useOpenParam } from "@/lib/open-param";
@@ -51,7 +54,7 @@ import { LanguageSelect } from "./LanguageSelect";
  * Configurações › Sua conta: your profile in this workspace, your time zone, whether agents' work shows under their replies,
  * how agents talk to you (ADR 0147), opening the phone app and a password
  * for an account without one, your plans' limits (ADR 0063 §5), how conversations look to you, then what this device keeps for itself (theme,
- * language, sounds, the desktop app's menus), and last, deleting the account.
+ * the app icon (ADR 0179), language, sounds, the desktop app's menus), and last, deleting the account.
  */
 export function AccountSection() {
   const { t, i18n } = useTranslation();
@@ -73,6 +76,8 @@ export function AccountSection() {
   const [profile, setProfile] = useState<"name" | "timezone" | null>(null);
   const [email, setEmail] = useState(false);
   const [phone, setPhone] = useState(false);
+  const icon = useAppIcon();
+  const [iconPicker, setIconPicker] = useState(false);
   // Adding a password and deleting the account: their dialogs are the account button's, kept in the address so a
   // sign-in again comes back to them.
   const [, setAccount] = useOpenParam("account");
@@ -203,6 +208,15 @@ export function AccountSection() {
               />
             }
           />
+          {picksAppIcon() && (
+            <PrefRow
+              id="account-app-icon"
+              lead={<AppIconPicture id={icon} className="settings-row__app-icon" />}
+              label={t("appIcon.title")}
+              status={t(appIconNameKey(icon))}
+              onOpen={() => setIconPicker(true)}
+            />
+          )}
           <PrefRow
             id="account-language"
             icon="globe"
@@ -256,6 +270,7 @@ export function AccountSection() {
             />
           )}
         </div>
+        <AppIconDialog open={iconPicker} onClose={() => setIconPicker(false)} />
       </Card>
       <Card aria-labelledby="account-delete" className="settings-danger">
         <CardHeader
