@@ -5,8 +5,9 @@ import type {
   ImportSkipReason,
   MigrationBundle,
 } from "@agenteschat/client";
-import { keys, useApps, useMe } from "@agenteschat/client";
+import { keys, useAgents, useApps, useMe } from "@agenteschat/client";
 import { aiAppImport } from "@agenteschat/client/lib/apps";
+import { errorText } from "@agenteschat/client/lib/errors";
 import { formatBytes, MAX_UPLOAD_MB } from "@agenteschat/client/lib/files";
 import { joinNames } from "@agenteschat/client/lib/format";
 import { frontmatter } from "@agenteschat/client/lib/import/shared";
@@ -35,10 +36,19 @@ import {
   Switch,
   Textarea,
 } from "@agenteschat/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
-import { type ComponentProps, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ComponentProps,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import { failedOffline } from "@/chat/offline";
@@ -142,7 +152,7 @@ export function useImportFlow(orgId: string | null) {
   const qc = useQueryClient();
   const { t } = useTranslation();
   const toast = useToast();
-  const [card, setCard] = useState<ImportCard | null>(null);
+  const [card, pickCard] = useState<ImportCard | null>(null);
   const [busy, setBusy] = useState<"reading" | "planning" | null>(null);
   const [failure, setFailure] = useState<ImportFailure | null>(null);
   const [planned, setPlanned] = useState<{
@@ -183,25 +193,33 @@ export function useImportFlow(orgId: string | null) {
   const sent = useRef(new Set<string>());
   // Connect with MCP or Prompt only, per source, once the person picks one (until then, the source's default).
   const [methods, setMethods] = useState<Partial<Record<ImportCard, ImportMethod>>>({});
-  // The workspace's agents read again when the MCP steps first showed: only the ones made after them arrived.
+  // The workspace's agents as read after a source's MCP steps first showed: only the ones made since then arrived.
+  // Per source, and the flow's own imports join it, so they never count.
   const [watching, setWatching] = useState(false);
   const [seen, setSeen] = useState<ReadonlySet<string> | null>(null);
+  const since = useRef(0);
   const me = useMe().data?.user.id;
   // Kept fresh by `agents.changed` and by coming back to the tab, as from the AI app's.
-  const agents = useQuery({
-    queryKey: keys.agents(orgId ?? ""),
-    queryFn: () => api.agents.list(orgId ?? ""),
-    enabled: orgId !== null && watching,
-    refetchOnWindowFocus: true,
-  });
-  const settled = watching && !agents.isFetching ? agents.data : undefined;
+  const agents = useAgents(orgId ?? "", orgId !== null && watching);
+  // From a read that ended after watching started: the cache may miss an agent made while the socket was down.
+  const fresh = watching && !agents.isFetching && agents.dataUpdatedAt >= since.current ? agents.data : undefined;
   useEffect(() => {
-    if (!seen && settled) setSeen(new Set(settled.map((a) => a.id)));
-  }, [seen, settled]);
+    if (!seen && fresh) setSeen(new Set(fresh.map((a) => a.id)));
+  }, [seen, fresh]);
   const list = agents.data;
   const arrived = useMemo(() => (seen && list && me ? agentsSince(list, seen, me) : []), [seen, list, me]);
-  /** Starts watching for the agents an AI app creates through MCP (`arrived`). */
-  const watch = useCallback(() => setWatching(true), []);
+  const { refetch } = agents;
+  /** Watches for the agents an AI app creates through MCP (`arrived`) until the returned stop. */
+  const watch = useCallback(() => {
+    since.current = Date.now();
+    setWatching(true);
+    void refetch();
+    return () => setWatching(false);
+  }, [refetch]);
+  const setCard = (next: ImportCard | null) => {
+    if (next !== card) setSeen(null);
+    pickCard(next);
+  };
 
   const read = async (input: ReadInput) => {
     if (!orgId) return;
@@ -319,6 +337,7 @@ export function useImportFlow(orgId: string | null) {
       setReport(items);
       const arrived = agentsArrived(planned.items, items, pick, sent.current);
       for (const [key, id] of arrived) agentIds.current.set(key, id);
+      setSeen((s) => s && new Set([...s, ...arrived.values()]));
       const theirs = planned.files.filter((f) => arrived.has(f.agent));
       if (copyFiles && theirs.length > 0) {
         for (const key of arrived.keys()) sent.current.add(key);
@@ -345,10 +364,16 @@ export function useImportFlow(orgId: string | null) {
     card,
     setCard,
     methods,
-    setMethod: (c: ImportCard, method: ImportMethod) => setMethods((m) => ({ ...m, [c]: method })),
+    setMethod: (c: ImportCard, method: ImportMethod) => {
+      setFailure(null);
+      setMethods((m) => ({ ...m, [c]: method }));
+    },
     watch,
-    /** The person's agents made since the MCP steps first showed: an embedder's way on, as `report` is. */
+    /** The person's agents made since the source's MCP steps first showed: an embedder's way on, as `report` is. */
     arrived,
+    /** The read the MCP step counts from failed: nothing can show as arrived until `refetch` works. */
+    watchError: watching && !seen && agents.isError && !agents.isFetching ? agents.error : null,
+    rewatch: () => void refetch(),
     busy,
     failure,
     planned,
@@ -393,19 +418,27 @@ export function useImportFlow(orgId: string | null) {
       setPlanned(null);
       setReport(null);
       setCopy(null);
+      setSeen(null);
     },
   };
 }
 
 export type ImportFlowState = ReturnType<typeof useImportFlow>;
 
-/** Moves focus to `el` once, when the flow asked for it (a step that replaced what had focus). */
-function useFocusOn<T extends HTMLElement>(flow: ImportFlowState, target: Exclude<Focus, null>) {
+/**
+ * Moves focus to `el` once, when the flow asked for it (a step that replaced what had focus), or to `instead` where
+ * `el` isn't shown.
+ */
+function useFocusOn<T extends HTMLElement>(
+  flow: ImportFlowState,
+  target: Exclude<Focus, null>,
+  instead?: RefObject<HTMLElement | null>,
+) {
   const el = useRef<T>(null);
   useEffect(() => {
     if (flow.focus.current !== target) return;
     flow.focus.current = null;
-    el.current?.focus();
+    (el.current ?? instead?.current)?.focus();
   });
   return el;
 }
@@ -473,12 +506,22 @@ function SourceMark({ card }: { card: ImportCard }) {
  */
 function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string; linked: boolean }) {
   const { t } = useTranslation();
-  const mcp = aiAppImport(t, useApps(orgId).data);
-  const method = flow.card && mcp ? (flow.methods[flow.card] ?? defaultMethod(flow.card, mcp.available)) : null;
-  const viaMcp = method === "mcp";
+  const apps = useApps(orgId);
+  const mcp = aiAppImport(t, apps.data);
+  // Prompt only for an app that takes no MCP, or when this server's address couldn't be read. Nothing to choose from
+  // while it loads, so the default never changes under the person.
+  const method: ImportMethod | null =
+    !flow.card || !mcpClient(flow.card)
+      ? "prompt"
+      : mcp
+        ? (flow.methods[flow.card] ?? defaultMethod(flow.card, mcp.available))
+        : apps.isError
+          ? "prompt"
+          : null;
   const filesInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
-  const drop = useFocusOn<HTMLButtonElement>(flow, "drop");
+  const steps = useRef<HTMLElement>(null);
+  const drop = useFocusOn<HTMLButtonElement>(flow, "drop", steps);
   const [over, setOver] = useState(false);
   const [text, setText] = useState("");
   const busy = flow.busy !== null;
@@ -540,6 +583,7 @@ function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string;
           mcp={mcp}
           method={method}
           linked={linked}
+          stepsRef={steps}
         />
       )}
 
@@ -555,7 +599,7 @@ function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string;
         </div>
       ) : (
         // With MCP the drop zone shows only while a file is dragged over: the file is still read.
-        (!viaMcp || over) && (
+        (method === "prompt" || over) && (
           <div className="imp-drop">
             <button ref={drop} type="button" className="imp-drop__area" onClick={() => filesInput.current?.click()}>
               <Icon name="upload" />
@@ -594,7 +638,7 @@ function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string;
         }}
       />
 
-      {!viaMcp && (
+      {method === "prompt" && (
         <Field label={t("onboarding.import.paste")} id="import-paste">
           <AffixInput
             value={text}
@@ -636,7 +680,7 @@ function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string;
         </div>
       )}
       {/* What a person needs before dropping a folder that holds keys: said on the line, the rest in its ⓘ. */}
-      {!viaMcp && (
+      {method === "prompt" && (
         <p className="imp-note ac-iconline">
           <Icon name="lock" size={16} />
           <span className="ac-hintline">
@@ -653,11 +697,13 @@ function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string;
 
 type McpOption = ReturnType<typeof aiAppImport>;
 
+/** How long the MCP step waits before it says what to check when nothing came. */
+const STUCK_MS = 2 * 60_000;
+
 /**
  * What to do in the picked source: the two ways in, MCP first where the app takes it and apps on the internet reach
- * this server, then that way's steps. With no MCP for the app, its request or where its file is; on a server apps
- * can't reach, that and one line saying why. Nothing while the server's address is still loading, so the default
- * never changes under the person.
+ * this server, then that way's steps. With no MCP for the app, or no way to tell, its request or where its file is;
+ * on a server apps can't reach, that and one line saying why. Nothing while the server's address is still loading.
  */
 function SourceSteps({
   card,
@@ -666,6 +712,7 @@ function SourceSteps({
   mcp,
   method,
   linked,
+  stepsRef,
 }: {
   card: ImportCard;
   flow: ImportFlowState;
@@ -673,6 +720,7 @@ function SourceSteps({
   mcp: McpOption;
   method: ImportMethod | null;
   linked: boolean;
+  stepsRef: RefObject<HTMLElement | null>;
 }) {
   const { t } = useTranslation();
   const client = mcpClient(card);
@@ -684,8 +732,8 @@ function SourceSteps({
       <span>{t(`onboarding.import.where.${card}`)}</span>
     </p>
   );
-  if (!client) return prompt;
-  if (!mcp || !method) return null;
+  if (!method) return null;
+  if (!client || !mcp) return prompt;
   if (!mcp.available)
     return (
       <>
@@ -712,15 +760,15 @@ function SourceSteps({
         ]}
       />
       {method === "mcp" ? (
-        <section className="imp-other" aria-label={t("onboarding.import.method.mcp")}>
+        <section ref={stepsRef} tabIndex={-1} className="imp-other" aria-label={t("onboarding.import.method.mcp")}>
           <p className="small muted">
             {card === "other"
               ? t("onboarding.import.aiApp.leadAny")
-              : t("onboarding.import.aiApp.lead", { app: cardName(t, card) })}
-            {card === "chatgpt-dots" && ` ${t("onboarding.import.aiApp.dots")}`}
+              : card === "chatgpt-dots"
+                ? t("onboarding.import.aiApp.leadDots")
+                : t("onboarding.import.aiApp.lead", { app: cardName(t, card) })}
           </p>
           <ClientSteps client={client} url={mcp.url}>
-            <li>{t("onboarding.import.aiApp.allow")}</li>
             <li>
               <span className="apps-step">
                 <span>{t("onboarding.import.aiApp.paste")}</span>
@@ -750,26 +798,43 @@ function SourceSteps({
 }
 
 /**
- * The agents the app creates, as they arrive (the agents list, read again on `agents.changed` and back on the tab):
- * waiting, with what to check when nothing comes, then how many, each to its page where the flow links out.
+ * The agents the app creates, as they arrive (the agents list, read again on `agents.changed` and back on the tab),
+ * watched while the step shows: waiting (what to check once a while passes with nothing), then how many, each to its
+ * page where the flow links out.
  */
 function Arrivals({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string; linked: boolean }) {
-  const { t } = useTranslation();
-  const { watch, arrived } = flow;
+  const { t, i18n } = useTranslation();
+  const { watch, arrived, watchError } = flow;
   useEffect(watch, [watch]);
+  const [late, setLate] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setLate(true), STUCK_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  if (watchError)
+    return (
+      <div className="imp-failure">
+        <Alert>{errorText(t, watchError, i18n.language)}</Alert>
+        <Button size="sm" icon="refresh" onClick={flow.rewatch}>
+          {t("common.retry")}
+        </Button>
+      </div>
+    );
   return (
     <div className="imp-arrivals">
       {arrived.length === 0 ? (
         <>
-          <p className="imp-arrivals__line" role="status">
+          <p className="imp-arrivals__line ac-iconline" role="status">
             <Spinner />
-            {t("onboarding.import.aiApp.waiting")}
+            <span>{t("onboarding.import.aiApp.waiting")}</span>
           </p>
-          <p className="small muted">{t("onboarding.import.aiApp.stuck")}</p>
+          {late && (
+            <p className="small muted">{t("onboarding.import.aiApp.stuck", { access: t("apps.consent.manage") })}</p>
+          )}
         </>
       ) : (
         <>
-          <p className="imp-arrivals__line" role="status">
+          <p className="imp-arrivals__line ac-iconline" role="status">
             <Icon name="check" size={16} />
             <b>{t("onboarding.import.aiApp.arrived", { count: arrived.length })}</b>
           </p>

@@ -109,7 +109,7 @@ describe("Apps de IA on the phone (ADR 0119)", () => {
     expect(aiAppImport(pt, { serverUrl: "http://10.0.0.5/mcp", serverPublic: false })).toEqual({ available: false });
     const ready = aiAppImport(pt, { serverUrl: "https://app.agentes.chat/mcp", serverPublic: true });
     expect(ready?.available && ready.prompt).toStartWith(
-      "Use o servidor MCP agentes que você acabou de conectar (https://app.agentes.chat/mcp)",
+      "Use o servidor MCP do agentes.chat que você acabou de conectar (https://app.agentes.chat/mcp)",
     );
     // The phone shows the request itself, selectable, not only a Copiar button.
     const card = readFileSync(

@@ -543,7 +543,12 @@ export function ClientSteps({
   const { t } = useTranslation();
   const guide = client.guide(url);
   const words = (s: GuideStep) => (
-    <Trans i18nKey={`apps.dialog.${s.text}`} values={s.vars} components={CODE} {...TYPED_VALUES} />
+    <Trans
+      i18nKey={`apps.dialog.${s.text}`}
+      values={{ access: t("apps.consent.manage"), ...s.vars }}
+      components={CODE}
+      {...TYPED_VALUES}
+    />
   );
   const installs = guide.steps.filter((s) => s.install);
   const steps = guide.steps.filter((s) => !s.install);

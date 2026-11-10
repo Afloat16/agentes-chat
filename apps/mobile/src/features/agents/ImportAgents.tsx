@@ -1,5 +1,8 @@
 import { useApps } from "@agenteschat/client";
+import type { GuideIcon } from "@agenteschat/client/lib/app-clients";
 import { aiAppImport } from "@agenteschat/client/lib/apps";
+import { errorText } from "@agenteschat/client/lib/errors";
+import { stripCodeTags } from "@agenteschat/client/lib/format";
 import {
   bundleOrigin,
   cardName,
@@ -15,6 +18,7 @@ import {
   todoLine,
 } from "@agenteschat/client/lib/import/flow";
 import { EXPORT_PROMPT } from "@agenteschat/client/lib/import/index";
+import { helpUrl } from "@agenteschat/client/lib/server";
 import * as Clipboard from "expo-clipboard";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
@@ -94,9 +98,18 @@ function SourceMark({ card, size = MARK }: { card: ImportCard; size?: number }) 
 function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
-  const mcp = aiAppImport(t, useApps(orgId).data);
-  const method = imp.card && mcp ? (imp.methods[imp.card] ?? defaultMethod(imp.card, mcp.available)) : null;
-  const viaMcp = method === "mcp";
+  const apps = useApps(orgId);
+  const mcp = aiAppImport(t, apps.data);
+  // Prompt only for an app that takes no MCP, or when this server's address couldn't be read. Nothing to choose from
+  // while it loads, so the default never changes under the person.
+  const method: ImportMethod | null =
+    !imp.card || !mcpClient(imp.card)
+      ? "prompt"
+      : mcp
+        ? (imp.methods[imp.card] ?? defaultMethod(imp.card, mcp.available))
+        : apps.isError
+          ? "prompt"
+          : null;
   const [text, setText] = useState("");
   const [archive, setArchive] = useState(false);
   const busy = imp.busy !== null;
@@ -152,7 +165,7 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
                   </Text>
                   {on ? <Icon name="checkc" size={24} color={c.ink} /> : null}
                 </Pressable>
-                {on && !isRequestCard(card) && !viaMcp ? (
+                {on && !isRequestCard(card) && method === "prompt" ? (
                   <View style={styles.where}>
                     <Note icon="info">{t(`mobile.newAgent.import.where.${card}`)}</Note>
                   </View>
@@ -175,7 +188,7 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
             <Button variant="secondary" size="sm" label={t("common.cancel")} onPress={imp.cancel} />
           </View>
         </View>
-      ) : takesFiles(imp.card) && !viaMcp ? (
+      ) : takesFiles(imp.card) && method === "prompt" ? (
         <Button
           variant="secondary"
           icon="file"
@@ -184,7 +197,7 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
         />
       ) : null}
 
-      {viaMcp ? null : (
+      {method === "prompt" ? (
         <>
           <Text variant="footnote" tone="faint" style={styles.gapTop}>
             {t("mobile.newAgent.import.pasteTitle")}
@@ -232,7 +245,7 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
             />
           </View>
         </>
-      )}
+      ) : null}
 
       {archive ? <ErrorText text={t("mobile.newAgent.import.archive")} /> : null}
       {imp.failure ? (
@@ -243,7 +256,7 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
           ) : null}
         </View>
       ) : null}
-      {viaMcp ? null : <Note icon="lock">{t("mobile.newAgent.import.privacy")}</Note>}
+      {method === "prompt" ? <Note icon="lock">{t("mobile.newAgent.import.privacy")}</Note> : null}
     </>
   );
 }
@@ -266,8 +279,8 @@ function SourceSteps({
 }) {
   const { t } = useTranslation();
   const prompt = isRequestCard(card) ? <RequestSteps card={card} /> : null;
-  if (!mcpClient(card)) return prompt;
-  if (!mcp || !method) return null;
+  if (!method) return null;
+  if (!mcpClient(card) || !mcp) return prompt;
   if (!mcp.available)
     return (
       <>
@@ -294,22 +307,24 @@ function SourceSteps({
   );
 }
 
-/** The guide's words as plain text: the phone shows its code and paths whole, copied from under the step. */
-const plain = (words: string) => words.replace(/<\/?code>/g, "");
+/** How long the MCP step waits before it says what to check when nothing came. */
+const STUCK_MS = 2 * 60_000;
 
-/** Connect the app (its own steps, shared with the web), allow it, paste the request, then the agents as they arrive. */
+/** Connect the app (its own steps, shared with the web), paste the request, then the agents as they arrive. */
 function McpSteps({ card, imp, url, prompt }: { card: ImportCard; imp: AgentImport; url: string; prompt: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const client = mcpClient(card);
   if (!client) return null;
   const guide = client.guide(url);
-  const steps: { text: string; open?: string; copy?: string }[] = [
+  const access = t("apps.consent.manage");
+  // The guide's code and paths show whole, copied from under the step.
+  const steps: { text: string; open?: string; copy?: string; mono?: boolean }[] = [
     ...guide.steps.map((s) => ({
-      text: plain(t(`apps.dialog.${s.text}`, s.vars)),
+      text: stripCodeTags(t(`apps.dialog.${s.text}`, { access, ...s.vars })),
       open: s.open,
       copy: s.address ? url : s.code,
+      mono: true,
     })),
-    { text: t("onboarding.import.aiApp.allow") },
     { text: t("onboarding.import.aiApp.paste"), copy: prompt },
   ];
   return (
@@ -318,8 +333,9 @@ function McpSteps({ card, imp, url, prompt }: { card: ImportCard; imp: AgentImpo
         <Text variant="footnote" tone="muted">
           {card === "other"
             ? t("onboarding.import.aiApp.leadAny")
-            : t("onboarding.import.aiApp.lead", { app: cardName(t, card) })}
-          {card === "chatgpt-dots" ? ` ${t("onboarding.import.aiApp.dots")}` : ""}
+            : card === "chatgpt-dots"
+              ? t("onboarding.import.aiApp.leadDots")
+              : t("onboarding.import.aiApp.lead", { app: cardName(t, card) })}
         </Text>
         {steps.map((s, i) => (
           <View key={s.text} style={styles.step}>
@@ -333,27 +349,35 @@ function McpSteps({ card, imp, url, prompt }: { card: ImportCard; imp: AgentImpo
                 onPress={() => openPage(s.open as string)}
               />
             ) : null}
-            {s.copy ? <CopyText text={s.copy} /> : null}
+            {s.copy ? <CopyText text={s.copy} mono={s.mono} /> : null}
           </View>
         ))}
         {guide.notes.map((n) => (
-          <Note key={n.text} icon="info">
-            {plain(t(`apps.dialog.${n.text}`))}
+          <Note key={n.text} icon={n.icon}>
+            {stripCodeTags(t(`apps.dialog.${n.text}`))}
           </Note>
         ))}
+        {card === "openbotrun" || card === "other" ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            label={t("onboarding.import.aiApp.howTo")}
+            onPress={() => openPage(helpUrl("apps-de-ia", i18n.language, "connect"))}
+          />
+        ) : null}
         <Arrivals imp={imp} />
       </View>
     </Card>
   );
 }
 
-/** Words to paste elsewhere, selectable whole, and their Copiar button. */
-function CopyText({ text }: { text: string }) {
+/** Words to paste elsewhere, selectable whole, and their Copiar button. `mono`: an address or a command. */
+function CopyText({ text, mono = false }: { text: string; mono?: boolean }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState<"ok" | "failed" | null>(null);
   return (
     <>
-      <Text selectable variant="footnote" tone="ink2" style={{ fontFamily: MONO }}>
+      <Text selectable variant="footnote" tone="ink2" style={mono ? { fontFamily: MONO } : undefined}>
         {text}
       </Text>
       <Button
@@ -372,12 +396,27 @@ function CopyText({ text }: { text: string }) {
   );
 }
 
-/** The agents the app creates, as they arrive: waiting (and what to check), then each one, to its page. */
+/**
+ * The agents the app creates, as they arrive, watched while the step shows: waiting (what to check once a while
+ * passes with nothing), then each one, to its page.
+ */
 function Arrivals({ imp }: { imp: AgentImport }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
-  const { watch, arrived } = imp;
+  const { watch, arrived, watchError } = imp;
   useEffect(watch, [watch]);
+  const [late, setLate] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setLate(true), STUCK_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  if (watchError)
+    return (
+      <View style={[styles.arrivals, styles.failure]}>
+        <ErrorText text={errorText(t, watchError)} />
+        <Button variant="secondary" size="sm" label={t("common.retry")} onPress={imp.rewatch} />
+      </View>
+    );
   if (arrived.length === 0)
     return (
       <View style={styles.arrivals}>
@@ -387,9 +426,11 @@ function Arrivals({ imp }: { imp: AgentImport }) {
             {t("onboarding.import.aiApp.waiting")}
           </Text>
         </View>
-        <Text variant="footnote" tone="muted">
-          {t("onboarding.import.aiApp.stuck")}
-        </Text>
+        {late ? (
+          <Text variant="footnote" tone="muted">
+            {t("onboarding.import.aiApp.stuck", { access: t("apps.consent.manage") })}
+          </Text>
+        ) : null}
       </View>
     );
   return (
@@ -624,7 +665,9 @@ function Preview({ imp, orgId }: { imp: AgentImport; orgId: string }) {
   );
 }
 
-function Note({ icon, children }: { icon: "info" | "lock" | "check"; children: string }) {
+type NoteIcon = "info" | "lock" | "check" | GuideIcon;
+
+function Note({ icon, children }: { icon: NoteIcon; children: string }) {
   const { colors: c } = useTheme();
   return (
     <View style={styles.note}>
@@ -657,9 +700,17 @@ const styles = StyleSheet.create({
   failure: { gap: 8, alignItems: "flex-start" },
   request: { gap: 8, padding: CARD_PAD, alignItems: "flex-start" },
   step: { gap: 8, alignSelf: "stretch", alignItems: "flex-start" },
-  arrivals: { gap: 8, alignSelf: "stretch", marginTop: 6 },
+  arrivals: { gap: 8, alignSelf: "stretch", marginTop: 8 },
   waiting: { flexDirection: "row", alignItems: "center", gap: 8 },
-  arrived: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 },
+  arrived: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    marginHorizontal: -8,
+    borderRadius: 8,
+  },
   previewHead: { flexDirection: "row", alignItems: "center", gap: 12 },
   // Words and their button past the lead: the button under the words once they take more than their line.
   line: { flex: 1, minWidth: 0, alignItems: "center", columnGap: 16, rowGap: 8 },

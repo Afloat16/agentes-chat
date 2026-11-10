@@ -115,6 +115,10 @@
 .imp-other p {
   margin: 0;
 }
+/* Connect with MCP takes focus where the drop zone it replaced had it (Trocar arquivo, Importar outro). */
+.imp-other:focus {
+  outline: none;
+}
 
 /* Connect with MCP: the agents the app creates, as they arrive. */
 .imp-arrivals {
@@ -123,9 +127,6 @@
   gap: var(--space-2);
 }
 .imp-arrivals__line {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
   font-size: 13.5px;
 }
 

@@ -270,23 +270,28 @@ describe("Configurações → Importar e exportar", () => {
       ["Só o pedido", "false"],
     ]);
     const mcp = screen().getByRole("region", { name: "Conectar com MCP" });
-    expect(mcp.textContent).toContain("O Grok Bot cria os agentes aqui sozinho.");
+    expect(mcp.querySelector("p")?.textContent).toBe(
+      "O MCP deixa o Grok Bot acessar este workspace, e ele cria os agentes aqui sozinho.",
+    );
+    // In order: the access is picked where the sign-in asks, and the server is attached before the request.
     const steps = [...mcp.querySelectorAll("ol > li")];
     expect(steps.map((li) => (li.querySelector(".apps-step > span") ?? li).textContent)).toEqual([
       "Na conversa com o seu bot, mande:",
       "Clique em Add it e depois em Authorize.",
-      "Entre com sua conta do agentes.chat na página que abrir.",
-      "Na tela de permissão, escolha Criar e editar agentes, rotinas e skills.",
+      "Entre com sua conta do agentes.chat na página que abrir e escolha Criar e editar agentes, rotinas e skills.",
+      "Na conversa, digite @ e escolha agentes.",
       "Depois cole este pedido no app:",
     ]);
     expect([...mcp.querySelectorAll(".machine-command__code")].map((c) => c.textContent)).toEqual([
       `Add a custom MCP server called agentes at ${SERVER_URL}`,
     ]);
-    const prompt = `Use o servidor MCP agentes que você acabou de conectar (${SERVER_URL}) para trazer o que você tem para o agentes.chat. Primeiro chame import_summary para ver o que já existe lá e não duplicar nada. Depois, para cada agente, instrução, skill e rotina que você tem, crie o equivalente com create_agent, create_skill e create_routine, e guarde o que cada agente deve lembrar com add_memory.`;
+    const prompt = `Use o servidor MCP do agentes.chat que você acabou de conectar (${SERVER_URL}) para trazer o que você tem para o agentes.chat. Primeiro chame import_summary para ver o que já existe lá e não duplicar nada. Depois, para cada agente, instrução, skill e rotina que você tem, crie o equivalente com create_agent, create_skill e create_routine, e guarde o que cada agente deve lembrar com add_memory.`;
     expect((within(mcp).getByLabelText("Pedido para o seu app de IA") as HTMLTextAreaElement).value).toBe(prompt);
     await click(within(mcp).getByRole("button", { name: "Copiar o pedido" }), 2);
     expect(writes).toEqual([prompt]);
     expect(mcp.textContent).toContain("Esperando os agentes chegarem…");
+    // What to check shows only once a while passes with nothing.
+    expect(mcp.textContent).not.toContain("Nada depois de alguns minutos?");
     // Grok Bot's steps say where: no help link, and nothing here to drop or paste.
     expect(within(mcp).queryByRole("link")).toBeNull();
     expect(document.querySelector(".imp-drop")).toBeNull();
@@ -312,14 +317,16 @@ describe("Configurações → Importar e exportar", () => {
     expect(screen().getByRole("region", { name: "Peça para o seu dot exportar" })).toBeTruthy();
     await click(radio("Conectar com MCP"), 2);
     const mcp = screen().getByRole("region", { name: "Conectar com MCP" });
-    expect(mcp.textContent).toContain(
-      "O ChatGPT dots cria os agentes aqui sozinho. Eles aparecem abaixo conforme chegam. O seu dot usa os plugins que você conecta no ChatGPT, então conecte lá.",
+    expect(mcp.querySelector("p")?.textContent).toBe(
+      "O MCP deixa o seu dot acessar este workspace por um plugin que você adiciona no ChatGPT, e ele cria os agentes aqui sozinho.",
     );
     const open = within(mcp).getByRole("link", { name: "Abrir o ChatGPT" });
     expect([open.getAttribute("href"), open.getAttribute("target")]).toEqual(["https://chatgpt.com/plugins", "_blank"]);
     expect(within(mcp).getByText(SERVER_URL)).toBeTruthy();
     expect(mcp.textContent).toContain("Não dá para adicionar pelo app do celular.");
-    expect(mcp.textContent).toContain("Na tela de permissão, escolha Criar e editar agentes, rotinas e skills.");
+    expect(mcp.textContent).toContain(
+      "Entre com sua conta do agentes.chat na página que abrir e escolha Criar e editar agentes, rotinas e skills.",
+    );
   });
 
   test("the file apps: MCP by default in each one's own words; Por arquivo brings back where its file is", async () => {
@@ -327,8 +334,17 @@ describe("Configurações → Importar e exportar", () => {
     const codes = () => [...document.querySelectorAll(".machine-command__code")].map((c) => c.textContent);
     await click(button("Hermes Agent"), 2);
     expect(codes()).toEqual([`mcp_servers:\n  agentes:\n    url: "${SERVER_URL}"\n    auth: oauth`]);
-    expect(text()).toContain("Para entrar, rode hermes mcp login agentes.");
-    expect(text()).toContain("Depois digite /reload-mcp na conversa.");
+    const words = () =>
+      [...document.querySelectorAll(".apps-steps > li")].map(
+        (li) => (li.querySelector(".apps-step > span") ?? li).textContent,
+      );
+    expect(words()).toEqual([
+      "Cole em ~/.hermes/config.yaml:",
+      "Para entrar, rode hermes mcp login agentes.",
+      "Entre com sua conta do agentes.chat na página que abrir e escolha Criar e editar agentes, rotinas e skills.",
+      "Depois digite /reload-mcp na conversa.",
+      "Depois cole este pedido no app:",
+    ]);
     expect(document.querySelector(".imp-tip")).toBeNull();
     expect(document.querySelector(".imp-drop")).toBeNull();
     await click(radio("Por arquivo"), 2);
@@ -336,10 +352,10 @@ describe("Configurações → Importar e exportar", () => {
     expect(document.querySelector(".imp-drop")).toBeTruthy();
 
     await click(button(/^OpenClaw$/), 2);
+    // The Gateway starts again once the sign-in ends, before the request is pasted.
     expect(codes()).toEqual([
-      `openclaw gateway stop\nopenclaw mcp set agentes '{"url":"${SERVER_URL}","transport":"streamable-http","auth":"oauth"}'\nopenclaw mcp login agentes`,
+      `openclaw gateway stop\nopenclaw mcp set agentes '{"url":"${SERVER_URL}","transport":"streamable-http","auth":"oauth"}'\nopenclaw mcp login agentes\nopenclaw gateway start`,
     ]);
-    expect(text()).toContain("O login roda com o Gateway parado. Ligue de novo quando terminar.");
 
     await click(button("OpenMausBot"), 2);
     expect(text()).toContain("Abra Plugins\u00a0›\u00a0MCP servers.");
@@ -425,6 +441,75 @@ describe("Configurações → Importar e exportar", () => {
     expect(text()).toContain("Nina");
     expect(screen().queryByRole("link", { name: "Nina" })).toBeNull();
     expect(r.router.state.location.pathname).toBe("/onboarding");
+  });
+
+  test("the flow's own imports never count as arrived: Só o pedido, Importar outro arquivo, then MCP waits again", async () => {
+    const { state } = await go();
+    await click(button("Grok Bot"), 4);
+    expect(text()).toContain("Esperando os agentes chegarem…");
+    await click(radio("Só o pedido"), 2);
+    await pasteReply(exportReply("grok-bot", "Minhas automações"));
+    await click(button(/^Importar \d+ ite/), 8);
+    expect(state.agents.some((a) => a.name === "Newsy")).toBe(true);
+    await click(button("Importar outro arquivo"), 4);
+    expect(button("Grok Bot").getAttribute("aria-pressed")).toBe("true");
+    await click(radio("Conectar com MCP"), 6);
+    const line = () => document.querySelector(".imp-arrivals__line")?.textContent;
+    expect(line()).toBe("Esperando os agentes chegarem…");
+    // Another source's MCP step counts from when it opened, not from the first one's.
+    await click(button("Hermes Agent"), 6);
+    expect(line()).toBe("Esperando os agentes chegarem…");
+  });
+
+  test("a file dropped on the MCP steps, then Trocar arquivo: focus lands on the steps, the drop zone isn't there", async () => {
+    await go();
+    await click(button("Grok Bot"), 4);
+    const file = new File([JSON.stringify(exportReply("grok-bot", "Meu bot"))], "agentes-chat-export.json");
+    await drop({ files: [file], items: [] });
+    expect(text()).toContain("Veio do Grok Bot");
+    await click(button("Trocar arquivo"), 4);
+    expect(document.querySelector(".imp-drop")).toBeNull();
+    expect(document.activeElement).toBe(screen().getByRole("region", { name: "Conectar com MCP" }));
+  });
+
+  test("the apps list fails: each source keeps its request or tip, with no MCP choice", async () => {
+    const state = seedState();
+    const api = createFakeApi(state);
+    api.apps = {
+      ...api.apps,
+      list: async () => {
+        throw new ApiError(500, "internal", "boom");
+      },
+    };
+    await go(state, api);
+    await click(button("Grok Bot"), 6);
+    expect(screen().queryByRole("radiogroup", { name: "Como trazer" })).toBeNull();
+    expect(screen().getByRole("region", { name: "Peça para o seu bot exportar" })).toBeTruthy();
+    expect(screen().getByLabelText("Ou cole um link do GitHub ou a resposta do outro app")).toBeTruthy();
+    await click(button("Hermes Agent"), 2);
+    expect(document.querySelector(".imp-tip")?.textContent).toContain("hermes profile export");
+  });
+
+  test("the agents can't be read when the MCP step opens: it says why and reads them again", async () => {
+    const state = seedState();
+    const api = createFakeApi(state);
+    const list = api.agents.list;
+    let fail = true;
+    api.agents = {
+      ...api.agents,
+      list: async (orgId) => {
+        if (fail) throw new ApiError(500, "internal", "boom");
+        return list(orgId);
+      },
+    };
+    await go(state, api);
+    await click(button("Grok Bot"), 8);
+    const mcp = () => screen().getByRole("region", { name: "Conectar com MCP" });
+    expect(mcp().textContent).not.toContain("Esperando os agentes chegarem…");
+    expect(within(mcp()).getByRole("alert")).toBeTruthy();
+    fail = false;
+    await click(within(mcp()).getByRole("button", { name: "Tentar de novo" }), 8);
+    expect(mcp().textContent).toContain("Esperando os agentes chegarem…");
   });
 
   test("its notes and lists lead each line with an icon on the line's first row", async () => {
