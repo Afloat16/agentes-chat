@@ -267,11 +267,11 @@ describe("pairing from the app", () => {
       expect(rowOf(el, "Oficina")?.querySelector("small")?.textContent).toBe(
         "agentes.chat Cloud · Its agents don't use this Mac",
       );
-      // Another workspace, then Open at login, close the card.
+      // Open at login, then Another workspace, close the card.
       const card = rowOf(el, norte)?.closest(".dk-card");
       expect([...(card?.querySelectorAll(".dk-crow__title") ?? [])].slice(-2).map((n) => n.textContent)).toEqual([
-        "Another workspace",
         "Open at login",
+        "Another workspace",
       ]);
       await act(async () => button(rowOf(el, "Another workspace"), "Add a workspace…")?.click());
       expect(host.window).toBe("welcome");

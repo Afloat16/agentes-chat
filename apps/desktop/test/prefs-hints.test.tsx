@@ -142,7 +142,7 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
       },
     ));
 
-  test("Servers: the usage switch keeps what changing it does in sight, what it sends behind its ⓘ", () =>
+  test("Servers: what the usage switch sends and what changing it does, both behind its ⓘ", () =>
     pane(
       "here",
       <Servers />,
@@ -152,11 +152,10 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
       (el) => {
         expect(row(el, "Send anonymous usage statistics to agentes.chat")).toEqual({
           title: "Send anonymous usage statistics to agentes.chat",
-          hint: "Counts such as people, agents, machine sizes, AI tokens used and how much data the agents' browsers send and receive. Never messages, files, names or sites.",
-          // The switch reads the hint, then what changing it does.
+          hint: "Counts such as people, agents, machine sizes, AI tokens used and how much data the agents' browsers send and receive. Never messages, files, names or sites. Changing it restarts agentes.chat for a moment.",
           switch:
             "Counts such as people, agents, machine sizes, AI tokens used and how much data the agents' browsers send and receive. Never messages, files, names or sites. Changing it restarts agentes.chat for a moment.",
-          line: "Changing it restarts agentes.chat for a moment.",
+          line: null,
         });
         expect(el.textContent).not.toContain("nothing is sent");
         expect(el.querySelector(".dk-phead .dk-lead")?.textContent).toBe("Where this app opens agentes.chat.");
