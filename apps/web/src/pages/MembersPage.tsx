@@ -401,7 +401,7 @@ export function MembersPage({ embedded = false }: { embedded?: boolean } = {}) {
                     </span>
                   )}
                   <div className="ac-acts">
-                    <Button asChild size="sm" variant="ghost">
+                    <Button asChild variant="link">
                       <Link to="/org/$orgId/agents/$agentId" params={{ orgId: org.id, agentId: a.id }}>
                         {t("profile.viewProfile")}
                       </Link>
