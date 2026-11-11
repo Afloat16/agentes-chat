@@ -161,10 +161,10 @@ describe("Configurações do workspace", () => {
     expect(more.inert).toBe(false);
     expect(more.textContent).toContain("Conectado como acme");
     // Its actions are one row of bare words, the ⋯ last.
-    expect([...more.querySelectorAll(".ac-acts > .ac-btn")].map((b) => b.className.includes("ac-btn--ghost"))).toEqual([
-      true,
-      true,
-      true,
+    expect([...more.querySelectorAll(".ac-acts > button")].map((b) => b.className)).toEqual([
+      "ac-link ac-link--action",
+      "ac-link ac-link--action",
+      "ac-btn ac-btn--ghost ac-btn--sm ac-btn--icon",
     ]);
     expect(within(more).getByRole("button", { name: "Quem usa GitHub" }).textContent).toBe("Quem usa");
     await click(line);

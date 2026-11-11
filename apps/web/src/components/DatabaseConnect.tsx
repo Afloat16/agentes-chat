@@ -862,13 +862,13 @@ export function DatabaseRow({
                 {t("mail.reconnect")}
               </Button>
             )}
-            <Button size="sm" variant="ghost" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
+            <Button variant="link" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
               {t("connectors.who")}
             </Button>
-            <Button size="sm" variant="ghost" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
+            <Button variant="link" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
               {t("connectors.tools")}
             </Button>
-            <Button size="sm" variant="ghost" aria-label={t("database.scopeEditName", { name })} onClick={onScope}>
+            <Button variant="link" aria-label={t("database.scopeEditName", { name })} onClick={onScope}>
               {t("database.scopeEdit")}
             </Button>
             {connection.wholeServer && (

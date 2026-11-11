@@ -996,7 +996,7 @@ export function MailRow({
                 {t("mail.reconnect")}
               </Button>
             )}
-            <Button size="sm" variant="ghost" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
+            <Button variant="link" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
               {t("connectors.who")}
             </Button>
             <Button variant="link" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>

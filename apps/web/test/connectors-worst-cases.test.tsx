@@ -134,13 +134,16 @@ describe("Conectores, worst case", () => {
     );
     for (const row of rows) expect(row.querySelectorAll(".ac-foldrow__more > .ac-acts").length).toBe(1);
     // The fix is the one plated button, first; the rest are bare words.
-    expect([...(rows[0]?.querySelectorAll(".ac-acts > .ac-btn") ?? [])].map((b) => b.textContent)).toEqual([
+    expect([...(rows[0]?.querySelectorAll(".ac-acts > button") ?? [])].map((b) => b.textContent)).toEqual([
       "Reconectar",
       "Quem usa",
       "Ferramentas",
       "Endereços",
       "Desconectar",
     ]);
-    expect(rows[0]?.querySelectorAll(".ac-acts > .ac-btn:not(.ac-btn--ghost)").length).toBe(1);
+    expect([...(rows[0]?.querySelectorAll(".ac-acts > .ac-btn") ?? [])].map((b) => b.textContent)).toEqual([
+      "Reconectar",
+    ]);
+    expect(rows[0]?.querySelectorAll(".ac-acts > .ac-link--action").length).toBe(4);
   });
 });
