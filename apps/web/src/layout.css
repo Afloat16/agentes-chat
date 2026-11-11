@@ -4944,11 +4944,6 @@ html:not([data-pointer]) .catalog-tile:focus-visible {
   min-width: 0;
   white-space: nowrap;
 }
-/* The faces left out of the line, as a number right after the last one: nearer the faces than the sentence is. */
-.connected-row__more {
-  margin-inline-start: calc(var(--space-1) - var(--space-2));
-  font-variant-numeric: tabular-nums;
-}
 /* Cofre › a connection's buttons, under its details (its row stays open: it holds a link and what to fix). */
 .connected-row__actions {
   display: flex;

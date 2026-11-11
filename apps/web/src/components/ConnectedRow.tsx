@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 
-/** Faces on the line before a "+N" stands for the rest. */
+/** Faces on the line: the count after them says how many there are. */
 const MAX_FACES = 5;
 
 /**
@@ -49,11 +49,6 @@ export function ConnectedRow({
                 <AgentAvatar key={a.id} agentId={a.id} name={a.name} size="xs" />
               ))}
             </AvatarStack>
-          )}
-          {using.length > MAX_FACES && (
-            <span className="connected-row__more" aria-hidden="true">
-              +{using.length - MAX_FACES}
-            </span>
           )}
           {using.length > 0 ? t("connectors.usedBy", { count: using.length, total }) : t("connectors.usedByNone")}
         </span>

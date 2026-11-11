@@ -103,7 +103,7 @@ describe("Conectores, worst case", () => {
       ]);
       expect(line.querySelectorAll(".list-title > .ac-chip").length).toBeGreaterThan(0);
       expect(line.querySelector(".connected-row__who")?.textContent).toMatch(
-        /^((\+\d+)?\d+ de \d+ agentes|Nenhum agente ainda)$/,
+        /^(\d+ de \d+ agentes|Nenhum agente ainda)$/,
       );
     }
     expect(lines().map((l) => l.querySelector(".list-title")?.textContent)).toEqual([
@@ -115,9 +115,8 @@ describe("Conectores, worst case", () => {
       "VazioAtivo",
     ]);
     expect(LONG_SERVER.length).toBeGreaterThanOrEqual(70);
-    // Forty agents use the first: five faces, then a number for the rest.
-    expect(lines()[0]?.querySelector(".connected-row__who")?.textContent).toBe("+3540 de 40 agentes");
-    expect(lines()[2]?.querySelector(".connected-row__more")).toBeNull();
+    // Forty agents use the first: five faces, and the count says the rest.
+    expect(lines()[0]?.querySelector(".connected-row__who")?.textContent).toBe("40 de 40 agentes");
     expect(lines()[0]?.querySelectorAll(".connected-row__who .ac-avatar").length).toBe(5);
     // Nothing of the inside is in reach: no action, no account.
     expect(screen().queryByRole("button", { name: /^(Quem usa|Reconectar|Desconectar) / })).toBeNull();
