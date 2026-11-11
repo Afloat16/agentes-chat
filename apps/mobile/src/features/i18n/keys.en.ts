@@ -393,8 +393,6 @@ export const featureKeysEn = {
     switchWorking: "working",
     join: "Join the channel",
     sending: "Sending…",
-    failed: "Not sent · Try again",
-    notSent: "The message wasn't sent.",
     toLatest: "Go to the latest messages",
     toLatestNew: "Go to the latest messages: {{text}}",
     stopAgent: "Stop {{name}}",

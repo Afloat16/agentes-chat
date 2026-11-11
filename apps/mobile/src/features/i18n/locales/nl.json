@@ -370,8 +370,6 @@
     "switchWorking": "aan het werk",
     "join": "Lid worden van het kanaal",
     "sending": "Versturen…",
-    "failed": "Niet verstuurd · Probeer opnieuw",
-    "notSent": "Het bericht is niet verstuurd.",
     "toLatest": "Naar de nieuwste berichten",
     "toLatestNew": "Naar de nieuwste berichten: {{text}}",
     "stopAgent": "{{name}} stoppen",

@@ -356,8 +356,6 @@
     "switchWorking": "工作中",
     "join": "加入频道",
     "sending": "正在发送…",
-    "failed": "未发送 · 重试",
-    "notSent": "消息未发送。",
     "toLatest": "前往最新消息",
     "toLatestNew": "前往最新消息：{{text}}",
     "stopAgent": "停止 {{name}}",
