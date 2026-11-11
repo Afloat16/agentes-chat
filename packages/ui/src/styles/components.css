@@ -515,9 +515,18 @@ html:not([data-pointer]) .ac-btn:focus-visible {
 .ac-acts > .ac-link--action + .ac-link--action {
   margin-inline-start: 0;
 }
-/* Busy: the words stay (so nothing moves) and dim, the spinner after them. */
-.ac-link--loading {
+/* Busy: the words keep their room unseen and the spinner takes their middle, as a loading button does, so nothing
+   beside it moves. */
+.ac-link--action.ac-link--loading,
+.ac-link--action.ac-link--loading:disabled {
   cursor: progress;
+  color: transparent;
+  text-decoration-color: transparent;
+}
+.ac-link--loading > .ac-btn__spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
   color: var(--muted);
 }
 /* A finger needs more than a line of text: the press area grows around the words and takes no layout room. */

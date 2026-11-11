@@ -167,3 +167,10 @@ test("step 1 is one call, the workspace with its zones; the finish and the DM it
   // An older self-hosted server's open says no DM: its list is read again, never waited for.
   expect(flow).toContain("else if (dm) void qc.invalidateQueries({ queryKey: keys.dms(id) });");
 });
+
+test("the team step's import finishes the setup and opens the import itself, never a Settings page", () => {
+  const flow = src("onboarding/OnboardingFlow.tsx");
+  expect(flow).toContain('if (how === "import") router.push(IMPORT_AGENTS_HREF as never);');
+  expect(flow).not.toContain("/settings/import");
+  expect(src("agents/import.ts")).toContain('export const IMPORT_AGENTS_HREF = "/new-agent?import=1";');
+});

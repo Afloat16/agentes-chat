@@ -8672,8 +8672,7 @@
     "agentTitle": "Skill",
     "agentSubtitle": "Yang bisa dibuka {{name}} saat dibutuhkan.",
     "agentEmpty": "{{name}} belum punya skill.",
-    "manage": "Kelola skill",
-    "step": "Skill"
+    "manage": "Kelola skill"
   },
   "edit": {
     "unsaved": "Perubahan belum disimpan",

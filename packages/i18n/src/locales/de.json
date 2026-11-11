@@ -8976,8 +8976,7 @@
     "agentTitle": "Skills",
     "agentSubtitle": "Was {{name}} bei Bedarf öffnen kann.",
     "agentEmpty": "{{name}} hat noch keine Skills.",
-    "manage": "Skills verwalten",
-    "step": "Skills"
+    "manage": "Skills verwalten"
   },
   "edit": {
     "unsaved": "Ungespeicherte Änderungen",

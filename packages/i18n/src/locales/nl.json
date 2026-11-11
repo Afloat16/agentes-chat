@@ -9023,8 +9023,7 @@
     "agentTitle": "Skills",
     "agentSubtitle": "Wat {{name}} kan openen als het nodig is.",
     "agentEmpty": "{{name}} heeft nog geen skills.",
-    "manage": "Skills beheren",
-    "step": "Skills"
+    "manage": "Skills beheren"
   },
   "edit": {
     "unsaved": "Niet-opgeslagen wijzigingen",

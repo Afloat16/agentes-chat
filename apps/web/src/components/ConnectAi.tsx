@@ -109,6 +109,8 @@ export interface ConnectAiRequest {
    * stays).
    */
   forNewAgent?: boolean;
+  /** Opened over a form still being filled in (Criar agente's steps): a Settings page opens in a new tab. */
+  overDraft?: boolean;
   /**
    * Opened right after the onboarding (ADR 0160): the team stands asleep beside the choices, which are cards in
    * words, and wakes as the sky turns to day once an AI is connected. The plans' own steps are the same.
@@ -379,9 +381,9 @@ function ConnectAiDialog({
     : named && agents.length === 0
       ? t("noAi.lockedAdmins")
       : undefined;
-  // From the create-agent step a Settings page opens in a new tab: the draft behind this dialog stays.
+  // Over a draft a Settings page opens in a new tab: the draft behind this dialog stays.
   const toSettings = (section: "devices" | "keys") => {
-    if (request.forNewAgent) {
+    if (request.forNewAgent || request.overDraft) {
       window.open(`/org/${org.id}/settings/${section}`, "_blank", "noopener");
       return;
     }

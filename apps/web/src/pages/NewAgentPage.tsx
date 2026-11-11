@@ -571,7 +571,7 @@ function NewAgentFlow({
   const connectHere = () => {
     if (!connect) return;
     setOptionsBefore(ownerId === me.user.id ? new Set(brainOptions.map((o) => o.value)) : null);
-    connect.open(ownerId === me.user.id ? { forNewAgent: true } : { intent: "api_key" });
+    connect.open(ownerId === me.user.id ? { forNewAgent: true } : { intent: "api_key", overDraft: true });
   };
   const connectedHere = optionsBefore ? newPlanAccountOption(brainOptions, optionsBefore) : undefined;
   // A plan account of mine that can think for it (one connected in place from the model step, or before I had any

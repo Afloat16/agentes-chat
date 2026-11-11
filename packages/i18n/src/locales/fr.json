@@ -9304,8 +9304,7 @@
     "agentTitle": "Compétences",
     "agentSubtitle": "Ce que {{name}} peut ouvrir au besoin.",
     "agentEmpty": "{{name}} n'a pas encore de compétences.",
-    "manage": "Gérer les compétences",
-    "step": "Compétences"
+    "manage": "Gérer les compétences"
   },
   "edit": {
     "unsaved": "Modifications non enregistrées",

@@ -241,6 +241,21 @@ describe("the steps", () => {
     expect(team()).toContain("Otto");
   });
 
+  test("Trazer agentes de outro app opens the import over the team step: nothing is finished, nothing leaves", async () => {
+    const state = settingUp({ context: "Roupas sob medida para noivas" });
+    await renderApp("/onboarding", { api: createFakeApi(state) });
+    await settle(14);
+    const step = heading();
+    await click(button("Trazer agentes de outro app"), 6);
+    const bring = screen().getByRole("dialog", { name: "Trazer agentes de outro app" });
+    expect(within(bring).getByRole("group", { name: "De onde vêm os agentes" })).toBeTruthy();
+    expect(heading()).toBe(step);
+    expect(calls(state, "orgs.saveOnboarding")).toEqual([]);
+    await click(within(bring).getByRole("button", { name: "Fechar" }), 4);
+    expect(screen().queryByRole("dialog")).toBeNull();
+    expect(document.querySelector(".tp-agents")?.textContent).toContain("Otto");
+  });
+
   test("Outra coisa asks for the sentence", async () => {
     const state = settingUp();
     await renderApp("/onboarding", { api: createFakeApi(state) });

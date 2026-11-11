@@ -129,4 +129,6 @@ test("the kit: an option's ⓘ follows its words, and a text button has no box",
   expect(declarations(kit, ".ac-hint.ac-menu__hint + .ac-menu__check")).toEqual([["margin-left", "auto"]]);
   const link = declarations(kit, ".ac-link--action").map(([p]) => p);
   for (const box of ["padding", "height", "min-height", "border", "background"]) expect(link).not.toContain(box);
+  // Busy, the spinner is over the words, out of the flow: the button keeps its width and its neighbours their place.
+  expect(declarations(kit, ".ac-link--loading > .ac-btn__spinner")).toContainEqual(["position", "absolute"]);
 });

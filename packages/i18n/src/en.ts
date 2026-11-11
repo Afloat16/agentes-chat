@@ -9004,7 +9004,6 @@ export const en = {
     agentSubtitle: "What {{name}} can open when needed.",
     agentEmpty: "{{name}} has no skills yet.",
     manage: "Manage skills",
-    step: "Skills",
   },
   edit: {
     unsaved: "Unsaved changes",

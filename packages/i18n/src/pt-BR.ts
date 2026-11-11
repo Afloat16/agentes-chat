@@ -9080,7 +9080,6 @@ export const ptBR = {
     agentSubtitle: "O que {{name}} pode abrir quando precisar.",
     agentEmpty: "{{name}} ainda não tem skills.",
     manage: "Gerenciar skills",
-    step: "Skills",
   },
   edit: {
     unsaved: "Alterações não salvas",

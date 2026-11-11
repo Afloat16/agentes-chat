@@ -9609,8 +9609,7 @@
     "agentTitle": "Umiejętności",
     "agentSubtitle": "Co {{name}} może otworzyć w razie potrzeby.",
     "agentEmpty": "{{name}} nie ma jeszcze umiejętności.",
-    "manage": "Zarządzaj umiejętnościami",
-    "step": "Umiejętności"
+    "manage": "Zarządzaj umiejętnościami"
   },
   "edit": {
     "unsaved": "Niezapisane zmiany",

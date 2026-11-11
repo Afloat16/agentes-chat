@@ -9319,8 +9319,7 @@
     "agentTitle": "Skill",
     "agentSubtitle": "Cosa può aprire {{name}} quando serve.",
     "agentEmpty": "{{name}} non ha ancora skill.",
-    "manage": "Gestisci skill",
-    "step": "Skill"
+    "manage": "Gestisci skill"
   },
   "edit": {
     "unsaved": "Modifiche non salvate",

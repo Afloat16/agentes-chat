@@ -8623,8 +8623,7 @@
     "agentTitle": "スキル",
     "agentSubtitle": "{{name}}が必要なときに開けるもの。",
     "agentEmpty": "{{name}}にはまだスキルがありません。",
-    "manage": "スキルを管理",
-    "step": "スキル"
+    "manage": "スキルを管理"
   },
   "edit": {
     "unsaved": "未保存の変更があります",

@@ -21,6 +21,9 @@ import { isIdHandle } from "@agenteschat/tokens/names";
  * apply are the web's (`@agenteschat/client/lib/import`).
  */
 
+/** Criar agente opened on bringing agents from another app. */
+export const IMPORT_AGENTS_HREF = "/new-agent?import=1";
+
 /** The cards whose app answers the export request (pasted back), not a file. */
 export const isRequestCard = (card: ImportCard | null): card is RequestCard =>
   card === "grok-bot" || card === "chatgpt-dots" || card === "other";

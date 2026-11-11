@@ -8922,8 +8922,7 @@
     "agentTitle": "Beceriler",
     "agentSubtitle": "{{name}} ajanının gerektiğinde açabilecekleri.",
     "agentEmpty": "{{name}} ajanının henüz becerisi yok.",
-    "manage": "Becerileri yönet",
-    "step": "Beceriler"
+    "manage": "Becerileri yönet"
   },
   "edit": {
     "unsaved": "Kaydedilmemiş değişiklikler",

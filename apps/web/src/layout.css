@@ -9762,7 +9762,7 @@ html:not([data-pointer]) .newag__addrow:focus-visible {
   }
   .newag__sect {
     flex-wrap: wrap;
-    gap: var(--space-1) var(--space-3);
+    gap: var(--space-2) var(--space-3);
   }
   .newag__money-field {
     flex: 1 1 100%;

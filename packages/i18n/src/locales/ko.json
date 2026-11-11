@@ -8617,8 +8617,7 @@
     "agentTitle": "스킬",
     "agentSubtitle": "{{name}}이(가) 필요할 때 열 수 있는 것이에요.",
     "agentEmpty": "{{name}}에게는 아직 스킬이 없어요.",
-    "manage": "스킬 관리",
-    "step": "스킬"
+    "manage": "스킬 관리"
   },
   "edit": {
     "unsaved": "저장하지 않은 변경 사항",

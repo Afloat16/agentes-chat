@@ -20,6 +20,7 @@ import { AuthField } from "@/ui/auth/AuthField";
 import { AuthLink } from "@/ui/auth/AuthLink";
 import { AuthScaffold, CENTER } from "@/ui/auth/AuthScaffold";
 import { router } from "@/ui/navigation";
+import { IMPORT_AGENTS_HREF } from "../agents/import";
 import { confirmationSentTo, forgetConfirmationSent } from "../auth/confirmation";
 import { InviteCrew } from "../auth/invite-parts";
 import { chatHref } from "../links/logic";
@@ -181,7 +182,8 @@ export function OnboardingFlow({ onLeave, another }: { onLeave?: () => void; ano
       // server doesn't send it: the list is read again, without waiting for it.
       if (dm?.dm) addDm(qc, id, dm.dm);
       else if (dm) void qc.invalidateQueries({ queryKey: keys.dms(id) });
-      if (how === "import") router.push("/settings/import");
+      // Straight to the import itself (Criar agente opens on it), not to the Settings page that links to it.
+      if (how === "import") router.push(IMPORT_AGENTS_HREF as never);
       else router.push(chatHref(dm?.channelId ?? generalChannelId));
     });
 

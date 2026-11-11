@@ -9,6 +9,9 @@
 .newag__marks {
   display: flex;
   flex: none;
+  align-items: center;
+  /* As tall as the tile of the card beside it, so the two names sit on one line. */
+  min-height: 44px;
 }
 .newag__marks > .imp-mark {
   margin: 0;
