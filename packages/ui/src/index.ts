@@ -220,6 +220,7 @@ export {
   Menu,
   MenuAt,
   MenuCheckboxItem,
+  MenuFace,
   MenuHeading,
   MenuItem,
   MenuNote,
