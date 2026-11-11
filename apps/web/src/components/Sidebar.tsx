@@ -2217,9 +2217,10 @@ function useWorkspaceLook() {
 }
 
 /**
- * Your workspaces in the account menu of a personal workspace (ADR 0159): the workspace menu's list (by server in the
- * desktop app, ADR 0154), then New workspace, Add workspace or both. Mounted only while the menu is open: the counts
- * load then. No role beside each: one person's own workspaces.
+ * Your workspaces in the account menu of a personal workspace (ADR 0159): the workspace menu's list, then New
+ * workspace; in the desktop app (ADR 0154) by server, with New workspace under this server's workspaces (it makes one
+ * here), then Add workspace. Mounted only while the menu is open: the counts load then. No role beside each: one
+ * person's own workspaces.
  */
 function MenuWorkspaces() {
   const { t, i18n } = useTranslation();
@@ -2262,9 +2263,9 @@ function MenuWorkspaces() {
                 </MenuItem>
               );
             })}
+            {g.here && newWorkspace}
           </Fragment>
         ))}
-        {newWorkspace}
         <MenuItem
           icon="plus"
           description={t("shell.addWorkspaceHint")}
@@ -2532,10 +2533,10 @@ function WorkspaceMenuOptions({ onDone }: { onDone: () => void }) {
                     </MenuOverlayItem>
                   );
                 })}
+                {g.here && newWorkspace}
               </Fragment>
             ))}
             <MenuOverlaySeparator />
-            {newWorkspace}
             <MenuOverlayItem
               icon="plus"
               description={t("shell.addWorkspaceHint")}
