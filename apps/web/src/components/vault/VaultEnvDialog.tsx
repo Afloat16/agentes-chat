@@ -12,7 +12,7 @@ import {
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import {
   Button,
-  CheckboxPill,
+  Checkbox,
   Dialog,
   DialogBody,
   DialogFooter,
@@ -63,9 +63,10 @@ function EnvRow({
         {row.state === "exists" && (
           <span className="vlt-env__choice">
             <span className="vlt-env__state">{t("vault.env.exists")}</span>
-            <CheckboxPill id={id} checked={replace} onCheckedChange={onReplace}>
+            <label htmlFor={id} className="vlt-env__replace">
+              <Checkbox id={id} checked={replace} onCheckedChange={onReplace} />
               {t("vault.env.replace")}
-            </CheckboxPill>
+            </label>
           </span>
         )}
       </span>
@@ -286,12 +287,13 @@ export function VaultEnvDialog({
           )}
         </DialogBody>
       </Locked>
-      <DialogFooter>
-        {file && (
-          <Locked when={importer.busy}>
+      <DialogFooter
+        // As a note, so a narrow dialog puts it over Cancel and Import instead of splitting those two.
+        note={
+          file ? (
             <Button
               variant="ghost"
-              className="vlt-foot__start"
+              disabled={importer.busy}
               onClick={() => {
                 setFile(null);
                 setReplace(new Set());
@@ -299,8 +301,9 @@ export function VaultEnvDialog({
             >
               {t("vault.import.another")}
             </Button>
-          </Locked>
-        )}
+          ) : undefined
+        }
+      >
         <Button onClick={onClose}>{t("common.cancel")}</Button>
         {file ? (
           <Button

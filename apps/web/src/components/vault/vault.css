@@ -584,12 +584,26 @@ html:not([data-pointer]) .vlt-drop__area:focus-visible {
   align-items: center;
   gap: var(--space-2);
 }
+.vlt-env__replace {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-h-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
 .vlt-env__value {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
   min-height: var(--control-h-sm);
+}
+/* The eye's glyph ends on the edge the states end on, not its plate. */
+.vlt-env__value > .ac-btn {
+  margin-inline-end: calc(-1 * var(--space-2));
 }
 .vlt-env__text {
   min-width: 0;

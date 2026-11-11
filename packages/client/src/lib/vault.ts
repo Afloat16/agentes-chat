@@ -63,7 +63,7 @@ const ESCAPES: Record<string, string> = { n: "\n", r: "\r", t: "\t", '"': '"', "
 /** `NAME=value` lines, as dotenv reads them. */
 function envPairs(src: string): [string, string][] {
   const pairs: [string, string][] = [];
-  const line = /^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.-]*)[ \t]*=[ \t]*/;
+  const line = /^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.-]*)[ \t]*=/;
   let at = 0;
   while (at < src.length) {
     const end = src.indexOf("\n", at);
@@ -76,7 +76,8 @@ function envPairs(src: string): [string, string][] {
       continue;
     }
     const name = head[1] as string;
-    const start = at + head[0].length;
+    const afterEquals = at + head[0].length;
+    const start = afterEquals + (/^[ \t]*/.exec(src.slice(afterEquals, stop)) as RegExpExecArray)[0].length;
     const quote = src[start];
     if (quote === '"' || quote === "'" || quote === "`") {
       // A quoted value runs to its closing quote, across lines. Only double quotes take escapes.
@@ -102,11 +103,12 @@ function envPairs(src: string): [string, string][] {
       }
       // No closing quote: the quote is part of a plain value on this one line.
     }
-    // A plain value ends at the line's end, or at a comment after a space.
+    // A plain value ends at the line's end, or at a comment after a space: `NAME= # note` has no value, while a
+    // `#` inside a value (a password's) stays.
     pairs.push([
       name,
       src
-        .slice(start, stop)
+        .slice(afterEquals, stop)
         .replace(/[ \t]+#.*$/, "")
         .trim(),
     ]);

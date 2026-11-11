@@ -102,7 +102,13 @@ export async function importVaultKeys(
       const [done] = await tx
         .update(vaultItems)
         .set(set)
-        .where(and(eq(vaultItems.id, item.id), eq(vaultItems.secretVersion, item.secretVersion)))
+        .where(
+          and(
+            eq(vaultItems.orgId, orgId),
+            eq(vaultItems.id, item.id),
+            eq(vaultItems.secretVersion, item.secretVersion),
+          ),
+        )
         .returning({ id: vaultItems.id });
       if (!done) throw new ConflictError("Some keys changed meanwhile. Import again.", "vault.changed_meanwhile");
     }

@@ -34,11 +34,13 @@ describe("parseEnvFile", () => {
   });
 
   test("a plain value: a comment after a space is cut, a # inside it stays, and so do = signs", () => {
-    expect(pairs("A=one # note\nB=two#three\nC=a=b==\nD=  spaced out  ")).toEqual([
+    expect(pairs("A=one # note\nB=two#three\nC=a=b==\nD=  spaced out  \nE= # only a note\nF=#hash")).toEqual([
       ["A", "one"],
       ["B", "two#three"],
       ["C", "a=b=="],
       ["D", "spaced out"],
+      ["E", ""],
+      ["F", "#hash"],
     ]);
   });
 
