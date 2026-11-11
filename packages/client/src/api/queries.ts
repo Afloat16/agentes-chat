@@ -20,7 +20,7 @@ import { newerSetup } from "../lib/computer";
 import { CONSULT_CONVERSATION_POLL_MS, CONSULT_GROUP_POLL_MS, exchangeIds } from "../lib/consult-group";
 import { forPeople } from "../lib/consultations";
 import { PHONE_LOOK_MS, WIFI_PAIR_POLL_MS, wifiPairLive } from "../lib/devices";
-import { answerWithin, noAnswer, sendWaits } from "../lib/errors";
+import { answerWithin, noAnswer, sendFailureOf, sendWaits } from "../lib/errors";
 import { ISSUES_VIEW_DEFAULT, type IssuesViewChange, withIssuesView } from "../lib/issues-view";
 import { LoginReadError, loginReadPasses } from "../lib/machines";
 import { GIF_PAGE, isMediaAfterReply, messageMediaOf, postedMedia } from "../lib/media";
@@ -1667,7 +1667,11 @@ export function postMessageMutation(
       if (waits && ctx?.local) outbox.add(orgId, ctx.local);
       options.onFailed?.(error, { clientId, waits });
       qc.setQueryData<Message[]>(key, (list) =>
-        list?.map((m) => (m.local && m.clientId === clientId ? { ...m, local: "failed" as const } : m)),
+        list?.map((m) =>
+          m.local && m.clientId === clientId
+            ? { ...m, local: "failed" as const, sendFailure: waits ? undefined : sendFailureOf(error) }
+            : m,
+        ),
       );
     },
   });
@@ -1865,6 +1869,9 @@ export function flushOutbox(
       } catch (error) {
         if (sendWaits(error)) return true;
         outbox.remove(clientId);
+        qc.setQueryData<Message[]>(keys.messages(orgId, local.channelId), (list) =>
+          list?.map((m) => (m.local && m.clientId === clientId ? { ...m, sendFailure: sendFailureOf(error) } : m)),
+        );
         onRefused?.(error);
       }
     }

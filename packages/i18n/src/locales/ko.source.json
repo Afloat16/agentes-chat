@@ -5465,8 +5465,32 @@
   "channel.sending": {
     "value": "sending…"
   },
-  "channel.notSent": {
-    "value": "Not sent"
+  "channel.notSentWhy": {
+    "value": "Not sent. {{why}}"
+  },
+  "channel.notSentUnknown": {
+    "value": "Something went wrong."
+  },
+  "channel.editSend": {
+    "value": "Edit"
+  },
+  "channel.tooLong.text": {
+    "value": "The message has {{length}} characters and the limit is {{max}}."
+  },
+  "channel.tooLong.fix": {
+    "value": "Send the text as a file."
+  },
+  "channel.tooLong.asFile": {
+    "value": "Send as a file"
+  },
+  "channel.tooLong.fileName": {
+    "value": "message.txt"
+  },
+  "channel.long.more": {
+    "value": "See more"
+  },
+  "channel.long.title": {
+    "value": "Message from {{name}}"
   },
   "channel.retrySend": {
     "value": "Try again"

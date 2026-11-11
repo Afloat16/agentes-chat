@@ -2222,7 +2222,23 @@ export const ptBR = {
     correctionSent: "Correção enviada. O {{name}} vai aprender com ela.",
     correctionSent_female: "Correção enviada. A {{name}} vai aprender com ela.",
     sending: "enviando…",
-    notSent: "Não enviada",
+    notSentWhy: "Não enviada. {{why}}",
+    /** The `why` of a failed message when the server gave no reason. */
+    notSentUnknown: "Algo deu errado.",
+    /** A failed message whose text must change before it can go: it returns to the field. */
+    editSend: "Editar",
+    /** A draft past the length limit, said above the field before sending: its sizes, then the way out. */
+    tooLong: {
+      text: "A mensagem tem {{length}} caracteres e o limite é {{max}}.",
+      fix: "Envie o texto como arquivo.",
+      asFile: "Enviar como arquivo",
+      fileName: "mensagem.txt",
+    },
+    /** A tall message, clipped in the conversation: the button under it and the dialog that shows it whole. */
+    long: {
+      more: "Ver mais",
+      title: "Mensagem de {{name}}",
+    },
     retrySend: "Tentar de novo",
     thinking: "{{name}} está pensando…",
     typing_one: "{{names}} está digitando…",

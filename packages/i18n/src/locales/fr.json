@@ -2270,7 +2270,19 @@
     "correctionSent": "Correction envoyée. {{name}} va en tirer une leçon.",
     "correctionSent_female": "Correction envoyée. {{name}} va en tirer une leçon.",
     "sending": "envoi…",
-    "notSent": "Non envoyé",
+    "tooLong": {
+      "text": "Le message fait {{length}} caractères et la limite est de {{max}}.",
+      "fix": "Envoyez le texte en fichier.",
+      "asFile": "Envoyer en fichier",
+      "fileName": "message.txt"
+    },
+    "notSentWhy": "Non envoyé. {{why}}",
+    "notSentUnknown": "Un problème est survenu.",
+    "editSend": "Modifier",
+    "long": {
+      "more": "Voir plus",
+      "title": "Message de {{name}}"
+    },
     "retrySend": "Réessayer",
     "thinking": "{{name}} réfléchit…",
     "typing_one": "{{names}} écrit…",

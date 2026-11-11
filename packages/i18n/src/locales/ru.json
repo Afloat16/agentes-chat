@@ -2334,7 +2334,19 @@
     "sendCorrection": "Отправить поправку",
     "correctionSent": "Поправка отправлена. {{name}} на ней научится.",
     "sending": "отправляется…",
-    "notSent": "Не отправлено",
+    "tooLong": {
+      "text": "В сообщении {{length}} символов, а лимит {{max}}.",
+      "fix": "Отправьте текст файлом.",
+      "asFile": "Отправить файлом",
+      "fileName": "message.txt"
+    },
+    "notSentWhy": "Не отправлено. {{why}}",
+    "notSentUnknown": "Что-то пошло не так.",
+    "editSend": "Изменить",
+    "long": {
+      "more": "Показать ещё",
+      "title": "Сообщение от {{name}}"
+    },
     "retrySend": "Попробовать снова",
     "thinking": "{{name}} думает…",
     "typing_one": "{{names}} печатает…",

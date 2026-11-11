@@ -2132,7 +2132,19 @@
     "sendCorrection": "修正を送信",
     "correctionSent": "修正を送信しました。{{name}}はここから学びます。",
     "sending": "送信中…",
-    "notSent": "送信されていません",
+    "tooLong": {
+      "text": "メッセージは{{length}}文字で、上限は{{max}}文字です。",
+      "fix": "テキストをファイルとして送信してください。",
+      "asFile": "ファイルとして送信",
+      "fileName": "message.txt"
+    },
+    "notSentWhy": "未送信。{{why}}",
+    "notSentUnknown": "問題が発生しました。",
+    "editSend": "編集",
+    "long": {
+      "more": "もっと見る",
+      "title": "{{name}}のメッセージ"
+    },
     "retrySend": "もう一度試す",
     "thinking": "{{name}}が考えています…",
     "typing_other": "{{names}}が入力中…",

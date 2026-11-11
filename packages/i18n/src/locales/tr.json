@@ -2198,7 +2198,19 @@
     "sendCorrection": "Düzeltmeyi gönder",
     "correctionSent": "Düzeltme gönderildi. {{name}} bundan öğrenecek.",
     "sending": "gönderiliyor…",
-    "notSent": "Gönderilmedi",
+    "tooLong": {
+      "text": "Mesaj {{length}} karakter, sınır ise {{max}}.",
+      "fix": "Metni dosya olarak gönder.",
+      "asFile": "Dosya olarak gönder",
+      "fileName": "mesaj.txt"
+    },
+    "notSentWhy": "Gönderilmedi. {{why}}",
+    "notSentUnknown": "Bir şeyler ters gitti.",
+    "editSend": "Düzenle",
+    "long": {
+      "more": "Devamını gör",
+      "title": "{{name}} adlı kişinin mesajı"
+    },
     "retrySend": "Tekrar dene",
     "thinking": "{{name}} düşünüyor…",
     "typing_one": "{{names}} yazıyor…",

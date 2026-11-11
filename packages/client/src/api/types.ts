@@ -1286,6 +1286,8 @@ export interface Message {
   longWork?: WorkView;
   /** Client only: an optimistic message waiting for the server, or one that failed to send. */
   local?: "pending" | "failed";
+  /** Client only, on a `failed` one the server refused: why (`sendFailureText`). */
+  sendFailure?: { status: number; code: string; message: string; params?: Record<string, unknown> };
   createdAt: string;
 }
 
