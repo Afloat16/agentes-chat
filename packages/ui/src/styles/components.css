@@ -11894,6 +11894,87 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   }
 }
 
+/*
+ * FoldRow: a list row that opens in place. Its line is a button over the row's whole width (the row's padding is the
+ * button's, so its hover and its ring reach the list's edges), a MediaRow with a fourth column for the chevron, which
+ * stays on the name's line when what ends that line goes under it. Under it the fold is a grid row of no height while
+ * closed, so opening and closing grow and shrink to what it holds: the details, then the row's actions (`.ac-acts`).
+ */
+.ac-list__row.ac-foldrow {
+  display: block;
+  padding: 0;
+}
+.ac-foldrow__head.ac-mediarow {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  width: 100%;
+  padding: var(--row-py) var(--space-4);
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ac-foldrow__head:hover {
+  background: var(--plate-soft);
+}
+/* The list clips at its rounded edge: the ring goes inside, as its link rows' does. */
+html:not([data-pointer]) .ac-foldrow__head:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-inset);
+}
+/* Open, the line's lower corners are no longer the row's. Open is a class, not an attribute: the layout check tells
+   one screen from another by its classes, so the open row is measured too. */
+.ac-foldrow--open > .ac-foldrow__head {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+/* On the middle of the name's first line, however many lines the name wraps to. `--glyph` is the size the icon is
+   drawn at, which its own style sets. */
+.ac-foldrow__chevron {
+  --glyph: 16px;
+  grid-area: 1 / 4;
+  margin-block-start: calc((var(--mediarow-axis) - var(--glyph)) / 2);
+  color: var(--faint);
+}
+.ac-foldrow--open .ac-foldrow__chevron {
+  rotate: 90deg;
+}
+.ac-foldrow__fold {
+  display: grid;
+  grid-template-rows: 0fr;
+}
+.ac-foldrow--open > .ac-foldrow__fold {
+  grid-template-rows: 1fr;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ac-foldrow__chevron {
+    transition: rotate var(--dur-base) ease;
+  }
+  .ac-foldrow__fold {
+    transition: grid-template-rows var(--dur-panel) ease;
+  }
+}
+/* A margin under the last thing, not a padding: a padding would keep the closed fold that tall. */
+.ac-foldrow__more {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+}
+.ac-foldrow__more > :last-child {
+  margin-block-end: var(--space-3);
+}
+/* The row's actions wrap under each other on a phone, never past the list's edge. */
+.ac-foldrow__more > .ac-acts {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+
 /* ---------- A phone's own Settings path (`SettingsPath`) ---------- */
 .ac-setpath {
   display: flex;

@@ -24,7 +24,6 @@ import {
 import { relativeTime } from "@agenteschat/client/lib/format";
 import {
   Alert,
-  AvatarStack,
   Button,
   CheckboxPill,
   Chip,
@@ -44,6 +43,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { ConnectedRow } from "@/components/ConnectedRow";
 import { DatabaseRulesPanel } from "@/components/DatabaseRules";
 import { FlowTitle } from "@/components/FlowTitle";
 import { LoadingList, useStepText } from "@/components/Loading";
@@ -834,13 +834,11 @@ export function DatabaseRow({
         relativeTime(t, i18n.language, connection.createdAt),
       ];
   return (
-    <div className="ac-list__row connected-row ac-mediarow">
-      <span className="ac-mediarow__face">
-        <DatabaseIcon />
-      </span>
-      <span className="ac-mediarow__head">
-        <span className="list-title">
-          <span>{name}</span>
+    <ConnectedRow
+      icon={<DatabaseIcon />}
+      name={name}
+      chips={
+        <>
           {connection.status === "needs_reconnect" ? (
             <Chip icon="alert" tone="waiting">
               {t("mail.status.needs_reconnect")}
@@ -851,29 +849,28 @@ export function DatabaseRow({
             </Chip>
           )}
           <Chip icon="eyeOff">{t("database.readOnlyChip")}</Chip>
-        </span>
-      </span>
-      <div className="ac-mediarow__body">
-        <span className="small muted">{meta.join(" · ")}</span>
-        <span className="connected-row__who small muted">
-          {using.length > 0 && (
-            <AvatarStack>
-              {using.slice(0, 5).map((a) => (
-                <AgentAvatar key={a.id} agentId={a.id} name={a.name} size="xs" />
-              ))}
-            </AvatarStack>
-          )}
-          {using.length > 0
-            ? t("connectors.usedBy", { count: using.length, total: agents.length })
-            : t("connectors.usedByNone")}
-        </span>
-        {admin && (
-          <div className="connected-row__actions">
+        </>
+      }
+      using={using}
+      total={agents.length}
+      details={[meta.join(" · ")]}
+      actions={
+        admin && (
+          <>
             {connection.status === "needs_reconnect" && (
               <Button size="sm" variant="primary" aria-label={t("mail.reconnectName", { name })} onClick={onReconnect}>
                 {t("mail.reconnect")}
               </Button>
             )}
+            <Button size="sm" variant="ghost" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
+              {t("connectors.who")}
+            </Button>
+            <Button size="sm" variant="ghost" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
+              {t("connectors.tools")}
+            </Button>
+            <Button size="sm" variant="ghost" aria-label={t("database.scopeEditName", { name })} onClick={onScope}>
+              {t("database.scopeEdit")}
+            </Button>
             {connection.wholeServer && (
               <Button
                 size="sm"
@@ -886,15 +883,6 @@ export function DatabaseRow({
                 {t("database.refresh")}
               </Button>
             )}
-            <Button size="sm" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
-              {t("connectors.who")}
-            </Button>
-            <Button size="sm" variant="ghost" aria-label={t("database.scopeEditName", { name })} onClick={onScope}>
-              {t("database.scopeEdit")}
-            </Button>
-            <Button size="sm" variant="ghost" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
-              {t("connectors.tools")}
-            </Button>
             <Button
               size="sm"
               variant="ghost"
@@ -903,10 +891,10 @@ export function DatabaseRow({
             >
               {t("connectors.disconnect")}
             </Button>
-          </div>
-        )}
-      </div>
-    </div>
+          </>
+        )
+      }
+    />
   );
 }
 

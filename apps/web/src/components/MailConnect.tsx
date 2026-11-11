@@ -33,7 +33,6 @@ import {
 import { can } from "@agenteschat/client/lib/permissions";
 import {
   Alert,
-  AvatarStack,
   Button,
   Chip,
   Dialog,
@@ -54,6 +53,7 @@ import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import { AddressList } from "@/components/AddressList";
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { ConnectedRow } from "@/components/ConnectedRow";
 import { ConnectorIcon } from "@/components/ConnectorCatalog";
 import { FlowTitle } from "@/components/FlowTitle";
 import { LoadingList, useStepText } from "@/components/Loading";
@@ -951,50 +951,36 @@ export function MailRow({
     relativeTime(t, i18n.language, account.createdAt),
   ];
   return (
-    <div className="ac-list__row connected-row ac-mediarow">
-      <span className="ac-mediarow__face">
-        <MailIcon choice={choice} />
-      </span>
-      <span className="ac-mediarow__head">
-        <span className="list-title">
-          <span>{mailChoiceName(t, choice)}</span>
-          {account.status === "needs_reconnect" ? (
-            <Chip icon="alert" tone="waiting">
-              {t("mail.status.needs_reconnect")}
-            </Chip>
-          ) : account.status === "pending" ? (
-            <Chip icon="waiting" tone="waiting">
-              {t("mail.status.pending")}
-            </Chip>
-          ) : (
-            <Chip icon="check" tone="done">
-              {t("mail.status.active")}
-            </Chip>
-          )}
-        </span>
-      </span>
-      <div className="ac-mediarow__body">
-        <span className="small muted">{meta.join(" · ")}</span>
-        <span className="connected-row__who small muted">
-          {using.length > 0 && (
-            <AvatarStack>
-              {using.slice(0, 5).map((a) => (
-                <AgentAvatar key={a.id} agentId={a.id} name={a.name} size="xs" />
-              ))}
-            </AvatarStack>
-          )}
-          {using.length > 0
-            ? t("connectors.usedBy", { count: using.length, total: agents.length })
-            : t("connectors.usedByNone")}
-        </span>
-        {admin && (
-          <div className="connected-row__actions">
+    <ConnectedRow
+      icon={<MailIcon choice={choice} />}
+      name={mailChoiceName(t, choice)}
+      chips={
+        account.status === "needs_reconnect" ? (
+          <Chip icon="alert" tone="waiting">
+            {t("mail.status.needs_reconnect")}
+          </Chip>
+        ) : account.status === "pending" ? (
+          <Chip icon="waiting" tone="waiting">
+            {t("mail.status.pending")}
+          </Chip>
+        ) : (
+          <Chip icon="check" tone="done">
+            {t("mail.status.active")}
+          </Chip>
+        )
+      }
+      using={using}
+      total={agents.length}
+      details={[meta.join(" · ")]}
+      actions={
+        admin && (
+          <>
             {account.status === "needs_reconnect" && (
               <Button size="sm" variant="primary" aria-label={t("mail.reconnectName", { name })} onClick={onReconnect}>
                 {t("mail.reconnect")}
               </Button>
             )}
-            <Button size="sm" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
+            <Button size="sm" variant="ghost" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
               {t("connectors.who")}
             </Button>
             <Button size="sm" variant="ghost" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
@@ -1016,10 +1002,10 @@ export function MailRow({
             >
               {t("connectors.disconnect")}
             </Button>
-          </div>
-        )}
-      </div>
-    </div>
+          </>
+        )
+      }
+    />
   );
 }
 

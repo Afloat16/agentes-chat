@@ -4900,8 +4900,8 @@ html:not([data-pointer]) .catalog-tile:focus-visible {
   height: 12px;
 }
 
-/* Settings → Conectores: one row per connected service, a MediaRow (the tile and the name on one line, the details,
-   who uses it and the actions under them at the row's width). The details wrap whole, never cut. */
+/* Settings → Conectores: one line per connected service (the kit's FoldRow: the tile, the name, its pill, who uses
+   it), opening to its details and its actions. The details wrap whole, never cut. */
 .connected-list {
   container-type: inline-size;
 }
@@ -4912,14 +4912,15 @@ html:not([data-pointer]) .catalog-tile:focus-visible {
 .connected-row__who {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 0;
   white-space: nowrap;
 }
+/* Cofre › a connection's buttons, under its details (its row stays open: it holds a link and what to fix). */
 .connected-row__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /*
