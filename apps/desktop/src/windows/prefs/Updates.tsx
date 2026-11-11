@@ -1,6 +1,6 @@
 import { LICENSE_URL, PUBLIC_SOURCE_URL } from "@agenteschat/client/lib/about";
 import { DOCS_SITE } from "@agenteschat/i18n/docs";
-import { Button, Chip, Switch } from "@agenteschat/ui";
+import { Button, Chip, InfoHint, Switch } from "@agenteschat/ui";
 import { type ReactNode, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useHost } from "../../app";
@@ -60,7 +60,7 @@ export function Updates({ update }: { update: UpdateCheck }) {
         <div className="dk-ver">
           <span className="dk-ver__big ac-num">{update.version ?? "…"}</span>
           <span className="dk-ver__text">
-            <span>
+            <span className="ac-hintline">
               {required ? (
                 <Chip icon="alert" tone="waiting">
                   {t("desktop.prefs.updates.required")}
@@ -74,6 +74,11 @@ export function Updates({ update }: { update: UpdateCheck }) {
                   {t("desktop.prefs.updates.upToDate")}
                 </Chip>
               )}
+              {local.run && (
+                <InfoHint name={t("common.about", { label: t("desktop.prefs.updates.title") })}>
+                  {t("desktop.server.updatesWithApp")}
+                </InfoHint>
+              )}
             </span>
             <small className="dk-help">
               {update.checkedAt
@@ -82,7 +87,6 @@ export function Updates({ update }: { update: UpdateCheck }) {
                   })
                 : t("desktop.prefs.updates.neverChecked")}
             </small>
-            {local.run && <small className="dk-help">{t("desktop.server.updatesWithApp")}</small>}
           </span>
           <Button size="sm" loading={update.checking} onClick={() => void checkNow()}>
             {t("desktop.prefs.updates.checkNow")}
