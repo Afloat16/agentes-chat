@@ -200,6 +200,7 @@ export {
   type FilterChipProps,
   type FilterOption,
 } from "./components/FilterChip";
+export { FoldRow } from "./components/FoldRow";
 export { GroupHeading } from "./components/GroupHeading";
 export { InfoHint, type InfoHintProps } from "./components/InfoHint";
 export { isApple, Kbd, modKey, shortcut } from "./components/Kbd";
