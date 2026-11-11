@@ -496,7 +496,7 @@ export class RunnerDaemon implements RequestObserver {
       });
     this.executors = () => exec() ?? {};
     this.executorsKnown = () => !("known" in exec) || exec.known === true;
-    this.executorsFresh = "fresh" in exec ? exec.fresh : async () => this.executors();
+    this.executorsFresh = (exec as { fresh?: () => Promise<unknown> }).fresh ?? (async () => this.executors());
     // System mode is set at install and kept through pairings: account folders are lent to agents' users.
     let system = false;
     try {

@@ -13,15 +13,7 @@ import type { RunnerTools } from "@agenteschat/adapters/machine-protocol";
 import { ControlError } from "./client";
 import { filesFolder } from "./local-server";
 import { homeServer } from "./server";
-import {
-  type DesktopStore,
-  type Home,
-  isPairedHome,
-  isRefusedHome,
-  isUnpairedHome,
-  orgName,
-  pairedHomes,
-} from "./store";
+import { type DesktopStore, type Home, isPairedHome, isRefusedHome, isUnpairedHome, pairedHomes } from "./store";
 
 /**
  * `local`: the asking page is the server here (`local_server.rs`), whose own homes point at its loopback
