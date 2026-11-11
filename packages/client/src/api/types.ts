@@ -6552,6 +6552,27 @@ export interface NotificationPage {
   nextCursor: string | null;
 }
 
+/**
+ * One thing waiting on me (`GET …/waiting`, ADR 0172): a view of an inbox row that waits, so `id` is that
+ * notification's and `source` opens as it does.
+ */
+export interface WaitingItem {
+  id: string;
+  kind: NotificationKind;
+  /** Who asks; null when nobody is behind it (a workspace's notice). */
+  asker: NotificationActor | null;
+  source: NotificationSource;
+  /** What is asked, in one line. */
+  question: string;
+  since: string;
+}
+
+/** `GET …/waiting`: oldest first, at most 100. */
+export interface WaitingList {
+  items: WaitingItem[];
+  count: number;
+}
+
 /** The sidebar badge (`GET …/notifications/count`, `notification.counts`). */
 /**
  * What reaches my devices as a notification, by category (ADR 0071 §8): the phone's and the browser's pushes and
@@ -6576,6 +6597,7 @@ export interface NoticePrefs {
 
 /** A tool at the top of the sidebar (`SIDEBAR_ITEMS` in packages/engine/src/sidebar-items.ts). */
 export type SidebarItem =
+  | "waiting"
   | "approvals"
   | "proposals"
   | "threads"
