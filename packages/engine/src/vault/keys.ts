@@ -1,5 +1,5 @@
 /**
- * Several keys in one save (ADR 0144 §10): what an imported .env file becomes. The app reads the file and sends
+ * Several keys in one save (ADR 0144 §11): what an imported .env file becomes. The app reads the file and sends
  * names and values; this checks each as a single key is checked, then writes them all or none. A name already saved
  * in the scope is left as it is unless the person asked to replace it, and then only its value changes: its access
  * and its note stay. Values are sealed before the transaction and appear in no audit row, use, event or error.

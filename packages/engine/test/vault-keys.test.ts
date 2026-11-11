@@ -13,7 +13,7 @@ import { openItemValue } from "../src/vault/seal";
 import { everythingStored, SOURCE_TOKEN, type VaultFixture, vaultSetup } from "./vault-fixtures";
 
 /**
- * Several keys in one save and an item moved between Personal and Team (ADR 0144 §10): the same permissions as one
+ * Several keys in one save and an item moved between Personal and Team (ADR 0144 §11): the same permissions as one
  * key, all or none, a saved name left unless replaced, and never a value in what is stored beside the seal.
  */
 

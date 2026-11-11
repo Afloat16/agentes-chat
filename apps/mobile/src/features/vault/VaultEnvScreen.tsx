@@ -27,7 +27,7 @@ import { AgentRows, ScopeRows } from "./parts";
 const DOTS = "••••••••••";
 
 /**
- * "Import .env" (ADR 0144 §10), the web's dialog as a pushed screen: a .env file (or a JSON object of names and
+ * "Import .env" (ADR 0144 §11), the web's dialog as a pushed screen: a .env file (or a JSON object of names and
  * values) picked or pasted, read here on the phone, reviewed key by key, then saved in one request as Personal or
  * Team keys with one access. The file's text and its values live in this screen only.
  */

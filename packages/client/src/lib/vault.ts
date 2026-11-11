@@ -2,7 +2,7 @@ import type { VaultAccess, VaultItem, VaultKeysImportInput, VaultScope } from ".
 import { MAX_SECRET_BYTES } from "./secret-box";
 
 /*
- * The Vault's rules the web and the phone share (ADR 0144 §10): a key's name, who may move an item, and a .env file
+ * The Vault's rules the web and the phone share (ADR 0144 §11): a key's name, who may move an item, and a .env file
  * (or a JSON object of names and values) read in the app for "Import .env". Pure: a file's text comes in, names and
  * values come out, and nothing here keeps, logs or sends anything. The values leave the app only in the save request.
  */
@@ -13,6 +13,10 @@ import { MAX_SECRET_BYTES } from "./secret-box";
  */
 export const canMoveVaultItem = (item: Pick<VaultItem, "connectionId" | "can">, canManageTeam: boolean) =>
   canManageTeam && item.connectionId === null && item.can.edit;
+
+/** No agent may use it: neither all of them nor any one picked. */
+export const vaultNoAgents = (access: Pick<VaultAccess, "allAgents" | "agentIds">) =>
+  !access.allAgents && access.agentIds.length === 0;
 
 /** A key's variable name, as the computer takes it (`SECRET_NAME` in `packages/adapters/src/secret-box.ts`). */
 export const VAULT_KEY_NAME = /^[A-Z][A-Z0-9_]{0,63}$/;

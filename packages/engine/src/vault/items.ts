@@ -505,7 +505,7 @@ export async function updateVaultItem(
 }
 
 /**
- * Moves an item kept here between Personal and Team (ADR 0144 §10). Either way takes `manage_credentials`: to the
+ * Moves an item kept here between Personal and Team (ADR 0144 §11). Either way takes `manage_credentials`: to the
  * team it is the permission to write there, from the team it is the permission to edit what is there. To Personal
  * it becomes the mover's own. Its agents stay as they were, a team item starts seen by everyone, and a personal one
  * has no audience. The seal names the owner, so every value it holds is opened and sealed again for the new one.

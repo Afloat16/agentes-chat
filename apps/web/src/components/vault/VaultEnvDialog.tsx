@@ -33,7 +33,7 @@ import { AccessBlock } from "./VaultAccess";
 import "./vault.css";
 
 /*
- * "Import .env" (ADR 0144 §10): a .env file (or a JSON object of names and values) picked, dropped or pasted, read
+ * "Import .env" (ADR 0144 §11): a .env file (or a JSON object of names and values) picked, dropped or pasted, read
  * here in the browser, reviewed key by key (new, already saved, not importable), then saved in one request as
  * Personal or Team keys with one access. The file's text and its values live in this dialog only: they go once, in
  * the save, and with the dialog when it closes.
