@@ -4,6 +4,9 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 
+/** Faces on the line before a "+N" stands for the rest. */
+const MAX_FACES = 5;
+
 /**
  * Settings → Conectores: one connected thing (a service, an MCP server, a mailbox, a database) as one line: its tile,
  * its name, its state's pill and who uses it. The line opens to `details` (the account, when, how many tools) and
@@ -42,10 +45,15 @@ export function ConnectedRow({
         <span className="connected-row__who small muted">
           {using.length > 0 && (
             <AvatarStack>
-              {using.slice(0, 5).map((a) => (
+              {using.slice(0, MAX_FACES).map((a) => (
                 <AgentAvatar key={a.id} agentId={a.id} name={a.name} size="xs" />
               ))}
             </AvatarStack>
+          )}
+          {using.length > MAX_FACES && (
+            <span className="connected-row__more" aria-hidden="true">
+              +{using.length - MAX_FACES}
+            </span>
           )}
           {using.length > 0 ? t("connectors.usedBy", { count: using.length, total }) : t("connectors.usedByNone")}
         </span>

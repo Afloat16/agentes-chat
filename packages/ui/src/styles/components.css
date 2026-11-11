@@ -11956,6 +11956,26 @@ html:not([data-pointer]) .ac-foldrow__head:focus-visible {
     transition: grid-template-rows var(--dur-panel) ease;
   }
 }
+/* A pill on the line says what needs the person: where the list is too narrow for it, its words wrap inside the
+   name's column. They never run under the chevron and never end in "…". */
+.ac-foldrow__head > .ac-mediarow__head > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.ac-foldrow__head .ac-chip {
+  align-items: flex-start;
+  height: auto;
+  min-height: 22px;
+  padding-block: 1px;
+  white-space: normal;
+}
+/* Its icon stays on the first line's capitals, as an `.ac-iconline` lead does. */
+.ac-foldrow__head .ac-chip > .ac-icon {
+  translate: 0 calc(0.5lh - var(--cap-mid) - 50%);
+}
+.ac-foldrow__head .ac-chip__text {
+  overflow: visible;
+}
 /* In a narrow list what ends the line goes under it: the chevron takes its column, so no empty one (and its gap)
    narrows the name. */
 @container (max-width: 479px) {
@@ -11964,6 +11984,11 @@ html:not([data-pointer]) .ac-foldrow__head:focus-visible {
   }
   .ac-foldrow__chevron {
     grid-area: 1 / 3;
+  }
+  /* The row's one plated action takes a line of its own, so the bare ones after it share the next and none is left
+     alone on a third. */
+  .ac-foldrow__more > .ac-acts > .ac-btn--primary {
+    flex: 1 0 100%;
   }
 }
 /* A margin under the last thing, not a padding: a padding would keep the closed fold that tall. As much room under

@@ -784,7 +784,7 @@ function WhoStep({
               </ul>
             </>
           )}
-          <p className="small muted cflow__asks">
+          <p className="small muted cflow__asks ac-iconline">
             <Icon name="lock" />
             {t("connectFlow.asksCount", { count: MAIL_ACTIONS.approval.length })}
           </p>

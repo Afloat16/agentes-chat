@@ -6,23 +6,27 @@ setupDom();
 import { defaultDatabasePolicy } from "@agenteschat/client/lib/databases";
 import { cleanup } from "@testing-library/react";
 import { openConnected } from "./catalog";
-import { ADA_ID, ATLAS_ID, createFakeApi, fakeDatabasesOf, fakeMailOf, ORG_ID, seedState } from "./fake-api";
+import { ADA_ID, createFakeApi, fakeDatabasesOf, fakeMailOf, ORG_ID, seedState } from "./fake-api";
 import { MAIL_PROVIDERS } from "./fakes/mail";
 import { renderApp, screen, settle } from "./render";
 
 afterEach(() => cleanup());
 
 /**
- * Settings → Conectores with what breaks its rows (break-ui): a sign-in that died, a server with a 60-character name
- * whose tools can't be read, a mailbox with a long address that waits, a whole database server with a prefix, rows
- * nobody uses beside rows every agent uses. CI's geometry check lays out every screen these tests reach, closed and
+ * Settings → Conectores with what breaks its rows (break-ui): a sign-in that died, a server with a 70-character name
+ * whose tools can't be read, a reviewed server with no tool at all, a mailbox with a long address that waits, a whole database server with a prefix, rows
+ * nobody uses beside a row all 40 agents use. CI's geometry check lays out every screen these tests reach, closed and
  * open, at 1280 and 320.
  */
-const LONG_SERVER = "Suporte ao cliente das lojas da região sul e do centro-oeste";
+const LONG_SERVER = "Suporte ao cliente das lojas da região sul, do sudeste e do centro-oeste";
 const LONG_ADDRESS = "atendimento.financeiro.contas-a-receber@subsidiaria.example.com";
 
 async function open() {
   const state = seedState();
+  const ada = state.agents[0];
+  if (!ada) throw new Error("no agent");
+  for (let n = 3; n <= 40; n++) state.agents.push({ ...ada, id: `agent-${n}`, name: `Agente ${n}` });
+  const everyone = state.agents.map((a) => ({ agentId: a.id, level: "read" as const, canDelete: false }));
   const github = state.connections[0];
   if (github) github.status = "needs_reconnect";
   const api = createFakeApi(state);
@@ -33,8 +37,18 @@ async function open() {
   });
   if (server.status !== "connected") throw new Error("expected connected");
   const list = api.customConnectors.list;
+  const empty = await api.customConnectors.connect(ORG_ID, {
+    serverUrl: "https://oauth.vazio.example.com",
+    label: "Vazio",
+    returnTo: "/",
+  });
+  if (empty.status !== "connected") throw new Error("expected connected");
   api.customConnectors.list = async (orgId) =>
-    (await list(orgId)).map((s) => ({ ...s, toolsError: "Streamable HTTP error: upstream timed out" }));
+    (await list(orgId)).map((s) =>
+      s.label === "Vazio"
+        ? { ...s, tools: [], reviewedAt: s.createdAt }
+        : { ...s, toolsError: "Streamable HTTP error: upstream timed out" },
+    );
   const mail = fakeMailOf.get(api);
   const databases = fakeDatabasesOf.get(api);
   if (!mail || !databases) throw new Error("no fakes");
@@ -58,10 +72,7 @@ async function open() {
       address: LONG_ADDRESS,
       label: LONG_ADDRESS,
       status: "needs_reconnect",
-      agents: [
-        { agentId: ADA_ID, level: "read_write", canDelete: false },
-        { agentId: ATLAS_ID, level: "read", canDelete: false },
-      ],
+      agents: everyone,
     },
     { ...mailbox, id: "mail-2", address: "a@example.com", label: "a@example.com", status: "pending", agents: [] },
   ];
@@ -81,7 +92,7 @@ const lines = () => [...document.querySelectorAll<HTMLElement>(".connected-row >
 describe("Conectores, worst case", () => {
   test("closed, every row is one line of the same parts, and what needs the person is a pill on it", async () => {
     await open();
-    expect(lines().length).toBe(5);
+    expect(lines().length).toBe(6);
     for (const line of lines()) {
       expect(line.getAttribute("aria-expanded")).toBe("false");
       expect([...line.children].map((c) => c.getAttribute("class"))).toEqual([
@@ -92,7 +103,7 @@ describe("Conectores, worst case", () => {
       ]);
       expect(line.querySelectorAll(".list-title > .ac-chip").length).toBeGreaterThan(0);
       expect(line.querySelector(".connected-row__who")?.textContent).toMatch(
-        /^(\d+ de \d+ agentes|Nenhum agente ainda)$/,
+        /^((\+\d+)?\d+ de \d+ agentes|Nenhum agente ainda)$/,
       );
     }
     expect(lines().map((l) => l.querySelector(".list-title")?.textContent)).toEqual([
@@ -101,7 +112,13 @@ describe("Conectores, worst case", () => {
       "ClientesAtivoSó lê",
       "GitHubPrecisa reconectar",
       `${LONG_SERVER}Sem ferramentas agora`,
+      "VazioAtivo",
     ]);
+    expect(LONG_SERVER.length).toBeGreaterThanOrEqual(70);
+    // Forty agents use the first: five faces, then a number for the rest.
+    expect(lines()[0]?.querySelector(".connected-row__who")?.textContent).toBe("+3540 de 40 agentes");
+    expect(lines()[2]?.querySelector(".connected-row__more")).toBeNull();
+    expect(lines()[0]?.querySelectorAll(".connected-row__who .ac-avatar").length).toBe(5);
     // Nothing of the inside is in reach: no action, no account.
     expect(screen().queryByRole("button", { name: /^(Quem usa|Reconectar|Desconectar) / })).toBeNull();
   });
@@ -110,7 +127,8 @@ describe("Conectores, worst case", () => {
     await open();
     await openConnected();
     const rows = [...document.querySelectorAll<HTMLElement>(".connected-row")];
-    expect(rows.map((r) => r.matches(".ac-foldrow--open"))).toEqual([true, true, true, true, true]);
+    expect(rows.map((r) => r.matches(".ac-foldrow--open"))).toEqual([true, true, true, true, true, true]);
+    expect(rows[5]?.querySelector(".connected-row__text")?.textContent).toContain("0 ferramentas");
     expect(rows[0]?.querySelector(".connected-row__text")?.textContent).toContain(`Conectado como ${LONG_ADDRESS}`);
     expect(rows[2]?.querySelector(".connected-row__text")?.textContent).toContain(
       "leitura_relatorios_financeiros@db-replica-01.interno.example.com",
