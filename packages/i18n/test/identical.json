@@ -2262,7 +2262,9 @@
       "install.scene.finder",
       "install.scene.account",
       "install.scene.appLabel",
-      "install.scene.downloads"
+      "install.scene.downloads",
+      "issues.projects.label",
+      "issues.display.field.project"
     ],
     "ja": [
       "devices.system.android",

@@ -3333,6 +3333,7 @@
       "priority": "la priorità",
       "assignee": "l'assegnatario",
       "labels": "le etichette",
+      "project": "il progetto",
       "dueDate": "la scadenza",
       "githubUrl": "il link GitHub",
       "criteria": "i criteri",
@@ -7267,6 +7268,7 @@
         "due": "Scadenza"
       },
       "field": {
+        "project": "Progetto",
         "assignee": "Assegnatario",
         "priority": "Priorità",
         "due": "Scadenza",
@@ -7293,6 +7295,22 @@
       "prioritized": "La #{{number}} ora ha priorità {{priority}}."
     },
     "canceledColumn": "Annullate",
+    "projects": {
+      "label": "Progetto",
+      "none": "Nessun progetto",
+      "all": "Tutti i progetti",
+      "new": "Nuovo progetto",
+      "edit": "Modifica progetto",
+      "create": "Crea progetto",
+      "archive": "Archivia progetto",
+      "unarchive": "Ripristina progetto",
+      "archived": "Archiviati",
+      "archivedMark": "Archiviato",
+      "delete": "Elimina progetto",
+      "deleteTitle": "Eliminare il progetto {{name}}?",
+      "deleteBody": "Le sue attività restano, senza progetto.",
+      "empty": "Ancora nessuna attività in questo progetto."
+    },
     "columns": {
       "add": "Aggiungi colonna",
       "options": "Opzioni per la colonna {{name}}",
@@ -7570,6 +7588,8 @@
       "pr_linked": "ha collegato la PR #{{number}}",
       "github_linked": "l'ha collegata a GitHub",
       "github_unlinked": "ha rimosso il link GitHub",
+      "project_set": "l'ha spostata nel progetto {{project}}",
+      "project_removed": "l'ha tolta dal progetto",
       "artifact_linked": "ha allegato un file",
       "files_attached": "ha allegato {{names}}",
       "files_removed": "ha tolto {{names}} dagli allegati",
@@ -13450,6 +13470,9 @@
     },
     "issue": {
       "assigneeOutside": "Questa persona non vede questa attività. Aggiungila prima a Chi lo vede.",
+      "projectNameTaken": "Esiste già un progetto con questo nome.",
+      "projectArchived": "Questo progetto è archiviato e non accetta nuove attività.",
+      "projectsFull": "Un workspace contiene al massimo {{max}} progetti. Eliminane uno prima.",
       "stageFull": "Una fase ha al massimo {{max}} colonne. Elimina prima una delle sue colonne.",
       "deleteForbidden": "Solo chi ha creato questa attività o un amministratore può eliminarla.",
       "audienceEmpty": "Scegli chi lo vede."

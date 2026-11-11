@@ -1609,7 +1609,7 @@
           const extra = desc
             ? grown(el.querySelector(".ac-menu__label > :first-child:not(.ac-menu__desc)")) +
               grown(el.querySelector(".ac-menu__desc"))
-            : 0;
+            : grown(el.querySelector(".ac-menu__label, .ac-filter__label"));
           const want = (faces ? (roomy ? 44 : 36) : desc ? (roomy ? 58 : 50) : roomy ? 40 : 32) + extra;
           const r = el.getBoundingClientRect();
           const base = { rule: "menuitem", node: el, el: sig(el), box: sig(menu) };

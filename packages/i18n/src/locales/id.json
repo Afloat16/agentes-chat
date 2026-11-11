@@ -3125,6 +3125,7 @@
       "priority": "prioritas",
       "assignee": "penanggung jawab",
       "labels": "label",
+      "project": "proyek",
       "dueDate": "tenggat",
       "githubUrl": "tautan GitHub",
       "criteria": "kriteria",
@@ -6810,6 +6811,7 @@
         "due": "Tenggat"
       },
       "field": {
+        "project": "Proyek",
         "assignee": "Penanggung jawab",
         "priority": "Prioritas",
         "due": "Tenggat",
@@ -6836,6 +6838,22 @@
       "prioritized": "#{{number}} sekarang berprioritas {{priority}}."
     },
     "canceledColumn": "Dibatalkan",
+    "projects": {
+      "label": "Proyek",
+      "none": "Tanpa proyek",
+      "all": "Semua proyek",
+      "new": "Proyek baru",
+      "edit": "Edit proyek",
+      "create": "Buat proyek",
+      "archive": "Arsipkan proyek",
+      "unarchive": "Batalkan arsip proyek",
+      "archived": "Diarsipkan",
+      "archivedMark": "Diarsipkan",
+      "delete": "Hapus proyek",
+      "deleteTitle": "Hapus proyek {{name}}?",
+      "deleteBody": "Tugasnya tetap ada, tanpa proyek.",
+      "empty": "Belum ada tugas di proyek ini."
+    },
     "columns": {
       "add": "Tambah kolom",
       "options": "Opsi untuk kolom {{name}}",
@@ -7097,6 +7115,8 @@
       "pr_linked": "menautkan PR #{{number}}",
       "github_linked": "menautkannya ke GitHub",
       "github_unlinked": "menghapus tautan GitHub",
+      "project_set": "memindahkannya ke proyek {{project}}",
+      "project_removed": "mengeluarkannya dari proyek",
       "artifact_linked": "melampirkan file",
       "files_attached": "melampirkan {{names}}",
       "files_removed": "menghapus {{names}} dari lampiran",
@@ -12553,6 +12573,9 @@
     },
     "issue": {
       "assigneeOutside": "Orang ini tidak bisa melihat tugas ini. Tambahkan dulu ke Siapa yang melihat.",
+      "projectNameTaken": "Sudah ada proyek dengan nama itu.",
+      "projectArchived": "Proyek ini diarsipkan dan tidak menerima tugas baru.",
+      "projectsFull": "Satu workspace memuat paling banyak {{max}} proyek. Hapus satu dulu.",
       "stageFull": "Satu tahap paling banyak punya {{max}} kolom. Hapus dulu salah satu kolomnya.",
       "deleteForbidden": "Hanya pembuat tugas ini atau administrator yang bisa menghapusnya.",
       "audienceEmpty": "Pilih siapa yang melihat."

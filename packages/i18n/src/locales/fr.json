@@ -3332,6 +3332,7 @@
       "priority": "la priorité",
       "assignee": "la personne assignée",
       "labels": "les étiquettes",
+      "project": "le projet",
       "dueDate": "l'échéance",
       "githubUrl": "le lien GitHub",
       "criteria": "les critères",
@@ -7260,6 +7261,7 @@
         "due": "Échéance"
       },
       "field": {
+        "project": "Projet",
         "assignee": "Responsable",
         "priority": "Priorité",
         "due": "Échéance",
@@ -7286,6 +7288,22 @@
       "prioritized": "La #{{number}} a maintenant une priorité {{priority}}."
     },
     "canceledColumn": "Annulées",
+    "projects": {
+      "label": "Projet",
+      "none": "Sans projet",
+      "all": "Tous les projets",
+      "new": "Nouveau projet",
+      "edit": "Modifier le projet",
+      "create": "Créer le projet",
+      "archive": "Archiver le projet",
+      "unarchive": "Désarchiver le projet",
+      "archived": "Archivés",
+      "archivedMark": "Archivé",
+      "delete": "Supprimer le projet",
+      "deleteTitle": "Supprimer le projet {{name}} ?",
+      "deleteBody": "Ses tâches restent, sans projet.",
+      "empty": "Aucune tâche dans ce projet pour l'instant."
+    },
     "columns": {
       "add": "Ajouter une colonne",
       "options": "Options de la colonne {{name}}",
@@ -7563,6 +7581,8 @@
       "pr_linked": "a lié la PR #{{number}}",
       "github_linked": "l'a lié à GitHub",
       "github_unlinked": "a retiré le lien GitHub",
+      "project_set": "l'a déplacée dans le projet {{project}}",
+      "project_removed": "l'a retirée du projet",
       "artifact_linked": "a joint un fichier",
       "files_attached": "a joint {{names}}",
       "files_removed": "a retiré {{names}} des pièces jointes",
@@ -13440,6 +13460,9 @@
     },
     "issue": {
       "assigneeOutside": "Cette personne ne voit pas cette tâche. Ajoutez-la d'abord à Qui le voit.",
+      "projectNameTaken": "Un projet porte déjà ce nom.",
+      "projectArchived": "Ce projet est archivé et ne reçoit plus de nouvelles tâches.",
+      "projectsFull": "Un espace de travail contient au plus {{max}} projets. Supprimez-en un d’abord.",
       "stageFull": "Une étape contient au plus {{max}} colonnes. Supprimez d'abord une de ses colonnes.",
       "deleteForbidden": "Seule la personne qui a créé cette tâche ou un administrateur peut la supprimer.",
       "audienceEmpty": "Choisissez qui le voit."

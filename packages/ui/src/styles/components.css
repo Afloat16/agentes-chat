@@ -6251,6 +6251,51 @@ html:not([data-pointer]) .ac-hint:focus-visible {
   border-top: 0;
 }
 
+/* A color's dot (ColorDot) in an icon's box, so it sits where an icon would. No color: a hollow ring. */
+.ac-colordot {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--dot-box, 14px);
+  height: var(--dot-box, 14px);
+}
+.ac-colordot::before {
+  content: "";
+  width: var(--dot-size, 8px);
+  height: var(--dot-size, 8px);
+  border-radius: 50%;
+  background: var(--dot);
+}
+.ac-colordot[data-none]::before {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--faint);
+}
+/* Beside 16px icons in a menu's rows and a select's value; in a page's title, a bigger dot before its first word. */
+:is(.ac-filter__option, .ac-menu__leading, .ac-select__lead) > .ac-colordot {
+  --dot-box: 16px;
+}
+/*
+ * The dot beside the name as a block of its own, so a name that wraps keeps its lines' left edge and a first word
+ * wider than the line breaks beside the dot, never under it. On the name's baseline (the count beside the title still
+ * lines up with it), raised so its middle is the capitals'.
+ */
+.ac-pagehead__title:has(> .ac-colordot) {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.ac-pagehead__title > .ac-colordot {
+  --dot-box: var(--space-3);
+  --dot-size: var(--space-3);
+  translate: 0 calc(var(--dot-size) / 2 - var(--cap-top) + var(--cap-mid));
+}
+/* In a menu's row the dot keeps to the name's first line when the name wraps. */
+.ac-menu__leading:has(> .ac-colordot) {
+  align-self: flex-start;
+  align-items: center;
+  height: 20px;
+}
+
 /* A role's mark (RoleMark, ADR 0085): the role's color in the agents' dither in a full circle, its icon in white. */
 .ac-rolemark {
   display: inline-grid;
@@ -10010,10 +10055,25 @@ html:not([data-pointer]) .ac-filter__option:focus-visible {
   width: var(--option-face);
   height: var(--option-face);
 }
+/* A name wider than the menu wraps in its row, whole. */
 .ac-filter__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ac-filter__list[hidden] {
+  display: none;
+}
+/* The menu's own action ("Novo projeto"), past a line under the options. */
+.ac-filter__foot {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--menu-pad) var(--menu-pad);
+}
+.ac-filter__list[hidden] + .ac-filter__foot {
+  padding-top: var(--menu-pad);
+}
+.ac-filter__foot > .ac-menu__separator {
+  margin: 0 var(--menu-item-px) var(--menu-pad);
 }
 /* A count (Tipo's kinds) ends the row before the check, on one right edge. */
 .ac-filter__option > .ac-countchip {
@@ -10306,6 +10366,11 @@ html:not([data-pointer]) .ac-filter__option:focus-visible {
 .ac-menu--dropdown,
 .ac-menu--select {
   max-width: calc(100vw - 24px);
+}
+/* And a name wider than that wraps in its row, never cut at the menu's edge. A row with a face keeps its one line. */
+:is(.ac-menu--dropdown, .ac-menu--select) .ac-menu__item:not(:has(> .ac-menu__leading > .ac-avatar)) > .ac-menu__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 @media (max-width: 640px) {
   .ac-suggest {
@@ -11699,7 +11764,7 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   overflow-wrap: anywhere;
 }
 /* Any mark: the kit's icons, a maker's logo drawn in the text's color, 14 on the first line's middle. */
-.ac-factline__fact > svg {
+.ac-factline__fact > :is(svg, .ac-colordot) {
   flex: none;
   align-self: flex-start;
   margin-block-start: 3px;
@@ -11787,6 +11852,31 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
 }
 .ac-props .ac-btn .ac-avatar {
   margin-inline-start: -2px;
+}
+/*
+ * A button's value wraps as a select's does (a long project's name): the control grows from its 32 instead of running
+ * past the strip, and a dot before the words stays on their first line.
+ */
+.ac-props > .ac-btn--sm:not(.ac-btn--icon),
+.ac-props > * > .ac-btn--sm:not(.ac-btn--icon) {
+  max-width: 100%;
+  height: auto;
+  min-height: var(--control-h-sm);
+  padding-block: 5px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+@supports (top: 1lh) {
+  /* The room above the first line is the same on one line or three, so the dot sits on that line either way. */
+  .ac-props > .ac-btn--sm:not(.ac-btn--icon),
+  .ac-props > * > .ac-btn--sm:not(.ac-btn--icon) {
+    padding-block: calc((var(--control-h-sm) - 1lh) / 2);
+  }
+  .ac-props .ac-btn > .ac-colordot:first-child {
+    align-self: flex-start;
+    translate: 0 calc(0.5lh - 50%);
+  }
 }
 /* The date is one more control as wide as its words: its calendar leads, as the others' icons and faces do. */
 .ac-props .ac-date__trigger > .ac-select__chev {

@@ -3114,6 +3114,7 @@
       "priority": "優先度",
       "assignee": "担当者",
       "labels": "ラベル",
+      "project": "プロジェクト",
       "dueDate": "期日",
       "githubUrl": "GitHub リンク",
       "criteria": "完了条件",
@@ -6782,6 +6783,7 @@
         "due": "期日"
       },
       "field": {
+        "project": "プロジェクト",
         "assignee": "担当者",
         "priority": "優先度",
         "due": "期日",
@@ -6808,6 +6810,22 @@
       "prioritized": "#{{number}}の優先度は{{priority}}になりました。"
     },
     "canceledColumn": "キャンセル済み",
+    "projects": {
+      "label": "プロジェクト",
+      "none": "プロジェクトなし",
+      "all": "すべてのプロジェクト",
+      "new": "新しいプロジェクト",
+      "edit": "プロジェクトを編集",
+      "create": "プロジェクトを作成",
+      "archive": "プロジェクトをアーカイブ",
+      "unarchive": "プロジェクトのアーカイブを解除",
+      "archived": "アーカイブ済み",
+      "archivedMark": "アーカイブ済み",
+      "delete": "プロジェクトを削除",
+      "deleteTitle": "プロジェクト「{{name}}」を削除しますか？",
+      "deleteBody": "タスクはプロジェクトなしで残ります。",
+      "empty": "このプロジェクトにはまだタスクがありません。"
+    },
     "columns": {
       "add": "列を追加",
       "options": "列「{{name}}」のオプション",
@@ -7060,6 +7078,8 @@
       "pr_linked": "PR #{{number}}をリンクしました",
       "github_linked": "GitHub にリンクしました",
       "github_unlinked": "GitHub リンクを削除しました",
+      "project_set": "プロジェクト「{{project}}」に移動しました",
+      "project_removed": "プロジェクトから外しました",
       "artifact_linked": "ファイルを添付しました",
       "files_attached": "{{names}}を添付しました",
       "files_removed": "{{names}}を添付ファイルから外しました",
@@ -12499,6 +12519,9 @@
     },
     "issue": {
       "assigneeOutside": "この人はこのタスクを見ることができません。先に閲覧できる人に追加してください。",
+      "projectNameTaken": "同じ名前のプロジェクトがすでにあります。",
+      "projectArchived": "このプロジェクトはアーカイブ済みで、新しいタスクは追加できません。",
+      "projectsFull": "ワークスペースのプロジェクトは最大{{max}}個です。先に1つ削除してください。",
       "stageFull": "1つのステージに置ける列は{{max}}列までです。先にその列を1つ削除してください。",
       "deleteForbidden": "このタスクを削除できるのは作成者か管理者だけです。",
       "audienceEmpty": "閲覧できる人を選んでください。"
