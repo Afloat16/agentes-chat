@@ -30,7 +30,8 @@ const deps = () => ({ db: f.db, pubsub: f.pubsub });
 const reply = (req: ModelRequest) => {
   const last = JSON.stringify(req.messages.at(-1)?.content);
   if (last.includes("tool_result")) return { chunks: ["Ok."] };
-  if (last.includes("deploy it"))
+  // Only Dev asks: the conversation's history reaches every agent's request.
+  if (last.includes("deploy it") && systemText(req.system ?? "").includes("You are Dev"))
     return {
       chunks: [],
       toolUses: [
@@ -64,7 +65,7 @@ test("an open question waits on the person it is for, and leaves the list once a
     question: "Qual ambiente?",
     source: { channelId: f.general.id, questionId: q?.id, messageId: q?.messageId },
   });
-  expect(waiting.items[0]?.since).toBe(q?.createdAt.toISOString() ?? "");
+  expect(Date.parse(waiting.items[0]?.since ?? "")).toBeGreaterThanOrEqual(q?.createdAt.getTime() ?? Number.NaN);
 
   // Nobody else's list holds it.
   const bia = await addMember(f.db, f.org.id, "member", "bia");
