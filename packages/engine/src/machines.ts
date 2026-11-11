@@ -187,6 +187,19 @@ export async function pauseForApps(
   return { until: pause.until, by: pause.by && name !== undefined ? { id: pause.by, name } : null };
 }
 
+/**
+ * A runner's reported pause with `by` kept only for a member of the org: the runner's config can outlive the person
+ * (`machines.paused_by_user_id` references `users`), and its word alone names no outsider.
+ */
+export async function memberPause<P extends { until: string | null; by?: string | null }>(
+  db: Database,
+  orgId: string,
+  pause: P | null,
+): Promise<P | null> {
+  if (!pause?.by) return pause;
+  return (await pauserNames(db, orgId, [pause.by])).has(pause.by) ? pause : { ...pause, by: null };
+}
+
 /** The time zone the machine's owner reads times in (their own, else UTC). */
 export async function machineOwnerTimezone(db: Database, row: Pick<MachineRow, "orgId" | "pairedByUserId">) {
   if (!row.pairedByUserId) return null;

@@ -68,6 +68,7 @@ import {
   machineOnline,
   machineOwnerTimezone,
   machinePause,
+  memberPause,
   pauseForApps,
   publishMachineStatus,
   publishMachineUpdated,
@@ -593,6 +594,8 @@ export function createMachineHub(deps: MachineHubDeps) {
         MACHINE_CLOSE.invalidToken,
       );
     }
+    // Protocol 9: a runner that says nothing about the pause isn't paused.
+    const reported = frame.protocol >= PAUSE_PROTOCOL ? await memberPause(db, machine.orgId, pauseOf(frame.paused)) : null;
     if (conn.closed) return;
     if (conn.helloTimer) clearTimeout(conn.helloTimer);
     conn.helloTimer = null;
@@ -601,8 +604,7 @@ export function createMachineHub(deps: MachineHubDeps) {
     conn.name = machine.name;
     conn.kind = machine.kind;
     conn.protocol = frame.protocol;
-    // Protocol 9: a runner that says nothing about the pause isn't paused.
-    conn.pause = frame.protocol >= PAUSE_PROTOCOL ? pauseOf(frame.paused) : null;
+    conn.pause = reported;
     const old = local.get(machine.id);
     local.set(machine.id, conn);
     if (old && old !== conn) {
@@ -825,7 +827,8 @@ export function createMachineHub(deps: MachineHubDeps) {
   async function runnerState(conn: MachineConnection, frame: Extract<RunnerFrame, { type: "runner.state" }>) {
     const machineId = conn.machineId as string;
     const wasPaused = pauseActive(conn.pause);
-    conn.pause = pauseOf(frame.paused);
+    const said = pauseOf(frame.paused);
+    conn.pause = conn.orgId ? await memberPause(db, conn.orgId, said) : said && { ...said, by: null };
     const [row] = await db
       .update(machines)
       .set({

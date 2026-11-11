@@ -3,7 +3,13 @@ import { type Database, eq, schema } from "@agenteschat/db";
 import { recordAudit } from "./audit";
 import { ForbiddenError, ValidationError } from "./errors";
 import type { MachineCaller } from "./machine-hub";
-import { MachineOfflineError, pauseForApps, publishMachineUpdated, requireMachineManager } from "./machines";
+import {
+  MachineOfflineError,
+  memberPause,
+  pauseForApps,
+  publishMachineUpdated,
+  requireMachineManager,
+} from "./machines";
 
 const { machines } = schema;
 
@@ -46,7 +52,8 @@ export async function setMachinePause(
     ...(input.paused ? { until } : {}),
     by: actorId,
   });
-  const pause = reply.paused.paused ? { until: reply.paused.until ?? null, by: reply.paused.by ?? null } : null;
+  const said = reply?.paused?.paused ? { until: reply.paused.until ?? null, by: reply.paused.by ?? null } : null;
+  const pause = await memberPause(deps.db, orgId, said);
   // The runner's `runner.state` says the same soon after; the row is right for this answer already.
   await deps.db
     .update(machines)

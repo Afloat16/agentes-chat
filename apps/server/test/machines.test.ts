@@ -574,6 +574,11 @@ test("pause from the apps: whoever connected it and admins, through the hub; any
   expect(view.machines[0]?.paused).toMatchObject({ until, by: { id: biaId } });
   expect((await orgApi(bia)(`${path}/pause`, { json: { until: "2001-01-01T00:00:00Z" } })).status).toBe(400);
 
+  // A runner naming someone outside the workspace: the pause stands, nobody is named, and the row stays writable.
+  await hub.message(conn, JSON.stringify({ type: "runner.state", paused: { paused: true, until, by: "not-a-member" } }));
+  const outsider = (await (await orgApi(owner)("/machines")).json()) as typeof view;
+  expect(outsider.machines[0]?.paused).toMatchObject({ until, by: null });
+
   // An admin resumes it; a paused computer still takes the resume.
   const resumed = await orgApi(owner)(`${path}/resume`, { json: {} });
   expect(resumed.status).toBe(200);

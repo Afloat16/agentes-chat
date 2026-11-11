@@ -171,7 +171,7 @@ const PAUSE_KEYS = {
 /** "For 1 hour", "Until tomorrow at 9 AM", "Until I resume". */
 export const pauseChoiceText = (t: TFunction, choice: PauseChoice) => t(PAUSE_KEYS[choice]);
 
-/** "Paused by you from the web." when someone paused it from the apps; null when it was paused on the computer. */
+/** "Paused by you." when someone paused it from the apps; null when it was paused on the computer. */
 export function pausedByText(
   t: TFunction,
   locale: string,

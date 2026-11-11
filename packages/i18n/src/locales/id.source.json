@@ -31883,16 +31883,16 @@
     "value": "Resume"
   },
   "machines.remotePause.byYou": {
-    "value": "Paused by you from the web."
+    "value": "Paused by you."
   },
   "machines.remotePause.byYouUntil": {
-    "value": "Paused by you from the web until {{time}}."
+    "value": "Paused by you until {{time}}."
   },
   "machines.remotePause.byName": {
-    "value": "Paused by {{name}} from the web."
+    "value": "Paused by {{name}}."
   },
   "machines.remotePause.byNameUntil": {
-    "value": "Paused by {{name}} from the web until {{time}}."
+    "value": "Paused by {{name}} until {{time}}."
   },
   "machines.remotePause.outdated": {
     "value": "Update the agentes.chat app on this computer to pause it from here."
