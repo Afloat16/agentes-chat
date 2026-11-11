@@ -2,7 +2,13 @@ import { Button, Chip, Dialog, DialogFooter, Icon, Menu, MenuItem, Select, Switc
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHost, useSnapshot, useStore } from "../../app";
-import { isHereServer, type KeepRunning, type LocalServerStatus, type ReachStage, type ServeProblem } from "../../control/local-server";
+import {
+  isHereServer,
+  type KeepRunning,
+  type LocalServerStatus,
+  type ReachStage,
+  type ServeProblem,
+} from "../../control/local-server";
 import {
   homeServer,
   type ServerKind,
@@ -819,7 +825,9 @@ function KeepItRunning({ awake }: { awake: boolean }) {
             lead={
               <span className="dk-keep" data-ok={r.ok || undefined}>
                 {r.ok ? <Icon name="check" size={16} /> : <span className="dk-keep__dot" />}
-                <span className="ac-visually-hidden">{t(r.ok ? "desktop.server.keepOn" : "desktop.server.keepOff")}</span>
+                <span className="ac-visually-hidden">
+                  {t(r.ok ? "desktop.server.keepOn" : "desktop.server.keepOff")}
+                </span>
               </span>
             }
             title={r.title}

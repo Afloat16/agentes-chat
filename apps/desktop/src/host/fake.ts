@@ -186,7 +186,9 @@ export function createFakeHost(
           backups: {
             nightly: true,
             copyTo: null,
-            files: [{ path: "/Users/voce/.agentes/backups/agentes-2026-10-25-030000.tar.gz", at: Date.UTC(2026, 9, 25, 6) }],
+            files: [
+              { path: "/Users/voce/.agentes/backups/agentes-2026-10-25-030000.tar.gz", at: Date.UTC(2026, 9, 25, 6) },
+            ],
             problem: null,
           },
         }
@@ -586,7 +588,9 @@ export function createFakeHost(
     backupLocalServer: async () => {
       await wait(1100);
       const path = "/Users/voce/.agentes/backups/agentes-2026-10-25-101500.tar.gz";
-      setLocal({ backups: { ...local.backups, files: [{ path, at: Date.now() }, ...local.backups.files].slice(0, 2) } });
+      setLocal({
+        backups: { ...local.backups, files: [{ path, at: Date.now() }, ...local.backups.files].slice(0, 2) },
+      });
       return path;
     },
     setLocalBackups: async (nightly, copyTo) => {
