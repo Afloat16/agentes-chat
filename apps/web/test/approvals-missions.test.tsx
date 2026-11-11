@@ -139,8 +139,9 @@ describe("Approvals: the open request", () => {
     const line = () => pane.querySelector(".ac-track__line")?.textContent ?? "";
     const nodes = within(track).getAllByRole("button");
     expect(nodes.at(-1)?.getAttribute("aria-current")).toBe("step");
-    expect(line()).toStartWith("Pediu aprovação");
-    expect(line()).toBe(nodes.at(-1)?.getAttribute("aria-label")?.replace(" · ", "") ?? "");
+    expect(nodes.at(-1)?.hasAttribute("data-told")).toBe(true);
+    expect(line()).toStartWith("Pediu aprovação · ");
+    expect(line()).toBe(nodes.at(-1)?.getAttribute("aria-label") ?? "");
     // Pointing at another node tells that one instead, and leaving goes back.
     const first = nodes[0] as HTMLElement;
     await act(async () => fireEvent.mouseEnter(first));
@@ -156,31 +157,32 @@ describe("Approvals: the open request", () => {
 });
 
 describe("Approvals: a long way to the request", () => {
-  test("23 steps with long commands: the middle folds into one node, and the line tells any step whole", async () => {
+  test("60 steps with long commands: the middle folds into one node, and the line tells any step whole", async () => {
     const state = seedState();
     const merge = state.approvals.find((a) => a.id === "ap-merge");
     if (!merge?.runId) throw new Error("no approval");
     const asked = Date.parse(merge.createdAt);
     const at = (seconds: number) => new Date(asked + seconds * 1000).toISOString();
-    const command = "git log --oneline origin/main..HEAD -- packages/engine/src/context/memory.ts apps/server/test";
+    const command =
+      "git log --oneline origin/main..HEAD -- packages/engine/src/context/memory.ts packages/engine/src/context/items.ts apps/server/test";
     state.runSteps = {
       [merge.runId]: [
-        ...Array.from({ length: 22 }, (_, i) => [
+        ...Array.from({ length: 59 }, (_, i) => [
           {
             seq: i * 2 + 1,
             kind: "tool_call" as const,
             data: { toolUseId: `c${i}`, name: "permission_prompt", detail: `${command} # ${i}`, input: {} },
-            createdAt: at(-600 + i * 20),
+            createdAt: at(-600 + i * 10),
           },
           {
             seq: i * 2 + 2,
             kind: "tool_result" as const,
-            data: { toolUseId: `c${i}`, content: "ok", ...(i === 20 ? { isError: true } : {}) },
-            createdAt: at(-599 + i * 20),
+            data: { toolUseId: `c${i}`, content: "ok", ...(i === 57 ? { isError: true } : {}) },
+            createdAt: at(-599 + i * 10),
           },
         ]).flat(),
         {
-          seq: 45,
+          seq: 119,
           kind: "tool_call",
           data: { toolUseId: "ask", name: "github_merge_pull_request", connector: "github", input: {} },
           createdAt: at(0),
@@ -193,9 +195,9 @@ describe("Approvals: a long way to the request", () => {
     const track = within(pane).getByRole("list", { name: "Como chegou aqui" });
     const nodes = within(track).getAllByRole("button");
     const line = () => pane.querySelector(".ac-track__line")?.textContent ?? "";
-    // 23 steps on 8 nodes: the first two, 16 folded, the last five.
+    // 60 steps on 8 nodes: the first two, 53 folded, the last five.
     expect(nodes).toHaveLength(8);
-    expect(nodes[2]?.getAttribute("aria-label")).toBe("16 passos");
+    expect(nodes[2]?.getAttribute("aria-label")).toBe("53 passos");
     expect(track.querySelector(".ac-track__label")).toBeNull();
     expect(line()).toStartWith("Pediu aprovação");
     // The first step's whole command, however long.
@@ -203,12 +205,21 @@ describe("Approvals: a long way to the request", () => {
     await settle(2);
     expect(line()).toBe(nodes[0]?.getAttribute("aria-label") ?? "");
     expect(line()).toBe(`Rodou: ${command} # 0`);
-    // A press keeps a step told after the pointer leaves: the folded one says how many it holds.
-    await act(async () => fireEvent.click(nodes[2] as HTMLElement));
-    await act(async () => fireEvent.mouseLeave(nodes[2] as HTMLElement));
+    expect(line().length).toBeGreaterThan(120);
+    // A press keeps a step told after the pointer leaves.
+    await act(async () => fireEvent.click(nodes[0] as HTMLElement));
+    await act(async () => fireEvent.mouseLeave(nodes[0] as HTMLElement));
     await settle(2);
-    expect(line()).toBe("16 passos");
-    expect(nodes[2]?.getAttribute("aria-current")).toBe("step");
+    expect(line()).toBe(`Rodou: ${command} # 0`);
+    expect(nodes[0]?.hasAttribute("data-told")).toBe(true);
+    // The folded node tells how many it holds under the pointer, and a press on it shows them all.
+    await act(async () => fireEvent.mouseEnter(nodes[2] as HTMLElement));
+    await settle(2);
+    expect(line()).toBe("53 passos");
+    expect(within(pane).queryByRole("button", { name: "Esconder os passos" })).toBeNull();
+    await act(async () => fireEvent.click(nodes[2] as HTMLElement));
+    await settle(4);
+    expect(within(pane).getByRole("button", { name: "Esconder os passos" }).getAttribute("aria-expanded")).toBe("true");
   });
 });
 

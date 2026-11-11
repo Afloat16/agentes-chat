@@ -11646,6 +11646,10 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   display: grid;
   place-items: center;
 }
+/* A lone step starts where the line under it does. */
+.ac-track__step:only-child {
+  justify-items: start;
+}
 .ac-track__step + .ac-track__step::before {
   content: "";
   position: absolute;
@@ -11677,6 +11681,8 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   background: var(--sunken);
   cursor: pointer;
   transition: box-shadow var(--dur-fast) ease;
+  /* The keys' ring sits outside the told node's own. */
+  outline-offset: 3px;
 }
 /* A finger gets the cell's height, not only the dot. */
 .ac-track__node::after {
@@ -11689,7 +11695,7 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   height: 14px;
 }
 /* The step the line under the track tells. */
-.ac-track__node[aria-current] {
+.ac-track__node[data-told] {
   box-shadow: 0 0 0 2px var(--ink2);
 }
 .ac-track__step.is-now .ac-track__node {
@@ -11697,14 +11703,14 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   color: var(--attention);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--attention) 18%, transparent);
 }
-.ac-track__step.is-now .ac-track__node[aria-current] {
+.ac-track__step.is-now .ac-track__node[data-told] {
   box-shadow: 0 0 0 2px var(--attention);
 }
 .ac-track__step.is-after .ac-track__node {
   background: color-mix(in srgb, var(--success) 14%, transparent);
   color: var(--success);
 }
-.ac-track__step.is-after .ac-track__node[aria-current] {
+.ac-track__step.is-after .ac-track__node[data-told] {
   box-shadow: 0 0 0 2px var(--success);
 }
 /* A failed step keeps its app's logo, the ring and the line say it failed. */
@@ -11712,10 +11718,15 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   color: var(--danger);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 60%, transparent);
 }
-.ac-track__step.is-failed .ac-track__node[aria-current] {
+.ac-track__step.is-failed .ac-track__node[data-told] {
   box-shadow: 0 0 0 2px var(--danger);
 }
+/* "+1234" is wider than a dot. */
 .ac-track__step.is-more .ac-track__node {
+  width: auto;
+  min-width: 28px;
+  padding: 0 var(--space-1);
+  border-radius: 999px;
   color: var(--muted);
 }
 /* Two lines are kept for it, so a longer step under the pointer moves nothing below. */
@@ -11741,10 +11752,6 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.ac-track__time::before {
-  content: " · ";
-  white-space: pre;
-}
 @supports (top: 1lh) {
   .ac-track__line {
     min-height: 2lh;
@@ -11755,6 +11762,10 @@ html:not([data-pointer]) .ac-carousel__arrow:focus-visible {
   .ac-track__node {
     width: 24px;
     height: 24px;
+  }
+  .ac-track__step.is-more .ac-track__node {
+    min-width: 24px;
+    padding: 0 2px;
   }
   .ac-track__step + .ac-track__step::before {
     left: calc(-50% + 15px);

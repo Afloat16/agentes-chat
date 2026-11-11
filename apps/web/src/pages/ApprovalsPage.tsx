@@ -1303,6 +1303,7 @@ function ReviewBody({ approval: a, channel }: { approval: Approval; channel: str
           steps={track}
           className="ap-review__track"
           more={(count) => t("chat.work.steps", { count })}
+          onMore={() => setSteps(true)}
           aria-label={t("approvals.review.trail")}
         />
         {steps && run.data && around && (
