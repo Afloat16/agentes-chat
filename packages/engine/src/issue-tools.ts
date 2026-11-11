@@ -453,7 +453,7 @@ export function createIssueToolSource(deps: ArtifactDeps): ToolSource {
               q: str(input.query) || undefined,
               status: (input.status as IssueStatus | undefined) ?? undefined,
               projectId:
-                projectOf(input) === "none"
+                projectOf(input).toLowerCase() === "none"
                   ? "none"
                   : projectOf(input)
                     ? (await projectByName(deps, ctx.orgId, projectOf(input), "list")).id

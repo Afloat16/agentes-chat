@@ -12629,6 +12629,8 @@
     "issue": {
       "assigneeOutside": "Deze persoon ziet deze taak niet. Voeg die eerst toe bij Wie het ziet.",
       "projectNameTaken": "Er bestaat al een project met die naam.",
+      "projectArchived": "Dit project is gearchiveerd en krijgt geen nieuwe taken.",
+      "projectsFull": "Een workspace heeft hoogstens {{max}} projecten. Verwijder er eerst een.",
       "stageFull": "Een fase heeft hoogstens {{max}} kolommen. Verwijder eerst een van de kolommen.",
       "deleteForbidden": "Alleen wie deze taak heeft gemaakt of een beheerder kan hem verwijderen.",
       "audienceEmpty": "Kies wie het ziet."

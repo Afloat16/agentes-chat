@@ -215,6 +215,8 @@ const KNOWN = {
   "issue.assignee_outside": "errors.issue.assigneeOutside",
   "issue_column.stage_full": "errors.issue.stageFull",
   "issue_project.name_taken": "errors.issue.projectNameTaken",
+  "issue_project.archived": "errors.issue.projectArchived",
+  "issue_project.too_many": "errors.issue.projectsFull",
   "issue.delete_forbidden": "errors.issue.deleteForbidden",
   "issue.audience_empty": "errors.issue.audienceEmpty",
   [REAUTH_PASSWORD]: "errors.reauth.password",

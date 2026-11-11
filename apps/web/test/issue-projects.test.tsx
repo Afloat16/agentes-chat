@@ -347,6 +347,21 @@ describe("Tarefas: projects", () => {
     expect(within(strip).getByRole("combobox", { name: "Projeto" }).textContent).toBe("Sem projeto");
   });
 
+  test("on a project's board a task moved to another project stays open, and a link to one outside it opens", async () => {
+    const { api, clinic, bakery } = await withProjects();
+    await go(api, `?project=${clinic.id}&open=131`);
+    const strip = () => screen().getByRole("dialog").querySelector(".issue-props") as HTMLElement;
+    await key(within(strip()).getByRole("combobox", { name: "Projeto" }), "Enter");
+    await click(within(screen().getByRole("listbox")).getByRole("option", { name: "Padaria Lia" }));
+    await settle(8);
+    expect((await api.issues.get(ORG_ID, 131)).project?.id).toBe(bakery.id);
+    expect(cards().sort()).toEqual([128, 129]);
+    expect(within(strip()).getByRole("combobox", { name: "Projeto" }).textContent).toBe("Padaria Lia");
+    cleanup();
+    await go(api, `?project=${clinic.id}&open=126`);
+    expect(within(strip()).getByRole("combobox", { name: "Projeto" }).textContent).toBe("Sem projeto");
+  });
+
   test("the list shows the project too, and Exibição's Projeto toggle takes it off the cards", async () => {
     const { state, api } = await withProjects();
     state.issuesView = { ...structuredClone(ISSUES_VIEW_DEFAULT), layout: "list" };

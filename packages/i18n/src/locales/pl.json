@@ -13459,6 +13459,8 @@
     "issue": {
       "assigneeOutside": "Ta osoba nie widzi tego zadania. Najpierw dodaj ją do Kto to widzi.",
       "projectNameTaken": "Projekt o tej nazwie już istnieje.",
+      "projectArchived": "Ten projekt jest zarchiwizowany i nie przyjmuje nowych zadań.",
+      "projectsFull": "Workspace mieści najwyżej {{max}} projektów. Najpierw usuń jeden.",
       "stageFull": "Etap mieści najwyżej {{max}} kolumn. Najpierw usuń jedną z jego kolumn.",
       "deleteForbidden": "Tylko osoba, która utworzyła to zadanie, lub administrator może je usunąć.",
       "audienceEmpty": "Wybierz, kto to widzi."

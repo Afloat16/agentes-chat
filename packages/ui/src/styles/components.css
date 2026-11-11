@@ -9834,10 +9834,10 @@ html:not([data-pointer]) .ac-filter__option:focus-visible {
   width: var(--option-face);
   height: var(--option-face);
 }
+/* A name wider than the menu wraps in its row, whole. */
 .ac-filter__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .ac-filter__list[hidden] {
   display: none;

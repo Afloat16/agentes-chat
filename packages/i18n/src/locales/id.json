@@ -12141,6 +12141,8 @@
     "issue": {
       "assigneeOutside": "Orang ini tidak bisa melihat tugas ini. Tambahkan dulu ke Siapa yang melihat.",
       "projectNameTaken": "Sudah ada proyek dengan nama itu.",
+      "projectArchived": "Proyek ini diarsipkan dan tidak menerima tugas baru.",
+      "projectsFull": "Satu workspace memuat paling banyak {{max}} proyek. Hapus satu dulu.",
       "stageFull": "Satu tahap paling banyak punya {{max}} kolom. Hapus dulu salah satu kolomnya.",
       "deleteForbidden": "Hanya pembuat tugas ini atau administrator yang bisa menghapusnya.",
       "audienceEmpty": "Pilih siapa yang melihat."

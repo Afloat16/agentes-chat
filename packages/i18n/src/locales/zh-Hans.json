@@ -12150,6 +12150,8 @@
     "issue": {
       "assigneeOutside": "这个人看不到这个任务。请先把他加入“谁能看到”。",
       "projectNameTaken": "已有同名项目。",
+      "projectArchived": "这个项目已归档，不能再加入新任务。",
+      "projectsFull": "一个工作区最多有 {{max}} 个项目。请先删除一个。",
       "stageFull": "一个阶段最多 {{max}} 列。请先删除其中一列。",
       "deleteForbidden": "只有这项任务的创建者或管理员可以删除它。",
       "audienceEmpty": "请选择谁能看到。"

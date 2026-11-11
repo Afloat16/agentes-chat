@@ -12940,6 +12940,8 @@
     "issue": {
       "assigneeOutside": "Esta persona no ve esta tarea. Agrégala primero a Quién lo ve.",
       "projectNameTaken": "Ya existe un proyecto con ese nombre.",
+      "projectArchived": "Este proyecto está archivado y no recibe tareas nuevas.",
+      "projectsFull": "Un workspace tiene como máximo {{max}} proyectos. Elimina uno antes.",
       "stageFull": "Una etapa tiene como máximo {{max}} columnas. Elimina una de sus columnas antes.",
       "deleteForbidden": "Solo quien creó esta tarea o un administrador puede eliminarla.",
       "audienceEmpty": "Elige quién lo ve."

@@ -30361,6 +30361,12 @@
   "errors.issue.projectNameTaken": {
     "value": "A project with that name already exists."
   },
+  "errors.issue.projectArchived": {
+    "value": "This project is archived and takes no new tasks."
+  },
+  "errors.issue.projectsFull": {
+    "value": "A workspace holds at most {{max}} projects. Delete one first."
+  },
   "errors.issue.stageFull": {
     "value": "A stage holds at most {{max}} columns. Delete one of its columns first."
   },

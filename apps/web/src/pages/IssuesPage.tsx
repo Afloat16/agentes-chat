@@ -1,5 +1,6 @@
 import type { Actor, Issue, IssueColumn, IssuePriority, IssueStatus, IssuesView } from "@agenteschat/client";
 import {
+  useIssue,
   useIssueColumns,
   useIssueProjectAction,
   useIssueProjects,
@@ -163,7 +164,14 @@ export function IssuesPage() {
   const posts = can(org, "post");
   const adds = posts && !project?.archived;
   const open = all.filter(isOpen);
-  const opened = all.find((i) => i.number === openNumber) ?? null;
+  const listed = all.find((i) => i.number === openNumber) ?? null;
+  // On a project's board a task that isn't in it still opens (a link, or its project changed in its own dialog).
+  const outside = useIssue(
+    org.id,
+    openNumber ?? 0,
+    Boolean(projectParam) && openNumber !== null && issues.isSuccess && !listed,
+  );
+  const opened = listed ?? (projectParam && outside.data?.number === openNumber ? outside.data : null);
   const toggle = (n: number) => setOpenParam(openNumber === n ? null : n);
   // The saved view decides the layout: until it comes, the skeleton (not the default board, then the list).
   const viewLoading = viewQuery.isLoading;

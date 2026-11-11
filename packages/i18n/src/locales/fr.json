@@ -13011,6 +13011,8 @@
     "issue": {
       "assigneeOutside": "Cette personne ne voit pas cette tâche. Ajoutez-la d'abord à Qui le voit.",
       "projectNameTaken": "Un projet porte déjà ce nom.",
+      "projectArchived": "Ce projet est archivé et ne reçoit plus de nouvelles tâches.",
+      "projectsFull": "Un espace de travail contient au plus {{max}} projets. Supprimez-en un d’abord.",
       "stageFull": "Une étape contient au plus {{max}} colonnes. Supprimez d'abord une de ses colonnes.",
       "deleteForbidden": "Seule la personne qui a créé cette tâche ou un administrateur peut la supprimer.",
       "audienceEmpty": "Choisissez qui le voit."

@@ -1,6 +1,6 @@
 import type { PubSub } from "@agenteschat/adapters";
 import { and, asc, type Database, eq, inArray, schema, sql } from "@agenteschat/db";
-import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
+import { ForbiddenError, isUniqueViolation, NotFoundError, ValidationError } from "./errors";
 import { publishOrgEvent } from "./events";
 import { can, requireActiveMembership } from "./organizations";
 import { ROLE_COLORS } from "./permissions";
@@ -173,7 +173,15 @@ export async function updateIssueProject(
   if (color !== undefined) set.color = color;
   if (patch.archived !== undefined) set.archivedAt = patch.archived ? (current.archivedAt ?? new Date()) : null;
   if (Object.keys(set).length === 0) return projectRef(current);
-  const [row] = await deps.db.update(issueProjects).set(set).where(eq(issueProjects.id, current.id)).returning();
+  const [row] = await deps.db
+    .update(issueProjects)
+    .set(set)
+    .where(eq(issueProjects.id, current.id))
+    .returning()
+    // Two renames to one name at once: the unique index refuses the second.
+    .catch((error: unknown) => {
+      throw isUniqueViolation(error) ? nameTaken(set.name ?? current.name) : error;
+    });
   await announce(deps, orgId);
   return projectRef(row ?? current);
 }

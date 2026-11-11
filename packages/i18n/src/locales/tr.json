@@ -12502,6 +12502,8 @@
     "issue": {
       "assigneeOutside": "Bu kişi bu görevi göremiyor. Önce onu Kimler görüyor listesine ekleyin.",
       "projectNameTaken": "Bu adla bir proje zaten var.",
+      "projectArchived": "Bu proje arşivlendi ve yeni görev almıyor.",
+      "projectsFull": "Bir çalışma alanında en fazla {{max}} proje olabilir. Önce birini silin.",
       "stageFull": "Bir aşama en fazla {{max}} sütun alır. Önce sütunlarından birini silin.",
       "deleteForbidden": "Bu görevi yalnızca oluşturan kişi veya bir yönetici silebilir.",
       "audienceEmpty": "Kimlerin göreceğini seçin."

@@ -244,6 +244,7 @@ describe("task projects", () => {
     const cleared = await run("update_issue", { issue: `#${agenda?.number}`, project: "none" });
     expect(cleared.content).not.toContain("[project:");
     expect((await run("list_issues", { project: "none" })).content).toContain("Agenda");
+    expect((await run("list_issues", { project: "None" })).content).toContain("Agenda");
     // A change that names no project leaves it where it is.
     await run("update_issue", { issue: `#${agenda?.number}`, project: "Clínica Teo" });
     const kept = await run("update_issue", { issue: `#${agenda?.number}`, priority: "high" });

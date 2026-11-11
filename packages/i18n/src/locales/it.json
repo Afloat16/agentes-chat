@@ -13020,6 +13020,8 @@
     "issue": {
       "assigneeOutside": "Questa persona non vede questa attività. Aggiungila prima a Chi lo vede.",
       "projectNameTaken": "Esiste già un progetto con questo nome.",
+      "projectArchived": "Questo progetto è archiviato e non accetta nuove attività.",
+      "projectsFull": "Un workspace contiene al massimo {{max}} progetti. Eliminane uno prima.",
       "stageFull": "Una fase ha al massimo {{max}} colonne. Elimina prima una delle sue colonne.",
       "deleteForbidden": "Solo chi ha creato questa attività o un amministratore può eliminarla.",
       "audienceEmpty": "Scegli chi lo vede."

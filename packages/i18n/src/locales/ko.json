@@ -12081,6 +12081,8 @@
     "issue": {
       "assigneeOutside": "이 사람은 이 작업을 볼 수 없어요. 먼저 볼 수 있는 사람에 추가하세요.",
       "projectNameTaken": "같은 이름의 프로젝트가 이미 있어요.",
+      "projectArchived": "이 프로젝트는 보관되어 새 작업을 받을 수 없어요.",
+      "projectsFull": "워크스페이스에는 프로젝트를 최대 {{max}}개까지 둘 수 있어요. 먼저 하나를 삭제하세요.",
       "stageFull": "한 단계에는 열을 최대 {{max}}개까지 둘 수 있어요. 먼저 그 단계의 열을 하나 삭제해 주세요.",
       "deleteForbidden": "이 작업은 만든 사람이나 관리자만 삭제할 수 있어요.",
       "audienceEmpty": "볼 수 있는 사람을 선택하세요."

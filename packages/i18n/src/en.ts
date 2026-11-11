@@ -12384,6 +12384,8 @@ export const en = {
     issue: {
       assigneeOutside: "This person can't see this task. Add them to who sees it first.",
       projectNameTaken: "A project with that name already exists.",
+      projectArchived: "This project is archived and takes no new tasks.",
+      projectsFull: "A workspace holds at most {{max}} projects. Delete one first.",
       stageFull: "A stage holds at most {{max}} columns. Delete one of its columns first.",
       deleteForbidden: "Only who created this task or an administrator can delete it.",
       audienceEmpty: "Choose who sees it.",

@@ -12566,6 +12566,8 @@
     "issue": {
       "assigneeOutside": "Diese Person sieht diese Aufgabe nicht. Füge sie zuerst bei Wer es sieht hinzu.",
       "projectNameTaken": "Ein Projekt mit diesem Namen gibt es schon.",
+      "projectArchived": "Dieses Projekt ist archiviert und nimmt keine neuen Aufgaben an.",
+      "projectsFull": "Ein Workspace hat höchstens {{max}} Projekte. Lösche zuerst eines.",
       "stageFull": "Eine Phase hat höchstens {{max}} Spalten. Lösch zuerst eine ihrer Spalten.",
       "deleteForbidden": "Nur wer diese Aufgabe erstellt hat oder ein Administrator kann sie löschen.",
       "audienceEmpty": "Wähle, wer es sieht."
