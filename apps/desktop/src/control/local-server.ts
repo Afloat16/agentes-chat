@@ -43,6 +43,26 @@ export interface LocalServerStatus {
   heldUntil: number | null;
   /** Reach is on, but Tailscale isn't connected on this computer: nobody else reaches it now. */
   tailnetDown: boolean;
+  backups: LocalBackups;
+  /** This Mac doesn't sleep while it runs (`caffeinate`). */
+  awake: boolean;
+}
+
+export interface LocalBackups {
+  /** "Back up every night" (at 3:00, local time). */
+  nightly: boolean;
+  /** "Copy to": each new backup is copied to this folder too. */
+  copyTo: string | null;
+  /** Its backups, newest first; `at` in milliseconds since 1970. */
+  files: { path: string; at: number }[];
+  /** The last backup didn't finish, or didn't reach the "Copy to" folder. */
+  problem: "backup" | "copy" | null;
+}
+
+/** What keeps the server here up after a restart or a power cut; null where the app can't tell (not a Mac, a laptop). */
+export interface KeepRunning {
+  autoLogin: boolean | null;
+  autoRestart: boolean | null;
 }
 
 /** `app`: Tailscale's Mac app is there to open, not only its command-line tool (Homebrew's). */
@@ -117,6 +137,8 @@ export const NO_SERVER: LocalServerStatus = {
   held: false,
   heldUntil: null,
   tailnetDown: false,
+  backups: { nightly: true, copyTo: null, files: [], problem: null },
+  awake: false,
 };
 
 /** "Setting it up", in order; access from other devices only when it was asked for. */
