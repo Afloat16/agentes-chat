@@ -13658,9 +13658,9 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   margin: 0;
 }
 /* What the provider's own program said, in the code well under the line about it: whole, wrapped, to select and copy.
-   It takes the row, so the button goes under it. */
+   It takes a line of the row, so the button goes under it, and gives up the room of the indent it gets there. */
 .ai-panel__row > .agp-addacct__said {
-  flex: 1 0 100%;
+  flex: 1 1 100%;
   min-width: 0;
   user-select: text;
 }

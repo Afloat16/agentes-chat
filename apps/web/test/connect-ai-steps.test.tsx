@@ -659,7 +659,7 @@ describe("Conectar uma IA: one picker, plans first", () => {
       cleanup();
     }
     const layout = await stylesheet("../src/layout.css");
-    expect(ruleOf(layout, ".ai-panel__row > .agp-addacct__said")).toContain("flex: 1 0 100%");
+    expect(ruleOf(layout, ".ai-panel__row > .agp-addacct__said")).toContain("flex: 1 1 100%");
   });
 
   test("a sign-in canceled from somewhere else shows no error: it is back at its start", async () => {
