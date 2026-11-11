@@ -389,9 +389,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Menulis dan mengubah kode di folder yang diizinkan, dengan akun Claude-mu.",
+    "claudeDesc": "Menulis dan mengubah kode di folder yang diizinkan, dengan akun Claude-mu. Menjalankan perintahnya sendiri di folder agen, bahkan saat Perintah mati.",
     "codexName": "Codex",
-    "codexDesc": "Menulis dan mengubah kode di folder yang diizinkan, dengan akun ChatGPT-mu.",
+    "codexDesc": "Menulis dan mengubah kode di folder yang diizinkan, dengan akun ChatGPT-mu. Menjalankan perintahnya sendiri di folder agen, bahkan saat Perintah mati.",
     "found": "Ditemukan",
     "notFound": "Tidak ditemukan",
     "loggedOut": "Belum masuk",
@@ -401,6 +401,14 @@
     "commandsWarnOrgs": "Perintah bisa menjangkau bagian lain {{device}} ini, termasuk folder ruang kerja lain.",
     "commandsWarnHere": "Perintah berjalan atas namamu dan bisa menjangkau bagian lain {{device}} ini, termasuk data agentes.chat sendiri.",
     "commandsSome": "Aktif hanya untuk {{orgs}}. Aktifkan untuk setiap ruang kerja di sini.",
+    "commandsAbout": "Tes, build, dan perintah Terminal lainnya. Setiap perintah muncul di Aktivitas. Perintah berjalan atas namamu. Perintah bisa membaca apa pun yang bisa kamu baca di {{device}} ini, termasuk database dan kunci agentes.chat. Nyalakan hanya untuk workspace yang kamu percayai dengan semua itu.",
+    "commandsReach": "Perintah berjalan atas namamu. Perintah bisa membaca apa pun yang bisa kamu baca di {{device}} ini, termasuk database dan kunci agentes.chat. Nyalakan hanya untuk workspace yang kamu percayai dengan semua itu.",
+    "commandsAsk": "Nyalakan Perintah untuk {{org}}?",
+    "commandsTurnOn": "Nyalakan",
+    "checkAgain": "Periksa lagi",
+    "lookPath": "agentes.chat mencari di PATH shell login-mu.",
+    "lookPathWindows": "agentes.chat mencari di PATH.",
+    "stillMissing": "{{tool}} masih belum ditemukan. Jalankan perintah di atas, lalu periksa lagi.",
     "browserName": "Browser",
     "browserDesc": "Membuka situs web untuk agen di browser milik mereka sendiri, tanpa login-mu.",
     "browserLogins": "Login yang dibuat agen tetap di {{device}} ini, di foldernya. Pakai hanya akun uji atau akun milik agen itu sendiri."
@@ -512,7 +520,7 @@
       "connected": "Terhubung",
       "protection": "Perlindungan",
       "protectedTitle": "Mode terlindungi",
-      "protectedDesc": "Perintah hanya menulis di folder yang diizinkan dan tidak membaca bagian lain {{device}} ini. Beberapa alat mungkin jadi lebih lambat.",
+      "protectedDesc": "Segera hadir: perintah yang hanya menulis di folder yang diizinkan dan tidak bisa membaca bagian lain {{device}} ini.",
       "commandsOn": "Perintah aktif"
     },
     "accounts": {

@@ -395,9 +395,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Écrit et modifie du code dans les dossiers autorisés, avec votre compte Claude.",
+    "claudeDesc": "Écrit et modifie du code dans les dossiers autorisés, avec votre compte Claude. Exécute ses propres commandes dans le dossier de l'agent, même avec Commandes désactivé.",
     "codexName": "Codex",
-    "codexDesc": "Écrit et modifie du code dans les dossiers autorisés, avec votre compte ChatGPT.",
+    "codexDesc": "Écrit et modifie du code dans les dossiers autorisés, avec votre compte ChatGPT. Exécute ses propres commandes dans le dossier de l'agent, même avec Commandes désactivé.",
     "found": "Trouvé",
     "notFound": "Introuvable",
     "loggedOut": "Non connecté",
@@ -407,6 +407,14 @@
     "commandsWarnOrgs": "Les commandes peuvent atteindre le reste de ce {{device}}, y compris les dossiers des autres espaces de travail.",
     "commandsWarnHere": "Les commandes tournent en votre nom et peuvent atteindre le reste de ce {{device}}, y compris les données d'agentes.chat.",
     "commandsSome": "Activé uniquement pour {{orgs}}. Activez-le pour chaque espace de travail ici.",
+    "commandsAbout": "Tests, builds et autres commandes du Terminal. Chacune apparaît dans Activité. Les commandes tournent en votre nom. Elles peuvent lire tout ce que vous pouvez lire sur ce {{device}}, y compris la base de données et les clés d'agentes.chat. Activez-les seulement pour les workspaces à qui vous confiez tout cela.",
+    "commandsReach": "Les commandes tournent en votre nom. Elles peuvent lire tout ce que vous pouvez lire sur ce {{device}}, y compris la base de données et les clés d'agentes.chat. Activez-les seulement pour les workspaces à qui vous confiez tout cela.",
+    "commandsAsk": "Activer les commandes pour {{org}} ?",
+    "commandsTurnOn": "Activer",
+    "checkAgain": "Vérifier à nouveau",
+    "lookPath": "agentes.chat cherche dans le PATH de votre shell de connexion.",
+    "lookPathWindows": "agentes.chat cherche dans le PATH.",
+    "stillMissing": "{{tool}} est toujours introuvable. Lancez la commande ci-dessus, puis vérifiez à nouveau.",
     "browserName": "Navigateur",
     "browserDesc": "Ouvre des sites pour les agents dans leur propre navigateur, sans vos identifiants.",
     "browserLogins": "Les connexions faites par un agent restent sur ce {{device}}, dans son dossier. N'utilisez que des comptes de test ou ceux de l'agent."
@@ -520,7 +528,7 @@
       "connected": "Connectés",
       "protection": "Protection",
       "protectedTitle": "Mode protégé",
-      "protectedDesc": "Les commandes n'écrivent que dans les dossiers autorisés et ne lisent pas le reste du {{device}}. Certains outils peuvent ralentir.",
+      "protectedDesc": "Bientôt : des commandes qui n'écrivent que dans les dossiers autorisés et ne peuvent pas lire le reste de ce {{device}}.",
       "commandsOn": "Les commandes sont activées"
     },
     "accounts": {

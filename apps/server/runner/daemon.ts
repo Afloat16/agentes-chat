@@ -350,6 +350,8 @@ export interface DaemonOptions {
   /** Tests: an address observation without network or a real agent process. */
   probeEgress?: typeof probeEgress;
   executors?: () => RunnerInfo["executors"];
+  /** App mode: takes the login shell's PATH again before "Check again" looks for the coding CLIs. */
+  refreshPath?: () => void;
   /** Tests: how the coding CLIs' looks run (the background cache stays real). */
   executorRun?: ExecutorRun;
   /** How the accounts' CLIs start (default `claude` / `codex`). */
@@ -451,6 +453,7 @@ export class RunnerDaemon implements RequestObserver {
   private readonly executors: () => NonNullable<RunnerInfo["executors"]>;
   /** False until the first look on a new install: `hello` then leaves the CLIs out, so the server keeps "unknown". */
   private readonly executorsKnown: () => boolean;
+  private readonly executorsFresh: () => Promise<unknown>;
   private readonly now: () => number;
   /** The computer brains' accounts (ADR 0041): machine-wide, kept across pairings and sessions. */
   readonly accounts: AccountManager;
@@ -493,6 +496,7 @@ export class RunnerDaemon implements RequestObserver {
       });
     this.executors = () => exec() ?? {};
     this.executorsKnown = () => !("known" in exec) || exec.known === true;
+    this.executorsFresh = (exec as { fresh?: () => Promise<unknown> }).fresh ?? (async () => this.executors());
     // System mode is set at install and kept through pairings: account folders are lent to agents' users.
     let system = false;
     try {
@@ -2020,6 +2024,13 @@ export class RunnerDaemon implements RequestObserver {
 
   pauseState(): RunnerPause {
     return pauseOf(this.stored, this.now());
+  }
+
+  /** The app's "Check again": the PATH and the coding CLIs looked up now, then the status with what was found. */
+  async executorsCheck(): Promise<ControlStatus> {
+    this.opts.refreshPath?.();
+    await this.executorsFresh();
+    return this.status();
   }
 
   status(): ControlStatus {

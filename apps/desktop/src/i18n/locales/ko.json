@@ -389,9 +389,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "내 Claude 계정으로 허용된 폴더에서 코드를 작성하고 수정해요.",
+    "claudeDesc": "내 Claude 계정으로 허용된 폴더에서 코드를 작성하고 수정해요. 명령이 꺼져 있어도 에이전트 폴더에서 자체 명령을 실행해요.",
     "codexName": "Codex",
-    "codexDesc": "내 ChatGPT 계정으로 허용된 폴더에서 코드를 작성하고 수정해요.",
+    "codexDesc": "내 ChatGPT 계정으로 허용된 폴더에서 코드를 작성하고 수정해요. 명령이 꺼져 있어도 에이전트 폴더에서 자체 명령을 실행해요.",
     "found": "찾음",
     "notFound": "찾지 못함",
     "loggedOut": "로그인 안 됨",
@@ -401,6 +401,14 @@
     "commandsWarnOrgs": "명령은 다른 워크스페이스의 폴더를 포함해 이 {{device}}의 다른 곳에도 접근할 수 있어요.",
     "commandsWarnHere": "명령은 내 권한으로 실행되며, agentes.chat 자체 데이터를 포함해 이 {{device}}의 다른 곳에도 접근할 수 있어요.",
     "commandsSome": "{{orgs}}에만 켜져 있어요. 여기 있는 모든 워크스페이스에 켜세요.",
+    "commandsAbout": "테스트, 빌드 같은 터미널 명령이에요. 하나하나 활동에 표시돼요. 명령은 내 권한으로 실행돼요. agentes.chat의 데이터베이스와 키를 포함해, 이 {{device}}에서 내가 읽을 수 있는 건 모두 읽을 수 있어요. 이 모든 걸 맡길 수 있는 워크스페이스에서만 켜세요.",
+    "commandsReach": "명령은 내 권한으로 실행돼요. agentes.chat의 데이터베이스와 키를 포함해, 이 {{device}}에서 내가 읽을 수 있는 건 모두 읽을 수 있어요. 이 모든 걸 맡길 수 있는 워크스페이스에서만 켜세요.",
+    "commandsAsk": "{{org}}의 명령을 켤까요?",
+    "commandsTurnOn": "켜기",
+    "checkAgain": "다시 확인",
+    "lookPath": "agentes.chat은 로그인 셸의 PATH에서 찾아요.",
+    "lookPathWindows": "agentes.chat은 PATH에서 찾아요.",
+    "stillMissing": "{{tool}}을(를) 아직 찾지 못했어요. 위 명령을 실행한 다음 다시 확인하세요.",
     "browserName": "브라우저",
     "browserDesc": "에이전트 전용 브라우저로 웹사이트를 열어요. 내 로그인 정보는 쓰지 않아요.",
     "browserLogins": "에이전트가 한 로그인은 이 {{device}}의 에이전트 폴더에 남아요. 테스트 계정이나 에이전트 전용 계정만 사용하세요."
@@ -512,7 +520,7 @@
       "connected": "연결됨",
       "protection": "보호",
       "protectedTitle": "보호 모드",
-      "protectedDesc": "명령은 허용된 폴더에만 쓰고 이 {{device}}의 나머지는 읽지 않아요. 일부 도구가 느려질 수 있어요.",
+      "protectedDesc": "곧 제공: 허용된 폴더에만 쓰고 이 {{device}}의 나머지는 읽을 수 없는 명령.",
       "commandsOn": "명령이 켜져 있어요"
     },
     "accounts": {
