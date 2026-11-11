@@ -10,8 +10,10 @@ import { Button, Checkbox, Icon, type IconName, PixelSpinner, Select } from "@ag
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHost, useSnapshot, useStore } from "../app";
+import { isHereServer } from "../control/local-server";
 import { type LinkFailure, type LinkInfo, type PairTarget, pairWithLink, pairWithSession } from "../control/pair";
-import { serverName } from "../control/server";
+import { serverKind, serverName } from "../control/server";
+import { useLocalServer } from "../hooks";
 import { OrgTile } from "../ui/bits";
 import { PrefCard, PrefRow } from "../ui/settings";
 import { PeoplePicker } from "./prefs/ThisMac";
@@ -75,8 +77,12 @@ export function PairOffer({ target, onClose }: { target: PairTarget; onClose: ()
   const [atLogin, setAtLogin] = useState(true);
   const [state, setState] = useState<"ask" | "busy" | "done">("ask");
   const [failed, setFailed] = useState<string | null>(null);
+  const local = useLocalServer();
   const org = target.name;
   const lead = <OrgTile logo={target.logo} size="lg" />;
+  // A server elsewhere that this computer already opens: pairing is about lending it, not about getting in.
+  const kind = serverKind(target.server);
+  const onlyOpens = (kind === "tailnet" || kind === "own") && !isHereServer(local, target.server);
 
   const allow = async () => {
     setState("busy");
@@ -125,6 +131,7 @@ export function PairOffer({ target, onClose }: { target: PairTarget; onClose: ()
         }
       >
         <p className="dk-lead">{t("desktop.pair.offerBody")}</p>
+        {onlyOpens && <p className="dk-lead">{t("desktop.pair.offerOnlyIf", { org })}</p>}
         <PrefCard>
           <PrefRow
             lead={

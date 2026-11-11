@@ -212,6 +212,9 @@
   "tray.pauseManual": {
     "value": "Until I resume"
   },
+  "tray.pauseAll": {
+    "value": "All workspaces"
+  },
   "tray.pauseHint": {
     "value": "What is already running finishes normally."
   },
@@ -265,6 +268,18 @@
   },
   "tray.pausedBody": {
     "value": "No agent, from any workspace, starts anything new on this {{device}}."
+  },
+  "tray.pausedSomeBody": {
+    "value": "On hold: {{orgs}}. The other workspaces' agents keep working."
+  },
+  "tray.alsoWorksFor": {
+    "value": "Also works for {{orgs}}"
+  },
+  "tray.otherWorkspaces": {
+    "value": {
+      "one": "{{count}} other workspace",
+      "other": "{{count}} other workspaces"
+    }
   },
   "tray.resumeNow": {
     "value": "Resume now"
@@ -877,6 +892,9 @@
   },
   "pair.keepReady": {
     "value": "Keep it ready: open agentes.chat at login"
+  },
+  "pair.offerOnlyIf": {
+    "value": "Only if you want this {{device}} to do agents' work too. With Not now you still use {{org}} here as usual."
   },
   "pair.linkTitle": {
     "value": "Connect this {{device}} to {{org}}?"

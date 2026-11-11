@@ -89,6 +89,7 @@ export const desktopPtBR = {
     pause1h: "Por 1 hora",
     pauseTomorrow: "Até amanhã às 9h",
     pauseManual: "Até eu retomar",
+    pauseAll: "Todos os workspaces",
     pauseHint: "O que já está rodando termina normalmente.",
     /** With the agentes.chat this computer runs: pausing the agents leaves it up (ADR 0158). */
     pauseHintServer: "O que já está rodando termina normalmente. O servidor segue no ar.",
@@ -109,6 +110,10 @@ export const desktopPtBR = {
     pausedUntil: "Pausado até {{time}}",
     pausedUntilResume: "Pausado até você retomar",
     pausedBody: "Nenhum agente, de nenhum workspace, começa nada novo neste {{device}}.",
+    pausedSomeBody: "Em pausa: {{orgs}}. Os agentes dos outros workspaces continuam trabalhando.",
+    alsoWorksFor: "Também trabalha para {{orgs}}",
+    otherWorkspaces_one: "{{count}} outro workspace",
+    otherWorkspaces_other: "{{count}} outros workspaces",
     resumeNow: "Retomar agora",
     plusHour: "+1 hora",
     updateTitle: "Versão {{version}} disponível",
@@ -446,6 +451,8 @@ export const desktopPtBR = {
     offerBody:
       "Eles começam sem pastas suas e com comandos desligados. Você escolhe o que eles recebem nas Preferências e pode pará-los quando quiser.",
     keepReady: "Deixar pronto: abrir o agentes.chat ao iniciar a sessão",
+    offerOnlyIf:
+      "Só se você quiser que este {{device}} também faça trabalho dos agentes. Com Agora não, você continua usando {{org}} aqui normalmente.",
     linkTitle: "Conectar este {{device}} a {{org}}?",
     askedBy: "Pedido por",
     from: "De",
