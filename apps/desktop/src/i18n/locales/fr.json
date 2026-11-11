@@ -465,6 +465,7 @@
       "launchTitle": "Ouvrir à la connexion",
       "launchDesc": "Les agents n'utilisent ce {{device}} que quand l'app est ouverte.",
       "launchHere": "agentes.chat sur ce {{device}} ne tourne que quand l'app est ouverte.",
+      "launchWork": "Les agents ne travaillent que quand l'app est ouverte.",
       "notifySiteTitle": "Me prévenir des messages et des demandes",
       "notifySiteDesc": "Mentions, messages directs et ce qui vous attend, quand l'app est en arrière-plan.",
       "notifyTitle": "Me prévenir quand un agent demande un dossier",
@@ -501,7 +502,13 @@
       "wider": "Les agents des autres personnes s'exécutent ici en tant que {{user}} et peuvent lire vos fichiers.",
       "phoneWho": "{{who}} peut l'utiliser",
       "signedOut": "Connectez-vous à {{server}} dans l'app pour voir qui peut utiliser ce {{device}}.",
-      "unreachable": "Impossible de joindre {{server}}. Vérifiez la connexion et réessayez."
+      "unreachable": "Impossible de joindre {{server}}. Vérifiez la connexion et réessayez.",
+      "placeHere": "Sur ce {{device}}",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "Plus pour {{org}}",
+      "otherWorkspace": "Un autre espace de travail",
+      "otherWorkspaceDesc": "Permettez à un espace de travail sur agentes.chat Cloud ou sur un autre serveur d'utiliser aussi ce {{device}}. Chacun garde sa propre connexion.",
+      "addWorkspace": "Ajouter un espace de travail…"
     },
     "folders": {
       "title": "Dossiers",

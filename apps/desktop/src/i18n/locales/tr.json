@@ -461,6 +461,7 @@
       "launchTitle": "Oturum açılınca başlat",
       "launchDesc": "Ajanlar bu {{device}} üzerinde yalnızca uygulama açıkken çalışır.",
       "launchHere": "Bu {{device}} üzerindeki agentes.chat yalnızca uygulama açıkken çalışır.",
+      "launchWork": "Ajanlar yalnızca uygulama açıkken çalışır.",
       "notifySiteTitle": "Mesajlar ve istekler için haber ver",
       "notifySiteDesc": "Uygulama arka plandayken bahsetmeler, doğrudan mesajlar ve sizi bekleyenler.",
       "notifyTitle": "Bir ajan klasör istediğinde haber ver",
@@ -497,7 +498,13 @@
       "wider": "Başkalarının ajanları burada {{user}} olarak çalışır ve dosyalarınızı okuyabilir.",
       "phoneWho": "{{who}} kullanabilir",
       "signedOut": "Bu {{device}} cihazını kimlerin kullanabileceğini görmek için uygulamada {{server}} sunucusunda oturum açın.",
-      "unreachable": "{{server}} sunucusuna ulaşılamadı. Bağlantıyı kontrol edip tekrar deneyin."
+      "unreachable": "{{server}} sunucusuna ulaşılamadı. Bağlantıyı kontrol edip tekrar deneyin.",
+      "placeHere": "Bu {{device}} üzerinde",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "{{org}} için diğer seçenekler",
+      "otherWorkspace": "Başka bir çalışma alanı",
+      "otherWorkspaceDesc": "agentes.chat Cloud'daki ya da başka bir sunucudaki bir çalışma alanının da bu {{device}} üzerinde çalışmasına izin verin. Her biri kendi oturumunu korur.",
+      "addWorkspace": "Çalışma alanı ekle…"
     },
     "folders": {
       "title": "Klasörler",

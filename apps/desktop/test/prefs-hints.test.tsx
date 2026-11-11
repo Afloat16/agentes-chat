@@ -94,7 +94,7 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
     pane(
       "selfhost",
       <General />,
-      (el) => el.querySelectorAll(".dk-card").length >= 3,
+      (el) => row(el, "Name") && row(el, "Open at login"),
       (el) => {
         expect(el.querySelector(".dk-phead .dk-lead")).toBeNull();
         const behavior = [...el.querySelectorAll(".dk-card")].at(-1) as HTMLElement;
@@ -132,8 +132,8 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
         // Open at login closes This Mac's card, where agents use this computer while the app is open.
         expect(row(el, "Open at login")).toEqual({
           title: "Open at login",
-          hint: "Agents only use this Mac while the app is open.",
-          switch: "Agents only use this Mac while the app is open.",
+          hint: "Agents work only while the app is open.",
+          switch: "Agents work only while the app is open.",
           line: null,
         });
         // The computer's name and the organizations: no lines that only describe them.

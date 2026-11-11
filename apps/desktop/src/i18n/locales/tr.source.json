@@ -1100,6 +1100,9 @@
   "prefs.general.launchHere": {
     "value": "agentes.chat on this {{device}} runs only while the app is open."
   },
+  "prefs.general.launchWork": {
+    "value": "Agents work only while the app is open."
+  },
   "prefs.general.notifySiteTitle": {
     "value": "Let me know about messages and requests"
   },
@@ -1204,6 +1207,24 @@
   },
   "prefs.thisMac.unreachable": {
     "value": "Couldn't reach {{server}}. Check the connection and try again."
+  },
+  "prefs.thisMac.placeHere": {
+    "value": "On this {{device}}"
+  },
+  "prefs.thisMac.placeCloud": {
+    "value": "agentes.chat Cloud"
+  },
+  "prefs.thisMac.more": {
+    "value": "More for {{org}}"
+  },
+  "prefs.thisMac.otherWorkspace": {
+    "value": "Another workspace"
+  },
+  "prefs.thisMac.otherWorkspaceDesc": {
+    "value": "Let a workspace on agentes.chat Cloud or on another server use this {{device}} too. Each one keeps its own sign-in."
+  },
+  "prefs.thisMac.addWorkspace": {
+    "value": "Add a workspace…"
   },
   "prefs.folders.title": {
     "value": "Folders"

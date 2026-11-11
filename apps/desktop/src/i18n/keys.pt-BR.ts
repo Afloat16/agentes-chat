@@ -498,6 +498,7 @@ export const desktopPtBR = {
       launchTitle: "Abrir ao iniciar a sessão",
       launchDesc: "Os agentes só usam este {{device}} com o app aberto.",
       launchHere: "O agentes.chat neste {{device}} só roda com o app aberto.",
+      launchWork: "Os agentes só trabalham com o app aberto.",
       notifySiteTitle: "Avisar sobre mensagens e pedidos",
       notifySiteDesc: "Menções, mensagens diretas e o que espera por você, com o app em segundo plano.",
       notifyTitle: "Avisar quando um agente pedir uma pasta",
@@ -537,6 +538,13 @@ export const desktopPtBR = {
       phoneWho: "{{who}} pode usar",
       signedOut: "Entre em {{server}} no app para ver quem pode usar este {{device}}.",
       unreachable: "Não deu para falar com {{server}}. Confira a conexão e tente de novo.",
+      placeHere: "Neste {{device}}",
+      placeCloud: "agentes.chat Cloud",
+      more: "Mais opções de {{org}}",
+      otherWorkspace: "Outro workspace",
+      otherWorkspaceDesc:
+        "Deixe um workspace do agentes.chat Cloud ou de outro servidor usar este {{device}} também. Cada um mantém o próprio login.",
+      addWorkspace: "Adicionar um workspace…",
     },
     folders: {
       title: "Pastas",

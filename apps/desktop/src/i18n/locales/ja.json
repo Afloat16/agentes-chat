@@ -457,6 +457,7 @@
       "launchTitle": "ログイン時に開く",
       "launchDesc": "エージェントがこの{{device}}を使えるのは、アプリが開いている間だけです。",
       "launchHere": "この{{device}}のagentes.chatは、アプリが開いている間だけ動きます。",
+      "launchWork": "エージェントが働くのは、アプリが開いている間だけです。",
       "notifySiteTitle": "メッセージやリクエストを知らせる",
       "notifySiteDesc": "アプリがバックグラウンドにある間の、メンション、ダイレクトメッセージ、あなたの対応待ち。",
       "notifyTitle": "エージェントがフォルダを求めたら知らせる",
@@ -493,7 +494,13 @@
       "wider": "ほかの人のエージェントはここで{{user}}として実行され、あなたのファイルを読めます。",
       "phoneWho": "{{who}}が使えます",
       "signedOut": "この{{device}}を使える人を見るには、アプリで{{server}}にサインインしてください。",
-      "unreachable": "{{server}}に接続できませんでした。接続を確認して、もう一度お試しください。"
+      "unreachable": "{{server}}に接続できませんでした。接続を確認して、もう一度お試しください。",
+      "placeHere": "この{{device}}で",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "{{org}}のその他の操作",
+      "otherWorkspace": "別のワークスペース",
+      "otherWorkspaceDesc": "agentes.chat Cloud や別のサーバーのワークスペースにも、この{{device}}を使わせます。サインインはそれぞれ別のままです。",
+      "addWorkspace": "ワークスペースを追加…"
     },
     "folders": {
       "title": "フォルダ",

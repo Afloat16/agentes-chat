@@ -469,6 +469,7 @@
       "launchTitle": "Otwieraj po zalogowaniu",
       "launchDesc": "Agenci korzystają z tego urządzenia ({{device}}) tylko wtedy, gdy aplikacja jest otwarta.",
       "launchHere": "agentes.chat na tym urządzeniu ({{device}}) działa tylko wtedy, gdy aplikacja jest otwarta.",
+      "launchWork": "Agenci pracują tylko wtedy, gdy aplikacja jest otwarta.",
       "notifySiteTitle": "Powiadamiaj mnie o wiadomościach i prośbach",
       "notifySiteDesc": "Wzmianki, wiadomości bezpośrednie i to, co na ciebie czeka, gdy aplikacja działa w tle.",
       "notifyTitle": "Powiadamiaj mnie, gdy agent prosi o folder",
@@ -505,7 +506,13 @@
       "wider": "Agenci innych osób działają tu jako {{user}} i mogą czytać twoje pliki.",
       "phoneWho": "Może używać: {{who}}",
       "signedOut": "Zaloguj się w aplikacji do {{server}}, żeby zobaczyć, kto może używać tego urządzenia ({{device}}).",
-      "unreachable": "Nie udało się połączyć z {{server}}. Sprawdź połączenie i spróbuj ponownie."
+      "unreachable": "Nie udało się połączyć z {{server}}. Sprawdź połączenie i spróbuj ponownie.",
+      "placeHere": "Na tym urządzeniu ({{device}})",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "Więcej dla {{org}}",
+      "otherWorkspace": "Inna przestrzeń robocza",
+      "otherWorkspaceDesc": "Pozwól, by przestrzeń robocza w agentes.chat Cloud lub na innym serwerze też korzystała z tego urządzenia ({{device}}). Każda zachowuje własne logowanie.",
+      "addWorkspace": "Dodaj przestrzeń roboczą…"
     },
     "folders": {
       "title": "Foldery",

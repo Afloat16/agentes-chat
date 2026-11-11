@@ -498,6 +498,7 @@ export const desktopEn = {
       launchTitle: "Open at login",
       launchDesc: "Agents only use this {{device}} while the app is open.",
       launchHere: "agentes.chat on this {{device}} runs only while the app is open.",
+      launchWork: "Agents work only while the app is open.",
       notifySiteTitle: "Let me know about messages and requests",
       notifySiteDesc: "Mentions, direct messages and what waits for you, while the app is in the background.",
       notifyTitle: "Let me know when an agent asks for a folder",
@@ -536,6 +537,13 @@ export const desktopEn = {
       phoneWho: "{{who}} can use it",
       signedOut: "Sign in to {{server}} in the app to see who can use this {{device}}.",
       unreachable: "Couldn't reach {{server}}. Check the connection and try again.",
+      placeHere: "On this {{device}}",
+      placeCloud: "agentes.chat Cloud",
+      more: "More for {{org}}",
+      otherWorkspace: "Another workspace",
+      otherWorkspaceDesc:
+        "Let a workspace on agentes.chat Cloud or on another server use this {{device}} too. Each one keeps its own sign-in.",
+      addWorkspace: "Add a workspace…",
     },
     folders: {
       title: "Folders",

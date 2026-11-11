@@ -244,42 +244,49 @@ describe("pairing from the app", () => {
     );
   });
 
-  test("Preferences: a switch for every workspace signed in to; on for one not here yet pairs it", () =>
+  test("Preferences: a switch for every workspace here, Allow for one not here yet, which pairs it", () =>
     mount("prefs", <General />, async (el, host, store) => {
-      const norte = "Let Estúdio Norte's agents use this Mac";
-      await until(() => rowOf(el, norte) && rowOf(el, "Let Acme's agents use this Mac")?.querySelector(".ac-chip"));
+      const norte = "Estúdio Norte";
+      await until(() => rowOf(el, norte) && rowOf(el, "Acme")?.querySelector(".ac-chip"));
       const on = (title: string) => rowOf(el, title)?.querySelector('[role="switch"]')?.getAttribute("aria-checked");
-      expect(on("Let Acme's agents use this Mac")).toBe("true");
-      expect(on("Let Horizonte's agents use this Mac")).toBe("true");
-      expect(rowOf(el, "Let Acme's agents use this Mac")?.querySelector("small")?.textContent).toBe(
-        "Agents can use it",
+      expect(on("Acme")).toBe("true");
+      expect(on("Horizonte")).toBe("true");
+      // Where the workspace is, then its agents.
+      expect(rowOf(el, "Acme")?.querySelector("small")?.textContent).toMatch(/^agentes\.tail1234\.ts\.net · /);
+      // One not here yet: Allow, never a switch.
+      expect(rowOf(el, norte)?.querySelector('[role="switch"]')).toBeNull();
+      expect(rowOf(el, norte)?.querySelector("small")?.textContent).toBe(
+        "agentes.tail1234.ts.net · Its agents don't use this Mac",
       );
-      expect(on(norte)).toBe("false");
-      expect(rowOf(el, norte)?.querySelector("small")?.textContent).toBe("Its agents don't use this Mac");
       // agentes.chat's workspace too.
-      expect(on("Let Oficina's agents use this Mac")).toBe("false");
-      // Open at login closes the card.
+      expect(button(rowOf(el, "Oficina"), "Allow")).toBeTruthy();
+      expect(rowOf(el, "Oficina")?.querySelector("small")?.textContent).toBe(
+        "agentes.chat Cloud · Its agents don't use this Mac",
+      );
+      // Another workspace, then Open at login, close the card.
       const card = rowOf(el, norte)?.closest(".dk-card");
-      expect([...(card?.querySelectorAll(".dk-crow__title") ?? [])].at(-1)?.textContent).toBe("Open at login");
+      expect([...(card?.querySelectorAll(".dk-crow__title") ?? [])].slice(-2).map((n) => n.textContent)).toEqual([
+        "Another workspace",
+        "Open at login",
+      ]);
+      await act(async () => button(rowOf(el, "Another workspace"), "Add a workspace…")?.click());
+      expect(host.window).toBe("welcome");
 
       // Pausing one workspace pauses only its own agents.
-      await act(async () =>
-        rowOf(el, "Let Horizonte's agents use this Mac")?.querySelector<HTMLElement>('[role="switch"]')?.click(),
-      );
-      await until(() => on("Let Horizonte's agents use this Mac") === "false");
-      expect(on("Let Acme's agents use this Mac")).toBe("true");
+      await act(async () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]')?.click());
+      await until(() => on("Horizonte") === "false");
+      expect(on("Acme")).toBe("true");
 
-      // One switch at a time: the others wait for the pause to answer.
-      await until(() => !rowOf(el, norte)?.querySelector("[role=switch]")?.hasAttribute("disabled"));
+      // One at a time: the others wait for the pause to answer.
+      await until(() => !button(rowOf(el, norte), "Allow")?.hasAttribute("disabled"));
       let asked = "";
       host.askToPair = async (_server, org) => {
         asked = org;
         return true;
       };
-      await act(async () => rowOf(el, norte)?.querySelector<HTMLElement>('[role="switch"]')?.click());
+      await act(async () => button(rowOf(el, norte), "Allow")?.click());
       await until(() => pairedWith(store, "o-norte") && on(norte) === "true");
       expect(asked).toBe("Estúdio Norte");
       expect(await host.autostart()).toBe(true);
-      expect(rowOf(el, norte)?.querySelector("small")?.textContent).toBe("Agents can use it");
     }));
 });
