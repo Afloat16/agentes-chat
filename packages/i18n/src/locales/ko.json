@@ -1604,6 +1604,7 @@
     "unshown": "표시할 수 없어요",
     "more": "더 보기",
     "moreWhat": {
+      "waiting": "내 답을 기다리는 모든 것",
       "approvals": "에이전트가 허락을 구하는 일",
       "proposals": "에이전트가 변경을 제안한 내용",
       "threads": "갈라져 나온 대화와 미션",
@@ -1701,6 +1702,7 @@
     "expandNav": "사이드바 펼치기",
     "searchWorkspace": "워크스페이스 검색",
     "summary_other": "멤버 {{people}}명 · 에이전트 {{agents}}명",
+    "waiting": "내 확인 대기",
     "approvals": "승인",
     "proposals": "개선 제안",
     "issues": "작업",
@@ -3908,6 +3910,7 @@
       "team": "<b>{{name}}</b>가 팀을 제안해요 · {{what}}",
       "firstTask": "<b>{{name}}</b>가 첫 작업을 제안해요 · {{what}}",
       "more": "+{{count}}",
+      "here_other": "여기서 내 확인을 기다리는 항목 {{count}}개",
       "see": "보기"
     }
   },

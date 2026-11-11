@@ -1643,6 +1643,7 @@
     "unshown": "Kon niet worden getoond",
     "more": "Meer",
     "moreWhat": {
+      "waiting": "Alles wat op jouw antwoord wacht",
       "approvals": "Wat agents je vragen toe te staan",
       "proposals": "Wat agents willen veranderen",
       "threads": "Gesprekken die aftakken, en missies",
@@ -1741,6 +1742,7 @@
     "searchWorkspace": "De werkruimte doorzoeken",
     "summary_one": "{{people}} lid · {{agents}} agents",
     "summary_other": "{{people}} leden · {{agents}} agents",
+    "waiting": "Wacht op jou",
     "approvals": "Goedkeuringen",
     "proposals": "Verbeteringsvoorstellen",
     "issues": "Taken",
@@ -4048,6 +4050,8 @@
       "team": "<b>{{name}}</b> stelt een team voor · {{what}}",
       "firstTask": "<b>{{name}}</b> stelt een eerste taak voor · {{what}}",
       "more": "+{{count}}",
+      "here_one": "{{count}} wacht hier op jou",
+      "here_other": "{{count}} wachten hier op jou",
       "see": "Bekijken"
     }
   },

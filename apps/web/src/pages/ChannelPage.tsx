@@ -72,7 +72,9 @@ import {
   useThreadRange,
   useUpdateChannel,
   useWaiting,
+  useWaitingOnMe,
   useWikiTree,
+  type WaitingItem,
 } from "@agenteschat/client";
 import { actionCardOf } from "@agenteschat/client/lib/action-cards";
 import { barElapsed, barEntries, entriesOffScreen, runElapsed, waitsForWords } from "@agenteschat/client/lib/activity";
@@ -142,6 +144,7 @@ import { buildTimeline, lastPostedId, mergeTimeline, type TimelineItem } from "@
 import { usageWaitOf } from "@agenteschat/client/lib/usage-pause";
 import { appVia } from "@agenteschat/client/lib/via";
 import { voiceOf } from "@agenteschat/client/lib/voice";
+import { waitingAway, waitingNotification } from "@agenteschat/client/lib/waiting";
 import { barStep, showsActivity, splitCanceled } from "@agenteschat/client/lib/work";
 import {
   AffixInput,
@@ -1614,6 +1617,23 @@ function ChannelView({
   const [askRegistry] = useState(createAskRegistry);
   const asksOut = useAsksOutOfView(scroller, askRegistry, isMember);
   const seeAsk = (id: string) => showRequest(scroller.current, id, !reducedMotion);
+  // …and what waits on me here with its card not loaded (older, or in a thread): the line counts it and goes to the
+  // oldest (ADR 0172).
+  const waitingOnMe = useWaitingOnMe(org.id).data?.items;
+  const loadedIds = useMemo(
+    () => new Set(timeline.flatMap((i) => (i.kind === "message" ? [i.message.id] : []))),
+    [timeline],
+  );
+  const waitingHere = useMemo(
+    () => (isMember ? waitingAway(waitingOnMe, channel.id, thread?.id ?? null, loadedIds) : []),
+    [isMember, waitingOnMe, channel.id, thread?.id, loadedIds],
+  );
+  const openNotification = useNotificationOpener();
+  const seeWaiting = (item: WaitingItem) => {
+    const { messageId, threadId } = item.source;
+    if (messageId && (!threadId || threadId === thread?.id)) jumpTo(messageId);
+    else openNotification(waitingNotification(item), org.id);
+  };
   // A DM with an agent: its tasks (ADR 0128), a pill in the header while it has any, opening them in the side panel.
   const tasksAgentId = chrome?.dmAgentId && !thread ? chrome.dmAgentId : null;
   // Asked every 5 s: a pill beside the conversation, not the page that follows every task (3 s).
@@ -2590,6 +2610,8 @@ function ChannelView({
                             onSee={seeRun}
                             asks={asksOut}
                             onSeeAsk={seeAsk}
+                            waiting={waitingHere}
+                            onSeeWaiting={seeWaiting}
                             stoppable={stopTarget?.runId}
                             consultBlocks={consultGroups.nearEnd}
                           />
@@ -3750,6 +3772,8 @@ function ActivityBar({
   onSee,
   asks,
   onSeeAsk,
+  waiting,
+  onSeeWaiting,
   stoppable,
   consultBlocks,
 }: {
@@ -3766,6 +3790,10 @@ function ActivityBar({
   asks: PendingAsk[];
   /** "Ver" on a request: scrolls to it and lights it up. */
   onSeeAsk: (id: string) => void;
+  /** What waits on the viewer here with no card loaded, oldest first: counted when no request above speaks. */
+  waiting: WaitingItem[];
+  /** "Ver" on that count: goes to the oldest one. */
+  onSeeWaiting: (item: WaitingItem) => void;
   /** The run Esc stops (the pill shows its stop). */
   stoppable?: string;
   /** Runs whose questions a block near the end shows (`ConsultGroup`): the line doesn't say them again. */
@@ -3826,7 +3854,9 @@ function ActivityBar({
   // A request waiting for you, out of view: the bar says that instead (waiting beats working).
   const ask = asks[0];
   const askName = ask ? (dir.anyAgent(ask.agentId)?.name ?? t("channel.unknownAgent")) : "";
-  const pill = !ask && active;
+  const away = ask ? undefined : waiting[0];
+  const awayAgent = away?.asker?.type === "agent" ? dir.anyAgent(away.asker.id) : undefined;
+  const pill = !ask && !away && active;
   return (
     <>
       {coding.map((r) =>
@@ -3844,8 +3874,8 @@ function ActivityBar({
       <div
         className="ac-typing"
         aria-live="polite"
-        data-active={active || Boolean(ask)}
-        data-ask={ask ? true : undefined}
+        data-active={active || Boolean(ask) || Boolean(away)}
+        data-ask={ask || away ? true : undefined}
         data-browser={pill && openBrowser ? true : undefined}
         onClick={
           pill && openBrowser
@@ -3884,6 +3914,28 @@ function ActivityBar({
             </button>
             {/* An agent still at work keeps its stop at the end; the line stays the request. */}
             {soloAway && stoppable === soloAway.runId && <StopButton run={soloAway} onStop={stop} place="bar" />}
+          </>
+        )}
+        {away && (
+          <>
+            {awayAgent && (
+              <>
+                <ActivitySky color={colorOf(awayAgent)} />
+                <span className="ac-typing__avatars" aria-hidden="true">
+                  <span className="ac-typing__tok">
+                    <AgentAvatar agentId={awayAgent.id} size="xs" name={awayAgent.name} state="waiting" />
+                  </span>
+                </span>
+              </>
+            )}
+            <WaitMark />
+            <span className="ac-typing__text">
+              <b>{t("ask.bar.here", { count: waiting.length })}</b>
+            </span>
+            <span className="ac-typing__sep" aria-hidden="true" />
+            <button type="button" className="ac-typing__see" onClick={() => onSeeWaiting(away)}>
+              {t("ask.bar.see")}
+            </button>
           </>
         )}
         {pill && (

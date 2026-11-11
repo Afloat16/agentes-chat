@@ -1684,6 +1684,7 @@
     "unshown": "Affichage impossible",
     "more": "Plus",
     "moreWhat": {
+      "waiting": "Tout ce qui attend votre réponse",
       "approvals": "Ce que les agents vous demandent d'autoriser",
       "proposals": "Ce que les agents proposent de changer",
       "threads": "Les conversations qui partent en fil, et les missions",
@@ -1783,6 +1784,7 @@
     "summary_one": "{{people}} membre · {{agents}} agents",
     "summary_many": "{{people}} membres · {{agents}} agents",
     "summary_other": "{{people}} membres · {{agents}} agents",
+    "waiting": "Vous attend",
     "approvals": "Approbations",
     "proposals": "Propositions d'amélioration",
     "issues": "Tâches",
@@ -4160,6 +4162,9 @@
       "team": "<b>{{name}}</b> propose une équipe · {{what}}",
       "firstTask": "<b>{{name}}</b> suggère une première tâche · {{what}}",
       "more": "+{{count}}",
+      "here_one": "{{count}} vous attend ici",
+      "here_many": "{{count}} vous attendent ici",
+      "here_other": "{{count}} vous attendent ici",
       "see": "Voir"
     }
   },

@@ -1657,6 +1657,7 @@ export const ptBR = {
     unshown: "Não pôde ser exibido",
     more: "Mais",
     moreWhat: {
+      waiting: "Tudo o que espera uma resposta sua",
       approvals: "O que os agentes pedem para você liberar",
       proposals: "O que os agentes propõem mudar",
       threads: "Conversas que seguem à parte, e as missões",
@@ -1759,6 +1760,7 @@ export const ptBR = {
     searchWorkspace: "Buscar no workspace",
     summary_one: "{{people}} membro · {{agents}} agentes",
     summary_other: "{{people}} membros · {{agents}} agentes",
+    waiting: "Esperando você",
     approvals: "Aprovações",
     proposals: "Propostas de melhoria",
     issues: "Tarefas",
@@ -4179,6 +4181,9 @@ export const ptBR = {
       team: "<b>{{name}}</b> propõe um time · {{what}}",
       firstTask: "<b>{{name}}</b> sugere uma primeira tarefa · {{what}}",
       more: "+{{count}}",
+      /** What waits on me here with its card not loaded (older, or in a thread): "Ver" goes to the oldest. */
+      here_one: "{{count}} esperando você aqui",
+      here_other: "{{count}} esperando você aqui",
       see: "Ver",
     },
   },

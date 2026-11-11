@@ -1643,6 +1643,7 @@
     "unshown": "Konnte nicht angezeigt werden",
     "more": "Mehr",
     "moreWhat": {
+      "waiting": "Alles, was auf deine Antwort wartet",
       "approvals": "Was Agenten dich erlauben lassen wollen",
       "proposals": "Was Agenten ändern möchten",
       "threads": "Abzweigende Unterhaltungen und Missionen",
@@ -1741,6 +1742,7 @@
     "searchWorkspace": "Workspace durchsuchen",
     "summary_one": "{{people}} Mitglied · {{agents}} Agenten",
     "summary_other": "{{people}} Mitglieder · {{agents}} Agenten",
+    "waiting": "Wartet auf dich",
     "approvals": "Freigaben",
     "proposals": "Verbesserungsvorschläge",
     "issues": "Aufgaben",
@@ -4048,6 +4050,8 @@
       "team": "<b>{{name}}</b> schlägt ein Team vor · {{what}}",
       "firstTask": "<b>{{name}}</b> schlägt eine erste Aufgabe vor · {{what}}",
       "more": "+{{count}}",
+      "here_one": "{{count}} wartet hier auf dich",
+      "here_other": "{{count}} warten hier auf dich",
       "see": "Ansehen"
     }
   },

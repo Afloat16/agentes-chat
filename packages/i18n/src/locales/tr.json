@@ -1643,6 +1643,7 @@
     "unshown": "Gösterilemedi",
     "more": "Daha fazla",
     "moreWhat": {
+      "waiting": "Yanıtınızı bekleyen her şey",
       "approvals": "Ajanların sizden izin istedikleri",
       "proposals": "Ajanların değiştirmeyi önerdikleri",
       "threads": "Ayrılan konuşmalar ve misyonlar",
@@ -1741,6 +1742,7 @@
     "searchWorkspace": "Çalışma alanında ara",
     "summary_one": "{{people}} üye · {{agents}} ajan",
     "summary_other": "{{people}} üye · {{agents}} ajan",
+    "waiting": "Sizi bekliyor",
     "approvals": "Onaylar",
     "proposals": "İyileştirme önerileri",
     "issues": "Görevler",
@@ -4033,6 +4035,8 @@
       "team": "<b>{{name}}</b> bir ekip öneriyor · {{what}}",
       "firstTask": "<b>{{name}}</b> ilk görevi öneriyor · {{what}}",
       "more": "+{{count}}",
+      "here_one": "Burada sizi bekleyen {{count}} şey var",
+      "here_other": "Burada sizi bekleyen {{count}} şey var",
       "see": "Gör"
     }
   },

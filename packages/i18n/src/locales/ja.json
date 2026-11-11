@@ -1604,6 +1604,7 @@
     "unshown": "表示できませんでした",
     "more": "その他",
     "moreWhat": {
+      "waiting": "あなたの返事を待っているものすべて",
       "approvals": "エージェントからの許可のお願い",
       "proposals": "エージェントが変更を提案している内容",
       "threads": "枝分かれした会話とミッション",
@@ -1701,6 +1702,7 @@
     "expandNav": "サイドバーを展開",
     "searchWorkspace": "ワークスペースを検索",
     "summary_other": "メンバー{{people}}人 · エージェント{{agents}}体",
+    "waiting": "あなたの対応待ち",
     "approvals": "承認",
     "proposals": "改善提案",
     "issues": "タスク",
@@ -3910,6 +3912,7 @@
       "team": "<b>{{name}}</b>がチームを提案しています · {{what}}",
       "firstTask": "<b>{{name}}</b>が最初のタスクを提案しています · {{what}}",
       "more": "+{{count}}",
+      "here_other": "ここであなたの対応待ち{{count}}件",
       "see": "見る"
     }
   },

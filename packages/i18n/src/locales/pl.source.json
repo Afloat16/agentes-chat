@@ -4013,6 +4013,9 @@
   "shell.more": {
     "value": "More"
   },
+  "shell.moreWhat.waiting": {
+    "value": "Everything waiting for your answer"
+  },
   "shell.moreWhat.approvals": {
     "value": "What agents ask you to allow"
   },
@@ -4291,6 +4294,9 @@
       "one": "{{people}} member · {{agents}} agents",
       "other": "{{people}} members · {{agents}} agents"
     }
+  },
+  "shell.waiting": {
+    "value": "Waiting on you"
   },
   "shell.approvals": {
     "value": "Approvals"
@@ -9956,6 +9962,12 @@
   },
   "ask.bar.more": {
     "value": "+{{count}}"
+  },
+  "ask.bar.here": {
+    "value": {
+      "one": "{{count}} waiting on you here",
+      "other": "{{count}} waiting on you here"
+    }
   },
   "ask.bar.see": {
     "value": "See"
