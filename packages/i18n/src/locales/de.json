@@ -1958,7 +1958,8 @@
       "emptyViewer": "Wer die Agenten verwaltet, fügt sie zu Kanälen hinzu, und die Karte erscheint hier.",
       "others": "Andere Kanäle",
       "band": "Supervisoren",
-      "reportsTo": "Berichtet an {{name}}"
+      "reportsTo": "Berichtet an {{name}}",
+      "short": "Wer sich um jeden Agenten kümmert und wo er arbeitet."
     },
     "sectors": {
       "lead": "Jede Abteilung hat eine Leitung, eine Vertretung, ihre Agenten und deren Kanäle und Routinen.",
@@ -2792,7 +2793,7 @@
       "gemini": {
         "title": "Dein Gemini-Abo",
         "tiers": "Google AI Pro, Google AI Ultra oder Gemini Enterprise",
-        "warning": "Google sagt, dass die Nutzung eines privaten Gemini-Abos in anderen Apps zur Sperrung des Kontos führen kann. Um dieses Risiko zu vermeiden, nutze einen API-Schlüssel oder Gemini Enterprise."
+        "warning": "Google sagt, dass die Nutzung eines privaten Gemini-Abos in anderen Apps zur Sperrung des Kontos führen kann."
       },
       "zen": {
         "title": "OpenCode",
@@ -7344,7 +7345,8 @@
         "bad_signature": "Abgelehnt: falsche Signatur",
         "too_large": "Abgelehnt: über 256 KB",
         "rate_limited": "Abgelehnt: zu viele Aufrufe pro Minute"
-      }
+      },
+      "newShort": "Die Routine bekommt eine eigene Adresse."
     },
     "setup": {
       "title": "{{provider}}-Webhook",
@@ -7539,7 +7541,9 @@
     "ownActions": {
       "hint": "Jeder Lauf erledigt das in deinen verbundenen Apps, ohne zu fragen. Jede andere Aktion dort fragt zuerst eine Person, und Merge, Deploy und Rollback fragen immer.",
       "none": "In verbundenen Apps fragt sie vor jeder Aktion eine Person. Damit sie ihre Aufgabe selbst erledigt, sag dem Agenten im Chat, welche Aktionen sie ausführen darf.",
-      "remove": "Wieder vorher fragen: {{action}}"
+      "remove": "Wieder vorher fragen: {{action}}",
+      "hintShort": "Jeder Lauf erledigt das, ohne zu fragen.",
+      "noneShort": "Sie fragt vor jeder Aktion eine Person."
     },
     "ahead": {
       "approved": "Freigegeben · läuft {{when}}",
@@ -9251,7 +9255,7 @@
     "undoUpdate": "Update rückgängig machen",
     "undone": "{{name}} ist zurück auf Version {{version}}.",
     "agentsImprove": "Agenten verbessern Skills selbst",
-    "agentsImproveHelp": "Findet ein Agent einen Skill falsch oder ohne einen Schritt, korrigiert er ihn sofort: eine neue Version, die du rückgängig machen kannst, und wer den Skill erstellt hat, erfährt es. Änderungen an Skripten warten auf jemanden, der Skills verwaltet.",
+    "agentsImproveHelp": "Findet ein Agent einen Skill falsch oder ohne einen Schritt, korrigiert er ihn sofort: eine neue Version, die du rückgängig machen kannst, und wer den Skill erstellt hat, erfährt es.",
     "agentsImproveThis": "Agenten verbessern diesen Skill selbst",
     "agentChange": "{{agent}} hat ihn geändert {{when}}",
     "undoAgentChange": "Änderung rückgängig machen",
@@ -9591,7 +9595,9 @@
       "only": "{{name}} antwortet nur {{names}}.",
       "some": "{{name}} antwortet nur einigen Personen.",
       "nobody": "{{name}} antwortet gerade niemandem."
-    }
+    },
+    "agentsToo": "Gilt auch für Agenten.",
+    "peopleOnly": "Gilt nur für Personen."
   },
   "composer": {
     "commands": "Befehle",
@@ -10396,7 +10402,7 @@
     "ask": {
       "button": "Einen Agenten bitten",
       "title": "Einen Agenten bitten",
-      "text": "Die Bitte geht in deine Unterhaltung mit dem Agenten, mit dem Link zur Seite. Er bearbeitet mit den Wiki-Werkzeugen, und die Version steht im Verlauf als auf deine Bitte.",
+      "text": "Die Bitte geht in deine Unterhaltung mit dem Agenten, mit dem Link zur Seite.",
       "agent": "Agent",
       "what": "Was soll sich ändern?",
       "placeholder": "Z. B. aktualisiere sie mit der Preiserhöhung 2027",
@@ -10509,7 +10515,8 @@
         "empty": "Keine .md-Notizen gefunden. Sende die .zip des Vault-Ordners, den Ordner oder .md-Dateien.",
         "too_big": "Der Vault ist größer als 500 MB. Sende ihn ohne die großen Anhänge oder in Teilen.",
         "unreadable": "Die Datei konnte nicht gelesen werden. Ist es eine .zip des Vaults?"
-      }
+      },
+      "howToLabel": "So erstellst du die .zip"
     },
     "save": "Im Wiki speichern",
     "saveTitle": "Im Wiki speichern",
@@ -11250,7 +11257,7 @@
   },
   "githubApp": {
     "title": "GitHub-Repositories",
-    "text": "Wo die agentes.chat-App installiert ist, öffnen Agenten Pull Requests, Issues, Kommentare und Commits als die App, mit dem Namen des Agenten und der Person, die gefragt hat. Was du von hier installierst, nutzt nur {{org}}.",
+    "text": "Wo die agentes.chat-App installiert ist, öffnen Agenten Pull Requests, Issues, Kommentare und Commits als die App, mit dem Namen des Agenten und der Person, die gefragt hat.",
     "install": "agentes.chat-App installieren",
     "installMore": "Auf einem weiteren Konto installieren",
     "none": "Noch kein GitHub-Konto.",
@@ -11325,7 +11332,8 @@
       "none": "Keine Repositorys ausgewählt. Jeder Merge fragt nach Freigabe.",
       "help": "In diesen Repositorys läuft ein Merge ohne Freigabekarte, steht im Audit und hinterlässt einen Beleg in der Unterhaltung. Alles andere Sensible fragt weiter nach.",
       "dialogTitle": "Wo {{name}} ohne Nachfrage mergt",
-      "dialogDesc": "Nur Repositorys, die bereits genutzt werden. Ein Merge an jedem anderen Ort fragt nach Freigabe."
+      "dialogDesc": "Nur Repositorys, die bereits genutzt werden. Ein Merge an jedem anderen Ort fragt nach Freigabe.",
+      "short": "In diesen Repositorys läuft ein Merge ohne Freigabekarte."
     },
     "label": "Welche Repositorys",
     "all": "Alle Repositorys",
@@ -12251,7 +12259,8 @@
       "added": "Jetzt auch: {{names}}.",
       "removed": "Nicht mehr: {{names}}.",
       "same": "Bei den Organisationen hat sich nichts geändert.",
-      "failed": "Die Organisationen konnten gerade nicht gelesen werden."
+      "failed": "Die Organisationen konnten gerade nicht gelesen werden.",
+      "short": "GitHub fragt nur beim ersten Mal nach Organisationen."
     },
     "composioHelp": "Du meldest dich auf der Seite von Composio an, auf Englisch, und kommst hierher zurück. {{name}} zeigt die Berechtigung als „Composio“ an.",
     "or": "oder",
@@ -12455,7 +12464,8 @@
       "timeout": "Zeitlimit pro Abfrage",
       "timeoutHelp": "Eine Abfrage, die länger dauert, wird abgebrochen, damit sie die Datenbank nicht belastet.",
       "seconds_one": "{{count}} Sekunde",
-      "seconds_other": "{{count}} Sekunden"
+      "seconds_other": "{{count}} Sekunden",
+      "hiddenExample": "tabelle.spalte, zum Beispiel kunden.\"Steuer-ID\""
     },
     "agent": {
       "title": "Datenbanken",
@@ -12509,7 +12519,7 @@
     "address": "E-Mail-Adresse",
     "addressPlaceholder": "du@firma.de",
     "addressInvalid": "Gib eine gültige E-Mail-Adresse ein, etwa du@firma.de.",
-    "icloudHint": "Nutze deine iCloud-Mail-Adresse, etwa name@icloud.com, auch wenn dein Apple Account {{name}} verwendet. Auf dem iPhone findest du sie unter Einstellungen › dein Name › iCloud › iCloud Mail, oder auf icloud.com/mail.",
+    "icloudHint": "Nutze deine iCloud-Mail-Adresse, etwa name@icloud.com, auch wenn dein Apple Account {{name}} verwendet.",
     "password": "App-Passwort",
     "passwordHelp": "Verschlüsselt auf dem Server gespeichert. Niemand sieht es wieder.",
     "passwordInvalid": "Füge das App-Passwort ein.",
@@ -12626,7 +12636,8 @@
       "newFrom": "Neue E-Mails gehen raus von",
       "newFromHelp": "Antworten gehen immer von der Adresse raus, an die die E-Mail ging.",
       "later": "Du kannst das später unter Adressen ändern.",
-      "saved": "Adressen von {{address}} gespeichert."
+      "saved": "Adressen von {{address}} gespeichert.",
+      "short": "Agenten antworten von der Adresse, an die die E-Mail ging."
     },
     "agent": {
       "title": "E-Mail",
@@ -12717,7 +12728,8 @@
       "every": "Läuft für jede neue E-Mail, die durch die Filter kommt.",
       "needsReconnect": "Muss neu verbunden werden",
       "error": "Schlägt fehl"
-    }
+    },
+    "toolsShort": "Wähle, was Agenten mit diesem Postfach tun."
   },
   "searchPage": {
     "title": "Workspace durchsuchen",
@@ -15057,7 +15069,8 @@
       "old": "{{brand}}, aus der Zeit vor den Konten",
       "oldSub": "Verbrauch von vor der Erfassung des Kontos",
       "ofMonth": "{{percent}} des Monats",
-      "shareLabel": "{{source}}: {{percent}} des Monats"
+      "shareLabel": "{{source}}: {{percent}} des Monats",
+      "estimateShort": "Eine Schätzung."
     }
   },
   "budget": {
@@ -16480,7 +16493,7 @@
   "deleteOrg": {
     "card": {
       "title": "Workspace löschen",
-      "text": "Schließt {{name}} sofort für alle. Nach 7 Tagen wird er endgültig gelöscht.",
+      "text": "Schließt {{name}} jetzt für alle und löscht ihn in 7 Tagen.",
       "button": "Workspace löschen…"
     },
     "title": "{{name}} löschen?",
@@ -16535,10 +16548,9 @@
   "deleteAccount": {
     "menu": "Konto löschen",
     "card": {
-      "text": "Du verlässt jeden Workspace und dein Konto wird 7 Tage später endgültig gelöscht. Bis dahin kannst du es wiederherstellen.",
+      "text": "Löscht dein Konto in 7 Tagen, in allen Workspaces.",
       "button": "Konto löschen…",
-      "oneWorkspace": "Möchtest du nur diesen Workspace löschen? Das geht unter Allgemein.",
-      "leaveWorkspace": "Möchtest du nur diesen Workspace verlassen? Das geht unter Mitglieder."
+      "title": "Löschen"
     },
     "title": "Dein ganzes Konto löschen?",
     "intro": "Damit löschst du dein ganzes Konto, nicht nur einen Workspace.",
@@ -17310,7 +17322,8 @@
       "textRoutine": "Die Routine von {{name}}, die es aktualisiert, stoppt, und sein Aktualisierungsverlauf verschwindet mit ihm.",
       "textManual": "Sein Aktualisierungsverlauf verschwindet mit ihm.",
       "confirm": "Entfernen"
-    }
+    },
+    "exposureShort": "Wer das Dashboard sieht, sieht diese Daten."
   },
   "agentPicker": {
     "search": "Agenten suchen",

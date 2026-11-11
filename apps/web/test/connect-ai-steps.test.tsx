@@ -438,6 +438,32 @@ describe("Conectar uma IA: one picker, plans first", () => {
     expect(screen().queryByRole("dialog")).toBeNull();
   });
 
+  test("the scene over the choice: the team asleep, their computer and the AIs' marks, the picked one alone lit", async () => {
+    const { dialog, choose } = await connect();
+    const scene = dialog.querySelector(".connect-scene") as HTMLElement;
+    // Decoration: what it says is said by the dialog's words.
+    expect(scene.getAttribute("aria-hidden")).toBe("true");
+    expect(dialog.querySelector(".ac-dialog__body")?.firstElementChild).toBe(scene);
+    const faces = scene.querySelectorAll(".team-scene__agent");
+    expect(faces.length).toBeGreaterThan(0);
+    expect(faces.length).toBeLessThanOrEqual(3);
+    expect(scene.querySelector(".team-scene__cast")?.hasAttribute("data-awake")).toBe(false);
+    expect(scene.querySelector(".ac-computer")?.getAttribute("data-state")).toBe("paused");
+    const marks = () => Array.from(scene.querySelectorAll(".connect-scene__marks .ac-brand"));
+    expect(marks().map((m) => m.getAttribute("data-mark"))).toEqual(["claude", "openai", "gemini"]);
+    expect(marks().filter((m) => m.classList.contains("ac-brand--off"))).toEqual([]);
+    // The pixels walk from the marks to the team: two trails, counted from the AI's side.
+    const trails = Array.from(scene.querySelectorAll(".team-scene__trail"));
+    expect(trails.map((t) => t.getAttribute("data-state"))).toEqual(["walk", "walk"]);
+    expect(
+      Array.from(scene.querySelectorAll<HTMLElement>(".team-scene__trail i")).map((i) =>
+        i.style.getPropertyValue("--n"),
+      ),
+    ).toEqual(["9", "8", "7", "6", "5", "4", "3", "2", "1", "0"]);
+    await choose("ChatGPT");
+    expect(marks().map((m) => m.classList.contains("ac-brand--off"))).toEqual([true, false, true]);
+  });
+
   test("ChatGPT: first its settings, then a sign-in that starts only on its button; switching tiles starts nothing", async () => {
     const { state, dialog, choose } = await connect();
     await choose("ChatGPT");
@@ -540,8 +566,7 @@ describe("Conectar uma IA: one picker, plans first", () => {
     await choose("Gemini");
     const panel = within(dialog).getByRole("region", { name: "Seu plano do Gemini" });
     expect(panel.textContent).toContain("Google AI Pro, Google AI Ultra ou Gemini Enterprise");
-    const warning =
-      "O Google diz que usar um plano pessoal do Gemini dentro de outros apps pode suspender a conta. Para não correr esse risco, use uma chave de API ou o Gemini Enterprise.";
+    const warning = "O Google diz que usar um plano pessoal do Gemini dentro de outros apps pode suspender a conta.";
     expect(shownText(panel)).toContain(warning);
     await click(within(panel).getByRole("button", { name: "Usar o Gemini Enterprise" }));
     expect(shownText(panel)).not.toContain(warning);

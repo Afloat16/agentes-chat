@@ -1902,7 +1902,8 @@
       "emptyViewer": "管理智能体的成员把它们加入频道后，地图会显示在这里。",
       "others": "其他频道",
       "band": "主管",
-      "reportsTo": "向 {{name}} 汇报"
+      "reportsTo": "向 {{name}} 汇报",
+      "short": "谁负责每个智能体，以及它在哪里工作。"
     },
     "sectors": {
       "lead": "每个部门都有负责人、替补、智能体，以及它们的频道和例行工作。",
@@ -2688,7 +2689,7 @@
       "gemini": {
         "title": "你的 Gemini 套餐",
         "tiers": "Google AI Pro、Google AI Ultra 或 Gemini Enterprise",
-        "warning": "Google 表示，在其他应用中使用个人 Gemini 套餐可能导致账号被停用。为避免这个风险，请使用 API 密钥或 Gemini Enterprise。"
+        "warning": "Google 表示，在其他应用中使用个人 Gemini 套餐可能导致账号被停用。"
       },
       "zen": {
         "title": "OpenCode",
@@ -7140,7 +7141,8 @@
         "bad_signature": "已拒绝：签名错误",
         "too_large": "已拒绝：超过 256 KB",
         "rate_limited": "已拒绝：每分钟调用次数过多"
-      }
+      },
+      "newShort": "例行工作会获得一个专属地址。"
     },
     "setup": {
       "title": "{{provider}} Webhook",
@@ -7330,7 +7332,9 @@
     "ownActions": {
       "hint": "每次运行都会在你已连接的应用中直接执行这些操作，无需询问。其中的其他操作会先请人审批，合并、部署和回滚始终需要审批。",
       "none": "在已连接的应用中，每个操作前都会先请人审批。若要让它自动完成工作，请在聊天中告诉智能体可以执行哪些操作。",
-      "remove": "之前再次询问：{{action}}"
+      "remove": "之前再次询问：{{action}}",
+      "hintShort": "每次运行都会直接执行这些操作，无需询问。",
+      "noneShort": "每个操作前都会先请人审批。"
     },
     "ahead": {
       "approved": "已批准 · {{when}}运行",
@@ -8936,7 +8940,7 @@
     "undoUpdate": "撤销更新",
     "undone": "{{name}} 已回到版本 {{version}}。",
     "agentsImprove": "智能体自行改进技能",
-    "agentsImproveHelp": "智能体发现技能有误或缺少步骤时，会立即修正：生成一个可撤销的新版本，并通知技能的创建者。脚本的改动要等管理技能的人处理。",
+    "agentsImproveHelp": "智能体发现技能有误或缺少步骤时，会立即修正：生成一个可撤销的新版本，并通知技能的创建者。",
     "agentsImproveThis": "智能体自行改进此技能",
     "agentChange": "{{agent}} {{when}}修改了它",
     "undoAgentChange": "撤销修改",
@@ -9284,7 +9288,9 @@
       "some_female": "{{name}} 只回复部分成员。",
       "nobody": "{{name}} 目前不回复任何人。",
       "nobody_female": "{{name}} 目前不回复任何人。"
-    }
+    },
+    "agentsToo": "这也适用于智能体。",
+    "peopleOnly": "这只适用于人。"
   },
   "composer": {
     "commands": "命令",
@@ -10068,7 +10074,7 @@
     "ask": {
       "button": "请智能体修改",
       "title": "请智能体修改",
-      "text": "请求会连同页面链接一起发到你和智能体的对话里。智能体用Wiki工具编辑，这个版本会在历史中记为应你的请求所改。",
+      "text": "请求会连同页面链接一起发到你和智能体的对话里。",
       "agent": "智能体",
       "what": "要改什么？",
       "placeholder": "例如：按 2027 年的涨价更新",
@@ -10157,7 +10163,8 @@
         "empty": "没有找到 .md 笔记。请发送仓库文件夹的 .zip、文件夹本身或 .md 文件。",
         "too_big": "仓库超过 500 MB。请去掉大附件后再发送，或分批发送。",
         "unreadable": "无法读取文件。这是仓库的 .zip 吗？"
-      }
+      },
+      "howToLabel": "如何制作 .zip"
     },
     "save": "保存到 Wiki",
     "saveTitle": "保存到 Wiki",
@@ -10869,7 +10876,7 @@
   },
   "githubApp": {
     "title": "GitHub 仓库",
-    "text": "在安装了 agentes.chat 应用的地方，智能体以应用的身份提交 pull request、issue、评论和 commit，并附上智能体的名字和提出请求的人。从这里安装的内容只有 {{org}} 使用。",
+    "text": "在安装了 agentes.chat 应用的地方，智能体以应用的身份提交 pull request、issue、评论和 commit，并附上智能体的名字和提出请求的人。",
     "install": "安装 agentes.chat 应用",
     "installMore": "安装到另一个账号",
     "none": "还没有 GitHub 账号。",
@@ -10944,7 +10951,8 @@
       "none": "未选择仓库。每次合并都需要审批。",
       "help": "在这些仓库中，合并无需审批卡片，会记入审计，并在对话中留下回执。其他敏感操作仍会询问。",
       "dialogTitle": "{{name}}可不经询问直接合并的位置",
-      "dialogDesc": "仅限已在使用的仓库。在其他位置合并需要审批。"
+      "dialogDesc": "仅限已在使用的仓库。在其他位置合并需要审批。",
+      "short": "在这些仓库中，合并无需审批卡片。"
     },
     "label": "哪些仓库",
     "all": "所有仓库",
@@ -11842,7 +11850,8 @@
       "added": "现在还包括：{{names}}。",
       "removed": "不再包括：{{names}}。",
       "same": "组织没有变化。",
-      "failed": "现在无法读取组织。"
+      "failed": "现在无法读取组织。",
+      "short": "GitHub 只在第一次询问组织。"
     },
     "composioHelp": "你会在 Composio 的英文页面上登录，然后回到这里。{{name}} 会把这项权限显示为“Composio”。",
     "or": "或",
@@ -12037,7 +12046,8 @@
       "capHelpAll": "留空 = 不限。按所有数据库合计。",
       "timeout": "每次查询的时间上限",
       "timeoutHelp": "超时的查询会被取消，以免给数据库造成负担。",
-      "seconds_other": "{{count}} 秒"
+      "seconds_other": "{{count}} 秒",
+      "hiddenExample": "格式为“表.列”，例如 customers.\"Tax ID\""
     },
     "agent": {
       "title": "数据库",
@@ -12090,7 +12100,7 @@
     "address": "邮箱地址",
     "addressPlaceholder": "you@company.com",
     "addressInvalid": "请输入有效的邮箱，比如 you@company.com。",
-    "icloudHint": "请使用你的 iCloud 邮件地址，比如 name@icloud.com，即使你的 Apple 账户使用的是 {{name}}。在 iPhone 上，它位于 设置 › 你的名字 › iCloud › iCloud 邮件，也可以访问 icloud.com/mail 查看。",
+    "icloudHint": "请使用你的 iCloud 邮件地址，比如 name@icloud.com，即使你的 Apple 账户使用的是 {{name}}。",
     "password": "应用专用密码",
     "passwordHelp": "在服务器上加密存储。之后谁也看不到。",
     "passwordInvalid": "请粘贴应用专用密码。",
@@ -12207,7 +12217,8 @@
       "newFrom": "新邮件的发件地址",
       "newFromHelp": "回复始终从收到邮件的那个地址发出。",
       "later": "之后你可以在“地址”中更改。",
-      "saved": "{{address}} 的地址已保存。"
+      "saved": "{{address}} 的地址已保存。",
+      "short": "智能体会用收到邮件的那个地址回复。"
     },
     "agent": {
       "title": "邮箱",
@@ -12295,7 +12306,8 @@
       "every": "每收到一封符合筛选条件的新邮件就运行一次。",
       "needsReconnect": "需要重新连接",
       "error": "运行失败"
-    }
+    },
+    "toolsShort": "选择智能体可以用这个邮箱做什么。"
   },
   "searchPage": {
     "title": "搜索工作区",
@@ -14597,7 +14609,8 @@
       "old": "{{brand}}，在启用账号之前",
       "oldSub": "记录账号之前的用量",
       "ofMonth": "本月的 {{percent}}",
-      "shareLabel": "{{source}}：本月的 {{percent}}"
+      "shareLabel": "{{source}}：本月的 {{percent}}",
+      "estimateShort": "这是估算值。"
     }
   },
   "budget": {
@@ -16062,7 +16075,7 @@
   "deleteOrg": {
     "card": {
       "title": "删除工作区",
-      "text": "立即为所有人关闭 {{name}}，7 天后永久删除。",
+      "text": "现在对所有人关闭 {{name}}，并在 7 天后删除。",
       "button": "删除工作区…"
     },
     "title": "删除 {{name}}？",
@@ -16117,10 +16130,9 @@
   "deleteAccount": {
     "menu": "删除账号",
     "card": {
-      "text": "你会退出所有工作区，账号将在 7 天后被永久删除。在那之前可以恢复。",
+      "text": "7 天后在所有工作区中删除你的账号。",
       "button": "删除账号…",
-      "oneWorkspace": "只想删除这个工作区？在“常规”里。",
-      "leaveWorkspace": "只想退出这个工作区？在“成员”里。"
+      "title": "删除"
     },
     "title": "删除你的整个账号？",
     "intro": "这会删除你的整个账号，而不只是一个工作区。",
@@ -16934,7 +16946,8 @@
       "textRoutine": "负责更新它的 {{name}} 的例行工作会停止，更新历史也会一起移除。",
       "textManual": "更新历史也会一起移除。",
       "confirm": "移除"
-    }
+    },
+    "exposureShort": "能看到仪表盘的人，就能看到这些数据。"
   },
   "agentPicker": {
     "search": "搜索智能体",

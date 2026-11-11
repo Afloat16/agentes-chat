@@ -2043,6 +2043,8 @@ export const en = {
     /** The team map: people on top, a column per channel, the right hand below. */
     map: {
       lead: "Who looks after the agents, the channels they are in, what each one does on its own and what waits for a person. Dashed lines are agents that asked each other in the last day.",
+      /** The one line over the map, with `lead` behind its ⓘ. */
+      short: "Who looks after each agent and where it works.",
       lodi: "Organizes the team with you",
       hint: "Drag an agent to another channel and {{name}} prepares the change for you to apply",
       proposed: "{{name}} prepared the change in your conversation. Apply it there.",
@@ -2960,8 +2962,7 @@ export const en = {
         title: "Your Gemini plan",
         tiers: "Google AI Pro, Google AI Ultra or Gemini Enterprise",
         /** Shown plainly wherever a personal Gemini plan is connected or chosen: Google's own rule for consumer plans. */
-        warning:
-          "Google says using a personal Gemini plan inside other apps can get the account suspended. To avoid that risk, use an API key or Gemini Enterprise.",
+        warning: "Google says using a personal Gemini plan inside other apps can get the account suspended.",
       },
       /** OpenCode's CLI (ADR 0132): its free models with no sign-in, or a key from OpenCode's console. */
       zen: { title: "OpenCode", tiers: "Free models, or your OpenCode key" },
@@ -7536,6 +7537,8 @@ export const en = {
       every: "Runs on every call. Calls that arrive together become one run.",
       newNote:
         "The routine gets an address of its own. Every POST to it starts the agent with what was sent. The address shows on the routine's page once it is saved.",
+      /** The one line a screen shows, with `newNote` behind its ⓘ. */
+      newShort: "The routine gets an address of its own.",
       hidden: "Only who can change the routine sees its address.",
       methods: "Accepted methods",
       methodsHelp:
@@ -7757,6 +7760,9 @@ export const en = {
     ownActions: {
       hint: "Every run does these in your connected apps without asking. Any other action there asks a person first, and merge, deploy and rollback always ask.",
       none: "In connected apps it asks a person before each action. To let it do its job on its own, tell the agent in the chat which actions it may do.",
+      /** The one line a screen shows, with `hint` (or `none`) behind its ⓘ. */
+      hintShort: "Every run does these without asking.",
+      noneShort: "It asks a person before each action.",
       /** Screen reader name of the button that takes one action out of the routine's list. */
       remove: "Ask again before: {{action}}",
     },
@@ -9391,7 +9397,7 @@ export const en = {
     undone: "{{name}} is back to version {{version}}.",
     agentsImprove: "Agents improve skills by themselves",
     agentsImproveHelp:
-      "When an agent finds a skill wrong or missing a step, it fixes it right away: a new version you can undo, and whoever made the skill is told. Changes to scripts wait for someone who manages skills.",
+      "When an agent finds a skill wrong or missing a step, it fixes it right away: a new version you can undo, and whoever made the skill is told.",
     agentsImproveThis: "Agents improve this skill by themselves",
     agentChange: "{{agent}} changed it {{when}}",
     undoAgentChange: "Undo change",
@@ -9690,6 +9696,9 @@ export const en = {
     section: "Who can talk",
     title: "Who can talk to {{name}}",
     notListed: "People not on the list get no reply.",
+    /** After `notListed`, with the matching `agents.*` sentence behind its ⓘ. */
+    agentsToo: "This covers agents too.",
+    peopleOnly: "This covers people only.",
     consultable: "Other agents can consult {{name}}",
     consultableHint:
       "For people not on the list, he answers only the agent that asked, never them directly. Sensitive actions still need approval from the people who look after him.",
@@ -10525,7 +10534,7 @@ export const en = {
     ask: {
       button: "Ask an agent",
       title: "Ask an agent",
-      text: "The request goes to your conversation with the agent, with a link to the page. It edits with the wiki tools, and the version shows in the history as done at your request.",
+      text: "The request goes to your conversation with the agent, with a link to the page.",
       agent: "Agent",
       what: "What should change?",
       placeholder: "E.g. update it with the 2027 price increase",
@@ -10546,6 +10555,8 @@ export const en = {
       pickFolder: "Choose folder",
       howTo:
         "To make the .zip: in Finder, right-click the vault folder → Compress. On Windows, Send to → Compressed folder. The .obsidian folder (plugins and themes) is left out.",
+      /** The label whose ⓘ holds `howTo`. */
+      howToLabel: "How to make the .zip",
       nothingYet: "Nothing goes in before you review it.",
       readingText: "Only in your browser for now. Nothing has been sent yet.",
       notesRead: "notes read",
@@ -11392,7 +11403,7 @@ export const en = {
   },
   githubApp: {
     title: "GitHub repositories",
-    text: "Where the agentes.chat app is installed, agents open pull requests, issues, comments and commits as the app, with the agent's name and who asked. Only {{org}} uses what you install from here.",
+    text: "Where the agentes.chat app is installed, agents open pull requests, issues, comments and commits as the app, with the agent's name and who asked.",
     install: "Install the agentes.chat app",
     installMore: "Install on another account",
     none: "No GitHub account yet.",
@@ -11490,6 +11501,8 @@ export const en = {
       label: "Can merge without asking",
       none: "No repositories chosen. Every merge asks for approval.",
       help: "In these repositories a merge runs with no approval card, goes in the audit and leaves a receipt in the conversation. Everything else that's sensitive still asks.",
+      /** The one line a screen shows, with `help` behind its ⓘ. */
+      short: "In these repositories a merge runs with no approval card.",
       dialogTitle: "Where {{name}} merges without asking",
       dialogDesc: "Only repositories it already uses. A merge anywhere else asks for approval.",
     },
@@ -12227,6 +12240,8 @@ export const en = {
       title: "Organizations it reaches",
       none: "No organization yet.",
       lead: "GitHub asks about organizations only the first time. To add one, open the app's page there and press Grant beside it. If you don't own it, the button says Request and an owner approves.",
+      /** The one line a screen shows, with `lead` behind its ⓘ. */
+      short: "GitHub asks about organizations only the first time.",
       open: "Grant organizations on GitHub",
       added: "Now also: {{names}}.",
       removed: "No longer: {{names}}.",
@@ -12434,6 +12449,8 @@ export const en = {
       hidden: "Columns it never sees",
       hiddenHelp:
         'table.column, with names that have capitals, spaces or symbols in double quotes (customers."Tax ID"). We already hid the ones that look like personal data or passwords.',
+      /** The example under the field, with `hiddenHelp` behind its ⓘ. */
+      hiddenExample: 'table.column, like customers."Tax ID"',
       hiddenPlaceholder: "customers.cpf",
       hiddenInvalid:
         'Type table.column (or schema.table.column), with "double quotes" around names that have capitals, spaces or symbols.',
@@ -12479,8 +12496,7 @@ export const en = {
     address: "Email address",
     addressPlaceholder: "you@company.com",
     addressInvalid: "Type a valid email, like you@company.com.",
-    icloudHint:
-      "Use your iCloud Mail address, like name@icloud.com, even if your Apple Account uses {{name}}. On an iPhone it's in Settings\u00a0›\u00a0your name\u00a0›\u00a0iCloud\u00a0›\u00a0iCloud Mail, or see icloud.com/mail.",
+    icloudHint: "Use your iCloud Mail address, like name@icloud.com, even if your Apple Account uses {{name}}.",
     password: "App password",
     passwordHelp: "Stored encrypted on the server. Nobody sees it again.",
     passwordInvalid: "Paste the app password.",
@@ -12531,6 +12547,8 @@ export const en = {
     rulesSend: "What it sends",
     toolsLead:
       "What agents can do in {{name}}. Turn off what no agent should do, or ask for approval for drafts and organizing too. Sending, replying and forwarding always ask for approval in the chat, showing who it goes to and the text.",
+    /** The one line a screen shows, with `toolsLead` behind its ⓘ. */
+    toolsShort: "Choose what agents do with this email.",
     group: {
       read: "Reads",
       write: "Writes",
@@ -12560,6 +12578,8 @@ export const en = {
       buttonName: "Addresses of {{name}}",
       title: "Addresses of {{address}}",
       lead: "Agents reply from the address the email was sent to. If this mailbox also gets email at other addresses, like your own domain or an alias, add them here.",
+      /** The one line a screen shows, with `lead` behind its ⓘ. */
+      short: "Agents reply from the address the email was sent to.",
       main: "Main address: {{address}}",
       others: "Other addresses of this mailbox",
       othersHelp: "Aliases and your own domains, like hello@yourcompany.com.",
@@ -15037,6 +15057,8 @@ export const en = {
       part: "{{name}}'s part: ≈ {{percent}}",
       estimate:
         "{{name}}'s part is the stronger stretch of each bar. {{brand}} only tells how much the whole account used, so each agent's part is an estimate from what it spent.",
+      /** The one word a screen shows, with `estimate` behind its ⓘ. */
+      estimateShort: "An estimate.",
       byAccount: "By account, this month",
       until: "until {{date}}",
       nowTag: "now",
@@ -16592,7 +16614,7 @@ export const en = {
   deleteOrg: {
     card: {
       title: "Delete workspace",
-      text: "Closes {{name}} for everyone now. It's deleted for good after 7 days.",
+      text: "Closes {{name}} for everyone now and deletes it in 7 days.",
       button: "Delete workspace…",
     },
     title: "Delete {{name}}?",
@@ -16660,12 +16682,10 @@ export const en = {
     menu: "Delete account",
     /** Sua conta's last card: its title is `menu`. */
     card: {
-      text: "You leave every workspace and your account is deleted for good 7 days later. You can restore it until then.",
+      text: "Deletes your account in 7 days, in every workspace.",
       button: "Delete account…",
-      /** The link to Settings › General, for someone who only meant this workspace. */
-      oneWorkspace: "Want to delete just this workspace? It's in General.",
-      /** The link to Members, for someone who can't delete this workspace and only meant to leave it. */
-      leaveWorkspace: "Want to leave just this workspace? It's in Members.",
+      /** The card's title for an owner, over its two buttons: the account and the workspace. */
+      title: "Delete",
     },
     title: "Delete your whole account?",
     intro: "This deletes your whole account, not just one workspace.",
@@ -17379,6 +17399,8 @@ export const en = {
     },
     exposure:
       "Whoever sees the dashboard sees what the agents brought, even without access to the accounts it came from. Agents create dashboards too. To show one to more people than whoever asked, they ask first, in Waiting on you.",
+    /** The one line a screen shows, with `exposure` behind its ⓘ. */
+    exposureShort: "Whoever sees the dashboard sees this data.",
     panel: {
       caresFor: "{{name}} looks after this widget",
       caresForOn: "{{name}} looks after this widget · {{board}}",

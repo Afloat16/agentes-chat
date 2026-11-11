@@ -169,6 +169,34 @@ describe("Criar agente: steps", () => {
     );
   });
 
+  test("an app's account or its server's host sits under its name, inside the row; every row has the same shape", async () => {
+    const state = seedState();
+    const api = createFakeApi(state);
+    // The worst case: a long name over a long host, beside an app with nothing under its name.
+    const HOST = "mcp.painel-de-vendas-e-atendimento-da-filial-sul.example.com";
+    await api.customConnectors.connect(ORG_ID, {
+      serverUrl: `https://${HOST}/mcp`,
+      label: "Painel de vendas e atendimento da filial sul",
+      apiKey: "fake-key-for-tests",
+      returnTo: "/",
+    });
+    for (const c of state.connections) if (c.connector === "github") c.accountLabel = null;
+    await open(state, api);
+    await startAs("QA");
+    await proceed(2);
+    const rows = within(screen().getByRole("list", { name: "Conectores e níveis" })).getAllByRole("listitem");
+    expect(rows.length).toBeGreaterThan(1);
+    for (const row of rows) expect(row.classList.contains("level-row--meta")).toBe(true);
+    const metaOf = (name: string) =>
+      rows
+        .find((r) => r.querySelector(".level-row__name")?.textContent === name)
+        ?.querySelector(".ac-mediarow__head > .ac-mediarow__meta")?.textContent ?? null;
+    expect(metaOf("Painel de vendas e atendimento da filial sul")).toBe(HOST);
+    expect(metaOf("GitHub")).toBeNull();
+    // Never on a line of its own under the logo.
+    for (const row of rows) expect(row.querySelector(".ac-mediarow__body")?.textContent).not.toContain(HOST);
+  });
+
   test("a role is required; picking one fills the rest (name, @, look, instructions, levels, channels, model)", async () => {
     const state = await open();
     expect(title()).toBe("Qual vai ser o papel?");
@@ -1381,6 +1409,10 @@ describe("Criar agente: what gets created", () => {
     const levels = within(screen().getByRole("list", { name: "Conectores e níveis" }));
     expect(levels.queryByRole("radiogroup", { name: "Nível em joao@acme.com.br" })).toBeNull();
     const mine = levels.getByRole("radiogroup", { name: "Nível em ola@acme.com.br" });
+    // The mailbox's label under its address, inside the row.
+    expect(mine.closest("li")?.querySelector(".ac-mediarow__head > .ac-mediarow__meta")?.textContent).toBe(
+      "Atendimento",
+    );
     expect(within(mine).getByRole("radio", { name: "Sem acesso" }).getAttribute("aria-checked")).toBe("true");
     await click(within(mine).getByRole("radio", { name: "Ler" }));
     await proceed(3);

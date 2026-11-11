@@ -1304,7 +1304,7 @@ function NewAgentFlow({
                       key={item.id}
                       icon={<ConnectorIcon def={item.def} image={item.image} label={n} />}
                       name={n}
-                      description={item.account}
+                      meta={item.account}
                       asks={level === "write" ? asksOf(item) : []}
                       levels={LEVELS}
                       value={level}
@@ -1319,7 +1319,7 @@ function NewAgentFlow({
                       key={account.id}
                       icon={<MailIcon choice={choiceOf(account)} />}
                       name={account.address}
-                      description={account.label || null}
+                      meta={account.label || null}
                       asks={level === "write" ? mailAsks : []}
                       levels={LEVELS}
                       value={level}

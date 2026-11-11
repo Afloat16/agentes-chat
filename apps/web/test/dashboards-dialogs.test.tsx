@@ -19,6 +19,7 @@ import {
   seedState,
 } from "./fake-api";
 import type { FakeDashboards } from "./fakes/dashboards";
+import { shownText } from "./hint";
 import { pick } from "./new-agent-flow";
 import { renderApp, screen, settle } from "./render";
 
@@ -104,6 +105,8 @@ describe("New dashboard (ADR 0135 §8, §10)", () => {
     expect(dialog.textContent).toContain("Você também pode pedir a um agente, numa conversa, que monte um.");
     expect(editorsShown(dialog)).toBe("Só você e a administração");
     // What whoever sees it sees, said where the audience is chosen (ADR 0135 §12).
+    expect(shownText(dialog)).toContain("Quem vê o painel vê estes dados.");
+    expect(shownText(dialog)).not.toContain("Quem vê o painel vê o que os agentes trouxeram");
     expect(dialog.textContent).toContain("Quem vê o painel vê o que os agentes trouxeram");
     await type(within(dialog).getByLabelText("Nome"), "Metas do trimestre");
     await click(create);

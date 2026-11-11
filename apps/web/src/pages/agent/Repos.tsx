@@ -26,6 +26,7 @@ import {
   Dialog,
   DialogFooter,
   DialogSearchList,
+  HintLine,
   Icon,
   type IconName,
   Locked,
@@ -194,7 +195,11 @@ export function MergeReposBlock() {
           </Button>
         )}
       </span>
-      <span className="small muted">{t("repos.merge.help")}</span>
+      <span className="small muted">
+        <HintLine name={t("common.about", { label: t("repos.merge.label") })} hint={t("repos.merge.help")}>
+          {t("repos.merge.short")}
+        </HintLine>
+      </span>
       {picking && <MergeRepoDialog chosen={list} onClose={() => setPicking(false)} />}
     </div>
   );

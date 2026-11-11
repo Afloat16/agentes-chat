@@ -3578,6 +3578,24 @@ html:not([data-pointer]) .channel-ref:focus-visible {
 .level-row__text {
   gap: 2px;
 }
+/* A short fact under the name (`meta`): the tile, the two lines and the level share one middle, and a row without the
+   fact is as tall as one with it. */
+.level-row--meta {
+  align-items: center;
+}
+.level-row--meta > .ac-mediarow__face {
+  margin-block-start: 0;
+}
+.level-row--meta > .ac-mediarow__head {
+  flex-flow: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: var(--control-h-md);
+  padding-block-start: 0;
+}
+.level-row--meta > .ac-mediarow__end {
+  height: auto;
+}
 /* The level control's middle on the icon's. */
 .level-row__name {
   font-weight: 600;

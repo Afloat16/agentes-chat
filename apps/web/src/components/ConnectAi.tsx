@@ -42,7 +42,13 @@ import {
 import { can } from "@agenteschat/client/lib/permissions";
 import { isPlanId, planOf } from "@agenteschat/client/lib/plans";
 import { providerGuess, providerLabel } from "@agenteschat/client/lib/providers";
-import { isRightHand, rightHandOf, rightHandOnKey, thinksWithLine } from "@agenteschat/client/lib/right-hand";
+import {
+  isRightHand,
+  rightHandOf,
+  rightHandOnKey,
+  sceneTeam,
+  thinksWithLine,
+} from "@agenteschat/client/lib/right-hand";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import {
   AvatarStack,
@@ -94,7 +100,7 @@ import {
 import { EndpointForm } from "@/components/ai/EndpointForm";
 import { ConnectChoices } from "@/components/arrival/ConnectChoices";
 import { bestHave, ConnectHave, haveId } from "@/components/arrival/ConnectHave";
-import { type SceneAgent, sceneTeam, TeamScene, useDawn } from "@/components/arrival/TeamScene";
+import { ConnectScene, isScenePlan, type SceneAgent, TeamScene, useDawn } from "@/components/arrival/TeamScene";
 import { useOrg } from "@/components/org-context";
 import { KeyRefused, ProviderKeySelect } from "@/components/ProviderKey";
 import { useDirectory } from "@/hooks/useDirectory";
@@ -1515,6 +1521,12 @@ function ConnectAiDialog({
       width={600}
     >
       <DialogBody>
+        <ConnectScene
+          agents={dir.agents}
+          connected={connected}
+          waiting={Boolean(hold)}
+          lit={isScenePlan(picked) ? picked : null}
+        />
         {/* A link opens this before the agents and their AI load, and what it opens on follows them. */}
         {hold ? (
           // Every way in lands here, a card's or a key pasted in the composer: nothing connects before the plan.

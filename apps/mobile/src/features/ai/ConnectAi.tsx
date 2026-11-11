@@ -32,6 +32,7 @@ import { router } from "@/ui/navigation";
 import { useColors, useDirectory, useMeId } from "../shared/hooks";
 import { PushedHeader } from "../shared/parts";
 import { ConnectAiFlow, viewOf } from "./ConnectAiSteps";
+import { ConnectScene } from "./ConnectScene";
 import type { FlowView } from "./logic";
 import { PlanHoldNote, usePlanHold } from "./parts";
 
@@ -202,6 +203,7 @@ export function ConnectAiSheet() {
         automaticallyAdjustKeyboardInsets
         contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + 32 }]}
       >
+        {view.page === "home" && !done ? <ConnectScene /> : null}
         {ready && view.page === "home" && !done ? (
           // The question the first page answers, then the ways under it.
           <View style={styles.head}>

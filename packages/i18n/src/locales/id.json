@@ -1902,7 +1902,8 @@
       "emptyViewer": "Orang yang mengelola agen menambahkannya ke kanal, lalu peta muncul di sini.",
       "others": "Kanal lain",
       "band": "Supervisor",
-      "reportsTo": "Melapor ke {{name}}"
+      "reportsTo": "Melapor ke {{name}}",
+      "short": "Siapa yang mengurus tiap agen dan di mana ia bekerja."
     },
     "sectors": {
       "lead": "Setiap departemen punya penanggung jawab, pengganti, agen, serta kanal dan rutinitas mereka.",
@@ -2695,7 +2696,7 @@
       "gemini": {
         "title": "Paket Gemini-mu",
         "tiers": "Google AI Pro, Google AI Ultra, atau Gemini Enterprise",
-        "warning": "Google menyatakan bahwa memakai paket Gemini pribadi di dalam aplikasi lain bisa membuat akun ditangguhkan. Agar tidak mengambil risiko itu, pakai kunci API atau Gemini Enterprise."
+        "warning": "Google menyatakan bahwa memakai paket Gemini pribadi di dalam aplikasi lain bisa membuat akun ditangguhkan."
       },
       "zen": {
         "title": "OpenCode",
@@ -7129,7 +7130,8 @@
         "bad_signature": "Ditolak: tanda tangan salah",
         "too_large": "Ditolak: lebih dari 256 KB",
         "rate_limited": "Ditolak: terlalu banyak panggilan per menit"
-      }
+      },
+      "newShort": "Rutinitas ini mendapat alamatnya sendiri."
     },
     "setup": {
       "title": "Webhook {{provider}}",
@@ -7322,7 +7324,9 @@
     "ownActions": {
       "hint": "Setiap jalannya melakukan ini di aplikasi terhubung kamu tanpa bertanya. Tindakan lain di sana meminta persetujuan seseorang dulu, dan merge, deploy, serta rollback selalu meminta.",
       "none": "Di aplikasi terhubung, rutinitas ini meminta persetujuan seseorang sebelum setiap tindakan. Agar bisa bekerja sendiri, beri tahu agen di chat tindakan apa saja yang boleh dilakukan.",
-      "remove": "Tanya lagi sebelum: {{action}}"
+      "remove": "Tanya lagi sebelum: {{action}}",
+      "hintShort": "Setiap jalannya melakukan ini tanpa bertanya.",
+      "noneShort": "Rutinitas ini meminta persetujuan seseorang sebelum setiap tindakan."
     },
     "ahead": {
       "approved": "Disetujui · jalan {{when}}",
@@ -8940,7 +8944,7 @@
     "undoUpdate": "Urungkan pembaruan",
     "undone": "{{name}} kembali ke versi {{version}}.",
     "agentsImprove": "Agen memperbaiki skill sendiri",
-    "agentsImproveHelp": "Saat agen menemukan skill yang salah atau kurang satu langkah, agen langsung memperbaikinya: versi baru yang bisa kamu urungkan, dan pembuat skill diberi tahu. Perubahan skrip menunggu orang yang mengelola skill.",
+    "agentsImproveHelp": "Saat agen menemukan skill yang salah atau kurang satu langkah, agen langsung memperbaikinya: versi baru yang bisa kamu urungkan, dan pembuat skill diberi tahu.",
     "agentsImproveThis": "Agen memperbaiki skill ini sendiri",
     "agentChange": "{{agent}} mengubahnya {{when}}",
     "undoAgentChange": "Urungkan perubahan",
@@ -9269,7 +9273,9 @@
       "only": "{{name}} hanya membalas {{names}}.",
       "some": "{{name}} hanya membalas beberapa orang.",
       "nobody": "{{name}} sedang tidak membalas siapa pun."
-    }
+    },
+    "agentsToo": "Ini juga berlaku untuk agen.",
+    "peopleOnly": "Ini hanya berlaku untuk orang."
   },
   "composer": {
     "commands": "Perintah",
@@ -10054,7 +10060,7 @@
     "ask": {
       "button": "Minta agen",
       "title": "Minta agen",
-      "text": "Permintaan masuk ke percakapanmu dengan agen, beserta tautan halaman. Agen mengedit dengan alat wiki, dan versinya tercatat di riwayat sebagai atas permintaanmu.",
+      "text": "Permintaan masuk ke percakapanmu dengan agen, beserta tautan halaman.",
       "agent": "Agen",
       "what": "Apa yang perlu diubah?",
       "placeholder": "Mis.: perbarui dengan kenaikan harga 2027",
@@ -10143,7 +10149,8 @@
         "empty": "Tidak ada catatan .md yang ditemukan. Kirim .zip folder vault, foldernya, atau file .md.",
         "too_big": "Vault lebih dari 500 MB. Kirim tanpa lampiran besar, atau kirim bertahap.",
         "unreadable": "File tidak bisa dibaca. Apakah ini .zip dari vault?"
-      }
+      },
+      "howToLabel": "Cara membuat .zip"
     },
     "save": "Simpan ke wiki",
     "saveTitle": "Simpan ke wiki",
@@ -10857,7 +10864,7 @@
   },
   "githubApp": {
     "title": "Repositori GitHub",
-    "text": "Di tempat aplikasi agentes.chat terpasang, agen membuka pull request, issue, komentar, dan commit sebagai aplikasi itu, dengan nama agen dan orang yang meminta. Hanya {{org}} yang memakai apa yang kamu pasang dari sini.",
+    "text": "Di tempat aplikasi agentes.chat terpasang, agen membuka pull request, issue, komentar, dan commit sebagai aplikasi itu, dengan nama agen dan orang yang meminta.",
     "install": "Pasang aplikasi agentes.chat",
     "installMore": "Pasang di akun lain",
     "none": "Belum ada akun GitHub.",
@@ -10932,7 +10939,8 @@
       "none": "Tidak ada repositori yang dipilih. Setiap merge meminta persetujuan.",
       "help": "Di repositori ini merge berjalan tanpa kartu persetujuan, tercatat di audit, dan meninggalkan tanda terima di percakapan. Hal sensitif lainnya tetap bertanya.",
       "dialogTitle": "Tempat {{name}} merge tanpa bertanya",
-      "dialogDesc": "Hanya repositori yang sudah digunakan. Merge di tempat lain meminta persetujuan."
+      "dialogDesc": "Hanya repositori yang sudah digunakan. Merge di tempat lain meminta persetujuan.",
+      "short": "Di repositori ini merge berjalan tanpa kartu persetujuan."
     },
     "label": "Repositori mana",
     "all": "Semua repositori",
@@ -11834,7 +11842,8 @@
       "added": "Sekarang juga: {{names}}.",
       "removed": "Tidak lagi: {{names}}.",
       "same": "Tidak ada yang berubah pada organisasi.",
-      "failed": "Organisasi tidak bisa dibaca sekarang."
+      "failed": "Organisasi tidak bisa dibaca sekarang.",
+      "short": "GitHub hanya menanyakan organisasi pada kali pertama."
     },
     "composioHelp": "Kamu masuk di halaman Composio, dalam bahasa Inggris, lalu kembali ke sini. {{name}} menampilkan izinnya sebagai “Composio”.",
     "or": "atau",
@@ -12029,7 +12038,8 @@
       "capHelpAll": "Kosong = tanpa batas. Dihitung dari semua database.",
       "timeout": "Batas waktu per query",
       "timeoutHelp": "Query yang lebih lama dibatalkan, supaya tidak membebani database.",
-      "seconds_other": "{{count}} detik"
+      "seconds_other": "{{count}} detik",
+      "hiddenExample": "tabel.kolom, seperti customers.\"Tax ID\""
     },
     "agent": {
       "title": "Database",
@@ -12082,7 +12092,7 @@
     "address": "Alamat email",
     "addressPlaceholder": "kamu@perusahaan.com",
     "addressInvalid": "Ketik email yang valid, seperti kamu@perusahaan.com.",
-    "icloudHint": "Pakai alamat iCloud Mail-mu, seperti nama@icloud.com, meskipun Akun Apple-mu memakai {{name}}. Di iPhone, ada di Pengaturan › namamu › iCloud › iCloud Mail, atau lihat icloud.com/mail.",
+    "icloudHint": "Pakai alamat iCloud Mail-mu, seperti nama@icloud.com, meskipun Akun Apple-mu memakai {{name}}.",
     "password": "Kata sandi aplikasi",
     "passwordHelp": "Disimpan terenkripsi di server. Tidak ada yang bisa melihatnya lagi.",
     "passwordInvalid": "Tempel kata sandi aplikasi.",
@@ -12199,7 +12209,8 @@
       "newFrom": "Email baru dikirim dari",
       "newFromHelp": "Balasan selalu dikirim dari alamat tujuan email itu dikirim.",
       "later": "Kamu bisa mengubah ini nanti di Alamat.",
-      "saved": "Alamat {{address}} tersimpan."
+      "saved": "Alamat {{address}} tersimpan.",
+      "short": "Agen membalas dari alamat tujuan email itu dikirim."
     },
     "agent": {
       "title": "Email",
@@ -12287,7 +12298,8 @@
       "every": "Berjalan untuk setiap email baru yang lolos filter.",
       "needsReconnect": "Perlu dihubungkan ulang",
       "error": "Gagal"
-    }
+    },
+    "toolsShort": "Pilih apa yang dilakukan agen dengan email ini."
   },
   "searchPage": {
     "title": "Cari di ruang kerja",
@@ -14595,7 +14607,8 @@
       "old": "{{brand}}, dari sebelum ada akun",
       "oldSub": "Pemakaian dari sebelum akun dicatat",
       "ofMonth": "{{percent}} dari bulan ini",
-      "shareLabel": "{{source}}: {{percent}} dari bulan ini"
+      "shareLabel": "{{source}}: {{percent}} dari bulan ini",
+      "estimateShort": "Perkiraan."
     }
   },
   "budget": {
@@ -16002,7 +16015,7 @@
   "deleteOrg": {
     "card": {
       "title": "Hapus ruang kerja",
-      "text": "Menutup {{name}} untuk semua orang sekarang. Dihapus selamanya setelah 7 hari.",
+      "text": "Menutup {{name}} untuk semua orang sekarang dan menghapusnya dalam 7 hari.",
       "button": "Hapus ruang kerja…"
     },
     "title": "Hapus {{name}}?",
@@ -16057,10 +16070,9 @@
   "deleteAccount": {
     "menu": "Hapus akun",
     "card": {
-      "text": "Kamu keluar dari semua ruang kerja dan akunmu dihapus selamanya 7 hari kemudian. Sampai saat itu kamu bisa memulihkannya.",
+      "text": "Menghapus akunmu dalam 7 hari, di semua ruang kerja.",
       "button": "Hapus akun…",
-      "oneWorkspace": "Mau menghapus ruang kerja ini saja? Ada di Umum.",
-      "leaveWorkspace": "Mau keluar dari ruang kerja ini saja? Ada di Anggota."
+      "title": "Hapus"
     },
     "title": "Hapus seluruh akunmu?",
     "intro": "Ini menghapus seluruh akunmu, bukan hanya satu ruang kerja.",
@@ -16860,7 +16872,8 @@
       "textRoutine": "Rutinitas {{name}} yang memperbaruinya berhenti, dan riwayat pembaruannya ikut hilang.",
       "textManual": "Riwayat pembaruannya ikut hilang.",
       "confirm": "Hapus"
-    }
+    },
+    "exposureShort": "Siapa pun yang melihat dasbor bisa melihat data ini."
   },
   "agentPicker": {
     "search": "Cari agen",

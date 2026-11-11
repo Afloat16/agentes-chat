@@ -2016,7 +2016,8 @@
       "emptyViewer": "Chi gestisce gli agenti li aggiunge ai canali, e la mappa compare qui.",
       "others": "Altri canali",
       "band": "Supervisori",
-      "reportsTo": "Risponde a {{name}}"
+      "reportsTo": "Risponde a {{name}}",
+      "short": "Chi si occupa di ogni agente e dove lavora."
     },
     "sectors": {
       "lead": "Ogni reparto ha un responsabile, un sostituto, i suoi agenti e i loro canali e routine.",
@@ -2891,7 +2892,7 @@
       "gemini": {
         "title": "Il tuo piano Gemini",
         "tiers": "Google AI Pro, Google AI Ultra o Gemini Enterprise",
-        "warning": "Google dice che usare un piano Gemini personale all'interno di altre app può portare alla sospensione dell'account. Per non correre questo rischio, usa una chiave API o Gemini Enterprise."
+        "warning": "Google dice che usare un piano Gemini personale all'interno di altre app può portare alla sospensione dell'account."
       },
       "zen": {
         "title": "OpenCode",
@@ -7602,7 +7603,8 @@
         "bad_signature": "Rifiutata: firma errata",
         "too_large": "Rifiutata: oltre 256 KB",
         "rate_limited": "Rifiutata: troppe chiamate al minuto"
-      }
+      },
+      "newShort": "La routine riceve un indirizzo tutto suo."
     },
     "setup": {
       "title": "Webhook di {{provider}}",
@@ -7796,7 +7798,9 @@
     "ownActions": {
       "hint": "Ogni esecuzione fa queste azioni nelle tue app collegate senza chiedere. Qualsiasi altra azione lì chiede prima l’approvazione di una persona, e merge, deploy e rollback la chiedono sempre.",
       "none": "Nelle app collegate chiede l’approvazione di una persona prima di ogni azione. Per farle fare il suo lavoro da sola, di’ all’agente in chat quali azioni può fare.",
-      "remove": "Torna a chiedere prima di: {{action}}"
+      "remove": "Torna a chiedere prima di: {{action}}",
+      "hintShort": "Ogni esecuzione fa queste azioni senza chiedere.",
+      "noneShort": "Chiede l’approvazione di una persona prima di ogni azione."
     },
     "ahead": {
       "approved": "Approvata · parte {{when}}",
@@ -9602,7 +9606,7 @@
     "undoUpdate": "Annulla aggiornamento",
     "undone": "{{name}} è tornata alla versione {{version}}.",
     "agentsImprove": "Gli agenti migliorano le skill da soli",
-    "agentsImproveHelp": "Quando un agente trova una skill sbagliata o a cui manca un passo, la corregge subito: una nuova versione che puoi annullare, e chi ha creato la skill viene avvisato. Le modifiche agli script aspettano chi gestisce le skill.",
+    "agentsImproveHelp": "Quando un agente trova una skill sbagliata o a cui manca un passo, la corregge subito: una nuova versione che puoi annullare, e chi ha creato la skill viene avvisato.",
     "agentsImproveThis": "Gli agenti migliorano questa skill da soli",
     "agentChange": "{{agent}} l'ha modificata {{when}}",
     "undoAgentChange": "Annulla modifica",
@@ -9969,7 +9973,9 @@
       "some_female": "{{name}} risponde solo ad alcune persone.",
       "nobody": "{{name}} non risponde a nessuno in questo momento.",
       "nobody_female": "{{name}} non risponde a nessuno in questo momento."
-    }
+    },
+    "agentsToo": "Vale anche per gli agenti.",
+    "peopleOnly": "Vale solo per le persone."
   },
   "composer": {
     "commands": "Comandi",
@@ -10785,7 +10791,7 @@
     "ask": {
       "button": "Chiedi a un agente",
       "title": "Chiedi a un agente",
-      "text": "La richiesta va nella tua conversazione con l'agente, con il link della pagina. Modifica con gli strumenti del wiki e la versione resta nella cronologia come fatta su tua richiesta.",
+      "text": "La richiesta va nella tua conversazione con l'agente, con il link della pagina.",
       "agent": "Agente",
       "what": "Cosa va cambiato?",
       "placeholder": "Es.: aggiornala con l'aumento del 2027",
@@ -10914,7 +10920,8 @@
         "empty": "Nessuna nota .md trovata. Invia il .zip della cartella del vault, la cartella o i file .md.",
         "too_big": "Il vault supera i 500 MB. Invialo senza gli allegati grandi, o in più parti.",
         "unreadable": "Non è stato possibile leggere il file. È un .zip del vault?"
-      }
+      },
+      "howToLabel": "Come creare il .zip"
     },
     "save": "Salva nel wiki",
     "saveTitle": "Salva nel wiki",
@@ -11676,7 +11683,7 @@
   },
   "githubApp": {
     "title": "Repository GitHub",
-    "text": "Dove l'app agentes.chat è installata, gli agenti aprono pull request, issue, commenti e commit come l'app, con il nome dell'agente e di chi l'ha chiesto. Solo {{org}} usa ciò che installi da qui.",
+    "text": "Dove l'app agentes.chat è installata, gli agenti aprono pull request, issue, commenti e commit come l'app, con il nome dell'agente e di chi l'ha chiesto.",
     "install": "Installa l'app agentes.chat",
     "installMore": "Installa su un altro account",
     "none": "Ancora nessun account GitHub.",
@@ -11751,7 +11758,8 @@
       "none": "Nessun repository scelto. Ogni merge chiede l'approvazione.",
       "help": "In questi repository il merge avviene senza scheda di approvazione, finisce nell'audit e lascia una ricevuta nella conversazione. Tutto il resto di sensibile continua a chiedere.",
       "dialogTitle": "Dove {{name}} fa il merge senza chiedere",
-      "dialogDesc": "Solo repository che usa già. Un merge altrove chiede l'approvazione."
+      "dialogDesc": "Solo repository che usa già. Un merge altrove chiede l'approvazione.",
+      "short": "In questi repository il merge avviene senza scheda di approvazione."
     },
     "label": "Quali repository",
     "all": "Tutti i repository",
@@ -12697,7 +12705,8 @@
       "added": "Ora anche: {{names}}.",
       "removed": "Non più: {{names}}.",
       "same": "Nelle organizzazioni non è cambiato nulla.",
-      "failed": "Non è stato possibile leggere le organizzazioni ora."
+      "failed": "Non è stato possibile leggere le organizzazioni ora.",
+      "short": "GitHub chiede delle organizzazioni solo la prima volta."
     },
     "composioHelp": "Accedi nella pagina di Composio, in inglese, e torni qui. {{name}} mostra il permesso come “Composio”.",
     "or": "oppure",
@@ -12910,7 +12919,8 @@
       "timeoutHelp": "Una query che dura di più viene annullata, così non appesantisce il database.",
       "seconds_one": "{{count}} secondo",
       "seconds_many": "{{count}} secondi",
-      "seconds_other": "{{count}} secondi"
+      "seconds_other": "{{count}} secondi",
+      "hiddenExample": "tabella.colonna, come clienti.\"Codice Fiscale\""
     },
     "agent": {
       "title": "Database",
@@ -12965,7 +12975,7 @@
     "address": "Indirizzo email",
     "addressPlaceholder": "tu@azienda.com",
     "addressInvalid": "Scrivi un'email valida, come tu@azienda.com.",
-    "icloudHint": "Usa il tuo indirizzo di iCloud Mail, come nome@icloud.com, anche se il tuo Account Apple usa {{name}}. Su iPhone lo trovi in Impostazioni › il tuo nome › iCloud › iCloud Mail, oppure vai su icloud.com/mail.",
+    "icloudHint": "Usa il tuo indirizzo di iCloud Mail, come nome@icloud.com, anche se il tuo Account Apple usa {{name}}.",
     "password": "Password per app",
     "passwordHelp": "Salvata cifrata sul server. Nessuno la vedrà più.",
     "passwordInvalid": "Incolla la password per app.",
@@ -13082,7 +13092,8 @@
       "newFrom": "Le nuove email partono da",
       "newFromHelp": "Le risposte partono sempre dall'indirizzo a cui è stata inviata l'email.",
       "later": "Puoi cambiarlo più tardi in Indirizzi.",
-      "saved": "Indirizzi di {{address}} salvati."
+      "saved": "Indirizzi di {{address}} salvati.",
+      "short": "Gli agenti rispondono dall'indirizzo a cui è stata inviata l'email."
     },
     "agent": {
       "title": "Email",
@@ -13176,7 +13187,8 @@
       "every": "Si avvia per ogni nuova email che passa i filtri.",
       "needsReconnect": "Da ricollegare",
       "error": "Non funziona"
-    }
+    },
+    "toolsShort": "Scegli cosa fanno gli agenti con questa email."
   },
   "searchPage": {
     "title": "Cerca nello spazio di lavoro",
@@ -15542,7 +15554,8 @@
       "old": "{{brand}}, da prima degli account",
       "oldSub": "Consumi di prima che l'account venisse registrato",
       "ofMonth": "{{percent}} del mese",
-      "shareLabel": "{{source}}: {{percent}} del mese"
+      "shareLabel": "{{source}}: {{percent}} del mese",
+      "estimateShort": "Una stima."
     }
   },
   "budget": {
@@ -17039,7 +17052,7 @@
   "deleteOrg": {
     "card": {
       "title": "Elimina spazio di lavoro",
-      "text": "Chiude {{name}} per tutti adesso. Viene eliminato per sempre dopo 7 giorni.",
+      "text": "Chiude {{name}} per tutti ora e lo elimina tra 7 giorni.",
       "button": "Elimina spazio di lavoro…"
     },
     "title": "Eliminare {{name}}?",
@@ -17094,10 +17107,9 @@
   "deleteAccount": {
     "menu": "Elimina account",
     "card": {
-      "text": "Esci da tutti gli spazi di lavoro e il tuo account viene eliminato per sempre 7 giorni dopo. Fino ad allora puoi ripristinarlo.",
+      "text": "Elimina il tuo account tra 7 giorni, in tutti gli spazi di lavoro.",
       "button": "Elimina account…",
-      "oneWorkspace": "Vuoi eliminare solo questo spazio di lavoro? Lo trovi in Generali.",
-      "leaveWorkspace": "Vuoi uscire solo da questo spazio di lavoro? Lo trovi in Membri."
+      "title": "Elimina"
     },
     "title": "Eliminare tutto il tuo account?",
     "intro": "Elimina tutto il tuo account, non solo uno spazio di lavoro.",
@@ -17951,7 +17963,8 @@
       "textRoutine": "La routine di {{name}} che lo aggiorna si ferma, e la sua cronologia degli aggiornamenti se ne va con lui.",
       "textManual": "La sua cronologia degli aggiornamenti se ne va con lui.",
       "confirm": "Rimuovi"
-    }
+    },
+    "exposureShort": "Chi vede la dashboard vede questi dati."
   },
   "agentPicker": {
     "search": "Cerca agenti",

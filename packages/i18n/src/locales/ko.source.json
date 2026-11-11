@@ -6881,7 +6881,7 @@
     "value": "Google AI Pro, Google AI Ultra or Gemini Enterprise"
   },
   "connectAi.plan.gemini.warning": {
-    "value": "Google says using a personal Gemini plan inside other apps can get the account suspended. To avoid that risk, use an API key or Gemini Enterprise."
+    "value": "Google says using a personal Gemini plan inside other apps can get the account suspended."
   },
   "connectAi.plan.zen.title": {
     "value": "OpenCode"
@@ -22489,7 +22489,7 @@
     "value": "Agents improve skills by themselves"
   },
   "skills.agentsImproveHelp": {
-    "value": "When an agent finds a skill wrong or missing a step, it fixes it right away: a new version you can undo, and whoever made the skill is told. Changes to scripts wait for someone who manages skills."
+    "value": "When an agent finds a skill wrong or missing a step, it fixes it right away: a new version you can undo, and whoever made the skill is told."
   },
   "skills.agentsImproveThis": {
     "value": "Agents improve this skill by themselves"
@@ -25366,7 +25366,7 @@
     "value": "Ask an agent"
   },
   "wiki.ask.text": {
-    "value": "The request goes to your conversation with the agent, with a link to the page. It edits with the wiki tools, and the version shows in the history as done at your request."
+    "value": "The request goes to your conversation with the agent, with a link to the page."
   },
   "wiki.ask.agent": {
     "value": "Agent"
@@ -27511,7 +27511,7 @@
     "value": "GitHub repositories"
   },
   "githubApp.text": {
-    "value": "Where the agentes.chat app is installed, agents open pull requests, issues, comments and commits as the app, with the agent's name and who asked. Only {{org}} uses what you install from here."
+    "value": "Where the agentes.chat app is installed, agents open pull requests, issues, comments and commits as the app, with the agent's name and who asked."
   },
   "githubApp.install": {
     "value": "Install the agentes.chat app"
@@ -30392,7 +30392,7 @@
     "value": "Type a valid email, like you@company.com."
   },
   "mail.icloudHint": {
-    "value": "Use your iCloud Mail address, like name@icloud.com, even if your Apple Account uses {{name}}. On an iPhone it's in Settings › your name › iCloud › iCloud Mail, or see icloud.com/mail."
+    "value": "Use your iCloud Mail address, like name@icloud.com, even if your Apple Account uses {{name}}."
   },
   "mail.password": {
     "value": "App password"
@@ -40060,7 +40060,7 @@
     "value": "Delete workspace"
   },
   "deleteOrg.card.text": {
-    "value": "Closes {{name}} for everyone now. It's deleted for good after 7 days."
+    "value": "Closes {{name}} for everyone now and deletes it in 7 days."
   },
   "deleteOrg.card.button": {
     "value": "Delete workspace…"
@@ -40189,16 +40189,10 @@
     "value": "Delete account"
   },
   "deleteAccount.card.text": {
-    "value": "You leave every workspace and your account is deleted for good 7 days later. You can restore it until then."
+    "value": "Deletes your account in 7 days, in every workspace."
   },
   "deleteAccount.card.button": {
     "value": "Delete account…"
-  },
-  "deleteAccount.card.oneWorkspace": {
-    "value": "Want to delete just this workspace? It's in General."
-  },
-  "deleteAccount.card.leaveWorkspace": {
-    "value": "Want to leave just this workspace? It's in Members."
   },
   "deleteAccount.title": {
     "value": "Delete your whole account?"
@@ -43689,5 +43683,50 @@
   },
   "feedback.offer.askFirst": {
     "value": "Ask before sending"
+  },
+  "team.map.short": {
+    "value": "Who looks after each agent and where it works."
+  },
+  "routines.webhook.newShort": {
+    "value": "The routine gets an address of its own."
+  },
+  "routines.ownActions.hintShort": {
+    "value": "Every run does these without asking."
+  },
+  "routines.ownActions.noneShort": {
+    "value": "It asks a person before each action."
+  },
+  "audience.agentsToo": {
+    "value": "This covers agents too."
+  },
+  "audience.peopleOnly": {
+    "value": "This covers people only."
+  },
+  "wiki.import.howToLabel": {
+    "value": "How to make the .zip"
+  },
+  "repos.merge.short": {
+    "value": "In these repositories a merge runs with no approval card."
+  },
+  "connectFlow.githubOrgs.short": {
+    "value": "GitHub asks about organizations only the first time."
+  },
+  "database.rule.hiddenExample": {
+    "value": "table.column, like customers.\"Tax ID\""
+  },
+  "mail.toolsShort": {
+    "value": "Choose what agents do with this email."
+  },
+  "mail.addresses.short": {
+    "value": "Agents reply from the address the email was sent to."
+  },
+  "usageViews.agent.estimateShort": {
+    "value": "An estimate."
+  },
+  "deleteAccount.card.title": {
+    "value": "Delete"
+  },
+  "widgets.exposureShort": {
+    "value": "Whoever sees the dashboard sees this data."
   }
 }

@@ -1902,7 +1902,8 @@
       "emptyViewer": "에이전트 관리자가 채널에 추가하면 여기에 지도가 표시돼요.",
       "others": "다른 채널",
       "band": "감독",
-      "reportsTo": "{{name}}에게 보고"
+      "reportsTo": "{{name}}에게 보고",
+      "short": "각 에이전트를 맡은 사람과 일하는 곳을 보여줘요."
     },
     "sectors": {
       "lead": "각 부서에는 담당자, 대리, 에이전트, 그리고 그 채널과 루틴이 있어요.",
@@ -2685,7 +2686,7 @@
       "gemini": {
         "title": "내 Gemini 요금제",
         "tiers": "Google AI Pro, Google AI Ultra 또는 Gemini Enterprise",
-        "warning": "Google에 따르면 개인 Gemini 요금제를 다른 앱 안에서 사용하면 계정이 정지될 수 있어요. 이 위험을 피하려면 API 키나 Gemini Enterprise를 사용하세요."
+        "warning": "Google에 따르면 개인 Gemini 요금제를 다른 앱 안에서 사용하면 계정이 정지될 수 있어요."
       },
       "zen": {
         "title": "OpenCode",
@@ -7089,7 +7090,8 @@
         "bad_signature": "거부됨: 잘못된 서명",
         "too_large": "거부됨: 256KB 초과",
         "rate_limited": "거부됨: 분당 호출이 너무 많음"
-      }
+      },
+      "newShort": "루틴에 전용 주소가 생겨요."
     },
     "setup": {
       "title": "{{provider}} 웹훅",
@@ -7282,7 +7284,9 @@
     "ownActions": {
       "hint": "실행할 때마다 연결된 앱에서 이 작업을 묻지 않고 수행해요. 그 밖의 작업은 먼저 사람의 승인을 받고, 병합, 배포, 롤백은 항상 승인을 받아요.",
       "none": "연결된 앱에서는 작업마다 먼저 사람의 승인을 받아요. 직접 일을 처리하게 하려면 채팅에서 에이전트에게 어떤 작업을 해도 되는지 알려 주세요.",
-      "remove": "다시 묻기: {{action}}"
+      "remove": "다시 묻기: {{action}}",
+      "hintShort": "실행할 때마다 이 작업을 묻지 않고 수행해요.",
+      "noneShort": "작업마다 먼저 사람의 승인을 받아요."
     },
     "ahead": {
       "approved": "승인됨 · {{when}} 실행",
@@ -8885,7 +8889,7 @@
     "undoUpdate": "업데이트 실행 취소",
     "undone": "{{name}}을(를) 버전 {{version}}(으)로 되돌렸어요.",
     "agentsImprove": "에이전트가 스킬을 스스로 개선해요",
-    "agentsImproveHelp": "에이전트가 스킬이 틀렸거나 단계가 빠진 걸 발견하면 바로 고쳐요. 새 버전은 실행 취소할 수 있고, 스킬을 만든 사람에게 알려요. 스크립트 변경은 스킬을 관리하는 사람을 기다려요.",
+    "agentsImproveHelp": "에이전트가 스킬이 틀렸거나 단계가 빠진 걸 발견하면 바로 고쳐요. 새 버전은 실행 취소할 수 있고, 스킬을 만든 사람에게 알려요.",
     "agentsImproveThis": "에이전트가 이 스킬을 스스로 개선해요",
     "agentChange": "{{agent}}이(가) {{when}} 변경함",
     "undoAgentChange": "변경 실행 취소",
@@ -9214,7 +9218,9 @@
       "only": "{{name}}은(는) {{names}}에게만 답해요.",
       "some": "{{name}}은(는) 일부 사람에게만 답해요.",
       "nobody": "{{name}}은(는) 지금 아무에게도 답하지 않아요."
-    }
+    },
+    "agentsToo": "에이전트에게도 적용돼요.",
+    "peopleOnly": "사람에게만 적용돼요."
   },
   "composer": {
     "commands": "명령어",
@@ -9995,7 +10001,7 @@
     "ask": {
       "button": "에이전트에게 부탁하기",
       "title": "에이전트에게 부탁하기",
-      "text": "요청은 페이지 링크와 함께 에이전트와의 대화로 갑니다. 에이전트는 Wiki 도구로 편집하고, 그 버전은 기록에 내 요청으로 남습니다.",
+      "text": "요청은 페이지 링크와 함께 에이전트와의 대화로 갑니다.",
       "agent": "에이전트",
       "what": "무엇을 바꿀까요?",
       "placeholder": "예: 2027년 인상분을 반영해 줘",
@@ -10084,7 +10090,8 @@
         "empty": ".md 노트를 찾지 못했어요. 보관함 폴더의 .zip, 폴더 또는 .md 파일을 보내세요.",
         "too_big": "보관함이 500MB를 넘어요. 큰 첨부 파일을 빼거나 나눠서 보내세요.",
         "unreadable": "파일을 읽지 못했어요. 보관함의 .zip 파일이 맞나요?"
-      }
+      },
+      "howToLabel": ".zip 만드는 방법"
     },
     "save": "Wiki에 저장",
     "saveTitle": "Wiki에 저장",
@@ -10797,7 +10804,7 @@
   },
   "githubApp": {
     "title": "GitHub 저장소",
-    "text": "agentes.chat 앱이 설치된 곳에서는 에이전트가 앱으로 풀 리퀘스트, 이슈, 댓글, 커밋을 올리고, 에이전트 이름과 요청한 사람이 함께 표시돼요. 여기서 설치한 것은 {{org}}만 사용해요.",
+    "text": "agentes.chat 앱이 설치된 곳에서는 에이전트가 앱으로 풀 리퀘스트, 이슈, 댓글, 커밋을 올리고, 에이전트 이름과 요청한 사람이 함께 표시돼요.",
     "install": "agentes.chat 앱 설치",
     "installMore": "다른 계정에 설치",
     "none": "아직 GitHub 계정이 없어요.",
@@ -10872,7 +10879,8 @@
       "none": "선택한 저장소가 없어요. 모든 병합은 승인을 요청해요.",
       "help": "이 저장소에서는 병합이 승인 카드 없이 실행되고, 감사 기록에 남으며, 대화에 영수증을 남겨요. 그 밖의 민감한 작업은 계속 물어봐요.",
       "dialogTitle": "{{name}}이 묻지 않고 병합하는 곳",
-      "dialogDesc": "이미 사용하는 저장소만 가능해요. 다른 곳의 병합은 승인을 요청해요."
+      "dialogDesc": "이미 사용하는 저장소만 가능해요. 다른 곳의 병합은 승인을 요청해요.",
+      "short": "이 저장소에서는 병합이 승인 카드 없이 실행돼요."
     },
     "label": "저장소",
     "all": "모든 저장소",
@@ -11774,7 +11782,8 @@
       "added": "이제 추가됨: {{names}}.",
       "removed": "더 이상 안 됨: {{names}}.",
       "same": "조직에 달라진 것이 없어요.",
-      "failed": "지금은 조직을 읽을 수 없어요."
+      "failed": "지금은 조직을 읽을 수 없어요.",
+      "short": "GitHub는 처음 한 번만 조직을 물어봐요."
     },
     "composioHelp": "Composio 페이지에서 영어로 로그인한 뒤 여기로 돌아와요. {{name}}에는 권한이 “Composio”로 표시돼요.",
     "or": "또는",
@@ -11969,7 +11978,8 @@
       "capHelpAll": "비우면 제한 없음. 모든 데이터베이스를 합산합니다.",
       "timeout": "쿼리당 시간 제한",
       "timeoutHelp": "더 오래 걸리는 쿼리는 데이터베이스에 부담을 주지 않도록 취소돼요.",
-      "seconds_other": "{{count}}초"
+      "seconds_other": "{{count}}초",
+      "hiddenExample": "table.column 형식, 예: customers.\"Tax ID\""
     },
     "agent": {
       "title": "데이터베이스",
@@ -12022,7 +12032,7 @@
     "address": "이메일 주소",
     "addressPlaceholder": "you@company.com",
     "addressInvalid": "you@company.com 같은 올바른 이메일을 입력하세요.",
-    "icloudHint": "Apple 계정이 {{name}}을(를) 사용하더라도 name@icloud.com 같은 iCloud Mail 주소를 사용하세요. iPhone에서는 설정 › 내 이름 › iCloud › iCloud Mail에 있어요. 또는 icloud.com/mail을 확인하세요.",
+    "icloudHint": "Apple 계정이 {{name}}을(를) 사용하더라도 name@icloud.com 같은 iCloud Mail 주소를 사용하세요.",
     "password": "앱 비밀번호",
     "passwordHelp": "서버에 암호화되어 저장돼요. 아무도 다시 볼 수 없어요.",
     "passwordInvalid": "앱 비밀번호를 붙여넣으세요.",
@@ -12139,7 +12149,8 @@
       "newFrom": "새 이메일 발신 주소",
       "newFromHelp": "답장은 항상 이메일을 받은 주소로 나가요.",
       "later": "나중에 주소에서 바꿀 수 있어요.",
-      "saved": "{{address}}의 주소를 저장했어요."
+      "saved": "{{address}}의 주소를 저장했어요.",
+      "short": "에이전트는 이메일을 받은 주소로 답장해요."
     },
     "agent": {
       "title": "이메일",
@@ -12227,7 +12238,8 @@
       "every": "필터를 통과한 새 이메일마다 실행돼요.",
       "needsReconnect": "다시 연결 필요",
       "error": "실패 중"
-    }
+    },
+    "toolsShort": "이 이메일로 에이전트가 할 일을 선택하세요."
   },
   "searchPage": {
     "title": "워크스페이스 검색",
@@ -14533,7 +14545,8 @@
       "old": "계정 도입 이전 {{brand}}",
       "oldSub": "계정이 기록되기 전의 사용량",
       "ofMonth": "이번 달의 {{percent}}",
-      "shareLabel": "{{source}}: 이번 달의 {{percent}}"
+      "shareLabel": "{{source}}: 이번 달의 {{percent}}",
+      "estimateShort": "추정한 값이에요."
     }
   },
   "budget": {
@@ -15940,7 +15953,7 @@
   "deleteOrg": {
     "card": {
       "title": "워크스페이스 삭제",
-      "text": "지금 모두에게 {{name}}이(가) 닫혀요. 7일 후 영구적으로 삭제돼요.",
+      "text": "지금 모두에게 {{name}}을(를) 닫고 7일 후 삭제해요.",
       "button": "워크스페이스 삭제…"
     },
     "title": "{{name}}을(를) 삭제할까요?",
@@ -15995,10 +16008,9 @@
   "deleteAccount": {
     "menu": "계정 삭제",
     "card": {
-      "text": "모든 워크스페이스에서 나가고 계정은 7일 후 영구적으로 삭제돼요. 그때까지 복원할 수 있어요.",
+      "text": "7일 후 모든 워크스페이스에서 계정을 삭제해요.",
       "button": "계정 삭제…",
-      "oneWorkspace": "이 워크스페이스만 삭제하고 싶나요? 일반에 있어요.",
-      "leaveWorkspace": "이 워크스페이스에서만 나가고 싶나요? 멤버에 있어요."
+      "title": "삭제"
     },
     "title": "계정 전체를 삭제할까요?",
     "intro": "워크스페이스 하나가 아니라 계정 전체를 삭제해요.",
@@ -16750,7 +16762,8 @@
       "textRoutine": "이것을 업데이트하는 {{name}}의 루틴이 멈추고, 업데이트 기록도 함께 사라져요.",
       "textManual": "업데이트 기록도 함께 사라져요.",
       "confirm": "제거"
-    }
+    },
+    "exposureShort": "대시보드를 보는 사람은 이 데이터를 볼 수 있어요."
   },
   "agentPicker": {
     "search": "에이전트 검색",

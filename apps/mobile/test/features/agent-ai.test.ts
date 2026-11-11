@@ -165,7 +165,7 @@ describe("the agent's AI", () => {
       "Ada answers only you, on your Gemini seat.",
     );
     expect(pt("connectAi.plan.gemini.warning")).toBe(
-      "O Google diz que usar um plano pessoal do Gemini dentro de outros apps pode suspender a conta. Para não correr esse risco, use uma chave de API ou o Gemini Enterprise.",
+      "O Google diz que usar um plano pessoal do Gemini dentro de outros apps pode suspender a conta.",
     );
     expect(geminiPersonal({ provider: "enterprise" })).toBe(false);
     expect(geminiPersonal(undefined)).toBe(true);
@@ -213,6 +213,24 @@ describe("the agent's AI", () => {
     // For the agents I create: none of mine is offered, so a plan signs in for the new one.
     expect(sheet).toMatch(/params\.forNew === "1"\s*\? \[\]/);
     expect(sheet).toContain("queryKey: keys.brainMachines(orgId)");
+  });
+
+  test("Conectar uma IA opens under the team's scene, and a new agent's app shows its account under its name", async () => {
+    const read = (path: string) => Bun.file(new URL(`../../src/features/${path}`, import.meta.url).pathname).text();
+    const [sheet, scene, screen] = await Promise.all([
+      read("ai/ConnectAi.tsx"),
+      read("ai/ConnectScene.tsx"),
+      read("agents/NewAgentScreen.tsx"),
+    ]);
+    // Over the first page only: the steps after it keep the screen for their own fields.
+    expect(sheet).toContain('{view.page === "home" && !done ? <ConnectScene /> : null}');
+    // Decoration, as every sky is: asleep until an AI is there, hidden from screen readers.
+    expect(scene).toContain('accessibilityElementsHidden importantForAccessibility="no-hide-descendants"');
+    expect(scene).toContain('mode="sleep"');
+    expect(scene).toContain("sceneTeam(agents, lead).slice(0, 2)");
+    // No team yet: no trail ending in the air beside the computer.
+    expect(scene).toContain("{team.length > 0 ? trail : null}");
+    expect(screen).toContain("{...(i.account ? { sub: i.account } : {})}");
   });
 
   test("under a hold, Uso's empty plans card says what comes first and invites no plan", async () => {

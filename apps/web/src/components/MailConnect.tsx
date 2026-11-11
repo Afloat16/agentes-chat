@@ -39,7 +39,9 @@ import {
   DialogBody,
   DialogFooter,
   Field,
+  HintLine,
   Icon,
+  InfoHint,
   Input,
   Locked,
   Segmented,
@@ -552,7 +554,11 @@ function AddressesStep({
     <>
       <Locked when={update.isPending}>
         <DialogBody className="cflow__body">
-          <p className="muted cflow__text">{t("mail.addresses.lead")}</p>
+          <p className="muted cflow__text">
+            <HintLine name={t("common.about", { label: t("mail.addresses.button") })} hint={t("mail.addresses.lead")}>
+              {t("mail.addresses.short")}
+            </HintLine>
+          </p>
           <AddressesFields account={account} draft={draft} />
           {update.isError && <Alert>{knownErrorText(t, update.error) ?? t("mail.actionsError")}</Alert>}
         </DialogBody>
@@ -575,7 +581,10 @@ export function MailAddressesDialog({ account, onClose }: { account: MailAccount
       open={account !== null}
       onOpenChange={(o) => !o && onClose()}
       title={t("mail.addresses.title", { address: account?.address ?? "" })}
-      description={t("mail.addresses.lead")}
+      description={t("mail.addresses.short")}
+      descriptionAside={
+        <InfoHint name={t("common.about", { label: t("mail.addresses.button") })}>{t("mail.addresses.lead")}</InfoHint>
+      }
       closeLabel={t("common.close")}
       width={520}
     >
@@ -658,7 +667,14 @@ function ActionsStep({ account, onNext, onClose }: { account: MailAccount; onNex
     <>
       <Locked when={update.isPending}>
         <DialogBody className="cflow__body tr-body">
-          <p className="muted cflow__text">{t("mail.toolsLead", { name: account.address })}</p>
+          <p className="muted cflow__text">
+            <HintLine
+              name={t("common.about", { label: account.address })}
+              hint={t("mail.toolsLead", { name: account.address })}
+            >
+              {t("mail.toolsShort")}
+            </HintLine>
+          </p>
           {mine ? (
             <ToolReview
               name={account.address}
