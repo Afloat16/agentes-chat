@@ -2525,7 +2525,6 @@
     },
     "formatAuto": "En iyisini {{name}} seçer",
     "newWidget": {
-      "titleHint": "Başlık · {{name}} testte bir tane önerir",
       "alerts": "Uyarı açık",
       "realData": "Gerçek veriler",
       "editAsk": "İsteği değiştir",

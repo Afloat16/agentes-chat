@@ -35,6 +35,12 @@ describe("dialogs laid out on the form's rhythm", () => {
     expect(blocks(css("pages/dashboards.css"), ".nwc-pks")).toContain("flex-wrap: wrap;");
   });
 
+  test("Novo widget: the title's box keeps the head's gap from the face, so its ring never touches it", () => {
+    const title = blocks(css("pages/dashboards.css"), ".nwc__title");
+    expect(title).toContain("margin: calc(-1 * var(--space-1)) 0;");
+    expect(title).toContain("padding: var(--space-1) var(--space-2);");
+  });
+
   test("Personalizar a barra lateral: every row's Segmented fills the same column", () => {
     const source = readFileSync(new URL("../src/components/SidebarSetup.tsx", import.meta.url), "utf8");
     expect(source).toMatch(/<Segmented\s+block\s/);

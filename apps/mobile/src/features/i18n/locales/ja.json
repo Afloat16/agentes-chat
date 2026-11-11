@@ -2416,7 +2416,6 @@
     },
     "formatAuto": "{{name}}が最適なものを選びます",
     "newWidget": {
-      "titleHint": "タイトル · テスト時に{{name}}が提案します",
       "alerts": "アラートあり",
       "realData": "実データ",
       "editAsk": "依頼を変更",
