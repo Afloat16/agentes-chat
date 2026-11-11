@@ -1,4 +1,4 @@
-import { Button, Chip, Dialog, DialogFooter, Icon, Menu, MenuItem, Select, Switch } from "@agenteschat/ui";
+import { Button, Chip, Dialog, DialogBody, DialogFooter, Icon, Menu, MenuItem, Select, Switch } from "@agenteschat/ui";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHost, useSnapshot, useStore } from "../../app";
@@ -625,16 +625,18 @@ function HereServer({ local, current }: { local: LocalServerStatus; current: str
         closeLabel={t("desktop.common.close")}
         width={440}
       >
-        <Select
-          aria-label={t("desktop.server.restoreWhich")}
-          value={restoring ?? undefined}
-          onValueChange={setRestoring}
-          disabled={busy === "restore"}
-          options={backups.files.map((f) => ({
-            value: f.path,
-            label: t("desktop.server.backupOf", { time: backupTime(f.at) }),
-          }))}
-        />
+        <DialogBody>
+          <Select
+            aria-label={t("desktop.server.restoreWhich")}
+            value={restoring ?? undefined}
+            onValueChange={setRestoring}
+            disabled={busy === "restore"}
+            options={backups.files.map((f) => ({
+              value: f.path,
+              label: t("desktop.server.backupOf", { time: backupTime(f.at) }),
+            }))}
+          />
+        </DialogBody>
         <DialogFooter bar>
           <Button variant="ghost" onClick={() => setRestoring(null)} disabled={busy === "restore"}>
             {t("desktop.common.cancel")}

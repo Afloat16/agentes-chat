@@ -2160,7 +2160,14 @@ fn backup(app: &AppHandle) -> Result<String, String> {
     }
     let parts: Vec<&str> = ["db", "files", ".env"].into_iter().filter(|p| folder.0.join(p).exists()).collect();
     // Windows 10 and later carry `tar` too.
-    let tar = crate::no_console(&mut Command::new("tar")).arg("-czf").arg(&out).arg("-C").arg(&folder.0).args(&parts).status();
+    // Under a temporary name until it's whole: a quit in the middle (the night's update) never leaves a cut file
+    // that lists as the newest backup.
+    let tmp = folder.backups().join(format!("{name}.tmp"));
+    let tar = crate::no_console(&mut Command::new("tar")).arg("-czf").arg(&tmp).arg("-C").arg(&folder.0).args(&parts).status();
+    let tar = tar.and_then(|s| if s.success() { fs::rename(&tmp, &out).map(|()| s) } else { Ok(s) });
+    if !tar.as_ref().is_ok_and(|s| s.success()) {
+        let _ = fs::remove_file(&tmp);
+    }
     if was_running {
         fresh_start(app);
         let _ = spawn(app, Phase::Starting);
@@ -2617,8 +2624,9 @@ pub async fn local_server_backup(app: AppHandle, webview: tauri::Webview) -> Res
     .map_err(|e| e.to_string())?
 }
 
+/// Async: a "Copy to" folder on a drive that went away can keep `is_dir` waiting, never on the main thread.
 #[tauri::command]
-pub fn local_server_backups_set(
+pub async fn local_server_backups_set(
     app: AppHandle,
     webview: tauri::Webview,
     nightly: bool,
@@ -2700,6 +2708,9 @@ pub async fn keep_running(webview: tauri::Webview) -> Result<KeepRunning, String
 #[tauri::command]
 pub fn open_system_settings(webview: tauri::Webview, page: String) -> Result<(), String> {
     app_window(&webview, &["prefs"])?;
+    if !cfg!(target_os = "macos") {
+        return Err("macOS only".into());
+    }
     let url = match page.as_str() {
         "users" => "x-apple.systempreferences:com.apple.preferences.users",
         "energy" => "x-apple.systempreferences:com.apple.preference.energysaver",
