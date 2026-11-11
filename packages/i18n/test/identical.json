@@ -281,7 +281,8 @@
       "onboarding.flow.area.options.marketing",
       "install.page.beta",
       "install.scene.finder",
-      "install.scene.downloads"
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "es": [
       "devices.iphone.path.general",
@@ -518,7 +519,8 @@
       "onboarding.flow.area.options.marketing",
       "install.page.beta",
       "install.scene.finder",
-      "install.scene.general"
+      "install.scene.general",
+      "devices.armBuild"
     ],
     "fr": [
       "calendar.moreRuns",
@@ -922,7 +924,8 @@
       "install.scene.finder",
       "install.scene.applications",
       "install.page.version",
-      "install.page.versionSize"
+      "install.page.versionSize",
+      "devices.armBuild"
     ],
     "de": [
       "devices.iphone.steps.account",
@@ -1349,7 +1352,8 @@
       "install.scene.displays",
       "install.scene.account",
       "install.scene.appLabel",
-      "install.scene.downloads"
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "it": [
       "calendar.moreRuns",
@@ -1693,7 +1697,8 @@
       "onboarding.flow.area.options.marketing",
       "install.page.beta",
       "install.scene.finder",
-      "install.scene.password"
+      "install.scene.password",
+      "devices.armBuild"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -2263,6 +2268,7 @@
       "install.scene.account",
       "install.scene.appLabel",
       "install.scene.downloads",
+      "devices.armBuild",
       "issues.projects.label",
       "issues.display.field.project"
     ],
@@ -2419,7 +2425,8 @@
       "feedback.mark",
       "devices.android.drivers.samsung",
       "install.page.beta",
-      "install.scene.finder"
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "ko": [
       "devices.system.android",
@@ -2569,7 +2576,8 @@
       "arrival.beta.word",
       "feedback.mark",
       "install.page.beta",
-      "install.scene.finder"
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "zh-Hans": [
       "devices.system.android",
@@ -2710,7 +2718,8 @@
       "openOnPhone.googlePlay",
       "arrival.beta.word",
       "feedback.mark",
-      "install.page.beta"
+      "install.page.beta",
+      "devices.armBuild"
     ],
     "id": [
       "devices.cpus",
@@ -2995,7 +3004,8 @@
       "install.page.beta",
       "install.scene.finder",
       "install.scene.edit",
-      "install.scene.desktopDock"
+      "install.scene.desktopDock",
+      "devices.armBuild"
     ],
     "tr": [
       "devices.cpus",
@@ -3171,7 +3181,8 @@
       "portrait.options.hair.mullet",
       "devices.android.drivers.samsung",
       "install.page.beta",
-      "install.scene.finder"
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "pl": [
       "devices.cpus",
@@ -3447,7 +3458,8 @@
       "onboarding.flow.area.options.marketing",
       "install.page.beta",
       "install.page.system",
-      "install.scene.finder"
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "ru": [
       "devices.system.android",
@@ -3588,7 +3600,8 @@
       "feedback.mark",
       "devices.android.drivers.samsung",
       "install.page.beta",
-      "install.scene.finder"
+      "install.scene.finder",
+      "devices.armBuild"
     ]
   },
   "mobile-base": {
