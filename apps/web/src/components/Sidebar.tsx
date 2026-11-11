@@ -119,6 +119,7 @@ import { ownPlanLines, planNearLimit, planWord } from "@/lib/plan-usage";
 import { useScrollEdges } from "@/lib/scroll-edges";
 import { rightHandSeen, STORAGE_KEYS, sessionStore, storage, storedStrings } from "@/lib/storage";
 import { useToast } from "@/lib/toast";
+import { offersNewWorkspace } from "@/lib/workspaces";
 import type { SettingsSection } from "@/pages/settings-sections";
 import { useStreams } from "@/realtime/context";
 import { ProfileDialog } from "./AccountSettings";
@@ -2217,8 +2218,8 @@ function useWorkspaceLook() {
 
 /**
  * Your workspaces in the account menu of a personal workspace (ADR 0159): the workspace menu's list (by server in the
- * desktop app, ADR 0154), then New workspace or Add workspace. Mounted only while the menu is open: the counts load
- * then. No role beside each: one person's own workspaces.
+ * desktop app, ADR 0154), then New workspace, Add workspace or both. Mounted only while the menu is open: the counts
+ * load then. No role beside each: one person's own workspaces.
  */
 function MenuWorkspaces() {
   const { t, i18n } = useTranslation();
@@ -2228,6 +2229,11 @@ function MenuWorkspaces() {
   const groups = useWorkspaceGroups({ orgs: me.organizations, currentOrgId: org.id });
   const navigate = useNavigate();
   const go = (orgId: string) => void navigate({ to: "/org/$orgId", params: { orgId } });
+  const newWorkspace = offersNewWorkspace(me.user.canCreateWorkspace, groups) && (
+    <MenuItem icon="plus" onSelect={() => void navigate({ to: "/onboarding" })}>
+      {t("shell.newWorkspace")}
+    </MenuItem>
+  );
   if (groups)
     return (
       <>
@@ -2258,6 +2264,7 @@ function MenuWorkspaces() {
             })}
           </Fragment>
         ))}
+        {newWorkspace}
         <MenuItem
           icon="plus"
           description={t("shell.addWorkspaceHint")}
@@ -2284,12 +2291,7 @@ function MenuWorkspaces() {
           </MenuItem>
         );
       })}
-      {/* On agentes.chat Cloud, while sign-up is by invitation, only an invitation makes a workspace (ADR 0078). */}
-      {me.user.canCreateWorkspace !== false && (
-        <MenuItem icon="plus" onSelect={() => void navigate({ to: "/onboarding" })}>
-          {t("shell.newWorkspace")}
-        </MenuItem>
-      )}
+      {newWorkspace}
     </>
   );
 }
@@ -2409,6 +2411,17 @@ function WorkspaceMenuOptions({ onDone }: { onDone: () => void }) {
       invite.open();
     } else go("members")();
   };
+  const newWorkspace = offersNewWorkspace(me.user.canCreateWorkspace, groups) && (
+    <MenuOverlayItem
+      icon="plus"
+      onSelect={() => {
+        onDone();
+        void navigate({ to: "/onboarding" });
+      }}
+    >
+      {t("shell.newWorkspace")}
+    </MenuOverlayItem>
+  );
   let key = 0;
   const next = () => String(++key);
   return (
@@ -2522,6 +2535,7 @@ function WorkspaceMenuOptions({ onDone }: { onDone: () => void }) {
               </Fragment>
             ))}
             <MenuOverlaySeparator />
+            {newWorkspace}
             <MenuOverlayItem
               icon="plus"
               description={t("shell.addWorkspaceHint")}
@@ -2556,19 +2570,10 @@ function WorkspaceMenuOptions({ onDone }: { onDone: () => void }) {
                 </MenuOverlayItem>
               );
             })}
-            {/* On agentes.chat Cloud, while sign-up is by invitation, only an invitation makes a workspace (ADR 0078). */}
-            {me.user.canCreateWorkspace !== false && (
+            {newWorkspace && (
               <>
                 <MenuOverlaySeparator />
-                <MenuOverlayItem
-                  icon="plus"
-                  onSelect={() => {
-                    onDone();
-                    void navigate({ to: "/onboarding" });
-                  }}
-                >
-                  {t("shell.newWorkspace")}
-                </MenuOverlayItem>
+                {newWorkspace}
               </>
             )}
           </>
