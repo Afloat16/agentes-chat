@@ -619,6 +619,8 @@
       "downloading": "正在下载…",
       "installing": "正在安装…",
       "installFailed": "无法自动更新。请手动下载并安装。",
+      "autoInstall": "夜间自动安装更新",
+      "autoInstallDesc": "服务器和智能体会重启约一分钟。如果新版本无法启动，会自动回到旧版本。",
       "download": "下载版本 {{version}}",
       "howTitle": "手动更新",
       "step1": "退出 agentes.chat（⌘Q）。",

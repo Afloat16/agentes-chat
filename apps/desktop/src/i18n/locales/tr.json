@@ -623,6 +623,8 @@
       "downloading": "İndiriliyor…",
       "installing": "Yükleniyor…",
       "installFailed": "Kendiliğinden güncellenemedi. İndirip elle yükleyin.",
+      "autoInstall": "Güncellemeleri gece kendiliğinden yükle",
+      "autoInstallDesc": "Sunucu ve ajanlar bir dakikalığına yeniden başlar. Yeni sürüm açılmazsa kendiliğinden eskisine döner.",
       "download": "{{version}} sürümünü indir",
       "howTitle": "Elle güncelleyin",
       "step1": "agentes.chat'ten çıkın (⌘Q).",

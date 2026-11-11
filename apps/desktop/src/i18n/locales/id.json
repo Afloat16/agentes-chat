@@ -619,6 +619,8 @@
       "downloading": "Mengunduh…",
       "installing": "Memasang…",
       "installFailed": "Tidak bisa memperbarui sendiri. Unduh dan pasang secara manual.",
+      "autoInstall": "Pasang pembaruan sendiri, di malam hari",
+      "autoInstallDesc": "Server dan agen dimulai ulang selama satu menit. Jika versi baru tidak berjalan, versi lama kembali dengan sendirinya.",
       "download": "Unduh versi {{version}}",
       "howTitle": "Perbarui secara manual",
       "step1": "Keluar dari agentes.chat (⌘Q).",

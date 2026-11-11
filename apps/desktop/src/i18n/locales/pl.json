@@ -631,6 +631,8 @@
       "downloading": "Pobieranie…",
       "installing": "Instalowanie…",
       "installFailed": "Nie udało się zaktualizować automatycznie. Pobierz i zainstaluj ręcznie.",
+      "autoInstall": "Instaluj aktualizacje samodzielnie, w nocy",
+      "autoInstallDesc": "Serwer i agenci uruchamiają się ponownie na minutę. Jeśli nowa wersja się nie uruchomi, aplikacja sama wróci do poprzedniej.",
       "download": "Pobierz wersję {{version}}",
       "howTitle": "Aktualizacja ręczna",
       "step1": "Zamknij agentes.chat (⌘Q).",

@@ -619,6 +619,8 @@
       "downloading": "ダウンロード中…",
       "installing": "インストール中…",
       "installFailed": "自動で更新できませんでした。手動でダウンロードしてインストールしてください。",
+      "autoInstall": "夜間にアップデートを自動でインストール",
+      "autoInstallDesc": "サーバーとエージェントが1分ほど再起動します。新しいバージョンが起動しない場合は、自動で元に戻ります。",
       "download": "バージョン{{version}}をダウンロード",
       "howTitle": "手動で更新",
       "step1": "agentes.chatを終了します（⌘Q）。",

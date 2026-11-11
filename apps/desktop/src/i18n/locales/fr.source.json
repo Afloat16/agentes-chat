@@ -1442,6 +1442,12 @@
   "prefs.updates.installFailed": {
     "value": "Couldn't update on its own. Download and install it by hand."
   },
+  "prefs.updates.autoInstall": {
+    "value": "Install updates by itself, at night"
+  },
+  "prefs.updates.autoInstallDesc": {
+    "value": "The server and agents restart for a minute. If the new version doesn't start, it goes back by itself."
+  },
   "prefs.updates.download": {
     "value": "Download version {{version}}"
   },

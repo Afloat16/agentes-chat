@@ -627,6 +627,8 @@
       "downloading": "Download…",
       "installing": "Installazione…",
       "installFailed": "Non è stato possibile aggiornare da solo. Scaricalo e installalo a mano.",
+      "autoInstall": "Installa gli aggiornamenti da solo, di notte",
+      "autoInstallDesc": "Il server e gli agenti si riavviano per un minuto. Se la nuova versione non parte, torna da sola alla precedente.",
       "download": "Scarica la versione {{version}}",
       "howTitle": "Aggiorna a mano",
       "step1": "Esci da agentes.chat (⌘Q).",

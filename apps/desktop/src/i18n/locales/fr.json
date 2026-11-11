@@ -627,6 +627,8 @@
       "downloading": "Téléchargement…",
       "installing": "Installation…",
       "installFailed": "Mise à jour automatique impossible. Téléchargez-la et installez-la manuellement.",
+      "autoInstall": "Installer les mises à jour tout seul, la nuit",
+      "autoInstallDesc": "Le serveur et les agents redémarrent pendant une minute. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.",
       "download": "Télécharger la version {{version}}",
       "howTitle": "Mettre à jour manuellement",
       "step1": "Quittez agentes.chat (⌘Q).",
