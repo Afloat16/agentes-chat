@@ -4964,7 +4964,9 @@
           "codeLabel": "Claude kodu",
           "notCode": "Bu bir Claude kodu gibi görünmüyor.",
           "stepTwoGoogle": "Google'ın gösterdiği kodu yapıştır",
-          "codeLabelGoogle": "Kod veya bağlantı",
+          "codeLabelGoogle": "Google kodu",
+          "codeHintGoogle": "Sayfanın adresini değil, Google sayfasının gösterdiği kodu yapıştırın.",
+          "notCodeGoogle": "Bu, kod içermeyen bir adres. Google sayfasının gösterdiği kodu yapıştırın.",
           "send": "{{computer}} bilgisayarına gönder",
           "sending": "Kod {{computer}} bilgisayarına gönderiliyor…",
           "sent": "Kod gönderildi. Giriş {{computer}} üzerinde tamamlanıyor.",
@@ -4977,6 +4979,17 @@
           "reconnecting": "Yeniden bağlanıyor…",
           "failed": "Bu hesaba giriş yapılamadı. Tekrar deneyin.",
           "expired": "Giriş süresi doldu. Tekrar deneyin.",
+          "why": {
+            "not_installed": "{{brand}}, {{computer}} üzerinde kurulu değil. Tekrar deneyin.",
+            "no_tty": "{{computer}}, kodu {{brand}} tarafına iletemedi. Tekrar deneyin.",
+            "network": "{{computer}}, {{brand}} ile bağlantı kuramadı. Tekrar deneyin.",
+            "bad_code": "{{brand}} kodu reddetti. Tekrar deneyin ve yalnızca sayfanın gösterdiği kodu yapıştırın.",
+            "cli_exit": "{{brand}}, {{computer}} üzerinde bir hatayla durdu. Tekrar deneyin.",
+            "not_signed_in_after_login": "{{brand}} girişi kabul etti ama bu hesap burada kullanılamıyor, planı bunu kapsamıyor olabilir. Başka bir hesap veya bir API anahtarı deneyin.",
+            "status_unknown": "{{brand}}, hesabın giriş yapıp yapmadığını bildirmedi. Tekrar deneyin.",
+            "no_token": "{{brand}}, hesabın belirtecini göstermeden bitti. Tekrar deneyin.",
+            "not_kept": "Hesap giriş yaptı ama {{computer}} girişi saklayamadı. Tekrar deneyin."
+          },
           "duplicate": {
             "claude_code": "Claude, zaten bağladığınız {{account}} hesabıyla giriş yaptı. Başka bir hesap kullanmak için Claude sayfasında çıkış yapıp tekrar deneyin.",
             "codex": "ChatGPT, zaten bağladığınız {{account}} hesabıyla giriş yaptı. Başka bir hesap kullanmak için ChatGPT sayfasında çıkış yapıp tekrar deneyin.",

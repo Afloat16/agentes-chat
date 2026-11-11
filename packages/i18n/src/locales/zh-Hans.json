@@ -4832,7 +4832,9 @@
           "codeLabel": "Claude 授权码",
           "notCode": "这看起来不像 Claude 的代码。",
           "stepTwoGoogle": "粘贴 Google 显示的代码",
-          "codeLabelGoogle": "代码或链接",
+          "codeLabelGoogle": "Google 代码",
+          "codeHintGoogle": "请粘贴 Google 页面显示的代码，不要粘贴页面地址。",
+          "notCodeGoogle": "这是一个不含代码的地址。请粘贴 Google 页面显示的代码。",
           "send": "发送到 {{computer}}",
           "sending": "正在把代码发送到 {{computer}}…",
           "sent": "代码已发送。正在 {{computer}} 上完成登录。",
@@ -4845,6 +4847,17 @@
           "reconnecting": "正在重新连接…",
           "failed": "无法登录该账号，请重试。",
           "expired": "登录超时，请重试。",
+          "why": {
+            "not_installed": "{{computer}} 上未安装 {{brand}}，请重试。",
+            "no_tty": "{{computer}} 无法把代码交给 {{brand}}，请重试。",
+            "network": "{{computer}} 无法连接 {{brand}}，请重试。",
+            "bad_code": "{{brand}} 拒绝了该代码。请重试，并且只粘贴页面显示的代码。",
+            "cli_exit": "{{brand}} 在 {{computer}} 上因出错而停止，请重试。",
+            "not_signed_in_after_login": "{{brand}} 接受了登录，但此账号无法在这里使用，可能套餐不包含。请换一个账号或使用 API 密钥。",
+            "status_unknown": "{{brand}} 没有说明账号是否已登录，请重试。",
+            "no_token": "{{brand}} 结束时没有显示账号的令牌，请重试。",
+            "not_kept": "账号已登录，但 {{computer}} 无法保存登录状态，请重试。"
+          },
           "duplicate": {
             "claude_code": "Claude 已登录为 {{account}}，这个账号你已经连接过了。要使用其他账号，请在 Claude 的页面上退出登录后重试。",
             "codex": "ChatGPT 已登录为 {{account}}，这个账号你已经连接过了。要使用其他账号，请在 ChatGPT 的页面上退出登录后重试。",

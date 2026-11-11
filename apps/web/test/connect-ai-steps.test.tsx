@@ -579,11 +579,27 @@ describe("Conectar uma IA: one picker, plans first", () => {
       "antigravity",
       { provider: "enterprise" },
     ]);
-    // Its second step is Google's: the code its page shows, or that page's address. Claude is named nowhere.
+    // Its second step is Google's: the code its page shows, never that page's address. Claude is named nowhere.
     expect(shownText(panel)).toContain("Cole o código que o Google mostrar");
-    const field = within(panel).getByRole("textbox", { name: "Código ou link" });
-    expect(field.getAttribute("placeholder")).toBe("Código ou link");
+    const field = within(panel).getByRole("textbox", { name: "Código do Google" });
+    expect(field.getAttribute("placeholder")).toBe("Código do Google");
     expect(shownText(panel)).not.toContain("Claude");
+    const hint = hintOf("Cole o código que o Google mostrar", panel);
+    expect(hint.text).toBe("Cole o código que a página do Google mostra, não o endereço da página.");
+    expect(field.getAttribute("aria-describedby")).toBe(hint.button.getAttribute("aria-describedby"));
+    // The page's own address carries no code: said under the field, and it can't be sent.
+    const noCode = "Isso é um endereço sem código. Cole o código que a página do Google mostra.";
+    await type(field, "https://example.com/oauth-callback");
+    expect(shownText(panel)).toContain(noCode);
+    const send = () => within(panel).getByRole("button", { name: "Enviar ao MacBook" }) as HTMLButtonElement;
+    expect(send().disabled).toBe(true);
+    await act(async () => fireEvent.keyDown(field, { key: "Enter" }));
+    expect(calls(state, "machines.sendAccountCode")).toHaveLength(0);
+    for (const ok of ["https://example.com/oauth-callback?code=4%2F0Afake", "4/0Afake"]) {
+      await type(field, ok);
+      expect(shownText(panel)).not.toContain(noCode);
+      expect(send().disabled).toBe(false);
+    }
   });
 
   test("a sign-in starting: the line under its title says the computer is asked, until it answers, and only then", async () => {
@@ -627,6 +643,59 @@ describe("Conectar uma IA: one picker, plans first", () => {
     const retry = within(dialog).getByRole("button", { name: "Tentar de novo" });
     expect(retry.parentElement?.className).toBe("ai-panel__row");
     expect(retry.parentElement?.querySelector(":scope > .ac-setnote")).not.toBeNull();
+  });
+
+  test("a sign-in that ended on the computer says why by its code, the CLI's own words under it only where they explain", async () => {
+    const said = `couldn't log in: ${"token-exchange-failed-".repeat(12)}end`;
+    const cases = [
+      {
+        code: "bad_code",
+        line: "O Gemini recusou o código. Tente de novo e cole só o código que a página mostrar.",
+        detail: false,
+      },
+      { code: "cli_exit", line: "O Gemini parou com um erro no MacBook. Tente de novo.", detail: true },
+      {
+        code: "not_signed_in_after_login",
+        line: "O Gemini aceitou o login, mas esta conta não pode ser usada aqui, talvez o plano não inclua. Tente outra conta ou uma chave de API.",
+        detail: true,
+      },
+      { code: "network", line: "O MacBook não conseguiu falar com o Gemini. Tente de novo.", detail: false },
+      // A code from a newer runner: the plain line.
+      { code: "something_new", line: "Não deu para entrar nessa conta. Tente de novo.", detail: false },
+    ];
+    const base = fakeAgentBrain(ADA_ID);
+    const geminiOption = { kind: "antigravity" as const, available: true, models: [], defaultModel: null };
+    for (const { code, line, detail } of cases) {
+      const { machines, dialog, choose } = await connect({
+        computers: [{ ...MAC, brains: { claude_code: true, codex: true, antigravity: true } }],
+        brain: { options: [...base.options, geminiOption] },
+      });
+      machines?.endLogin("login_1", { state: "failed", code, message: said } as never);
+      await choose("Gemini");
+      await withPopup(() => click(within(dialog).getByRole("button", { name: "Entrar com Google" })));
+      await settle(8);
+      const retry = within(dialog).getByRole("button", { name: "Tentar de novo" });
+      const row = retry.parentElement as HTMLElement;
+      expect(row.querySelector(":scope > .ac-setnote")?.textContent).toBe(line);
+      // Whole, in the code well between the line and its button: never cut, and the button under it.
+      const well = row.querySelector(":scope > .agp-addacct__said");
+      expect(well?.textContent ?? null).toBe(detail ? said : null);
+      if (well) expect([...row.children].indexOf(well)).toBe(1);
+      cleanup();
+    }
+    const layout = await stylesheet("../src/layout.css");
+    expect(ruleOf(layout, ".ai-panel__row > .agp-addacct__said")).toContain("flex: 1 1 100%");
+  });
+
+  test("a sign-in canceled from somewhere else shows no error: it is back at its start", async () => {
+    const { machines, dialog, choose } = await connect();
+    machines?.endLogin("login_1", { state: "failed", code: "canceled", message: "Canceled" });
+    await choose("ChatGPT");
+    await withPopup(() => click(within(dialog).getByRole("button", { name: "Entrar com ChatGPT" })));
+    await settle(8);
+    expect(within(dialog).queryByRole("button", { name: "Tentar de novo" })).toBeNull();
+    expect(dialog.textContent).not.toContain("Não deu para entrar");
+    expect(within(dialog).getByRole("button", { name: "Entrar com ChatGPT" })).toBeTruthy();
   });
 
   test("a plan's panel: its body starts at the panel's edge, every lead centred in the numbers' column, an even well", async () => {

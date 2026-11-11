@@ -5148,7 +5148,9 @@
           "codeLabel": "Codice di Claude",
           "notCode": "Non sembra un codice di Claude.",
           "stepTwoGoogle": "Incolla il codice che mostra Google",
-          "codeLabelGoogle": "Codice o link",
+          "codeLabelGoogle": "Codice di Google",
+          "codeHintGoogle": "Incolla il codice mostrato dalla pagina di Google, non l'indirizzo della pagina.",
+          "notCodeGoogle": "Questo è un indirizzo senza codice. Incolla il codice mostrato dalla pagina di Google.",
           "send": "Invia a {{computer}}",
           "sending": "Invio del codice a {{computer}}…",
           "sent": "Codice inviato. Completamento dell'accesso su {{computer}}.",
@@ -5161,6 +5163,17 @@
           "reconnecting": "Riconnessione…",
           "failed": "Impossibile accedere a quell'account. Riprova.",
           "expired": "Il tempo per accedere è scaduto. Riprova.",
+          "why": {
+            "not_installed": "{{brand}} non è installato su {{computer}}. Riprova.",
+            "no_tty": "Il codice non è arrivato a {{brand}} su {{computer}}. Riprova.",
+            "network": "{{brand}} non è raggiungibile da {{computer}}. Riprova.",
+            "bad_code": "{{brand}} ha rifiutato il codice. Riprova e incolla solo il codice mostrato dalla pagina.",
+            "cli_exit": "{{brand}} si è fermato con un errore su {{computer}}. Riprova.",
+            "not_signed_in_after_login": "{{brand}} ha accettato l'accesso, ma questo account non si può usare qui, forse il piano non lo include. Prova un altro account o una chiave API.",
+            "status_unknown": "{{brand}} non ha indicato se l'account ha effettuato l'accesso. Riprova.",
+            "no_token": "{{brand}} ha finito senza mostrare il token dell'account. Riprova.",
+            "not_kept": "L'account ha effettuato l'accesso, ma {{computer}} non è riuscito a conservarlo. Riprova."
+          },
           "duplicate": {
             "claude_code": "Claude ha effettuato l'accesso come {{account}}, un account che hai già collegato. Per usarne un altro, esci sulla pagina di Claude e riprova.",
             "codex": "ChatGPT ha effettuato l'accesso come {{account}}, un account che hai già collegato. Per usarne un altro, esci sulla pagina di ChatGPT e riprova.",

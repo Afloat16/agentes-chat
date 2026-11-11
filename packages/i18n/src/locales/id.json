@@ -4824,7 +4824,9 @@
           "codeLabel": "Kode Claude",
           "notCode": "Itu sepertinya bukan kode Claude.",
           "stepTwoGoogle": "Tempel kode yang ditampilkan Google",
-          "codeLabelGoogle": "Kode atau tautan",
+          "codeLabelGoogle": "Kode Google",
+          "codeHintGoogle": "Tempel kode yang ditampilkan halaman Google, bukan alamat halamannya.",
+          "notCodeGoogle": "Itu alamat tanpa kode. Tempel kode yang ditampilkan halaman Google.",
           "send": "Kirim ke {{computer}}",
           "sending": "Mengirim kode ke {{computer}}…",
           "sent": "Kode terkirim. Menyelesaikan proses masuk di {{computer}}.",
@@ -4837,6 +4839,17 @@
           "reconnecting": "Menghubungkan ulang…",
           "failed": "Tidak bisa masuk ke akun itu. Coba lagi.",
           "expired": "Waktu untuk masuk sudah habis. Coba lagi.",
+          "why": {
+            "not_installed": "{{brand}} belum terpasang di {{computer}}. Coba lagi.",
+            "no_tty": "Kode tidak sampai ke {{brand}} di {{computer}}. Coba lagi.",
+            "network": "{{brand}} tidak bisa dihubungi dari {{computer}}. Coba lagi.",
+            "bad_code": "{{brand}} menolak kode itu. Coba lagi dan tempel hanya kode yang ditampilkan halaman.",
+            "cli_exit": "{{brand}} berhenti karena galat di {{computer}}. Coba lagi.",
+            "not_signed_in_after_login": "{{brand}} menerima login, tetapi akun ini tidak bisa dipakai di sini, mungkin paketnya tidak mencakupnya. Coba akun lain atau kunci API.",
+            "status_unknown": "{{brand}} tidak memberi tahu apakah akun sudah masuk. Coba lagi.",
+            "no_token": "{{brand}} selesai tanpa menampilkan token akun. Coba lagi.",
+            "not_kept": "Akun sudah masuk, tetapi {{computer}} tidak bisa menyimpan loginnya. Coba lagi."
+          },
           "duplicate": {
             "claude_code": "Claude masuk sebagai {{account}}, akun yang sudah kamu hubungkan. Untuk memakai akun lain, keluar di halaman Claude lalu coba lagi.",
             "codex": "ChatGPT masuk sebagai {{account}}, akun yang sudah kamu hubungkan. Untuk memakai akun lain, keluar di halaman ChatGPT lalu coba lagi.",

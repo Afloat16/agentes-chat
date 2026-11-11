@@ -5318,7 +5318,9 @@
           "codeLabel": "Kod Claude",
           "notCode": "To nie wygląda na kod Claude.",
           "stepTwoGoogle": "Wklej kod, który pokazuje Google",
-          "codeLabelGoogle": "Kod lub link",
+          "codeLabelGoogle": "Kod Google",
+          "codeHintGoogle": "Wklej kod, który pokazuje strona Google, a nie adres tej strony.",
+          "notCodeGoogle": "To adres bez kodu. Wklej kod, który pokazuje strona Google.",
           "send": "Wyślij na {{computer}}",
           "sending": "Wysyłanie kodu na {{computer}}…",
           "sent": "Kod wysłany. Kończenie logowania na komputerze {{computer}}.",
@@ -5331,6 +5333,17 @@
           "reconnecting": "Ponowne łączenie…",
           "failed": "Nie udało się zalogować na to konto. Spróbuj ponownie.",
           "expired": "Czas na zalogowanie minął. Spróbuj ponownie.",
+          "why": {
+            "not_installed": "{{brand}} nie jest zainstalowany na komputerze {{computer}}. Spróbuj ponownie.",
+            "no_tty": "Komputer {{computer}} nie mógł przekazać kodu do {{brand}}. Spróbuj ponownie.",
+            "network": "Komputer {{computer}} nie mógł połączyć się z {{brand}}. Spróbuj ponownie.",
+            "bad_code": "{{brand}} odrzucił kod. Spróbuj ponownie i wklej tylko kod, który pokazuje strona.",
+            "cli_exit": "{{brand}} zatrzymał się z błędem na komputerze {{computer}}. Spróbuj ponownie.",
+            "not_signed_in_after_login": "{{brand}} przyjął logowanie, ale tego konta nie można tu używać, być może plan tego nie obejmuje. Spróbuj z innym kontem lub kluczem API.",
+            "status_unknown": "{{brand}} nie potwierdził, czy konto jest zalogowane. Spróbuj ponownie.",
+            "no_token": "{{brand}} zakończył bez pokazania tokenu konta. Spróbuj ponownie.",
+            "not_kept": "Konto jest zalogowane, ale komputer {{computer}} nie mógł zapisać logowania. Spróbuj ponownie."
+          },
           "duplicate": {
             "claude_code": "Claude zalogował się jako {{account}}, a to konto jest już połączone. Aby użyć innego, wyloguj się na stronie Claude i spróbuj ponownie.",
             "codex": "ChatGPT zalogował się jako {{account}}, a to konto jest już połączone. Aby użyć innego, wyloguj się na stronie ChatGPT i spróbuj ponownie.",

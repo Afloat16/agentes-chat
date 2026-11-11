@@ -5159,9 +5159,13 @@ export const ptBR = {
           codeLabel: "Código do Claude",
           /** Under the field while what it holds isn't a code of this sign-in (it waits for Enviar). */
           notCode: "Isso não parece o código do Claude.",
-          /** The Gemini sign-in's second step: Google's page shows a code, or lands on one whose link works too. */
+          /** The Gemini sign-in's second step: Google's page shows a code and takes it out of its own address. */
           stepTwoGoogle: "Cole o código que o Google mostrar",
-          codeLabelGoogle: "Código ou link",
+          codeLabelGoogle: "Código do Google",
+          /** That step's ⓘ. */
+          codeHintGoogle: "Cole o código que a página do Google mostra, não o endereço da página.",
+          /** Under the field while it holds an address with no code in it (never sent). */
+          notCodeGoogle: "Isso é um endereço sem código. Cole o código que a página do Google mostra.",
           send: "Enviar ao {{computer}}",
           sending: "Enviando o código ao {{computer}}…",
           sent: "Código enviado. O {{computer}} está terminando de entrar.",
@@ -5174,6 +5178,22 @@ export const ptBR = {
           reconnecting: "Reconectando…",
           failed: "Não deu para entrar nessa conta. Tente de novo.",
           expired: "O tempo para entrar acabou. Tente de novo.",
+          /**
+           * Why a sign-in ended on the computer, by its code (`loginFailureLine`). `brand`: the provider or the plan.
+           * `cli_exit` and `not_signed_in_after_login` show the CLI's own words under them.
+           */
+          why: {
+            not_installed: "O {{brand}} não está instalado no {{computer}}. Tente de novo.",
+            no_tty: "O {{computer}} não conseguiu entregar o código ao {{brand}}. Tente de novo.",
+            network: "O {{computer}} não conseguiu falar com o {{brand}}. Tente de novo.",
+            bad_code: "O {{brand}} recusou o código. Tente de novo e cole só o código que a página mostrar.",
+            cli_exit: "O {{brand}} parou com um erro no {{computer}}. Tente de novo.",
+            not_signed_in_after_login:
+              "O {{brand}} aceitou o login, mas esta conta não pode ser usada aqui, talvez o plano não inclua. Tente outra conta ou uma chave de API.",
+            status_unknown: "O {{brand}} não respondeu se a conta entrou. Tente de novo.",
+            no_token: "O {{brand}} terminou sem mostrar o token da conta. Tente de novo.",
+            not_kept: "A conta entrou, mas o {{computer}} não conseguiu guardar o login. Tente de novo.",
+          },
           duplicate: {
             claude_code:
               "O Claude entrou como {{account}}, uma conta que você já conectou. Para usar outra, saia na página do Claude e tente de novo.",
