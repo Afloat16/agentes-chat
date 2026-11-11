@@ -84,8 +84,8 @@ describe("the wall", () => {
     state.messages.push(wall());
     await open(state);
     // A title, one sentence and the button: what the plan brings waits behind the ⓘ beside the title.
-    expect([...card().querySelectorAll("p")].map((p) => p.textContent)).toEqual([
-      KEPT,
+    expect(card().querySelector(".rq__title b")?.textContent).toBe(KEPT);
+    expect([...card().querySelectorAll("p:not(.rq__title)")].map((p) => p.textContent)).toEqual([
       "Respondo aqui quando o workspace tiver um plano do agentes.chat.",
     ]);
     const about = within(card()).getByRole("button", { name: `Sobre ${KEPT}` });
