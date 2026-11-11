@@ -234,10 +234,8 @@ export async function projectByName(
     return row;
   }
   const names = (await projectRows(deps.db, orgId)).filter((p) => !p.archivedAt).map((p) => `"${p.name}"`);
-  throw new ValidationError(
-    names.length
-      ? `There is no project named "${wanted}". The projects are: ${names.join(", ")}. Use one of them, or set new_project only when the person asked for a new project.`
-      : `There is no project named "${wanted}", and no projects yet. Set new_project only when the person asked for a new project.`,
-    "issue_project.unknown",
-  );
+  const message = names.length
+    ? `There is no project named "${wanted}". The projects are: ${names.join(", ")}. Use one of them, or set new_project only when the person asked for a new project.`
+    : `There is no project named "${wanted}", and no projects yet. Set new_project only when the person asked for a new project.`;
+  throw new ValidationError(message, "issue_project.unknown");
 }
