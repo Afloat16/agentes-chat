@@ -1,6 +1,7 @@
 import type { ComputerDevice, DeviceAudience, DevicesList, Member, OrgRole, PhoneDevice } from "@agenteschat/client";
 import {
   audienceWords,
+  iosOf,
   portraitOf,
   reasonText,
   sameAudience,
@@ -25,7 +26,7 @@ import {
   Select,
   Switch,
 } from "@agenteschat/ui";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHost, useStore } from "../../app";
 import {
@@ -36,13 +37,14 @@ import {
   siteApi,
   thisComputer,
 } from "../../control/devices";
-import { combinedPause } from "../../control/pause";
+import { type PairTarget, pairWithSession, targetKey } from "../../control/pair";
 import { serverName } from "../../control/server";
 import { type Home, orgName } from "../../control/store";
 import { toolsHere } from "../../control/this-mac";
 import { agentOf, useLocalServer, usePending, writePref } from "../../hooks";
 import type { Host } from "../../host/types";
-import { AgentFace } from "../../ui/bits";
+import { AgentFace, ConnectionChip, OrgTile } from "../../ui/bits";
+import { MacPermissionCard, useMacGrants } from "../../ui/permissions";
 import { CardTitle, hintFor, PrefCard, PrefRow } from "../../ui/settings";
 import { useToast } from "../../ui/Toast";
 
@@ -109,31 +111,75 @@ const AUDIENCE_ICON: Record<DeviceAudience["mode"], IconName> = {
 };
 
 /**
- * General's This Mac part: Let agents use this Mac, Commands, who can use it, and the phones plugged in with their
- * state and one way out each (Stop, Show me how). The rule and the phones are the server's, as the web sets them.
+ * General's This Mac part: one switch per workspace the person is signed in to (a paired one pauses and resumes, one
+ * this computer doesn't work for yet pairs it after the system's dialog), Commands, who can use it, and the phones
+ * plugged in with their state and one way out each (Stop, Show me how). The rule and the phones are the server's, as
+ * the web sets them. On a Mac, its permissions (`Permissions`). `bottom`: Open at login, under the rest.
  */
-export function ThisMacCards({ homes }: { homes: Home[] }) {
-  const { t } = useTranslation();
+export function ThisMacCards({ homes, offers, bottom }: { homes: Home[]; offers: PairTarget[]; bottom?: ReactNode }) {
+  const { t, i18n } = useTranslation();
   const host = useHost();
   const store = useStore();
   const toast = useToast();
   const { answers, load, targets } = useDevices(homes);
-  const [pending, run] = usePending<"agents" | "commands">();
-  const paused = combinedPause(homes.map((h) => h.status?.paused ?? { paused: false }));
+  const [pending, run] = usePending<string>();
   const { tools } = toolsHere(homes);
   const user = homes.find((h) => h.status?.user)?.status?.user;
   const multi = homes.length > 1;
-  const letTitle = t("desktop.prefs.thisMac.letAgents");
   const commandsTitle = t("desktop.tools.commandsName");
 
-  const setAgents = (on: boolean) =>
-    run("agents", async () => {
+  const setAgents = (home: Home, on: boolean) =>
+    run(home.homeId, async () => {
       try {
-        await store.requestAll(on ? { type: "resume" } : { type: "pause", until: null });
+        await store.request(home.homeId, on ? { type: "resume" } : { type: "pause", until: null });
       } catch {
         toast(t("desktop.common.error"), "alert");
       }
     });
+  const pair = (target: PairTarget) =>
+    run(targetKey(target), async () => {
+      try {
+        if (!(await host.askToPair(target.server, target.name))) return;
+        await pairWithSession(host, store, target);
+        // Its agents work while the app runs.
+        await host.setAutostart(true).catch(() => {});
+        toast(t("desktop.pair.done", { org: target.name }));
+      } catch (err) {
+        toast(errorText(t, err, i18n.language), "alert");
+      }
+    });
+  const workspaceRow = (
+    key: string,
+    logo: string | null,
+    org: string,
+    on: boolean,
+    desc: string,
+    onChange: (on: boolean) => void,
+    chip?: ReactNode,
+  ) => {
+    const title = t("desktop.pair.letOrg", { org });
+    const id = `mac-agents-${key}`;
+    return (
+      <PrefRow
+        key={key}
+        lead={<OrgTile logo={logo} size="lg" />}
+        htmlFor={id}
+        title={title}
+        hint={hintFor(t, title, t("desktop.prefs.thisMac.letAgentsDesc"))}
+        chip={chip}
+        desc={desc}
+        end={
+          <Switch
+            id={id}
+            aria-describedby={`${id}-hint`}
+            checked={on}
+            disabled={pending !== null}
+            onCheckedChange={onChange}
+          />
+        }
+      />
+    );
+  };
   const setCommands = (on: boolean) =>
     run("commands", async () => {
       try {
@@ -154,46 +200,50 @@ export function ThisMacCards({ homes }: { homes: Home[] }) {
     <>
       <CardTitle>{t("desktop.prefs.thisMac.agents")}</CardTitle>
       <PrefCard>
-        <PrefRow
-          lead={logo("agent")}
-          htmlFor="mac-agents"
-          title={letTitle}
-          hint={hintFor(t, letTitle, t("desktop.prefs.thisMac.letAgentsDesc"))}
-          end={
-            <Switch
-              id="mac-agents"
-              aria-describedby="mac-agents-hint"
-              checked={!paused}
-              disabled={pending !== null}
-              onCheckedChange={(on) => void setAgents(on)}
-            />
-          }
-        />
-        <PrefRow
-          lead={logo("code")}
-          htmlFor="mac-commands"
-          title={commandsTitle}
-          hint={hintFor(
-            t,
-            commandsTitle,
-            user ? t("desktop.prefs.thisMac.commandsDesc", { user }) : t("desktop.tools.commandsDesc"),
-          )}
-          end={
-            <Switch
-              id="mac-commands"
-              aria-describedby="mac-commands-hint mac-commands-warn"
-              checked={tools.commands}
-              disabled={pending !== null}
-              onCheckedChange={(on) => void setCommands(on)}
-            />
-          }
-          under={
-            <span className="dk-honest ac-iconline">
-              <Icon name="alert" size={14} />
-              <span id="mac-commands-warn">{t("desktop.tools.commandsWarn")}</span>
-            </span>
-          }
-        />
+        {homes.map((h) => {
+          const paused = h.status?.paused?.paused === true;
+          return workspaceRow(
+            h.homeId,
+            h.logo,
+            orgName(h),
+            !paused,
+            t(paused ? "desktop.pair.notUsing" : "desktop.pair.canUse"),
+            (on) => void setAgents(h, on),
+            <ConnectionChip status={h.status} running={h.running} />,
+          );
+        })}
+        {offers.map((o) =>
+          workspaceRow(targetKey(o), o.logo, o.name, pending === targetKey(o), t("desktop.pair.notUsing"), (on) => {
+            if (on) void pair(o);
+          }),
+        )}
+        {homes.length > 0 && (
+          <PrefRow
+            lead={logo("code")}
+            htmlFor="mac-commands"
+            title={commandsTitle}
+            hint={hintFor(
+              t,
+              commandsTitle,
+              user ? t("desktop.prefs.thisMac.commandsDesc", { user }) : t("desktop.tools.commandsDesc"),
+            )}
+            end={
+              <Switch
+                id="mac-commands"
+                aria-describedby="mac-commands-hint mac-commands-warn"
+                checked={tools.commands}
+                disabled={pending !== null}
+                onCheckedChange={(on) => void setCommands(on)}
+              />
+            }
+            under={
+              <span className="dk-honest ac-iconline">
+                <Icon name="alert" size={14} />
+                <span id="mac-commands-warn">{t("desktop.tools.commandsWarn")}</span>
+              </span>
+            }
+          />
+        )}
         {homes.map((h, i) => {
           const target = targets[i];
           const answer = answers[h.homeId];
@@ -211,7 +261,10 @@ export function ThisMacCards({ homes }: { homes: Home[] }) {
             />
           ) : null;
         })}
+        {bottom}
       </PrefCard>
+
+      {host.platform === "mac" && homes.length > 0 && <Permissions />}
 
       {homes.map((h, i) => {
         const target = targets[i];
@@ -262,6 +315,35 @@ export function ThisMacCards({ homes }: { homes: Home[] }) {
           </Fragment>
         );
       })}
+    </>
+  );
+}
+
+/**
+ * This Mac's permissions, as Prepare this Mac asks them, and where people turn them on again: an ad-hoc signed app
+ * loses them with each update. Asking for Screen Recording or Full Disk Access keeps Preferences to open again when
+ * macOS reopens the app.
+ */
+function Permissions() {
+  const { t } = useTranslation();
+  const host = useHost();
+  const [resumed, setResumed] = useState(false);
+  useEffect(() => {
+    host
+      .setupState()
+      .then((s) => {
+        if (s?.step !== "prefs" || !s.resumed) return;
+        setResumed(true);
+        return host.setSetupState(null);
+      })
+      .catch(() => {});
+  }, [host]);
+  const mac = useMacGrants(() => host.setSetupState({ step: "prefs" }).catch(() => {}));
+  const title = t("desktop.prepare.prefsTitle");
+  return (
+    <>
+      <CardTitle hint={hintFor(t, title, t("desktop.prepare.prefsHint"))}>{title}</CardTitle>
+      <MacPermissionCard mac={mac} resumed={resumed} />
     </>
   );
 }
@@ -436,7 +518,7 @@ const fold = (s: string) =>
     .toLowerCase();
 
 /** "Specific people or roles": the workspace's people (the owner always can) and roles, ticked. */
-function PeoplePicker({
+export function PeoplePicker({
   server,
   orgId,
   ownerUserId,
@@ -595,7 +677,9 @@ function PhoneRow({
   const line =
     s.kind === "needs_you"
       ? reasonText(t, s.reason)
-      : [statusDetail(t, i18n.language, s, { host: computer.name }), who].filter(Boolean).join(" · ");
+      : [statusDetail(t, i18n.language, s, { host: computer.name, ios: iosOf(phone) }), who]
+          .filter(Boolean)
+          .join(" · ");
   const icon: IconName | undefined =
     look === "ready"
       ? "check"

@@ -415,6 +415,10 @@ export function chatRoutes(deps: AppDeps) {
                 startedAt: z.string().nullable(),
                 heartbeatAt: z.string().nullable().openapi({ description: "Last sign of life of its worker." }),
                 createdAt: z.string(),
+                workingMs: z.number().int().openapi({
+                  description:
+                    "How long the work it is doing now has taken, in milliseconds, as this server counts it: since it last went back to work (after waiting for a person, an approval or its computer) or last posted, else since it was created. For the conversation's \"thinking for …\": count on from it with the app's own clock, never from `startedAt`, which stays at the run's first start.",
+                }),
                 pendingMessageIds: z.array(z.uuid()).openapi({
                   description:
                     "Messages sent while it works that it hasn't read yet. A message whose `meta.steeredRunIds` names a run that is not here, or is here without it in this list, was read (or handed on: `agent.run.redispatched`).",
@@ -423,21 +427,6 @@ export function chatRoutes(deps: AppDeps) {
                   description:
                     "Work in the background (a routine's, or long work, ADR 0121): not the conversation's working row.",
                 }),
-                live: z
-                  .object({
-                    turn: z.number().int(),
-                    at: z.number().int(),
-                    text: z.string(),
-                    shownAt: z.string().optional().openapi({
-                      description:
-                        "When the reply it writes first showed words (`agent.delta.shownAt`): its live row, and its message once posted, go there.",
-                    }),
-                  })
-                  .optional()
-                  .openapi({
-                    description:
-                      "What its current model call has streamed so far (`agent.delta`) past its last tool, when this server runs it: `text` starts at `at` of the call's text, so the next delta's `at` is `at` plus its length.",
-                  }),
               }),
             ),
             consults: z

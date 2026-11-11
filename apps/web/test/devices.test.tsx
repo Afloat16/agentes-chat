@@ -1,17 +1,40 @@
-import { afterEach, describe, expect, test } from "bun:test";
-import { setupDom } from "@agenteschat/ui/testing/dom";
+import { afterEach, describe, expect, setSystemTime, test } from "bun:test";
+import { domWindow, setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
 
+import type { PhoneDevice } from "@agenteschat/client";
+import { ANDROID_SLOW_MS, ANDROID_USB_DRIVERS } from "@agenteschat/client/lib/devices";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import { createFakeApi, ENG_ID, fakeDevicesOf, fakeMachinesOf } from "./fake-api";
 import { notification } from "./fakes/notifications";
-import { acmeDevices, acmeState, IMAC, IPHONE, LIA, MAC, ORG_ID, PIXEL, RUI } from "./fixtures/devices";
+import { ANA, acmeDevices, acmeState, BUILD_PC, IMAC, IPHONE, LIA, MAC, ORG_ID, PIXEL, RUI } from "./fixtures/devices";
 import { renderApp, screen, settle, showIn } from "./render";
+
+let home: string | undefined;
+/** The address this page is open at: the desktop app takes a pair link of an https server only. */
+const servedAt = (url: string) => {
+  home ??= domWindow().location.href;
+  domWindow().happyDOM.setURL(url);
+};
 
 afterEach(() => {
   cleanup();
+  setSystemTime();
+  if (home) domWindow().happyDOM.setURL(home);
 });
+
+/** Each step of a checklist: its state, and its title alone when folded. */
+const stepsOf = (dialog: HTMLElement) =>
+  [...dialog.querySelectorAll(".dv-step")].map(
+    (s) => `${s.getAttribute("data-state")}${s.hasAttribute("data-shut") ? " folded" : ""}`,
+  );
+/** The clock moves past the guide's 30 s, and the dialog's 1 s tick redraws it. */
+const after30s = async () => {
+  setSystemTime(new Date(Date.now() + ANDROID_SLOW_MS + 1000));
+  await act(() => new Promise((r) => setTimeout(r, 1100)));
+  await settle(4);
+};
 
 const click = async (el: Element) => {
   await act(async () => fireEvent.click(el));
@@ -23,6 +46,16 @@ const refetch = async (services: Awaited<ReturnType<typeof renderApp>>["services
     await services.queryClient.invalidateQueries({ queryKey: ["org"] });
   });
   await settle(4);
+};
+/** A row's ⋯ (Radix opens a menu from the keyboard here): its menu. */
+const openMenu = async (trigger: HTMLElement) => {
+  trigger.focus();
+  await act(async () => {
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    fireEvent.keyUp(trigger, { key: "Enter" });
+  });
+  await settle(2);
+  return screen().getByRole("menu");
 };
 const calls = (state: ReturnType<typeof acmeState>, method: string) => state.calls.filter((c) => c.method === method);
 
@@ -104,6 +137,26 @@ describe("Settings › Devices", () => {
     expect(names()).toEqual(["Sam's MacBook Pro", "Pixel 8"]);
   });
 
+  test("a row's menu opens with Settings, its page, for computers and phones", async () => {
+    const { router } = await open(`/org/${ORG_ID}/settings/devices`);
+    let menu = await openMenu(screen().getByRole("button", { name: "Sam's MacBook Pro actions" }));
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((i) => i.textContent),
+    ).toEqual(["Settings", "Rename", "Remove"]);
+    await click(within(menu).getByRole("menuitem", { name: "Settings" }));
+    expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/settings/devices/${MAC}`);
+    await act(() =>
+      router.navigate({ to: "/org/$orgId/settings/$section", params: { orgId: ORG_ID, section: "devices" } }),
+    );
+    await settle(4);
+    menu = await openMenu(screen().getByRole("button", { name: "Pixel 8 actions" }));
+    expect(within(menu).getAllByRole("menuitem")[0]?.textContent).toBe("Settings");
+    await click(within(menu).getByRole("menuitem", { name: "Settings" }));
+    expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/settings/devices/phones/${PIXEL}`);
+  });
+
   test("Let it join, from the list: name and who can use it, then the server lets it in", async () => {
     const { state } = await open(`/org/${ORG_ID}/settings/devices`);
     const ask = screen().getByRole("list", { name: "Asking to join" });
@@ -143,13 +196,121 @@ describe("Connect a device", () => {
     expect(screen().getByRole("dialog", { name: "ci-runner is connected" })).toBeTruthy();
   });
 
-  test("an Android phone: the computer's live checklist, Allow on the phone, then connected", async () => {
+  test("the computers: this one, another one, a server or VPS", async () => {
+    await open(`/org/${ORG_ID}/settings/devices`);
+    await click(screen().getByRole("button", { name: "Connect a device" }));
+    const computers = screen().getByRole("region", { name: "Computers" });
+    expect([...computers.querySelectorAll(".dv-option__title")].map((n) => n.textContent)).toEqual([
+      "This computer",
+      "Another computer",
+      "A server or VPS",
+    ]);
+    // Served over plain http here: the app wouldn't take a link to it, so this computer gets its one line.
+    await click(screen().getByRole("button", { name: /This computer/ }));
+    const line = screen().getByRole("dialog", { name: "Connect a computer" });
+    expect(within(line).queryByRole("link", { name: "Open the agentes.chat app" })).toBeNull();
+  });
+
+  test("this computer, from a browser: the app opens a link to this server, asks to join, the maker lets it in", async () => {
+    servedAt("https://app.agentes.chat/");
+    const { state, devices, services } = await open(`/org/${ORG_ID}/settings/devices`);
+    await click(screen().getByRole("button", { name: "Connect a device" }));
+    await click(screen().getByRole("button", { name: /This computer/ }));
+    const dialog = screen().getByRole("dialog", { name: "This computer" });
+    expect(calls(state, "devices.createLink")[0]?.args).toEqual([ORG_ID, "computer"]);
+    const app = within(dialog).getByRole("link", { name: "Open the agentes.chat app" });
+    expect(app.getAttribute("href")).toBe("agenteschat://pair?server=https%3A%2F%2Fapp.agentes.chat&link=7KQ2-M9X1");
+    expect(dialog.textContent).toContain("Waiting for the app on this computer…");
+    expect(within(dialog).getByRole("heading", { name: "Don't have the app?" })).toBeTruthy();
+    expect(dialog.textContent).toContain("After installing, press Open the agentes.chat app again.");
+
+    devices.setLink({ status: "asking", request: acmeDevices().requests[0] });
+    await refetch(services);
+    const asking = screen().getByRole("dialog", { name: "ci-runner wants to join Acme" });
+    await click(within(asking).getByRole("button", { name: "Let it join" }));
+    // This computer is the maker's own until they share it.
+    expect(calls(state, "devices.approveRequest")[0]?.args[2]).toEqual({
+      name: "ci-runner",
+      audience: { mode: "owner", userIds: [], roleIds: [] },
+    });
+  });
+
+  test("this computer without the app: one line for its terminal, or a server's", async () => {
+    servedAt("https://app.agentes.chat/");
+    await open(`/org/${ORG_ID}/settings/devices`);
+    await click(screen().getByRole("button", { name: "Connect a device" }));
+    await click(screen().getByRole("button", { name: /This computer/ }));
+    await click(screen().getByRole("button", { name: "Or paste one line in its terminal" }));
+    const line = screen().getByRole("dialog", { name: "Connect a computer" });
+    expect(line.querySelector("code")?.textContent).toMatch(
+      /^curl -fsSL https:\/\/app\.agentes\.chat\/i\/7KQ2-M9X\d \| sh$/,
+    );
+    await click(within(line).getByRole("button", { name: "Back" }));
+    await click(screen().getByRole("button", { name: /This computer/ }));
+    await click(screen().getByRole("button", { name: "A server? Use a terminal line" }));
+    expect(screen().getByRole("dialog", { name: "Connect a server" })).toBeTruthy();
+  });
+
+  test("another computer: the app on it, signed in as me, then Connected once a computer of mine shows up", async () => {
     const { devices, services } = await open(`/org/${ORG_ID}/settings/devices`);
+    await click(screen().getByRole("button", { name: "Connect a device" }));
+    await click(screen().getByRole("button", { name: /Another computer/ }));
+    const dialog = screen().getByRole("dialog", { name: "Connect another computer" });
+    expect(dialog.textContent).toContain("Open it and sign in as yourself.");
+    expect(dialog.textContent).toContain("Click Allow when it asks to let Acme's agents use it.");
+    expect(dialog.textContent).toContain("Waiting for a computer of yours…");
+
+    const list = acmeDevices();
+    const mac = list.devices.find((d) => d.id === MAC);
+    if (!mac) throw new Error("no Mac");
+    // Someone else's new computer isn't the one this dialog waits for.
+    devices.set({
+      ...list,
+      devices: [...list.devices, { ...mac, id: "m-ana-new", name: "Ana's laptop", ownerUserId: ANA, phones: [] }],
+    });
+    await refetch(services);
+    expect(dialog.textContent).toContain("Waiting for a computer of yours…");
+    devices.set({
+      ...list,
+      devices: [...list.devices, { ...mac, id: "m-sam-new", name: "Sam's Mac mini", phones: [] }],
+    });
+    await refetch(services);
+    expect(dialog.textContent).toContain("Connected: Sam's Mac mini");
+    expect(within(dialog).getByRole("link", { name: "Open its page" }).getAttribute("href")).toBe(
+      `/org/${ORG_ID}/settings/devices/m-sam-new`,
+    );
+    expect(within(dialog).getByRole("button", { name: "Done" })).toBeTruthy();
+    await click(within(dialog).getByRole("button", { name: "Can't install the app on it? Use a terminal line" }));
+    expect(screen().getByRole("dialog", { name: "Connect a computer" })).toBeTruthy();
+  });
+
+  test("an Android phone: the computer's live checklist, Allow on the phone, then connected", async () => {
+    const { devices, services, state } = await open(`/org/${ORG_ID}/settings/devices`);
     await click(screen().getByRole("button", { name: "Connect a device" }));
     await click(screen().getByRole("button", { name: /Android phone/ }));
     const dialog = screen().getByRole("dialog", { name: "Connect an Android phone" });
+    // Fresh: Developer options open, the rest folded to their titles. The computer can't see it, so the person ticks it.
+    expect(stepsOf(dialog)).toEqual(["current", "waiting folded", "waiting folded", "waiting folded"]);
+    // A step on the phone shows its number, not the live mark: the computer isn't the one working on it.
+    expect(dialog.querySelector('.dv-step[data-state="current"] .dv-step__mark')?.childElementCount).toBe(0);
+    // Our phone app is in no store yet: no QR that would only open this page in the phone's browser.
+    expect(dialog.querySelector(".dv-qr")).toBeNull();
+    // The guide asks the computer to look for a phone it has no driver for.
+    expect(calls(state, "devices.lookForPhones").at(-1)?.args).toEqual([ORG_ID, MAC]);
+    await click(within(dialog).getByRole("button", { name: "Done" }));
+    expect(stepsOf(dialog)).toEqual(["done folded", "current", "waiting folded", "waiting folded"]);
+    // Ticked by hand: opened again from its title, it may be unticked.
+    await click(within(dialog).getByRole("button", { name: "Turn on Developer options" }));
+    expect(stepsOf(dialog)).toEqual(["done", "current folded", "waiting folded", "waiting folded"]);
+    await click(within(dialog).getByRole("button", { name: "Not done yet" }));
+    expect(stepsOf(dialog)).toEqual(["current", "waiting folded", "waiting folded", "waiting folded"]);
+    await click(within(dialog).getByRole("button", { name: "Done" }));
+    await click(within(dialog).getByRole("button", { name: "Done" }));
+    expect(stepsOf(dialog)).toEqual(["done folded", "done folded", "current", "waiting folded"]);
     expect(dialog.textContent).toContain("Looking for a phone on Sam's MacBook Pro…");
-    expect(dialog.querySelector(".dv-qr svg")).toBeTruthy();
+    // Before 30 s, nothing more; no old hint behind an ⓘ.
+    expect(dialog.querySelector(".dv-slow")).toBeNull();
+    expect(dialog.textContent).not.toContain("Phone not showing up?");
     const list = acmeDevices();
     const mac = list.devices.find((d) => d.id === MAC);
     const pixel = mac?.phones.find((p) => p.id === PIXEL);
@@ -162,6 +323,11 @@ describe("Connect a device", () => {
     });
     devices.set(list);
     await refetch(services);
+    // Seen, even before Allow: every step before it ticks by itself, and none may be unticked.
+    expect(stepsOf(dialog)).toEqual(["done folded", "done folded", "done folded", "needs"]);
+    await click(within(dialog).getByRole("button", { name: "Turn on Developer options" }));
+    expect(within(dialog).queryByRole("button", { name: "Not done yet" })).toBeNull();
+    await click(within(dialog).getByRole("button", { name: "Tap Allow on the phone" }));
     const allow = dialog.querySelector('.dv-step[data-state="needs"]');
     expect(allow?.textContent).toContain("Tap Allow on the phone");
     expect(allow?.textContent).toContain("Allow USB debugging?");
@@ -170,6 +336,96 @@ describe("Connect a device", () => {
     devices.set(list);
     await refetch(services);
     expect(screen().getByRole("dialog", { name: "Galaxy S24 is connected" })).toBeTruthy();
+  });
+
+  test("Android by cable: the phone already plugged in shows up asking, and every step before Allow is done", async () => {
+    const { devices, services } = await open(`/org/${ORG_ID}/settings/devices/android-setup?computer=${MAC}`);
+    const dialog = screen().getByRole("dialog", { name: "Connect an Android phone" });
+    const list = acmeDevices();
+    const mac = list.devices.find((d) => d.id === MAC);
+    const pixel = mac?.phones.find((p) => p.id === PIXEL);
+    if (!mac || !pixel) throw new Error("fixture");
+    mac.phones.push({
+      ...pixel,
+      id: "p-new",
+      name: "Galaxy S24",
+      status: { kind: "needs_you", reason: "unauthorized" },
+    });
+    devices.set(list);
+    await refetch(services);
+    expect(stepsOf(dialog)).toEqual(["done folded", "done folded", "done folded", "needs"]);
+    expect(dialog.querySelector('.dv-step[data-state="needs"]')?.textContent).toContain("Allow USB debugging?");
+  });
+
+  test("Android by cable on Windows: after 30 s, why a phone may not show up, the maker's USB driver included", async () => {
+    const { devices, services, state } = await open(
+      `/org/${ORG_ID}/settings/devices/android-setup?computer=${BUILD_PC}`,
+    );
+    const dialog = screen().getByRole("dialog", { name: "Connect an Android phone" });
+    expect(calls(state, "devices.lookForPhones").at(-1)?.args).toEqual([ORG_ID, BUILD_PC]);
+    await click(within(dialog).getByRole("button", { name: "Done" }));
+    await click(within(dialog).getByRole("button", { name: "Done" }));
+    await after30s();
+    const help = dialog.querySelector(".dv-slow");
+    expect(help?.closest(".dv-step")?.getAttribute("data-state")).toBe("current");
+    expect(help?.querySelector(".dv-slow__title")?.textContent).toBe("Still not showing up?");
+    expect([...(help?.querySelectorAll(".dv-slow__list > li") ?? [])].map((li) => li.textContent)).toEqual([
+      "A cable that carries data. Some only charge. Or try another port.",
+      "The phone unlocked, with its screen on.",
+      "If the phone asks how to use USB, pick File transfer.",
+      "USB debugging on. See step 2",
+      "On Samsung, Auto Blocker off: Settings\u00a0›\u00a0Security and privacy\u00a0›\u00a0Auto Blocker.",
+      "On Windows, the phone maker's USB driver:Google, for PixelSamsungOther makers",
+    ]);
+    expect([...(help?.querySelectorAll("a") ?? [])].map((a) => a.getAttribute("href"))).toEqual(
+      Object.values(ANDROID_USB_DRIVERS),
+    );
+    // See step 2 opens USB debugging again.
+    await click(within(dialog).getByRole("button", { name: "See step 2" }));
+    expect(stepsOf(dialog)).toEqual(["done folded", "done", "current folded", "waiting folded"]);
+
+    // The computer finds the phone with no driver: the cable step says so, with the drivers.
+    const list = acmeDevices();
+    const pc = list.devices.find((d) => d.id === BUILD_PC);
+    const pixel = list.devices.flatMap((d) => d.phones).find((p) => p.id === PIXEL);
+    if (!pc || !pixel) throw new Error("fixture");
+    pc.phones.push({
+      ...pixel,
+      id: "p-nodriver",
+      name: "Pixel 8",
+      hostMachineId: BUILD_PC,
+      status: { kind: "needs_you", reason: "no_driver" },
+    });
+    devices.set(list);
+    await refetch(services);
+    expect(stepsOf(dialog)).toEqual(["done folded", "done folded", "needs", "waiting folded"]);
+    const cable = dialog.querySelector('.dv-step[data-state="needs"]');
+    expect(cable?.querySelector(".dv-step__text")?.textContent).toBe(
+      "Windows build PC sees the phone but has no USB driver for it. Install the phone maker's driver, then plug the phone in again.",
+    );
+    expect(cable?.querySelectorAll(".dv-links a")).toHaveLength(3);
+  });
+
+  test("Android by cable on a Mac, in German with a long computer name: the 30 s help without a driver", async () => {
+    const longName = "Sams MacBook Pro aus dem Entwicklungsbüro im dritten Stock neben der Kaffeemaschine";
+    const app = await open(`/org/${ORG_ID}/settings/devices/android-setup?computer=${MAC}`, (devices) => {
+      const list = acmeDevices();
+      const mac = list.devices.find((d) => d.id === MAC);
+      if (mac) mac.name = longName;
+      devices.set(list);
+    });
+    await showIn(app.services, "de");
+    const dialog = screen().getByRole("dialog");
+    for (const _ of [1, 2]) {
+      const done = dialog.querySelector<HTMLButtonElement>('.dv-step[data-state="current"] .dv-step__more .ac-btn');
+      if (!done) throw new Error("no Done");
+      await click(done);
+    }
+    await after30s();
+    const items = dialog.querySelectorAll(".dv-slow__list > li");
+    expect(items).toHaveLength(5);
+    expect(dialog.querySelector(".dv-slow a")).toBeNull();
+    expect(dialog.textContent).toContain(longName);
   });
 
   test("an Android phone over Wi-Fi: Android's pairing QR, the computer's live line, then connected", async () => {
@@ -189,18 +445,26 @@ describe("Connect a device", () => {
     expect(dialog.querySelector('.dv-step[data-state="current"]')?.textContent).toContain(
       "Waiting for the phone to scan…",
     );
-    expect(dialog.querySelector(".ac-setpath")?.textContent).toBe("Wireless debuggingPair device with QR code");
+    expect(dialog.querySelector(".ac-setpath")?.textContent).toBe(
+      "Developer optionsWireless debuggingPair device with QR code",
+    );
+    expect(dialog.querySelector('.dv-step[data-state="current"] .dv-step__title')?.textContent).toBe(
+      "Scan it from Wireless debugging, not the camera",
+    );
+    expect(dialog.querySelector(".dv-qr")?.textContent).toBe(
+      "Not with the cameraIt offers a Wi-Fi network named agentes-…, which doesn't exist. Keep the phone on the computer's Wi-Fi.",
+    );
     devices.setPairing({ state: "pairing" });
     await ask();
     expect(dialog.textContent).toContain("Found a phone. Pairing…");
     expect(dialog.querySelector(".dv-qr--used")).toBeTruthy();
 
-    // Nothing in 2 minutes: the cause, and Try again makes a new code.
+    // Nothing in 2 minutes: the camera or a phone off the Wi-Fi, and on a Mac its Local Network setting. Try again makes a new code.
     devices.setPairing({ state: "failed", reason: "timed_out" });
     await ask();
     const failed = dialog.querySelector('.dv-step[data-state="needs"]');
     expect(failed?.textContent).toContain(
-      "Nothing scanned the code in 2 minutes. Check the phone is on the same Wi-Fi as Sam's MacBook Pro and try again.",
+      "No phone paired in 2 minutes. If the camera scanned the code or the phone left the Wi-Fi, put it on the same Wi-Fi as Sam's MacBook Pro and scan from Wireless debugging. On that Mac, also turn on agentes.chat in System Settings › Privacy & Security › Local Network.",
     );
     await click(within(dialog).getByRole("button", { name: "Try again" }));
     expect(calls(state, "devices.startWifiPairing")).toHaveLength(2);
@@ -208,6 +472,8 @@ describe("Connect a device", () => {
     // The six-digit way: what the phone shows, typed here.
     await click(within(dialog).getByRole("button", { name: "Use a pairing code instead" }));
     expect(calls(state, "devices.cancelWifiPairing").length).toBeGreaterThan(0);
+    // No pairing QR now, and no QR into a phone app that isn't out yet: the steps take the dialog's width.
+    expect(dialog.querySelector(".dv-qr")).toBeNull();
     const pairButton = within(dialog).getByRole("button", { name: "Pair" }) as HTMLButtonElement;
     expect(pairButton.disabled).toBe(true);
     await act(async () => {
@@ -233,12 +499,30 @@ describe("Connect a device", () => {
     expect(screen().getByRole("dialog", { name: "Galaxy S24 is connected" })).toBeTruthy();
   });
 
-  test("the Android steps draw Android's own prompt in Portuguese", async () => {
+  test("the Android steps in Portuguese: Android's own prompt, where to scan, the code way", async () => {
     const app = await open(`/org/${ORG_ID}/settings/devices/android-setup?computer=${MAC}`);
     await showIn(app.services, "pt-BR");
     const dialog = screen().getByRole("dialog", { name: "Conectar um celular Android" });
+    expect(within(dialog).getByRole("button", { name: "Já fiz" })).toBeTruthy();
+    // A later step opens from its title, to read ahead.
+    await click(within(dialog).getByRole("button", { name: "Toque em Permitir no celular" }));
     expect(dialog.textContent).toContain("Permitir a depuração USB?");
     expect(dialog.textContent).toContain("Sempre permitir neste computador");
+    await click(within(dialog).getByRole("radio", { name: "Por Wi-Fi" }));
+    const qr = dialog.querySelector(".dv-qr")?.textContent;
+    app.devices.setPairing({ state: "failed", reason: "same_wifi" });
+    await act(async () => {
+      await app.services.queryClient.invalidateQueries({ queryKey: ["wifi-pair-state"] });
+    });
+    await settle(4);
+    const failed = dialog.querySelector('.dv-step[data-state="needs"] .dv-step__head .dv-step__text')?.textContent;
+    await click(within(dialog).getByRole("button", { name: "Usar um código de pareamento" }));
+    expect(qr).toContain("Não pela câmera");
+    expect(failed).toBe(
+      "Não deu para alcançar o celular. Coloque-o no mesmo Wi-Fi que Sam's MacBook Pro. Nesse Mac, ligue também o agentes.chat em Ajustes do Sistema › Privacidade e Segurança › Rede Local.",
+    );
+    expect(within(dialog).getByLabelText("Endereço IP e porta")).toBeTruthy();
+    expect(within(dialog).getByLabelText("Código de pareamento por Wi-Fi")).toBeTruthy();
   });
 
   test("an iPhone: the checklist mirrors the Mac, Developer Mode as a Settings path", async () => {
@@ -249,6 +533,75 @@ describe("Connect a device", () => {
     const states = [...dialog.querySelectorAll(".dv-step")].map((s) => s.getAttribute("data-state"));
     expect(states).toEqual(["done", "done", "done", "done", "done", "needs", "waiting", "waiting"]);
     expect(dialog.querySelector(".ac-setpath")?.textContent).toBe("SettingsPrivacy & SecurityDeveloper Mode");
+  });
+
+  test("an iPhone: each state has its way out, an old one ends the guide, a still step says why", async () => {
+    type Status = PhoneDevice["status"];
+    /** The fixture with Sam's iPhone in `status` (null: unplugged) and the Mac's toolchains topped up. */
+    const iphoneAs = (status: Status | null, over: Partial<PhoneDevice> = {}, tools: Record<string, string> = {}) => {
+      const list = acmeDevices();
+      const mac = list.devices.find((d) => d.id === MAC);
+      const iphone = mac?.phones.find((p) => p.id === IPHONE);
+      if (!mac || !iphone) throw new Error("fixture");
+      Object.assign(mac.toolchains, tools);
+      if (status) Object.assign(iphone, { status, ...over });
+      else mac.phones = mac.phones.filter((p) => p.id !== IPHONE);
+      return list;
+    };
+    const app = await open(`/org/${ORG_ID}/settings/devices/iphone-setup?computer=${MAC}`);
+    const dialog = () => screen().getByRole("dialog", { name: "Connect an iPhone" });
+    const step = () => dialog().querySelector('.dv-step[data-state="current"], .dv-step[data-state="needs"]');
+    const show = async (list: ReturnType<typeof acmeDevices>) => {
+      app.devices.set(list);
+      await refetch(app.services);
+    };
+    const team = { appleTeam: "Sam Rivera (Personal Team)" };
+
+    await show(iphoneAs({ kind: "needs_you", reason: "ui_not_authorized" }));
+    expect(step()?.textContent).toContain("Turn on UI Automation");
+    expect(step()?.textContent).toContain("The iPhone refused the test helper's taps. Unlock it");
+
+    await show(iphoneAs({ kind: "needs_you", reason: "xcode_too_old" }, {}, { xcodeSdk: "26.2" }));
+    expect(step()?.textContent).toContain(
+      "Sam's iPhone 16 runs iOS 27.1 and Xcode on Sam's MacBook Pro knows iOS 26.2 at most. Install Xcode 27, then run this in Terminal.",
+    );
+    expect(step()?.querySelector(".machine-command__code")?.textContent).toBe("xcrun devicectl manage ddis update");
+
+    // Below iOS 17: the guide ends at being connected, says why, and nothing spins.
+    await show(iphoneAs({ kind: "unsupported", reason: "os_too_old" }, { osVersion: "16.7.10" }));
+    expect(step()?.textContent).toContain("Sam's iPhone 16 runs iOS 16.7.10, and agents need iOS 17 or newer.");
+    expect(dialog().querySelector(".dv-step__mark .ac-pixspin")).toBeNull();
+    expect(within(dialog()).queryByRole("button", { name: "Done" })).toBeNull();
+    // devicectl names no version for some of them.
+    await show(iphoneAs({ kind: "unsupported", reason: "os_too_old" }, { osVersion: "" }));
+    expect(step()?.textContent).toContain("Sam's iPhone 16 runs iOS 16 or older, and agents need iOS 17 or newer.");
+
+    // Xcode lists an account that shows no team yet: how to get one, not "sign in".
+    await show(iphoneAs(null, {}, { appleAccount: "no_team" }));
+    expect(step()?.textContent).toContain("Apple Account in Xcode");
+    expect(step()?.textContent).toContain("Xcode is signed in but shows no team yet.");
+
+    // Plugged in, the Mac sees no iPhone: what to check, at once.
+    await show(iphoneAs(null, {}, team));
+    expect(step()?.getAttribute("data-state")).toBe("current");
+    await click(within(step() as HTMLElement).getByRole("button", { name: "It's plugged in" }));
+    expect(step()?.querySelector(".dv-step__stall")?.textContent).toBe(
+      "Sam's MacBook Pro doesn't see an iPhone yet. Use a cable that carries data, not only power, unlock the iPhone and tap Trust if it asks.",
+    );
+
+    // The Mac builds the helper: 45 s with nothing new, and it says what that waits for.
+    await show(iphoneAs({ kind: "preparing", reason: "helper_missing" }, {}, team));
+    expect(step()?.textContent).toContain("Test helper");
+    expect(step()?.querySelector(".dv-step__stall")).toBeNull();
+    try {
+      setSystemTime(new Date(Date.now() + 46_000));
+      await refetch(app.services);
+      expect(step()?.querySelector(".dv-step__stall")?.textContent).toContain(
+        "Sam's MacBook Pro builds the test helper and starts it on the iPhone",
+      );
+    } finally {
+      setSystemTime();
+    }
   });
 });
 

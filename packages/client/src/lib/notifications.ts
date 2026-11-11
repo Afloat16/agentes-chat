@@ -322,7 +322,7 @@ export type OpenTarget =
   | { to: "/org/$orgId/threads/$threadId"; params: { threadId: string }; search?: { m: string } }
   | { to: "/org/$orgId/c/$channelId"; params: { channelId: string }; search?: { m: string } }
   | { to: "/org/$orgId/dm/agent/$agentId"; params: { agentId: string }; search?: { m: string } }
-  | { to: "/org/$orgId/agents/$agentId"; params: { agentId: string }; search?: { sec: "brain" } }
+  | { to: "/org/$orgId/agents/$agentId"; params: { agentId: string }; search?: { sec: "brain"; brain?: "model" } }
   | { to: "/org/$orgId/dm/person/$userId"; params: { userId: string }; search?: { m: string } }
   | { to: "/org/$orgId/issues/$number"; params: { number: string }; search?: { m: string } }
   | { to: "/org/$orgId/approvals"; search?: { open: string } }
@@ -332,7 +332,7 @@ export type OpenTarget =
   | { to: "/org/$orgId/settings/computers/$machineId"; params: { machineId: string } }
   | {
       to: "/org/$orgId/settings/$section";
-      params: { section: "computers" | "members" | "usage" | "connectors" | "billing" | "approvals" | "keys" };
+      params: { section: "computers" | "members" | "usage" | "connectors" | "billing" | "approvals" | "right_hand" };
     }
   | { to: "/org/$orgId/home"; search?: { widget: string } }
   | { to: "/org/$orgId/dashboards" }
@@ -369,9 +369,10 @@ export function openTarget(n: AppNotification): OpenTarget | null {
   // A change someone sent to whoever decides (ADR 0137) is decided on its card in the row: the DM it came from is theirs.
   if (n.kind === "change_request") return null;
   if (n.kind === "proposal_waiting") return { to: "/org/$orgId/proposals" };
-  // Who approves for whom (ADR 0139) is set, seen and declined in Configurações › Você › Aprovações.
-  if (n.kind === "approval_cover" || n.kind === "right_hand_paused")
-    return { to: "/org/$orgId/settings/$section", params: { section: "approvals" } };
+  // Who approves for whom (ADR 0139) is set, seen and declined in Configurações › Sua conta › Aprovações.
+  if (n.kind === "approval_cover") return { to: "/org/$orgId/settings/$section", params: { section: "approvals" } };
+  // What the right hand does without asking is on its own page, which its old settings address opens.
+  if (n.kind === "right_hand_paused") return { to: "/org/$orgId/settings/$section", params: { section: "right_hand" } };
   // Requests to join are answered in Members (ADR 0068).
   if (n.kind === "join_request") return { to: "/org/$orgId/settings/$section", params: { section: "members" } };
   // Someone accepted an invitation (ADR 0090): a conversation with them, to say hi.
@@ -409,11 +410,15 @@ export function openTarget(n: AppNotification): OpenTarget | null {
       ...(theirs && s.userId ? { search: { person: s.userId } } : {}),
     };
   }
-  // The agent's model left its plan's list: its page, with "Quem pensa" open to choose another.
+  // The agent's model left its plan's list: its page, with "Quem pensa" open on its model to choose another.
   if (n.kind === "plan_model_dropped" && s.agentId)
-    return { to: "/org/$orgId/agents/$agentId", params: { agentId: s.agentId }, search: { sec: "brain" } };
-  // Someone gave an agent the person's plan: Contas de IA, where their plans and the agents on them are.
-  if (n.kind === "plan_lent") return { to: "/org/$orgId/settings/$section", params: { section: "keys" } };
+    return {
+      to: "/org/$orgId/agents/$agentId",
+      params: { agentId: s.agentId },
+      search: { sec: "brain", brain: "model" },
+    };
+  // Someone gave an agent the person's plan: IA e uso, where their plans and the agents on them are.
+  if (n.kind === "plan_lent") return { to: "/org/$orgId/settings/$section", params: { section: "usage" } };
   // An update of a skill from its link: the skill, in Skills.
   if (n.kind === "skill_update")
     return {

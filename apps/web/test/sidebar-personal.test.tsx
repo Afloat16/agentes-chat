@@ -63,6 +63,8 @@ describe("a personal workspace's sidebar", () => {
     await go(personal());
     const me = within(top()).getByRole("button", { name: /^Conta: / });
     expect(me.textContent).toContain("Walter");
+    // My row, not the workspace's: my name wraps whole there, never cut.
+    expect(me.classList.contains("sidebar__org-button--me")).toBe(true);
     expect(within(top()).getByRole("link", { name: "Notificações" }).getAttribute("href")).toBe(
       `/org/${ORG_ID}/notifications`,
     );
@@ -84,8 +86,10 @@ describe("a personal workspace's sidebar", () => {
     expect(
       within(menu)
         .getAllByRole("menuitem")
-        .map((el) => el.textContent),
+        .map((el) => el.getAttribute("aria-label") ?? el.textContent),
     ).toEqual([
+      // My face on top changes my photo.
+      "Trocar foto",
       "Definir status",
       "Editar perfil",
       "Sua conta",
@@ -183,6 +187,39 @@ describe("a personal workspace's sidebar", () => {
     expect(input.setup.hello).toContain("agenda");
     // The checklist suggests her starter's apps not connected yet, and keeps the card's (ADR 0164).
     expect(input.setup.apps).toMatchObject({ "google-calendar": "write", todoist: "write", github: "write" });
+  });
+
+  test("the agent being made never reads as taken: its @ stays the one shown, though the list has it before Criar is answered", async () => {
+    const state = withRightHand(personal());
+    const api = createFakeApi(state);
+    const make = api.agents.create;
+    let answer = () => {};
+    const answered = new Promise<void>((resolve) => {
+      answer = resolve;
+    });
+    api.agents.create = async (...args) => {
+      const made = await make(...args);
+      await answered;
+      return made;
+    };
+    const { sockets } = await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api });
+    await settle(8);
+    await act(async () => sockets.last().open());
+    await settle(2);
+    const agents = nav().querySelector('.sidebar__block[data-section="agents"]') as HTMLElement;
+    await click([...agents.querySelectorAll(".sidebar__item")].at(-1) as HTMLElement);
+    const dialog = screen().getByRole("dialog", { name: "Novo agente" });
+    const handle = () => dialog.querySelector(".nac__handle")?.textContent;
+    const shown = handle();
+    expect(shown).toContain("No chat: @clara");
+    await click(within(dialog).getByRole("button", { name: /Criar Clara/ }));
+    // Made on the server, which says so on the socket before it answers.
+    await act(async () => sockets.last().push({ type: "event", scope: "org", event: { type: "agents.changed" } }));
+    await settle(6);
+    expect(agents.textContent).toContain("Clara");
+    expect(handle()).toBe(shown);
+    await act(async () => answer());
+    await settle(6);
   });
 
   test("how it works is edited on the card; its helpers add a line and the cursor goes after it (ADR 0164)", async () => {

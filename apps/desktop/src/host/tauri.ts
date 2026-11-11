@@ -5,6 +5,8 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Candidate } from "../control/first-run";
 import type { LocalServerStatus, ReachResult, ReachStage, StepChange, Tailnet } from "../control/local-server";
+import type { LinkInfo } from "../control/pair";
+import type { SetupState } from "../control/permissions";
 import { platformOf } from "../control/platform";
 import type { ServerList, ServerWorkspaces } from "../control/server";
 import type { ThisMacRequest } from "../control/this-mac";
@@ -59,6 +61,9 @@ export function createTauriHost(): Host {
     removeServer: (server) => invoke<void>("server_remove", { server }),
     signOutServer: (server) => invoke<void>("server_sign_out", { server }),
     workspaces: () => invoke<ServerWorkspaces[]>("workspaces_get"),
+    onWorkspaces: (cb) => subscribe<null>("workspaces://changed", () => cb()),
+    pairLinkInfo: (server, code) => invoke<LinkInfo>("pair_link_info", { server, code }),
+    askToPair: (server, org) => invoke<boolean>("pair_ask", { server, org }),
     siteFetch: (server, method, path, body) =>
       invoke<SiteAnswer>("site_fetch", { server, method, path, body: body ?? null }),
     welcomeMode: () => invoke<string | null>("welcome_mode_take").then((m) => (m === "add" ? "add" : null)),
@@ -112,5 +117,12 @@ export function createTauriHost(): Host {
     tailscale: () => invoke<Tailnet>("tailscale_status"),
     openTailscale: (page) => invoke<void>("tailscale_open", { page }),
     onNewHostHome: (cb) => subscribe<string>("host://new", cb),
+    screenAccess: () => invoke<boolean>("screen_access"),
+    requestScreenAccess: () => invoke<boolean>("screen_request"),
+    diskAccess: () => invoke<boolean>("disk_access"),
+    askLocalNetwork: () => invoke<void>("network_ask"),
+    openPrivacy: (pane) => invoke<void>("privacy_open", { pane }),
+    setupState: () => invoke<SetupState | null>("setup_state_get"),
+    setSetupState: (state) => invoke<void>("setup_state_set", { state }),
   };
 }

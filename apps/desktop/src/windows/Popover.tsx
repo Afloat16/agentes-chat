@@ -25,8 +25,10 @@ import { hereBanner, hereLine, type LocalServerStatus } from "../control/local-s
 import { menuLabels } from "../control/menu-labels";
 import { NOTCH_PREF } from "../control/notch";
 import { SITE_NOTIFY_PREF } from "../control/notify";
+import { nextOffer, PAIR_OFFER_PREF, PAIR_OFFERED_PREF, targetKey } from "../control/pair";
 import { combinedPause, extendPause, type PauseChoice, pauseUntil } from "../control/pause";
-import { homeServer, type ServerList, serverName } from "../control/server";
+import { PREPARE_PREF } from "../control/permissions";
+import { homeServer, type ServerList, type ServerWorkspaces, serverName } from "../control/server";
 import { type Home, isIncompatible, isRefusedHome, orgName, pairedHomes } from "../control/store";
 import { answerThisMac, type PrefsTab, whenHostHomeReady } from "../control/this-mac";
 import { isOnline, macStateOf, trayStateOf } from "../control/tray";
@@ -34,6 +36,7 @@ import { agentOf, readPref, useLocalServer, useOnShown, usePending, useUpdateChe
 import type { BadgeCounts } from "../host/types";
 import { AgentFace, Banner, BrandFace, Count, HelpLink, MacPortrait, MenuRow, OrgTile } from "../ui/bits";
 import { CopyDetails } from "../ui/here";
+import { needsPrepare } from "../ui/permissions";
 import { useToast } from "../ui/Toast";
 import { baseName, clock, shortPath, since } from "../ui/time";
 
@@ -87,6 +90,27 @@ export function Popover() {
 
   // The server here's sync made a home: its first tools once its runner is up.
   useEffect(() => host.onNewHostHome((homeId) => whenHostHomeReady(store, homeId)), [host, store]);
+  // Signed in to a workspace this computer doesn't work for yet: its card, once, in the welcome window.
+  const workspacesSeen = useRef<ServerWorkspaces[] | null>(null);
+  useEffect(
+    () =>
+      host.onWorkspaces(() => {
+        void host
+          .workspaces()
+          .then((list) => {
+            const before = workspacesSeen.current;
+            workspacesSeen.current = list;
+            const offered = readPref<string[]>(PAIR_OFFERED_PREF, []);
+            const offer = nextOffer(list, before, store.getSnapshot(), offered);
+            if (!offer) return;
+            writePref(PAIR_OFFERED_PREF, [...offered, targetKey(offer)]);
+            writePref(PAIR_OFFER_PREF, offer);
+            return host.showWindow("welcome");
+          })
+          .catch(() => {});
+      }),
+    [host, store],
+  );
   // One of its homes was refused by its organization (its token): the next sync asks for a new one, once a
   // while per organization.
   const rotated = useRef(new Map<string, number>());
@@ -207,7 +231,19 @@ export function Popover() {
       const showRequests = () => host.showWindow("popover");
       const localDir = () => host.localServer().then((s) => s.dir);
       const revealFolder = (path: string) => host.revealFolder(path);
-      answerThisMac({ store, openPrefs: openPrefsOn, showRequests, localDir, revealFolder }, request)
+      // Its agents work while the app runs; on a Mac, the permissions they need next, up front.
+      const onPaired = (org: string) => {
+        void host.setAutostart(true).catch(() => {});
+        if (request.kind !== "connect") return;
+        void needsPrepare(host)
+          .then((needed) => {
+            if (!needed) return;
+            writePref(PREPARE_PREF, { org, server: request.origin });
+            return host.showWindow("welcome");
+          })
+          .catch(() => {});
+      };
+      answerThisMac({ store, openPrefs: openPrefsOn, showRequests, localDir, revealFolder, onPaired }, request)
         .then(
           (data) => host.thisMacReply(id, true, data ?? null),
           (err: unknown) => host.thisMacReply(id, false, err instanceof Error ? err.message : String(err)),

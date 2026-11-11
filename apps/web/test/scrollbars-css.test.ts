@@ -56,7 +56,7 @@ async function selectorsWith(match: (property: string, value: string) => boolean
  */
 const SIDEWAYS: Record<string, "strip" | "content"> = {
   ".agp-subnav": "strip",
-  ".agp-tabs .ac-tabs": "strip",
+  ".ac-tabs": "strip",
   ".settings__groups": "strip",
   ".channel-settings__nav": "strip",
   ".onb__steps": "strip",
@@ -67,7 +67,6 @@ const SIDEWAYS: Record<string, "strip" | "content"> = {
   ".nt-segwrap": "strip",
   ".mi-files__tabs": "strip",
   ".ac-seg": "strip",
-  ".ac-composer__format": "strip",
   ".ac-toolbar__filters": "strip",
   ".ac-toolbar[data-stack]>.ac-toolbar__filters": "strip",
   ".ac-carousel__track": "strip",

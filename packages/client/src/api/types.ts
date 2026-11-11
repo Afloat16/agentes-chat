@@ -103,6 +103,23 @@ export interface FeedbackInput {
   files?: string[];
 }
 
+/**
+ * `message.meta.feedbackOffer` (server-made): a report about the app the agent offered on its own, under its reply.
+ * Only `forUserId` sees its row and decides it (`decideFeedbackOffer`); `auto`: it went with the reply, because they
+ * chose Always send.
+ */
+export interface FeedbackOffer {
+  id: string;
+  forUserId: string;
+  /** The problem in a few words, as the row's one line. */
+  summary: string;
+  /** The report, as the email carries it. */
+  text: string;
+  state: "offered" | "sent" | "dismissed";
+  auto?: true;
+  decidedAt?: string;
+}
+
 export interface FeedbackAbout {
   /** The app's own word for the thing: `message`, `card`, `button`… */
   kind: string;
@@ -248,6 +265,8 @@ export interface User {
   locale?: string | null;
   /** The language follows each device's own (Automático) until the person picks one. */
   localeAuto?: boolean;
+  /** Their own area, asked once during the onboarding (`WORK_AREAS`), or `skipped`; null until asked. */
+  workArea?: string | null;
 }
 
 /** ADR 0056 §8: `hold` pauses the agents, `suspended` closes the workspace. */
@@ -1363,6 +1382,8 @@ export interface AiStatus {
   routing?: AiRouting;
   /** The organization has a key of its own, or the server's own Claude key. */
   apiKey?: boolean;
+  /** Memory reflects on finished conversations: there is a summary model it can call (absent from an older server). */
+  reflection?: boolean;
   agents: {
     agentId: string;
     /** `waiting`: its computer is away for now (not "no AI"). */
@@ -1462,15 +1483,16 @@ export interface ActiveRun {
   /** Last sign of life from the worker. */
   heartbeatAt?: string | null;
   createdAt?: string;
+  /**
+   * How long the work it is doing now has taken, in milliseconds, as the server counts it (since it last went back
+   * to work or last posted, else since it was created). A length, not a time: "thinking for …" counts on from it by
+   * this device's clock. Absent on a server from before it.
+   */
+  workingMs?: number;
   /** Messages sent to it while it works that it hasn't read yet (the others steered into it, it read). */
   pendingMessageIds?: string[];
   /** A routine's run working in the background: it holds no conversation and shows no "trabalhando". */
   background?: boolean;
-  /**
-   * What its current model call streamed so far past its last tool: `text` starts at `at` of the call's text, so an
-   * app opened mid-answer goes on from `at` plus its length. `shownAt`: as `agent.delta.shownAt`.
-   */
-  live?: { turn: number; at: number; text: string; shownAt?: string };
 }
 
 /** Real-time channel events (packages/engine/src/events.ts, docs/adr/0010-realtime.md). */
@@ -1537,6 +1559,7 @@ export type ChannelEvent =
       messageIds?: string[];
     }
   | ArtifactEvent
+  /** From a server that still streams a reply's words: read only as "it writes" (the reply shows whole, once posted). */
   | {
       type: "agent.delta";
       channelId: string;
@@ -1545,14 +1568,6 @@ export type ChannelEvent =
       agentId: string;
       seq: number;
       text: string;
-      /** Which model call of the run this text belongs to (narration is keyed by it). */
-      turn?: number;
-      /** Where `text` starts in its turn's text: past what arrived here, a piece was missed. */
-      at?: number;
-      /** Where its stretch starts in the turn's text (a stretch: the text between two calls of a computer brain). */
-      from?: number;
-      /** When its reply first showed words (ISO, the server's clock): its message is posted there (`LiveRun.shownAt`). */
-      shownAt?: string;
     }
   | {
       type: "agent.run";
@@ -1592,6 +1607,14 @@ export type ChannelEvent =
       threadId: string | null;
       messageId: string;
       proposal: CalendarProposal;
+    }
+  /** A report an agent offered was sent or turned down: its row (`meta.feedbackOffer`) as it is now. */
+  | {
+      type: "feedback_offer.updated";
+      channelId: string;
+      threadId: string | null;
+      messageId: string;
+      offer: FeedbackOffer;
     }
   /** The right hand's team card changed (ADR 0137 §10): the whole card. */
   | {
@@ -1974,7 +1997,7 @@ export interface ScopeInfo {
   sensitive: boolean;
 }
 
-/** Catalog groups: Desenvolvimento, Produto, Docs, Pagamentos, Suporte, Marketing, Automação. */
+/** Catalog groups: Desenvolvimento, Produto, Docs, Pagamentos, Suporte, Marketing, Automação, Redes sociais. */
 export type ConnectorCategory =
   | "dev"
   | "product"
@@ -1984,7 +2007,8 @@ export type ConnectorCategory =
   | "sales"
   | "support"
   | "marketing"
-  | "automation";
+  | "automation"
+  | "social";
 
 /** A connector agentes.chat knows (`GET /connectors/catalog`: ours and the one-click MCP servers, one per service). */
 export interface ConnectorDef {
@@ -4354,6 +4378,11 @@ export interface Machine {
   /** The public address measured through an agent process, absent on older runners. */
   egress?: { ip: string; country?: string; at: string } | null;
   networkTransition?: { state: "draining" | "restart_required"; deadline: string; agents: string[] } | null;
+  /**
+   * The workspace's own computer, online, has its agents waiting for their way out: none of the proxies its network
+   * requires works now, so their connections are refused for a while. Absent from an older server: they don't wait.
+   */
+  egressWaiting?: boolean;
   name: string;
   /**
    * Absent from a server that doesn't say: `connected`. A `managed` one can't be removed, and its hostname,
@@ -5777,11 +5806,29 @@ export interface AccountLoginStart {
   expiresAt: string;
 }
 
+/** Why a sign-in ended on the computer (mirror of `ACCOUNT_LOGIN_FAILURES` in `@agenteschat/adapters`). */
+export type AccountLoginFailure =
+  | "not_installed"
+  | "no_tty"
+  | "network"
+  | "bad_code"
+  | "cli_exit"
+  | "not_signed_in_after_login"
+  | "status_unknown"
+  | "no_token"
+  | "not_kept"
+  | "timeout"
+  | "canceled";
+
 /** `GET …/account-logins/{loginId}`. */
 export interface AccountLoginStatus {
   state: "waiting" | "done" | "failed" | "expired";
   account?: MachineAccount;
   error?: string;
+  /** `failed` or `expired` on the computer: why (an older runner sends none). */
+  code?: AccountLoginFailure;
+  /** With `code`: what the CLI itself said, in English. */
+  message?: string;
   /** `failed`: the viewer already has this account on that computer, named `label` (an older server sends no `account`). */
   duplicate?: { label: string; account?: MachineAccount };
   /** `failed`: signing in again came back as another account, this email; the account stays signed out. */
@@ -6737,6 +6784,8 @@ export interface TaskWait {
   window: string | null;
   /** When the limit resets; null when unknown. */
   resetsAt: string | null;
+  /** When it began waiting on its plan or budget; null when unknown (absent on an older server). */
+  since?: string | null;
   /** You may press Continuar agora. */
   canContinue: boolean;
 }

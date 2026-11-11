@@ -4,6 +4,7 @@ import { placeOf, subtitleOf } from "../../src/features/activity/logic";
 import {
   androidStage,
   audienceText,
+  connectKindOf,
   deviceHref,
   deviceNoticeOf,
   deviceNoticeTitle,
@@ -13,6 +14,7 @@ import {
   narrowsAudience,
   phoneFacts,
   phonePortrait,
+  reasonText,
   statusView,
   thisPhoneOn,
 } from "../../src/features/devices/logic";
@@ -112,6 +114,12 @@ describe("the phone in hand", () => {
     expect(androidStage(phone({ id: "p", status: needs("unauthorized") }))).toBe("allow");
     expect(androidStage(phone({ id: "p" }))).toBe("done");
   });
+  test("a phone with no driver: its maker's USB driver on Windows, udev rules on Linux", async () => {
+    const t = await translator("en");
+    expect(reasonText(t, "no_driver", "windows")).toBe("Windows needs the phone maker's USB driver");
+    expect(reasonText(t, "no_driver", "linux")).toBe("Linux needs udev rules for this phone");
+    expect(reasonText(t, "no_driver")).toBe("Windows needs the phone maker's USB driver");
+  });
   test("the iPhone's steps follow the Mac's reason", () => {
     expect(iphoneStep(null)).toBe(0);
     expect(iphoneStep(phone({ id: "i", status: needs("untrusted") }))).toBe(1);
@@ -119,9 +127,18 @@ describe("the phone in hand", () => {
     expect(iphoneStep(phone({ id: "i", status: needs("ui_automation_off") }))).toBe(3);
     expect(iphoneStep(phone({ id: "i", status: needs("helper_expired") }))).toBe(4);
     // The Mac builds the test helper; trusting it, or an Apple Account or app limit, holds that last step.
-    for (const reason of ["helper_untrusted", "team_limit", "apple_account_missing"])
+    for (const reason of ["helper_untrusted", "team_limit", "apple_account_missing", "apple_team_missing"])
       expect(iphoneStep(phone({ id: "i", status: needs(reason) }))).toBe(4);
     expect(iphoneStep(phone({ id: "i" }))).toBe(5);
+    // The iPhone refused the helper's taps: UI Automation's step says what to do.
+    expect(iphoneStep(phone({ id: "i", status: needs("ui_not_authorized") }))).toBe(3);
+    // Below iOS 17 it never gets past being plugged in, and never reads as ready.
+    expect(iphoneStep(phone({ id: "i", status: { kind: "unsupported", reason: "os_too_old" } }))).toBe(0);
+  });
+  test("the new iPhone reasons have their own words", async () => {
+    const t = await translator("en");
+    expect(reasonText(t, "apple_team_missing")).toBe("Xcode on the Mac shows no team yet");
+    expect(reasonText(t, "ui_not_authorized")).toBe("This iPhone refused the test helper's taps");
   });
   test("a phone waiting on someone is drawn dimmed, an offline one dark", () => {
     expect(phonePortrait(phone({ id: "i", platform: "ios", status: needs("locked") }))).toEqual({
@@ -190,5 +207,19 @@ describe("notices, waits and facts", async () => {
       "Permitir",
     ]);
     expect(en("mobile.devices.android.prompt.title")).toBe("Allow USB debugging?");
+  });
+
+  test("connecting another computer: through its app, or one line; the app's Allow named as the app names it", () => {
+    expect(["app", "server", "computer", "phone", undefined].map(connectKindOf)).toEqual([
+      "app",
+      "server",
+      "computer",
+      null,
+      null,
+    ]);
+    expect(en("mobile.devices.connect.appStep3", { org: "Acme" })).toBe(
+      "Click Allow when it asks to let Acme's agents use it",
+    );
+    expect(pt("mobile.devices.connect.appConnected", { name: "Mac mini da Ana" })).toBe("Conectado: Mac mini da Ana");
   });
 });

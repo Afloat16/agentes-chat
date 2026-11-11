@@ -15,6 +15,7 @@ import {
   noAiStatusKey,
   opensByItself,
   planLineFix,
+  planLineKey,
   planLinePasses,
   planOfKind,
   type RightHandPlanLine,
@@ -69,7 +70,7 @@ export function NoAiBanner({ agentIds, dmAgentId }: { agentIds: string[]; dmAgen
           <b>{t(noAiStatusKey(status.data, dmAgentId), agentGrammar(name))}</b>
         </span>
         {mayConnectAi(agent, me.user.id, org) && (
-          <Button size="sm" onClick={() => connect.open({ agentId: dmAgentId })}>
+          <Button size="sm" onClick={() => connect.open({ agentId: dmAgentId, chat: true })}>
             {t("noAi.action")}
           </Button>
         )}
@@ -78,6 +79,10 @@ export function NoAiBanner({ agentIds, dmAgentId }: { agentIds: string[]; dmAgen
   }
   if (status.data.any || agentIds.length === 0) return null;
   const action = t("noAi.banner.orgAction");
+  // The workspace has no AI at all: Connect for the whole team, whoever is in the channel (ADR 0160, "For the whole
+  // team"). Only someone else's agent alone in it opens its own dialog, which says who connects it.
+  const lone = agentIds.length === 1 ? dir.agentById.get(agentIds[0] ?? "") : undefined;
+  const theirs = lone !== undefined && lone.ownerUserId !== me.user.id && !isRightHand(lone);
   return (
     <div className="noai-banner ac-actline" role="status">
       <span className="noai-banner__text ac-iconline">
@@ -93,7 +98,7 @@ export function NoAiBanner({ agentIds, dmAgentId }: { agentIds: string[]; dmAgen
           <b>{t("noAi.banner.org")}</b>
         )}
       </span>
-      <Button size="sm" onClick={() => connect.open({ agentId: agentIds.length === 1 ? agentIds[0] : undefined })}>
+      <Button size="sm" onClick={() => connect.open(theirs ? { agentId: lone.id } : {})}>
         {action}
       </Button>
     </div>
@@ -117,7 +122,9 @@ export function NoAiCard({ message }: { message: Message }) {
   // Any card on a billing hold is the wall: a Connect or a key from before it leads nowhere until the plan.
   if (card.held || hold) return <KeptCard message={message} card={card} hold={hold} />;
   if (card.planLine)
-    return <PlanLineCard message={message} agentId={card.agentId} line={card.planLine} model={card.model} />;
+    return (
+      <PlanLineCard message={message} agentId={card.agentId} line={card.planLine} model={card.model} why={card.why} />
+    );
   const agent = dir.agentById.get(card.agentId);
   const name = agent?.name ?? t("channel.unknownAgent");
   const again = signInAgainPlan(card, agent);
@@ -313,11 +320,13 @@ function PlanLineCard({
   agentId,
   line,
   model,
+  why,
 }: {
   message: Message;
   agentId: string;
   line: RightHandPlanLine;
   model?: string;
+  why?: string;
 }) {
   const { t } = useTranslation();
   const { org, me } = useOrg();
@@ -343,7 +352,7 @@ function PlanLineCard({
         {t("noAi.card.connected", { name })}
       </RequestDone>
     );
-  const sentence = t(`noAi.rightHand.${line}`, { name, model });
+  const sentence = t(planLineKey(line, why), { name, model, why });
   const mine = connect !== null && (fix === "connectMine" || fix === "useKey");
   return (
     <RequestOpen

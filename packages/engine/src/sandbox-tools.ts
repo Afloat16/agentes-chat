@@ -42,7 +42,7 @@ import { copyToComputer } from "./file-pulls";
 import { cutText, formatBytes, textOfBytes } from "./format";
 import { mergeReposOfCall } from "./git/repos";
 import { fullMachinePath, pathInOwnFolder, requestFolderAccess } from "./machine-access";
-import { MachineRequestError } from "./machine-hub";
+import { MachineRequestError, type MachineStatus } from "./machine-hub";
 import {
   foldersFixedMessage,
   notAllowedMessage,
@@ -1292,7 +1292,7 @@ export function createSandboxToolSource(
   ): ToolDefinition[] => [
     {
       name: "start_task",
-      description: `Start a detached command or a parallel CLI job on the computer "${info.name}" (a build, a dev server, a second Claude Code or Codex on its own task) and return at once with its id. To step out of this conversation while you keep working yourself, use work_in_background instead. With executor "claude" (the default when you give a prompt) Claude Code works on \`prompt\` in your folder, in this conversation's session (it remembers earlier turns), editing files on its own; "codex" runs Codex the same way; "shell" runs \`command\`. With \`branch\` it works in its own git worktree on that new branch; when your folder isn't a git repository, claude and codex work in their own subfolder work/<branch>/ instead (no branch; shell needs a repository). It keeps running if the connection drops. If the computer itself restarts, a "claude" task resumes where it stopped once it's back (unless resuming is turned off on that computer); "codex" and "shell" tasks stop, and you are woken to tell the people. You are woken in this conversation when it finishes, with its result: don't poll it with task_status, don't wait; tell the people it started and end your turn. Use run_code for short commands.`,
+      description: `Start a detached command or a parallel CLI job on the computer "${info.name}" (a build, a dev server, a second Claude Code or Codex on its own task) and return at once with its id. To step out of this conversation while you keep working yourself, use work_in_background instead. With executor "claude" (the default when you give a prompt) Claude Code works on \`prompt\` in your folder, in this conversation's session (it remembers earlier turns), editing files on its own; "codex" runs Codex the same way; "shell" runs \`command\`. With \`branch\` it works in its own git worktree on that new branch; when your folder isn't a git repository, claude and codex work in their own subfolder work/<branch>/ instead (no branch; shell needs a repository). It keeps running if the connection drops. If the computer itself restarts or moves, once it's back a "claude" task resumes where it stopped and a "shell" command starts again in its folder (unless resuming is turned off on that computer); "codex" tasks stop, and you are woken to tell the people. You are woken in this conversation when it finishes, with its result: don't poll it with task_status, don't wait; tell the people it started and end your turn. Use run_code for short commands.`,
       scope: SANDBOX_SCOPE,
       sensitive: requireApproval,
       whyAsks: true,
@@ -1319,6 +1319,9 @@ export function createSandboxToolSource(
         detail: (str(input.prompt) || str(input.command)).slice(0, 500),
       }),
       async execute(input, ctx) {
+        let where = info.name;
+        // A person's computer named with `computer`: its refusals point to that person, not to request_folder_access.
+        let device = null as MachineStatus | null;
         try {
           const prompt = str(input.prompt).trim();
           const command = str(input.command).trim();
@@ -1334,12 +1337,12 @@ export function createSandboxToolSource(
           const hub = hubOf();
           // On another device (`computer`), a full one keeps the task in its line instead of refusing it.
           const elsewhere = str(input.computer).trim() !== "";
-          let where = info.name;
           const row = await run(
             ctx,
             async (computer) => {
               const status = await hub.status(computer.machineId);
               where = status?.name ?? info.name;
+              if (computer.machineId !== info.machineId) device = status;
               const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
               // One session per conversation for Claude Code and Codex (the runner maps Codex's own thread id).
               const session = executor === "claude" || executor === "codex" ? ctx.threadRootId : null;
@@ -1426,7 +1429,7 @@ export function createSandboxToolSource(
           }
           if (error instanceof MachineRequestError && error.code === "not_allowed") {
             return {
-              content: `Not started: ${notAllowedMessage(info.name, error.message, undefined, info.managed)}`,
+              content: `Not started: ${notAllowedMessage(where, error.message, undefined, device ? device.kind === "managed" : info.managed, device ?? undefined)}`,
               isError: true,
               data: { code: "machine.not_allowed" },
             };
@@ -1479,7 +1482,9 @@ export function createSandboxToolSource(
               ? [
                   `Its computer dropped off: it keeps running there if only the connection dropped. If the computer restarted, ${
                     (await taskResumesByItself(ctx.db, row))
-                      ? "Claude Code resumes it where it stopped once the computer is back."
+                      ? row.executor === "shell"
+                        ? "it starts again in its folder once the computer is back."
+                        : "Claude Code resumes it where it stopped once the computer is back."
                       : "it stopped and won't resume by itself; you are woken then."
                   }`,
                 ]

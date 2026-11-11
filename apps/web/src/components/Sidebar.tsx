@@ -1,5 +1,6 @@
 import type {
   Agent,
+  AgentGroup,
   AgentSort,
   Availability,
   Channel,
@@ -48,7 +49,7 @@ import { AVAILABILITIES, isOutOfOffice, presenceOfAvailability, statusEndNote } 
 import { recentDms } from "@agenteschat/client/lib/recent";
 import { isRightHand, rightHandSeenKey } from "@agenteschat/client/lib/right-hand";
 import { inSidebarList, sidebarItemOrder, sidebarPlace } from "@agenteschat/client/lib/sidebar-items";
-import { AGENT_SORTS, sortAgents } from "@agenteschat/client/lib/sidebar-view";
+import { AGENT_SORTS, sortAgents, splitPinned } from "@agenteschat/client/lib/sidebar-view";
 import { badgeCount, looksUnread } from "@agenteschat/client/lib/unread";
 import { isPersonal, modeKey } from "@agenteschat/client/lib/workspace-mode";
 import {
@@ -64,6 +65,7 @@ import {
   Kbd,
   Menu,
   MenuCheckboxItem,
+  MenuFace,
   MenuHeading,
   MenuItem,
   MenuOverlay,
@@ -122,8 +124,17 @@ import { useStreams } from "@/realtime/context";
 import { ProfileDialog } from "./AccountSettings";
 import { AddPasswordDialog } from "./AddPassword";
 import { AgentAvatar } from "./AgentAvatar";
-import { type GroupDialogFor, GroupNameDialog, useAgentDrag, useMoveAgent } from "./AgentGroups";
+import {
+  DeleteGroupDialog,
+  type GroupDialogFor,
+  GroupMenu,
+  GroupNameDialog,
+  useAgentDrag,
+  useGroupEntries,
+  useMoveAgent,
+} from "./AgentGroups";
 import { ArchivedChannelsDialog } from "./ArchivedChannelsDialog";
+import { ChangeAvatarDialog } from "./AvatarBuilder";
 import { FeedbackMark } from "./arrival/FeedbackDialog";
 import { MoveChannelDialog, NewCategoryDialog, RenameCategoryDialog } from "./ChannelCategoryDialogs";
 import { openPalette } from "./CommandMenu";
@@ -366,21 +377,20 @@ export function Sidebar() {
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   const rail = !compact && (tablet || collapsed);
 
-  // AGENTES (ADR 0083 and its addendum): the agents that talk to me (who manages agents may list the rest), my pinned
-  // ones on top, then the ones in no group, then each group of agents, each in my order.
+  // AGENTES (ADR 0083 and its addendum): the agents that talk to me (who manages agents may list the rest), the ones in
+  // no group, then each group of agents, each with my pinned ones on top and the rest in my order.
   const manages = can(org, "manage_agents");
   const team = dir.agents.filter((a) => !isRightHand(a));
   const shownAgents = team.filter((a) => (manages && view.showAllAgents) || canTalk(a));
   const busyKey = useStreams((st) => [...runningAgents(st)].sort().join());
   const busy = useMemo(() => new Set(busyKey ? busyKey.split(",") : []), [busyKey]);
   const groups = useAgentGroups(orgId).data ?? [];
-  const pinnedAgents = pins.agents.flatMap((id) => shownAgents.filter((a) => a.id === id));
-  const byGroup = agentSections(
-    shownAgents.filter((a) => !pins.agents.includes(a.id)),
-    groups,
-    (a) => a.id,
-  );
-  const ordered = (list: Agent[]) => sortAgents(list, view.agentSort, me.user.id, busy);
+  const byGroup = agentSections(shownAgents, groups, (a) => a.id);
+  const ordered = (items: Agent[]) => {
+    const { top, rest } = splitPinned(items, pins.agents, (a) => a.id);
+    return { top, rest: sortAgents(rest, view.agentSort, me.user.id, busy) };
+  };
+  const loose = ordered(byGroup.ungrouped);
   // Members never see an empty group; who arranges the agents keeps them, to drop agents in.
   const agentGroups = byGroup.groups.filter((g) => g.items.length > 0 || (manages && g.group.agentIds.length === 0));
   const groupIds = agentGroups.map((g) => `group:${g.group.id}` as SectionId);
@@ -390,6 +400,15 @@ export function Sidebar() {
   const drag = useAgentDrag(groups);
   const moveAgent = useMoveAgent(groups);
   const [groupDialog, setGroupDialog] = useState<GroupDialogFor | null>(null);
+  const [deletingGroup, setDeletingGroup] = useState<AgentGroup | null>(null);
+  const groupMenuEntries = useGroupEntries();
+  const groupChoices = (group: AgentGroup) => ({
+    group,
+    index: groups.findIndex((g) => g.id === group.id),
+    count: groups.length,
+    onRename: () => setGroupDialog({ mode: "rename", group }),
+    onDelete: () => setDeletingGroup(group),
+  });
   const agentsUnread = shownAgents.reduce((n, a) => n + (dmOf.get(a.id)?.unread ?? 0), 0);
   // "Mudar de grupo" in an agent's right click: the keyboard's way to what dragging does.
   const groupEntries = (a: Agent): MenuEntry[] => {
@@ -531,11 +550,11 @@ export function Sidebar() {
         />
       )}
       {dir.loading && team.length === 0 && <SidebarSkeleton count={2} avatar label={t("common.loadingList")} />}
-      {pinnedAgents.map(agentRow)}
-      {pinnedAgents.length > 0 && (byGroup.ungrouped.length > 0 || agentGroups.length > 0) && (
+      {loose.top.map(agentRow)}
+      {loose.top.length > 0 && (loose.rest.length > 0 || agentGroups.length > 0) && (
         <hr className="sidebar__pins-end" />
       )}
-      {ordered(byGroup.ungrouped).map(agentRow)}
+      {loose.rest.map(agentRow)}
     </>
   );
   const blocks: Record<SectionKey, ReactNode> = {
@@ -633,7 +652,11 @@ export function Sidebar() {
                   {manages && (
                     <MenuItem
                       icon="layers"
-                      onSelect={() => void navigate({ to: "/org/$orgId/team", params: { orgId } })}
+                      onSelect={() => {
+                        // Equipe opens on the view it remembers: here, its setores.
+                        storage.set(STORAGE_KEYS.teamView, "sectors");
+                        void navigate({ to: "/org/$orgId/team", params: { orgId } });
+                      }}
                     >
                       {t("sidebarAgents.organize")}
                     </MenuItem>
@@ -648,7 +671,8 @@ export function Sidebar() {
           </SidebarSection>
         )}
         {agentGroups.map(({ group, items }) => {
-          const list = ordered(items);
+          const { top, rest } = ordered(items);
+          const list = [...top, ...rest];
           // Where a dragged row would land: a line before the row at that place among the others.
           const others = list.filter((a) => a.id !== drag.dragging);
           const lineAt = drag.over?.groupId === group.id ? drag.over.index : null;
@@ -663,20 +687,29 @@ export function Sidebar() {
               sections={sections}
               defaultOpen={groupsOpen}
               className="sidebar__section--category sidebar__section--group"
+              headProps={
+                manages
+                  ? entityMenu(() => [{ kind: "header", label: group.name }, ...groupMenuEntries(groupChoices(group))])
+                  : undefined
+              }
               summary={
                 workingHere > 0 && (
                   <span className="sidebar__section-working">{t("sidebarAgents.working", { count: workingHere })}</span>
                 )
               }
               action={
-                <span className="sidebar__section-count" title={t("sidebarAgents.count", { count: list.length })}>
-                  {list.length}
-                </span>
+                <>
+                  {manages && <GroupMenu {...groupChoices(group)} className="sidebar__section-add" />}
+                  <span className="sidebar__section-count" title={t("sidebarAgents.count", { count: list.length })}>
+                    {list.length}
+                  </span>
+                </>
               }
               drop={organize ? drag.zone(group.id) : undefined}
             >
-              {list.map((a) => (
+              {list.map((a, i) => (
                 <Fragment key={a.id}>
+                  {i > 0 && i === top.length && <hr className="sidebar__pins-end" />}
                   {lineAt === others.indexOf(a) && line}
                   {agentRow(a)}
                 </Fragment>
@@ -888,6 +921,7 @@ export function Sidebar() {
       />
       <SidebarSetupDialog open={customizing} onClose={() => setCustomizing(false)} />
       {groupDialog && <GroupNameDialog purpose={groupDialog} onClose={() => setGroupDialog(null)} />}
+      {deletingGroup && <DeleteGroupDialog group={deletingGroup} onClose={() => setDeletingGroup(null)} />}
 
       {/* Beta: the way to the feedback form, a row of its own at the bottom, where this server takes it. Not beside
           the person's name, which it would leave no room for; the rail has no room for a row's words. */}
@@ -1939,9 +1973,10 @@ function UnreadCount({
  * The account button: your face with your presence badge; under the name, your line (or how you appear). It opens a
  * menu right above it: you on top (face, name, @ and how you appear, your line in a well, a plan near its limit), then
  * your status (how you appear, or what you're up to), your profile, your settings (Configurações › Sua conta) and
- * signing out. Deleting the account starts at the bottom of Sua conta, not here beside Sair, where a slip would open
- * it. It and adding a password keep their dialogs here, in the address (`?account=delete`, `?account=password`) on any
- * page: adding a password may ask for a sign-in again, which comes back.
+ * signing out. The face on top changes your photo, as Editar perfil's Trocar foto does. Deleting the account starts at
+ * the bottom of Sua conta, not here beside Sair, where a slip would open it. It and adding a password keep their
+ * dialogs here, in the address (`?account=delete`, `?account=password`) on any page: adding a password may ask for a
+ * sign-in again, which comes back.
  *
  * In a personal workspace (`personal`, ADR 0159) it is the sidebar's top row (face, name and ▾, no foot) and its menu,
  * opening down, also holds what the workspace menu held for one person: Your account, Settings and the person's
@@ -1957,6 +1992,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
   const compact = useMediaQuery(COMPACT_QUERY);
   const saveStatus = useSaveStatus();
   const [profile, setProfile] = useState(false);
+  const [photo, setPhoto] = useState(false);
   const [phone, setPhone] = useState(false);
   const [account, setAccount] = useOpenParam("account");
   const [statusOpen, setStatusOpen] = useState(false);
@@ -2036,7 +2072,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
             // On top, as the workspace's header is in a team's: the face (how you appear on it) and the name.
             <button
               type="button"
-              className="sidebar__org-button"
+              className="sidebar__org-button sidebar__org-button--me"
               aria-label={`${t("shell.account")}: ${who}`}
               title={who}
             >
@@ -2069,9 +2105,11 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
         }
       >
         <div className="profile-card__head profile-menu__head">
-          <MyFace size="lg" presence={presence} presenceLabel={presenceWord} />
+          <MenuFace label={t("photo.change")} onSelect={openAfter(() => setPhoto(true))}>
+            <MyFace size="lg" presence={presence} presenceLabel={presenceWord} />
+          </MenuFace>
           <span className="list-col">
-            <span className="profile-card__name">{me.user.name}</span>
+            <span className="profile-card__name ac-captop">{me.user.name}</span>
             <span className="small muted">{[handle && `@${handle}`, presenceWord].filter(Boolean).join(" · ")}</span>
           </span>
         </div>
@@ -2128,6 +2166,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
         </MenuItem>
       </Menu>
       <ProfileDialog focus={profile ? "name" : null} onClose={() => setProfile(false)} />
+      <ChangeAvatarDialog open={photo} onClose={() => setPhoto(false)} />
       <SetStatusDialog open={statusOpen} onClose={() => setStatusOpen(false)} />
       <OpenOnPhoneDialog open={phone} onClose={() => setPhone(false)} />
       <AddPasswordDialog open={account === "password"} onClose={() => setAccount(null)} />

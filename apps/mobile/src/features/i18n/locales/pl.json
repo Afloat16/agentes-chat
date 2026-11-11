@@ -61,7 +61,6 @@
     "failed": "Twój wybór nie został wysłany. Spróbuj ponownie."
   },
   "chart": {
-    "pending": "Tworzenie wykresu…",
     "table": "Tabela",
     "item": "Element",
     "share": "Udostępnij",
@@ -405,12 +404,6 @@
     "toLatestNew": "Przejdź do najnowszych wiadomości: {{text}}",
     "stopAgent": "Zatrzymaj: {{name}}",
     "offlineWait": "Wyśle się po powrocie połączenia",
-    "turn": {
-      "thinking": "myśli",
-      "working": "pracuje",
-      "writing": "pisze",
-      "stopped": "zatrzymano"
-    },
     "steer": {
       "waiting": "{{name}} przeczyta to przy następnej przerwie",
       "computer": "{{name}} przeczyta to, gdy dostanie komputer",
@@ -1243,7 +1236,6 @@
     "proposalsWaiting_other": "{{count}} czeka",
     "drive": "Drive",
     "connectors": "Konektory i MCP",
-    "usage": "Użycie",
     "preferences": "Preferencje",
     "editProfile": "Edytuj profil",
     "switchWorkspace": "Przełącz przestrzeń roboczą",
@@ -1533,6 +1525,8 @@
     "uses_other": "Użyte {{count}} razy",
     "confirmed": "Potwierdzone przez osobę",
     "unconfirmed": "Jeszcze niepotwierdzone",
+    "confirm": "Potwierdź",
+    "confirmedToast": "Potwierdzono",
     "details": "Szczegóły techniczne",
     "before": "Wcześniej było: {{text}}",
     "fix": "Popraw",
@@ -1999,10 +1993,13 @@
       "helper_missing": "Pomocnik testowy nie jest jeszcze skonfigurowany",
       "helper_expired": "Pomocnik testowy wymaga odnowienia",
       "apple_account_missing": "Xcode na Macu potrzebuje konta Apple Account",
+      "apple_team_missing": "Xcode na Macu nie pokazuje jeszcze zespołu",
+      "ui_not_authorized": "Ten iPhone odrzucił stuknięcia pomocnika testowego",
       "team_limit": "Usuń z tego iPhone'a własną aplikację",
       "helper_untrusted": "Zaufaj pomocnikowi testowemu na tym iPhonie",
       "booting": "Uruchamia się",
-      "no_driver": "Windows potrzebuje sterownika USB tego telefonu",
+      "no_driver": "Windows potrzebuje sterownika USB producenta telefonu",
+      "no_driverLinux": "Linux potrzebuje reguł udev dla tego telefonu",
       "os_too_old": "System tego telefonu jest za stary",
       "adb_offline": "Odłącz kabel i podłącz go ponownie",
       "other": "Jeszcze nie jest gotowe"
@@ -2078,8 +2075,15 @@
       "server": "Serwer lub VPS",
       "serverText": "Jedno polecenie do wklejenia w jego terminalu",
       "computer": "Inny komputer",
-      "computerText": "Mac, Windows lub Linux",
+      "computerText": "Zainstaluj na nim aplikację",
       "appNote": "Maca albo PC, z którego korzystasz, podłączy też aplikacja agentes.chat na komputer.",
+      "appStep1": "Zainstaluj na nim aplikację agentes.chat",
+      "appStep2": "Otwórz ją i zaloguj się na swoje konto",
+      "appStep3": "Kliknij Zezwól, gdy zapyta, czy agenci {{org}} mogą go używać",
+      "appShows": "Pojawi się tu sam, widoczny tylko dla ciebie, dopóki go nie udostępnisz.",
+      "appWaiting": "Czekam na twój komputer…",
+      "appConnected": "Połączono: {{name}}",
+      "appLine": "Nie możesz zainstalować na nim aplikacji? Użyj polecenia w terminalu",
       "unix": "Linux i macOS",
       "windows": "Windows",
       "once": "Działa raz, przez 10 minut. Uruchom je na komputerze, a potem wpuść go tutaj.",
@@ -2098,12 +2102,11 @@
       "noHost": "Ten telefon działa przez twój komputer. Najpierw podłącz komputer.",
       "hostOffline": "{{host}} jest offline. Włącz go i otwórz tam agentes.chat.",
       "step1": "Włącz Opcje programisty",
-      "step1Text": "Stuknij 7 razy Numer kompilacji, a potem wpisz PIN.",
+      "step1Text": "Stuknij 7 razy Numer kompilacji, a potem wpisz PIN. Na Samsungu: Informacje o oprogramowaniu › Numer wersji.",
       "openAbout": "Otwórz Informacje o telefonie",
       "step2": "Włącz debugowanie USB",
       "openDev": "Otwórz Opcje programisty",
       "step3": "Podłącz go do {{host}}",
-      "step3Hint": "Użyj kabla do przesyłania danych, nie takiego, który tylko ładuje. Jeśli telefon zapyta, do czego służy USB, wybierz Przesyłanie plików.",
       "looking": "Szukam tego telefonu",
       "step4": "Stuknij Zezwól na tym telefonie",
       "step4Text": "Najpierw zaznacz Zawsze zezwalaj z tego komputera.",
@@ -2121,7 +2124,7 @@
       "wifi1": "Włącz debugowanie bezprzewodowe",
       "wifi1Text": "Zaznacz Zawsze zezwalaj w tej sieci i stuknij Zezwól.",
       "wifi2": "Zeskanuj kod na komputerze",
-      "wifi2Text": "W Debugowanie bezprzewodowe › Sparuj urządzenie za pomocą kodu QR.",
+      "wifi2Text": "W Debugowanie bezprzewodowe › Sparuj urządzenie za pomocą kodu QR. Nie używaj aparatu: odczyta kod jako sieć Wi-Fi i odłączy telefon od twojej sieci.",
       "wifi2Hint": "W agentes.chat na komputerze otwórz Podłącz urządzenie › Telefon z Androidem › Przez Wi-Fi i wybierz {{host}}.",
       "codeHead": "Sparuj za pomocą kodu parowania",
       "codeNote": "W Debugowanie bezprzewodowe › Sparuj urządzenie za pomocą kodu parowania. Otwórz Ustawienia i agentes.chat obok siebie, żeby kod został na ekranie.",
@@ -2152,7 +2155,16 @@
       "step5Hint": "Aplikacja, którą {{host}} instaluje, żeby agenci mogli stukać i pisać na tym iPhonie. Pojawi się na tej liście po instalacji.",
       "step5Text": "Ustawienia › Ogólne › VPN i zarządzanie urządzeniem. Stuknij nazwę dewelopera, a potem Zaufaj.",
       "waiting": "Czekam, aż {{host}} go wykryje",
-      "footer": "Resztę zrobi twój Mac, a gdy jest włączony, odnawia pomocnika testowego co 7 dni."
+      "footer": "Resztę zrobi twój Mac, a gdy jest włączony, odnawia pomocnika testowego co 7 dni.",
+      "tooOld": "Ten iPhone ma iOS {{version}}, a agenci potrzebują iOS 17 lub nowszego. Zaktualizuj go, jeśli się da, albo użyj nowszego iPhone'a.",
+      "xcodeOld": "Ten iPhone ma iOS {{version}}, nowszy niż zna Xcode na {{host}}. Zainstaluj tam Xcode {{major}}, a potem uruchom xcrun devicectl manage ddis update w Terminalu.",
+      "teamMissing": "Xcode jest zalogowany, ale nie pokazuje jeszcze zespołu. W Xcode utwórz dowolną aplikację iOS, wybierz swój zespół w Signing & Capabilities i uruchom ją raz na tym iPhonie.",
+      "uiRefused": "Ten iPhone odrzucił stuknięcia pomocnika testowego. Odblokuj go i wpisz kod, jeśli poprosi. Jeśli to się powtarza, wyłącz i włącz Ustawienia › Deweloper › Włącz automatyzację UI.",
+      "pluggedIn": "Jest podłączony",
+      "stall": {
+        "plug": "{{host}} nie widzi jeszcze tego iPhone'a. Użyj kabla, który przesyła dane, a nie tylko ładuje, trzymaj ten iPhone odblokowany i stuknij Zaufaj, jeśli poprosi.",
+        "devmode": "Tryb dewelopera włącza się dopiero po ponownym uruchomieniu tego iPhone'a. Stuknij Uruchom ponownie, a po starcie Włącz. Nie ma przełącznika? Odłącz ten iPhone i podłącz go ponownie."
+      }
     },
     "notice": {
       "kind": "Urządzenia",
@@ -2223,7 +2235,6 @@
     "failed": "Nie udało się połączyć. Spróbuj ponownie.",
     "refused": "Brak autoryzacji w {{name}}. Nic nie zostało połączone.",
     "connectedTitle": "Połączono z {{name}}",
-    "connectedSub": "Teraz sprawdź, co agenci mogą robić sami.",
     "connectedDone": "Usługa połączona.",
     "levelFailed": "Nie udało się zmienić dostępu do {{name}}. Spróbuj ponownie.",
     "everyoneFailed": "Nie udało się zmienić dostępu dla wszystkich. Spróbuj ponownie.",
@@ -2358,9 +2369,9 @@
     "anotherLead": "W agentes.chat. Zostajesz w {{org}} i możesz przełączyć się w każdej chwili.",
     "suggested": "Na podstawie twojego adresu w domenie {{domain}} proponuję {{org}}.",
     "create": "Utwórz",
+    "enter": "Wejdź do przestrzeni roboczej",
     "shareMessage": "Dołącz do {{org}} w agentes.chat: {{url}}",
-    "failed": "Nie udało się zapisać. Spróbuj ponownie.",
-    "enter": "Wejdź do przestrzeni roboczej"
+    "failed": "Nie udało się zapisać. Spróbuj ponownie."
   },
   "ai": {
     "yourPlan": "Twój plan AI",
@@ -2414,16 +2425,13 @@
     "editSub": "Nazwa, logo, strefa czasowa i to, co wiedzą agenci",
     "group": {
       "org": "Przestrzeń robocza",
-      "people": "Osoby",
-      "agents": "Agenci",
-      "costs": "Koszty i dane"
+      "people": "Osoby"
     },
     "section": {
       "members": "Członkowie",
       "roles": "Role",
       "access": "Dostęp agentów",
-      "connectors": "Konektory",
-      "usage": "Użycie i budżet"
+      "connectors": "Konektory"
     },
     "ofOnline": "{{online}} z {{count}}",
     "deleteName": "Usuń {{name}}",
@@ -2507,7 +2515,7 @@
       "guide": "Otwórz przewodnik {{name}}",
       "fields": "Dane",
       "private": "Te dane są przechowywane w postaci zaszyfrowanej i nigdy nie są ponownie pokazywane.",
-      "teamHelp": "Na początku jego elementy widzą wszyscy w przestrzeni roboczej i nie używa ich żaden agent. Agentów wybierasz później.",
+      "teamHelp": "Jego elementy widzą wszyscy w przestrzeni roboczej i każdy agent może ich używać. Możesz to potem zmienić.",
       "personalHelp": "Tylko ty widzisz jego elementy, a twoi agenci używają ich, gdy o to poprosisz.",
       "checking": "Sprawdzanie w {{name}}…",
       "connected": "Połączono z {{name}}",
@@ -2518,6 +2526,7 @@
       "ready": "Połączono",
       "syncing": "Synchronizowanie…",
       "reads": "Odczytuje: {{label}}",
+      "noWrites": "tylko do odczytu",
       "items_one": "{{count}} element",
       "items_few": "{{count}} elementy",
       "items_many": "{{count}} elementów",

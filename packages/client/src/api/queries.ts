@@ -17,9 +17,9 @@ import { newerBlockState, stateChanges, stateForPage } from "../lib/blocks";
 import type { ChatPrefs } from "../lib/chat-look";
 import type { ChoiceAnswer } from "../lib/choices";
 import { newerSetup } from "../lib/computer";
-import { CONSULT_CONVERSATION_POLL_MS, CONSULT_GROUP_POLL_MS } from "../lib/consult-group";
+import { CONSULT_CONVERSATION_POLL_MS, CONSULT_GROUP_POLL_MS, exchangeIds } from "../lib/consult-group";
 import { forPeople } from "../lib/consultations";
-import { WIFI_PAIR_POLL_MS, wifiPairLive } from "../lib/devices";
+import { PHONE_LOOK_MS, WIFI_PAIR_POLL_MS, wifiPairLive } from "../lib/devices";
 import { answerWithin, noAnswer, sendWaits } from "../lib/errors";
 import { ISSUES_VIEW_DEFAULT, type IssuesViewChange, withIssuesView } from "../lib/issues-view";
 import { LoginReadError, loginReadPasses } from "../lib/machines";
@@ -33,6 +33,7 @@ import {
   upsertInPages,
   withServerCounts,
 } from "../lib/notifications";
+import { workspaceUsesApi } from "../lib/plan-usage";
 import { learnPlanModels } from "../lib/plans";
 import { setMyReaction } from "../lib/reactions";
 import { recentConversations } from "../lib/recent";
@@ -1052,7 +1053,8 @@ export type AgentGroupAction =
 
 /**
  * Every change answers with all the groups. A move shows at once, and goes back if the server refuses it. Agents I put
- * in a group leave my pins (`unpinAgents`), so they show in it; `pinnedAt` in a move's result says where one was.
+ * in a group leave my pins (`unpinAgents`), so they land where I put them; `pinnedAt` in a move's result says where one
+ * was.
  */
 export function useAgentGroupAction(orgId: string) {
   const api = useApi();
@@ -2469,6 +2471,17 @@ export const useOverview = (orgId: string) => {
   return useQuery({ queryKey: keys.overview(orgId), queryFn: () => api.orgs.overview(orgId), staleTime: 30_000 });
 };
 
+/**
+ * Whether the workspace bills per use (`workspaceUsesApi`): only then a screen shows a budget, the API per agent or
+ * what the API cost. False while loading, so a workspace on plans alone never shows a budget that then leaves.
+ */
+export function useWorkspaceUsesApi(orgId: string) {
+  const overview = useOverview(orgId).data;
+  const agents = useAgents(orgId).data ?? [];
+  const ai = useAiStatus(orgId).data;
+  return workspaceUsesApi(agents, ai, overview?.budgetUsedPercent ?? 0);
+}
+
 export const useSettings = (orgId: string) => {
   const api = useApi();
   return useQuery({ queryKey: keys.settings(orgId), queryFn: () => api.orgs.settings(orgId) });
@@ -3087,18 +3100,58 @@ export const useConsultations = (orgId: string, channelId: string, enabled = tru
  * page no events: while the question is out it reloads every `CONSULT_CONVERSATION_POLL_MS`, and with the list
  * (its key sits under the list's) on every consult event.
  */
+const consultationQuery = (
+  api: ReturnType<typeof useApi>,
+  orgId: string,
+  channelId: string,
+  consultationId: string | null,
+) => ({
+  queryKey: keys.consultation(orgId, channelId, consultationId ?? ""),
+  // The relay line the server opens a mention to an agent outside the conversation with is the agent's, not people's.
+  queryFn: async () => {
+    const talk = await api.agents.consultation(orgId, channelId, consultationId ?? "");
+    return talk && { ...talk, ...forPeople(talk) };
+  },
+  enabled: consultationId !== null,
+  refetchInterval: (q: { state: { data?: { consultation: { status: string } } | null } }) =>
+    q.state.data?.consultation.status === "open" ? CONSULT_CONVERSATION_POLL_MS : false,
+});
+
 export const useConsultationConversation = (orgId: string, channelId: string, consultationId: string | null) => {
   const api = useApi();
-  return useQuery({
-    queryKey: keys.consultation(orgId, channelId, consultationId ?? ""),
-    // The relay line the server opens a mention to an agent outside the conversation with is the agent's, not people's.
-    queryFn: async () => {
-      const talk = await api.agents.consultation(orgId, channelId, consultationId ?? "");
-      return talk && { ...talk, ...forPeople(talk) };
-    },
-    enabled: consultationId !== null,
-    refetchInterval: (q) => (q.state.data?.consultation.status === "open" ? CONSULT_CONVERSATION_POLL_MS : false),
+  return useQuery(consultationQuery(api, orgId, channelId, consultationId));
+};
+
+/** Stable, so `useQueries` keeps the same list while no conversation changed. */
+const messagesOfTalks = (results: { data?: { messages: Message[] } | null }[]) =>
+  results.flatMap((r) => r.data?.messages ?? []);
+
+/**
+ * What a pair row opens: the question's own conversation (`useConsultationConversation`) with the rest of its
+ * exchange (`exchangeIds`: the other questions and hand-offs between the same two agents its row stands for), one
+ * conversation, oldest first.
+ */
+export const useExchangeConversation = (orgId: string, channelId: string, consultationId: string | null) => {
+  const api = useApi();
+  const own = useConsultationConversation(orgId, channelId, consultationId);
+  const list = useConsultations(orgId, channelId, consultationId !== null);
+  const others = useMemo(
+    () => (consultationId ? exchangeIds(list.data ?? [], consultationId).filter((id) => id !== consultationId) : []),
+    [list.data, consultationId],
+  );
+  const rest = useQueries({
+    queries: others.map((id) => consultationQuery(api, orgId, channelId, id)),
+    combine: messagesOfTalks,
   });
+  const data = useMemo(() => {
+    if (!own.data || rest.length === 0) return own.data;
+    const byId = new Map([...own.data.messages, ...rest].map((m) => [m.id, m]));
+    return {
+      ...own.data,
+      messages: [...byId.values()].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)),
+    };
+  }, [own.data, rest]);
+  return { ...own, data };
 };
 
 export const useRoster = (orgId: string, channelId: string, enabled = true) => {
@@ -3532,19 +3585,30 @@ export function useMemoryAction(orgId: string, agentId: string) {
       action:
         | { type: "edit"; id: string; text: string }
         | { type: "pin"; id: string; pinned: boolean }
-        | { type: "archive"; id: string; archived: boolean },
+        | { type: "archive"; id: string; archived: boolean }
+        | { type: "confirm"; id: string }
+        | { type: "team"; id: string },
     ) => {
       if (action.type === "edit") return api.memory.edit(orgId, action.id, action.text);
       if (action.type === "pin") return api.memory.setPinned(orgId, action.id, action.pinned);
+      if (action.type === "confirm") return api.memory.confirm(orgId, action.id);
+      if (action.type === "team") return api.memory.makeTeam(orgId, action.id);
       return api.memory.setArchived(orgId, action.id, action.archived);
     },
     onSuccess: () =>
       Promise.all([
         qc.invalidateQueries({ queryKey: keys.memory(orgId, agentId) }),
         qc.invalidateQueries({ queryKey: keys.orgMemories(orgId) }),
+        qc.invalidateQueries({ queryKey: keys.teamMemories(orgId) }),
       ]),
   });
 }
+
+/** Memória do time (ADR 0167). */
+export const useTeamMemories = (orgId: string) => {
+  const api = useApi();
+  return useQuery({ queryKey: keys.teamMemories(orgId), queryFn: () => api.memory.listTeam(orgId) });
+};
 
 export const useProposals = (orgId: string) => {
   const api = useApi();
@@ -4413,6 +4477,25 @@ export function useCalendarProposal(orgId: string, where: { channelId: string; m
     onSuccess: (proposal) => {
       cacheMessageMeta(qc, orgId, where.channelId, where.messageId, () => ({ calendarProposal: proposal }));
       void qc.invalidateQueries({ queryKey: keys.calendar(orgId) });
+    },
+  });
+}
+
+/**
+ * A report about the app an agent offered under its reply (`meta.feedbackOffer`): Send queues it in my name, Not now
+ * puts it away, and the row says so at once (my other devices see it through `feedback_offer.updated`).
+ */
+export function useFeedbackOffer(
+  orgId: string,
+  where: { channelId: string; threadId?: string | null; messageId: string },
+) {
+  const api = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (decision: "send" | "dismiss") => api.system.decideFeedbackOffer(orgId, where.messageId, decision),
+    onSuccess: (offer) => {
+      cacheMessageMeta(qc, orgId, where.channelId, where.messageId, () => ({ feedbackOffer: offer }));
+      if (where.threadId) void qc.invalidateQueries({ queryKey: keys.thread(orgId, where.channelId, where.threadId) });
     },
   });
 }
@@ -6394,6 +6477,21 @@ export function useAppActions(orgId: string) {
       onSuccess: done,
     }),
   };
+}
+
+/**
+ * While a phone guide waits for a phone on `machineId` (`on`), asks that computer now and every 20 s to also look for
+ * a plugged phone it has no driver for: adb never lists one, and the computer looks only while asked.
+ */
+export function useLookForPhones(orgId: string, machineId: string | null, on: boolean) {
+  const api = useApi();
+  useEffect(() => {
+    if (!on || !machineId) return;
+    const look = () => void api.devices.lookForPhones(orgId, machineId).catch(() => undefined);
+    look();
+    const id = setInterval(look, PHONE_LOOK_MS);
+    return () => clearInterval(id);
+  }, [api, orgId, machineId, on]);
 }
 
 /**

@@ -2,12 +2,14 @@ import { pairAddress } from "@agenteschat/adapters";
 import {
   approveDeviceJoin,
   cancelWifiPairing,
+  connectLinkInfo,
   connectLinkState,
   createConnectLink,
   deleteMachine,
   denyDeviceJoin,
   forgetPhone,
   listDevices,
+  lookForPhones,
   normalizeUserCode,
   openConnectLink,
   startWifiPairing,
@@ -389,6 +391,25 @@ export function deviceAppRoutes(deps: AppDeps) {
 
   app.openapi(
     createRoute({
+      method: "post",
+      path: "/organizations/{orgId}/devices/computers/{machineId}/phone-looks",
+      tags,
+      security,
+      summary: "Look for a cabled phone the computer has no driver for",
+      description:
+        "A phone guide waits for a phone plugged into this computer: for the next minute, the computer also looks for one it has no USB driver for (Windows), which then shows as needing the person (`no_driver`). Read only. Ask again while the guide stays open.",
+      request: { params: MachineParams },
+      responses: { 204: noContent[204], ...errors },
+    }),
+    async (c) => {
+      const { orgId, machineId } = c.req.valid("param");
+      await lookForPhones({ db, hub: hub() }, c.get("user").id, orgId, machineId);
+      return c.body(null, 204);
+    },
+  );
+
+  app.openapi(
+    createRoute({
       method: "delete",
       path: "/organizations/{orgId}/devices/computers/{machineId}/wifi-pairings/{pairingId}",
       tags,
@@ -481,6 +502,46 @@ export function deviceAppRoutes(deps: AppDeps) {
   );
 
   return app;
+}
+
+/**
+ * `GET /api/machines/connect-links/{code}` (no session, no CSRF: it only reads): the workspace and the maker of a
+ * link, for the desktop app's own "Connect this computer to …?" before it asks to join with it. Unknown, used and
+ * expired give the same 404, and a try counts like the install line's.
+ */
+export function registerConnectLinkInfo(api: OpenAPIHono, deps: AppDeps) {
+  const { db, config, adapters } = deps;
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/machines/connect-links/{code}",
+      tags,
+      summary: "A connect link's workspace and maker, while it waits for its computer",
+      request: { params: z.object({ code: z.string().openapi({ example: "K7QM-4ZPA" }) }) },
+      responses: {
+        200: json(
+          z
+            .object({
+              org: z.object({ name: z.string() }),
+              by: z.object({ name: z.string() }),
+              kind: z.enum(["server", "computer"]),
+              expiresAt: z.string(),
+            })
+            .openapi("ConnectLinkInfo"),
+        ),
+        404: json(z.object({ error: z.literal("link_expired") }), "Unknown, used or expired"),
+        429: errorResponse("Too many tries from this address"),
+      },
+    }),
+    async (c) => {
+      const ip = requestLimitIp(c.req.raw.headers, config.TRUSTED_PROXIES);
+      if (!(await adapters.rateLimiter.consume(`device-link-info:${ip}`, SCRIPT_LIMIT)).allowed) {
+        return apiError(c, 429, "rate_limited", "Too many tries from this address. Wait a minute and try again.");
+      }
+      const info = await connectLinkInfo(db, c.req.valid("param").code);
+      return info ? c.json(info, 200) : c.json({ error: "link_expired" as const }, 404);
+    },
+  );
 }
 
 const SH = { "content-type": "text/x-shellscript; charset=utf-8", "cache-control": "no-store" };

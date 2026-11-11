@@ -829,7 +829,7 @@ export function hostTokenConflict(content: string | null): { now: string; off: s
  */
 export function computerOffer(machine: ThisMachine, content: string | null, image: boolean): ComputerOffer {
   const no = (error: string, fix: string): ComputerOffer => ({ problem: { check: "computer", error, fix } });
-  const later = "connect a computer later in Settings → Computers";
+  const later = "connect a computer later in Settings › Devices";
   if (image) {
     return no(
       "Inside the image, the setup can't make this machine the agents' computer.",
@@ -1105,11 +1105,11 @@ export function decideComputer(p: {
   if (on === undefined) return { ask: "computer", yes: p.offer.yes };
   if (!on) return off();
   const { mac, simple } = p.offer;
-  // On a Mac agents work as the person, so their commands could reach everything that person can: asked
-  // with the computer, off when it was on already and nothing installed says otherwise.
-  const unsaid = mac ? (now === "on" ? false : p.answers.commands) : true;
+  // Commands start on everywhere (product decision). On a Mac agents work as the person, so the question is still
+  // asked there, with yes as its answer by default.
+  const unsaid = mac ? (now === "on" ? true : p.answers.commands) : true;
   const commands = p.commands ? p.commands === "yes" : (p.installed ?? unsaid);
-  if (commands === undefined) return { ask: "commands", yes: false };
+  if (commands === undefined) return { ask: "commands", yes: true };
   return {
     plan: {
       state: "on",
@@ -1357,7 +1357,7 @@ function computerStep(c: ComputerPlan): string {
   if (c.state === "off" && c.wasOn) {
     return `agents' computer: not this machine any more (HOST_COMPUTER_TOKEN emptied, ${HOST_TOKEN_FILE} removed)`;
   }
-  if (c.state === "off") return "agents' computer: not this machine (connect one later in Settings → Computers)";
+  if (c.state === "off") return "agents' computer: not this machine (connect one later in Settings › Devices)";
   if (c.state === "skipped") return `agents' computer: skipped. ${c.why}`;
   const who = c.mac
     ? `this Mac, agents working as you in folders of their own, commands ${c.commands ? "on" : "off"}`

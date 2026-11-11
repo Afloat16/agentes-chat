@@ -6,6 +6,7 @@ import type { OnboardingStepId } from "../lib/onboarding";
 import type { TeamWeekAct, TeamWeekPrefs } from "../lib/team-week";
 import type { AudienceChoice } from "../lib/who-sees";
 import type { WikiAccess } from "../lib/wiki";
+import type { WorkAreaAnswer } from "../lib/work-area";
 import type {
   SecretToVaultInput,
   VaultConnectInput,
@@ -134,6 +135,7 @@ import type {
   EndpointStyle,
   FeedbackFile,
   FeedbackInput,
+  FeedbackOffer,
   ForeignMailbox,
   FormerAgent,
   GifKey,
@@ -360,6 +362,11 @@ export interface ApiClient {
     /** A picture or a video for the feedback being written: kept an hour unless it is sent. */
     uploadFeedbackFile(file: File): Promise<FeedbackFile>;
     dropFeedbackFile(id: string): Promise<void>;
+    /**
+     * A report an agent offered under its reply (`meta.feedbackOffer`): I send it or put it away, once. Answers with
+     * the offer as it stands.
+     */
+    decideFeedbackOffer(orgId: string, messageId: string, decision: "send" | "dismiss"): Promise<FeedbackOffer>;
     /** `null` unless I am the installation's owner on a self-hosted server. */
     jev(): Promise<JevKey | null>;
     /** Checked with TypeSafe first: `jev_key_invalid` (422) when it refuses, `jev_key_env` (409) with an env key. */
@@ -410,6 +417,8 @@ export interface ApiClient {
     unread(): Promise<{ organizations: { orgId: string; unread: number; waiting: number }[] } | null>;
     /** My app language (emails and pushes are written in it). */
     updateMe(input: { locale: AppLocale; auto?: boolean }): Promise<void>;
+    /** My own area, asked once during the onboarding, or `skipped` (`PUT /me/work-area`). */
+    setWorkArea(area: WorkAreaAnswer): Promise<void>;
     /** A one-time sign-in for the phone app, shown as a QR code. */
     phoneSignIn(): Promise<PhoneSignIn>;
     /**
@@ -516,7 +525,11 @@ export interface ApiClient {
     /** Replaces my sidebar view here; answers with what the server kept. */
     setSidebarView(orgId: string, view: SidebarView): Promise<SidebarView>;
     /** My profile photo: a square image (JSON only: base64), already cropped. */
-    setAvatar(orgId: string, input: { imageBase64: string; contentType: string }): Promise<{ avatarUrl: string }>;
+    /** `portrait`: the recipe of a portrait drawn in the app; it comes back on the address as a `#px=` fragment. */
+    setAvatar(
+      orgId: string,
+      input: { imageBase64: string; contentType: string; portrait?: string },
+    ): Promise<{ avatarUrl: string }>;
     removeAvatar(orgId: string): Promise<void>;
     /** The workspace logo (admins): a square image (JSON only: base64), already cropped. */
     setLogo(orgId: string, input: { imageBase64: string; contentType: string }): Promise<{ logo: string }>;
@@ -1048,6 +1061,8 @@ export interface ApiClient {
     ): Promise<WifiPairing>;
     wifiPairing(orgId: string, machineId: string, pairingId: string): Promise<WifiPairing>;
     cancelWifiPairing(orgId: string, machineId: string, pairingId: string): Promise<void>;
+    /** Asks the computer to also look for a plugged phone it has no driver for, which adb never lists (Windows). */
+    lookForPhones(orgId: string, machineId: string): Promise<void>;
   };
   /** Connected computers (ADR 0025): machines running `agentes-runner`. */
   machines: {
@@ -1176,9 +1191,15 @@ export interface ApiClient {
     /** `about: "me"`: only what came from the viewer, each with `from` (the message). */
     list(orgId: string, agentId: string, filter?: { about?: "me" }): Promise<Memory[]>;
     listAll(orgId: string): Promise<Memory[]>;
+    /** Memória do time (ADR 0167): what people asked every agent to keep. */
+    listTeam(orgId: string): Promise<Memory[]>;
+    /** Tornar do time (ADR 0167): an agent's memory becomes the team's; its copies are archived. */
+    makeTeam(orgId: string, memoryId: string): Promise<Memory>;
     edit(orgId: string, memoryId: string, text: string): Promise<Memory>;
     setPinned(orgId: string, memoryId: string, pinned: boolean): Promise<Memory>;
     setArchived(orgId: string, memoryId: string, archived: boolean): Promise<Memory>;
+    /** Confirmar (ADR 0167): trusted and verified, by who may edit it or the person who said it. */
+    confirm(orgId: string, memoryId: string): Promise<Memory>;
     /** Undoes a change the agent made from the chat (`update.undo.path`). */
     revert(orgId: string, memoryId: string): Promise<void>;
   };

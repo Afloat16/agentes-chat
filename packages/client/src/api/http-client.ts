@@ -96,6 +96,7 @@ import type {
   EndpointCheck,
   EndpointModel,
   FeedbackFile,
+  FeedbackOffer,
   ForeignMailbox,
   FormerAgent,
   GifKey,
@@ -540,6 +541,12 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         return files.upload<FeedbackFile>("/api/app/feedback/files", form);
       },
       dropFeedbackFile: (id) => request<void>(`/api/app/feedback/files/${enc(id)}`, { method: "DELETE" }),
+      decideFeedbackOffer: async (orgId, messageId, decision) =>
+        (
+          await request<{ offer: FeedbackOffer }>(`/api/app/feedback/offers/${enc(messageId)}`, {
+            json: { orgId, decision },
+          })
+        ).offer,
       jev: () => nullOn(404, () => request<JevKey>("/api/app/jev")),
       saveJev: (apiKey) => request<JevKey>("/api/app/jev", { method: "PUT", json: { apiKey } }),
       checkJev: () => request<JevKey>("/api/app/jev/check", { method: "POST" }),
@@ -561,6 +568,7 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
           request<{ organizations: { orgId: string; unread: number; waiting: number }[] }>("/api/app/me/unread"),
         ),
       updateMe: (input) => request<void>("/api/app/me", { method: "PATCH", json: input }),
+      setWorkArea: (area) => request<void>("/api/app/me/work-area", { method: "PUT", json: { area } }),
       phoneSignIn: () => request<PhoneSignIn>("/api/app/phone-sign-in", { json: {} }),
       addPassword: (password) => request<void>("/api/app/me/password", { json: { password } }),
       deletionPlan: () => request<AccountDeletionPlan>("/api/app/account/deletion"),
@@ -1127,6 +1135,8 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
     },
     memory: {
       listAll: async (orgId) => (await request<{ memories: Memory[] }>(`${org(orgId)}/memories`)).memories,
+      listTeam: async (orgId) => (await request<{ memories: Memory[] }>(`${org(orgId)}/team-memories`)).memories,
+      makeTeam: (orgId, id) => request<Memory>(`${org(orgId)}/memories/${enc(id)}/team`, { json: {} }),
       list: async (orgId, agentId, filter) =>
         (
           await request<{ memories: Memory[] }>(`${org(orgId)}/agents/${enc(agentId)}/memories`, {
@@ -1139,6 +1149,8 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         request<Memory>(`${org(orgId)}/memories/${enc(id)}`, { method: "PATCH", json: { pinned } }),
       setArchived: (orgId, id, archived) =>
         request<Memory>(`${org(orgId)}/memories/${enc(id)}`, { method: "PATCH", json: { archived } }),
+      confirm: (orgId, id) =>
+        request<Memory>(`${org(orgId)}/memories/${enc(id)}`, { method: "PATCH", json: { confirmed: true } }),
       revert: async (orgId, id) => {
         await request<unknown>(`${org(orgId)}/memories/${enc(id)}/revert`, { json: {} });
       },
@@ -1191,6 +1203,8 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         request<void>(`${org(orgId)}/devices/computers/${enc(machineId)}/wifi-pairings/${enc(pairingId)}`, {
           method: "DELETE",
         }),
+      lookForPhones: (orgId, machineId) =>
+        request<void>(`${org(orgId)}/devices/computers/${enc(machineId)}/phone-looks`, { json: {} }),
     },
     machines: {
       list: async (orgId) => (await request<{ machines: Machine[] }>(`${org(orgId)}/machines`)).machines,

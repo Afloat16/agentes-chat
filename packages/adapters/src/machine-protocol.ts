@@ -617,7 +617,7 @@ export type PhoneReason =
   | "developer_mode_off"
   /** iPhone: Settings › Developer › Enable UI Automation is off. */
   | "ui_automation_off"
-  /** iPhone: no Xcode on the Mac, or it can't serve this iOS (`xcode_too_old`). */
+  /** iPhone: no Xcode on the Mac, or its iPhone SDK is older than the phone's iOS (`xcode_too_old`). */
   | "xcode_missing"
   | "xcode_too_old"
   /** iPhone: the Mac is preparing the phone (device support download, needs internet). */
@@ -625,8 +625,12 @@ export type PhoneReason =
   /** iPhone: the test helper isn't built yet, or its free signature ran out (`helper_expired`). */
   | "helper_missing"
   | "helper_expired"
-  /** iPhone: Xcode on the Mac is signed in to no Apple Account (Xcode › Settings › Accounts), so nothing signs the helper. */
+  /** iPhone: Xcode on the Mac is signed in to no Apple Account (Xcode › Settings › Apple Accounts), so nothing signs the helper. */
   | "apple_account_missing"
+  /** iPhone: Xcode lists an Apple Account but no team yet (it shows one after its first build for an iPhone). */
+  | "apple_team_missing"
+  /** iPhone: the phone refused UI actions (unlocked, so its daily passcode grant or UI Automation). */
+  | "ui_not_authorized"
   /** iPhone: a free Apple Account's limit (3 apps of its own per phone, 10 app ids a week) stops the helper. */
   | "team_limit"
   /** iPhone: the phone doesn't trust the helper's developer yet (Settings › General › VPN & Device Management). */
@@ -635,7 +639,7 @@ export type PhoneReason =
   | "booting"
   /** Windows sees no driver for this phone (install its maker's USB driver). */
   | "no_driver"
-  /** Too old an OS for the tools (`unsupported`). */
+  /** Too old an OS for the tools (`unsupported`): Android before 5, iOS before 17. */
   | "os_too_old"
   /** adb reports the phone `offline` (replug it, or it is restarting). */
   | "adb_offline";
@@ -729,7 +733,13 @@ export interface RunnerToolchains {
   xcode?: string;
   /** The Apple Account team that signs the iPhone test helper, as Xcode names it ("Sam Rivera (Personal Team)"). */
   appleTeam?: string;
+  /** What Xcode's Apple Accounts give: a team, an account with no team yet, or no account. */
+  appleAccount?: "team" | "no_team" | "none";
+  /** The iPhone SDK's version (`xcrun --sdk iphoneos --show-sdk-version`, "26.2"): the newest iOS it drives. */
+  xcodeSdk?: string;
   node?: string;
+  /** Podman's version: with the runner in system mode, the agents' containers (ADR 0169). */
+  podman?: string;
 }
 
 /** The phone a `phone.*` op is for. */
@@ -1056,6 +1066,38 @@ export const PLAN_USAGE_LIMITS = { windows: 8, label: 40 } as const;
 
 /** Where a sign-in is: waiting for the person, done (signed in), failed or expired (folder removed). */
 export type AccountLoginState = "waiting" | "done" | "failed" | "expired";
+
+/**
+ * Why a sign-in ended without signing in (`status`'s `code`, beside `error`), for the apps to say in their own words.
+ * An older runner sends none.
+ */
+export const ACCOUNT_LOGIN_FAILURES = [
+  /** The CLI isn't installed on the computer. */
+  "not_installed",
+  /** The CLI found no terminal to read the pasted code from. */
+  "no_tty",
+  /** The CLI couldn't reach the provider. */
+  "network",
+  /** The provider refused the pasted code: not the page's, already used, or too old. */
+  "bad_code",
+  /** The CLI stopped with an error of its own (its words in `message`). */
+  "cli_exit",
+  /** The CLI finished, but its status says the account isn't signed in (its words in `message`). */
+  "not_signed_in_after_login",
+  /** The CLI finished, but its status didn't answer in time. */
+  "status_unknown",
+  /** `claude setup-token` finished without showing its token. */
+  "no_token",
+  /** It signed in, but the computer couldn't keep the sign-in. */
+  "not_kept",
+  /** Nobody finished it within `ACCOUNT_LOGIN_TTL_MS` (`expired`). */
+  "timeout",
+  /** The person canceled it. */
+  "canceled",
+] as const;
+export type AccountLoginFailure = (typeof ACCOUNT_LOGIN_FAILURES)[number];
+export const isAccountLoginFailure = (v: unknown): v is AccountLoginFailure =>
+  (ACCOUNT_LOGIN_FAILURES as readonly unknown[]).includes(v);
 
 /**
  * `op: "account"` (protocol 13, ADR 0041 §2). `begin` starts the CLI's sign-in
@@ -1992,6 +2034,11 @@ export interface MachineAgent {
   account?: string;
   /** The other accounts here it thinks with: the team's right hand on people's own plans (ADR 0137 §11). */
   accounts?: string[];
+  /**
+   * Its containers service may run here (ADR 0169). Absent for a brain whose shell runs in a sandbox of the CLI's own,
+   * which that service, outside it, would be a way out of, and for the team's right hand, which thinks on several.
+   */
+  containers?: boolean;
 }
 
 /** The pause state (protocol 9). `until` null: paused until the owner resumes. */
@@ -2313,6 +2360,12 @@ export type MachineRequest = (
   | { op: "phone.pair.code"; address: string; code: string }
   | { op: "phone.pair.status"; pairingId: string }
   | { op: "phone.pair.cancel"; pairingId: string }
+  /**
+   * A phone guide is open and waits for a phone: for the next minute, a Windows runner also looks for a plugged phone
+   * Windows has no USB driver for (adb never lists one) and reports it as `no_driver`. Older runners answer
+   * `bad_request`, which the server ignores.
+   */
+  | { op: "phone.look" }
 ) & {
   agent?: AgentScope;
   /** Protocol 34: a `browser.*` op in this browser profile's session instead of the agent's (ADR 0110). */
@@ -2383,6 +2436,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "phone.pair.code",
   "phone.pair.status",
   "phone.pair.cancel",
+  "phone.look",
 ];
 
 /** What each op answers with `ok: true`. */
@@ -2422,6 +2476,10 @@ export interface MachineReplies {
     accounts?: RunnerAccountInfo[];
     /** `failed`: why, for people. */
     error?: string;
+    /** `failed` or `expired`: why, as a code (`ACCOUNT_LOGIN_FAILURES`). */
+    code?: AccountLoginFailure;
+    /** With `code`: what the CLI itself said, without tokens or the pasted code, cut at a word. */
+    message?: string;
   };
   /** `cwd`: where it runs, relative to the agent's folder (`.worktrees/<taskId>` with a branch). */
   "task.start": {
@@ -2537,6 +2595,7 @@ export interface MachineReplies {
   "phone.pair.code": PhonePairing;
   "phone.pair.status": PhonePairing;
   "phone.pair.cancel": { canceled: boolean };
+  "phone.look": { looking: boolean };
 }
 
 /** An element numbered on a `browser.capture` image: its ref and box (CSS pixels). */
@@ -2727,6 +2786,8 @@ export type RunnerFrame =
   | { type: "accounts.changed"; accounts: RunnerAccountInfo[]; ownUsage?: OwnPlanUsage }
   /** Protocol 41: the coding CLIs found changed since `hello` (`hello.executors`, whole). */
   | { type: "executors.changed"; executors: NonNullable<RunnerInfo["executors"]> }
+  /** What `hello.toolchains` said changed (an Apple team found, Xcode updated), whole. An older server drops it. */
+  | { type: "toolchains.changed"; toolchains: RunnerToolchains }
   /** `PHONES_PROTOCOL`: the phones it reaches changed (one came or went, a state or a holder changed), whole. */
   | { type: "phones.changed"; phones: RunnerPhone[] }
   /**
@@ -2750,7 +2811,15 @@ export interface McpToolInfo {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  /** MCP's own `_meta`, passed to the CLI as is (`MCP_ALWAYS_LOAD`). */
+  _meta?: Record<string, unknown>;
 }
+
+/**
+ * A tool's `_meta` key Claude Code reads: listed with its schema from the first round, never behind its ToolSearch.
+ * The runner sets it on the tools every run reaches for; the server on what one kind of run needs at once.
+ */
+export const MCP_ALWAYS_LOAD = "anthropic/alwaysLoad";
 
 /** Most tools one `mcp.tools` frame carries. */
 export const MCP_TOOLS_MAX = 200;
@@ -2788,7 +2857,10 @@ const TOOLCHAINS: readonly (keyof RunnerToolchains)[] = [
   "maestro",
   "xcode",
   "appleTeam",
+  "appleAccount",
+  "xcodeSdk",
   "node",
+  "podman",
 ];
 const idOrNull = (v: unknown) => (isString(v) && v.length <= 64 ? v : null);
 
@@ -2843,8 +2915,9 @@ export function parseToolchains(v: Record<string, unknown>): RunnerToolchains {
   const out: RunnerToolchains = {};
   for (const key of TOOLCHAINS) {
     const value = cut(v[key], 100);
-    if (value) out[key] = value;
+    if (value) (out as Record<string, string>)[key] = value;
   }
+  if (out.appleAccount && !["team", "no_team", "none"].includes(out.appleAccount)) delete out.appleAccount;
   return out;
 }
 
@@ -3225,6 +3298,8 @@ export function parseRunnerFrame(raw: string): RunnerFrame | null {
     }
     case "executors.changed":
       return isObject(f.executors) ? { type: "executors.changed", executors: parseExecutors(f.executors) } : null;
+    case "toolchains.changed":
+      return isObject(f.toolchains) ? { type: "toolchains.changed", toolchains: parseToolchains(f.toolchains) } : null;
     case "access.decided": {
       if (!isString(f.requestId)) return null;
       const decision = (["granted", "denied", "expired"] as const).find((d) => d === f.decision);

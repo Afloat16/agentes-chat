@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setSystemTime, test } from "bun:test";
+import type { RunnerPhone } from "@agenteschat/adapters/machine-protocol";
 import { setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
@@ -55,7 +56,7 @@ async function mount(
 /** The first workspace's cards alone (the fake has two). */
 function OneWorkspace() {
   const homes = pairedHomes(useSnapshot()).slice(0, 1);
-  return homes.length ? <ThisMacCards homes={homes} /> : null;
+  return homes.length ? <ThisMacCards homes={homes} offers={[]} /> : null;
 }
 
 const rowOf = (el: HTMLElement, title: string) =>
@@ -69,9 +70,9 @@ describe("Preferences › This Mac", () => {
   test("agents, commands as this user, who can use it, and each phone with its state and one way out", () =>
     mount("prefs", <OneWorkspace />, async (el, host) => {
       await until(() => rowOf(el, "Pixel 8") && rowOf(el, "Who can use it")?.querySelector('[role="combobox"]'));
-      expect(rowOf(el, "Let agents use this Mac")?.querySelector('[role="switch"]')?.getAttribute("aria-checked")).toBe(
-        "true",
-      );
+      expect(
+        rowOf(el, "Let Acme's agents use this Mac")?.querySelector('[role="switch"]')?.getAttribute("aria-checked"),
+      ).toBe("true");
       expect(document.getElementById("mac-commands-hint")?.textContent).toContain("They run as sam");
       expect(rowOf(el, "Who can use it")?.querySelector('[role="combobox"]')?.textContent).toBe("Only me");
 
@@ -137,9 +138,8 @@ describe("the iPhone setup window", () => {
         "SettingsPrivacy & SecurityDeveloper Mode",
       );
       expect(el.textContent).toContain("Sam Rivera · Personal Team");
-      expect(
-        el.querySelector('svg[role="img"][aria-label="QR code that opens these steps on the iPhone"]'),
-      ).toBeTruthy();
+      // Our phone app is in no store yet: no QR that would only open a web page on the iPhone.
+      expect(el.querySelector(".dk-ip__qr")).toBeNull();
       expect(button(el, "Back")).toBeTruthy();
       expect(button(el, "Cancel")).toBeTruthy();
 
@@ -151,6 +151,60 @@ describe("the iPhone setup window", () => {
       expect(el.querySelector('[aria-current="step"] .ac-setpath')?.textContent).toBe(
         "SettingsGeneralVPN & Device Management",
       );
+    });
+  });
+
+  test("every iPhone state names its way out, and a step that sits still says what most likely holds it", async () => {
+    writePref(IPHONE_SETUP_PREF, true);
+    await mount("welcome", <WindowView name="welcome" />, async (el, host) => {
+      const step = () => el.querySelector('[aria-current="step"]');
+      const at = (name: string) => until(() => step()?.querySelector("b")?.textContent === name);
+      const phone = (over: Partial<RunnerPhone>) => {
+        for (const runner of host.runners.values())
+          runner.setPhones(runner.phones.map((p) => (p.platform === "ios" ? { ...p, ...over } : p)));
+      };
+      await at("Turn on Developer Mode");
+
+      phone({ reason: "ui_not_authorized" });
+      await at("Turn on UI Automation");
+      expect(step()?.textContent).toContain("The iPhone refused the test helper's taps. Unlock it");
+
+      for (const runner of host.runners.values()) runner.iphone = { ...runner.iphone, sdk: "26.2" };
+      phone({ reason: "xcode_too_old", osVersion: "27.0" });
+      await at("Xcode");
+      // The SDK comes with the next ask of the Mac (every 2 s), after the phone's own report.
+      await until(() => step()?.textContent?.includes("knows iOS 26.2 at most"));
+      expect(step()?.textContent).toContain("Sam's iPhone 16 runs iOS 27.0 and Xcode on");
+      expect(step()?.textContent).toContain("knows iOS 26.2 at most. Install Xcode 27, then run this in Terminal.");
+      expect(step()?.querySelector("code")?.textContent).toBe("xcrun devicectl manage ddis update");
+
+      // Below iOS 17: what it runs and what agents need, with no spinner left turning.
+      phone({ state: "unsupported", reason: "os_too_old", osVersion: "16.7.10" });
+      await at("iPhone connected");
+      expect(step()?.getAttribute("data-state")).toBe("warn");
+      expect(step()?.textContent).toContain("Sam's iPhone 16 runs iOS 16.7.10, and agents need iOS 17 or newer.");
+      expect(el.querySelector(".dk-fr__stepmark .ac-pixspin")).toBeNull();
+
+      // Xcode lists an account that shows no team: its own words, not "sign in".
+      for (const runner of host.runners.values()) runner.iphone = { ...runner.iphone, account: null, noTeam: true };
+      await at("Apple Account in Xcode");
+      expect(step()?.textContent).toContain("Xcode is signed in but shows no team yet.");
+
+      for (const runner of host.runners.values())
+        runner.iphone = { ...runner.iphone, account: { name: "Sam Rivera", personal: true } };
+      phone({ state: "preparing", reason: "helper_missing", osVersion: "27.1" });
+      await at("Test helper");
+      expect(step()?.querySelector(".dk-ip__stall")).toBeNull();
+      try {
+        // The next ask of the Mac, 45 s on with nothing changed: what the helper waits for.
+        setSystemTime(new Date(Date.now() + 46_000));
+        await until(() => step()?.querySelector(".dk-ip__stall"));
+        expect(step()?.querySelector(".dk-ip__stall")?.textContent).toContain(
+          "builds the test helper and starts it on the iPhone",
+        );
+      } finally {
+        setSystemTime();
+      }
     });
   });
 

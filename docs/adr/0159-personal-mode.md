@@ -52,8 +52,8 @@ same shape.
 - **Chat:** every conversation opens in bubbles (DMs already did); a person's own choice still wins. The panels on the
   right of a conversation (the agent's panel beside its DM, a channel's members column) start closed at every width;
   the person's own toggle is remembered and wins.
-- **Settings:** six sections in one list (Your account, About you, AI and apps, Plan and usage, Vault, Computers) and
-  the rest under Advanced, collapsed. People joins the list once others are members. Every section still opens by its
+- **Settings:** six sections in one list (Your account, About you, AI and usage, Connectors, Vault, Computers) and
+  the rest under Advanced, collapsed. AI and usage also holds the plan and billing. People joins the list once others are members. Every section still opens by its
   address, from ⌘K and from the right hand's cards.
 - **An agent's page:** its bar is Overview, Instructions, Memory, "Can use" (its apps and mailboxes), Settings (name,
   look and budget) and Advanced, with no "More". Advanced holds the rest, whole: Activity, Files and Usage a click away,
@@ -127,3 +127,11 @@ off" works as in a team workspace (web `routes/org.$orgId.index.tsx`).
 
 ADR 0164: the sidebar's "New agent" opens the same card as a team's, with the personal starters; the one-sentence ask
 sent to the right hand is gone.
+
+## Amendment (2026-11-10): the personal onboarding (§2)
+
+"For me" no longer opens the workspace at once. It still creates the workspace as personal, named in the person's
+language, and then goes through the onboarding's rail (ADR 0162, amended 2026-11-10) in its own words and with no
+business step: its agents (bringing them from another app, or "Seguir sem agentes"), the plan where the workspace waits
+for its first one, and connecting an AI, then the right hand's DM. On a billing hold the card's first row is "Ligue os
+seus agentes.", before the four rows above.

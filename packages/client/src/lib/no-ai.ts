@@ -54,6 +54,8 @@ export interface NoAiCard {
   planLine?: RightHandPlanLine;
   /** With `model_limit`, `model_region` and `model_off`: the model's name. */
   model?: string;
+  /** With `planLine` `cli_failed`: what the plan's CLI said, the cause its line names. */
+  why?: string;
   /** Not "no AI": its computer has no such CLI installed, or it has no computer at all. */
   missing?: "cli_missing" | "no_computer";
   /** A billing hold stopped the run: the message is kept for after the plan (`keptCardState`). */
@@ -121,6 +123,7 @@ export function noAiCardOf(meta: Record<string, unknown> | null | undefined): No
       ? { planLine: o.reason as RightHandPlanLine }
       : {}),
     ...(typeof o.model === "string" && o.model ? { model: o.model } : {}),
+    ...(o.reason === "cli_failed" && typeof o.why === "string" && o.why ? { why: o.why } : {}),
     ...(o.reason === "cli_missing" || o.reason === "no_computer" ? { missing: o.reason } : {}),
     ...(o.reason === "plan_hold" ? { held: true } : {}),
   };
@@ -135,6 +138,10 @@ export function keptCardState(s: { hold: BillingHold | null; paid: boolean; read
   if (s.hold) return s.paid ? ("paid" as const) : ("held" as const);
   return s.ready ? ("answer" as const) : ("connect" as const);
 }
+
+/** The key of a plan line's sentence (`name`, `model` and `why` fill it): the CLI's failure with what it said. */
+export const planLineKey = (line: RightHandPlanLine, why?: string) =>
+  line === "cli_failed" && why ? ("noAi.rightHand.cli_failedWhy" as const) : (`noAi.rightHand.${line}` as const);
 
 /** A plan line that passes by itself: once the agent can think again, its card offers "Responder agora". */
 export const planLinePasses = (line: RightHandPlanLine | undefined) =>
@@ -774,3 +781,16 @@ export function onlyOwnerReplies(agents: readonly Agent[], hasAi: (agentId: stri
     thinking.every((a) => a.ownerUserId === viewerId && !answersOthers(audienceOf(a), a.ownerUserId))
   );
 }
+
+/**
+ * Whether every one of these agents thinks (ready, or waiting for its computer: anything but "no AI"), read alike by
+ * the onboarding's AI step and the arrival (ADR 0162, ADR 0160). Undefined while the status loads, and while it
+ * doesn't list one of them yet: a status read before an agent was made says nothing about that agent, so the caller
+ * waits for a fresh read instead of taking it as unanswered.
+ */
+export const teamThinks = (agentIds: readonly string[], status: AiStatus | undefined): boolean | undefined => {
+  if (status === undefined) return undefined;
+  const states = agentIds.map((id) => aiStateOf(status, id));
+  if (states.some((s) => s === undefined)) return undefined;
+  return states.length > 0 && states.every((s) => s !== "no_ai");
+};

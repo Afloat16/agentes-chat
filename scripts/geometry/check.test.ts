@@ -84,7 +84,7 @@ describe("geometry check", () => {
       expect(SELF_TESTED).toContain(rule);
     for (const rule of ["pagetop", "groupedge", "menuitem", "rowpad", "emptyselect", "toolorder", "toolrow", "captop"])
       expect(SELF_TESTED).toContain(rule);
-    for (const rule of ["timeedge", "panefill", "bleed", "stampout"]) expect(SELF_TESTED).toContain(rule);
+    for (const rule of ["timeedge", "panefill", "bleed", "stampout", "stampover"]) expect(SELF_TESTED).toContain(rule);
     // Words squeezed beside actions, a lone main button on a phone, buttons 8 apart and never split by words before
     // them, one height in a row, a fact on one line, Desfazer in its sentence, a count that calls on someone readable
     // on what's behind it.
@@ -106,6 +106,10 @@ describe("geometry check", () => {
     // A title in a row that wraps a word a line is squeezed; one long address wrapping its full lines is not.
     for (const twin of ["bad-wordwrap--row", "good-wordwrap--url"]) expect(fixture).toContain(twin);
     expect(rules).toContain('".ac-facts__value, .ac-factline__fact"');
+    // A word broken at its syllables in a box that hyphenates (a narrow calendar item's title) is no midword.
+    expect(fixture).toContain("good-midword--hyphens");
+    // The face on a menu's top that changes the photo (`MenuFace`) is no row: neither its height nor its room.
+    for (const twin of ["good-menuitem--face", "good-rim--face"]) expect(fixture).toContain(twin);
     for (const rule of SELF_TESTED) {
       expect(fixture).toContain(`bad-${rule}`);
       expect(fixture).toContain(`good-${rule}`);

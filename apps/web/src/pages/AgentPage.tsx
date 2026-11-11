@@ -27,8 +27,6 @@ import { isRightHand, tellsNameStory } from "@agenteschat/client/lib/right-hand"
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import {
   Button,
-  Card,
-  CardHeader,
   colorKey,
   cx,
   Dialog,
@@ -55,12 +53,13 @@ import { DeleteAgentDialog } from "@/components/DeleteAgentDialog";
 import { LoadingPage } from "@/components/Loading";
 import { useOrg } from "@/components/org-context";
 import { useWidenAsk } from "@/components/ReachLines";
-import { RightHandMineRow, RightHandSettingsSection, useRightHandMineHint } from "@/components/RightHandSettings";
+import { RightHandSettingsSection } from "@/components/RightHandSettings";
 import { useDirectory } from "@/hooks/useDirectory";
 import {
   AGENT_TABS,
   type AgentSection,
   type AgentTab,
+  type BrainScreen,
   budgetValue,
   canEdit,
   changedKeys,
@@ -118,6 +117,10 @@ export interface AgentPageProps {
   agentId: string;
   tab: AgentTab;
   section?: AgentSection;
+  /** With the section "brain": the screen "Quem pensa" opens on (a notification's "Escolher outro modelo"). */
+  brainAt?: BrainScreen;
+  /** The memory or skill a link opened Memória at. */
+  item?: string;
   /** Changes the tab (and section) in the URL. */
   onNavigate: (tab: AgentTab, section?: AgentSection) => void;
   /** Shown in the panel beside its DM (like a thread's), not as a page: closes the panel. */
@@ -153,41 +156,31 @@ export function AgentPage(props: AgentPageProps) {
       </div>
     );
   }
-  // The right hand (ADR 0137) has no tabs: its instructions are the product's. Admins get its short form here too.
-  if (isRightHand(agent) && can(org, "manage_agents")) {
+  // The right hand (ADR 0137) has no tabs: its instructions are the product's. Its page is its settings, each
+  // person's own and, for who manages agents, the workspace's.
+  if (isRightHand(agent)) {
     return (
       <div className="page page--full">
         <PageHeader title={agent.name} meta={t("settings.sectionText.right_hand")} />
         {tellsNameStory(agent) && <p className="small muted">{t("rightHand.profile.nameStory")}</p>}
-        <RightHandSettingsSection />
+        <RightHandSettingsSection agent={agent} />
       </div>
-    );
-  }
-  // Everyone else gives their own DM with it their plan (ADR 0137 §11).
-  if (isRightHand(agent)) {
-    return (
-      <AgentPublicCard agent={agent}>
-        <RightHandMineCard agent={agent} />
-      </AgentPublicCard>
     );
   }
   if (!seesDetails(agent)) return <AgentPublicCard agent={agent} />;
   return <AgentProfile key={agent.id} agent={agent} {...props} />;
 }
 
-/** "Sua IA" on the right hand's page: why it is the viewer's alone behind the title's ⓘ, the status under it. */
-function RightHandMineCard({ agent }: { agent: Agent }) {
-  const { t } = useTranslation();
-  const hint = useRightHandMineHint(agent);
-  return (
-    <Card as="section" className="agp-card" aria-labelledby="rh-mine-title">
-      <CardHeader id="rh-mine-title" title={t("rightHand.settings.mine")} hint={hint} />
-      <RightHandMineRow agent={agent} />
-    </Card>
-  );
-}
-
-function AgentProfile({ agent, tab, section, onNavigate, onClose, closeRequest }: AgentPageProps & { agent: Agent }) {
+function AgentProfile({
+  agent,
+  tab,
+  section,
+  brainAt,
+  item,
+  onNavigate,
+  onClose,
+  closeRequest,
+}: AgentPageProps & { agent: Agent }) {
   const { t, i18n } = useTranslation();
   const { org, me } = useOrg();
   const api = useApi();
@@ -806,7 +799,7 @@ function AgentProfile({ agent, tab, section, onNavigate, onClose, closeRequest }
                 {view === "overview" && <OverviewTab />}
                 {view === "instructions" && <InstructionsTab />}
                 {view === "access" && <AccessTab part={personal ? "basic" : "all"} />}
-                {view === "memory" && <MemoryTab />}
+                {view === "memory" && <MemoryTab item={item} />}
                 {view === "files" && <FilesTab />}
                 {view === "usage" && <UsageTab />}
                 {view === "activity" && <ActivityTab />}
@@ -847,6 +840,7 @@ function AgentProfile({ agent, tab, section, onNavigate, onClose, closeRequest }
 
       <WorkDialogs
         open={work}
+        brainAt={section === "brain" ? brainAt : undefined}
         onClose={() => {
           setWork(null);
           if (section === "brain") onNavigate(tab);
