@@ -35,12 +35,12 @@ describe("dialogs laid out on the form's rhythm", () => {
     expect(blocks(css("pages/dashboards.css"), ".nwc-pks")).toContain("flex-wrap: wrap;");
   });
 
-  test("Novo widget: the title's box keeps the head's gap from the face, so its ring never touches it", () => {
+  test("Novo widget: the title's box stands off the face by more than its ring, a faceless one starts on the text edge", () => {
     const title = blocks(css("pages/dashboards.css"), ".nwc__title");
-    expect(title).toContain("margin: calc(-1 * var(--space-1)) 0;");
-    expect(title).toContain("padding: var(--space-1) var(--space-2);");
+    expect(title).toContain("margin: calc(-1 * var(--space-1)) var(--space-1);");
+    expect(title).toContain("padding: var(--space-1);");
     expect(blocks(css("pages/dashboards.css"), ".nwc__title:first-child")).toContain(
-      "margin-inline-start: calc(-1 * var(--space-2));",
+      "margin-inline-start: calc(-1 * var(--space-1));",
     );
   });
 

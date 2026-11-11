@@ -504,14 +504,15 @@ html:not([data-pointer]) .nw-quiet:focus-visible {
 .nwc[data-size="s"] .nwc-building {
   display: none;
 }
-/* The title, written on the card: quiet text until the pointer or the keys reach it. Its box keeps the head's gap
-   from the face and from what follows, so its ring never reaches them, and grows only up and down past its line. */
+/* The title, written on the card: quiet text until the pointer or the keys reach it. Its box stands a step further
+   from the face and from what follows than the head's gap, so the focus ring drawn outside it still keeps that gap,
+   and grows only up and down past its line. */
 .nwc__title {
   flex: 1;
   min-width: 0;
   box-sizing: border-box;
-  margin: calc(-1 * var(--space-1)) 0;
-  padding: var(--space-1) var(--space-2);
+  margin: calc(-1 * var(--space-1)) var(--space-1);
+  padding: var(--space-1);
   border: 0;
   border-radius: 7px;
   background: none;
@@ -525,7 +526,7 @@ html:not([data-pointer]) .nw-quiet:focus-visible {
 }
 /* No face before it (a pin with no block picked yet): its words start on the card's text edge. */
 .nwc__title:first-child {
-  margin-inline-start: calc(-1 * var(--space-2));
+  margin-inline-start: calc(-1 * var(--space-1));
 }
 .nwc__title:hover {
   box-shadow: inset 0 0 0 1px var(--line2);

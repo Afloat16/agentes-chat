@@ -757,9 +757,11 @@ function NewWidgetBody({
             </span>
           )
         )}
-        <span className="wg__dot" aria-hidden="true">
-          ·
-        </span>
+        {(mode === "ask" || owner) && (
+          <span className="wg__dot" aria-hidden="true">
+            ·
+          </span>
+        )}
         {scheduleSelect}
         {tested && <span className="nwc-when">{testedWhen}</span>}
       </>

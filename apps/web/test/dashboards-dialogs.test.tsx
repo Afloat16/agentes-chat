@@ -708,6 +708,8 @@ describe("New widget (ADR 0135 §3)", () => {
     const pin = within(dialog).getByRole("button", { name: "Fixar" }) as HTMLButtonElement;
     expect(pin.disabled).toBe(true);
     expect(dialog.textContent).toContain("Escolha um bloco que um agente já mandou:");
+    // No block picked, so nobody before the schedule: no separator opens the card's foot.
+    expect(card(dialog).querySelector(".wg__foot .wg__dot")).toBeNull();
     const block = segment(dialog, "Blocos que os agentes mandaram no chat", /Deploys da semana/);
     expect(block.textContent).toContain("Ada em #eng");
     await click(block);
@@ -716,6 +718,7 @@ describe("New widget (ADR 0135 §3)", () => {
     expect((within(pinned).getByLabelText("Título") as HTMLInputElement).value).toBe("Deploys da semana");
     expect([...pinned.querySelectorAll(".wk-bar__v")].map((v) => v.textContent)).toEqual(["3", "5", "2"]);
     expect(within(pinned).queryByRole("button", { name: "Aviso" })).toBeNull();
+    expect(pinned.querySelector(".wg__foot .nwc-who + .wg__dot")).toBeTruthy();
     await pick(combo(dialog, "Atualiza"), "Não atualizar");
     expect(dialog.textContent).toContain("Fica como está, sem rotina");
     await click(pin);
