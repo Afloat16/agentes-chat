@@ -103,7 +103,15 @@ import { consultationsOf } from "@agenteschat/client/lib/consultations";
 import { deviceWaitOf } from "@agenteschat/client/lib/devices";
 import { clearDraft, peekDraft } from "@agenteschat/client/lib/drafts";
 import { ErrorBoundary } from "@agenteschat/client/lib/error-boundary";
-import { errorCode, errorText, restrictionLine, runErrorText, runFailureLine } from "@agenteschat/client/lib/errors";
+import {
+  errorCode,
+  errorText,
+  restrictionLine,
+  runErrorText,
+  runFailureLine,
+  sendFailureText,
+  sendNeedsEdit,
+} from "@agenteschat/client/lib/errors";
 import { everyoneWord, isEveryoneMention, mentionsReader, offersEveryone } from "@agenteschat/client/lib/everyone";
 import { fileIcon, fitsUpload, formatBytes, MAX_UPLOAD_MB, previewKind } from "@agenteschat/client/lib/files";
 import { dayLabel, formatFullDate, formatTime } from "@agenteschat/client/lib/format";
@@ -115,6 +123,7 @@ import { supersededBrainNotices } from "@agenteschat/client/lib/machine-outages"
 import { hasWideBlock, plainLine } from "@agenteschat/client/lib/markdown";
 import { isMediaAfterReply, isMediaAlone, messageMediaOf, quoteText, textOrMedia } from "@agenteschat/client/lib/media";
 import { serverBody } from "@agenteschat/client/lib/message-body";
+import { tooLongToSend } from "@agenteschat/client/lib/message-length";
 import {
   isOpenMission,
   missionCommandOf,
@@ -209,6 +218,8 @@ import { useApi } from "@/api/context";
 import { tokenizeBody } from "@/chat/body";
 import { ChatMedia } from "@/chat/ChatMedia";
 import { ChatVoice } from "@/chat/ChatVoice";
+import { ClippedBody } from "@/chat/ClippedBody";
+import { LongDraftNotice } from "@/chat/LongDraftNotice";
 import { useConversationLook } from "@/chat/look";
 import { MessageBody } from "@/chat/MessageBody";
 import { useBrowserOffline } from "@/chat/offline";
@@ -1927,6 +1938,11 @@ function ChannelView({
     }
     composer.current?.focus();
   };
+  // A draft past the length limit goes as a text file instead, which agents open like any other.
+  const draftAsFile = () => {
+    addFiles([new File([draft], t("channel.tooLong.fileName"), { type: "text/plain" })]);
+    setDraft("");
+  };
   const attached = files.flatMap((f) => (f.status === "done" && f.ref ? [f.ref] : []));
   const uploading = files.some((f) => f.status === "uploading");
 
@@ -2193,6 +2209,13 @@ function ChannelView({
       stick.current = true;
       retry(local);
     },
+    editUnsent: (local) => {
+      qc.setQueryData<MessageType[]>(keys.messages(org.id, channel.id), (list) =>
+        list?.filter((m) => m.id !== local.id),
+      );
+      setDraft(local.body);
+      composer.current?.focus();
+    },
     resend: (body) => send(body),
     focusComposer: () => composer.current?.focus(),
     fillComposer: (text) => {
@@ -2256,6 +2279,7 @@ function ChannelView({
     return {
       insertMention: (handle) => now().insertMention(handle),
       retry: (local) => now().retry(local),
+      editUnsent: (local) => now().editUnsent(local),
       resend: (body) => now().resend(body),
       focusComposer: () => now().focusComposer(),
       fillComposer: (text) => now().fillComposer(text),
@@ -2663,7 +2687,17 @@ function ChannelView({
                                 }
                                 onFiles={chrome?.locked ? undefined : addFiles}
                                 canSendEmpty={attached.length > 0}
-                                sendBlocked={uploading}
+                                sendBlocked={uploading || tooLongToSend(draft)}
+                                notice={
+                                  tooLongToSend(draft) ? (
+                                    <LongDraftNotice
+                                      length={draft.trim().length}
+                                      onAsFile={
+                                        chrome?.locked || files.length >= MAX_ATTACHMENTS ? undefined : draftAsFile
+                                      }
+                                    />
+                                  ) : undefined
+                                }
                                 format={formatLabels}
                                 emoji={mediaTabs ? { ...emojiLabels, button: mediaTabs.button } : emojiLabels}
                                 pickerTabs={mediaTabs?.tabs}
@@ -4442,20 +4476,25 @@ export const TimelineMessage = memo(function TimelineMessage({
             {routine && report && reportOpen && <RoutineReport text={report} />}
             {bodyShown && (
               <MessageText key="body" style={workOver ? { opacity: 0.6 } : undefined}>
-                <MessageBody
-                  body={talk ? talk.lead : body}
-                  resolveMention={dir.mentionName}
-                  mentionTone={dir.mentionTone}
-                  renderMention={renderMention}
-                  wikiLink={wikiLink}
-                  channelRefs={channelRefsOf(m.meta)}
-                  accent={colorOf(agent)}
-                  pinFrom={
-                    m.author.type === "agent" && m.author.id && !m.local && !readOnly
-                      ? { messageId: m.id, agentId: m.author.id }
-                      : null
-                  }
-                />
+                <ClippedBody name={name} text={talk ? talk.lead : body}>
+                  {(clip) => (
+                    <MessageBody
+                      className={clip}
+                      body={talk ? talk.lead : body}
+                      resolveMention={dir.mentionName}
+                      mentionTone={dir.mentionTone}
+                      renderMention={renderMention}
+                      wikiLink={wikiLink}
+                      channelRefs={channelRefsOf(m.meta)}
+                      accent={colorOf(agent)}
+                      pinFrom={
+                        m.author.type === "agent" && m.author.id && !m.local && !readOnly
+                          ? { messageId: m.id, agentId: m.author.id }
+                          : null
+                      }
+                    />
+                  )}
+                </ClippedBody>
                 {talk && openThread && (
                   <button
                     type="button"
@@ -4494,14 +4533,21 @@ export const TimelineMessage = memo(function TimelineMessage({
               />
             )}
             {local === "failed" && (
-              <p className="ac-msg__error ac-iconline" role="alert">
-                <Icon name="alert" size={16} />
-                <span>{t("channel.notSent")}</span>
-                <span aria-hidden="true">·</span>
-                <button type="button" className="ac-link" onClick={() => actions?.retry(m)} style={inlineButton}>
-                  {t("channel.retrySend")}
+              // Why it didn't go, then the one way out: the same text again, or back in the field when only a change
+              // to it can make it go.
+              <div className="ac-msg__unsent" role="alert">
+                <p className="ac-msg__error ac-iconline">
+                  <Icon name="alert" size={16} />
+                  <span>{sendFailureText(t, m.sendFailure, i18n.language)}</span>
+                </p>
+                <button
+                  type="button"
+                  className="ac-link"
+                  onClick={() => (sendNeedsEdit(m.sendFailure) ? actions?.editUnsent(m) : actions?.retry(m))}
+                >
+                  {t(sendNeedsEdit(m.sendFailure) ? "channel.editSend" : "channel.retrySend")}
                 </button>
-              </p>
+              </div>
             )}
             {m.author.type === "agent" && !m.local && <AgentActionReceipts message={m} />}
             {m.author.type === "agent" && !m.local && <HandedTaskChips message={m} />}
@@ -4657,15 +4703,6 @@ function isMemoryUpdate(v: unknown): v is MemoryUpdate {
   const o = v as Record<string, unknown>;
   return typeof o.action === "string" && typeof o.itemId === "string" && typeof o.text === "string";
 }
-
-const inlineButton = {
-  background: "none",
-  border: 0,
-  padding: 0,
-  font: "inherit",
-  cursor: "pointer",
-  color: "inherit",
-};
 
 /**
  * The request of a message with `meta.approvalId`: from the approvals list, or fetched by id. Requests the agent

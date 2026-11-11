@@ -3522,6 +3522,33 @@ html:not([data-pointer]) .channel-ref:focus-visible {
   margin-top: 2px;
   font-size: 13px;
 }
+/*
+ * A tall message in a conversation (ClippedBody): whole up to `LONG_MESSAGE.over`, past it only its first
+ * `LONG_MESSAGE.shows`, fading out, with "Ver mais" under it. The limits sit on the words' own root, so the bubble
+ * still reads them as its direct child. `clip`, not `hidden`: the browser's find must not scroll the words inside
+ * their box, and only the vertical axis, so a wide table still reaches the row's edge.
+ */
+.msg-clip {
+  max-height: 520px;
+  overflow-y: clip;
+}
+.msg-clip--cut {
+  max-height: 360px;
+  mask-image: linear-gradient(#000 calc(100% - 96px), transparent);
+}
+.msg-clip__more {
+  display: inline-block;
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: inherit;
+}
+/* The same message whole, in its dialog: the conversation's reading size, room under the last line. */
+.msg-clip__whole {
+  padding-bottom: var(--dialog-pad);
+  font-size: var(--msg-text, 14px);
+  line-height: var(--msg-line, 24px);
+  overflow-wrap: anywhere;
+}
 .channel-card__head {
   display: flex;
   align-items: center;

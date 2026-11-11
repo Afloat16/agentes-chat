@@ -72,14 +72,16 @@ describe("optimistic send", () => {
     expect(rowsWith("bom dia")).toHaveLength(1);
   });
 
-  test("failure says 'Não enviada · Tentar de novo'; retry sends the same text", async () => {
-    const state = seedState({ failPosts: true });
+  test("failure says 'Não enviada' with the cause and Tentar de novo; retry sends the same text", async () => {
+    const state = seedState({ failPosts: new ApiError(500, "internal_error", "Something went wrong on our side") });
     await open(state);
     await sendText("vai falhar");
     await settle(4);
     const row = rowsWith("vai falhar")[0] as HTMLElement;
     expect(row.className).toContain("ac-msg--failed");
-    expect(within(row).getByRole("alert").textContent).toBe("Não enviada·Tentar de novo");
+    expect(within(row).getByRole("alert").textContent).toBe(
+      "Não enviada. Algo deu errado do nosso lado. Tente de novo daqui a pouco.Tentar de novo",
+    );
     state.failPosts = false;
     await act(async () => fireEvent.click(within(row).getByRole("button", { name: "Tentar de novo" })));
     await settle(4);
