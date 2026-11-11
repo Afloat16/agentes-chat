@@ -290,6 +290,7 @@ export function ThisMacCards({
             />
           );
         })}
+        {bottom}
         <PrefRow
           lead={
             <span className="dk-logo">
@@ -299,12 +300,11 @@ export function ThisMacCards({
           title={t("desktop.prefs.thisMac.otherWorkspace")}
           hint={hintFor(t, t("desktop.prefs.thisMac.otherWorkspace"), t("desktop.prefs.thisMac.otherWorkspaceDesc"))}
           end={
-            <Button size="sm" onClick={() => void host.showWindow("welcome")}>
+            <Button size="sm" onClick={() => void host.addWorkspace().catch(() => {})}>
               {t("desktop.prefs.thisMac.addWorkspace")}
             </Button>
           }
         />
-        {bottom}
       </PrefCard>
 
       {phonesShown && (
