@@ -282,7 +282,7 @@ export function installTitleTips(doc: Document = document): () => void {
     doc.removeEventListener("pointerover", onOver, on);
     doc.removeEventListener("pointerout", onOut, on);
     doc.removeEventListener("pointermove", onMove, on);
-  doc.removeEventListener("pointerup", onOver, on);
+    doc.removeEventListener("pointerup", onOver, on);
     doc.removeEventListener("focusin", onFocus, on);
     doc.removeEventListener("focusout", onBlur, on);
     doc.removeEventListener("keydown", dismiss, on);

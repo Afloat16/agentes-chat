@@ -68,7 +68,8 @@ const tabTo = (el: HTMLElement) =>
     el.focus();
     fireEvent.keyUp(document.body, { key: "Tab" });
   });
-const ICON = '<svg aria-hidden="true"></svg>';
+// The icon's stand-in: an unsized <svg> in a bare button is a 300px box the layout check would measure.
+const ICON = '<span aria-hidden="true"></span>';
 
 describe("a `title` opens the product's tip, never the browser's", () => {
   test("after the delay under a mouse; the title is held meanwhile and given back on leave", async () => {
