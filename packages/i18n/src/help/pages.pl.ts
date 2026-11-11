@@ -13,7 +13,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Jak to działa",
         blocks: [
           "Działa wewnątrz aplikacji, z wbudowaną bazą danych, i trzyma wszystko w jednym folderze na tym komputerze: `.agentes` w twoim folderze domowym. Nie trzeba niczego więcej instalować: bez Dockera, bez konfigurowania bazy danych.",
-          "Uruchamia się razem z aplikacją i zatrzymuje, gdy ją zamkniesz. Przed zamknięciem aplikacja pyta, bo nikt nie skorzysta z agentes.chat, dopóki znów jej nie otworzysz.",
+          "Uruchamia się razem z aplikacją i zatrzymuje, gdy ją zamkniesz. Przed zamknięciem aplikacja pyta, bo nikt nie skorzysta z agentes.chat, dopóki znów jej nie otworzysz. Żeby zatrzymać go na chwilę bez zamykania aplikacji, kliknij ikonę agentes.chat przy zegarze i wybierz **Zatrzymaj** w menu **⋯** jego karty.",
         ],
       },
       {
@@ -28,7 +28,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "keep-on",
         heading: "Niech zostaje włączony",
         blocks: [
-          "Na komputerze, z którego korzystają inni, ustaw to raz:",
+          "Na komputerze, z którego korzystają inni, ustaw to raz. **Utrzymuj działanie**, w **Preferencje\u00a0›\u00a0Serwery**, pokazuje, czego jeszcze brakuje, i otwiera właściwe ustawienia:",
           {
             list: [
               "**Otwieraj po zalogowaniu** włącza się samo po konfiguracji.",
@@ -43,16 +43,16 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Twoi agenci też tu pracują",
         blocks: [
-          "Twoi agenci też pracują na tym komputerze, we własnych folderach, z przeglądarką oraz z Claude Code lub Codexem, jeśli są tu zainstalowane. Polecenia są wyłączone, dopóki nie włączysz ich w **Preferencje › Narzędzia**.",
-          "Agenci działają tu jako ty. Z włączonymi poleceniami mają dostęp do reszty tego komputera, także do `.agentes`: bazy danych, `.env` z `AGENTES_SECRET`, klucza właściciela i tokenu tego komputera. Dotyczy to każdej przestrzeni roboczej, która używa tego komputera, także tej w agentes.chat Cloud. Zobacz [Do czego mają dostęp agenci](/help/computers#reach).",
+          "Twoi agenci też pracują na tym komputerze, we własnych folderach, z przeglądarką oraz z Claude Code lub Codexem, jeśli są tu zainstalowane. Polecenia są wyłączone, dopóki nie włączysz ich dla przestrzeni roboczej w **Preferencje\u00a0›\u00a0Narzędzia**.",
+          "Agenci działają tu jako ty. Z włączonymi poleceniami mają dostęp do reszty tego komputera, także do `.agentes`: bazy danych, `.env` z `AGENTES_SECRET`, klucza właściciela i tokenu tego komputera. Dotyczy to każdej przestrzeni roboczej, w której włączysz polecenia, także tej w agentes.chat Cloud. Zobacz [Do czego mają dostęp agenci](/help/computers#reach).",
         ],
       },
       {
         id: "another-workspace",
         heading: "Udostępnij go też innej przestrzeni roboczej",
         blocks: [
-          "Przestrzenie robocze serwera, który tu uruchamiasz, korzystają z tego komputera same. Żeby mogła z niego korzystać także przestrzeń robocza gdzie indziej, na przykład w agentes.chat Cloud, otwórz **Preferencje › Serwery**, naciśnij **Dodaj serwer…**, zaloguj się do tej przestrzeni roboczej i naciśnij **Zezwól**, gdy aplikacja zapyta.",
-          "Każda przestrzeń robocza ma tu własnych agentów i foldery. **Polecenia** w **Preferencje › Narzędzia** obowiązują od razu wszystkie przestrzenie robocze na tym komputerze: włącz je tylko wtedy, gdy powierzasz agentom każdej z nich cały ten komputer.",
+          "Przestrzenie robocze serwera, który tu uruchamiasz, korzystają z tego komputera same. Żeby mogła z niego korzystać także przestrzeń robocza gdzie indziej, na przykład w agentes.chat Cloud, naciśnij **Dodaj przestrzeń roboczą…** na dole pierwszej karty w **Preferencje\u00a0›\u00a0Ogólne** albo **Dodaj serwer…** w **Preferencje\u00a0›\u00a0Serwery**. Zaloguj się do tej przestrzeni roboczej i naciśnij **Zezwól**, gdy aplikacja zapyta.",
+          "Każda przestrzeń robocza ma tu własnych agentów i foldery oraz własny przełącznik **Polecenia** w **Preferencje\u00a0›\u00a0Narzędzia**. Włącz polecenia tylko w przestrzeni roboczej, której agentom powierzasz cały ten komputer.",
         ],
       },
       {
@@ -67,29 +67,29 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "password",
         heading: "Logowanie z innych urządzeń",
         blocks: [
-          "Właściciel zaczyna bez hasła: aplikacja loguje cię na tym komputerze. Żeby zalogować się w przeglądarce na innym komputerze, ustaw hasło w **Ustawienia › Twoje konto**. Aplikacja na telefon łączy się po zeskanowaniu kodu QR z sekcji **Na telefonie**, w **Preferencje › Serwery**. Musi być przy tym włączone **Dostęp z telefonu i dla zespołu**.",
+          "Właściciel zaczyna bez hasła: aplikacja loguje cię na tym komputerze. Żeby zalogować się w przeglądarce na innym komputerze, ustaw hasło w **Ustawienia\u00a0›\u00a0Twoje konto**. Dopóki tego nie zrobisz, **Preferencje\u00a0›\u00a0Serwery** o tym przypomina, a **Dodaj hasło** otwiera tę stronę. Aplikacja na telefon łączy się po zeskanowaniu kodu QR z sekcji **Na telefonie**, w **Preferencje\u00a0›\u00a0Serwery**. Musi być przy tym włączone **Dostęp z telefonu i dla zespołu**.",
         ],
       },
       {
         id: "updates",
         heading: "Aktualizacje",
         blocks: [
-          "Aplikacja sama szuka aktualizacji i instaluje je, gdy naciśniesz **Zaktualizuj i otwórz ponownie** w **Preferencje › Aktualizacje**. Serwer i wszyscy agenci uruchamiają się wtedy ponownie. Najpierw powstaje kopia bazy danych, a jeśli nowa wersja nie odpowie w ciągu 3 minut, aplikacja sama wraca do poprzedniej wersji i jej danych.",
+          "Aplikacja sama szuka aktualizacji. Gdy **Instaluj aktualizacje samodzielnie, w nocy** jest włączone, w **Preferencje\u00a0›\u00a0Aktualizacje**, instaluje je między 3:00 a 5:00, kiedy aplikacja jest otwarta. Jest to włączone od początku, gdy serwer działa tutaj. W przeciwnym razie naciśnij **Zaktualizuj i otwórz ponownie**. Serwer i wszyscy agenci uruchamiają się wtedy ponownie. Najpierw powstaje kopia bazy danych, a jeśli nowa wersja nie odpowie w ciągu 3 minut, aplikacja sama wraca do poprzedniej wersji i jej danych.",
         ],
       },
       {
         id: "backups",
         heading: "Kopie zapasowe",
         blocks: [
-          "Na razie nic nie robi kopii samo. **Zrób kopię zapasową teraz**, w **Preferencje › Serwery**, zatrzymuje na chwilę serwer i zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Zostają dwie najnowsze.",
-          "Co jakiś czas skopiuj je poza ten komputer, na dysk albo do chmury. Zawierają twoje klucze: trzymaj je w tajemnicy.",
+          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.6.2 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
+          "**Kopiuj do** umieszcza też każdą nową kopię w wybranym folderze, na przykład na pendrivie albo w iCloud Drive, gdzie zostają dwie najnowsze. Zawierają twoje klucze: trzymaj je w tajemnicy. **Przywróć…** cofa agentes.chat do kopii: wiadomości, plików i ustawień. Zatrzymuje się na minutę, a to, co było wcześniej, zostaje w folderze kopii.",
         ],
       },
       {
         id: "ai-programs",
         heading: "Claude Code i Codex",
         blocks: [
-          "Aplikacja znajduje Claude Code i Codex przez `PATH` twojej powłoki logowania oraz w typowych folderach, takich jak `~/.local/bin`, `/opt/homebrew/bin` i `/usr/local/bin`. Jeśli **Preferencje › Narzędzia** pokazuje **Nie znaleziono**, sprawdź, czy `claude` albo `codex` działa w nowym oknie Terminala, a potem zamknij i otwórz aplikację ponownie.",
+          "Aplikacja znajduje Claude Code i Codex przez `PATH` twojej powłoki logowania oraz w typowych folderach, takich jak `~/.local/bin`, `/opt/homebrew/bin` i `/usr/local/bin`. Jeśli **Preferencje\u00a0›\u00a0Narzędzia** pokazuje **Nie znaleziono**, widać tam też wiersz, który go instaluje. Uruchom go w Terminalu, a potem naciśnij **Sprawdź ponownie**.",
         ],
       },
       {
@@ -161,7 +161,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Z aplikacji agentes.chat",
         blocks: [
           "Zainstaluj aplikację na komputerze, otwórz ją i zaloguj się do swojej przestrzeni roboczej. Zapyta **Pozwolić agentom z <workspace> używać tego urządzenia (Mac)?** (PC na Windowsie, komputer na Linuksie). Wybierz, kto może z niego korzystać, i naciśnij **Zezwól**. To wszystko.",
-          "Jesteś już zalogowany? Włącz przestrzeń roboczą w **Preferencje › Ogólne**, na karcie **Agenci**.",
+          "Jesteś już zalogowany? Otwórz **Preferencje\u00a0›\u00a0Ogólne** i naciśnij **Zezwól** w wierszu przestrzeni roboczej na pierwszej karcie. Nie ma jej tam? Naciśnij **Dodaj przestrzeń roboczą…** na dole tej karty i zaloguj się.",
         ],
       },
       {
@@ -204,7 +204,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "pausing",
         heading: "Pauza i odłączanie",
         blocks: [
-          "Na komputerze ikona agentes.chat przy zegarze wstrzymuje agentów wszystkich przestrzeni roboczych. W **Preferencje › Ogólne** przełącznik każdej przestrzeni roboczej wstrzymuje tylko ją, a **Odłącz** ją odłącza. Podczas pauzy nic nowego się nie zaczyna, a to, co już działało, kończy się. Po odłączeniu foldery agentów zostają na dysku.",
+          "Na komputerze ikona agentes.chat przy zegarze wstrzymuje agentów wszystkich przestrzeni roboczych albo tylko jednej. W **Preferencje\u00a0›\u00a0Ogólne** przełącznik każdej przestrzeni roboczej wstrzymuje tylko ją, a **Odłącz** w jej menu **⋯** ją odłącza. Podczas pauzy nic nowego się nie zaczyna, a to, co już działało, kończy się. Po odłączeniu foldery agentów zostają na dysku.",
           "Na stronie internetowej urządzenie odłączysz przyciskiem **Usuń** na jego stronie.",
         ],
       },
@@ -237,7 +237,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
               "na komputerze, który uruchamia też agentes.chat, jego bazę danych i klucze w `.agentes`",
             ],
           },
-          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. Dlatego **Polecenia** są na początku wyłączone. Włączenie ich w **Preferencje › Narzędzia** obowiązuje od razu wszystkie przestrzenie robocze na komputerze: zrób to tylko wtedy, gdy powierzyłbyś wszystko, co na nim jest, agentom każdej przestrzeni roboczej i osobom, dla których pracują. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, według własnych zasad.",
+          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. Dlatego **Polecenia** są na początku wyłączone. Każda przestrzeń robocza ma własny przełącznik w **Preferencje\u00a0›\u00a0Narzędzia** (aplikacja 0.6.2 i nowsze), a aplikacja pyta, zanim jakiś włączy. Włącz go tylko w przestrzeni roboczej, której agentom i osobom, dla których pracują, powierzyłbyś wszystko, co jest na komputerze. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, nawet przy wyłączonych poleceniach.",
           "Prawdziwy mur da ci serwer z Linuksem. Na Debianie 13, zainstalowanym z `--system`, każdy agent jest osobnym użytkownikiem. Na Ubuntu agenci dzielą jednego użytkownika, `agentes`: widzą nawzajem swoje foldery, ale nie twoje ani serwera. Możesz też dać agentom osobny komputer.",
         ],
       },
