@@ -6239,6 +6239,8 @@
     "agentsOnlyYouHint": "Bir planla, her birinin sayfasından diğer kişilere de yanıt vermesine izin verebilirsiniz.",
     "filters": "Kişileri filtrele",
     "rolesOf": "Roller: {{name}}",
+    "rolesAdd": "Rol ekle",
+    "rolesChange": "Rolleri değiştir",
     "moreOf": "{{name}} için daha fazlası",
     "passwordLink": {
       "item": "Yeni şifre bağlantısı oluştur",

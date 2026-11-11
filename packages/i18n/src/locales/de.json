@@ -6278,6 +6278,8 @@
     "agentsOnlyYouHint": "Mit einem Abo kannst du auf der Seite jedes Agenten festlegen, dass er auch anderen Personen antwortet.",
     "filters": "Personen filtern",
     "rolesOf": "Rollen von {{name}}",
+    "rolesAdd": "Rolle hinzufügen",
+    "rolesChange": "Rollen ändern",
     "moreOf": "Mehr zu {{name}}",
     "passwordLink": {
       "item": "Link für neues Passwort erstellen",

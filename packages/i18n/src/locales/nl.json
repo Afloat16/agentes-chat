@@ -6318,6 +6318,8 @@
     "agentsOnlyYouHint": "Met een abonnement kun je op de pagina van elke agent instellen dat hij ook anderen antwoordt.",
     "filters": "Mensen filteren",
     "rolesOf": "Rollen van {{name}}",
+    "rolesAdd": "Rol toevoegen",
+    "rolesChange": "Rollen wijzigen",
     "moreOf": "Meer voor {{name}}",
     "passwordLink": {
       "item": "Link voor nieuw wachtwoord maken",

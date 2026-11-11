@@ -6052,6 +6052,8 @@
     "agentsOnlyYouHint": "요금제를 사용하면 각 에이전트 페이지에서 다른 사람에게도 답하도록 설정할 수 있어요.",
     "filters": "사람 필터",
     "rolesOf": "{{name}}의 역할",
+    "rolesAdd": "역할 추가",
+    "rolesChange": "역할 변경",
     "moreOf": "{{name}} 더 보기",
     "passwordLink": {
       "item": "새 비밀번호 링크 만들기",

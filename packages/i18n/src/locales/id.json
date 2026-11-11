@@ -6083,6 +6083,8 @@
     "agentsOnlyYouHint": "Dengan paket, kamu bisa membiarkan tiap agen menjawab orang lain dari halamannya.",
     "filters": "Filter orang",
     "rolesOf": "Peran {{name}}",
+    "rolesAdd": "Tambah peran",
+    "rolesChange": "Ubah peran",
     "moreOf": "Lainnya untuk {{name}}",
     "passwordLink": {
       "item": "Buat tautan kata sandi baru",

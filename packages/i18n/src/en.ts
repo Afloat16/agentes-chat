@@ -6513,6 +6513,8 @@ export const en = {
     agentsOnlyYouHint: "On a plan, you can let each one answer other people on its page.",
     filters: "Filter people",
     rolesOf: "{{name}}'s roles",
+    rolesAdd: "Add role",
+    rolesChange: "Change roles",
     moreOf: "More for {{name}}",
     /** On a server that sends no email, an owner's new-password link for a member (ADR 0158). */
     passwordLink: {

@@ -6055,6 +6055,8 @@
     "agentsOnlyYouHint": "プランがあれば、エージェントのページでほかの人にも返信できるよう設定できます。",
     "filters": "人を絞り込む",
     "rolesOf": "{{name}}のロール",
+    "rolesAdd": "ロールを追加",
+    "rolesChange": "ロールを変更",
     "moreOf": "{{name}} のその他の操作",
     "passwordLink": {
       "item": "新しいパスワードのリンクを作成",

@@ -6094,6 +6094,8 @@
     "agentsOnlyYouHint": "升级套餐后，你可以在每个智能体的页面上允许它回复其他人。",
     "filters": "筛选成员",
     "rolesOf": "{{name}} 的角色",
+    "rolesAdd": "添加角色",
+    "rolesChange": "更改角色",
     "moreOf": "{{name}} 的更多操作",
     "passwordLink": {
       "item": "生成新密码链接",

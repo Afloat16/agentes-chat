@@ -6493,6 +6493,8 @@
     "agentsOnlyYouHint": "Avec un abonnement, vous pouvez laisser chacun répondre à d'autres personnes, depuis sa page.",
     "filters": "Filtrer les personnes",
     "rolesOf": "Rôles de {{name}}",
+    "rolesAdd": "Ajouter un rôle",
+    "rolesChange": "Modifier les rôles",
     "moreOf": "Plus pour {{name}}",
     "passwordLink": {
       "item": "Créer un lien de nouveau mot de passe",

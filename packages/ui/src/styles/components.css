@@ -3093,6 +3093,15 @@ html:not([data-pointer]) .ac-tab:focus-visible {
 .ac-planmeter--compact .ac-planmeter__state {
   font-size: 12px;
 }
+/* A plan's state as one word at the end of a closed row (`planAttention`), in its bar's color. */
+.ac-planword {
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--warn);
+}
+.ac-planword:is([data-level="critical"], [data-level="limited"]) {
+  color: var(--danger);
+}
 
 /* A month day by day (UsageDays.tsx): a column per day stacked by source, in 1-px rows; days ahead dotted. */
 .ac-usage-days {
@@ -3179,6 +3188,11 @@ html:not([data-pointer]) .ac-tab:focus-visible {
 }
 .ac-list__row + .ac-list__row {
   border-top: 1px solid var(--line);
+}
+/* A face line in a list (the name risen to its face's top, what ends that line risen with it): the rise takes the
+   line's own room above the words, so the row's padding is all that stands between them and the hairline. */
+.ac-list__row:has(> .ac-captail.ac-captop) {
+  padding-block: var(--space-3);
 }
 /* A ghost icon that ends a row (its actions' menu): its icon on the row's padding line, as far in as the row's lead,
    in the row's first-line box (`.ac-captail`) too. */
