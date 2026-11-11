@@ -144,6 +144,8 @@ export interface ConnectAiRequest {
    * stays).
    */
   forNewAgent?: boolean;
+  /** Opened over a form still being filled in (Criar agente's steps): a Settings page opens in a new tab. */
+  overDraft?: boolean;
   /**
    * Opened right after the onboarding (ADR 0160): the team stands asleep beside the choices, which are cards in
    * words, and wakes as the sky turns to day once an AI is connected. The plans' own steps are the same.
@@ -717,19 +719,16 @@ function ConnectAiDialog({
     : named && agents.length === 0
       ? t("noAi.lockedAdmins")
       : undefined;
-  const toComputers = settingUp
-    ? undefined
-    : () => {
-        if (request.forNewAgent) {
-          window.open(`/org/${org.id}/settings/devices`, "_blank", "noopener");
-          return;
-        }
-        onClose();
-        void navigate({
-          to: "/org/$orgId/settings/$section",
-          params: { orgId: org.id, section: "devices" },
-        });
-      };
+  // Over a draft a Settings page opens in a new tab: the draft behind this dialog stays.
+  const toSettings = (section: "devices" | "usage") => {
+    if (request.forNewAgent || request.overDraft) {
+      window.open(`/org/${org.id}/settings/${section}`, "_blank", "noopener");
+      return;
+    }
+    onClose();
+    void navigate({ to: "/org/$orgId/settings/$section", params: { orgId: org.id, section } });
+  };
+  const toComputers = settingUp ? undefined : () => toSettings("devices");
   const keySelect = mayAddKey && !keySaved && (
     <ProviderKeySelect
       value={draft.provider}
@@ -1555,17 +1554,7 @@ function ConnectAiDialog({
                     setPickedTarget(forAgent.id);
                     setHeldReader(undefined);
                   }}
-                  {...(settingUp
-                    ? {}
-                    : {
-                        onManageKeys: () => {
-                          onClose();
-                          void navigate({
-                            to: "/org/$orgId/settings/$section",
-                            params: { orgId: org.id, section: "usage" },
-                          });
-                        },
-                      })}
+                  {...(settingUp ? {} : { onManageKeys: () => toSettings("usage") })}
                   onUsed={(id, next) => {
                     setLinked((l) => ({ ...l, [id]: next.choice }));
                     setUsed(next);

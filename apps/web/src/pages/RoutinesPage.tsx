@@ -2689,9 +2689,7 @@ function RoutineDialog({
                       </span>
                       <Button
                         type="button"
-                        size="sm"
-                        variant="ghost"
-                        icon="repeat"
+                        variant="link"
                         aria-expanded={pickerOpen}
                         onClick={() => setPickerOpen((o) => !o)}
                       >

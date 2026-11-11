@@ -6063,8 +6063,12 @@
     "approvalsNote": "Birleştirme, dağıtım ve geri alma her zaman sohbette onay ister.",
     "approverOwner": "{{name}} onaylar.",
     "approverAdmins": "Bir yönetici onaylar.",
+    "skillsTitle": "Çalışma alanının becerileri",
     "skillsHelp": "{{name}} kişisinin gerektiğinde açtığı kılavuzlar.",
+    "importCard": "Başka bir uygulamadan",
+    "importCardLine": "Başka bir uygulamada zaten olan ajanlarınızı getirin.",
     "channels": "Kanallar",
+    "channelsJoin": "Kanallara katılır",
     "channelsHelp": "Şimdi katılır. Daha sonra başka kanallara ekleyebilirsiniz.",
     "noChannels": "Henüz hiçbir kanalda değilsiniz. Ajanı daha sonra bir kanala ekleyebilirsiniz.",
     "owner": "Sahip",
@@ -6303,10 +6307,12 @@
       "title": "{{name}} uygulamaları",
       "titleBlank": "Ajanın uygulamaları",
       "lead": "Bağlı bir uygulama hemen karta eklenir. Diğerlerini burada bağlarsın.",
+      "leadList": "Bağlı bir uygulama hemen listeye eklenir. Diğerlerini burada bağlarsın.",
       "suggested": "{{name}} için önerilenler",
       "suggestedBlank": "Önerilenler",
       "use": "Kullan",
-      "added": "Kartta"
+      "added": "Kartta",
+      "addedList": "Listede"
     },
     "create": "{{name}} oluştur",
     "createBlank": "Ajan oluştur",
@@ -9271,8 +9277,7 @@
     "agentTitle": "Beceriler",
     "agentSubtitle": "{{name}} ajanının gerektiğinde açabilecekleri.",
     "agentEmpty": "{{name}} ajanının henüz becerisi yok.",
-    "manage": "Becerileri yönet",
-    "step": "Beceriler"
+    "manage": "Becerileri yönet"
   },
   "edit": {
     "unsaved": "Kaydedilmemiş değişiklikler",

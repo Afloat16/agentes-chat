@@ -6510,8 +6510,12 @@
     "approvalsNote": "Merge, wdrożenie i rollback zawsze wymagają zatwierdzenia na czacie.",
     "approverOwner": "Zatwierdza {{name}}.",
     "approverAdmins": "Zatwierdza administrator.",
+    "skillsTitle": "Umiejętności przestrzeni roboczej",
     "skillsHelp": "Instrukcje, które {{name}} otwiera, gdy ich potrzebuje.",
+    "importCard": "Z innej aplikacji",
+    "importCardLine": "Przenieś agentów, których masz już w innej aplikacji.",
     "channels": "Kanały",
+    "channelsJoin": "Dołącza do kanałów",
     "channelsHelp": "Dołącza od razu. Do innych kanałów możesz go dodać później.",
     "noChannels": "Nie jesteś jeszcze na żadnym kanale. Agenta możesz dodać do kanału później.",
     "owner": "Opiekun",
@@ -6755,10 +6759,12 @@
       "title": "Aplikacje: {{name}}",
       "titleBlank": "Aplikacje agenta",
       "lead": "Połączona aplikacja od razu trafia na kartę. Inne połączysz tutaj.",
+      "leadList": "Połączona aplikacja od razu trafia na listę. Inne połączysz tutaj.",
       "suggested": "Sugerowane dla: {{name}}",
       "suggestedBlank": "Sugerowane",
       "use": "Użyj",
-      "added": "Na karcie"
+      "added": "Na karcie",
+      "addedList": "Na liście"
     },
     "create": "Utwórz: {{name}}",
     "createBlank": "Utwórz agenta",
@@ -9977,8 +9983,7 @@
     "agentTitle": "Umiejętności",
     "agentSubtitle": "Co {{name}} może otworzyć w razie potrzeby.",
     "agentEmpty": "{{name}} nie ma jeszcze umiejętności.",
-    "manage": "Zarządzaj umiejętnościami",
-    "step": "Umiejętności"
+    "manage": "Zarządzaj umiejętnościami"
   },
   "edit": {
     "unsaved": "Niezapisane zmiany",

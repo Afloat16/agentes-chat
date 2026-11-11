@@ -5920,8 +5920,12 @@
     "approvalsNote": "合并、部署和回滚始终会在聊天中请求审批。",
     "approverOwner": "由 {{name}} 审批。",
     "approverAdmins": "由管理员审批。",
+    "skillsTitle": "工作区的技能",
     "skillsHelp": "{{name}} 需要时会查阅的手册。",
+    "importCard": "来自其他应用",
+    "importCardLine": "把你在其他应用里已有的智能体带过来。",
     "channels": "频道",
+    "channelsJoin": "加入这些频道",
     "channelsHelp": "立即加入。之后你可以把它加到其他频道。",
     "noChannels": "你还没有加入任何频道。之后可以把智能体加到频道中。",
     "owner": "负责人",
@@ -6158,10 +6162,12 @@
       "title": "{{name}} 的应用",
       "titleBlank": "智能体的应用",
       "lead": "已连接的应用会立刻加到卡片上。其他应用可以直接在这里连接。",
+      "leadList": "已连接的应用会立刻加到列表里。其他应用可以直接在这里连接。",
       "suggested": "为 {{name}} 推荐",
       "suggestedBlank": "推荐",
       "use": "使用",
-      "added": "已在卡片上"
+      "added": "已在卡片上",
+      "addedList": "已在列表中"
     },
     "create": "创建 {{name}}",
     "createBlank": "创建智能体",
@@ -9009,8 +9015,7 @@
     "agentTitle": "技能",
     "agentSubtitle": "{{name}} 在需要时可以打开的内容。",
     "agentEmpty": "{{name}} 还没有技能。",
-    "manage": "管理技能",
-    "step": "技能"
+    "manage": "管理技能"
   },
   "edit": {
     "unsaved": "有未保存的更改",

@@ -5881,8 +5881,12 @@
     "approvalsNote": "マージ、デプロイ、ロールバックは常にチャットで承認を求めます。",
     "approverOwner": "{{name}}が承認します。",
     "approverAdmins": "管理者が承認します。",
+    "skillsTitle": "ワークスペースのスキル",
     "skillsHelp": "{{name}}が必要に応じて開くマニュアルです。",
+    "importCard": "ほかのアプリから",
+    "importCardLine": "ほかのアプリにあるエージェントを取り込みます。",
     "channels": "チャンネル",
+    "channelsJoin": "参加するチャンネル",
     "channelsHelp": "今すぐ参加します。ほかのチャンネルにはあとで追加できます。",
     "noChannels": "まだどのチャンネルにも参加していません。エージェントはあとでチャンネルに追加できます。",
     "owner": "オーナー",
@@ -6119,10 +6123,12 @@
       "title": "{{name}} のアプリ",
       "titleBlank": "エージェントのアプリ",
       "lead": "接続済みのアプリはすぐカードに入ります。ほかのアプリはここで接続できます。",
+      "leadList": "接続済みのアプリはすぐリストに入ります。ほかのアプリはここで接続できます。",
       "suggested": "{{name}} へのおすすめ",
       "suggestedBlank": "おすすめ",
       "use": "使う",
-      "added": "カードにあり"
+      "added": "カードにあり",
+      "addedList": "リストにあり"
     },
     "create": "{{name}} を作成",
     "createBlank": "エージェントを作成",
@@ -8964,8 +8970,7 @@
     "agentTitle": "スキル",
     "agentSubtitle": "{{name}}が必要なときに開けるもの。",
     "agentEmpty": "{{name}}にはまだスキルがありません。",
-    "manage": "スキルを管理",
-    "step": "スキル"
+    "manage": "スキルを管理"
   },
   "edit": {
     "unsaved": "未保存の変更があります",

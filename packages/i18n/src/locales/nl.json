@@ -6138,9 +6138,13 @@
     "approvalsNote": "Merge, deploy en rollback vragen altijd om goedkeuring in de chat.",
     "approverOwner": "{{name}} keurt goed.",
     "approverAdmins": "Een beheerder keurt goed.",
+    "skillsTitle": "Skills van de werkruimte",
     "skillsHelp": "Handleidingen die {{name}} opent als het nodig is.",
     "skillsHelp_female": "Handleidingen die {{name}} opent als het nodig is.",
+    "importCard": "Uit een andere app",
+    "importCardLine": "Haal de agents op die je al in een andere app hebt.",
     "channels": "Kanalen",
+    "channelsJoin": "Komt in deze kanalen",
     "channelsHelp": "Komt er nu in. Je kunt hem later aan andere kanalen toevoegen.",
     "noChannels": "Je zit nog in geen enkel kanaal. Je kunt de agent later aan een kanaal toevoegen.",
     "owner": "Eigenaar",
@@ -6382,10 +6386,12 @@
       "title": "Apps van {{name}}",
       "titleBlank": "Apps van de agent",
       "lead": "Een gekoppelde app komt meteen op de kaart. Andere koppel je hier.",
+      "leadList": "Een gekoppelde app komt meteen op de lijst. Andere koppel je hier.",
       "suggested": "Voorgesteld voor {{name}}",
       "suggestedBlank": "Voorgesteld",
       "use": "Gebruiken",
-      "added": "Op de kaart"
+      "added": "Op de kaart",
+      "addedList": "Op de lijst"
     },
     "create": "{{name}} maken",
     "createBlank": "Agent maken",
@@ -9372,8 +9378,7 @@
     "agentTitle": "Skills",
     "agentSubtitle": "Wat {{name}} kan openen als het nodig is.",
     "agentEmpty": "{{name}} heeft nog geen skills.",
-    "manage": "Skills beheren",
-    "step": "Skills"
+    "manage": "Skills beheren"
   },
   "edit": {
     "unsaved": "Niet-opgeslagen wijzigingen",

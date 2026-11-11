@@ -388,10 +388,8 @@ html:not([data-pointer]) .vlt-list .vlt-row:focus-visible {
   font-weight: 600;
   color: var(--muted);
 }
-/* On the label's line without making it taller: the button's own height reaches into the gap below. */
 .vlt-access__edit {
   grid-area: edit;
-  margin-block: -4px;
 }
 .vlt-access__value {
   grid-area: value;

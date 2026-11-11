@@ -42,6 +42,25 @@ import {
 const body = () => within(document.body);
 
 describe("Button", () => {
+  test("variant link: the words alone as a button, with none of a button's box classes", () => {
+    const { getByRole } = render(
+      <>
+        <Button variant="link" size="sm" block>
+          Editar
+        </Button>
+        <Button variant="link" className="ac-link--danger" disabled>
+          Remover a chave de um nome bem comprido
+        </Button>
+      </>,
+    );
+    const edit = getByRole("button", { name: "Editar" });
+    expect(edit.className).toBe("ac-link ac-link--action");
+    expect(edit.getAttribute("type")).toBe("button");
+    const remove = getByRole("button", { name: /^Remover/ }) as HTMLButtonElement;
+    expect(remove.className).toBe("ac-link ac-link--action ac-link--danger");
+    expect(remove.disabled).toBe(true);
+  });
+
   test("variants map to the design classes; default type is button", () => {
     render(
       <>

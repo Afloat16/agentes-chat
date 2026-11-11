@@ -6261,8 +6261,12 @@
     "approvalsNote": "Merge, deploy y rollback siempre piden aprobación en el chat.",
     "approverOwner": "Aprueba {{name}}.",
     "approverAdmins": "Aprueba un admin.",
+    "skillsTitle": "Habilidades del espacio de trabajo",
     "skillsHelp": "Manuales que {{name}} abre cuando los necesita.",
+    "importCard": "De otra app",
+    "importCardLine": "Trae los agentes que ya tienes en otra app.",
     "channels": "Canales",
+    "channelsJoin": "Entra en los canales",
     "channelsHelp": "Entra ahora. Puedes añadirlo a otros canales después.",
     "noChannels": "Todavía no estás en ningún canal. Puedes añadir el agente a un canal después.",
     "owner": "Responsable",
@@ -6505,10 +6509,12 @@
       "title": "Apps de {{name}}",
       "titleBlank": "Apps del agente",
       "lead": "Una app conectada entra en la tarjeta al momento. Las demás las conectas aquí mismo.",
+      "leadList": "Una app conectada entra en la lista al momento. Las demás las conectas aquí mismo.",
       "suggested": "Sugeridas para {{name}}",
       "suggestedBlank": "Sugeridas",
       "use": "Usar",
-      "added": "En la tarjeta"
+      "added": "En la tarjeta",
+      "addedList": "En la lista"
     },
     "create": "Crear a {{name}}",
     "createBlank": "Crear agente",
@@ -9610,8 +9616,7 @@
     "agentTitle": "Habilidades",
     "agentSubtitle": "Lo que {{name}} puede abrir cuando lo necesita.",
     "agentEmpty": "{{name}} aún no tiene habilidades.",
-    "manage": "Gestionar habilidades",
-    "step": "Habilidades"
+    "manage": "Gestionar habilidades"
   },
   "edit": {
     "unsaved": "Cambios sin guardar",

@@ -489,6 +489,54 @@ html:not([data-pointer]) .ac-btn:focus-visible {
   color: var(--faint);
   text-decoration-color: transparent;
 }
+/* A row's or a card's quiet action (`Button variant="link"`): the words alone, on one line, taking only their own
+   room, so the row's height and its end come from its text. Its icon, when it has one, sits on the capitals. */
+.ac-link--action {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+.ac-link--action > .ac-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.ac-link--action.ac-link--danger {
+  color: var(--danger);
+}
+/* Two of them side by side read as one phrase when only a small gap parts them: at least a step more, and in a row of
+   actions the row's own 16. */
+.ac-link--action + .ac-link--action {
+  margin-inline-start: var(--space-2);
+}
+.ac-acts > .ac-link--action + .ac-link--action {
+  margin-inline-start: 0;
+}
+/* Busy: the words keep their room unseen and the spinner takes their middle, as a loading button does, so nothing
+   beside it moves. */
+.ac-link--action.ac-link--loading,
+.ac-link--action.ac-link--loading:disabled {
+  cursor: progress;
+  color: transparent;
+  text-decoration-color: transparent;
+}
+.ac-link--loading > .ac-btn__spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: var(--muted);
+}
+/* A finger needs more than a line of text: the press area grows around the words and takes no layout room. */
+@media (pointer: coarse) {
+  .ac-link--action::after {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--space-3)) calc(-1 * var(--space-2));
+  }
+}
 html:not([data-pointer]) .ac-link:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
@@ -6090,8 +6138,17 @@ html:not([data-pointer]) .ac-hint:focus-visible {
  */
 .ac-hint.ac-menu__hint {
   align-self: center;
-  margin: -5px -5px -5px auto;
+  margin: -5px 0;
+  padding-left: 0;
   translate: none;
+}
+/* Right after the option's words, not at the row's end: there it reads as the check's, and hangs alone on a row that
+   isn't chosen. The label gives up the room it takes in a list of faces, and the check keeps the end. */
+.ac-menu__item:has(> .ac-hint.ac-menu__hint) > .ac-menu__label {
+  flex: 0 1 auto;
+}
+.ac-hint.ac-menu__hint + .ac-menu__check {
+  margin-left: auto;
 }
 .ac-menu__tip {
   position: fixed;

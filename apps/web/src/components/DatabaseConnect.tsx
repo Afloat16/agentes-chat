@@ -873,8 +873,7 @@ export function DatabaseRow({
             </Button>
             {connection.wholeServer && (
               <Button
-                size="sm"
-                variant="ghost"
+                variant="link"
                 aria-label={t("database.refreshName", { name })}
                 disabled={servers.refresh.isPending}
                 loading={servers.refresh.isPending}
@@ -883,12 +882,7 @@ export function DatabaseRow({
                 {t("database.refresh")}
               </Button>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              aria-label={t("connectors.disconnectName", { name })}
-              onClick={onDisconnect}
-            >
+            <Button variant="link" aria-label={t("connectors.disconnectName", { name })} onClick={onDisconnect}>
               {t("connectors.disconnect")}
             </Button>
           </>

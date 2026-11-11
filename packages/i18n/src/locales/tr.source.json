@@ -14934,11 +14934,23 @@
   "newAgent.approverAdmins": {
     "value": "An admin approves."
   },
+  "newAgent.skillsTitle": {
+    "value": "Workspace skills"
+  },
   "newAgent.skillsHelp": {
     "value": "Manuals {{name}} opens when needed."
   },
+  "newAgent.importCard": {
+    "value": "From another app"
+  },
+  "newAgent.importCardLine": {
+    "value": "Bring the agents you already have in another app."
+  },
   "newAgent.channels": {
     "value": "Channels"
+  },
+  "newAgent.channelsJoin": {
+    "value": "Joins these channels"
   },
   "newAgent.channelsHelp": {
     "value": "Joins now. You can add it to other channels later."
@@ -15499,6 +15511,9 @@
   "newAgentCard.picker.lead": {
     "value": "A connected app goes on the card at once. Connect any other right here."
   },
+  "newAgentCard.picker.leadList": {
+    "value": "A connected app goes on the list at once. Connect any other right here."
+  },
   "newAgentCard.picker.suggested": {
     "value": "Suggested for {{name}}"
   },
@@ -15510,6 +15525,9 @@
   },
   "newAgentCard.picker.added": {
     "value": "On the card"
+  },
+  "newAgentCard.picker.addedList": {
+    "value": "On the list"
   },
   "newAgentCard.create": {
     "value": "Create {{name}}"
@@ -22673,9 +22691,6 @@
   },
   "skills.manage": {
     "value": "Manage skills"
-  },
-  "skills.step": {
-    "value": "Skills"
   },
   "edit.unsaved": {
     "value": "Unsaved changes"

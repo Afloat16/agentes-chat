@@ -81,6 +81,7 @@ import {
 import { useScrollEdges } from "@/lib/scroll-edges";
 import { useToast } from "@/lib/toast";
 import { AppsPickerDialog } from "./AppsPicker";
+import { ImportAgentsDialog } from "./ImportAgentsDialog";
 import { useNewAgentBrain } from "./useNewAgentBrain";
 import "../team-plan.css";
 import "./new-agent-card.css";
@@ -784,10 +785,7 @@ function NewAgentDialog({
   const appIcon = (id: string) => <ConnectorIcon def={defs.get(id) ?? null} label={appName(id)} />;
 
   const howLabel = name ? t("newAgentCard.how", g) : t("newAgentCard.howBlank");
-  const toImport = () => {
-    onClose();
-    void navigate({ to: "/org/$orgId/settings/$section", params: { orgId: org.id, section: "import" } });
-  };
+  const [importing, setImporting] = useState(false);
 
   return (
     <Dialog
@@ -1185,7 +1183,7 @@ function NewAgentDialog({
             className="nac__foot"
             note={
               <span className="nac__foot-left">
-                <button type="button" className="ac-link nac__import" onClick={toImport}>
+                <button type="button" className="ac-link nac__import" onClick={() => setImporting(true)}>
                   <Icon name="download" size={16} />
                   {t("newAgentCard.import")}
                 </button>
@@ -1252,6 +1250,7 @@ function NewAgentDialog({
           onClose={() => setPicking(false)}
         />
       )}
+      {importing && <ImportAgentsDialog orgId={org.id} standalone onClose={() => setImporting(false)} />}
       {/* Signing in on the provider's page comes back here, to this card (`takeResume`). */}
       <ConnectFlow
         flow={flow}

@@ -140,7 +140,7 @@ export function ReposBlock() {
           ))
         )}
         {editable && (
-          <Button size="sm" variant="ghost" icon="edit" onClick={() => pickRepos()}>
+          <Button variant="link" onClick={() => pickRepos()}>
             {r.mode === "all" ? t("repos.choose") : t("repos.change")}
           </Button>
         )}
@@ -190,7 +190,7 @@ export function MergeReposBlock() {
           ))
         )}
         {editable && (
-          <Button size="sm" variant="ghost" icon="edit" onClick={() => setPicking(true)}>
+          <Button variant="link" onClick={() => setPicking(true)}>
             {list.length === 0 ? t("repos.choose") : t("repos.change")}
           </Button>
         )}

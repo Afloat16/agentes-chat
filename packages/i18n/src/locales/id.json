@@ -5905,9 +5905,13 @@
     "approvalsNote": "Merge, deploy, dan rollback selalu meminta persetujuan di chat.",
     "approverOwner": "{{name}} yang menyetujui.",
     "approverAdmins": "Admin yang menyetujui.",
+    "skillsTitle": "Skill ruang kerja",
     "skillsHelp": "Panduan yang dibuka {{name}} saat dibutuhkan.",
     "skillsHelp_female": "Panduan yang dibuka {{name}} saat dibutuhkan.",
+    "importCard": "Dari aplikasi lain",
+    "importCardLine": "Bawa agen yang sudah kamu punya di aplikasi lain.",
     "channels": "Kanal",
+    "channelsJoin": "Bergabung ke kanal",
     "channelsHelp": "Bergabung sekarang. Kamu bisa menambahkannya ke kanal lain nanti.",
     "noChannels": "Kamu belum ada di kanal mana pun. Kamu bisa menambahkan agen ke kanal nanti.",
     "owner": "Pemilik",
@@ -6147,10 +6151,12 @@
       "title": "Aplikasi {{name}}",
       "titleBlank": "Aplikasi agen",
       "lead": "Aplikasi yang terhubung langsung masuk ke kartu. Yang lain bisa kamu hubungkan di sini.",
+      "leadList": "Aplikasi yang terhubung langsung masuk ke daftar. Yang lain bisa kamu hubungkan di sini.",
       "suggested": "Disarankan untuk {{name}}",
       "suggestedBlank": "Disarankan",
       "use": "Pakai",
-      "added": "Di kartu"
+      "added": "Di kartu",
+      "addedList": "Di daftar"
     },
     "create": "Buat {{name}}",
     "createBlank": "Buat agen",
@@ -9013,8 +9019,7 @@
     "agentTitle": "Skill",
     "agentSubtitle": "Yang bisa dibuka {{name}} saat dibutuhkan.",
     "agentEmpty": "{{name}} belum punya skill.",
-    "manage": "Kelola skill",
-    "step": "Skill"
+    "manage": "Kelola skill"
   },
   "edit": {
     "unsaved": "Perubahan belum disimpan",
