@@ -1,4 +1,5 @@
 import { ErrorBoundary } from "@agenteschat/client/lib/error-boundary";
+import { installTitleTips } from "@agenteschat/ui";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
@@ -78,6 +79,7 @@ const store = new DesktopStore(host, {
 });
 store.start();
 
+installTitleTips();
 const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
