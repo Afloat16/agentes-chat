@@ -1406,6 +1406,14 @@ body[data-window="popover"] {
 .dk-here__more {
   margin-top: 0;
 }
+/* "Also works for …" under it: on the same left edge as the rows below (.dk-psec plus .dk-ohead). */
+.dk-here__also {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 10px 4px;
+}
 
 .dk-prefs {
   height: 100%;

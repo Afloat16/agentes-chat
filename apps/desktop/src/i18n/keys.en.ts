@@ -82,6 +82,8 @@ export const desktopEn = {
     pause1h: "For 1 hour",
     pauseTomorrow: "Until tomorrow at 9 AM",
     pauseManual: "Until I resume",
+    /** The pause menu with several workspaces: every one of them, then each on its own. */
+    pauseAll: "All workspaces",
     pauseHint: "What is already running finishes normally.",
     /** With the agentes.chat this computer runs: pausing the agents leaves it up (ADR 0158). */
     pauseHintServer: "What is already running finishes normally. The server stays up.",
@@ -102,6 +104,12 @@ export const desktopEn = {
     pausedUntil: "Paused until {{time}}",
     pausedUntilResume: "Paused until you resume",
     pausedBody: "No agent, from any workspace, starts anything new on this {{device}}.",
+    /** Only some workspaces paused: `orgs` is their names ("Acme and Northwind"). */
+    pausedSomeBody: "On hold: {{orgs}}. The other workspaces' agents keep working.",
+    /** Under the card of the server this computer runs: other servers' workspaces whose agents use it too. */
+    alsoWorksFor: "Also works for {{orgs}}",
+    otherWorkspaces_one: "{{count}} other workspace",
+    otherWorkspaces_other: "{{count}} other workspaces",
     resumeNow: "Resume now",
     plusHour: "+1 hour",
     updateTitle: "Version {{version}} is available",
@@ -406,6 +414,9 @@ export const desktopEn = {
     offerBody:
       "They start with no folders of yours and commands off. You pick what they get in Preferences, and you can stop them any time.",
     keepReady: "Keep it ready: open agentes.chat at login",
+    /** The offer for a server elsewhere that this computer only opens: pairing lends it, it isn't needed to get in. */
+    offerOnlyIf:
+      "Only if you want this {{device}} to do agents' work too. With Not now you still use {{org}} here as usual.",
     /** A link from the web asks to connect this computer: who asked, from which server. */
     linkTitle: "Connect this {{device}} to {{org}}?",
     askedBy: "Asked by",

@@ -153,6 +153,10 @@ describe("pairing from the app", () => {
       await until(() => el.querySelector("h1")?.textContent === "Let Estúdio Norte's agents use this Mac?");
       expect(readPref(PAIR_OFFER_PREF, null)).toBeNull();
       expect(el.textContent).toContain("They start with no folders of yours and commands off.");
+      // A server this Mac only opens: lending it is optional.
+      expect(el.textContent).toContain(
+        "Only if you want this Mac to do agents' work too. With Not now you still use Estúdio Norte here as usual.",
+      );
       expect(rowOf(el, "Who can use it")?.querySelector('[role="combobox"]')?.textContent).toBe("Only me");
       expect(rowOf(el, "Keep it ready: open agentes.chat at login")?.querySelector('[role="checkbox"]')).toBeTruthy();
       expect(button(el, "Not now")).toBeTruthy();
