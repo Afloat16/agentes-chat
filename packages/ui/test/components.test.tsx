@@ -33,6 +33,8 @@ import {
   Meter,
   RunMark,
   Steps,
+  StepTrack,
+  type StepTrackStep,
   Textarea,
 } from "../src";
 
@@ -787,6 +789,51 @@ describe("Logo, Icon, Meter", () => {
     const meter = body().getByRole("meter", { name: "Orçamento usado" });
     expect(meter.getAttribute("aria-valuenow")).toBe("12.3");
     expect((meter.firstElementChild as HTMLElement).style.width).toBe("31%");
+  });
+
+  test("step track: nodes carry no words, one line tells one step whole (the waiting one, else the pointed or pressed)", () => {
+    const long = "Rodou: git log --oneline origin/main..HEAD -- packages/engine/src/context/memory.ts";
+    const steps: StepTrackStep[] = [
+      ...Array.from({ length: 12 }, (_, i) => ({
+        key: `s${i}`,
+        icon: "code" as IconName,
+        label: `Passo ${i}`,
+        title: i === 0 ? long : undefined,
+        state: "done" as const,
+      })),
+      { key: "asked", icon: "waiting", label: "Pediu aprovação", time: "09:18", state: "now" },
+    ];
+    const { container } = render(<StepTrack steps={steps} more={(n) => `${n} passos`} aria-label="Como chegou aqui" />);
+    const line = () => container.querySelector(".ac-track__line")?.textContent;
+    const nodes = within(body().getByRole("list", { name: "Como chegou aqui" })).getAllByRole("button");
+    // 13 steps on 8 nodes: two, the folded middle, the last five.
+    expect(nodes.map((n) => n.getAttribute("aria-label"))).toEqual([
+      long,
+      "Passo 1",
+      "6 passos",
+      "Passo 8",
+      "Passo 9",
+      "Passo 10",
+      "Passo 11",
+      "Pediu aprovação · 09:18",
+    ]);
+    expect(container.querySelectorAll(".ac-track__step .ac-track__label")).toHaveLength(0);
+    expect(line()).toBe("Pediu aprovação09:18");
+    expect(nodes.filter((n) => n.getAttribute("aria-current")).map((n) => n.getAttribute("aria-label"))).toEqual([
+      "Pediu aprovação · 09:18",
+    ]);
+    // The pointer previews, a press keeps, the folded node says how many it holds.
+    fireEvent.mouseEnter(nodes[0] as HTMLElement);
+    expect(line()).toBe(long);
+    fireEvent.mouseLeave(nodes[0] as HTMLElement);
+    expect(line()).toBe("Pediu aprovação09:18");
+    fireEvent.click(nodes[2] as HTMLElement);
+    expect(line()).toBe("6 passos");
+    expect(nodes[2]?.getAttribute("aria-current")).toBe("step");
+    fireEvent.focus(nodes[1] as HTMLElement);
+    expect(line()).toBe("Passo 1");
+    fireEvent.blur(nodes[1] as HTMLElement);
+    expect(line()).toBe("6 passos");
   });
 
   test("steps: the ones before the current are done; the current is under way, not done (on the last one too)", () => {
