@@ -187,21 +187,19 @@ export function Tools() {
           lead={logo("globe")}
           htmlFor="tool-browser"
           title={t("desktop.tools.browserName")}
-          hint={hintFor(t, t("desktop.tools.browserName"), t("desktop.tools.browserDesc"))}
+          hint={hintFor(
+            t,
+            t("desktop.tools.browserName"),
+            `${t("desktop.tools.browserDesc")} ${t("desktop.tools.browserLogins")}`,
+          )}
           end={
             <Switch
               id="tool-browser"
-              aria-describedby="tool-browser-hint tool-browser-logins"
+              aria-describedby="tool-browser-hint"
               checked={tools.browser === true}
               disabled={homes.length === 0 || pending !== null}
               onCheckedChange={(on) => void set("browser", on)}
             />
-          }
-          under={
-            <span className="dk-honest ac-iconline">
-              <Icon name="lock" size={14} />
-              <span id="tool-browser-logins">{t("desktop.tools.browserLogins")}</span>
-            </span>
           }
         />
       </PrefCard>

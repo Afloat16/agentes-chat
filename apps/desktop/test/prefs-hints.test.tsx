@@ -229,7 +229,7 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
           },
           {
             title: "Browser",
-            hint: "Opens websites for the agents in a browser of their own, without your logins.",
+            hint: "Opens websites for the agents in a browser of their own, without your logins. Logins an agent makes stay on this Mac, in its folder. Use only test accounts or the agent's own.",
           },
         ]);
         const [claude] = card.querySelectorAll(".dk-crow");
@@ -243,10 +243,8 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
           ["Acme", "true"],
           ["Horizonte", "true"],
         ]);
-        // The warning sits behind the ⓘ: only the browser's line stays in sight.
-        expect([...card.querySelectorAll(".dk-honest")].map((w) => w.textContent)).toEqual([
-          "Logins an agent makes stay on this Mac, in its folder. Use only test accounts or the agent's own.",
-        ]);
+        // Warnings sit behind each row's ⓘ, none in sight.
+        expect(card.querySelectorAll(".dk-honest")).toHaveLength(0);
         expect(row(el, "Protected mode")?.hint).toBe(
           "Coming: commands that write only in allowed folders and can't read the rest of this Mac.",
         );
