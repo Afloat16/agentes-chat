@@ -6,6 +6,7 @@ setupDom();
 import type { Approval, ApprovalRule } from "@agenteschat/client";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import { ADA_ID, createFakeApi, ENG_ID, ORG_ID, seedState } from "./fake-api";
+import { hintOf, shownText } from "./hint";
 import { renderApp, screen, settle } from "./render";
 
 afterEach(() => cleanup());
@@ -110,7 +111,10 @@ describe("Aprovar sempre on a request", () => {
     await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api: createFakeApi(state) });
     await settle(4);
     const card = screen().getByRole("group", { name: "Pedido de aprovação" });
-    expect(card.textContent).toContain(
+    // One line on the card's face, the whole note behind its ⓘ.
+    expect(shownText(card)).toContain("Cobre só leituras, de agora em diante.");
+    expect(shownText(card)).not.toContain("Para desfazer");
+    expect(hintOf("Aprovar sempre leituras", card).text).toBe(
       "Cobre só leituras de Rodar SQL, neste projeto (project_id=proj-a), de agora em diante. O que muda dados continua pedindo. Para desfazer: Ferramentas e acesso, na página da Ada.",
     );
     expect(within(card).queryByRole("button", { name: "Aprovar sempre" })).toBeNull();

@@ -42,6 +42,7 @@ import {
   approveAlwaysHint,
   approveAlwaysLabel,
   approveAlwaysOffered,
+  approveAlwaysShort,
   approveAlwaysToast,
 } from "./logic";
 import {
@@ -93,6 +94,8 @@ export function ApprovalSheet({
   const nameOf = useConnectorNamer({ connector: a?.connector ?? null });
   const agent = a ? dir.agentById.get(a.agentId) : undefined;
   const name = agent?.name ?? "";
+  const alwaysNote = a ? approveAlwaysHint(t, a, name || t("channel.unknownAgent")) : "";
+  const alwaysShort = a ? approveAlwaysShort(t, a) : null;
   const g = genderOf(name);
   const channel = a ? channels.data?.find((x) => x.id === a.channelId) : undefined;
   const origin = useOriginShort({ origin: a?.origin ?? null });
@@ -256,7 +259,13 @@ export function ApprovalSheet({
                 onPress={() => setAlways((on) => !on)}
               />
             </GroupedList>
-            <GroupedFooter>{approveAlwaysHint(t, a, name || t("channel.unknownAgent"))}</GroupedFooter>
+            <GroupedFooter
+              {...(alwaysShort
+                ? { hint: { name: t("common.about", { label: approveAlwaysLabel(t, a) }), text: alwaysNote } }
+                : {})}
+            >
+              {alwaysShort ?? alwaysNote}
+            </GroupedFooter>
           </View>
         ) : null}
         {pending ? (

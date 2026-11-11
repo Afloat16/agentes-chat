@@ -1705,6 +1705,7 @@
     },
     "map": {
       "lead": "Wer sich um die Agenten kümmert, in welchen Kanälen sie sind, was jeder selbstständig macht und was auf eine Person wartet. Gestrichelte Linien verbinden Agenten, die sich am letzten Tag um Hilfe gebeten haben.",
+      "short": "Wer sich um jeden Agenten kümmert und wo er arbeitet.",
       "lodi": "Organisiert das Team mit dir",
       "hint": "Zieh einen Agenten in einen anderen Kanal und {{name}} bereitet die Änderung vor, die du anwendest",
       "proposed": "{{name}} hat die Änderung in deiner Unterhaltung vorbereitet. Wende sie dort an.",
@@ -2492,7 +2493,7 @@
       "gemini": {
         "title": "Dein Gemini-Abo",
         "tiers": "Google AI Pro, Google AI Ultra oder Gemini Enterprise",
-        "warning": "Google sagt, dass die Nutzung eines privaten Gemini-Abos in anderen Apps zur Sperrung des Kontos führen kann. Um dieses Risiko zu vermeiden, nutze einen API-Schlüssel oder Gemini Enterprise."
+        "warning": "Google sagt, dass die Nutzung eines privaten Gemini-Abos in anderen Apps zur Sperrung des Kontos führen kann."
       },
       "zen": {
         "title": "OpenCode",
@@ -3804,6 +3805,9 @@
       "routine": "Immer in dieser Routine",
       "thisRoutine": "diese Routine",
       "noteRoutine": "{{routine}} erledigt {{actions}} ab jetzt selbstständig, mit beliebigen Werten. Außerhalb dieser Routine wird weiter gefragt. Rückgängig machen: in den Einstellungen der Routine.",
+      "shortReads": "Gilt ab jetzt nur für Lesezugriffe.",
+      "shortRoutine": "Gilt ab jetzt nur in dieser Routine.",
+      "shortCommand": "Gilt ab jetzt für {{actions}} auf dem Computer.",
       "doneRoutine": "Freigegeben. {{routine}} fragt danach nicht mehr.",
       "undoRoutine": "Zum Rückgängigmachen geh in die Einstellungen der Routine."
     },
@@ -6955,6 +6959,7 @@
       "waiting": "Wartet auf den nächsten Aufruf",
       "every": "Läuft bei jedem Aufruf. Aufrufe, die gleichzeitig ankommen, werden zu einer Ausführung.",
       "newNote": "Die Routine bekommt eine eigene Adresse. Jeder POST dorthin startet den Agenten mit dem, was gesendet wurde. Die Adresse erscheint auf der Seite der Routine, sobald sie gespeichert ist.",
+      "newShort": "Die Routine bekommt eine eigene Adresse.",
       "hidden": "Nur wer die Routine ändern darf, sieht ihre Adresse.",
       "methods": "Akzeptierte Methoden",
       "methodsHelp": "Die Adresse antwortet nur auf die markierten Methoden. Bei GET sind die Query-Parameter der URL die Daten des Aufrufs.",
@@ -7188,6 +7193,8 @@
     "ownActions": {
       "hint": "Jeder Lauf erledigt das in deinen verbundenen Apps, ohne zu fragen. Jede andere Aktion dort fragt zuerst eine Person, und Merge, Deploy und Rollback fragen immer.",
       "none": "In verbundenen Apps fragt sie vor jeder Aktion eine Person. Damit sie ihre Aufgabe selbst erledigt, sag dem Agenten im Chat, welche Aktionen sie ausführen darf.",
+      "hintShort": "Jeder Lauf erledigt das, ohne zu fragen.",
+      "noneShort": "Sie fragt vor jeder Aktion eine Person.",
       "remove": "Wieder vorher fragen: {{action}}"
     },
     "ahead": {
@@ -7845,6 +7852,7 @@
       "alwaysBy": "In dieser Mission erlaubt von {{name}} · {{time}}: {{rules}}",
       "alwaysAgent": "Immer für diesen Agenten genehmigen",
       "alwaysAgentHint": "Immer für diesen Agenten genehmigen erlaubt {{kind}} mit beliebigen Argumenten, in jeder Mission und jedem Gespräch. Rückgängig: Tools und Zugriff, auf der Seite des Agenten.",
+      "alwaysAgentShort": "Erlaubt {{kind}} in jeder Mission und jedem Gespräch.",
       "alwaysAgentBy": "Für diesen Agenten erlaubt von {{name}} · {{time}}: {{kind}}",
       "state": {
         "allowed": "Freigegeben",
@@ -8899,7 +8907,7 @@
     "undoUpdate": "Update rückgängig machen",
     "undone": "{{name}} ist zurück auf Version {{version}}.",
     "agentsImprove": "Agenten verbessern Skills selbst",
-    "agentsImproveHelp": "Findet ein Agent einen Skill falsch oder ohne einen Schritt, korrigiert er ihn sofort: eine neue Version, die du rückgängig machen kannst, und wer den Skill erstellt hat, erfährt es. Änderungen an Skripten warten auf jemanden, der Skills verwaltet.",
+    "agentsImproveHelp": "Findet ein Agent einen Skill falsch oder ohne einen Schritt, korrigiert er ihn sofort: eine neue Version, die du rückgängig machen kannst, und wer den Skill erstellt hat, erfährt es.",
     "agentsImproveThis": "Agenten verbessern diesen Skill selbst",
     "agentChange": "{{agent}} hat ihn geändert {{when}}",
     "undoAgentChange": "Änderung rückgängig machen",
@@ -9183,6 +9191,8 @@
     "section": "Wer schreiben darf",
     "title": "Wer mit {{name}} schreiben darf",
     "notListed": "Personen, die nicht auf der Liste stehen, bekommen keine Antwort.",
+    "agentsToo": "Gilt auch für Agenten.",
+    "peopleOnly": "Gilt nur für Personen.",
     "consultable": "Andere Agenten können {{name}} um Rat fragen",
     "consultableHint": "Personen, die nicht auf der Liste stehen, antwortet er nie direkt, sondern nur dem Agenten, der gefragt hat. Sensible Aktionen brauchen weiterhin die Freigabe der Personen, die sich um ihn kümmern.",
     "consultableHint_female": "Personen, die nicht auf der Liste stehen, antwortet sie nie direkt, sondern nur dem Agenten, der gefragt hat. Sensible Aktionen brauchen weiterhin die Freigabe der Personen, die sich um sie kümmern.",
@@ -10045,7 +10055,7 @@
     "ask": {
       "button": "Einen Agenten bitten",
       "title": "Einen Agenten bitten",
-      "text": "Die Bitte geht in deine Unterhaltung mit dem Agenten, mit dem Link zur Seite. Er bearbeitet mit den Wiki-Werkzeugen, und die Version steht im Verlauf als auf deine Bitte.",
+      "text": "Die Bitte geht in deine Unterhaltung mit dem Agenten, mit dem Link zur Seite.",
       "agent": "Agent",
       "what": "Was soll sich ändern?",
       "placeholder": "Z. B. aktualisiere sie mit der Preiserhöhung 2027",
@@ -10065,6 +10075,7 @@
       "pickZip": ".zip oder .md auswählen",
       "pickFolder": "Ordner auswählen",
       "howTo": "So erstellst du die .zip: Im Finder Rechtsklick auf den Vault-Ordner → Komprimieren. Unter Windows Senden an → ZIP-komprimierter Ordner. Der Ordner .obsidian (Plugins und Designs) bleibt außen vor.",
+      "howToLabel": "So erstellst du die .zip",
       "nothingYet": "Nichts kommt hinein, bevor du es geprüft hast.",
       "readingText": "Vorerst nur in deinem Browser. Es wurde noch nichts gesendet.",
       "notesRead": "Notizen gelesen",
@@ -10899,7 +10910,7 @@
   },
   "githubApp": {
     "title": "GitHub-Repositories",
-    "text": "Wo die agentes.chat-App installiert ist, öffnen Agenten Pull Requests, Issues, Kommentare und Commits als die App, mit dem Namen des Agenten und der Person, die gefragt hat. Was du von hier installierst, nutzt nur {{org}}.",
+    "text": "Wo die agentes.chat-App installiert ist, öffnen Agenten Pull Requests, Issues, Kommentare und Commits als die App, mit dem Namen des Agenten und der Person, die gefragt hat.",
     "install": "agentes.chat-App installieren",
     "installMore": "Auf einem weiteren Konto installieren",
     "none": "Noch kein GitHub-Konto.",
@@ -10973,6 +10984,7 @@
       "label": "Darf ohne Nachfrage mergen",
       "none": "Keine Repositorys ausgewählt. Jeder Merge fragt nach Freigabe.",
       "help": "In diesen Repositorys läuft ein Merge ohne Freigabekarte, steht im Audit und hinterlässt einen Beleg in der Unterhaltung. Alles andere Sensible fragt weiter nach.",
+      "short": "In diesen Repositorys läuft ein Merge ohne Freigabekarte.",
       "dialogTitle": "Wo {{name}} ohne Nachfrage mergt",
       "dialogDesc": "Nur Repositorys, die bereits genutzt werden. Ein Merge an jedem anderen Ort fragt nach Freigabe."
     },
@@ -11853,6 +11865,7 @@
       "title": "Erreichte Organisationen",
       "none": "Noch keine Organisation.",
       "lead": "GitHub fragt nur beim ersten Mal nach Organisationen. Um eine weitere freizugeben, öffne dort die Seite der App und klicke daneben auf Grant. Wenn sie dir nicht gehört, steht dort Request und ein Inhaber bestätigt es.",
+      "short": "GitHub fragt nur beim ersten Mal nach Organisationen.",
       "open": "Organisationen auf GitHub freigeben",
       "added": "Jetzt auch: {{names}}.",
       "removed": "Nicht mehr: {{names}}.",
@@ -12053,6 +12066,7 @@
       "databasesHelp": "Die Regeln unten gelten für jede Datenbank, die dieser Agent liest.",
       "hidden": "Spalten, die er nie sieht",
       "hiddenHelp": "tabelle.spalte, Namen mit Großbuchstaben, Leerzeichen oder Symbolen in doppelten Anführungszeichen (kunden.\"Steuer-ID\"). Spalten, die nach persönlichen Daten oder Passwörtern aussehen, haben wir schon versteckt.",
+      "hiddenExample": "tabelle.spalte, zum Beispiel kunden.\"Steuer-ID\"",
       "hiddenPlaceholder": "kunden.steuer_id",
       "hiddenInvalid": "Gib tabelle.spalte (oder schema.tabelle.spalte) ein, mit \"doppelten Anführungszeichen\" um Namen mit Großbuchstaben, Leerzeichen oder Symbolen.",
       "cap": "Abfragen pro Tag",
@@ -12115,7 +12129,7 @@
     "address": "E-Mail-Adresse",
     "addressPlaceholder": "du@firma.de",
     "addressInvalid": "Gib eine gültige E-Mail-Adresse ein, etwa du@firma.de.",
-    "icloudHint": "Nutze deine iCloud-Mail-Adresse, etwa name@icloud.com, auch wenn dein Apple Account {{name}} verwendet. Auf dem iPhone findest du sie unter Einstellungen › dein Name › iCloud › iCloud Mail, oder auf icloud.com/mail.",
+    "icloudHint": "Nutze deine iCloud-Mail-Adresse, etwa name@icloud.com, auch wenn dein Apple Account {{name}} verwendet.",
     "password": "App-Passwort",
     "passwordHelp": "Verschlüsselt auf dem Server gespeichert. Niemand sieht es wieder.",
     "passwordInvalid": "Füge das App-Passwort ein.",
@@ -12162,6 +12176,7 @@
     "rulesRead": "Was er liest",
     "rulesSend": "Was er sendet",
     "toolsLead": "Was Agenten in {{name}} tun dürfen. Schalte aus, was kein Agent tun soll, oder verlange auch für Entwürfe und das Ordnen eine Freigabe. Senden, Antworten und Weiterleiten fragen immer im Chat nach Freigabe und zeigen Empfänger und Text.",
+    "toolsShort": "Wähle, was Agenten mit diesem Postfach tun.",
     "group": {
       "read": "Lesen",
       "write": "Schreiben",
@@ -12222,6 +12237,7 @@
       "buttonName": "Adressen von {{name}}",
       "title": "Adressen von {{address}}",
       "lead": "Agenten antworten von der Adresse, an die die E-Mail ging. Wenn dieses Postfach auch E-Mails an andere Adressen bekommt, etwa an deine eigene Domain oder einen Alias, füge sie hier hinzu.",
+      "short": "Agenten antworten von der Adresse, an die die E-Mail ging.",
       "main": "Hauptadresse: {{address}}",
       "others": "Weitere Adressen dieses Postfachs",
       "othersHelp": "Aliasse und deine eigenen Domains, etwa hallo@deinefirma.de.",
@@ -14646,6 +14662,7 @@
       "part_female": "Anteil von {{name}}: ≈ {{percent}}",
       "estimate": "Der Anteil von {{name}} ist der kräftigere Teil jedes Balkens. {{brand}} sagt nur, wie viel das ganze Konto verbraucht hat, daher ist der Anteil jedes Agenten eine Schätzung aus dem, was er verbraucht hat.",
       "estimate_female": "Der Anteil von {{name}} ist der kräftigere Teil jedes Balkens. {{brand}} sagt nur, wie viel das ganze Konto verbraucht hat, daher ist der Anteil jedes Agenten eine Schätzung aus dem, was er verbraucht hat.",
+      "estimateShort": "Eine Schätzung.",
       "byAccount": "Nach Konto, diesen Monat",
       "until": "bis {{date}}",
       "nowTag": "jetzt",
@@ -16079,7 +16096,7 @@
   "deleteOrg": {
     "card": {
       "title": "Workspace löschen",
-      "text": "Schließt {{name}} sofort für alle. Nach 7 Tagen wird er endgültig gelöscht.",
+      "text": "Schließt {{name}} jetzt für alle und löscht ihn in 7 Tagen.",
       "button": "Workspace löschen…"
     },
     "title": "{{name}} löschen?",
@@ -16134,10 +16151,9 @@
   "deleteAccount": {
     "menu": "Konto löschen",
     "card": {
-      "text": "Du verlässt jeden Workspace und dein Konto wird 7 Tage später endgültig gelöscht. Bis dahin kannst du es wiederherstellen.",
+      "text": "Löscht dein Konto in 7 Tagen, in allen Workspaces.",
       "button": "Konto löschen…",
-      "oneWorkspace": "Möchtest du nur diesen Workspace löschen? Das geht unter Allgemein.",
-      "leaveWorkspace": "Möchtest du nur diesen Workspace verlassen? Das geht unter Mitglieder."
+      "title": "Löschen"
     },
     "title": "Dein ganzes Konto löschen?",
     "intro": "Damit löschst du dein ganzes Konto, nicht nur einen Workspace.",
@@ -16828,6 +16844,7 @@
       "unknown": "Jede Aktualisierung nutzt das Budget von {{name}}"
     },
     "exposure": "Wer das Dashboard sieht, sieht, was die Agenten geholt haben, auch ohne Zugriff auf die Konten, aus denen es stammt. Agenten erstellen auch Dashboards. Um eines mehr Personen zu zeigen als der Person, die es angefragt hat, fragen sie zuerst, in „Wartet auf dich“.",
+    "exposureShort": "Wer das Dashboard sieht, sieht diese Daten.",
     "panel": {
       "caresFor": "{{name}} kümmert sich um dieses Widget",
       "caresForOn": "{{name}} kümmert sich um dieses Widget · {{board}}",

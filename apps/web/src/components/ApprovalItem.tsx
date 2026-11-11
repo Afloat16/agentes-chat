@@ -18,12 +18,13 @@ import {
   approvalWaitsFor,
   approveAlwaysHint,
   approveAlwaysLabel,
+  approveAlwaysShort,
   decisionOutcome,
   requesterDecidesLine,
 } from "@agenteschat/client/lib/approval-words";
 import { nextLabel, timeLeft, whenAt } from "@agenteschat/client/lib/format";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
-import { ApprovalCard, Button, cx, EventPillAction, Icon } from "@agenteschat/ui";
+import { ApprovalCard, Button, cx, EventPillAction, HintLine, Icon } from "@agenteschat/ui";
 import { useNavigate } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
 import { useContext } from "react";
@@ -152,6 +153,8 @@ export function ApproveAlways({
       () => {},
     );
   };
+  const note = approveAlwaysHint(t, approval, g.name);
+  const short = approveAlwaysShort(t, approval);
   return (
     <>
       <Button
@@ -164,7 +167,13 @@ export function ApproveAlways({
         {approveAlwaysLabel(t, approval)}
       </Button>
       <p className="small muted ap-always" title={kind?.actions.join(", ") || kind?.tool}>
-        {approveAlwaysHint(t, approval, g.name)}
+        {short ? (
+          <HintLine name={t("common.about", { label: approveAlwaysLabel(t, approval) })} hint={note}>
+            {short}
+          </HintLine>
+        ) : (
+          note
+        )}
       </p>
     </>
   );

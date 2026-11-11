@@ -3,7 +3,7 @@ import { ApiError, useMission, useMissionAct, useMissionCommands } from "@agente
 import { errorText } from "@agenteschat/client/lib/errors";
 import { formatTime } from "@agenteschat/client/lib/format";
 import { executorName } from "@agenteschat/client/lib/missions";
-import { Button, Checkbox, Chip, DetailsDialog, DetailsSection, Icon, Skeleton } from "@agenteschat/ui";
+import { Button, Checkbox, Chip, DetailsDialog, DetailsSection, HintLine, Icon, Skeleton } from "@agenteschat/ui";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
@@ -102,9 +102,13 @@ export function MissionCommandCard({ command: meta }: { command: MissionCommandM
         </p>
       )}
       {c.state === "pending" && c.agentKind && m.canAct && (
-        <p className="mi-hint ac-iconline">
-          <Icon name="info" size={14} />
-          {t("missions.command.alwaysAgentHint", { kind: c.agentKind })}
+        <p className="mi-hint">
+          <HintLine
+            name={t("common.about", { label: t("missions.command.alwaysAgent") })}
+            hint={t("missions.command.alwaysAgentHint", { kind: c.agentKind })}
+          >
+            {t("missions.command.alwaysAgentShort", { kind: c.agentKind })}
+          </HintLine>
         </p>
       )}
     </section>

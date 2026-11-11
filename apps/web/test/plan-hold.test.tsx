@@ -114,6 +114,9 @@ describe("a plan with no agentes.chat plan in force", () => {
     expect(buttonNamed(dialog, KEY)).toBeNull();
     expect(within(dialog).queryByRole("combobox", { name: "Plano" })).toBeNull();
     expect(dialog.querySelector(".ai-picker")).toBeNull();
+    // The scene stays over the notice, still: nothing walks to the team before the plan.
+    const trails = Array.from(dialog.querySelectorAll(".connect-scene .team-scene__trail"));
+    expect(trails.map((t) => t.getAttribute("data-state"))).toEqual([null, null]);
   });
 
   test("a member: Connect says why and who can sort it out, with nothing to press", async () => {

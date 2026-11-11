@@ -1654,6 +1654,7 @@
     },
     "map": {
       "lead": "谁负责这些智能体、它们在哪些频道、各自独立做什么、哪些在等人处理。虚线表示过去一天里互相求助过的智能体。",
+      "short": "谁负责每个智能体，以及它在哪里工作。",
       "lodi": "和你一起整理团队",
       "hint": "把智能体拖到另一个频道，{{name}} 会准备好更改，由你来应用",
       "proposed": "{{name}} 已在你们的对话中准备好更改。请在那里应用。",
@@ -2395,7 +2396,7 @@
       "gemini": {
         "title": "你的 Gemini 套餐",
         "tiers": "Google AI Pro、Google AI Ultra 或 Gemini Enterprise",
-        "warning": "Google 表示，在其他应用中使用个人 Gemini 套餐可能导致账号被停用。为避免这个风险，请使用 API 密钥或 Gemini Enterprise。"
+        "warning": "Google 表示，在其他应用中使用个人 Gemini 套餐可能导致账号被停用。"
       },
       "zen": {
         "title": "OpenCode",
@@ -3670,6 +3671,9 @@
       "routine": "在此例行工作中始终批准",
       "thisRoutine": "此例行工作",
       "noteRoutine": "从现在起，{{routine}}会自行执行{{actions}}，不限参数值。在此例行工作之外仍会询问。如需撤销：前往例行工作的设置。",
+      "shortReads": "从现在起仅涵盖读取。",
+      "shortRoutine": "从现在起仅在此例行工作中适用。",
+      "shortCommand": "从现在起涵盖计算机上的 {{actions}}。",
       "doneRoutine": "已批准。{{routine}}不会再询问此操作。",
       "undoRoutine": "如需撤销，请前往例行工作的设置。"
     },
@@ -6761,6 +6765,7 @@
       "waiting": "等待下一次调用",
       "every": "每次调用都会运行。同时到达的调用会合并为一次运行。",
       "newNote": "例行工作会获得一个专属地址。每次向它发送 POST，都会带着发送的内容启动智能体。保存后，地址会显示在例行工作页面上。",
+      "newShort": "例行工作会获得一个专属地址。",
       "hidden": "只有能修改此例行工作的人才能看到它的地址。",
       "methods": "接受的方法",
       "methodsHelp": "该地址只响应勾选的方法。使用 GET 时，URL 的查询参数就是这次调用的数据。",
@@ -6989,6 +6994,8 @@
     "ownActions": {
       "hint": "每次运行都会在你已连接的应用中直接执行这些操作，无需询问。其中的其他操作会先请人审批，合并、部署和回滚始终需要审批。",
       "none": "在已连接的应用中，每个操作前都会先请人审批。若要让它自动完成工作，请在聊天中告诉智能体可以执行哪些操作。",
+      "hintShort": "每次运行都会直接执行这些操作，无需询问。",
+      "noneShort": "每个操作前都会先请人审批。",
       "remove": "之前再次询问：{{action}}"
     },
     "ahead": {
@@ -7608,6 +7615,7 @@
       "alwaysBy": "由 {{name}} 在此专项任务中允许 · {{time}}：{{rules}}",
       "alwaysAgent": "对此智能体始终批准",
       "alwaysAgentHint": "“对此智能体始终批准”会在每个任务和对话中允许 {{kind}}，参数不限。如需撤销：智能体页面的“工具和权限”。",
+      "alwaysAgentShort": "在每个任务和对话中允许 {{kind}}。",
       "alwaysAgentBy": "{{name}} 已为此智能体允许 · {{time}}：{{kind}}",
       "state": {
         "allowed": "已批准",
@@ -8594,7 +8602,7 @@
     "undoUpdate": "撤销更新",
     "undone": "{{name}} 已回到版本 {{version}}。",
     "agentsImprove": "智能体自行改进技能",
-    "agentsImproveHelp": "智能体发现技能有误或缺少步骤时，会立即修正：生成一个可撤销的新版本，并通知技能的创建者。脚本的改动要等管理技能的人处理。",
+    "agentsImproveHelp": "智能体发现技能有误或缺少步骤时，会立即修正：生成一个可撤销的新版本，并通知技能的创建者。",
     "agentsImproveThis": "智能体自行改进此技能",
     "agentChange": "{{agent}} {{when}}修改了它",
     "undoAgentChange": "撤销修改",
@@ -8879,6 +8887,8 @@
     "title": "谁可以和 {{name}} 对话",
     "title_female": "谁可以和 {{name}} 对话",
     "notListed": "不在名单上的人不会收到回复。",
+    "agentsToo": "这也适用于智能体。",
+    "peopleOnly": "这只适用于人。",
     "consultable": "其他智能体可以咨询 {{name}}",
     "consultable_female": "其他智能体可以咨询 {{name}}",
     "consultableHint": "对于不在名单上的人，他只回复发起询问的智能体，绝不直接回复他们。敏感操作仍需负责他的人审批。",
@@ -9727,7 +9737,7 @@
     "ask": {
       "button": "请智能体修改",
       "title": "请智能体修改",
-      "text": "请求会连同页面链接一起发到你和智能体的对话里。智能体用Wiki工具编辑，这个版本会在历史中记为应你的请求所改。",
+      "text": "请求会连同页面链接一起发到你和智能体的对话里。",
       "agent": "智能体",
       "what": "要改什么？",
       "placeholder": "例如：按 2027 年的涨价更新",
@@ -9747,6 +9757,7 @@
       "pickZip": "选择 .zip 或 .md",
       "pickFolder": "选择文件夹",
       "howTo": "制作 .zip：在访达中右键点击仓库文件夹 → 压缩。在 Windows 上，选择 发送到 → 压缩文件夹。.obsidian 文件夹（插件和主题）不会包含在内。",
+      "howToLabel": "如何制作 .zip",
       "nothingYet": "在你检查之前，不会导入任何内容。",
       "readingText": "目前只在你的浏览器中处理，还没有发送任何内容。",
       "notesRead": "篇笔记已读取",
@@ -10528,7 +10539,7 @@
   },
   "githubApp": {
     "title": "GitHub 仓库",
-    "text": "在安装了 agentes.chat 应用的地方，智能体以应用的身份提交 pull request、issue、评论和 commit，并附上智能体的名字和提出请求的人。从这里安装的内容只有 {{org}} 使用。",
+    "text": "在安装了 agentes.chat 应用的地方，智能体以应用的身份提交 pull request、issue、评论和 commit，并附上智能体的名字和提出请求的人。",
     "install": "安装 agentes.chat 应用",
     "installMore": "安装到另一个账号",
     "none": "还没有 GitHub 账号。",
@@ -10602,6 +10613,7 @@
       "label": "可不经询问直接合并",
       "none": "未选择仓库。每次合并都需要审批。",
       "help": "在这些仓库中，合并无需审批卡片，会记入审计，并在对话中留下回执。其他敏感操作仍会询问。",
+      "short": "在这些仓库中，合并无需审批卡片。",
       "dialogTitle": "{{name}}可不经询问直接合并的位置",
       "dialogDesc": "仅限已在使用的仓库。在其他位置合并需要审批。"
     },
@@ -11454,6 +11466,7 @@
       "title": "可访问的组织",
       "none": "还没有组织。",
       "lead": "GitHub 只在第一次询问组织。要添加其他组织，请在 GitHub 打开应用页面，然后点击组织旁边的 Grant。如果你不是所有者，按钮显示为 Request，由所有者批准。",
+      "short": "GitHub 只在第一次询问组织。",
       "open": "在 GitHub 上授权组织",
       "added": "现在还包括：{{names}}。",
       "removed": "不再包括：{{names}}。",
@@ -11646,6 +11659,7 @@
       "databasesHelp": "以下规则适用于此智能体读取的每个数据库。",
       "hidden": "永远看不到的列",
       "hiddenHelp": "格式为“表.列”，名称含大写字母、空格或符号时用双引号括起来（customers.\"Tax ID\"）。看起来像个人数据或密码的列，我们已经隐藏了。",
+      "hiddenExample": "格式为“表.列”，例如 customers.\"Tax ID\"",
       "hiddenPlaceholder": "customers.cpf",
       "hiddenInvalid": "请输入 table.column（或 schema.table.column），名称含大写字母、空格或符号时用\"双引号\"括起来。",
       "cap": "每天查询次数",
@@ -11706,7 +11720,7 @@
     "address": "邮箱地址",
     "addressPlaceholder": "you@company.com",
     "addressInvalid": "请输入有效的邮箱，比如 you@company.com。",
-    "icloudHint": "请使用你的 iCloud 邮件地址，比如 name@icloud.com，即使你的 Apple 账户使用的是 {{name}}。在 iPhone 上，它位于 设置 › 你的名字 › iCloud › iCloud 邮件，也可以访问 icloud.com/mail 查看。",
+    "icloudHint": "请使用你的 iCloud 邮件地址，比如 name@icloud.com，即使你的 Apple 账户使用的是 {{name}}。",
     "password": "应用专用密码",
     "passwordHelp": "在服务器上加密存储。之后谁也看不到。",
     "passwordInvalid": "请粘贴应用专用密码。",
@@ -11753,6 +11767,7 @@
     "rulesRead": "可读取的内容",
     "rulesSend": "可发送的对象",
     "toolsLead": "智能体在 {{name}} 中可以做的事。关闭任何智能体都不该做的操作，也可以让起草和整理同样需要审批。发送、回复和转发始终会在聊天中请求审批，并显示收件人和正文。",
+    "toolsShort": "选择智能体可以用这个邮箱做什么。",
     "group": {
       "read": "读取",
       "write": "写入",
@@ -11813,6 +11828,7 @@
       "buttonName": "{{name}} 的地址",
       "title": "{{address}} 的地址",
       "lead": "智能体会用收到邮件的那个地址回复。如果这个邮箱还会收到发往其他地址的邮件，比如你自己的域名或别名，请在这里添加。",
+      "short": "智能体会用收到邮件的那个地址回复。",
       "main": "主地址：{{address}}",
       "others": "这个邮箱的其他地址",
       "othersHelp": "别名和你自己的域名，比如 hello@yourcompany.com。",
@@ -14189,6 +14205,7 @@
       "sharedWith": "与 {{names}} 共用",
       "part": "{{name}} 的部分：约 {{percent}}",
       "estimate": "每根柱子中颜色较深的部分是 {{name}} 的用量。{{brand}} 只显示整个账号的用量，所以每个智能体的部分是根据其花费估算的。",
+      "estimateShort": "这是估算值。",
       "byAccount": "按账号，本月",
       "until": "直到 {{date}}",
       "nowTag": "现在",
@@ -15663,7 +15680,7 @@
   "deleteOrg": {
     "card": {
       "title": "删除工作区",
-      "text": "立即为所有人关闭 {{name}}，7 天后永久删除。",
+      "text": "现在对所有人关闭 {{name}}，并在 7 天后删除。",
       "button": "删除工作区…"
     },
     "title": "删除 {{name}}？",
@@ -15718,10 +15735,9 @@
   "deleteAccount": {
     "menu": "删除账号",
     "card": {
-      "text": "你会退出所有工作区，账号将在 7 天后被永久删除。在那之前可以恢复。",
+      "text": "7 天后在所有工作区中删除你的账号。",
       "button": "删除账号…",
-      "oneWorkspace": "只想删除这个工作区？在“常规”里。",
-      "leaveWorkspace": "只想退出这个工作区？在“成员”里。"
+      "title": "删除"
     },
     "title": "删除你的整个账号？",
     "intro": "这会删除你的整个账号，而不只是一个工作区。",
@@ -16455,6 +16471,7 @@
       "unknown": "每次更新都使用 {{name}} 的预算"
     },
     "exposure": "能看到仪表盘的人，就能看到智能体带来的内容，即使没有数据来源账号的权限。智能体也会创建仪表盘。要给比提出请求的人更多的人看时，它们会先在“等你处理”中征求同意。",
+    "exposureShort": "能看到仪表盘的人，就能看到这些数据。",
     "panel": {
       "caresFor": "{{name}} 负责这个小组件",
       "caresForOn": "{{name}} 负责这个小组件 · {{board}}",

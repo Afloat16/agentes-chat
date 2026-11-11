@@ -95,6 +95,7 @@ import {
   FilterBar,
   FilterChip,
   GroupHeading,
+  HintLine,
   Icon,
   type IconName,
   InfoHint,
@@ -2672,7 +2673,12 @@ function RoutineDialog({
                   ) : (
                     <p className="routine-note small ac-iconline">
                       <Icon name="link" size={14} />
-                      <span>{t("routines.webhook.newNote")}</span>
+                      <HintLine
+                        name={t("common.about", { label: t("routines.webhook.address") })}
+                        hint={t("routines.webhook.newNote")}
+                      >
+                        {t("routines.webhook.newShort")}
+                      </HintLine>
                     </p>
                   ))}
                 {kind === "schedule" && (
@@ -2840,7 +2846,15 @@ function OwnActions({ routine }: { routine: Routine | undefined }) {
   const { org } = useOrg();
   const action = useRoutineAction(org.id);
   const own = routine?.ownActions ?? [];
-  if (own.length === 0) return <p className="small muted">{t("routines.ownActions.none")}</p>;
+  const about = t("common.about", { label: t("routines.panel.ownActions") });
+  if (own.length === 0)
+    return (
+      <p className="small muted">
+        <HintLine name={about} hint={t("routines.ownActions.none")}>
+          {t("routines.ownActions.noneShort")}
+        </HintLine>
+      </p>
+    );
   return (
     <>
       <ul className="routine-own" aria-label={t("routines.panel.ownActions")}>
@@ -2867,7 +2881,11 @@ function OwnActions({ routine }: { routine: Routine | undefined }) {
           </li>
         ))}
       </ul>
-      <p className="small muted">{t("routines.ownActions.hint")}</p>
+      <p className="small muted">
+        <HintLine name={about} hint={t("routines.ownActions.hint")}>
+          {t("routines.ownActions.hintShort")}
+        </HintLine>
+      </p>
     </>
   );
 }

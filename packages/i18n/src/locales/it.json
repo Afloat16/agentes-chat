@@ -1756,6 +1756,7 @@
     },
     "map": {
       "lead": "Chi si occupa degli agenti, i canali in cui sono, cosa fa ognuno da solo e cosa aspetta una persona. Le linee tratteggiate sono agenti che si sono chiesti aiuto nell'ultimo giorno.",
+      "short": "Chi si occupa di ogni agente e dove lavora.",
       "lodi": "Organizza il team con te",
       "hint": "Trascina un agente in un altro canale e {{name}} prepara la modifica da applicare",
       "proposed": "{{name}} ha preparato la modifica nella tua conversazione. Applicala lì.",
@@ -2583,7 +2584,7 @@
       "gemini": {
         "title": "Il tuo piano Gemini",
         "tiers": "Google AI Pro, Google AI Ultra o Gemini Enterprise",
-        "warning": "Google dice che usare un piano Gemini personale all'interno di altre app può portare alla sospensione dell'account. Per non correre questo rischio, usa una chiave API o Gemini Enterprise."
+        "warning": "Google dice che usare un piano Gemini personale all'interno di altre app può portare alla sospensione dell'account."
       },
       "zen": {
         "title": "OpenCode",
@@ -3913,6 +3914,9 @@
       "routine": "Sempre in questa routine",
       "thisRoutine": "questa routine",
       "noteRoutine": "{{routine}} fa {{actions}} da sola d'ora in poi, con qualsiasi valore. Fuori da questa routine continua a chiedere. Per annullare: le impostazioni della routine.",
+      "shortReads": "Copre solo le letture, da ora in poi.",
+      "shortRoutine": "Vale solo in questa routine, da ora in poi.",
+      "shortCommand": "Copre {{actions}} sul computer, da ora in poi.",
       "doneRoutine": "Approvato. {{routine}} non lo chiederà più.",
       "undoRoutine": "Per annullarlo, vai nelle impostazioni della routine."
     },
@@ -7204,6 +7208,7 @@
       "waiting": "Aspetta la prossima chiamata",
       "every": "Si avvia a ogni chiamata. Le chiamate che arrivano insieme diventano un'unica esecuzione.",
       "newNote": "La routine riceve un indirizzo tutto suo. Ogni POST a quell'indirizzo avvia l'agente con ciò che è stato inviato. L'indirizzo compare nella pagina della routine dopo il salvataggio.",
+      "newShort": "La routine riceve un indirizzo tutto suo.",
       "hidden": "Solo chi può modificare la routine vede il suo indirizzo.",
       "methods": "Metodi accettati",
       "methodsHelp": "L’indirizzo risponde solo ai metodi selezionati. Con GET, i parametri della query dell’URL sono i dati della chiamata.",
@@ -7436,6 +7441,8 @@
     "ownActions": {
       "hint": "Ogni esecuzione fa queste azioni nelle tue app collegate senza chiedere. Qualsiasi altra azione lì chiede prima l’approvazione di una persona, e merge, deploy e rollback la chiedono sempre.",
       "none": "Nelle app collegate chiede l’approvazione di una persona prima di ogni azione. Per farle fare il suo lavoro da sola, di’ all’agente in chat quali azioni può fare.",
+      "hintShort": "Ogni esecuzione fa queste azioni senza chiedere.",
+      "noneShort": "Chiede l’approvazione di una persona prima di ogni azione.",
       "remove": "Torna a chiedere prima di: {{action}}"
     },
     "ahead": {
@@ -8127,6 +8134,7 @@
       "alwaysBy": "Consentito in questa missione da {{name}} · {{time}}: {{rules}}",
       "alwaysAgent": "Approva sempre per questo agente",
       "alwaysAgentHint": "Approva sempre per questo agente consente {{kind}} con qualsiasi argomento, in ogni missione e conversazione. Per annullarlo: Strumenti e accesso, nella pagina dell'agente.",
+      "alwaysAgentShort": "Consente {{kind}} in ogni missione e conversazione.",
       "alwaysAgentBy": "Consentito per questo agente da {{name}} · {{time}}: {{kind}}",
       "state": {
         "allowed": "Approvato",
@@ -9241,7 +9249,7 @@
     "undoUpdate": "Annulla aggiornamento",
     "undone": "{{name}} è tornata alla versione {{version}}.",
     "agentsImprove": "Gli agenti migliorano le skill da soli",
-    "agentsImproveHelp": "Quando un agente trova una skill sbagliata o a cui manca un passo, la corregge subito: una nuova versione che puoi annullare, e chi ha creato la skill viene avvisato. Le modifiche agli script aspettano chi gestisce le skill.",
+    "agentsImproveHelp": "Quando un agente trova una skill sbagliata o a cui manca un passo, la corregge subito: una nuova versione che puoi annullare, e chi ha creato la skill viene avvisato.",
     "agentsImproveThis": "Gli agenti migliorano questa skill da soli",
     "agentChange": "{{agent}} l'ha modificata {{when}}",
     "undoAgentChange": "Annulla modifica",
@@ -9541,6 +9549,8 @@
     "title": "Chi può parlare con {{name}}",
     "title_female": "Chi può parlare con {{name}}",
     "notListed": "Le persone non in elenco non ricevono risposta.",
+    "agentsToo": "Vale anche per gli agenti.",
+    "peopleOnly": "Vale solo per le persone.",
     "consultable": "Altri agenti possono consultare {{name}}",
     "consultable_female": "Altri agenti possono consultare {{name}}",
     "consultableHint": "Per le persone non in elenco, risponde solo all'agente che ha chiesto, mai direttamente a loro. Le azioni sensibili richiedono comunque l'approvazione di chi si occupa di lui.",
@@ -10425,7 +10435,7 @@
     "ask": {
       "button": "Chiedi a un agente",
       "title": "Chiedi a un agente",
-      "text": "La richiesta va nella tua conversazione con l'agente, con il link della pagina. Modifica con gli strumenti del wiki e la versione resta nella cronologia come fatta su tua richiesta.",
+      "text": "La richiesta va nella tua conversazione con l'agente, con il link della pagina.",
       "agent": "Agente",
       "what": "Cosa va cambiato?",
       "placeholder": "Es.: aggiornala con l'aumento del 2027",
@@ -10445,6 +10455,7 @@
       "pickZip": "Scegli .zip o .md",
       "pickFolder": "Scegli cartella",
       "howTo": "Per creare il .zip: nel Finder, fai clic destro sulla cartella del vault → Comprimi. Su Windows, Invia a → Cartella compressa. La cartella .obsidian (plugin e temi) resta fuori.",
+      "howToLabel": "Come creare il .zip",
       "nothingYet": "Non entra nulla prima che tu lo abbia rivisto.",
       "readingText": "Per ora solo nel tuo browser. Non è ancora stato inviato nulla.",
       "notesRead": "note lette",
@@ -11316,7 +11327,7 @@
   },
   "githubApp": {
     "title": "Repository GitHub",
-    "text": "Dove l'app agentes.chat è installata, gli agenti aprono pull request, issue, commenti e commit come l'app, con il nome dell'agente e di chi l'ha chiesto. Solo {{org}} usa ciò che installi da qui.",
+    "text": "Dove l'app agentes.chat è installata, gli agenti aprono pull request, issue, commenti e commit come l'app, con il nome dell'agente e di chi l'ha chiesto.",
     "install": "Installa l'app agentes.chat",
     "installMore": "Installa su un altro account",
     "none": "Ancora nessun account GitHub.",
@@ -11390,6 +11401,7 @@
       "label": "Può fare il merge senza chiedere",
       "none": "Nessun repository scelto. Ogni merge chiede l'approvazione.",
       "help": "In questi repository il merge avviene senza scheda di approvazione, finisce nell'audit e lascia una ricevuta nella conversazione. Tutto il resto di sensibile continua a chiedere.",
+      "short": "In questi repository il merge avviene senza scheda di approvazione.",
       "dialogTitle": "Dove {{name}} fa il merge senza chiedere",
       "dialogDesc": "Solo repository che usa già. Un merge altrove chiede l'approvazione."
     },
@@ -12290,6 +12302,7 @@
       "title": "Organizzazioni raggiunte",
       "none": "Ancora nessuna organizzazione.",
       "lead": "GitHub chiede delle organizzazioni solo la prima volta. Per aggiungerne un'altra, apri lì la pagina dell'app e premi Grant accanto. Se non ne sei proprietario, il pulsante dice Request e un proprietario approva.",
+      "short": "GitHub chiede delle organizzazioni solo la prima volta.",
       "open": "Autorizza organizzazioni su GitHub",
       "added": "Ora anche: {{names}}.",
       "removed": "Non più: {{names}}.",
@@ -12498,6 +12511,7 @@
       "databasesHelp": "Le regole qui sotto valgono per ogni database che questo agente legge.",
       "hidden": "Colonne che non vede mai",
       "hiddenHelp": "tabella.colonna, con i nomi che hanno maiuscole, spazi o simboli tra virgolette doppie (clienti.\"Codice Fiscale\"). Abbiamo già nascosto quelle che sembrano dati personali o password.",
+      "hiddenExample": "tabella.colonna, come clienti.\"Codice Fiscale\"",
       "hiddenPlaceholder": "clienti.codice_fiscale",
       "hiddenInvalid": "Scrivi tabella.colonna (o schema.tabella.colonna), con \"virgolette doppie\" attorno ai nomi che hanno maiuscole, spazi o simboli.",
       "cap": "Query al giorno",
@@ -12562,7 +12576,7 @@
     "address": "Indirizzo email",
     "addressPlaceholder": "tu@azienda.com",
     "addressInvalid": "Scrivi un'email valida, come tu@azienda.com.",
-    "icloudHint": "Usa il tuo indirizzo di iCloud Mail, come nome@icloud.com, anche se il tuo Account Apple usa {{name}}. Su iPhone lo trovi in Impostazioni › il tuo nome › iCloud › iCloud Mail, oppure vai su icloud.com/mail.",
+    "icloudHint": "Usa il tuo indirizzo di iCloud Mail, come nome@icloud.com, anche se il tuo Account Apple usa {{name}}.",
     "password": "Password per app",
     "passwordHelp": "Salvata cifrata sul server. Nessuno la vedrà più.",
     "passwordInvalid": "Incolla la password per app.",
@@ -12609,6 +12623,7 @@
     "rulesRead": "Cosa legge",
     "rulesSend": "Cosa invia",
     "toolsLead": "Cosa possono fare gli agenti in {{name}}. Disattiva quello che nessun agente deve fare, oppure chiedi l'approvazione anche per bozze e organizzazione. Inviare, rispondere e inoltrare chiedono sempre l'approvazione nella chat, mostrando destinatari e testo.",
+    "toolsShort": "Scegli cosa fanno gli agenti con questa email.",
     "group": {
       "read": "Legge",
       "write": "Scrive",
@@ -12669,6 +12684,7 @@
       "buttonName": "Indirizzi di {{name}}",
       "title": "Indirizzi di {{address}}",
       "lead": "Gli agenti rispondono dall'indirizzo a cui è stata inviata l'email. Se questa casella riceve email anche su altri indirizzi, come il tuo dominio o un alias, aggiungili qui.",
+      "short": "Gli agenti rispondono dall'indirizzo a cui è stata inviata l'email.",
       "main": "Indirizzo principale: {{address}}",
       "others": "Altri indirizzi di questa casella",
       "othersHelp": "Alias e domini tuoi, come ciao@tuaazienda.com.",
@@ -15131,6 +15147,7 @@
       "sharedWith": "condiviso con {{names}}",
       "part": "Parte di {{name}}: ≈ {{percent}}",
       "estimate": "La parte di {{name}} è il tratto più intenso di ogni barra. {{brand}} indica solo quanto ha usato l'intero account, quindi la parte di ogni agente è una stima basata su quanto ha speso.",
+      "estimateShort": "Una stima.",
       "byAccount": "Per account, questo mese",
       "until": "fino al {{date}}",
       "nowTag": "ora",
@@ -16637,7 +16654,7 @@
   "deleteOrg": {
     "card": {
       "title": "Elimina spazio di lavoro",
-      "text": "Chiude {{name}} per tutti adesso. Viene eliminato per sempre dopo 7 giorni.",
+      "text": "Chiude {{name}} per tutti ora e lo elimina tra 7 giorni.",
       "button": "Elimina spazio di lavoro…"
     },
     "title": "Eliminare {{name}}?",
@@ -16692,10 +16709,9 @@
   "deleteAccount": {
     "menu": "Elimina account",
     "card": {
-      "text": "Esci da tutti gli spazi di lavoro e il tuo account viene eliminato per sempre 7 giorni dopo. Fino ad allora puoi ripristinarlo.",
+      "text": "Elimina il tuo account tra 7 giorni, in tutti gli spazi di lavoro.",
       "button": "Elimina account…",
-      "oneWorkspace": "Vuoi eliminare solo questo spazio di lavoro? Lo trovi in Generali.",
-      "leaveWorkspace": "Vuoi uscire solo da questo spazio di lavoro? Lo trovi in Membri."
+      "title": "Elimina"
     },
     "title": "Eliminare tutto il tuo account?",
     "intro": "Elimina tutto il tuo account, non solo uno spazio di lavoro.",
@@ -17467,6 +17483,7 @@
       "unknown": "Ogni aggiornamento usa il budget di {{name}}"
     },
     "exposure": "Chi vede la dashboard vede quello che hanno portato gli agenti, anche senza accesso agli account da cui viene. Anche gli agenti creano dashboard. Per mostrarne una a più persone di chi l'ha chiesta, prima chiedono, in “Ti aspetta”.",
+    "exposureShort": "Chi vede la dashboard vede questi dati.",
     "panel": {
       "caresFor": "{{name}} si occupa di questo widget",
       "caresForOn": "{{name}} si occupa di questo widget · {{board}}",

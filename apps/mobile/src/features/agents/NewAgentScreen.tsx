@@ -889,6 +889,7 @@ function NewAgentForm({
                 key={i.id}
                 leading={<ConnectorIcon def={i.def} image={i.image} label={app} size={32} />}
                 label={app}
+                {...(i.account ? { sub: i.account } : {})}
                 value={
                   proposed
                     ? t(`access.level.${level}`)

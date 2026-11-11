@@ -241,12 +241,15 @@ export function UsageCard({
   title,
   hint,
   footer,
+  footerHint,
   children,
 }: {
   icon: IconName;
   title: string;
   hint?: { name: string; text: string };
   footer?: string;
+  /** An ⓘ after the footer's words, with the rest of the explanation. */
+  footerHint?: { name: string; text: string };
   children: ReactNode;
 }) {
   const { colors: c, shadows } = useTheme();
@@ -274,9 +277,17 @@ export function UsageCard({
       {children}
       {footer ? (
         <View style={[styles.cardFoot, { borderTopColor: c.line }]}>
-          <Text variant="caption" tone="muted">
-            {footer}
-          </Text>
+          {footerHint ? (
+            <InfoHint {...footerHint} variant="caption">
+              <Text variant="caption" tone="muted">
+                {footer}
+              </Text>
+            </InfoHint>
+          ) : (
+            <Text variant="caption" tone="muted">
+              {footer}
+            </Text>
+          )}
         </View>
       ) : null}
     </View>

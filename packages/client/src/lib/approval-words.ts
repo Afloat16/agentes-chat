@@ -343,6 +343,22 @@ export function approveAlwaysHint(
   return t(key, { ...agentGrammar(agentName), actions: approveAlwaysWords(t, approval), target: target ?? "" });
 }
 
+/**
+ * `approveAlwaysHint` in one line, for the notes too long for a card's face (only the reads of a project, a routine, a
+ * command on the computer): the card shows this and keeps the whole note behind an ⓘ. Null when the note is already
+ * one line.
+ */
+export function approveAlwaysShort(
+  t: TFunction,
+  approval: Pick<Approval, "approveAlways"> & Partial<Pick<Approval, "origin">>,
+) {
+  if (alwaysRoutineName(t, { origin: null, ...approval })) return t("approval.always.shortRoutine");
+  if (sqlReadsTarget(approval.approveAlways?.actions[0]) !== null) return t("approval.always.shortReads");
+  return approval.approveAlways?.tool === COMMAND_RULE_TOOL
+    ? t("approval.always.shortCommand", { actions: approveAlwaysWords(t, approval) })
+    : null;
+}
+
 /** Where a rule applies, for its list: the connection's name, or the agent's computer for a command. */
 export const approvalRuleServer = (t: TFunction, rule: Pick<ApprovalRule, "server">) =>
   rule.server ?? t("approval.always.computer");

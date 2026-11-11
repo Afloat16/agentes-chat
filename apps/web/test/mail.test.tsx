@@ -249,7 +249,7 @@ describe("Conectores → Email", () => {
     const hint = () => document.getElementById(address().getAttribute("aria-describedby") ?? "")?.textContent ?? null;
     await type(address(), "Ana@Gmail.com");
     expect(hint()).toBe(
-      "Use o endereço do Mail do iCloud, como nome@icloud.com, mesmo que a sua Conta Apple use o Gmail. No iPhone ele está em Ajustes\u00a0›\u00a0seu nome\u00a0›\u00a0iCloud\u00a0›\u00a0Mail do iCloud, ou veja em icloud.com/mail.",
+      "Use o endereço do Mail do iCloud, como nome@icloud.com, mesmo que a sua Conta Apple use o Gmail.",
     );
     await type(address(), "ana@hotmail.com");
     expect(hint()).toContain("use o Outlook");

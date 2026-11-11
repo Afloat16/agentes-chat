@@ -52,6 +52,7 @@ import {
   DialogBody,
   DialogFooter,
   Field,
+  HintLine,
   Icon,
   Input,
   Locked,
@@ -553,7 +554,14 @@ function GithubOrgs() {
       )}
       {manageUrl && (
         <>
-          <p className="small muted">{t("connectFlow.githubOrgs.lead")}</p>
+          <p className="small muted">
+            <HintLine
+              name={t("common.about", { label: t("connectFlow.githubOrgs.title") })}
+              hint={t("connectFlow.githubOrgs.lead")}
+            >
+              {t("connectFlow.githubOrgs.short")}
+            </HintLine>
+          </p>
           <Button
             asChild
             size="sm"

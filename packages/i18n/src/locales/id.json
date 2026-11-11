@@ -1654,6 +1654,7 @@
     },
     "map": {
       "lead": "Siapa yang mengurus agen, kanal tempat mereka berada, apa yang dikerjakan masing-masing sendiri, dan apa yang menunggu seseorang. Garis putus-putus adalah agen yang saling minta bantuan dalam sehari terakhir.",
+      "short": "Siapa yang mengurus tiap agen dan di mana ia bekerja.",
       "lodi": "Menata tim bersamamu",
       "hint": "Seret agen ke kanal lain dan {{name}} menyiapkan perubahan untuk kamu terapkan",
       "proposed": "{{name}} menyiapkan perubahan di percakapanmu. Terapkan di sana.",
@@ -2402,7 +2403,7 @@
       "gemini": {
         "title": "Paket Gemini-mu",
         "tiers": "Google AI Pro, Google AI Ultra, atau Gemini Enterprise",
-        "warning": "Google menyatakan bahwa memakai paket Gemini pribadi di dalam aplikasi lain bisa membuat akun ditangguhkan. Agar tidak mengambil risiko itu, pakai kunci API atau Gemini Enterprise."
+        "warning": "Google menyatakan bahwa memakai paket Gemini pribadi di dalam aplikasi lain bisa membuat akun ditangguhkan."
       },
       "zen": {
         "title": "OpenCode",
@@ -3680,6 +3681,9 @@
       "routine": "Selalu di rutinitas ini",
       "thisRoutine": "rutinitas ini",
       "noteRoutine": "{{routine}} melakukan {{actions}} sendiri mulai sekarang, dengan nilai apa pun. Di luar rutinitas ini tetap bertanya. Untuk membatalkan: pengaturan rutinitas.",
+      "shortReads": "Hanya mencakup pembacaan, mulai sekarang.",
+      "shortRoutine": "Hanya berlaku di rutinitas ini, mulai sekarang.",
+      "shortCommand": "Mencakup {{actions}} di komputer, mulai sekarang.",
       "doneRoutine": "Disetujui. {{routine}} tidak akan meminta ini lagi.",
       "undoRoutine": "Untuk membatalkannya, buka pengaturan rutinitas."
     },
@@ -6749,6 +6753,7 @@
       "waiting": "Menunggu panggilan berikutnya",
       "every": "Berjalan di setiap panggilan. Panggilan yang datang bersamaan menjadi satu proses.",
       "newNote": "Rutinitas ini mendapat alamatnya sendiri. Setiap POST ke alamat itu memulai agen dengan data yang dikirim. Alamatnya muncul di halaman rutinitas setelah disimpan.",
+      "newShort": "Rutinitas ini mendapat alamatnya sendiri.",
       "hidden": "Hanya yang bisa mengubah rutinitas ini yang melihat alamatnya.",
       "methods": "Metode yang diterima",
       "methodsHelp": "Alamat ini hanya menjawab metode yang dicentang. Dengan GET, parameter kueri URL menjadi data panggilan.",
@@ -6980,6 +6985,8 @@
     "ownActions": {
       "hint": "Setiap jalannya melakukan ini di aplikasi terhubung kamu tanpa bertanya. Tindakan lain di sana meminta persetujuan seseorang dulu, dan merge, deploy, serta rollback selalu meminta.",
       "none": "Di aplikasi terhubung, rutinitas ini meminta persetujuan seseorang sebelum setiap tindakan. Agar bisa bekerja sendiri, beri tahu agen di chat tindakan apa saja yang boleh dilakukan.",
+      "hintShort": "Setiap jalannya melakukan ini tanpa bertanya.",
+      "noneShort": "Rutinitas ini meminta persetujuan seseorang sebelum setiap tindakan.",
       "remove": "Tanya lagi sebelum: {{action}}"
     },
     "ahead": {
@@ -7603,6 +7610,7 @@
       "alwaysBy": "Diizinkan di misi ini oleh {{name}} · {{time}}: {{rules}}",
       "alwaysAgent": "Selalu setujui untuk agen ini",
       "alwaysAgentHint": "Selalu setujui untuk agen ini mengizinkan {{kind}} dengan argumen apa pun, di setiap misi dan percakapan. Untuk membatalkan: Alat dan akses, di halaman agen.",
+      "alwaysAgentShort": "Mengizinkan {{kind}} di setiap misi dan percakapan.",
       "alwaysAgentBy": "Diizinkan untuk agen ini oleh {{name}} · {{time}}: {{kind}}",
       "state": {
         "allowed": "Disetujui",
@@ -8597,7 +8605,7 @@
     "undoUpdate": "Urungkan pembaruan",
     "undone": "{{name}} kembali ke versi {{version}}.",
     "agentsImprove": "Agen memperbaiki skill sendiri",
-    "agentsImproveHelp": "Saat agen menemukan skill yang salah atau kurang satu langkah, agen langsung memperbaikinya: versi baru yang bisa kamu urungkan, dan pembuat skill diberi tahu. Perubahan skrip menunggu orang yang mengelola skill.",
+    "agentsImproveHelp": "Saat agen menemukan skill yang salah atau kurang satu langkah, agen langsung memperbaikinya: versi baru yang bisa kamu urungkan, dan pembuat skill diberi tahu.",
     "agentsImproveThis": "Agen memperbaiki skill ini sendiri",
     "agentChange": "{{agent}} mengubahnya {{when}}",
     "undoAgentChange": "Urungkan perubahan",
@@ -8872,6 +8880,8 @@
     "section": "Siapa yang bisa bicara",
     "title": "Siapa yang bisa bicara dengan {{name}}",
     "notListed": "Orang yang tidak ada di daftar tidak mendapat balasan.",
+    "agentsToo": "Ini juga berlaku untuk agen.",
+    "peopleOnly": "Ini hanya berlaku untuk orang.",
     "consultable": "Agen lain bisa berkonsultasi dengan {{name}}",
     "consultableHint": "Untuk orang yang tidak ada di daftar, dia hanya menjawab agen yang bertanya, tidak pernah langsung ke mereka. Tindakan sensitif tetap butuh persetujuan dari orang yang mengurusnya.",
     "consultableHint_female": "Untuk orang yang tidak ada di daftar, dia hanya menjawab agen yang bertanya, tidak pernah langsung ke mereka. Tindakan sensitif tetap butuh persetujuan dari orang yang mengurusnya.",
@@ -9712,7 +9722,7 @@
     "ask": {
       "button": "Minta agen",
       "title": "Minta agen",
-      "text": "Permintaan masuk ke percakapanmu dengan agen, beserta tautan halaman. Agen mengedit dengan alat wiki, dan versinya tercatat di riwayat sebagai atas permintaanmu.",
+      "text": "Permintaan masuk ke percakapanmu dengan agen, beserta tautan halaman.",
       "agent": "Agen",
       "what": "Apa yang perlu diubah?",
       "placeholder": "Mis.: perbarui dengan kenaikan harga 2027",
@@ -9732,6 +9742,7 @@
       "pickZip": "Pilih .zip atau .md",
       "pickFolder": "Pilih folder",
       "howTo": "Untuk membuat .zip: di Finder, klik kanan folder vault → Compress. Di Windows, Send to → Compressed folder. Folder .obsidian (plugin dan tema) tidak disertakan.",
+      "howToLabel": "Cara membuat .zip",
       "nothingYet": "Tidak ada yang masuk sebelum kamu meninjaunya.",
       "readingText": "Untuk sekarang hanya ada di browsermu. Belum ada yang dikirim.",
       "notesRead": "catatan dibaca",
@@ -10515,7 +10526,7 @@
   },
   "githubApp": {
     "title": "Repositori GitHub",
-    "text": "Di tempat aplikasi agentes.chat terpasang, agen membuka pull request, issue, komentar, dan commit sebagai aplikasi itu, dengan nama agen dan orang yang meminta. Hanya {{org}} yang memakai apa yang kamu pasang dari sini.",
+    "text": "Di tempat aplikasi agentes.chat terpasang, agen membuka pull request, issue, komentar, dan commit sebagai aplikasi itu, dengan nama agen dan orang yang meminta.",
     "install": "Pasang aplikasi agentes.chat",
     "installMore": "Pasang di akun lain",
     "none": "Belum ada akun GitHub.",
@@ -10589,6 +10600,7 @@
       "label": "Boleh merge tanpa bertanya",
       "none": "Tidak ada repositori yang dipilih. Setiap merge meminta persetujuan.",
       "help": "Di repositori ini merge berjalan tanpa kartu persetujuan, tercatat di audit, dan meninggalkan tanda terima di percakapan. Hal sensitif lainnya tetap bertanya.",
+      "short": "Di repositori ini merge berjalan tanpa kartu persetujuan.",
       "dialogTitle": "Tempat {{name}} merge tanpa bertanya",
       "dialogDesc": "Hanya repositori yang sudah digunakan. Merge di tempat lain meminta persetujuan."
     },
@@ -11445,6 +11457,7 @@
       "title": "Organisasi yang terjangkau",
       "none": "Belum ada organisasi.",
       "lead": "GitHub hanya menanyakan organisasi pada kali pertama. Untuk menambahkan yang lain, buka halaman aplikasi di sana dan tekan Grant di sampingnya. Jika Anda bukan pemiliknya, tombolnya bertuliskan Request dan pemilik yang menyetujui.",
+      "short": "GitHub hanya menanyakan organisasi pada kali pertama.",
       "open": "Izinkan organisasi di GitHub",
       "added": "Sekarang juga: {{names}}.",
       "removed": "Tidak lagi: {{names}}.",
@@ -11637,6 +11650,7 @@
       "databasesHelp": "Aturan di bawah berlaku untuk setiap database yang dibaca agen ini.",
       "hidden": "Kolom yang tidak pernah dilihat",
       "hiddenHelp": "tabel.kolom, dengan nama yang memuat huruf kapital, spasi, atau simbol diapit tanda kutip ganda (customers.\"Tax ID\"). Kolom yang tampak seperti data pribadi atau kata sandi sudah kami sembunyikan.",
+      "hiddenExample": "tabel.kolom, seperti customers.\"Tax ID\"",
       "hiddenPlaceholder": "customers.nik",
       "hiddenInvalid": "Ketik tabel.kolom (atau skema.tabel.kolom), dengan \"tanda kutip ganda\" di sekitar nama yang memuat huruf kapital, spasi, atau simbol.",
       "cap": "Query per hari",
@@ -11697,7 +11711,7 @@
     "address": "Alamat email",
     "addressPlaceholder": "kamu@perusahaan.com",
     "addressInvalid": "Ketik email yang valid, seperti kamu@perusahaan.com.",
-    "icloudHint": "Pakai alamat iCloud Mail-mu, seperti nama@icloud.com, meskipun Akun Apple-mu memakai {{name}}. Di iPhone, ada di Pengaturan › namamu › iCloud › iCloud Mail, atau lihat icloud.com/mail.",
+    "icloudHint": "Pakai alamat iCloud Mail-mu, seperti nama@icloud.com, meskipun Akun Apple-mu memakai {{name}}.",
     "password": "Kata sandi aplikasi",
     "passwordHelp": "Disimpan terenkripsi di server. Tidak ada yang bisa melihatnya lagi.",
     "passwordInvalid": "Tempel kata sandi aplikasi.",
@@ -11744,6 +11758,7 @@
     "rulesRead": "Yang dibaca",
     "rulesSend": "Yang dikirim",
     "toolsLead": "Apa yang bisa dilakukan agen di {{name}}. Matikan yang tidak boleh dilakukan agen mana pun, atau minta persetujuan juga untuk draf dan pengaturan email. Mengirim, membalas, dan meneruskan selalu meminta persetujuan di chat, dengan menampilkan penerima dan isinya.",
+    "toolsShort": "Pilih apa yang dilakukan agen dengan email ini.",
     "group": {
       "read": "Membaca",
       "write": "Menulis",
@@ -11804,6 +11819,7 @@
       "buttonName": "Alamat {{name}}",
       "title": "Alamat {{address}}",
       "lead": "Agen membalas dari alamat tujuan email itu dikirim. Jika kotak surat ini juga menerima email di alamat lain, seperti domain milikmu atau alias, tambahkan di sini.",
+      "short": "Agen membalas dari alamat tujuan email itu dikirim.",
       "main": "Alamat utama: {{address}}",
       "others": "Alamat lain kotak surat ini",
       "othersHelp": "Alias dan domain milikmu, seperti halo@perusahaanmu.com.",
@@ -14185,6 +14201,7 @@
       "part_female": "Bagian {{name}}: ≈ {{percent}}",
       "estimate": "Bagian {{name}} adalah ruas yang lebih tegas di tiap batang. {{brand}} hanya memberi tahu pemakaian seluruh akun, jadi bagian tiap agen adalah perkiraan dari pemakaiannya.",
       "estimate_female": "Bagian {{name}} adalah ruas yang lebih tegas di tiap batang. {{brand}} hanya memberi tahu pemakaian seluruh akun, jadi bagian tiap agen adalah perkiraan dari pemakaiannya.",
+      "estimateShort": "Perkiraan.",
       "byAccount": "Per akun, bulan ini",
       "until": "sampai {{date}}",
       "nowTag": "sekarang",
@@ -15602,7 +15619,7 @@
   "deleteOrg": {
     "card": {
       "title": "Hapus ruang kerja",
-      "text": "Menutup {{name}} untuk semua orang sekarang. Dihapus selamanya setelah 7 hari.",
+      "text": "Menutup {{name}} untuk semua orang sekarang dan menghapusnya dalam 7 hari.",
       "button": "Hapus ruang kerja…"
     },
     "title": "Hapus {{name}}?",
@@ -15657,10 +15674,9 @@
   "deleteAccount": {
     "menu": "Hapus akun",
     "card": {
-      "text": "Kamu keluar dari semua ruang kerja dan akunmu dihapus selamanya 7 hari kemudian. Sampai saat itu kamu bisa memulihkannya.",
+      "text": "Menghapus akunmu dalam 7 hari, di semua ruang kerja.",
       "button": "Hapus akun…",
-      "oneWorkspace": "Mau menghapus ruang kerja ini saja? Ada di Umum.",
-      "leaveWorkspace": "Mau keluar dari ruang kerja ini saja? Ada di Anggota."
+      "title": "Hapus"
     },
     "title": "Hapus seluruh akunmu?",
     "intro": "Ini menghapus seluruh akunmu, bukan hanya satu ruang kerja.",
@@ -16380,6 +16396,7 @@
       "unknown": "Setiap pembaruan memakai anggaran {{name}}"
     },
     "exposure": "Siapa pun yang melihat dasbor bisa melihat apa yang dibawa para agen, meski tanpa akses ke akun asalnya. Agen juga membuat dasbor. Untuk menampilkannya ke lebih banyak orang daripada yang meminta, mereka bertanya dulu di “Menunggumu”.",
+    "exposureShort": "Siapa pun yang melihat dasbor bisa melihat data ini.",
     "panel": {
       "caresFor": "{{name}} mengurus widget ini",
       "caresForOn": "{{name}} mengurus widget ini · {{board}}",

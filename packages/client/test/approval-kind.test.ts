@@ -22,6 +22,7 @@ import {
   approvalWaitsFor,
   approveAlwaysHint,
   approveAlwaysLabel,
+  approveAlwaysShort,
   approveAlwaysWords,
   askKindWords,
   ownActionName,
@@ -368,6 +369,13 @@ describe('"Sempre nesta rotina" on a routine\'s card', () => {
     expect(approveAlwaysHint(pt, card, "Ada")).toBe(
       "Resumo da semana faz Enviar e-mail (Gmail) sozinha de agora em diante, com qualquer valor. Fora desta rotina continua pedindo. Para desfazer: configurações da rotina.",
     );
+    // The card's face takes one line of it, the rest behind an ⓘ.
+    expect(approveAlwaysShort(pt, card)).toBe("Vale só nesta rotina, de agora em diante.");
+    expect(
+      approveAlwaysShort(pt, { approveAlways: { tool: "execute_sql", actions: ["sql-read:project_id=p1"] } }),
+    ).toBe("Cobre só leituras, de agora em diante.");
+    // A note that is one line already has no shorter one.
+    expect(approveAlwaysShort(pt, { approveAlways: { tool: "send_email", actions: [] } })).toBeNull();
     const en = await routine("en");
     expect(approveAlwaysLabel(en, card)).toBe("Always in this routine");
     expect(approveAlwaysHint(en, card, "Ada")).toContain("To undo: the routine's settings.");

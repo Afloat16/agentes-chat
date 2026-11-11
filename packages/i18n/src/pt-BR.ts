@@ -1709,6 +1709,8 @@ export const ptBR = {
     },
     map: {
       lead: "Quem cuida dos agentes, os canais onde eles estão, o que cada um faz sozinho e o que espera uma pessoa. As linhas tracejadas são agentes que pediram ajuda um ao outro no último dia.",
+      /** The one line over the map, with `lead` behind its ⓘ. */
+      short: "Quem cuida de cada agente e onde ele trabalha.",
       lodi: "Organiza o time com você",
       hint: "Arraste um agente para outro canal e {{name}} prepara a mudança para você aplicar",
       proposed: "{{name}} preparou a mudança na sua conversa. Aplique por lá.",
@@ -2557,8 +2559,7 @@ export const ptBR = {
       gemini: {
         title: "Seu plano do Gemini",
         tiers: "Google AI Pro, Google AI Ultra ou Gemini Enterprise",
-        warning:
-          "O Google diz que usar um plano pessoal do Gemini dentro de outros apps pode suspender a conta. Para não correr esse risco, use uma chave de API ou o Gemini Enterprise.",
+        warning: "O Google diz que usar um plano pessoal do Gemini dentro de outros apps pode suspender a conta.",
       },
       zen: { title: "OpenCode", tiers: "Modelos grátis, ou a sua chave do OpenCode" },
       zai: { tiers: "Lite, Pro ou Max" },
@@ -3916,6 +3917,10 @@ export const ptBR = {
       thisRoutine: "esta rotina",
       noteRoutine:
         "{{routine}} faz {{actions}} sozinha de agora em diante, com qualquer valor. Fora desta rotina continua pedindo. Para desfazer: configurações da rotina.",
+      /** The one line under "Aprovar sempre", with the whole note (`noteReads`, `noteRoutine`, `noteCommand`) behind its ⓘ. */
+      shortReads: "Cobre só leituras, de agora em diante.",
+      shortRoutine: "Vale só nesta rotina, de agora em diante.",
+      shortCommand: "Cobre {{actions}} no computador, de agora em diante.",
       doneRoutine: "Aprovado. {{routine}} não pede mais para isso.",
       undoRoutine: "Para desfazer, vá nas configurações da rotina.",
     },
@@ -7135,6 +7140,8 @@ export const ptBR = {
       every: "Roda a cada chamada. Chamadas que chegam juntas viram uma execução só.",
       newNote:
         "A rotina ganha um endereço só dela. Cada POST que chegar nele aciona o agente com o que foi enviado. O endereço aparece na página da rotina assim que ela for salva.",
+      /** The one line a screen shows, with `newNote` behind its ⓘ. */
+      newShort: "A rotina ganha um endereço só dela.",
       hidden: "Só quem pode mudar a rotina vê o endereço.",
       methods: "Métodos aceitos",
       methodsHelp:
@@ -7356,6 +7363,9 @@ export const ptBR = {
     ownActions: {
       hint: "Cada execução faz isso nos seus apps conectados sem pedir. Qualquer outra ação neles pede aprovação antes, e merge, deploy e rollback sempre pedem.",
       none: "Nos apps conectados, ela pede aprovação antes de cada ação. Para ela fazer o trabalho sozinha, diga ao agente no chat quais ações pode fazer.",
+      /** The one line a screen shows, with `hint` (or `none`) behind its ⓘ. */
+      hintShort: "Cada execução faz isso sem pedir.",
+      noneShort: "Ela pede aprovação antes de cada ação.",
       remove: "Voltar a pedir antes de: {{action}}",
     },
     /** Actions prepared for its runs (`schedule_action`), on its page. */
@@ -8021,6 +8031,8 @@ export const ptBR = {
       alwaysAgent: "Aprovar sempre para este agente",
       alwaysAgentHint:
         "Aprovar sempre para este agente libera {{kind}} com quaisquer argumentos, em toda missão e conversa. Para desfazer: Ferramentas e acesso, na página do agente.",
+      /** The one line a screen shows, with `alwaysAgentHint` behind its ⓘ. */
+      alwaysAgentShort: "Libera {{kind}} em toda missão e conversa.",
       alwaysAgentBy: "Liberado para este agente por {{name}} · {{time}}: {{kind}}",
       state: { allowed: "Aprovado", denied: "Recusado", expired: "Sem resposta", pending: "Esperando" },
       blockedLabel: "Comandos bloqueados",
@@ -9002,7 +9014,7 @@ export const ptBR = {
     undone: "{{name}} voltou para a versão {{version}}.",
     agentsImprove: "Agentes melhoram as skills sozinhos",
     agentsImproveHelp:
-      "Quando um agente acha uma skill errada ou faltando um passo, ele corrige na hora: uma versão nova que dá para desfazer, e quem fez a skill fica sabendo. Mudanças em scripts esperam alguém que gerencia skills.",
+      "Quando um agente acha uma skill errada ou faltando um passo, ele corrige na hora: uma versão nova que dá para desfazer, e quem fez a skill fica sabendo.",
     agentsImproveThis: "Agentes melhoram esta skill sozinhos",
     agentChange: "{{agent}} mudou {{when}}",
     undoAgentChange: "Desfazer mudança",
@@ -9319,6 +9331,9 @@ export const ptBR = {
     title: "Quem pode falar com o {{name}}",
     title_female: "Quem pode falar com a {{name}}",
     notListed: "Quem não está na lista não recebe resposta.",
+    /** After `notListed`, with the matching `agents.*` sentence behind its ⓘ. */
+    agentsToo: "Vale para agentes também.",
+    peopleOnly: "Vale só para pessoas.",
     consultable: "Outros agentes podem consultar o {{name}}",
     consultable_female: "Outros agentes podem consultar a {{name}}",
     consultableHint:
@@ -10176,7 +10191,7 @@ export const ptBR = {
     ask: {
       button: "Pedir a um agente",
       title: "Pedir a um agente",
-      text: "O pedido vai para a sua conversa com o agente, com o link da página. Ele edita com as ferramentas da wiki, e a versão fica no histórico como sendo a seu pedido.",
+      text: "O pedido vai para a sua conversa com o agente, com o link da página.",
       agent: "Agente",
       what: "O que mudar?",
       placeholder: "Ex.: atualiza com o reajuste de 2027",
@@ -10197,6 +10212,8 @@ export const ptBR = {
       pickFolder: "Escolher pasta",
       howTo:
         "Para gerar o .zip: no Finder, clique com o botão direito na pasta da vault → Comprimir. No Windows, Enviar para → Pasta compactada. A pasta .obsidian (plugins e temas) fica de fora.",
+      /** The label whose ⓘ holds `howTo`. */
+      howToLabel: "Como gerar o .zip",
       nothingYet: "Nada entra antes de você revisar.",
       readingText: "Só no seu navegador por enquanto. Nada foi enviado ainda.",
       notesRead: "notas lidas",
@@ -11031,7 +11048,7 @@ export const ptBR = {
   },
   githubApp: {
     title: "Repositórios do GitHub",
-    text: "Onde o app agentes.chat está instalado, os agentes abrem pull requests, issues, comentários e commits como o app, com o nome do agente e de quem pediu. Só a {{org}} usa o que você instalar daqui.",
+    text: "Onde o app agentes.chat está instalado, os agentes abrem pull requests, issues, comentários e commits como o app, com o nome do agente e de quem pediu.",
     install: "Instalar o app agentes.chat",
     installMore: "Instalar em outra conta",
     none: "Nenhuma conta do GitHub ainda.",
@@ -11131,6 +11148,8 @@ export const ptBR = {
       label: "Pode fazer merge sem perguntar",
       none: "Nenhum repositório escolhido. Todo merge pede aprovação.",
       help: "Nestes repositórios o merge roda sem cartão de aprovação, entra na auditoria e deixa um recibo na conversa. O resto que é sensível continua pedindo.",
+      /** The one line a screen shows, with `help` behind its ⓘ. */
+      short: "Nestes repositórios o merge roda sem cartão de aprovação.",
       dialogTitle: "Onde {{name}} faz merge sem perguntar",
       dialogDesc: "Só repositórios que já usa. Um merge em qualquer outro lugar pede aprovação.",
     },
@@ -11814,6 +11833,8 @@ export const ptBR = {
       title: "Organizações que ele alcança",
       none: "Nenhuma organização ainda.",
       lead: "O GitHub só pergunta pelas organizações na primeira vez. Para liberar outra, abra a página do app lá e clique em Grant ao lado dela. Se você não for dono dela, o botão é Request e um dono aprova.",
+      /** The one line a screen shows, with `lead` behind its ⓘ. */
+      short: "O GitHub só pergunta pelas organizações na primeira vez.",
       open: "Liberar organizações no GitHub",
       added: "Agora também: {{names}}.",
       removed: "Não alcança mais: {{names}}.",
@@ -12024,6 +12045,8 @@ export const ptBR = {
       hidden: "Colunas que ele nunca vê",
       hiddenHelp:
         'tabela.coluna, com aspas duplas nos nomes que têm maiúsculas, espaços ou símbolos (clientes."CPF/CNPJ"). Já escondemos as que parecem dados pessoais ou senhas.',
+      /** The example under the field, with `hiddenHelp` behind its ⓘ. */
+      hiddenExample: 'tabela.coluna, como clientes."CPF/CNPJ"',
       hiddenPlaceholder: "clientes.cpf",
       hiddenInvalid:
         'Digite tabela.coluna (ou schema.tabela.coluna), com "aspas duplas" nos nomes que têm maiúsculas, espaços ou símbolos.',
@@ -12069,8 +12092,7 @@ export const ptBR = {
     address: "Endereço de email",
     addressPlaceholder: "voce@empresa.com.br",
     addressInvalid: "Digite um email válido, como voce@empresa.com.br.",
-    icloudHint:
-      "Use o endereço do Mail do iCloud, como nome@icloud.com, mesmo que a sua Conta Apple use o {{name}}. No iPhone ele está em Ajustes\u00a0›\u00a0seu nome\u00a0›\u00a0iCloud\u00a0›\u00a0Mail do iCloud, ou veja em icloud.com/mail.",
+    icloudHint: "Use o endereço do Mail do iCloud, como nome@icloud.com, mesmo que a sua Conta Apple use o {{name}}.",
     password: "Senha de app",
     passwordHelp: "Fica cifrada no servidor. Ninguém vê depois.",
     passwordInvalid: "Cole a senha de app.",
@@ -12121,6 +12143,8 @@ export const ptBR = {
     rulesSend: "O que envia",
     toolsLead:
       "O que os agentes podem fazer em {{name}}. Desligue o que nenhum agente deve fazer, ou peça aprovação também para rascunhos e para organizar. Enviar, responder e encaminhar sempre pedem aprovação no chat, mostrando para quem vai e o texto.",
+    /** The one line a screen shows, with `toolsLead` behind its ⓘ. */
+    toolsShort: "Escolha o que os agentes fazem com este email.",
     group: {
       read: "Lê",
       write: "Escreve",
@@ -12150,6 +12174,8 @@ export const ptBR = {
       buttonName: "Endereços de {{name}}",
       title: "Endereços de {{address}}",
       lead: "Os agentes respondem pelo endereço que recebeu o email. Se esta caixa também recebe em outros endereços, como um domínio próprio ou um apelido, coloque aqui.",
+      /** The one line a screen shows, with `lead` behind its ⓘ. */
+      short: "Os agentes respondem pelo endereço que recebeu o email.",
       main: "Endereço principal: {{address}}",
       others: "Outros endereços desta caixa",
       othersHelp: "Apelidos e domínios próprios, como contato@suaempresa.com.",
@@ -14563,6 +14589,8 @@ export const ptBR = {
         "A parte do {{name}} é o trecho mais forte de cada barra. O {{brand}} só diz quanto a conta inteira usou, então a parte de cada agente é uma estimativa pelo que cada um gastou.",
       estimate_female:
         "A parte da {{name}} é o trecho mais forte de cada barra. O {{brand}} só diz quanto a conta inteira usou, então a parte de cada agente é uma estimativa pelo que cada um gastou.",
+      /** The one word a screen shows, with `estimate` behind its ⓘ. */
+      estimateShort: "Estimativa.",
       byAccount: "Por conta, este mês",
       until: "até {{date}}",
       nowTag: "agora",
@@ -16170,7 +16198,7 @@ export const ptBR = {
   deleteOrg: {
     card: {
       title: "Apagar workspace",
-      text: "Fecha {{name}} para todos agora. Ele é apagado de vez depois de 7 dias.",
+      text: "Fecha {{name}} para todos agora e apaga em 7 dias.",
       button: "Apagar workspace…",
     },
     title: "Apagar {{name}}?",
@@ -16238,12 +16266,10 @@ export const ptBR = {
   deleteAccount: {
     menu: "Apagar conta",
     card: {
-      text: "Você sai de todos os workspaces e a sua conta é apagada de vez 7 dias depois. Até lá, dá para restaurar.",
+      text: "Apaga a sua conta em 7 dias, em todos os workspaces.",
       button: "Apagar conta…",
-      /** The link to Configurações › Geral, for someone who only meant this workspace. */
-      oneWorkspace: "Quer apagar só este workspace? Fica em Geral.",
-      /** The link to Membros, for someone who can't delete this workspace and only meant to leave it. */
-      leaveWorkspace: "Quer sair só deste workspace? Fica em Membros.",
+      /** The card's title for an owner, over its two buttons: the account and the workspace. */
+      title: "Apagar",
     },
     title: "Apagar a sua conta inteira?",
     intro: "Isto apaga a sua conta inteira, não só um workspace.",
@@ -17018,6 +17044,8 @@ export const ptBR = {
     },
     exposure:
       "Quem vê o painel vê o que os agentes trouxeram, mesmo sem acesso às contas de onde veio. Agentes também criam painéis. Para mostrar a mais gente do que quem pediu, eles pedem antes, em Esperando você.",
+    /** The one line a screen shows, with `exposure` behind its ⓘ. */
+    exposureShort: "Quem vê o painel vê estes dados.",
     panel: {
       caresFor: "{{name}} cuida deste widget",
       caresForOn: "{{name}} cuida deste widget · {{board}}",

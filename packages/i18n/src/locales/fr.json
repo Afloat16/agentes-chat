@@ -1757,6 +1757,7 @@
     },
     "map": {
       "lead": "Qui s'occupe des agents, les canaux où ils sont, ce que chacun fait seul et ce qui attend une personne. Les lignes pointillées relient les agents qui se sont demandé de l'aide ces dernières 24 h.",
+      "short": "Qui s'occupe de chaque agent et où il travaille.",
       "lodi": "Organise l'équipe avec vous",
       "hint": "Faites glisser un agent vers un autre canal et {{name}} prépare le changement pour que vous l'appliquiez",
       "proposed": "{{name}} a préparé le changement dans votre conversation. Appliquez-le là-bas.",
@@ -2582,7 +2583,7 @@
       "gemini": {
         "title": "Votre abonnement Gemini",
         "tiers": "Google AI Pro, Google AI Ultra ou Gemini Enterprise",
-        "warning": "Google indique qu'utiliser un abonnement Gemini personnel dans d'autres applications peut entraîner la suspension du compte. Pour éviter ce risque, utilisez une clé API ou Gemini Enterprise."
+        "warning": "Google indique qu'utiliser un abonnement Gemini personnel dans d'autres applications peut entraîner la suspension du compte."
       },
       "zen": {
         "title": "OpenCode",
@@ -3914,6 +3915,9 @@
       "routine": "Toujours dans cette routine",
       "thisRoutine": "cette routine",
       "noteRoutine": "{{routine}} fait {{actions}} toute seule à partir de maintenant, avec n'importe quelle valeur. En dehors de cette routine, l'approbation reste demandée. Pour annuler : les paramètres de la routine.",
+      "shortReads": "Couvre seulement les lectures, à partir de maintenant.",
+      "shortRoutine": "Vaut seulement dans cette routine, à partir de maintenant.",
+      "shortCommand": "Couvre {{actions}} sur l'ordinateur, à partir de maintenant.",
       "doneRoutine": "Approuvé. {{routine}} ne demandera plus cela.",
       "undoRoutine": "Pour l'annuler, allez dans les paramètres de la routine."
     },
@@ -7198,6 +7202,7 @@
       "waiting": "Attend le prochain appel",
       "every": "S'exécute à chaque appel. Les appels qui arrivent ensemble ne font qu'une exécution.",
       "newNote": "La routine reçoit sa propre adresse. Chaque POST vers elle lance l'agent avec ce qui a été envoyé. L'adresse apparaît sur la page de la routine une fois enregistrée.",
+      "newShort": "La routine reçoit sa propre adresse.",
       "hidden": "Seules les personnes qui peuvent modifier la routine voient son adresse.",
       "methods": "Méthodes acceptées",
       "methodsHelp": "L’adresse ne répond qu’aux méthodes cochées. Avec GET, les paramètres de l’URL sont les données de l’appel.",
@@ -7433,6 +7438,8 @@
     "ownActions": {
       "hint": "Chaque exécution fait cela dans tes apps connectées sans demander. Toute autre action dans ces apps demande d’abord l’accord d’une personne, et merge, deploy et rollback le demandent toujours.",
       "none": "Dans les apps connectées, elle demande l’accord d’une personne avant chaque action. Pour qu’elle fasse son travail seule, dis à l’agent dans le chat quelles actions elle peut faire.",
+      "hintShort": "Chaque exécution fait cela sans demander.",
+      "noneShort": "Elle demande l’accord d’une personne avant chaque action.",
       "remove": "Redemander avant : {{action}}"
     },
     "ahead": {
@@ -8120,6 +8127,7 @@
       "alwaysBy": "Autorisé dans cette mission par {{name}} · {{time}} : {{rules}}",
       "alwaysAgent": "Toujours approuver pour cet agent",
       "alwaysAgentHint": "Toujours approuver pour cet agent autorise {{kind}} avec n'importe quels arguments, dans chaque mission et conversation. Pour l'annuler : Outils et accès, sur la page de l'agent.",
+      "alwaysAgentShort": "Autorise {{kind}} dans chaque mission et conversation.",
       "alwaysAgentBy": "Autorisé pour cet agent par {{name}} · {{time}} : {{kind}}",
       "state": {
         "allowed": "Approuvée",
@@ -9226,7 +9234,7 @@
     "undoUpdate": "Annuler la mise à jour",
     "undone": "{{name}} est revenue à la version {{version}}.",
     "agentsImprove": "Les agents améliorent les compétences eux-mêmes",
-    "agentsImproveHelp": "Quand un agent trouve une compétence fausse ou incomplète, il la corrige tout de suite : une nouvelle version que vous pouvez annuler, et la personne qui l'a créée est prévenue. Les changements de scripts attendent une personne qui gère les compétences.",
+    "agentsImproveHelp": "Quand un agent trouve une compétence fausse ou incomplète, il la corrige tout de suite : une nouvelle version que vous pouvez annuler, et la personne qui l'a créée est prévenue.",
     "agentsImproveThis": "Les agents améliorent cette compétence eux-mêmes",
     "agentChange": "{{agent}} l'a modifiée {{when}}",
     "undoAgentChange": "Annuler la modification",
@@ -9525,6 +9533,8 @@
     "title": "Qui peut parler à {{name}}",
     "title_female": "Qui peut parler à {{name}}",
     "notListed": "Les personnes absentes de la liste ne reçoivent pas de réponse.",
+    "agentsToo": "Cela vaut aussi pour les agents.",
+    "peopleOnly": "Cela ne vaut que pour les personnes.",
     "consultable": "Les autres agents peuvent consulter {{name}}",
     "consultable_female": "Les autres agents peuvent consulter {{name}}",
     "consultableHint": "Pour les personnes absentes de la liste, il ne répond qu'à l'agent qui a demandé, jamais directement à elles. Les actions sensibles nécessitent toujours l'approbation des personnes qui s'occupent de lui.",
@@ -10408,7 +10418,7 @@
     "ask": {
       "button": "Demander à un agent",
       "title": "Demander à un agent",
-      "text": "La demande part dans votre conversation avec l'agent, avec le lien de la page. Il modifie avec les outils du wiki, et la version apparaît dans l'historique comme faite à votre demande.",
+      "text": "La demande part dans votre conversation avec l'agent, avec le lien de la page.",
       "agent": "Agent",
       "what": "Que faut-il changer ?",
       "placeholder": "Ex. : mets-la à jour avec la hausse de 2027",
@@ -10428,6 +10438,7 @@
       "pickZip": "Choisir un .zip ou des .md",
       "pickFolder": "Choisir un dossier",
       "howTo": "Pour créer le .zip : dans le Finder, clic droit sur le dossier du coffre → Compresser. Sous Windows, Envoyer vers → Dossier compressé. Le dossier .obsidian (plugins et thèmes) est laissé de côté.",
+      "howToLabel": "Comment créer le .zip",
       "nothingYet": "Rien n'entre avant que vous l'ayez vérifié.",
       "readingText": "Seulement dans votre navigateur pour l'instant. Rien n'a encore été envoyé.",
       "notesRead": "notes lues",
@@ -11303,7 +11314,7 @@
   },
   "githubApp": {
     "title": "Dépôts GitHub",
-    "text": "Là où l'app agentes.chat est installée, les agents ouvrent des pull requests, issues, commentaires et commits en tant que l'app, avec le nom de l'agent et de la personne qui a demandé. Seul {{org}} utilise ce que vous installez d'ici.",
+    "text": "Là où l'app agentes.chat est installée, les agents ouvrent des pull requests, issues, commentaires et commits en tant que l'app, avec le nom de l'agent et de la personne qui a demandé.",
     "install": "Installer l'app agentes.chat",
     "installMore": "Installer sur un autre compte",
     "none": "Aucun compte GitHub pour l'instant.",
@@ -11377,6 +11388,7 @@
       "label": "Peut merger sans demander",
       "none": "Aucun dépôt choisi. Chaque merge demande une approbation.",
       "help": "Dans ces dépôts, le merge se fait sans carte d'approbation, figure dans l'audit et laisse un reçu dans la conversation. Tout le reste de sensible continue de demander.",
+      "short": "Dans ces dépôts, le merge se fait sans carte d'approbation.",
       "dialogTitle": "Où {{name}} merge sans demander",
       "dialogDesc": "Uniquement les dépôts déjà utilisés. Un merge ailleurs demande une approbation."
     },
@@ -12281,6 +12293,7 @@
       "title": "Organisations atteintes",
       "none": "Aucune organisation pour l'instant.",
       "lead": "GitHub ne demande les organisations que la première fois. Pour en ajouter une, ouvrez la page de l'app là-bas et cliquez sur Grant à côté. Si vous n'en êtes pas propriétaire, le bouton indique Request et un propriétaire approuve.",
+      "short": "GitHub ne demande les organisations que la première fois.",
       "open": "Autoriser des organisations sur GitHub",
       "added": "Maintenant aussi : {{names}}.",
       "removed": "Plus maintenant : {{names}}.",
@@ -12489,6 +12502,7 @@
       "databasesHelp": "Les règles ci-dessous s'appliquent à chaque base que cet agent lit.",
       "hidden": "Colonnes qu'il ne voit jamais",
       "hiddenHelp": "table.colonne, avec les noms contenant des majuscules, des espaces ou des symboles entre guillemets doubles (clients.\"Numéro TVA\"). Nous avons déjà masqué celles qui ressemblent à des données personnelles ou à des mots de passe.",
+      "hiddenExample": "table.colonne, comme clients.\"Numéro TVA\"",
       "hiddenPlaceholder": "clients.email",
       "hiddenInvalid": "Saisissez table.colonne (ou schéma.table.colonne), avec des \"guillemets doubles\" autour des noms contenant des majuscules, des espaces ou des symboles.",
       "cap": "Requêtes par jour",
@@ -12553,7 +12567,7 @@
     "address": "Adresse e-mail",
     "addressPlaceholder": "vous@entreprise.com",
     "addressInvalid": "Saisissez un e-mail valide, comme vous@entreprise.com.",
-    "icloudHint": "Utilisez votre adresse iCloud Mail, comme nom@icloud.com, même si votre compte Apple utilise {{name}}. Sur un iPhone, elle se trouve dans Réglages › votre nom › iCloud › iCloud Mail, ou consultez icloud.com/mail.",
+    "icloudHint": "Utilisez votre adresse iCloud Mail, comme nom@icloud.com, même si votre compte Apple utilise {{name}}.",
     "password": "Mot de passe d'app",
     "passwordHelp": "Stocké chiffré sur le serveur. Personne ne le revoit.",
     "passwordInvalid": "Collez le mot de passe d'app.",
@@ -12600,6 +12614,7 @@
     "rulesRead": "Ce qu'il lit",
     "rulesSend": "Ce qu'il envoie",
     "toolsLead": "Ce que les agents peuvent faire dans {{name}}. Désactivez ce qu'aucun agent ne doit faire, ou demandez aussi une approbation pour les brouillons et le tri. L'envoi, la réponse et le transfert demandent toujours une approbation dans la discussion, avec le destinataire et le texte.",
+    "toolsShort": "Choisissez ce que les agents font avec cet e-mail.",
     "group": {
       "read": "Lecture",
       "write": "Écriture",
@@ -12660,6 +12675,7 @@
       "buttonName": "Adresses de {{name}}",
       "title": "Adresses de {{address}}",
       "lead": "Les agents répondent depuis l'adresse à laquelle l'e-mail a été envoyé. Si cette boîte mail reçoit aussi des e-mails à d'autres adresses, comme votre propre domaine ou un alias, ajoutez-les ici.",
+      "short": "Les agents répondent depuis l'adresse à laquelle l'e-mail a été envoyé.",
       "main": "Adresse principale : {{address}}",
       "others": "Autres adresses de cette boîte mail",
       "othersHelp": "Alias et vos propres domaines, comme bonjour@votreentreprise.com.",
@@ -15127,6 +15143,7 @@
       "part_female": "Part de {{name}} : ≈ {{percent}}",
       "estimate": "La part de {{name}} est la partie la plus foncée de chaque barre. {{brand}} indique seulement combien le compte entier a utilisé, la part de chaque agent est donc une estimation d'après ce qu'il a dépensé.",
       "estimate_female": "La part de {{name}} est la partie la plus foncée de chaque barre. {{brand}} indique seulement combien le compte entier a utilisé, la part de chaque agent est donc une estimation d'après ce qu'il a dépensé.",
+      "estimateShort": "Une estimation.",
       "byAccount": "Par compte, ce mois-ci",
       "until": "jusqu'au {{date}}",
       "nowTag": "maintenant",
@@ -16634,7 +16651,7 @@
   "deleteOrg": {
     "card": {
       "title": "Supprimer l'espace de travail",
-      "text": "Ferme {{name}} pour tout le monde dès maintenant. Il est supprimé définitivement après 7 jours.",
+      "text": "Ferme {{name}} pour tout le monde maintenant et le supprime dans 7 jours.",
       "button": "Supprimer l'espace de travail…"
     },
     "title": "Supprimer {{name}} ?",
@@ -16689,10 +16706,9 @@
   "deleteAccount": {
     "menu": "Supprimer le compte",
     "card": {
-      "text": "Vous quittez tous les espaces de travail et votre compte est supprimé définitivement 7 jours plus tard. D'ici là, vous pouvez le restaurer.",
+      "text": "Supprime votre compte dans 7 jours, dans tous les espaces de travail.",
       "button": "Supprimer le compte…",
-      "oneWorkspace": "Vous voulez supprimer seulement cet espace de travail ? C'est dans Général.",
-      "leaveWorkspace": "Vous voulez quitter seulement cet espace de travail ? C'est dans Membres."
+      "title": "Supprimer"
     },
     "title": "Supprimer tout votre compte ?",
     "intro": "Cela supprime tout votre compte, pas seulement un espace de travail.",
@@ -17464,6 +17480,7 @@
       "unknown": "Chaque mise à jour utilise le budget de {{name}}"
     },
     "exposure": "Qui voit le tableau de bord voit ce que les agents ont apporté, même sans accès aux comptes d'où cela vient. Les agents créent aussi des tableaux de bord. Pour en montrer un à plus de personnes que celle qui l'a demandé, ils demandent d'abord, dans « Vous attend ».",
+    "exposureShort": "Qui voit le tableau de bord voit ces données.",
     "panel": {
       "caresFor": "{{name}} s'occupe de ce widget",
       "caresForOn": "{{name}} s'occupe de ce widget · {{board}}",

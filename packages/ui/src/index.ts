@@ -201,7 +201,7 @@ export {
   type FilterOption,
 } from "./components/FilterChip";
 export { GroupHeading } from "./components/GroupHeading";
-export { InfoHint, type InfoHintProps } from "./components/InfoHint";
+export { HintLine, type HintLineProps, InfoHint, type InfoHintProps } from "./components/InfoHint";
 export { isApple, Kbd, modKey, shortcut } from "./components/Kbd";
 export { Logo, LogoMark, type LogoProps } from "./components/Logo";
 export {
@@ -486,7 +486,18 @@ export {
   startSky,
 } from "./sky/engine";
 export { selectionSkyUrl } from "./sky/selection";
-export { agentTones, EYE, glowTones, mix, parseColor, pixelOf, SKY_TONES, softTones, spriteTone } from "./sky/tones";
+export {
+  agentTones,
+  EYE,
+  glowTones,
+  mix,
+  parseColor,
+  pixelOf,
+  SKY_TONES,
+  softTones,
+  spriteTone,
+  TEAM_NIGHT,
+} from "./sky/tones";
 export {
   cloudAt,
   HEADER_AREA,

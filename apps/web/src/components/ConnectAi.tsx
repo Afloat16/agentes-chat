@@ -35,7 +35,13 @@ import {
 } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { providerGuess, providerLabel } from "@agenteschat/client/lib/providers";
-import { isRightHand, rightHandOf, rightHandOnKey, thinksWithLine } from "@agenteschat/client/lib/right-hand";
+import {
+  isRightHand,
+  rightHandOf,
+  rightHandOnKey,
+  sceneTeam,
+  thinksWithLine,
+} from "@agenteschat/client/lib/right-hand";
 import { Button, Dialog, DialogBody, DialogFooter, Icon, ProviderLogo, Spinner } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -67,7 +73,7 @@ import {
 } from "@/components/ai/ConnectAiSteps";
 import { EndpointForm } from "@/components/ai/EndpointForm";
 import { ConnectChoices } from "@/components/arrival/ConnectChoices";
-import { sceneTeam, TeamScene, useDawn } from "@/components/arrival/TeamScene";
+import { ConnectScene, isScenePlan, TeamScene, useDawn } from "@/components/arrival/TeamScene";
 import { useOrg } from "@/components/org-context";
 import { ProviderKeySelect } from "@/components/ProviderKey";
 import { useDirectory } from "@/hooks/useDirectory";
@@ -601,6 +607,12 @@ function ConnectAiDialog({
       width={600}
     >
       <DialogBody>
+        <ConnectScene
+          agents={dir.agents}
+          connected={connected}
+          waiting={Boolean(hold)}
+          lit={isScenePlan(picked) ? picked : null}
+        />
         {/* A link opens this before the agents and their AI load, and what it opens on follows them. */}
         {hold ? (
           // Every way in lands here, a card's or a key pasted in the composer: nothing connects before the plan.

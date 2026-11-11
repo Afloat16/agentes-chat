@@ -19,7 +19,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
-import { Button, Chip, Fuse, haptics, LineIcon, Text, useToast } from "@/ui";
+import { Button, Chip, Fuse, haptics, InfoHint, LineIcon, Text, useToast } from "@/ui";
 import { router } from "@/ui/navigation";
 import { parseInline } from "../chat/logic";
 import { Spans } from "../chat/MessageSpans";
@@ -36,6 +36,7 @@ import {
   approveAlwaysHint,
   approveAlwaysLabel,
   approveAlwaysOffered,
+  approveAlwaysShort,
   approveAlwaysToast,
 } from "./logic";
 
@@ -572,9 +573,7 @@ export function ApproveAlways({
   return (
     <View style={styles.always}>
       <Button variant="ghost" wide label={approveAlwaysLabel(t, a)} disabled={disabled} onPress={onPress} />
-      <Text variant="caption" tone="faint" style={styles.alwaysHint}>
-        {approveAlwaysHint(t, a, name || t("channel.unknownAgent"))}
-      </Text>
+      <AlwaysNote approval={a} name={name} center />
     </View>
   );
 }
@@ -598,12 +597,30 @@ export function ApproveAlwaysButton({
 
 /** What "Aprovar sempre" covers and where to undo it, on a line of its own under the row of buttons. */
 export function ApproveAlwaysHint({ approval: a, name }: { approval: Approval; name: string }) {
-  const { t } = useTranslation();
   if (!approveAlwaysOffered(a)) return null;
-  return (
-    <Text variant="caption" tone="faint">
-      {approveAlwaysHint(t, a, name || t("channel.unknownAgent"))}
+  return <AlwaysNote approval={a} name={name} />;
+}
+
+/** The note in one line with the rest behind its ⓘ (`approveAlwaysShort`), or whole when it is already one line. */
+function AlwaysNote({ approval: a, name, center = false }: { approval: Approval; name: string; center?: boolean }) {
+  const { t } = useTranslation();
+  const note = approveAlwaysHint(t, a, name || t("channel.unknownAgent"));
+  const short = approveAlwaysShort(t, a);
+  const line = (
+    <Text variant="caption" tone="faint" style={center ? styles.alwaysHint : null}>
+      {short ?? note}
     </Text>
+  );
+  if (!short) return line;
+  return (
+    <InfoHint
+      name={t("common.about", { label: approveAlwaysLabel(t, a) })}
+      text={note}
+      variant="caption"
+      center={center}
+    >
+      {line}
+    </InfoHint>
   );
 }
 

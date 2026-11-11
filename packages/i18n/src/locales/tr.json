@@ -1705,6 +1705,7 @@
     },
     "map": {
       "lead": "Ajanlarla kim ilgileniyor, hangi kanallarda bulunuyorlar, her biri kendi başına ne yapıyor ve ne bir kişiyi bekliyor. Kesikli çizgiler son bir günde birbirinden yardım isteyen ajanlardır.",
+      "short": "Her ajanla kim ilgileniyor ve ajan nerede çalışıyor.",
       "lodi": "Ekibi sizinle düzenler",
       "hint": "Bir ajanı başka bir kanala sürükleyin, {{name}} değişikliği uygulamanız için hazırlasın",
       "proposed": "{{name}} değişikliği konuşmanızda hazırladı. Orada uygulayın.",
@@ -2482,7 +2483,7 @@
       "gemini": {
         "title": "Gemini planınız",
         "tiers": "Google AI Pro, Google AI Ultra veya Gemini Enterprise",
-        "warning": "Google, kişisel bir Gemini planını başka uygulamaların içinde kullanmanın hesabın askıya alınmasına yol açabileceğini söylüyor. Bu riski almamak için bir API anahtarı ya da Gemini Enterprise kullanın."
+        "warning": "Google, kişisel bir Gemini planını başka uygulamaların içinde kullanmanın hesabın askıya alınmasına yol açabileceğini söylüyor."
       },
       "zen": {
         "title": "OpenCode",
@@ -3790,6 +3791,9 @@
       "routine": "Bu rutinde her zaman",
       "thisRoutine": "bu rutin",
       "noteRoutine": "{{routine}} bundan sonra {{actions}} işlemini her değerle kendi başına yapar. Bu rutinin dışında sormaya devam eder. Geri almak için: rutinin ayarları.",
+      "shortReads": "Bundan sonra yalnızca okumalar için geçerli.",
+      "shortRoutine": "Bundan sonra yalnızca bu rutinde geçerli.",
+      "shortCommand": "Bundan sonra bilgisayardaki {{actions}} için geçerli.",
       "doneRoutine": "Onaylandı. {{routine}} bunu bir daha sormaz.",
       "undoRoutine": "Geri almak için rutinin ayarlarına gidin."
     },
@@ -6916,6 +6920,7 @@
       "waiting": "Sonraki çağrıyı bekliyor",
       "every": "Her çağrıda çalışır. Birlikte gelen çağrılar tek bir çalıştırma olur.",
       "newNote": "Rutinin kendine ait bir adresi olur. Bu adrese yapılan her POST, ajanı gönderilen içerikle başlatır. Adres, rutin kaydedildikten sonra rutinin sayfasında görünür.",
+      "newShort": "Rutinin kendine ait bir adresi olur.",
       "hidden": "Adresini yalnızca rutini değiştirebilenler görür.",
       "methods": "Kabul edilen yöntemler",
       "methodsHelp": "Adres yalnızca işaretli yöntemlere yanıt verir. GET ile URL'nin sorgu parametreleri çağrının verisi olur.",
@@ -7146,6 +7151,8 @@
     "ownActions": {
       "hint": "Her çalıştırma bunları bağlı uygulamalarında sormadan yapar. Oradaki diğer her işlem önce bir kişinin onayını ister, merge, deploy ve rollback ise her zaman onay ister.",
       "none": "Bağlı uygulamalarda her işlemden önce bir kişinin onayını ister. İşini kendisi yapması için sohbette ajana hangi işlemleri yapabileceğini söyle.",
+      "hintShort": "Her çalıştırma bunları sormadan yapar.",
+      "noneShort": "Her işlemden önce bir kişinin onayını ister.",
       "remove": "Şundan önce yine sor: {{action}}"
     },
     "ahead": {
@@ -7799,6 +7806,7 @@
       "alwaysBy": "Bu misyonda izin veren: {{name}} · {{time}}: {{rules}}",
       "alwaysAgent": "Bu ajan için her zaman onayla",
       "alwaysAgentHint": "Bu ajan için her zaman onayla, her görevde ve sohbette {{kind}} komutuna her argümanla izin verir. Geri almak için: ajanın sayfasındaki Araçlar ve erişim.",
+      "alwaysAgentShort": "Her görevde ve sohbette {{kind}} komutuna izin verir.",
       "alwaysAgentBy": "Bu ajan için {{name}} izin verdi · {{time}}: {{kind}}",
       "state": {
         "allowed": "Onaylandı",
@@ -8845,7 +8853,7 @@
     "undoUpdate": "Güncellemeyi geri al",
     "undone": "{{name}} {{version}} sürümüne döndü.",
     "agentsImprove": "Ajanlar becerileri kendileri geliştirir",
-    "agentsImproveHelp": "Bir ajan bir becerinin yanlış olduğunu ya da bir adımının eksik olduğunu görünce hemen düzeltir: geri alabileceğiniz yeni bir sürüm olur ve beceriyi oluşturan kişiye haber verilir. Betik değişiklikleri becerileri yöneten birini bekler.",
+    "agentsImproveHelp": "Bir ajan bir becerinin yanlış olduğunu ya da bir adımının eksik olduğunu görünce hemen düzeltir: geri alabileceğiniz yeni bir sürüm olur ve beceriyi oluşturan kişiye haber verilir.",
     "agentsImproveThis": "Ajanlar bu beceriyi kendileri geliştirir",
     "agentChange": "{{agent}} {{when}} değiştirdi",
     "undoAgentChange": "Değişikliği geri al",
@@ -9128,6 +9136,8 @@
     "section": "Kimler konuşabilir",
     "title": "{{name}} ile kimler konuşabilir",
     "notListed": "Listede olmayan kişiler yanıt almaz.",
+    "agentsToo": "Bu ajanlar için de geçerli.",
+    "peopleOnly": "Bu yalnızca kişiler için geçerli.",
     "consultable": "Diğer ajanlar {{name}} ajanına danışabilir",
     "consultableHint": "Listede olmayan kişiler için yalnızca soran ajana yanıt verir, onlara doğrudan asla. Hassas işlemler yine de ondan sorumlu kişilerin onayını gerektirir.",
     "consultableHint_female": "Listede olmayan kişiler için yalnızca soran ajana yanıt verir, onlara doğrudan asla. Hassas işlemler yine de ondan sorumlu kişilerin onayını gerektirir.",
@@ -9989,7 +9999,7 @@
     "ask": {
       "button": "Bir ajandan iste",
       "title": "Bir ajandan iste",
-      "text": "İstek, sayfanın bağlantısıyla birlikte ajanla konuşmana gider. Ajan wiki araçlarıyla düzenler ve sürüm geçmişte senin isteğinle yapılmış olarak görünür.",
+      "text": "İstek, sayfanın bağlantısıyla birlikte ajanla konuşmana gider.",
       "agent": "Ajan",
       "what": "Ne değişmeli?",
       "placeholder": "Örn.: 2027 zammıyla güncelle",
@@ -10009,6 +10019,7 @@
       "pickZip": ".zip veya .md seç",
       "pickFolder": "Klasör seç",
       "howTo": ".zip oluşturmak için: Finder'da kasa klasörüne sağ tıklayın → Sıkıştır. Windows'ta Gönder → Sıkıştırılmış klasör. .obsidian klasörü (eklentiler ve temalar) dışarıda bırakılır.",
+      "howToLabel": ".zip nasıl oluşturulur",
       "nothingYet": "Siz incelemeden hiçbir şey eklenmez.",
       "readingText": "Şimdilik yalnızca tarayıcınızda. Henüz hiçbir şey gönderilmedi.",
       "notesRead": "not okundu",
@@ -10839,7 +10850,7 @@
   },
   "githubApp": {
     "title": "GitHub depoları",
-    "text": "agentes.chat uygulamasının yüklü olduğu yerlerde ajanlar çekme isteklerini, sorun kayıtlarını, yorumları ve commit'leri uygulama olarak açar, ajanın adı ve isteyen kişiyle birlikte. Buradan yüklediklerinizi yalnızca {{org}} kullanır.",
+    "text": "agentes.chat uygulamasının yüklü olduğu yerlerde ajanlar çekme isteklerini, sorun kayıtlarını, yorumları ve commit'leri uygulama olarak açar, ajanın adı ve isteyen kişiyle birlikte.",
     "install": "agentes.chat uygulamasını yükle",
     "installMore": "Başka bir hesaba yükle",
     "none": "Henüz GitHub hesabı yok.",
@@ -10913,6 +10924,7 @@
       "label": "Sormadan birleştirebilir",
       "none": "Depo seçilmedi. Her birleştirme onay ister.",
       "help": "Bu depolarda birleştirme onay kartı olmadan çalışır, denetim kaydına geçer ve konuşmaya bir makbuz bırakır. Diğer tüm hassas işlemler sormaya devam eder.",
+      "short": "Bu depolarda birleştirme onay kartı olmadan çalışır.",
       "dialogTitle": "{{name}} nerede sormadan birleştirir",
       "dialogDesc": "Yalnızca zaten kullandığı depolar. Başka bir yerdeki birleştirme onay ister."
     },
@@ -11789,6 +11801,7 @@
       "title": "Erişilen kuruluşlar",
       "none": "Henüz kuruluş yok.",
       "lead": "GitHub kuruluşları yalnızca ilk seferde sorar. Başka bir tane eklemek için oradaki uygulama sayfasını açın ve yanındaki Grant düğmesine basın. Sahibi değilseniz düğmede Request yazar ve bir sahip onaylar.",
+      "short": "GitHub kuruluşları yalnızca ilk seferde sorar.",
       "open": "GitHub'da kuruluşlara izin ver",
       "added": "Artık bunlar da var: {{names}}.",
       "removed": "Artık yok: {{names}}.",
@@ -11989,6 +12002,7 @@
       "databasesHelp": "Aşağıdaki kurallar bu ajanın okuduğu her veritabanı için geçerlidir.",
       "hidden": "Asla görmediği sütunlar",
       "hiddenHelp": "tablo.sütun biçiminde. Büyük harf, boşluk veya simge içeren adları çift tırnak içine alın (customers.\"Tax ID\"). Kişisel veri veya şifre gibi görünenleri zaten gizledik.",
+      "hiddenExample": "tablo.sütun, örneğin customers.\"Tax ID\"",
       "hiddenPlaceholder": "customers.cpf",
       "hiddenInvalid": "tablo.sütun (veya şema.tablo.sütun) yazın. Büyük harf, boşluk veya simge içeren adları \"çift tırnak\" içine alın.",
       "cap": "Günlük sorgu sayısı",
@@ -12051,7 +12065,7 @@
     "address": "E-posta adresi",
     "addressPlaceholder": "siz@sirket.com",
     "addressInvalid": "Geçerli bir e-posta yazın, örneğin siz@sirket.com.",
-    "icloudHint": "Apple Hesabınız {{name}} kullansa bile iCloud Mail adresinizi kullanın, örneğin ad@icloud.com. iPhone'da Ayarlar › adınız › iCloud › iCloud Mail altındadır, ya da icloud.com/mail adresine bakın.",
+    "icloudHint": "Apple Hesabınız {{name}} kullansa bile iCloud Mail adresinizi kullanın, örneğin ad@icloud.com.",
     "password": "Uygulama şifresi",
     "passwordHelp": "Sunucuda şifreli saklanır. Kimse bir daha görmez.",
     "passwordInvalid": "Uygulama şifresini yapıştırın.",
@@ -12098,6 +12112,7 @@
     "rulesRead": "Neyi okur",
     "rulesSend": "Neyi gönderir",
     "toolsLead": "Ajanların {{name}} içinde neler yapabileceği. Hiçbir ajanın yapmaması gerekenleri kapatın ya da taslaklar ve düzenleme için de onay isteyin. Gönderme, yanıtlama ve iletme her zaman sohbette, alıcıyı ve metni göstererek onay ister.",
+    "toolsShort": "Ajanların bu e-postayla neler yapacağını seçin.",
     "group": {
       "read": "Okuma",
       "write": "Yazma",
@@ -12158,6 +12173,7 @@
       "buttonName": "Adresler: {{name}}",
       "title": "Adresler: {{address}}",
       "lead": "Ajanlar, e-postanın gönderildiği adresten yanıt verir. Bu posta kutusu kendi alan adınız veya bir takma ad gibi başka adreslere de e-posta alıyorsa buraya ekleyin.",
+      "short": "Ajanlar, e-postanın gönderildiği adresten yanıt verir.",
       "main": "Ana adres: {{address}}",
       "others": "Bu posta kutusunun diğer adresleri",
       "othersHelp": "Takma adlar ve kendi alan adlarınız, örneğin merhaba@sirketiniz.com.",
@@ -14577,6 +14593,7 @@
       "sharedWith": "{{names}} ile paylaşılıyor",
       "part": "{{name}} payı: ≈ {{percent}}",
       "estimate": "{{name}} payı, her çubuğun koyu kısmıdır. {{brand}} yalnızca hesabın tamamının ne kadar kullandığını söyler, bu yüzden her ajanın payı harcadığına göre bir tahmindir.",
+      "estimateShort": "Bir tahmindir.",
       "byAccount": "Hesaba göre, bu ay",
       "until": "{{date}} tarihine kadar",
       "nowTag": "şimdi",
@@ -16009,7 +16026,7 @@
   "deleteOrg": {
     "card": {
       "title": "Çalışma alanını sil",
-      "text": "{{name}} herkes için şimdi kapanır. 7 gün sonra kalıcı olarak silinir.",
+      "text": "{{name}} alanını şimdi herkese kapatır ve 7 gün sonra siler.",
       "button": "Çalışma alanını sil…"
     },
     "title": "{{name}} silinsin mi?",
@@ -16064,10 +16081,9 @@
   "deleteAccount": {
     "menu": "Hesabı sil",
     "card": {
-      "text": "Tüm çalışma alanlarından ayrılırsınız ve hesabınız 7 gün sonra kalıcı olarak silinir. O zamana kadar geri yükleyebilirsiniz.",
+      "text": "Hesabınızı 7 gün sonra tüm çalışma alanlarında siler.",
       "button": "Hesabı sil…",
-      "oneWorkspace": "Yalnızca bu çalışma alanını mı silmek istiyorsunuz? Genel bölümünde.",
-      "leaveWorkspace": "Yalnızca bu çalışma alanından mı ayrılmak istiyorsunuz? Üyeler bölümünde."
+      "title": "Sil"
     },
     "title": "Hesabınızın tamamı silinsin mi?",
     "intro": "Bu, tek bir çalışma alanını değil hesabınızın tamamını siler.",
@@ -16758,6 +16774,7 @@
       "unknown": "Her güncelleme {{name}} bütçesini kullanır"
     },
     "exposure": "Panoyu gören kişi, verinin geldiği hesaplara erişimi olmasa bile ajanların getirdiklerini görür. Ajanlar da pano oluşturur. Bir panoyu isteyen kişiden daha fazla kişiye göstermek için önce “Sizi bekleyenler” bölümünde sorarlar.",
+    "exposureShort": "Panoyu gören kişi bu verileri görür.",
     "panel": {
       "caresFor": "Bu widget ile {{name}} ilgileniyor",
       "caresForOn": "Bu widget ile {{name}} ilgileniyor · {{board}}",

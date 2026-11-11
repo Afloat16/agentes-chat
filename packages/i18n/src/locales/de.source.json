@@ -4133,6 +4133,9 @@
   "team.map.lead": {
     "value": "Who looks after the agents, the channels they are in, what each one does on its own and what waits for a person. Dashed lines are agents that asked each other in the last day."
   },
+  "team.map.short": {
+    "value": "Who looks after each agent and where it works."
+  },
   "team.map.lodi": {
     "value": "Organizes the team with you"
   },
@@ -6044,7 +6047,7 @@
     "value": "Google AI Pro, Google AI Ultra or Gemini Enterprise"
   },
   "connectAi.plan.gemini.warning": {
-    "value": "Google says using a personal Gemini plan inside other apps can get the account suspended. To avoid that risk, use an API key or Gemini Enterprise."
+    "value": "Google says using a personal Gemini plan inside other apps can get the account suspended."
   },
   "connectAi.plan.zen.title": {
     "value": "OpenCode"
@@ -9251,6 +9254,15 @@
   },
   "approval.always.noteRoutine": {
     "value": "{{routine}} does {{actions}} on its own from now on, with any values. Outside this routine it still asks. To undo: the routine's settings."
+  },
+  "approval.always.shortReads": {
+    "value": "Covers only reads, from now on."
+  },
+  "approval.always.shortRoutine": {
+    "value": "Only in this routine, from now on."
+  },
+  "approval.always.shortCommand": {
+    "value": "Covers {{actions}} on the computer, from now on."
   },
   "approval.always.doneRoutine": {
     "value": "Approved. {{routine}} won't ask for this again."
@@ -16732,6 +16744,9 @@
   "routines.webhook.newNote": {
     "value": "The routine gets an address of its own. Every POST to it starts the agent with what was sent. The address shows on the routine's page once it is saved."
   },
+  "routines.webhook.newShort": {
+    "value": "The routine gets an address of its own."
+  },
   "routines.webhook.hidden": {
     "value": "Only who can change the routine sees its address."
   },
@@ -17313,6 +17328,12 @@
   },
   "routines.ownActions.none": {
     "value": "In connected apps it asks a person before each action. To let it do its job on its own, tell the agent in the chat which actions it may do."
+  },
+  "routines.ownActions.hintShort": {
+    "value": "Every run does these without asking."
+  },
+  "routines.ownActions.noneShort": {
+    "value": "It asks a person before each action."
   },
   "routines.ownActions.remove": {
     "value": "Ask again before: {{action}}"
@@ -18854,6 +18875,9 @@
   },
   "missions.command.alwaysAgentHint": {
     "value": "Always approve for this agent allows {{kind}} with any arguments, in every mission and conversation. To undo: Tools and access, on the agent's page."
+  },
+  "missions.command.alwaysAgentShort": {
+    "value": "Allows {{kind}} in every mission and conversation."
   },
   "missions.command.alwaysAgentBy": {
     "value": "Allowed for this agent by {{name}} · {{time}}: {{kind}}"
@@ -21472,7 +21496,7 @@
     "value": "Agents improve skills by themselves"
   },
   "skills.agentsImproveHelp": {
-    "value": "When an agent finds a skill wrong or missing a step, it fixes it right away: a new version you can undo, and whoever made the skill is told. Changes to scripts wait for someone who manages skills."
+    "value": "When an agent finds a skill wrong or missing a step, it fixes it right away: a new version you can undo, and whoever made the skill is told."
   },
   "skills.agentsImproveThis": {
     "value": "Agents improve this skill by themselves"
@@ -22144,6 +22168,12 @@
   },
   "audience.notListed": {
     "value": "People not on the list get no reply."
+  },
+  "audience.agentsToo": {
+    "value": "This covers agents too."
+  },
+  "audience.peopleOnly": {
+    "value": "This covers people only."
   },
   "audience.consultable": {
     "value": "Other agents can consult {{name}}"
@@ -24352,7 +24382,7 @@
     "value": "Ask an agent"
   },
   "wiki.ask.text": {
-    "value": "The request goes to your conversation with the agent, with a link to the page. It edits with the wiki tools, and the version shows in the history as done at your request."
+    "value": "The request goes to your conversation with the agent, with a link to the page."
   },
   "wiki.ask.agent": {
     "value": "Agent"
@@ -24404,6 +24434,9 @@
   },
   "wiki.import.howTo": {
     "value": "To make the .zip: in Finder, right-click the vault folder → Compress. On Windows, Send to → Compressed folder. The .obsidian folder (plugins and themes) is left out."
+  },
+  "wiki.import.howToLabel": {
+    "value": "How to make the .zip"
   },
   "wiki.import.nothingYet": {
     "value": "Nothing goes in before you review it."
@@ -26497,7 +26530,7 @@
     "value": "GitHub repositories"
   },
   "githubApp.text": {
-    "value": "Where the agentes.chat app is installed, agents open pull requests, issues, comments and commits as the app, with the agent's name and who asked. Only {{org}} uses what you install from here."
+    "value": "Where the agentes.chat app is installed, agents open pull requests, issues, comments and commits as the app, with the agent's name and who asked."
   },
   "githubApp.install": {
     "value": "Install the agentes.chat app"
@@ -26672,6 +26705,9 @@
   },
   "repos.merge.help": {
     "value": "In these repositories a merge runs with no approval card, goes in the audit and leaves a receipt in the conversation. Everything else that's sensitive still asks."
+  },
+  "repos.merge.short": {
+    "value": "In these repositories a merge runs with no approval card."
   },
   "repos.merge.dialogTitle": {
     "value": "Where {{name}} merges without asking"
@@ -28675,6 +28711,9 @@
   "connectFlow.githubOrgs.lead": {
     "value": "GitHub asks about organizations only the first time. To add one, open the app's page there and press Grant beside it. If you don't own it, the button says Request and an owner approves."
   },
+  "connectFlow.githubOrgs.short": {
+    "value": "GitHub asks about organizations only the first time."
+  },
   "connectFlow.githubOrgs.open": {
     "value": "Grant organizations on GitHub"
   },
@@ -29167,6 +29206,9 @@
   "database.rule.hiddenHelp": {
     "value": "table.column, with names that have capitals, spaces or symbols in double quotes (customers.\"Tax ID\"). We already hid the ones that look like personal data or passwords."
   },
+  "database.rule.hiddenExample": {
+    "value": "table.column, like customers.\"Tax ID\""
+  },
   "database.rule.hiddenPlaceholder": {
     "value": "customers.cpf"
   },
@@ -29291,7 +29333,7 @@
     "value": "Type a valid email, like you@company.com."
   },
   "mail.icloudHint": {
-    "value": "Use your iCloud Mail address, like name@icloud.com, even if your Apple Account uses {{name}}. On an iPhone it's in Settings › your name › iCloud › iCloud Mail, or see icloud.com/mail."
+    "value": "Use your iCloud Mail address, like name@icloud.com, even if your Apple Account uses {{name}}."
   },
   "mail.password": {
     "value": "App password"
@@ -29413,6 +29455,9 @@
   "mail.toolsLead": {
     "value": "What agents can do in {{name}}. Turn off what no agent should do, or ask for approval for drafts and organizing too. Sending, replying and forwarding always ask for approval in the chat, showing who it goes to and the text."
   },
+  "mail.toolsShort": {
+    "value": "Choose what agents do with this email."
+  },
   "mail.group.read": {
     "value": "Reads"
   },
@@ -29517,6 +29562,9 @@
   },
   "mail.addresses.lead": {
     "value": "Agents reply from the address the email was sent to. If this mailbox also gets email at other addresses, like your own domain or an alias, add them here."
+  },
+  "mail.addresses.short": {
+    "value": "Agents reply from the address the email was sent to."
   },
   "mail.addresses.main": {
     "value": "Main address: {{address}}"
@@ -35523,6 +35571,9 @@
   "usageViews.agent.estimate": {
     "value": "{{name}}'s part is the stronger stretch of each bar. {{brand}} only tells how much the whole account used, so each agent's part is an estimate from what it spent."
   },
+  "usageViews.agent.estimateShort": {
+    "value": "An estimate."
+  },
   "usageViews.agent.byAccount": {
     "value": "By account, this month"
   },
@@ -38938,7 +38989,7 @@
     "value": "Delete workspace"
   },
   "deleteOrg.card.text": {
-    "value": "Closes {{name}} for everyone now. It's deleted for good after 7 days."
+    "value": "Closes {{name}} for everyone now and deletes it in 7 days."
   },
   "deleteOrg.card.button": {
     "value": "Delete workspace…"
@@ -39067,16 +39118,13 @@
     "value": "Delete account"
   },
   "deleteAccount.card.text": {
-    "value": "You leave every workspace and your account is deleted for good 7 days later. You can restore it until then."
+    "value": "Deletes your account in 7 days, in every workspace."
   },
   "deleteAccount.card.button": {
     "value": "Delete account…"
   },
-  "deleteAccount.card.oneWorkspace": {
-    "value": "Want to delete just this workspace? It's in General."
-  },
-  "deleteAccount.card.leaveWorkspace": {
-    "value": "Want to leave just this workspace? It's in Members."
+  "deleteAccount.card.title": {
+    "value": "Delete"
   },
   "deleteAccount.title": {
     "value": "Delete your whole account?"
@@ -40650,6 +40698,9 @@
   },
   "widgets.exposure": {
     "value": "Whoever sees the dashboard sees what the agents brought, even without access to the accounts it came from. Agents create dashboards too. To show one to more people than whoever asked, they ask first, in Waiting on you."
+  },
+  "widgets.exposureShort": {
+    "value": "Whoever sees the dashboard sees this data."
   },
   "widgets.panel.caresFor": {
     "value": "{{name}} looks after this widget"

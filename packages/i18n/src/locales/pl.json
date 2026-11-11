@@ -1809,6 +1809,7 @@
     },
     "map": {
       "lead": "Kto opiekuje się agentami, w jakich kanałach są, co każdy robi sam i co czeka na człowieka. Linie przerywane to agenci, którzy w ostatniej dobie prosili się nawzajem o pomoc.",
+      "short": "Kto opiekuje się każdym agentem i gdzie on pracuje.",
       "lodi": "Porządkuje zespół razem z tobą",
       "hint": "Przeciągnij agenta do innego kanału, a {{name}} przygotuje zmianę do zastosowania",
       "proposed": "{{name}} przygotował zmianę w waszej rozmowie. Zastosuj ją tam.",
@@ -2671,7 +2672,7 @@
       "gemini": {
         "title": "Twój plan Gemini",
         "tiers": "Google AI Pro, Google AI Ultra lub Gemini Enterprise",
-        "warning": "Google twierdzi, że korzystanie z prywatnego planu Gemini w innych aplikacjach może skończyć się zawieszeniem konta. Aby uniknąć tego ryzyka, użyj klucza API lub Gemini Enterprise."
+        "warning": "Google twierdzi, że korzystanie z prywatnego planu Gemini w innych aplikacjach może skończyć się zawieszeniem konta."
       },
       "zen": {
         "title": "OpenCode",
@@ -4052,6 +4053,9 @@
       "routine": "Zawsze w tej rutynie",
       "thisRoutine": "ta rutyna",
       "noteRoutine": "{{routine}}: od teraz {{actions}} bez pytania, z dowolnymi wartościami. Poza tą rutyną nadal pyta. Aby cofnąć: ustawienia rutyny.",
+      "shortReads": "Obejmuje od teraz tylko odczyty.",
+      "shortRoutine": "Dotyczy od teraz tylko tej rutyny.",
+      "shortCommand": "Obejmuje {{actions}} na komputerze, od teraz.",
       "doneRoutine": "Zatwierdzono. {{routine}}: już nie zapyta o to.",
       "undoRoutine": "Aby to cofnąć, przejdź do ustawień rutyny."
     },
@@ -7407,6 +7411,7 @@
       "waiting": "Czeka na następne wywołanie",
       "every": "Uruchamia się przy każdym wywołaniu. Wywołania, które przyjdą razem, dają jedno uruchomienie.",
       "newNote": "Rutyna dostaje własny adres. Każdy POST na niego uruchamia agenta z tym, co wysłano. Adres pojawi się na stronie rutyny po jej zapisaniu.",
+      "newShort": "Rutyna dostaje własny adres.",
       "hidden": "Adres widzą tylko osoby, które mogą zmieniać rutynę.",
       "methods": "Akceptowane metody",
       "methodsHelp": "Adres odpowiada tylko na zaznaczone metody. Przy GET parametry zapytania w URL są danymi wywołania.",
@@ -7641,6 +7646,8 @@
     "ownActions": {
       "hint": "Każde uruchomienie robi to w twoich połączonych aplikacjach bez pytania. Każda inna akcja w nich najpierw prosi osobę o zgodę, a merge, deploy i rollback zawsze o nią proszą.",
       "none": "W połączonych aplikacjach przed każdą akcją prosi osobę o zgodę. Żeby wykonywała swoją pracę sama, powiedz agentowi na czacie, jakie akcje może wykonywać.",
+      "hintShort": "Każde uruchomienie robi to bez pytania.",
+      "noneShort": "Przed każdą akcją prosi osobę o zgodę.",
       "remove": "Znowu pytaj przed: {{action}}"
     },
     "ahead": {
@@ -8362,6 +8369,7 @@
       "alwaysBy": "Dozwolone w tej misji przez {{name}} · {{time}}: {{rules}}",
       "alwaysAgent": "Zawsze zatwierdzaj dla tego agenta",
       "alwaysAgentHint": "Zawsze zatwierdzaj dla tego agenta pozwala na {{kind}} z dowolnymi argumentami, w każdej misji i rozmowie. Aby cofnąć: Narzędzia i dostęp na stronie agenta.",
+      "alwaysAgentShort": "Pozwala na {{kind}} w każdej misji i rozmowie.",
       "alwaysAgentBy": "Dozwolone dla tego agenta przez {{name}} · {{time}}: {{kind}}",
       "state": {
         "allowed": "Zatwierdzone",
@@ -9528,7 +9536,7 @@
     "undoUpdate": "Cofnij aktualizację",
     "undone": "{{name}}: przywrócono wersję {{version}}.",
     "agentsImprove": "Agenci sami ulepszają umiejętności",
-    "agentsImproveHelp": "Gdy agent zauważy, że umiejętność jest błędna albo brakuje w niej kroku, od razu ją poprawia: nowa wersja, którą możesz cofnąć, a osoba, która ją utworzyła, dostaje informację. Zmiany w skryptach czekają na osobę, która zarządza umiejętnościami.",
+    "agentsImproveHelp": "Gdy agent zauważy, że umiejętność jest błędna albo brakuje w niej kroku, od razu ją poprawia: nowa wersja, którą możesz cofnąć, a osoba, która ją utworzyła, dostaje informację.",
     "agentsImproveThis": "Agenci sami ulepszają tę umiejętność",
     "agentChange": "{{agent}}: zmiana {{when}}",
     "undoAgentChange": "Cofnij zmianę",
@@ -9837,6 +9845,8 @@
     "title": "Kto może rozmawiać z {{name}}",
     "title_female": "Kto może rozmawiać z {{name}}",
     "notListed": "Osoby spoza listy nie dostają odpowiedzi.",
+    "agentsToo": "Dotyczy też agentów.",
+    "peopleOnly": "Dotyczy tylko osób.",
     "consultable": "Inni agenci mogą konsultować się z {{name}}",
     "consultable_female": "Inni agenci mogą konsultować się z {{name}}",
     "consultableHint": "Osobom spoza listy odpowiada tylko za pośrednictwem agenta, który pytał, nigdy bezpośrednio. Wrażliwe akcje nadal wymagają zatwierdzenia przez osoby, które się nim opiekują.",
@@ -10758,7 +10768,7 @@
     "ask": {
       "button": "Poproś agenta",
       "title": "Poproś agenta",
-      "text": "Prośba trafia do twojej rozmowy z agentem, razem z linkiem do strony. Agent edytuje narzędziami wiki, a wersja zostaje w historii jako zrobiona na twoją prośbę.",
+      "text": "Prośba trafia do twojej rozmowy z agentem, razem z linkiem do strony.",
       "agent": "Agent",
       "what": "Co zmienić?",
       "placeholder": "Np. zaktualizuj o podwyżkę z 2027",
@@ -10778,6 +10788,7 @@
       "pickZip": "Wybierz .zip lub .md",
       "pickFolder": "Wybierz folder",
       "howTo": "Aby utworzyć .zip: w Finderze kliknij prawym przyciskiem folder sejfu → Kompresuj. W Windows: Wyślij do → Folder skompresowany. Folder .obsidian (wtyczki i motywy) zostanie pominięty.",
+      "howToLabel": "Jak utworzyć .zip",
       "nothingYet": "Nic nie trafi do wiki, zanim tego nie sprawdzisz.",
       "readingText": "Na razie tylko w twojej przeglądarce. Nic jeszcze nie zostało wysłane.",
       "notesRead": "przeczytane notatki",
@@ -11714,7 +11725,7 @@
   },
   "githubApp": {
     "title": "Repozytoria GitHub",
-    "text": "Tam, gdzie zainstalowano aplikację agentes.chat, agenci otwierają pull requesty, issues, komentarze i commity jako aplikacja, z nazwą agenta i osoby, która o to poprosiła. To, co stąd zainstalujesz, wykorzystuje tylko {{org}}.",
+    "text": "Tam, gdzie zainstalowano aplikację agentes.chat, agenci otwierają pull requesty, issues, komentarze i commity jako aplikacja, z nazwą agenta i osoby, która o to poprosiła.",
     "install": "Zainstaluj aplikację agentes.chat",
     "installMore": "Zainstaluj na innym koncie",
     "none": "Nie ma jeszcze konta GitHub.",
@@ -11788,6 +11799,7 @@
       "label": "Może scalać bez pytania",
       "none": "Nie wybrano repozytoriów. Każde scalanie prosi o zatwierdzenie.",
       "help": "W tych repozytoriach scalanie odbywa się bez karty zatwierdzenia, trafia do audytu i zostawia potwierdzenie w rozmowie. Wszystko inne, co wrażliwe, nadal pyta.",
+      "short": "W tych repozytoriach scalanie odbywa się bez karty zatwierdzenia.",
       "dialogTitle": "Gdzie {{name}} scala bez pytania",
       "dialogDesc": "Tylko repozytoria, których już używa. Scalanie gdzie indziej prosi o zatwierdzenie."
     },
@@ -12712,6 +12724,7 @@
       "title": "Dostępne organizacje",
       "none": "Na razie żadnej organizacji.",
       "lead": "GitHub pyta o organizacje tylko za pierwszym razem. Aby dodać kolejną, otwórz tam stronę aplikacji i kliknij Grant obok niej. Jeśli nie jesteś właścicielem, przycisk to Request, a właściciel zatwierdza.",
+      "short": "GitHub pyta o organizacje tylko za pierwszym razem.",
       "open": "Zezwól na organizacje w GitHubie",
       "added": "Teraz także: {{names}}.",
       "removed": "Już nie: {{names}}.",
@@ -12928,6 +12941,7 @@
       "databasesHelp": "Poniższe reguły dotyczą każdej bazy, którą czyta ten agent.",
       "hidden": "Kolumny, których nigdy nie widzi",
       "hiddenHelp": "tabela.kolumna, z nazwami zawierającymi wielkie litery, spacje lub symbole w cudzysłowie (customers.\"Tax ID\"). Kolumny, które wyglądają na dane osobowe lub hasła, już ukryliśmy.",
+      "hiddenExample": "tabela.kolumna, na przykład customers.\"Tax ID\"",
       "hiddenPlaceholder": "customers.pesel",
       "hiddenInvalid": "Wpisz tabela.kolumna (albo schemat.tabela.kolumna), z \"cudzysłowem\" wokół nazw zawierających wielkie litery, spacje lub symbole.",
       "cap": "Zapytania dziennie",
@@ -12994,7 +13008,7 @@
     "address": "Adres e-mail",
     "addressPlaceholder": "ty@firma.com",
     "addressInvalid": "Wpisz prawidłowy adres e-mail, na przykład ty@firma.com.",
-    "icloudHint": "Użyj adresu iCloud Mail, na przykład imie@icloud.com, nawet jeśli twoje Konto Apple używa {{name}}. Na iPhonie znajdziesz go w Ustawienia › twoje imię › iCloud › Poczta iCloud albo na icloud.com/mail.",
+    "icloudHint": "Użyj adresu iCloud Mail, na przykład imie@icloud.com, nawet jeśli twoje Konto Apple używa {{name}}.",
     "password": "Hasło aplikacji",
     "passwordHelp": "Przechowywane w postaci zaszyfrowanej na serwerze. Nikt go już nie zobaczy.",
     "passwordInvalid": "Wklej hasło aplikacji.",
@@ -13041,6 +13055,7 @@
     "rulesRead": "Co czyta",
     "rulesSend": "Co wysyła",
     "toolsLead": "Co agenci mogą robić w {{name}}. Wyłącz to, czego żaden agent nie powinien robić, albo wymagaj zatwierdzenia także dla wersji roboczych i porządkowania. Wysyłanie, odpowiadanie i przekazywanie zawsze wymaga zatwierdzenia na czacie, z adresatem i treścią.",
+    "toolsShort": "Wybierz, co agenci robią z tą skrzynką.",
     "group": {
       "read": "Odczyt",
       "write": "Zapis",
@@ -13101,6 +13116,7 @@
       "buttonName": "Adresy: {{name}}",
       "title": "Adresy: {{address}}",
       "lead": "Agenci odpowiadają z adresu, na który wysłano e-mail. Jeśli ta skrzynka odbiera też pocztę na inne adresy, na przykład we własnej domenie lub aliasy, dodaj je tutaj.",
+      "short": "Agenci odpowiadają z adresu, na który wysłano e-mail.",
       "main": "Główny adres: {{address}}",
       "others": "Inne adresy tej skrzynki",
       "othersHelp": "Aliasy i własne domeny, na przykład hello@twojafirma.com.",
@@ -15607,6 +15623,7 @@
       "sharedWith": "wspólne z: {{names}}",
       "part": "Część {{name}}: ≈ {{percent}}",
       "estimate": "Część {{name}} to mocniejszy fragment każdego paska. {{brand}} podaje tylko, ile zużyło całe konto, więc część każdego agenta to szacunek na podstawie jego wydatków.",
+      "estimateShort": "Szacunek.",
       "byAccount": "Według konta, w tym miesiącu",
       "until": "do {{date}}",
       "nowTag": "teraz",
@@ -17129,7 +17146,7 @@
   "deleteOrg": {
     "card": {
       "title": "Usuń przestrzeń roboczą",
-      "text": "Zamyka {{name}} dla wszystkich od razu. Po 7 dniach zostaje trwale usunięta.",
+      "text": "Zamyka {{name}} dla wszystkich teraz i usuwa za 7 dni.",
       "button": "Usuń przestrzeń roboczą…"
     },
     "title": "Usunąć {{name}}?",
@@ -17184,10 +17201,9 @@
   "deleteAccount": {
     "menu": "Usuń konto",
     "card": {
-      "text": "Opuszczasz wszystkie przestrzenie robocze, a twoje konto zostaje trwale usunięte 7 dni później. Do tego czasu możesz je przywrócić.",
+      "text": "Usuwa twoje konto za 7 dni, we wszystkich przestrzeniach roboczych.",
       "button": "Usuń konto…",
-      "oneWorkspace": "Chcesz usunąć tylko tę przestrzeń roboczą? To jest w sekcji Ogólne.",
-      "leaveWorkspace": "Chcesz opuścić tylko tę przestrzeń roboczą? To jest w sekcji Członkowie."
+      "title": "Usuń"
     },
     "title": "Usunąć całe twoje konto?",
     "intro": "To usuwa całe twoje konto, a nie tylko jedną przestrzeń roboczą.",
@@ -17937,6 +17953,7 @@
       "unknown": "Każda aktualizacja korzysta z budżetu agenta {{name}}"
     },
     "exposure": "Kto widzi dashboard, widzi to, co przynieśli agenci, nawet bez dostępu do kont, z których to pochodzi. Agenci też tworzą dashboardy. Zanim pokażą któryś większej liczbie osób niż ta, która o niego prosiła, najpierw pytają w „Czeka na ciebie”.",
+    "exposureShort": "Kto widzi dashboard, widzi te dane.",
     "panel": {
       "caresFor": "{{name}} zajmuje się tym widżetem",
       "caresForOn": "{{name}} zajmuje się tym widżetem · {{board}}",
