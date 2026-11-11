@@ -2529,7 +2529,6 @@
     },
     "formatAuto": "{{name}} kiest de beste",
     "newWidget": {
-      "titleHint": "Titel · {{name}} stelt er een voor bij het testen",
       "alerts": "Melding aan",
       "realData": "Echte gegevens",
       "editAsk": "Vraag wijzigen",

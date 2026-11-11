@@ -49,10 +49,12 @@ import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { AgentPickerDialog } from "@/components/agents/AgentPickerDialog";
+import { COMPACT_QUERY } from "@/components/NavDrawer";
 import { useOrg } from "@/components/org-context";
 import { colorOf } from "@/components/Sky";
 import { failureText } from "@/components/widgets/parts";
 import { useDirectory } from "@/hooks/useDirectory";
+import { useMatchMedia } from "@/hooks/useMatchMedia";
 import { useToast } from "@/lib/toast";
 import "@/pages/dashboards.css";
 
@@ -151,6 +153,8 @@ function NewWidgetBody({
   const [condition, setCondition] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
   const [size, setSize] = useState<WidgetSize>("m");
+  // A phone's card and the small size have no room for the whole hint beside the face and the bell.
+  const compact = useMatchMedia(COMPACT_QUERY);
   const [dest, setDest] = useState<string>(dashboardId ?? HOME);
   const [block, setBlock] = useState<number | null>(null);
   const [choosing, setChoosing] = useState(false);
@@ -753,9 +757,11 @@ function NewWidgetBody({
             </span>
           )
         )}
-        <span className="wg__dot" aria-hidden="true">
-          ·
-        </span>
+        {(mode === "ask" || owner) && (
+          <span className="wg__dot" aria-hidden="true">
+            ·
+          </span>
+        )}
         {scheduleSelect}
         {tested && <span className="nwc-when">{testedWhen}</span>}
       </>
@@ -790,7 +796,9 @@ function NewWidgetBody({
           autoComplete="off"
           aria-label={t("dashboards.newWidget.titleField")}
           placeholder={
-            mode === "pin" ? t("dashboards.newWidget.titleField") : t("dashboards.newWidget.titlePlaceholder", { name })
+            mode === "pin" || compact || size === "s"
+              ? t("dashboards.newWidget.titleField")
+              : t("dashboards.newWidget.titlePlaceholder", { name })
           }
           onChange={(e) => setTitleEdit(e.target.value)}
         />

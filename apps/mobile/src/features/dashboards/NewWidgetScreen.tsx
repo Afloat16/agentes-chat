@@ -346,11 +346,7 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
       <TextInput
         value={titleValue}
         onChangeText={setTitle}
-        placeholder={
-          draft
-            ? t("mobile.dashboards.widget.titlePlaceholder")
-            : t("mobile.dashboards.newWidget.titleHint", { name: look.name })
-        }
+        placeholder={t("dashboards.newWidget.titleField")}
         placeholderTextColor={c.faint}
         accessibilityLabel={t("mobile.dashboards.widget.title")}
         maxLength={WIDGET_LIMITS.title}
@@ -685,7 +681,7 @@ const SIZES_PAD = 2;
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   in: { paddingHorizontal: 16, paddingTop: 8 },
-  head: { flexDirection: "row", alignItems: "center", gap: 6, minWidth: 0 },
+  head: { flexDirection: "row", alignItems: "center", gap: 8, minWidth: 0 },
   titleInput: { flex: 1, minWidth: 0, paddingVertical: 4, ...fieldText("footnote", "600") },
   okBadge: { width: 22, height: 22, borderRadius: 6, alignItems: "center", justifyContent: "center" },
   bell: {

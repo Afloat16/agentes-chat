@@ -2747,7 +2747,6 @@
     },
     "formatAuto": "{{name}} wybiera najlepszą",
     "newWidget": {
-      "titleHint": "Tytuł · {{name}} zaproponuje go przy teście",
       "alerts": "Alert włączony",
       "realData": "Prawdziwe dane",
       "editAsk": "Zmień prośbę",
