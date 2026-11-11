@@ -275,6 +275,7 @@ export {
   type PlanMeterUsage,
   type PlanMeterWindow,
   type PlanState,
+  planAttention,
   planLevel,
   planLine,
   planState,

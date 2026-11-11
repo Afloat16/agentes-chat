@@ -15664,6 +15664,12 @@
   "members.rolesOf": {
     "value": "{{name}}'s roles"
   },
+  "members.rolesAdd": {
+    "value": "Add role"
+  },
+  "members.rolesChange": {
+    "value": "Change roles"
+  },
   "members.moreOf": {
     "value": "More for {{name}}"
   },

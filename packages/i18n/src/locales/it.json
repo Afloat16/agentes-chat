@@ -6633,6 +6633,8 @@
     "agentsOnlyYouHint": "Con un piano, puoi far rispondere ognuno anche ad altre persone dalla sua pagina.",
     "filters": "Filtra persone",
     "rolesOf": "Ruoli di {{name}}",
+    "rolesAdd": "Aggiungi ruolo",
+    "rolesChange": "Cambia ruoli",
     "moreOf": "Altro per {{name}}",
     "passwordLink": {
       "item": "Crea link per nuova password",

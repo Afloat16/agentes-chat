@@ -6688,6 +6688,8 @@ export const ptBR = {
     agentsOnlyYouHint: "Num plano, você pode deixar cada um atender outras pessoas na página dele.",
     filters: "Filtrar pessoas",
     rolesOf: "Papéis de {{name}}",
+    rolesAdd: "Adicionar papel",
+    rolesChange: "Mudar papéis",
     moreOf: "Mais de {{name}}",
     /** On a server that sends no email, an owner's new-password link for a member (ADR 0158). */
     passwordLink: {

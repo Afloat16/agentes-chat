@@ -6574,6 +6574,8 @@
     "agentsOnlyYouHint": "Con un plan, puedes dejar que cada uno responda a otras personas desde su página.",
     "filters": "Filtrar personas",
     "rolesOf": "Roles de {{name}}",
+    "rolesAdd": "Añadir rol",
+    "rolesChange": "Cambiar roles",
     "moreOf": "Más de {{name}}",
     "passwordLink": {
       "item": "Generar enlace de contraseña nueva",

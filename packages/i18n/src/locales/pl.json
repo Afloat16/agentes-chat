@@ -6824,6 +6824,8 @@
     "agentsOnlyYouHint": "W planie możesz pozwolić każdemu z nich odpowiadać innym osobom, na jego stronie.",
     "filters": "Filtruj osoby",
     "rolesOf": "Role: {{name}}",
+    "rolesAdd": "Dodaj rolę",
+    "rolesChange": "Zmień role",
     "moreOf": "Więcej: {{name}}",
     "passwordLink": {
       "item": "Utwórz link do nowego hasła",
