@@ -31,6 +31,7 @@ import { homeServer, type ServerList, type ServerWorkspaces, serverName } from "
 import { type Home, isIncompatible, isRefusedHome, orgName, pairedHomes } from "../control/store";
 import { answerThisMac, type PrefsTab, whenHostHomeReady } from "../control/this-mac";
 import { isOnline, macStateOf, trayStateOf } from "../control/tray";
+import { AUTO_UPDATE_PREF, autoUpdateOn, installNight } from "../control/version";
 import { agentOf, readPref, useLocalServer, useOnShown, usePending, useUpdateCheck, writePref } from "../hooks";
 import type { BadgeCounts } from "../host/types";
 import { AgentFace, Banner, BrandFace, Count, HelpLink, MacPortrait, MenuRow, OrgTile } from "../ui/bits";
@@ -173,6 +174,18 @@ export function Popover() {
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
+
+  // Preferences › Updates › "Install updates by itself, at night": the update the check found installs in the
+  // night's window once no agent works on this Mac, with "Update and reopen"'s path (its rollback included). A
+  // night's try is made once: one that fails or finds nothing waits for the next night.
+  const triedNight = useRef<string | null>(null);
+  useEffect(() => {
+    const night = installNight(new Date(now));
+    if (!night || triedNight.current === night || !update.state.available || jobs.length > 0) return;
+    if (!autoUpdateOn(readPref<boolean | null>(AUTO_UPDATE_PREF, null), local.run)) return;
+    triedNight.current = night;
+    void host.installUpdate().catch(() => {});
+  }, [now, update.state.available, jobs.length, local.run, host]);
 
   useOnShown("popover", () => {
     setPauseMenu(false);

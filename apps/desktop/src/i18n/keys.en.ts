@@ -606,6 +606,9 @@ export const desktopEn = {
       downloading: "Downloading…",
       installing: "Installing…",
       installFailed: "Couldn't update on its own. Download and install it by hand.",
+      autoInstall: "Install updates by itself, at night",
+      autoInstallDesc:
+        "The server and agents restart for a minute. If the new version doesn't start, it goes back by itself.",
       download: "Download version {{version}}",
       howTitle: "Update by hand",
       step1: "Quit agentes.chat (⌘Q).",

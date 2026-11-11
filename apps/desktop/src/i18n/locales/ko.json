@@ -566,6 +566,8 @@
       "downloading": "다운로드하는 중…",
       "installing": "설치하는 중…",
       "installFailed": "자동으로 업데이트하지 못했어요. 직접 다운로드해서 설치하세요.",
+      "autoInstall": "밤에 업데이트를 알아서 설치",
+      "autoInstallDesc": "서버와 에이전트가 1분 동안 다시 시작돼요. 새 버전이 시작되지 않으면 알아서 이전 버전으로 돌아가요.",
       "download": "버전 {{version}} 다운로드",
       "howTitle": "직접 업데이트하기",
       "step1": "agentes.chat을 종료하세요(⌘Q).",

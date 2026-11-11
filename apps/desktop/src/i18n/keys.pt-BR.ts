@@ -607,6 +607,9 @@ export const desktopPtBR = {
       downloading: "Baixando…",
       installing: "Instalando…",
       installFailed: "Não deu para atualizar sozinho. Baixe e instale à mão.",
+      autoInstall: "Instalar atualizações sozinho, de madrugada",
+      autoInstallDesc:
+        "O servidor e os agentes reiniciam por um minuto. Se a versão nova não abrir, volta sozinho para a anterior.",
       download: "Baixar a versão {{version}}",
       howTitle: "Atualizar à mão",
       step1: "Saia do agentes.chat (⌘Q).",

@@ -570,6 +570,8 @@
       "downloading": "Downloaden…",
       "installing": "Installeren…",
       "installFailed": "Automatisch bijwerken lukte niet. Download en installeer het met de hand.",
+      "autoInstall": "Updates 's nachts vanzelf installeren",
+      "autoInstallDesc": "De server en de agents starten een minuut opnieuw. Start de nieuwe versie niet, dan gaat hij vanzelf terug.",
       "download": "Versie {{version}} downloaden",
       "howTitle": "Met de hand bijwerken",
       "step1": "Sluit agentes.chat af (⌘Q).",

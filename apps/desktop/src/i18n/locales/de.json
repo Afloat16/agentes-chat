@@ -570,6 +570,8 @@
       "downloading": "Wird heruntergeladen…",
       "installing": "Wird installiert…",
       "installFailed": "Das automatische Update hat nicht geklappt. Lade es herunter und installiere es von Hand.",
+      "autoInstall": "Updates nachts von selbst installieren",
+      "autoInstallDesc": "Server und Agenten starten für eine Minute neu. Startet die neue Version nicht, geht es von selbst zurück.",
       "download": "Version {{version}} herunterladen",
       "howTitle": "Von Hand aktualisieren",
       "step1": "Beende agentes.chat (⌘Q).",
