@@ -34,6 +34,8 @@ import {
   wifiHosts,
   wifiPairLive,
   wifiPairText,
+  XCODE_UNBLOCK,
+  xcodeBlockedOf,
 } from "@agenteschat/client/lib/devices";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { computerKind } from "@agenteschat/client/lib/machines";
@@ -771,17 +773,19 @@ export function IphoneFlow({
   const ready = IPHONE_STEPS.every((s) => states[s] === "done");
   const reason = phone && "reason" in phone.status ? phone.status.reason : null;
   const tooOld = phone?.status.kind === "unsupported";
+  const blocked = xcodeBlockedOf(mac);
   const at = IPHONE_STEPS.find((s) => states[s] === "current" || states[s] === "needs") ?? null;
   // The Mac reports by itself; a step that sits unchanged gets what most likely holds it. Nothing to add for an iPhone
-  // below iOS 17, nor where the step's own text already says what to do (a helper the person must act on, no team),
-  // nor over Wi-Fi: those lines are about the cable.
+  // below iOS 17, nor where the step's own text already says what to do (a helper the person must act on, no team,
+  // Xcode installed but blocked), nor over Wi-Fi: those lines are about the cable.
   const stalled = useStalled(
     at &&
       mac &&
       !tooOld &&
       !(phone && iphoneOverWifi(phone)) &&
       !(at === "helper" && states.helper === "needs") &&
-      !(at === "account" && iphoneNoTeam(mac, phone))
+      !(at === "account" && iphoneNoTeam(mac, phone)) &&
+      !(at === "xcode" && blocked)
       ? [mac.id, at, phone?.id, reason].join(":")
       : null,
   );
@@ -804,7 +808,11 @@ export function IphoneFlow({
                 mac: macName,
               })
             : reasonText(t, reason)
-          : t("devices.iphone.xcodeText", { mac: macName }),
+          : blocked
+            ? t(blocked === "license" ? "devices.iphone.xcodeLicense" : "devices.iphone.xcodeCommandLineTools", {
+                mac: macName,
+              })
+            : t("devices.iphone.xcodeText", { mac: macName }),
     tools: states.tools === "done" ? t("devices.iphone.toolsDone") : t("devices.iphone.toolsText"),
     account:
       states.account === "done"
@@ -837,7 +845,9 @@ export function IphoneFlow({
           : t("devices.iphone.helperText"),
   };
   const more: Partial<Record<IphoneStep, ReactNode>> = {
-    xcode: (
+    xcode: blocked ? (
+      <CommandBlock command={XCODE_UNBLOCK[blocked]} />
+    ) : (
       <>
         <span className="dv-step__acts">
           <Button asChild size="sm" icon="external">

@@ -14149,6 +14149,9 @@ export const ptBR = {
       },
       xcodeDone: "Versão {{version}}",
       xcodeText: "Instale o Xcode pela App Store em {{mac}}. A configuração segue quando ele estiver lá.",
+      xcodeCommandLineTools:
+        "O Xcode está em {{mac}}, mas o Mac ainda usa as Command Line Tools. Rode isto no Terminal, ele pede a senha do Mac.",
+      xcodeLicense: "O Xcode em {{mac}} espera você aceitar a licença. Rode isto no Terminal, ele pede a senha do Mac.",
       getXcode: "Baixar o Xcode",
       toolsDone: "Baixadas pelo Mac",
       toolsText: "O Mac baixa sozinho, uns 8 GB.",

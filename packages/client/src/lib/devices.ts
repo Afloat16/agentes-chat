@@ -571,6 +571,22 @@ export const iosMajor = (version: string) => version.split(".")[0] ?? version;
 /** What Xcode needs for an iPhone on a newer iOS than it knows, after installing the matching Xcode. */
 export const DDIS_UPDATE = "xcrun devicectl manage ddis update";
 
+/**
+ * Xcode on the Mac whose tools don't answer (the runner's `toolchains.xcodeBlocked`), with the Terminal command that
+ * fixes it: the developer folder left on the Command Line Tools, or Xcode's license not agreed to.
+ */
+export const XCODE_UNBLOCK = {
+  command_line_tools: "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
+  license: "sudo xcodebuild -license accept",
+} as const;
+export type XcodeBlocked = keyof typeof XCODE_UNBLOCK;
+
+/** Why the Mac's Xcode doesn't answer, when it's installed and one command fixes it; null otherwise. */
+export function xcodeBlockedOf(host: ComputerDevice | undefined): XcodeBlocked | null {
+  const blocked = host?.toolchains.xcodeBlocked;
+  return !host?.toolchains.xcode && blocked && Object.hasOwn(XCODE_UNBLOCK, blocked) ? (blocked as XcodeBlocked) : null;
+}
+
 /** A step under way or waiting on the person this long, unchanged, says what most likely holds it and one way out. */
 export const SETUP_STALL_MS = 45_000;
 

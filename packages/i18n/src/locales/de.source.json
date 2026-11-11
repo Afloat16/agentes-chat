@@ -34290,6 +34290,12 @@
   "devices.iphone.xcodeText": {
     "value": "Install Xcode from the App Store on {{mac}}. The setup goes on when it's there."
   },
+  "devices.iphone.xcodeCommandLineTools": {
+    "value": "Xcode is on {{mac}}, but the Mac still uses the Command Line Tools. Run this in Terminal, it asks for the Mac's password."
+  },
+  "devices.iphone.xcodeLicense": {
+    "value": "Xcode on {{mac}} waits for its license to be accepted. Run this in Terminal, it asks for the Mac's password."
+  },
   "devices.iphone.getXcode": {
     "value": "Get Xcode"
   },

@@ -14137,6 +14137,12 @@ export const en = {
       },
       xcodeDone: "Version {{version}}",
       xcodeText: "Install Xcode from the App Store on {{mac}}. The setup goes on when it's there.",
+      /** Apple's name "Command Line Tools" stays in English. Shown above the command it means. */
+      xcodeCommandLineTools:
+        "Xcode is on {{mac}}, but the Mac still uses the Command Line Tools. Run this in Terminal, it asks for the Mac's password.",
+      /** Shown above the command it means. */
+      xcodeLicense:
+        "Xcode on {{mac}} waits for its license to be accepted. Run this in Terminal, it asks for the Mac's password.",
       getXcode: "Get Xcode",
       toolsDone: "Downloaded by the Mac",
       toolsText: "The Mac downloads them, about 8 GB.",

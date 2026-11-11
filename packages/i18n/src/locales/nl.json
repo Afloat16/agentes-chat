@@ -14171,6 +14171,8 @@
       },
       "xcodeDone": "Versie {{version}}",
       "xcodeText": "Installeer Xcode uit de App Store op {{mac}}. De installatie gaat verder zodra het er is.",
+      "xcodeCommandLineTools": "Xcode staat op {{mac}}, maar de Mac gebruikt nog de Command Line Tools. Voer dit uit in Terminal, het vraagt om het wachtwoord van de Mac.",
+      "xcodeLicense": "Xcode op {{mac}} wacht tot de licentie is geaccepteerd. Voer dit uit in Terminal, het vraagt om het wachtwoord van de Mac.",
       "getXcode": "Xcode downloaden",
       "toolsDone": "Gedownload door de Mac",
       "toolsText": "De Mac downloadt ze, ongeveer 8 GB.",

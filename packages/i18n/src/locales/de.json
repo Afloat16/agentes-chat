@@ -14109,6 +14109,8 @@
       },
       "xcodeDone": "Version {{version}}",
       "xcodeText": "Installiere Xcode aus dem App Store auf {{mac}}. Die Einrichtung geht weiter, sobald es da ist.",
+      "xcodeCommandLineTools": "Xcode ist auf {{mac}}, aber der Mac nutzt noch die Command Line Tools. Führe das hier im Terminal aus, es fragt nach dem Passwort des Macs.",
+      "xcodeLicense": "Xcode auf {{mac}} wartet darauf, dass seine Lizenz akzeptiert wird. Führe das hier im Terminal aus, es fragt nach dem Passwort des Macs.",
       "getXcode": "Xcode holen",
       "toolsDone": "Vom Mac geladen",
       "toolsText": "Der Mac lädt sie herunter, etwa 8 GB.",

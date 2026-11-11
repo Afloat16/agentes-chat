@@ -13604,6 +13604,8 @@
       },
       "xcodeDone": "버전 {{version}}",
       "xcodeText": "{{mac}}에서 App Store로 Xcode를 설치하세요. 설치되면 설정이 이어져요.",
+      "xcodeCommandLineTools": "{{mac}}에 Xcode가 있지만 Mac은 아직 Command Line Tools를 쓰고 있어요. 터미널에서 이것을 실행하세요. Mac 암호를 물어봐요.",
+      "xcodeLicense": "{{mac}}의 Xcode가 라이선스 동의를 기다리고 있어요. 터미널에서 이것을 실행하세요. Mac 암호를 물어봐요.",
       "getXcode": "Xcode 받기",
       "toolsDone": "Mac이 다운로드함",
       "toolsText": "Mac이 약 8GB를 다운로드해요.",

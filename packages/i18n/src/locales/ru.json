@@ -14988,6 +14988,8 @@
       },
       "xcodeDone": "Версия {{version}}",
       "xcodeText": "Установите Xcode из App Store на {{mac}}. Настройка продолжится, когда он появится.",
+      "xcodeCommandLineTools": "Xcode есть на {{mac}}, но Mac всё ещё использует Command Line Tools. Выполните это в Терминале, он попросит пароль Mac.",
+      "xcodeLicense": "Xcode на {{mac}} ждёт, пока примут его лицензию. Выполните это в Терминале, он попросит пароль Mac.",
       "getXcode": "Скачать Xcode",
       "toolsDone": "Mac их загрузил",
       "toolsText": "Mac загружает их, это около 8 ГБ.",

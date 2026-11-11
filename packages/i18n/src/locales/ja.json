@@ -13612,6 +13612,8 @@
       },
       "xcodeDone": "バージョン {{version}}",
       "xcodeText": "{{mac}}でApp StoreからXcodeをインストールしてください。インストールされると設定が続きます。",
+      "xcodeCommandLineTools": "{{mac}}にXcodeはありますが、MacはまだCommand Line Toolsを使っています。ターミナルでこれを実行してください。Macのパスワードを求められます。",
+      "xcodeLicense": "{{mac}}のXcodeはライセンスへの同意を待っています。ターミナルでこれを実行してください。Macのパスワードを求められます。",
       "getXcode": "Xcodeを入手",
       "toolsDone": "Macがダウンロード済み",
       "toolsText": "Macがダウンロードします。約8 GBです。",

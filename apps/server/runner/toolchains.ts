@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { RunnerToolchains } from "@agenteschat/adapters/machine-protocol";
@@ -24,9 +25,14 @@ export interface ToolchainsProbe {
   dirs?: string[];
   /** Tests: the teams of Xcode's Apple Accounts, or the whole look (default `appleLook`). */
   teams?: () => Promise<AppleTeam[] | AppleLook>;
+  /** Tests: where Xcode is installed (default `XCODE_APP`). */
+  xcodeApp?: string;
 }
 
-type AppleKeys = Pick<RunnerToolchains, "xcode" | "xcodeSdk" | "appleTeam" | "appleAccount">;
+type AppleKeys = Pick<RunnerToolchains, "xcode" | "xcodeSdk" | "appleTeam" | "appleAccount" | "xcodeBlocked">;
+
+/** Where the App Store installs Xcode; `xcode-select -s` takes its Developer folder. */
+export const XCODE_APP = "/Applications/Xcode.app";
 
 /** The first version-looking word after `prefix` in `text`. */
 const version = (text: string, prefix: RegExp) =>
@@ -59,12 +65,31 @@ async function appleKeys(opts: ToolchainsProbe, devTools?: boolean): Promise<App
   ]);
   const look = Array.isArray(found) ? appleLookOf(found, 0) : found;
   const sdk = /^\s*(\d+(?:\.\d+)+)\s*$/.exec(sdkV)?.[1];
+  const xcode = version(xcodeV, /Xcode/);
   return {
-    xcode: version(xcodeV, /Xcode/),
+    xcode,
     xcodeSdk: sdk,
     appleTeam: look.teams[0] ? teamLabel(look.teams[0]) : undefined,
     appleAccount: look.account,
+    xcodeBlocked: xcode ? undefined : await xcodeBlocked(opts),
   };
+}
+
+/**
+ * Why Xcode is on the Mac yet `xcodebuild` doesn't answer, when it's something the person fixes with one command:
+ * the developer folder still on the Command Line Tools (installed before Xcode, `xcode-select` never moved), or
+ * Xcode's license not agreed to. Neither is "install Xcode", which the setup would otherwise say.
+ */
+async function xcodeBlocked(opts: ToolchainsProbe): Promise<RunnerToolchains["xcodeBlocked"]> {
+  const { env, find, say } = finder(opts);
+  const selected = await say(find("xcode-select"), ["-p"]);
+  if (/CommandLineTools/.test(selected) && existsSync(opts.xcodeApp ?? XCODE_APP)) return "command_line_tools";
+  const xcodebuild = find("xcodebuild");
+  if (!xcodebuild) return undefined;
+  const r = await runTool(xcodebuild, ["-version"], { timeoutMs: 20_000, env });
+  // "You have not agreed to the Xcode license agreements. Please run 'sudo xcodebuild -license' …", exit 69.
+  const said = `${r.stdout.toString("utf8")}\n${r.stderr}`;
+  return r.code !== 0 && /xcodebuild -license|license agreement/i.test(said) ? "license" : undefined;
 }
 
 const defined = <T extends object>(o: T) =>
@@ -114,7 +139,7 @@ export function cachedToolchains(
 ) {
   let current = readJson<RunnerToolchains>(file);
   const appleOf = (t: RunnerToolchains | null) =>
-    JSON.stringify([t?.xcode, t?.xcodeSdk, t?.appleTeam, t?.appleAccount]);
+    JSON.stringify([t?.xcode, t?.xcodeSdk, t?.appleTeam, t?.appleAccount, t?.xcodeBlocked]);
   /** Xcode's part as the server last heard it (`hello` reads `get`, or a frame that went out). */
   let told = appleOf(current);
   let looking: Promise<void> | null = null;
@@ -145,6 +170,7 @@ export function cachedToolchains(
         xcodeSdk: undefined,
         appleTeam: undefined,
         appleAccount: undefined,
+        xcodeBlocked: undefined,
         ...keys,
       });
       if (JSON.stringify(next) !== JSON.stringify(before)) {

@@ -34,6 +34,8 @@ import {
   wifiHosts,
   wifiPairLive,
   wifiPairText,
+  XCODE_UNBLOCK,
+  xcodeBlockedOf,
 } from "../src/lib/devices";
 
 const i18n = i18next.createInstance();
@@ -308,6 +310,19 @@ describe("connecting a phone", () => {
       "waiting",
       "waiting",
     ]);
+  });
+
+  test("iPhone: Xcode installed but blocked stays on the Xcode step, with the command that fixes it", () => {
+    const cli = computer({ toolchains: { xcodeBlocked: "command_line_tools" } });
+    expect(xcodeBlockedOf(cli)).toBe("command_line_tools");
+    expect(iphoneSteps(cli, null)).toMatchObject({ xcode: "needs", tools: "waiting" });
+    expect(XCODE_UNBLOCK.command_line_tools).toBe("sudo xcode-select -s /Applications/Xcode.app/Contents/Developer");
+    expect(xcodeBlockedOf(computer({ toolchains: { xcodeBlocked: "license" } }))).toBe("license");
+    // Xcode answers (a stale reason never wins), an unknown reason, nothing said: not blocked.
+    expect(xcodeBlockedOf(computer({ toolchains: { xcode: "27.0", xcodeBlocked: "license" } }))).toBeNull();
+    expect(xcodeBlockedOf(computer({ toolchains: { xcodeBlocked: "toString" } }))).toBeNull();
+    expect(xcodeBlockedOf(computer({ toolchains: {} }))).toBeNull();
+    expect(xcodeBlockedOf(undefined)).toBeNull();
   });
 
   test("the new reasons in words, and an iPhone too old names its iOS", () => {

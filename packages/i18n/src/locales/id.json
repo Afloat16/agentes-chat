@@ -13666,6 +13666,8 @@
       },
       "xcodeDone": "Versi {{version}}",
       "xcodeText": "Pasang Xcode dari App Store di {{mac}}. Penyiapan berlanjut setelah Xcode terpasang.",
+      "xcodeCommandLineTools": "Xcode sudah ada di {{mac}}, tetapi Mac masih memakai Command Line Tools. Jalankan ini di Terminal, nanti diminta kata sandi Mac.",
+      "xcodeLicense": "Xcode di {{mac}} menunggu lisensinya disetujui. Jalankan ini di Terminal, nanti diminta kata sandi Mac.",
       "getXcode": "Dapatkan Xcode",
       "toolsDone": "Diunduh oleh Mac",
       "toolsText": "Mac mengunduhnya, sekitar 8 GB.",

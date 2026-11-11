@@ -14044,6 +14044,8 @@
       },
       "xcodeDone": "Sürüm {{version}}",
       "xcodeText": "Xcode'u {{mac}} üzerinde App Store'dan yükleyin. Yüklendiğinde kurulum devam eder.",
+      "xcodeCommandLineTools": "Xcode {{mac}} üzerinde var ama Mac hâlâ Command Line Tools'u kullanıyor. Bunu Terminal'de çalıştırın, Mac'in parolasını soracak.",
+      "xcodeLicense": "{{mac}} üzerindeki Xcode, lisansının kabul edilmesini bekliyor. Bunu Terminal'de çalıştırın, Mac'in parolasını soracak.",
       "getXcode": "Xcode'u edinin",
       "toolsDone": "Mac tarafından indirildi",
       "toolsText": "Mac bunları indirir, yaklaşık 8 GB.",

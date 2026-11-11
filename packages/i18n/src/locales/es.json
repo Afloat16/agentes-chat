@@ -14500,6 +14500,8 @@
       },
       "xcodeDone": "Versión {{version}}",
       "xcodeText": "Instala Xcode desde la App Store en {{mac}}. La configuración sigue cuando esté instalado.",
+      "xcodeCommandLineTools": "Xcode está en {{mac}}, pero el Mac sigue usando las Command Line Tools. Ejecuta esto en Terminal, pedirá la contraseña del Mac.",
+      "xcodeLicense": "Xcode en {{mac}} espera que aceptes su licencia. Ejecuta esto en Terminal, pedirá la contraseña del Mac.",
       "getXcode": "Obtener Xcode",
       "toolsDone": "Descargadas por la Mac",
       "toolsText": "La Mac las descarga, unos 8 GB.",

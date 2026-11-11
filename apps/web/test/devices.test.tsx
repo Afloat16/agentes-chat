@@ -576,6 +576,24 @@ describe("Connect a device", () => {
     await show(iphoneAs({ kind: "unsupported", reason: "os_too_old" }, { osVersion: "" }));
     expect(step()?.textContent).toContain("Sam's iPhone 16 runs iOS 16 or older, and agents need iOS 17 or newer.");
 
+    // Xcode installed but the Mac still on the Command Line Tools: why, and the command, not "Install Xcode".
+    const blocked = (xcodeBlocked: string) => {
+      const list = iphoneAs(null, {}, { xcodeBlocked });
+      for (const d of list.devices) if (d.id === MAC) delete d.toolchains.xcode;
+      return list;
+    };
+    await show(blocked("command_line_tools"));
+    expect(step()?.textContent).toContain(
+      "Xcode is on Sam's MacBook Pro, but the Mac still uses the Command Line Tools. Run this in Terminal",
+    );
+    expect(step()?.querySelector(".machine-command__code")?.textContent).toBe(
+      "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
+    );
+    expect(within(step() as HTMLElement).queryByRole("link", { name: "Get Xcode" })).toBeNull();
+    await show(blocked("license"));
+    expect(step()?.textContent).toContain("Xcode on Sam's MacBook Pro waits for its license to be accepted.");
+    expect(step()?.querySelector(".machine-command__code")?.textContent).toBe("sudo xcodebuild -license accept");
+
     // Xcode lists an account that shows no team yet: how to get one, not "sign in".
     await show(iphoneAs(null, {}, { appleAccount: "no_team" }));
     expect(step()?.textContent).toContain("Apple Account in Xcode");

@@ -758,6 +758,9 @@ export function pairAddress(input: unknown): string | null {
   return v6?.[1]?.includes(":") ? text : null;
 }
 
+export const XCODE_BLOCKED = ["command_line_tools", "license"] as const;
+export type XcodeBlocked = (typeof XCODE_BLOCKED)[number];
+
 /** What this computer can build and drive with (versions found, best effort; absent: not found). */
 export interface RunnerToolchains {
   git?: string;
@@ -775,6 +778,11 @@ export interface RunnerToolchains {
   appleAccount?: "team" | "no_team" | "none";
   /** The iPhone SDK's version (`xcrun --sdk iphoneos --show-sdk-version`, "26.2"): the newest iOS it drives. */
   xcodeSdk?: string;
+  /**
+   * Xcode is installed but its tools don't answer, for a reason one command fixes: the developer folder is still the
+   * Command Line Tools (`xcode-select -s`), or Xcode's license isn't agreed to. Absent with `xcode`.
+   */
+  xcodeBlocked?: XcodeBlocked;
   node?: string;
   /** Podman's version: with the runner in system mode, the agents' containers (ADR 0169). */
   podman?: string;
@@ -2930,6 +2938,7 @@ const TOOLCHAINS: readonly (keyof RunnerToolchains)[] = [
   "appleTeam",
   "appleAccount",
   "xcodeSdk",
+  "xcodeBlocked",
   "node",
   "podman",
 ];
@@ -2989,6 +2998,7 @@ export function parseToolchains(v: Record<string, unknown>): RunnerToolchains {
     if (value) (out as Record<string, string>)[key] = value;
   }
   if (out.appleAccount && !["team", "no_team", "none"].includes(out.appleAccount)) delete out.appleAccount;
+  if (out.xcodeBlocked && !(XCODE_BLOCKED as readonly string[]).includes(out.xcodeBlocked)) delete out.xcodeBlocked;
   return out;
 }
 

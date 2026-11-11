@@ -13674,6 +13674,8 @@
       },
       "xcodeDone": "版本 {{version}}",
       "xcodeText": "在 {{mac}} 上从 App Store 安装 Xcode。安装好后设置会继续。",
+      "xcodeCommandLineTools": "{{mac}} 上已有 Xcode，但这台 Mac 仍在使用 Command Line Tools。在终端中运行下面的命令，它会要求输入 Mac 的密码。",
+      "xcodeLicense": "{{mac}} 上的 Xcode 正在等待接受其许可协议。在终端中运行下面的命令，它会要求输入 Mac 的密码。",
       "getXcode": "获取 Xcode",
       "toolsDone": "已由 Mac 下载",
       "toolsText": "Mac 会下载这些工具，约 8 GB。",
