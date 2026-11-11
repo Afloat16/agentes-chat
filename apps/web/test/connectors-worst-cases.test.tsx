@@ -91,7 +91,9 @@ describe("Conectores, worst case", () => {
         "ac-icon ac-foldrow__chevron",
       ]);
       expect(line.querySelectorAll(".list-title > .ac-chip").length).toBeGreaterThan(0);
-      expect(line.querySelector(".connected-row__who")?.textContent).toMatch(/^(\d+ de \d+ agentes|Nenhum agente ainda)$/);
+      expect(line.querySelector(".connected-row__who")?.textContent).toMatch(
+        /^(\d+ de \d+ agentes|Nenhum agente ainda)$/,
+      );
     }
     expect(lines().map((l) => l.querySelector(".list-title")?.textContent)).toEqual([
       "iCloudPrecisa reconectar",
