@@ -240,12 +240,11 @@ function LearnedRow({ m }: { m: Memory }) {
       <span className="agp-row">
         {draft === null ? (
           <>
-            <Button size="sm" variant="ghost" icon="edit" onClick={() => setDraft(m.text)}>
+            <Button variant="link" onClick={() => setDraft(m.text)}>
               {t("agentPage.memory.edit")}
             </Button>
             <Button
-              size="sm"
-              variant="ghost"
+              variant="link"
               disabled={act.isPending}
               onClick={() =>
                 act.mutate(
@@ -292,13 +291,12 @@ function LearnedSkillRow({ s }: { s: LearnedSkill }) {
       </span>
       {open && <pre className="agp-skill-body">{s.body}</pre>}
       <span className="agp-row">
-        <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>
+        <Button variant="link" onClick={() => setOpen((v) => !v)}>
           {open ? t("agentPage.memory.hide") : t("agentPage.memory.view")}
         </Button>
         {!s.canChange ? null : s.archived ? (
           <Button
-            size="sm"
-            variant="ghost"
+            variant="link"
             disabled={act.isPending}
             onClick={() => act.mutate({ type: "restore", id: s.id })}
           >
@@ -308,8 +306,7 @@ function LearnedSkillRow({ s }: { s: LearnedSkill }) {
           <>
             {s.canRevert && (
               <Button
-                size="sm"
-                variant="ghost"
+                variant="link"
                 disabled={act.isPending}
                 onClick={() =>
                   act.mutate(
@@ -322,8 +319,7 @@ function LearnedSkillRow({ s }: { s: LearnedSkill }) {
               </Button>
             )}
             <Button
-              size="sm"
-              variant="ghost"
+              variant="link"
               disabled={act.isPending}
               onClick={() => act.mutate({ type: "update", id: s.id, patch: { locked: !s.locked } })}
             >
@@ -377,8 +373,7 @@ function RulesCard({ rules }: { rules: Memory[] }) {
             {m.removable && (
               <span className="agp-row">
                 <Button
-                  size="sm"
-                  variant="ghost"
+                  variant="link"
                   disabled={act.isPending}
                   onClick={() =>
                     act.mutate(

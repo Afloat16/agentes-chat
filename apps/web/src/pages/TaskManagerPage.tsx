@@ -366,8 +366,7 @@ export function TaskManagerPage({
                 </span>
                 {(c.inLine > 0 || c.working > 0) && (
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    variant="link"
                     aria-label={`${t("queue.see")}: ${c.name}`}
                     onClick={() => setQueueOf(c.id)}
                   >

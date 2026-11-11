@@ -252,8 +252,7 @@ export function AiAccountsSection() {
                     <span className="ai-panel__row">
                       <SettingNote icon="repeat">{t("aiAccounts.page.copies", { count: copies.length })}</SettingNote>
                       <Button
-                        size="sm"
-                        variant="ghost"
+                        variant="link"
                         loading={busy}
                         disabled={busy}
                         onClick={() => void removeCopies(copies)}
@@ -273,7 +272,7 @@ export function AiAccountsSection() {
                 </span>
                 <div className="ac-acts ac-mediarow__end ac-mediarow__end--wrap">
                   {give.length === 1 && give[0] ? (
-                    <Button variant="ghost" size="sm" onClick={() => give[0] && void giveTo(a, give[0])}>
+                    <Button variant="link" onClick={() => give[0] && void giveTo(a, give[0])}>
                       {t("aiAccounts.page.useFor", agentGrammar(give[0].name))}
                     </Button>
                   ) : (
@@ -281,7 +280,7 @@ export function AiAccountsSection() {
                       <Menu
                         label={t("aiAccounts.page.useForMenu")}
                         trigger={
-                          <Button variant="ghost" size="sm">
+                          <Button variant="link">
                             {t("aiAccounts.page.useForMenu")}
                           </Button>
                         }
@@ -294,18 +293,17 @@ export function AiAccountsSection() {
                       </Menu>
                     )
                   )}
-                  <Button variant="ghost" size="sm" onClick={() => setOpen({ type: "rename", account })}>
+                  <Button variant="link" onClick={() => setOpen({ type: "rename", account })}>
                     {t("aiAccounts.page.rename")}
                   </Button>
                   {(logins.some(offersSignInAgain) || plan) && (
-                    <Button variant="ghost" size="sm" onClick={() => setOpen({ type: "again", account })}>
+                    <Button variant="link" onClick={() => setOpen({ type: "again", account })}>
                       {plan ? t("aiAccounts.page.newKey") : t("aiAccounts.page.signInAgain")}
                     </Button>
                   )}
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ac-btn--danger"
+                    variant="link"
+                    className="ac-link--danger"
                     onClick={() => setOpen({ type: "remove", account })}
                   >
                     {t("aiAccounts.page.disconnect")}

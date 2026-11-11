@@ -325,8 +325,7 @@ function ConnectionRow({
               </Button>
             )}
             <Button
-              size="sm"
-              variant="ghost"
+              variant="link"
               aria-label={t("vault.connections.accessTitle", { label: c.label })}
               onClick={onAccess}
             >

@@ -52,6 +52,7 @@ import { returnPlace } from "@/lib/return-to";
 import { STORAGE_KEYS, sessionStore, storage } from "@/lib/storage";
 import { useToast } from "@/lib/toast";
 import { OnboardingPreview, type PreviewAgent } from "./onboarding/OnboardingPreview";
+import { ImportAgentsDialog } from "@/components/new-agent/ImportAgentsDialog";
 import { BusinessStep, PlanStep, TeamStep, useTemplate } from "./onboarding/steps";
 import "./onboarding.css";
 
@@ -88,6 +89,8 @@ export function OnboardingPage() {
   const [created, setCreated] = useState<{ orgId: string; generalChannelId: string } | null>(null);
   // A done step the person went back to, else the step the data says.
   const [picked, setPicked] = useState<RailStep | null>(null);
+  // "Trazer agentes de outro app" on the team step, over it: what arrives is the team, and the step goes on from it.
+  const [importing, setImporting] = useState(false);
   // What step 2 picked in this visit: step 3 starts on its template.
   const [business, setBusiness] = useState<BusinessType | null>(null);
   // "Apagar este workspace" (`?delete=1`, which the phone's onboarding opens) and "Apagar conta", kept in the address.
@@ -183,7 +186,7 @@ export function OnboardingPage() {
   const leaveTo = others.find((o) => o.id === storage.get(STORAGE_KEYS.lastOrg)) ?? others[0];
 
   const open = useMutation({
-    mutationFn: async (how: "paid" | "done" | "skipped" | "import") => {
+    mutationFn: async (how: "paid" | "done" | "skipped") => {
       if (!target) return;
       const done = await finishOnboarding(api, target.orgId);
       sessionStore.remove(STORAGE_KEYS.confirmationSent);
@@ -193,9 +196,7 @@ export function OnboardingPage() {
       const params = { orgId: target.orgId };
       // Wherever it opens, on its arrival (ADR 0160): the beta notice, then Connect an AI.
       const search = { [ARRIVAL_PARAM]: 1 } as never;
-      if (how === "import")
-        await navigate({ to: "/org/$orgId/settings/$section", params: { ...params, section: "import" }, search });
-      else if (landingOf(how, isPersonal(mine)) === "rightHand" && done.agentId)
+      if (landingOf(how, isPersonal(mine)) === "rightHand" && done.agentId)
         await navigate({ to: "/org/$orgId/dm/agent/$agentId", params: { ...params, agentId: done.agentId }, search });
       else
         await navigate({
@@ -683,7 +684,7 @@ export function OnboardingPage() {
                 template={template}
                 reviewer={lodiName}
                 onContinue={() => setPicked(null)}
-                onImport={() => open.mutate("import")}
+                onImport={() => setImporting(true)}
                 leaving={open.isPending}
               />
             )}
@@ -713,6 +714,7 @@ export function OnboardingPage() {
           )}
         </div>
       </main>
+      {importing && orgId && <ImportAgentsDialog orgId={orgId} onClose={() => setImporting(false)} />}
     </div>
   );
 }

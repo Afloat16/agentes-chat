@@ -295,7 +295,7 @@ function HowItUpdates({
           sub={alert.enabled ? t("widgets.alert.where") : null}
           action={
             widget.canEdit && !alerting ? (
-              <Button size="sm" variant="ghost" onClick={() => setAlerting(true)}>
+              <Button variant="link" onClick={() => setAlerting(true)}>
                 {t("widgets.panel.changeAlert")}
               </Button>
             ) : null

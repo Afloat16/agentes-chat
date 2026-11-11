@@ -260,19 +260,17 @@ function MemoryView({ agent, item }: { agent: Agent; item?: string }) {
               </span>
               {/* A row of ghosts: their words 16px apart, the last one on the item's padding line. */}
               <div className="ac-acts">
-                <Button variant="ghost" size="sm" onClick={() => setEditing(m)}>
+                <Button variant="link" onClick={() => setEditing(m)}>
                   {t("memory.edit")}
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="link"
                   onClick={() => action.mutate({ type: "pin", id: m.id, pinned: !m.pinned })}
                 >
                   {m.pinned ? t("memory.unpin") : t("memory.pin")}
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="link"
                   onClick={() => action.mutate({ type: "archive", id: m.id, archived: !m.archived })}
                 >
                   {m.archived ? t("memory.restore") : t("memory.archive")}

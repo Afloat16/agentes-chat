@@ -608,7 +608,7 @@ function NewWidgetBody({
             <Button size="sm" icon="refresh" disabled={!canTest} onClick={runTest}>
               {t("dashboards.newWidget.tryAgain")}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+            <Button variant="link" onClick={() => setEditing(true)}>
               {t("dashboards.newWidget.editAsk")}
             </Button>
           </span>

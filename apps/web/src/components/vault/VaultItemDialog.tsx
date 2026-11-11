@@ -374,7 +374,7 @@ function SecretValue({
         )}
         <span className="vlt-secret__acts">
           {canChange && (
-            <Button size="sm" variant="ghost" icon="edit" onClick={() => onValue("")}>
+            <Button variant="link" onClick={() => onValue("")}>
               {item.hasSecret ? t("vault.item.change") : t("vault.item.add")}
             </Button>
           )}

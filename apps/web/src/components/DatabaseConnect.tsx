@@ -876,8 +876,7 @@ export function DatabaseRow({
             )}
             {connection.wholeServer && (
               <Button
-                size="sm"
-                variant="ghost"
+                variant="link"
                 aria-label={t("database.refreshName", { name })}
                 disabled={servers.refresh.isPending}
                 loading={servers.refresh.isPending}
@@ -889,15 +888,14 @@ export function DatabaseRow({
             <Button size="sm" aria-label={t("connectors.whoName", { name })} onClick={onWho}>
               {t("connectors.who")}
             </Button>
-            <Button size="sm" variant="ghost" aria-label={t("database.scopeEditName", { name })} onClick={onScope}>
+            <Button variant="link" aria-label={t("database.scopeEditName", { name })} onClick={onScope}>
               {t("database.scopeEdit")}
             </Button>
-            <Button size="sm" variant="ghost" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
+            <Button variant="link" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
               {t("connectors.tools")}
             </Button>
             <Button
-              size="sm"
-              variant="ghost"
+              variant="link"
               aria-label={t("connectors.disconnectName", { name })}
               onClick={onDisconnect}
             >

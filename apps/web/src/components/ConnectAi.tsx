@@ -379,17 +379,16 @@ function ConnectAiDialog({
     : named && agents.length === 0
       ? t("noAi.lockedAdmins")
       : undefined;
-  const toComputers = () => {
+  // From the create-agent step a Settings page opens in a new tab: the draft behind this dialog stays.
+  const toSettings = (section: "devices" | "keys") => {
     if (request.forNewAgent) {
-      window.open(`/org/${org.id}/settings/devices`, "_blank", "noopener");
+      window.open(`/org/${org.id}/settings/${section}`, "_blank", "noopener");
       return;
     }
     onClose();
-    void navigate({
-      to: "/org/$orgId/settings/$section",
-      params: { orgId: org.id, section: "devices" },
-    });
+    void navigate({ to: "/org/$orgId/settings/$section", params: { orgId: org.id, section } });
   };
+  const toComputers = () => toSettings("devices");
   const keySelect = mayAddKey && !keySaved && (
     <ProviderKeySelect
       value={draft.provider}
@@ -629,13 +628,7 @@ function ConnectAiDialog({
                     setPickedTarget(forAgent.id);
                     setHeldReader(undefined);
                   }}
-                  onManageKeys={() => {
-                    onClose();
-                    void navigate({
-                      to: "/org/$orgId/settings/$section",
-                      params: { orgId: org.id, section: "keys" },
-                    });
-                  }}
+                  onManageKeys={() => toSettings("keys")}
                   onUsed={(id, next) => {
                     setLinked((l) => ({ ...l, [id]: next.choice }));
                     setUsed(next);
