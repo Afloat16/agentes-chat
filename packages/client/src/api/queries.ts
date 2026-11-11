@@ -4890,6 +4890,23 @@ export const useDesktopLatest = (target: string, arch: string, enabled = true) =
   });
 };
 
+/** Pauses a computer from the apps (`until` null: until resumed) or resumes it; the list follows at once. */
+export function useMachinePause(orgId: string) {
+  const api = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ machineId, input }: { machineId: string; input: { until: string | null } | "resume" }) =>
+      api.machines.setPause(orgId, machineId, input),
+    meta: { silent: true },
+    onSuccess: (paused, { machineId }) => {
+      qc.setQueryData<Machine[]>(keys.machines(orgId), (list) =>
+        list?.map((m) => (m.id === machineId ? { ...m, paused: paused ?? { paused: false } } : m)),
+      );
+      void qc.invalidateQueries({ queryKey: keys.devices(orgId) });
+    },
+  });
+}
+
 /** Removes a folder (for everyone or one agent) or turns a tool off; the machine follows. */
 export function useReduceMachineAccess(orgId: string) {
   const api = useApi();

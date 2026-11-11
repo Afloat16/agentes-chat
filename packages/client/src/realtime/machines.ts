@@ -40,7 +40,11 @@ export function pauseOf(v: unknown): MachinePause | undefined {
   if (v === null) return { paused: false };
   if (!isObject(v)) return undefined;
   if (v.paused === false) return { paused: false };
-  return { paused: true, until: typeof v.until === "string" ? v.until : null };
+  const by =
+    isObject(v.by) && typeof v.by.id === "string" && typeof v.by.name === "string"
+      ? { id: v.by.id, name: v.by.name }
+      : null;
+  return { paused: true, until: typeof v.until === "string" ? v.until : null, ...(by ? { by } : {}) };
 }
 
 /** Access from an event (`{ folders, tools }`), checked; `null` when the machine stopped reporting it. */

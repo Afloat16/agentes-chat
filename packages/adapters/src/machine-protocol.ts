@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 55;
+export const MACHINE_PROTOCOL_VERSION = 56;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -600,6 +600,11 @@ export const PHONES_PROTOCOL = 54;
 export const PHONE_SCREEN_PROTOCOL = 55;
 /** Pairing an Android phone over Wi-Fi (`phone.pair.*`): the server asks no older runner. */
 export const PHONE_PAIRING_PROTOCOL = 55;
+/**
+ * `pause.set`: a person who may manage the computer pauses or resumes it from the apps. The runner applies it as its
+ * own pause (stored, `runner.state` sent) and keeps `by`, the person who did it, until the next local change.
+ */
+export const REMOTE_PAUSE_PROTOCOL = 56;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -2006,6 +2011,8 @@ export interface RunnerPause {
   paused: boolean;
   /** ISO time; absent or null with `paused: true` means "until resumed". */
   until?: string | null;
+  /** `REMOTE_PAUSE_PROTOCOL`: the user id of the person who paused it from the apps; absent when paused on it. */
+  by?: string | null;
 }
 
 /** The tools a person turns on or off on the machine (protocol 10). */
@@ -2320,6 +2327,8 @@ export type MachineRequest = (
   | { op: "phone.pair.code"; address: string; code: string }
   | { op: "phone.pair.status"; pairingId: string }
   | { op: "phone.pair.cancel"; pairingId: string }
+  /** `REMOTE_PAUSE_PROTOCOL`: pause (until `until`, null: until resumed) or resume, for the person `by`. */
+  | { op: "pause.set"; paused: boolean; until?: string | null; by: string }
 ) & {
   agent?: AgentScope;
   /** Protocol 34: a `browser.*` op in this browser profile's session instead of the agent's (ADR 0110). */
@@ -2390,6 +2399,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "phone.pair.code",
   "phone.pair.status",
   "phone.pair.cancel",
+  "pause.set",
 ];
 
 /** What each op answers with `ok: true`. */
@@ -2544,6 +2554,7 @@ export interface MachineReplies {
   "phone.pair.code": PhonePairing;
   "phone.pair.status": PhonePairing;
   "phone.pair.cancel": { canceled: boolean };
+  "pause.set": { paused: RunnerPause };
 }
 
 /** An element numbered on a `browser.capture` image: its ref and box (CSS pixels). */
@@ -3787,7 +3798,8 @@ export const isSafeRule = (rule: string) =>
 export function parsePause(v: unknown): RunnerPause | undefined {
   if (!isObject(v) || typeof v.paused !== "boolean") return undefined;
   const until = isString(v.until) && !Number.isNaN(Date.parse(v.until)) ? new Date(v.until).toISOString() : null;
-  return v.paused ? { paused: true, until } : { paused: false };
+  if (!v.paused) return { paused: false };
+  return isString(v.by) && v.by.length <= 64 ? { paused: true, until, by: v.by } : { paused: true, until };
 }
 
 /** `hello.access` / `access.changed.access`, checked and cut. */
