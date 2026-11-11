@@ -52,7 +52,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Başka bir çalışma alanına da açın",
         blocks: [
           "Burada çalıştırdığınız sunucunun çalışma alanları bu bilgisayarı kendiliğinden kullanır. Başka bir yerdeki bir çalışma alanının da, örneğin agentes.chat Cloud'daki birinin, kullanmasını istiyorsanız **Tercihler\u00a0›\u00a0Genel** içindeki ilk kartın en altında bulunan **Çalışma alanı ekle…** düğmesine ya da **Tercihler\u00a0›\u00a0Sunucular** içindeki **Sunucu ekle…** düğmesine basın. O çalışma alanında oturum açın ve uygulama sorduğunda **İzin ver** düğmesine basın.",
-          "Her çalışma alanının burada kendi ajanları ve klasörleri, **Tercihler\u00a0›\u00a0Araçlar** içinde de kendi **Komutlar** anahtarı olur. Komutları yalnızca ajanlarına bu bilgisayarın tamamını emanet edebileceğiniz bir çalışma alanında açın.",
+          "Her çalışma alanının burada kendi ajanları ve klasörleri, **Tercihler › Araçlar** içinde de kendi **Komutlar** anahtarı olur. Komutlar onun için açık başlar, uygulamanın sorusunda **İzin ver**'e basmadan önce kapatmazsanız. Komutları yalnızca ajanlarına bu bilgisayarın tamamını emanet edebileceğiniz bir çalışma alanında açık bırakın.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Yedekler",
         blocks: [
-          "**Tercihler\u00a0›\u00a0Sunucular** içinde **Her gece yedekle** açıksa (uygulama 0.6.2 ve sonrası), uygulama her gece saat 3:00'te veritabanını, dosyaları ve `.env` dosyasını ana klasörünüzdeki `.agentes/backups` içine kaydeder. O saatte uykuda olan bir bilgisayar uyandığında yedekler. **Şimdi yedekle** aynısını hemen yapar. Her yedekleme sunucuyu kısa bir süre durdurur ve en yeni iki yedek kalır.",
+          "**Tercihler\u00a0›\u00a0Sunucular** içinde **Her gece yedekle** açıksa (uygulama 0.7.1 ve sonrası), uygulama her gece saat 3:00'te veritabanını, dosyaları ve `.env` dosyasını ana klasörünüzdeki `.agentes/backups` içine kaydeder. O saatte uykuda olan bir bilgisayar uyandığında yedekler. **Şimdi yedekle** aynısını hemen yapar. Her yedekleme sunucuyu kısa bir süre durdurur ve en yeni iki yedek kalır.",
           "**Şuraya kopyala**, her yeni yedeği seçtiğiniz bir klasöre de koyar, örneğin bir USB belleğe ya da iCloud Drive'a, ve orada da en yeni iki yedek kalır. İçlerinde anahtarlarınız var: onları gizli tutun. **Geri yükle…** agentes.chat'i bir yedeğe döndürür: mesajlar, dosyalar ve ayarlar. Bir dakikalığına durur ve önceden orada olanlar yedek klasöründe kalır.",
         ],
       },
@@ -199,7 +199,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
               "agentes.chat'i de çalıştıran bir bilgisayarda, onun `.agentes` içindeki veritabanı ve anahtarları",
             ],
           },
-          "agentes.chat anahtarların, token'ların ve oturum bilgilerinin adını geçiren komutları reddeder, ama bu bir kuraldır, duvar değil. Bu yüzden **Komutlar** kapalı başlar. **Tercihler\u00a0›\u00a0Araçlar** içinde her çalışma alanının kendi anahtarı vardır (uygulama 0.6.2 ve sonrası) ve uygulama birini açmadan önce sorar. Yalnızca ajanlarına ve onların çalıştığı kişilere bilgisayardaki her şeyi emanet edebileceğiniz bir çalışma alanında açın. Claude Code ve Codex, Komutlar kapalıyken bile kendi komutlarını ajanın klasöründe çalıştırır.",
+          "agentes.chat anahtarların, token'ların ve oturum bilgilerinin adını geçiren komutları reddeder, ama bu bir kuraldır, duvar değil. **Komutlar** açık başlar. Onları uygulamanın sorusunda **İzin ver**'e basmadan önce ya da daha sonra **Tercihler › Araçlar** içinde kapatın. Orada her çalışma alanının kendi anahtarı vardır (uygulama 0.7.1 ve sonrası) ve uygulama birini yeniden açmadan önce sorar. Yalnızca ajanlarına ve onların çalıştığı kişilere bilgisayardaki her şeyi emanet edebileceğiniz bir çalışma alanında açık bırakın. Claude Code ve Codex, Komutlar kapalıyken bile kendi komutlarını ajanın klasöründe çalıştırır.",
           "Gerçek bir duvar için bir Linux sunucu kullanın. Debian 13'te `--system` ile kurulduğunda her ajan ayrı bir kullanıcıdır. Ubuntu'da ajanlar tek bir kullanıcıyı, `agentes` kullanıcısını paylaşır: birbirlerinin klasörlerini görürler, sizinkileri ya da sunucununkileri görmezler. Ya da ajanlara kendilerine ait bir bilgisayar verin.",
         ],
       },

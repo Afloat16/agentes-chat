@@ -52,7 +52,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Udostępnij go też innej przestrzeni roboczej",
         blocks: [
           "Przestrzenie robocze serwera, który tu uruchamiasz, korzystają z tego komputera same. Żeby mogła z niego korzystać także przestrzeń robocza gdzie indziej, na przykład w agentes.chat Cloud, naciśnij **Dodaj przestrzeń roboczą…** na dole pierwszej karty w **Preferencje\u00a0›\u00a0Ogólne** albo **Dodaj serwer…** w **Preferencje\u00a0›\u00a0Serwery**. Zaloguj się do tej przestrzeni roboczej i naciśnij **Zezwól**, gdy aplikacja zapyta.",
-          "Każda przestrzeń robocza ma tu własnych agentów i foldery oraz własny przełącznik **Polecenia** w **Preferencje\u00a0›\u00a0Narzędzia**. Włącz polecenia tylko w przestrzeni roboczej, której agentom powierzasz cały ten komputer.",
+          "Każda przestrzeń robocza ma tu własnych agentów i foldery oraz własny przełącznik **Polecenia** w **Preferencje › Narzędzia**. Polecenia są w niej na początku włączone, chyba że wyłączysz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**. Zostaw je włączone tylko w przestrzeni roboczej, której agentom powierzasz cały ten komputer.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Kopie zapasowe",
         blocks: [
-          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.6.2 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
+          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.7.1 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
           "**Kopiuj do** umieszcza też każdą nową kopię w wybranym folderze, na przykład na pendrivie albo w iCloud Drive, gdzie zostają dwie najnowsze. Zawierają twoje klucze: trzymaj je w tajemnicy. **Przywróć…** cofa agentes.chat do kopii: wiadomości, plików i ustawień. Zatrzymuje się na minutę, a to, co było wcześniej, zostaje w folderze kopii.",
         ],
       },
@@ -237,7 +237,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
               "na komputerze, który uruchamia też agentes.chat, jego bazę danych i klucze w `.agentes`",
             ],
           },
-          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. Dlatego **Polecenia** są na początku wyłączone. Każda przestrzeń robocza ma własny przełącznik w **Preferencje\u00a0›\u00a0Narzędzia** (aplikacja 0.6.2 i nowsze), a aplikacja pyta, zanim jakiś włączy. Włącz go tylko w przestrzeni roboczej, której agentom i osobom, dla których pracują, powierzyłbyś wszystko, co jest na komputerze. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, nawet przy wyłączonych poleceniach.",
+          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. **Polecenia** są na początku włączone. Wyłącz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**, albo później w **Preferencje › Narzędzia**, gdzie każda przestrzeń robocza ma własny przełącznik (aplikacja 0.7.1 i nowsze), a aplikacja pyta, zanim ponownie jakiś włączy. Zostaw je włączone tylko w przestrzeni roboczej, której agentom i osobom, dla których pracują, powierzyłbyś wszystko, co jest na komputerze. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, nawet przy wyłączonych poleceniach.",
           "Prawdziwy mur da ci serwer z Linuksem. Na Debianie 13, zainstalowanym z `--system`, każdy agent jest osobnym użytkownikiem. Na Ubuntu agenci dzielą jednego użytkownika, `agentes`: widzą nawzajem swoje foldery, ale nie twoje ani serwera. Możesz też dać agentom osobny komputer.",
         ],
       },

@@ -52,7 +52,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Leen hem ook uit aan een andere werkruimte",
         blocks: [
           "De werkruimtes van de server die je hier draait, gebruiken deze computer vanzelf. Wil je dat een werkruimte ergens anders hem ook gebruikt, zoals een op agentes.chat Cloud, druk dan op **Werkruimte toevoegen…** onderaan de eerste kaart in **Voorkeuren\u00a0›\u00a0Algemeen**, of op **Een server toevoegen…** in **Voorkeuren\u00a0›\u00a0Servers**. Meld je aan bij die werkruimte en druk op **Toestaan** als de app het vraagt.",
-          "Elke werkruimte krijgt hier eigen agents en mappen, en een eigen schakelaar voor **Opdrachten** in **Voorkeuren\u00a0›\u00a0Tools**. Zet Opdrachten alleen aan voor een werkruimte waarvan je de agents met heel deze computer vertrouwt.",
+          "Elke werkruimte krijgt hier eigen agents en mappen, en een eigen schakelaar voor **Opdrachten** in **Voorkeuren › Tools**. Opdrachten staan er eerst aan, tenzij je ze uitzet in de vraag van de app voordat je op **Toestaan** drukt. Laat ze alleen aan voor een werkruimte waarvan je de agents met heel deze computer vertrouwt.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Back-ups",
         blocks: [
-          "Met **Elke nacht een back-up maken** aan (app 0.6.2 en nieuwer), in **Voorkeuren\u00a0›\u00a0Servers**, bewaart de app elke nacht om 3:00 de database, de bestanden en `.env` in `.agentes/backups`, in je thuismap. Een computer die toen sliep, maakt de back-up zodra hij wakker is. **Nu een back-up maken** doet hetzelfde meteen. Elke back-up stopt de server even, en de twee nieuwste blijven bewaard.",
+          "Met **Elke nacht een back-up maken** aan (app 0.7.1 en nieuwer), in **Voorkeuren\u00a0›\u00a0Servers**, bewaart de app elke nacht om 3:00 de database, de bestanden en `.env` in `.agentes/backups`, in je thuismap. Een computer die toen sliep, maakt de back-up zodra hij wakker is. **Nu een back-up maken** doet hetzelfde meteen. Elke back-up stopt de server even, en de twee nieuwste blijven bewaard.",
           "**Kopiëren naar** zet elke nieuwe back-up ook in een map die je kiest, zoals een USB-stick of iCloud Drive, waar de twee nieuwste blijven. Ze bevatten je sleutels: houd ze privé. **Terugzetten…** zet agentes.chat terug naar een back-up: berichten, bestanden en instellingen. Het stopt een minuut, en wat er eerst stond, blijft bewaard in de back-upmap.",
         ],
       },
@@ -97,7 +97,9 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Verhuizen naar een server",
         blocks: [
           {
-            list: ["Sluit de app af en maak dan een dump van de database met de eigen kopie van de server in de app. Op een Mac:"],
+            list: [
+              "Sluit de app af en maak dan een dump van de database met de eigen kopie van de server in de app. Op een Mac:",
+            ],
           },
           {
             code: "BUN_BE_BUN=1 /Applications/agentes.chat.app/Contents/MacOS/agentes-runner \\\n  ~/.agentes/app/current/server/native.js db dump --data ~/.agentes --out agentes.sql",
@@ -237,7 +239,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
               "op een computer die ook agentes.chat draait, de database en sleutels ervan in `.agentes`",
             ],
           },
-          "agentes.chat weigert opdrachten die zijn sleutels, tokens en aanmeldingen noemen, maar dat is een regel, geen muur. Daarom staan **Opdrachten** eerst uit. Elke werkruimte heeft een eigen schakelaar in **Voorkeuren\u00a0›\u00a0Tools** (app 0.6.2 en nieuwer), en de app vraagt het eerst voordat er een aangaat. Zet hem alleen aan voor een werkruimte waarvan je de agents, en de mensen voor wie ze werken, met alles op de computer zou vertrouwen. Claude Code en Codex voeren hun eigen opdrachten uit in de map van de agent, ook als Opdrachten uit staan.",
+          "agentes.chat weigert opdrachten die zijn sleutels, tokens en aanmeldingen noemen, maar dat is een regel, geen muur. **Opdrachten** staan eerst aan. Zet ze uit in de vraag van de app voordat je op **Toestaan** drukt, of later in **Voorkeuren › Tools**, waar elke werkruimte een eigen schakelaar heeft (app 0.7.1 en nieuwer) en de app het eerst vraagt voordat er een weer aangaat. Laat ze alleen aan voor een werkruimte waarvan je de agents, en de mensen voor wie ze werken, met alles op de computer zou vertrouwen. Claude Code en Codex voeren hun eigen opdrachten uit in de map van de agent, ook als Opdrachten uit staan.",
           "Voor een echte muur gebruik je een Linux-server. Op Debian 13, geïnstalleerd met `--system`, is elke agent een eigen gebruiker. Op Ubuntu delen agents één gebruiker, `agentes`: ze zien elkaars mappen, niet die van jou of van de server. Of geef de agents een eigen computer.",
         ],
       },

@@ -52,7 +52,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Pinjamkan juga ke ruang kerja lain",
         blocks: [
           "Ruang kerja dari server yang kamu jalankan di sini memakai komputer ini dengan sendirinya. Supaya ruang kerja di tempat lain juga bisa memakainya, misalnya ruang kerja di agentes.chat Cloud, tekan **Tambah ruang kerja…** di bagian bawah kartu pertama di **Preferensi\u00a0›\u00a0Umum**, atau **Tambah server…** di **Preferensi\u00a0›\u00a0Server**. Masuk ke ruang kerja itu, lalu tekan **Izinkan** saat aplikasi bertanya.",
-          "Tiap ruang kerja punya agen dan foldernya sendiri di sini, juga sakelar **Perintah** sendiri di **Preferensi\u00a0›\u00a0Alat**. Nyalakan Perintah hanya untuk ruang kerja yang agennya kamu percaya memegang seluruh komputer ini.",
+          "Tiap ruang kerja punya agen dan foldernya sendiri di sini, juga sakelar **Perintah** sendiri di **Preferensi › Alat**. Perintah awalnya menyala untuknya, kecuali kamu mematikannya di pertanyaan aplikasi sebelum menekan **Izinkan**. Biarkan menyala hanya untuk ruang kerja yang agennya kamu percaya memegang seluruh komputer ini.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Cadangan",
         blocks: [
-          "Kalau **Cadangkan setiap malam** menyala (aplikasi 0.6.2 ke atas), di **Preferensi\u00a0›\u00a0Server**, aplikasi menyimpan database, file, dan `.env` di `.agentes/backups`, di folder pribadimu, setiap malam pukul 3:00. Komputer yang sedang tidur saat itu mencadangkan begitu bangun. **Cadangkan sekarang** melakukan hal yang sama saat itu juga. Setiap pencadangan menghentikan server sebentar, dan dua cadangan terbaru yang disimpan.",
+          "Kalau **Cadangkan setiap malam** menyala (aplikasi 0.7.1 ke atas), di **Preferensi\u00a0›\u00a0Server**, aplikasi menyimpan database, file, dan `.env` di `.agentes/backups`, di folder pribadimu, setiap malam pukul 3:00. Komputer yang sedang tidur saat itu mencadangkan begitu bangun. **Cadangkan sekarang** melakukan hal yang sama saat itu juga. Setiap pencadangan menghentikan server sebentar, dan dua cadangan terbaru yang disimpan.",
           "**Salin ke** juga menaruh setiap cadangan baru di folder pilihanmu, seperti flashdisk atau iCloud Drive, tempat dua cadangan terbaru disimpan. Isinya kunci-kuncimu: jaga kerahasiaannya. **Pulihkan…** mengembalikan agentes.chat ke sebuah cadangan: pesan, file, dan pengaturan. agentes.chat berhenti selama semenit, dan isi sebelumnya tetap disimpan di folder cadangan.",
         ],
       },
@@ -199,7 +199,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
               "di komputer yang juga menjalankan agentes.chat, database dan kuncinya di `.agentes`",
             ],
           },
-          "agentes.chat menolak perintah yang menyebut kunci, token, dan data login, tapi itu aturan, bukan tembok. Karena itu **Perintah** awalnya mati. Tiap ruang kerja punya sakelarnya sendiri di **Preferensi\u00a0›\u00a0Alat** (aplikasi 0.6.2 ke atas), dan aplikasi bertanya dulu sebelum menyalakannya. Nyalakan hanya untuk ruang kerja yang agennya, dan orang-orang yang mereka bantu, kamu percaya memegang semua isi komputer itu. Claude Code dan Codex menjalankan perintahnya sendiri di folder agen, bahkan saat Perintah mati.",
+          "agentes.chat menolak perintah yang menyebut kunci, token, dan data login, tapi itu aturan, bukan tembok. **Perintah** awalnya menyala. Matikan di pertanyaan aplikasi sebelum menekan **Izinkan**, atau nanti di **Preferensi › Alat**, tempat tiap ruang kerja punya sakelarnya sendiri (aplikasi 0.7.1 ke atas) dan aplikasi bertanya dulu sebelum menyalakannya lagi. Biarkan menyala hanya untuk ruang kerja yang agennya, dan orang-orang yang mereka bantu, kamu percaya memegang semua isi komputer itu. Claude Code dan Codex menjalankan perintahnya sendiri di folder agen, bahkan saat Perintah mati.",
           "Untuk tembok sungguhan, pakai server Linux. Di Debian 13, kalau dipasang dengan `--system`, tiap agen jadi pengguna tersendiri. Di Ubuntu, agen berbagi satu pengguna, `agentes`: mereka bisa melihat folder satu sama lain, tapi bukan foldermu atau folder server. Atau beri agen komputer milik mereka sendiri.",
         ],
       },

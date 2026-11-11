@@ -51,7 +51,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         heading: "Emprestar para outro workspace também",
         blocks: [
           "Os workspaces do servidor que roda aqui já usam este computador, sem nada a fazer. Para um workspace de outro lugar usar também, como um no agentes.chat Cloud, aperte **Adicionar um workspace…** no fim do primeiro cartão de **Preferências\u00a0›\u00a0Geral**, ou **Adicionar um servidor…** em **Preferências\u00a0›\u00a0Servidores**. Entre nesse workspace e aperte **Permitir** quando o app perguntar.",
-          "Cada workspace tem aqui os próprios agentes e pastas, e a própria chave de **Comandos** em **Preferências\u00a0›\u00a0Ferramentas**. Ligue Comandos só num workspace a cujos agentes você confiaria este computador inteiro.",
+          "Cada workspace tem aqui os próprios agentes e pastas, e a própria chave de **Comandos** em **Preferências\u00a0›\u00a0Ferramentas**. Os Comandos começam ligados para ele, a não ser que você desligue na pergunta do app antes de apertar **Permitir**. Deixe ligado só num workspace a cujos agentes você confiaria este computador inteiro.",
         ],
       },
       {
@@ -80,7 +80,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         id: "backups",
         heading: "Backup",
         blocks: [
-          "Com **Fazer backup toda noite** ligado (app 0.6.2 ou mais novo), em **Preferências\u00a0›\u00a0Servidores**, o app guarda o banco de dados, os arquivos e o `.env` em `.agentes/backups`, na sua pasta pessoal, toda noite às 3:00. Um computador que estava dormindo faz o backup quando acorda. **Fazer backup agora** faz o mesmo na hora. Cada backup para o servidor por um instante, e os dois mais novos ficam.",
+          "Com **Fazer backup toda noite** ligado (app 0.7.1 ou mais novo), em **Preferências\u00a0›\u00a0Servidores**, o app guarda o banco de dados, os arquivos e o `.env` em `.agentes/backups`, na sua pasta pessoal, toda noite às 3:00. Um computador que estava dormindo faz o backup quando acorda. **Fazer backup agora** faz o mesmo na hora. Cada backup para o servidor por um instante, e os dois mais novos ficam.",
           "**Copiar para** também põe cada backup novo numa pasta que você escolhe, como um pendrive ou o iCloud Drive, onde os dois mais novos ficam. Eles guardam as suas chaves: mantenha em sigilo. **Restaurar…** volta o agentes.chat para um backup: mensagens, arquivos e ajustes. Ele para por um minuto, e o que havia antes fica guardado na pasta de backups.",
         ],
       },
@@ -236,7 +236,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
               "num computador que também roda o agentes.chat, o banco de dados e as chaves dele em `.agentes`",
             ],
           },
-          "O agentes.chat recusa comandos que citam as chaves, os tokens e os logins, mas isso é uma regra, não uma parede. Por isso os **Comandos** começam desligados. Cada workspace tem a própria chave em **Preferências\u00a0›\u00a0Ferramentas** (app 0.6.2 ou mais novo), e o app pergunta antes de ligar. Ligue só num workspace a cujos agentes, e às pessoas para quem eles trabalham, você confiaria tudo o que há no computador. O Claude Code e o Codex rodam os próprios comandos na pasta do agente, mesmo com Comandos desligado.",
+          "O agentes.chat recusa comandos que citam as chaves, os tokens e os logins, mas isso é uma regra, não uma parede. Os **Comandos** começam ligados. Desligue na pergunta do app antes de apertar **Permitir**, ou depois em **Preferências\u00a0›\u00a0Ferramentas**, onde cada workspace tem a própria chave (app 0.7.1 ou mais novo) e o app pergunta antes de ligar de novo. Deixe ligado só num workspace a cujos agentes, e às pessoas para quem eles trabalham, você confiaria tudo o que há no computador. O Claude Code e o Codex rodam os próprios comandos na pasta do agente, mesmo com Comandos desligado.",
           "Para uma parede de verdade, use um servidor Linux. No Debian 13, instalado com `--system`, cada agente é um usuário só dele. No Ubuntu, os agentes dividem um usuário, `agentes`: eles veem as pastas uns dos outros, não as suas nem as do servidor. Ou dê aos agentes um computador só deles.",
         ],
       },

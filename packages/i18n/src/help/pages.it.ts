@@ -52,7 +52,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Prestalo anche a un altro spazio di lavoro",
         blocks: [
           "Gli spazi di lavoro del server che fai girare qui usano questo computer da soli. Per farlo usare anche a uno spazio di lavoro altrove, come uno su agentes.chat Cloud, premi **Aggiungi uno spazio di lavoro…** in fondo alla prima scheda di **Preferenze\u00a0›\u00a0Generali**, oppure **Aggiungi un server…** in **Preferenze\u00a0›\u00a0Server**. Accedi a quello spazio di lavoro e premi **Consenti** quando l’app lo chiede.",
-          "Ogni spazio di lavoro ha qui i suoi agenti e le sue cartelle, e un suo interruttore **Comandi** in **Preferenze\u00a0›\u00a0Strumenti**. Attiva i comandi solo per uno spazio di lavoro ai cui agenti affideresti tutto questo computer.",
+          "Ogni spazio di lavoro ha qui i suoi agenti e le sue cartelle, e un suo interruttore **Comandi** in **Preferenze › Strumenti**. I comandi partono attivi, a meno che tu non li disattivi nella domanda dell’app prima di premere **Consenti**. Lasciali attivi solo per uno spazio di lavoro ai cui agenti affideresti tutto questo computer.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Backup",
         blocks: [
-          "Con **Fai un backup ogni notte** attivo (app 0.6.2 e successive), in **Preferenze\u00a0›\u00a0Server**, l’app salva ogni notte alle 3:00 il database, i file e `.env` in `.agentes/backups`, nella tua cartella personale. Un computer che dormiva a quell’ora fa il backup appena si risveglia. **Fai il backup ora** fa lo stesso subito. Ogni backup ferma il server per un momento, e restano i due più recenti.",
+          "Con **Fai un backup ogni notte** attivo (app 0.7.1 e successive), in **Preferenze\u00a0›\u00a0Server**, l’app salva ogni notte alle 3:00 il database, i file e `.env` in `.agentes/backups`, nella tua cartella personale. Un computer che dormiva a quell’ora fa il backup appena si risveglia. **Fai il backup ora** fa lo stesso subito. Ogni backup ferma il server per un momento, e restano i due più recenti.",
           "**Copia in** mette anche ogni nuovo backup in una cartella che scegli, come una chiavetta USB o iCloud Drive, dove restano i due più recenti. Contengono le tue chiavi: tienili privati. **Ripristina…** riporta agentes.chat a un backup: messaggi, file e impostazioni. Si ferma per un minuto, e quello che c’era prima resta nella cartella dei backup.",
         ],
       },
@@ -237,7 +237,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
               "su un computer che fa girare anche agentes.chat, il suo database e le sue chiavi in `.agentes`",
             ],
           },
-          "agentes.chat rifiuta i comandi che nominano le sue chiavi, i token e gli accessi salvati, ma è una regola, non un muro. Per questo i **Comandi** partono disattivati. Ogni spazio di lavoro ha il suo interruttore in **Preferenze\u00a0›\u00a0Strumenti** (app 0.6.2 e successive), e l’app chiede conferma prima di attivarne uno. Attivalo solo per uno spazio di lavoro ai cui agenti, e alle persone per cui lavorano, affideresti tutto ciò che c’è sul computer. Claude Code e Codex eseguono i propri comandi nella cartella dell’agente, anche con i comandi disattivati.",
+          "agentes.chat rifiuta i comandi che nominano le sue chiavi, i token e gli accessi salvati, ma è una regola, non un muro. I **Comandi** partono attivi. Disattivali nella domanda dell’app prima di premere **Consenti**, o più tardi in **Preferenze › Strumenti**, dove ogni spazio di lavoro ha il suo interruttore (app 0.7.1 e successive) e l’app chiede conferma prima di riattivarne uno. Lasciali attivi solo per uno spazio di lavoro ai cui agenti, e alle persone per cui lavorano, affideresti tutto ciò che c’è sul computer. Claude Code e Codex eseguono i propri comandi nella cartella dell’agente, anche con i comandi disattivati.",
           "Per un vero muro, usa un server Linux. Su Debian 13, installato con `--system`, ogni agente è un utente a sé. Su Ubuntu, gli agenti condividono un solo utente, `agentes`: vedono le cartelle degli altri, non le tue né quelle del server. Oppure dai agli agenti un computer tutto loro.",
         ],
       },

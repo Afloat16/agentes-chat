@@ -52,7 +52,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Auch einem anderen Workspace leihen",
         blocks: [
           "Die Workspaces des Servers, den du hier betreibst, nutzen diesen Computer von selbst. Damit ihn auch ein Workspace an anderer Stelle nutzen kann, etwa einer auf agentes.chat Cloud, drück **Workspace hinzufügen…** unten in der ersten Karte unter **Einstellungen\u00a0›\u00a0Allgemein** oder **Server hinzufügen…** unter **Einstellungen\u00a0›\u00a0Server**. Melde dich bei diesem Workspace an und drück **Erlauben**, wenn die App fragt.",
-          "Jeder Workspace bekommt hier eigene Agenten und Ordner und unter **Einstellungen\u00a0›\u00a0Tools** einen eigenen Schalter für **Befehle**. Schalte Befehle nur für einen Workspace ein, dessen Agenten du diesen ganzen Computer anvertraust.",
+          "Jeder Workspace bekommt hier eigene Agenten und Ordner und unter **Einstellungen › Tools** einen eigenen Schalter für **Befehle**. Befehle sind für ihn zu Beginn an, außer du schaltest sie in der Frage der App aus, bevor du **Erlauben** drückst. Lass sie nur für einen Workspace an, dessen Agenten du diesen ganzen Computer anvertraust.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Backups",
         blocks: [
-          "Ist **Jede Nacht sichern** an (ab App-Version 0.6.2), unter **Einstellungen\u00a0›\u00a0Server**, speichert die App jede Nacht um 3:00 die Datenbank, die Dateien und `.env` in `.agentes/backups` in deinem Benutzerordner. Ein Computer, der da schlief, sichert, sobald er wach ist. **Jetzt sichern** macht dasselbe sofort. Jede Sicherung stoppt den Server kurz, und die zwei neuesten bleiben erhalten.",
+          "Ist **Jede Nacht sichern** an (ab App-Version 0.7.1), unter **Einstellungen\u00a0›\u00a0Server**, speichert die App jede Nacht um 3:00 die Datenbank, die Dateien und `.env` in `.agentes/backups` in deinem Benutzerordner. Ein Computer, der da schlief, sichert, sobald er wach ist. **Jetzt sichern** macht dasselbe sofort. Jede Sicherung stoppt den Server kurz, und die zwei neuesten bleiben erhalten.",
           "**Kopieren nach** legt jede neue Sicherung zusätzlich in einen Ordner deiner Wahl, etwa auf einen USB-Stick oder in iCloud Drive, wo die zwei neuesten bleiben. Sie enthalten deine Schlüssel: Behalte sie für dich. **Wiederherstellen…** setzt agentes.chat auf eine Sicherung zurück: Nachrichten, Dateien und Einstellungen. Es stoppt dafür eine Minute, und was vorher da war, bleibt im Sicherungsordner.",
         ],
       },
@@ -97,7 +97,9 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Umzug auf einen Server",
         blocks: [
           {
-            list: ["Beende die App und exportiere dann die Datenbank mit der Kopie des Servers, die in der App steckt. Auf einem Mac:"],
+            list: [
+              "Beende die App und exportiere dann die Datenbank mit der Kopie des Servers, die in der App steckt. Auf einem Mac:",
+            ],
           },
           {
             code: "BUN_BE_BUN=1 /Applications/agentes.chat.app/Contents/MacOS/agentes-runner \\\n  ~/.agentes/app/current/server/native.js db dump --data ~/.agentes --out agentes.sql",
@@ -237,7 +239,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
               "auf einem Computer, der auch agentes.chat ausführt, dessen Datenbank und Schlüssel in `.agentes`",
             ],
           },
-          "agentes.chat lehnt Befehle ab, die seine Schlüssel, Tokens und Anmeldungen nennen, aber das ist eine Regel, keine Mauer. Deshalb sind **Befehle** zu Beginn aus. Jeder Workspace hat unter **Einstellungen\u00a0›\u00a0Tools** einen eigenen Schalter (ab App-Version 0.6.2), und die App fragt nach, bevor sie einen einschaltet. Schalte ihn nur für einen Workspace ein, dessen Agenten und den Personen, für die sie arbeiten, du alles auf dem Computer anvertrauen würdest. Claude Code und Codex führen ihre eigenen Befehle im Ordner des Agenten aus, auch wenn Befehle aus sind.",
+          "agentes.chat lehnt Befehle ab, die seine Schlüssel, Tokens und Anmeldungen nennen, aber das ist eine Regel, keine Mauer. **Befehle** sind zu Beginn an. Schalte sie in der Frage der App aus, bevor du **Erlauben** drückst, oder später unter **Einstellungen › Tools**, wo jeder Workspace einen eigenen Schalter hat (ab App-Version 0.7.1) und die App nachfragt, bevor sie einen wieder einschaltet. Lass sie nur für einen Workspace an, dessen Agenten und den Personen, für die sie arbeiten, du alles auf dem Computer anvertrauen würdest. Claude Code und Codex führen ihre eigenen Befehle im Ordner des Agenten aus, auch wenn Befehle aus sind.",
           "Für eine echte Mauer nimm einen Linux-Server. Unter Debian 13, installiert mit `--system`, ist jeder Agent ein eigener Benutzer. Unter Ubuntu teilen sich die Agenten einen Benutzer, `agentes`: Sie sehen die Ordner der anderen, aber nicht deine oder die des Servers. Oder gib den Agenten einen eigenen Computer.",
         ],
       },

@@ -45,6 +45,7 @@ import { type Home, orgName } from "../../control/store";
 import { agentOf, useLocalServer, usePending, writePref } from "../../hooks";
 import type { Host } from "../../host/types";
 import { AgentFace, ConnectionChip, OrgTile } from "../../ui/bits";
+import { MacPermissionCard, useMacGrants } from "../../ui/permissions";
 import { CardTitle, hintFor, PrefCard, PrefRow } from "../../ui/settings";
 import { useToast } from "../../ui/Toast";
 
@@ -114,7 +115,8 @@ const AUDIENCE_ICON: Record<DeviceAudience["mode"], IconName> = {
  * General's This Mac card: the name (`top`), one row per workspace the person is signed in to (a paired one pauses
  * and resumes with its switch, one this computer doesn't work for yet shows Allow, which pairs it after the system's
  * dialog), Add a workspace, and Open at login (`bottom`). Under it the phones plugged in, with their state and one
- * way out each (Stop, Show me how). Who can use it and the phones are the server's, as the web sets them.
+ * way out each (Stop, Show me how). Who can use it and the phones are the server's, as the web sets
+ * them. On a Mac, its permissions (`Permissions`).
  */
 export function ThisMacCards({
   homes,
@@ -307,6 +309,8 @@ export function ThisMacCards({
         />
       </PrefCard>
 
+      {host.platform === "mac" && homes.length > 0 && <Permissions />}
+
       {phonesShown && (
         <>
           <CardTitle>{t("desktop.prefs.thisMac.phones")}</CardTitle>
@@ -378,6 +382,35 @@ export function ThisMacCards({
           </DialogBody>
         </Dialog>
       )}
+    </>
+  );
+}
+
+/**
+ * This Mac's permissions, as Prepare this Mac asks them, and where people turn them on again: an ad-hoc signed app
+ * loses them with each update. Asking for Screen Recording or Full Disk Access keeps Preferences to open again when
+ * macOS reopens the app.
+ */
+function Permissions() {
+  const { t } = useTranslation();
+  const host = useHost();
+  const [resumed, setResumed] = useState(false);
+  useEffect(() => {
+    host
+      .setupState()
+      .then((s) => {
+        if (s?.step !== "prefs" || !s.resumed) return;
+        setResumed(true);
+        return host.setSetupState(null);
+      })
+      .catch(() => {});
+  }, [host]);
+  const mac = useMacGrants(() => host.setSetupState({ step: "prefs" }).catch(() => {}));
+  const title = t("desktop.prepare.prefsTitle");
+  return (
+    <>
+      <CardTitle hint={hintFor(t, title, t("desktop.prepare.prefsHint"))}>{title}</CardTitle>
+      <MacPermissionCard mac={mac} resumed={resumed} />
     </>
   );
 }

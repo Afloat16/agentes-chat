@@ -52,7 +52,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Préstala también a otro espacio de trabajo",
         blocks: [
           "Los espacios de trabajo del servidor que ejecutas aquí ya usan esta computadora sin que hagas nada. Para que un espacio de trabajo de otro lugar también la use, como uno en agentes.chat Cloud, pulsa **Agregar un espacio de trabajo…** al final de la primera tarjeta de **Preferencias\u00a0›\u00a0General**, o **Agregar un servidor…** en **Preferencias\u00a0›\u00a0Servidores**. Inicia sesión en ese espacio de trabajo y pulsa **Permitir** cuando la app te lo pregunte.",
-          "Cada espacio de trabajo tiene aquí sus propios agentes y carpetas, y su propio interruptor de **Comandos** en **Preferencias\u00a0›\u00a0Herramientas**. Activa los comandos solo en un espacio de trabajo a cuyos agentes les confiarías toda esta computadora.",
+          "Cada espacio de trabajo tiene aquí sus propios agentes y carpetas, y su propio interruptor de **Comandos** en **Preferencias › Herramientas**. Los comandos empiezan activados para él, salvo que los desactives en la pregunta de la app antes de pulsar **Permitir**. Déjalos activados solo en un espacio de trabajo a cuyos agentes les confiarías toda esta computadora.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Copias de seguridad",
         blocks: [
-          "Con **Hacer una copia cada noche** activado (app 0.6.2 y posteriores), en **Preferencias\u00a0›\u00a0Servidores**, la app guarda la base de datos, los archivos y el `.env` en `.agentes/backups`, en tu carpeta personal, cada noche a las 3:00. Una computadora que estaba dormida hace la copia cuando despierta. **Hacer una copia ahora** hace lo mismo al momento. Cada copia detiene el servidor un momento, y se conservan las dos más recientes.",
+          "Con **Hacer una copia cada noche** activado (app 0.7.1 y posteriores), en **Preferencias\u00a0›\u00a0Servidores**, la app guarda la base de datos, los archivos y el `.env` en `.agentes/backups`, en tu carpeta personal, cada noche a las 3:00. Una computadora que estaba dormida hace la copia cuando despierta. **Hacer una copia ahora** hace lo mismo al momento. Cada copia detiene el servidor un momento, y se conservan las dos más recientes.",
           "**Copiar en** también pone cada copia nueva en una carpeta que elijas, como una memoria USB o iCloud Drive, donde se conservan las dos más recientes. Contienen tus claves: guárdalas en privado. **Restaurar…** devuelve agentes.chat a una copia: mensajes, archivos y ajustes. Se detiene un minuto, y lo que había antes se guarda en la carpeta de copias.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
               "en una computadora que también ejecuta agentes.chat, su base de datos y sus claves en `.agentes`",
             ],
           },
-          "agentes.chat rechaza los comandos que nombran sus claves, tokens e inicios de sesión, pero es una regla, no un muro. Por eso los **Comandos** empiezan desactivados. Cada espacio de trabajo tiene su propio interruptor en **Preferencias\u00a0›\u00a0Herramientas** (app 0.6.2 y posteriores), y la app pregunta antes de activar uno. Actívalo solo en un espacio de trabajo a cuyos agentes, y a las personas para las que trabajan, les confiarías todo lo que hay en la computadora. Claude Code y Codex ejecutan sus propios comandos en la carpeta del agente, incluso con los comandos desactivados.",
+          "agentes.chat rechaza los comandos que nombran sus claves, tokens e inicios de sesión, pero es una regla, no un muro. Los **Comandos** empiezan activados. Desactívalos en la pregunta de la app antes de pulsar **Permitir**, o más tarde en **Preferencias › Herramientas**, donde cada espacio de trabajo tiene su propio interruptor (app 0.7.1 y posteriores) y la app pregunta antes de volver a activar uno. Déjalos activados solo en un espacio de trabajo a cuyos agentes, y a las personas para las que trabajan, les confiarías todo lo que hay en la computadora. Claude Code y Codex ejecutan sus propios comandos en la carpeta del agente, incluso con los comandos desactivados.",
           "Para un muro de verdad, usa un servidor Linux. En Debian 13, instalado con `--system`, cada agente es un usuario propio. En Ubuntu, los agentes comparten un usuario, `agentes`: ven las carpetas de los demás, no las tuyas ni las del servidor. O dales a los agentes una computadora propia.",
         ],
       },

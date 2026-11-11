@@ -52,7 +52,7 @@ export const helpFr: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Le prêter aussi à un autre espace de travail",
         blocks: [
           "Les espaces de travail du serveur que vous faites tourner ici utilisent déjà cet ordinateur, sans rien à faire. Pour qu’un espace de travail d’ailleurs l’utilise aussi, par exemple sur agentes.chat Cloud, cliquez sur **Ajouter un espace de travail…** en bas de la première carte de **Préférences\u00a0›\u00a0Général**, ou sur **Ajouter un serveur…** dans **Préférences\u00a0›\u00a0Serveurs**. Connectez-vous à cet espace de travail et cliquez sur **Autoriser** quand l’app le demande.",
-          "Chaque espace de travail a ici ses propres agents et dossiers, et son propre interrupteur **Commandes** dans **Préférences\u00a0›\u00a0Outils**. N’activez les commandes que pour un espace de travail dont vous confiez tout cet ordinateur aux agents.",
+          "Chaque espace de travail a ici ses propres agents et dossiers, et son propre interrupteur **Commandes** dans **Préférences › Outils**. Les commandes y sont activées au départ, sauf si vous les désactivez dans la question de l’app avant d’appuyer sur **Autoriser**. Ne les laissez activées que pour un espace de travail dont vous confiez tout cet ordinateur aux agents.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpFr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Sauvegardes",
         blocks: [
-          "Avec **Sauvegarder chaque nuit** activé (app 0.6.2 et plus récente), dans **Préférences\u00a0›\u00a0Serveurs**, l’app enregistre chaque nuit à 3:00 la base de données, les fichiers et le `.env` dans `.agentes/backups`, dans votre dossier personnel. Un ordinateur en veille à ce moment-là sauvegarde dès qu’il se réveille. **Sauvegarder maintenant** fait la même chose tout de suite. Chaque sauvegarde arrête le serveur un instant, et les deux plus récentes sont gardées.",
+          "Avec **Sauvegarder chaque nuit** activé (app 0.7.1 et plus récente), dans **Préférences\u00a0›\u00a0Serveurs**, l’app enregistre chaque nuit à 3:00 la base de données, les fichiers et le `.env` dans `.agentes/backups`, dans votre dossier personnel. Un ordinateur en veille à ce moment-là sauvegarde dès qu’il se réveille. **Sauvegarder maintenant** fait la même chose tout de suite. Chaque sauvegarde arrête le serveur un instant, et les deux plus récentes sont gardées.",
           "**Copier dans** place aussi chaque nouvelle sauvegarde dans un dossier de votre choix, comme une clé USB ou iCloud Drive, où les deux plus récentes sont gardées. Elles contiennent vos clés\u00a0: gardez-les privées. **Restaurer…** ramène agentes.chat à une sauvegarde\u00a0: messages, fichiers et réglages. Il s’arrête une minute, et ce qui était là avant est gardé dans le dossier des sauvegardes.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpFr: Partial<Record<HelpSlug, HelpDocument>> = {
               "sur un ordinateur qui fait aussi tourner agentes.chat, sa base de données et ses clés dans `.agentes`",
             ],
           },
-          "agentes.chat refuse les commandes qui citent ses clés, ses jetons et les connexions enregistrées, mais c’est une règle, pas un mur. C’est pourquoi les **Commandes** sont désactivées au départ. Chaque espace de travail a son propre interrupteur dans **Préférences\u00a0›\u00a0Outils** (app 0.6.2 et plus récente), et l’app demande confirmation avant d’en activer un. Activez-le seulement pour un espace de travail dont vous confieriez tout ce que contient l’ordinateur aux agents et aux personnes pour qui ils travaillent. Claude Code et Codex lancent leurs propres commandes dans le dossier de l’agent, même avec les commandes désactivées.",
+          "agentes.chat refuse les commandes qui citent ses clés, ses jetons et les connexions enregistrées, mais c’est une règle, pas un mur. Les **Commandes** sont activées au départ. Désactivez-les dans la question de l’app avant d’appuyer sur **Autoriser**, ou plus tard dans **Préférences › Outils**, où chaque espace de travail a son propre interrupteur (app 0.7.1 et plus récente) et où l’app demande confirmation avant d’en réactiver un. Ne les laissez activées que pour un espace de travail dont vous confieriez tout ce que contient l’ordinateur aux agents et aux personnes pour qui ils travaillent. Claude Code et Codex lancent leurs propres commandes dans le dossier de l’agent, même avec les commandes désactivées.",
           "Pour un vrai mur, utilisez un serveur Linux. Sous Debian 13, installé avec `--system`, chaque agent est un utilisateur à part. Sous Ubuntu, les agents partagent un utilisateur, `agentes`\u00a0: ils voient les dossiers les uns des autres, pas les vôtres ni ceux du serveur. Ou donnez aux agents un ordinateur rien qu’à eux.",
         ],
       },
