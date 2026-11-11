@@ -2510,6 +2510,15 @@ export const en = {
       groupWorkspace: "For the whole workspace",
       groupAdmins: "admins only",
     },
+    /** "Workspace powers" on its page: what only the right hand does, one line each (`RIGHT_HAND_POWERS`). */
+    powers: {
+      title: "Workspace powers",
+      help: "Only your right hand does these.",
+      team: "Sets up and changes the whole team with cards a person applies: agents, people and workspace settings",
+      routines: "Runs and deletes any agent's routine you may manage",
+      asYou: "In your own conversation, reads the Drive, the wiki and the tasks you can see",
+      mentions: "Answers an @mention in any channel without being a member",
+    },
     card: {
       settings: "{{name}} · Settings",
       apply: "Apply",

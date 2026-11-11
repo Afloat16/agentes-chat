@@ -2377,6 +2377,14 @@
       "groupWorkspace": "Voor de hele workspace",
       "groupAdmins": "alleen admins"
     },
+    "powers": {
+      "title": "Bevoegdheden in de workspace",
+      "help": "Alleen je rechterhand doet dit.",
+      "team": "Zet het hele team op en past het aan met kaarten die een persoon toepast: agents, mensen en workspace-instellingen",
+      "routines": "Start en verwijdert routines van elke agent die jij mag beheren",
+      "asYou": "Leest in je eigen gesprek de Drive, de wiki en de taken die jij kunt zien",
+      "mentions": "Antwoordt op een @vermelding in elk kanaal zonder lid te zijn"
+    },
     "card": {
       "settings": "{{name}} · Instellingen",
       "apply": "Toepassen",

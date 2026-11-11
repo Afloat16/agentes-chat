@@ -2464,6 +2464,14 @@
       "groupWorkspace": "Pour tout le workspace",
       "groupAdmins": "admins uniquement"
     },
+    "powers": {
+      "title": "Pouvoirs dans le workspace",
+      "help": "Seul votre bras droit fait cela.",
+      "team": "Met en place et modifie toute l'équipe avec des cartes qu'une personne applique : agents, personnes et réglages du workspace",
+      "routines": "Lance et supprime les routines de n'importe quel agent que vous pouvez gérer",
+      "asYou": "Dans votre propre conversation, lit le Drive, le wiki et les tâches que vous pouvez voir",
+      "mentions": "Répond à une @mention dans n'importe quel canal sans en être membre"
+    },
     "card": {
       "settings": "{{name}} · Réglages",
       "apply": "Appliquer",

@@ -2378,6 +2378,14 @@
       "groupWorkspace": "Für den ganzen Workspace",
       "groupAdmins": "nur Admins"
     },
+    "powers": {
+      "title": "Workspace-Befugnisse",
+      "help": "Das kann nur deine rechte Hand.",
+      "team": "Richtet das ganze Team über Karten ein, die eine Person anwendet, und ändert es: Agenten, Personen und Workspace-Einstellungen",
+      "routines": "Startet und löscht Routinen jedes Agenten, die du verwalten darfst",
+      "asYou": "Liest in deiner eigenen Unterhaltung das Drive, das Wiki und die Aufgaben, die du sehen kannst",
+      "mentions": "Antwortet auf eine @Erwähnung in jedem Kanal, ohne Mitglied zu sein"
+    },
     "card": {
       "settings": "{{name}} · Einstellungen",
       "apply": "Anwenden",
