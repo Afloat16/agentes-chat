@@ -1325,7 +1325,8 @@
       "portrait.options.clothes.blazer",
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.dreads"
+      "portrait.options.hair.dreads",
+      "agentPage.work.brain.v2.computer"
     ],
     "it": [
       "calendar.moreRuns",
@@ -1664,7 +1665,8 @@
       "portrait.options.clothes.polo",
       "portrait.options.hair.flat",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "agentPage.work.brain.v2.computer"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -2227,7 +2229,8 @@
       "portrait.options.clothes.polo",
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.dreads"
+      "portrait.options.hair.dreads",
+      "agentPage.work.brain.v2.computer"
     ],
     "ja": [
       "devices.system.android",

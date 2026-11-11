@@ -240,6 +240,30 @@ function LearnedRow({ m }: { m: Memory }) {
       <span className="agp-row">
         {draft === null ? (
           <>
+            {(m.lowTrust || !m.verified) && (
+              <Button
+                variant="link"
+                title={t("memory.confirmTitle")}
+                disabled={act.isPending}
+                onClick={() =>
+                  act.mutate({ type: "confirm", id: m.id }, { onSuccess: () => toast.show(t("memory.confirmed")) })
+                }
+              >
+                {t("memory.confirm")}
+              </Button>
+            )}
+            {/* Tornar do time (ADR 0167): who reviews memory makes it every agent's, its copies archived. */}
+            {can(org, "review_memory") && !m.howTo && !m.playbook && m.kind !== "lesson" && (
+              <Button
+                variant="link"
+                disabled={act.isPending}
+                onClick={() =>
+                  act.mutate({ type: "team", id: m.id }, { onSuccess: () => toast.show(t("teamMemory.made")) })
+                }
+              >
+                {t("teamMemory.make")}
+              </Button>
+            )}
             <Button variant="link" onClick={() => setDraft(m.text)}>
               {t("agentPage.memory.edit")}
             </Button>
