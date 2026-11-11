@@ -94,7 +94,7 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
     pane(
       "selfhost",
       <General />,
-      (el) => el.querySelectorAll(".dk-card").length >= 2 && row(el, "Open at login"),
+      (el) => row(el, "Name") && row(el, "Open at login"),
       (el) => {
         expect(el.querySelector(".dk-phead .dk-lead")).toBeNull();
         const behavior = [...el.querySelectorAll(".dk-card")].at(-1) as HTMLElement;

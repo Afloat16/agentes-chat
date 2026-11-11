@@ -382,7 +382,7 @@ export function ThisMacCards({
   );
 }
 
-/** Who in `home`'s workspace may point their agents at this computer, the web's three choices; people and roles in a dialog. */
+/** Who in `home` may point their agents at this computer, the web's three choices; people and roles in a dialog. */
 function WhoRow({
   home,
   server,
@@ -436,13 +436,7 @@ function WhoRow({
     );
   }
   if (!computer) {
-    return (
-      <PrefRow
-        lead={lead}
-        title={title}
-        end={<PixelSpinner size={16} />}
-      />
-    );
+    return <PrefRow lead={lead} title={title} end={<PixelSpinner size={16} />} />;
   }
 
   const audience = computer.audience;
