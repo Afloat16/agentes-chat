@@ -38,6 +38,7 @@ import { DeleteAccountDialog } from "@/components/DeleteAccount";
 import { DeleteWorkspaceDialog } from "@/components/DeleteWorkspace";
 import { ErrorState } from "@/components/Loading";
 import { COMPACT_QUERY, DESKTOP_QUERY, useMediaQuery } from "@/components/NavDrawer";
+import { ImportAgentsDialog } from "@/components/new-agent/ImportAgentsDialog";
 import { ImageCropDialog, OrgMark } from "@/components/ProfilePhoto";
 import { PurposeScene } from "@/components/PurposeScene";
 import { BootSplash, OnboardingHorizon, OnboardingProgress } from "@/components/Sky";
@@ -52,7 +53,6 @@ import { returnPlace } from "@/lib/return-to";
 import { STORAGE_KEYS, sessionStore, storage } from "@/lib/storage";
 import { useToast } from "@/lib/toast";
 import { OnboardingPreview, type PreviewAgent } from "./onboarding/OnboardingPreview";
-import { ImportAgentsDialog } from "@/components/new-agent/ImportAgentsDialog";
 import { BusinessStep, PlanStep, TeamStep, useTemplate } from "./onboarding/steps";
 import "./onboarding.css";
 

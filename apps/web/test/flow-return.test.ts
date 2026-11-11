@@ -33,7 +33,10 @@ test("another workspace's, an old one or a broken one is dropped, and the addres
   expect(back.take("o2")).toBeNull();
   expect(sessionStorage.getItem(KEY)).toBeNull();
 
-  sessionStorage.setItem(KEY, JSON.stringify({ org: "o1", at: Date.now() - 2 * 60 * 60 * 1000, draft: { name: "Lia" } }));
+  sessionStorage.setItem(
+    KEY,
+    JSON.stringify({ org: "o1", at: Date.now() - 2 * 60 * 60 * 1000, draft: { name: "Lia" } }),
+  );
   at("/org/o1/agents/new?resume=1");
   expect(back.take("o1")).toBeNull();
 

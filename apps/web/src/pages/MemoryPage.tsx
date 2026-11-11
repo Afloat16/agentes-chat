@@ -263,10 +263,7 @@ function MemoryView({ agent, item }: { agent: Agent; item?: string }) {
                 <Button variant="link" onClick={() => setEditing(m)}>
                   {t("memory.edit")}
                 </Button>
-                <Button
-                  variant="link"
-                  onClick={() => action.mutate({ type: "pin", id: m.id, pinned: !m.pinned })}
-                >
+                <Button variant="link" onClick={() => action.mutate({ type: "pin", id: m.id, pinned: !m.pinned })}>
                   {m.pinned ? t("memory.unpin") : t("memory.pin")}
                 </Button>
                 <Button

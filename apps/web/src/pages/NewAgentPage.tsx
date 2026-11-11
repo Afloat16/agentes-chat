@@ -4,8 +4,8 @@ import {
   useAgentProposal,
   useAgents,
   useAiAccounts,
-  useCatalog,
   useBrainMachines,
+  useCatalog,
   useChannels,
   useCreateAgent,
   useCredentials,
@@ -107,15 +107,15 @@ import { ConnectorIcon } from "@/components/ConnectorCatalog";
 import { ImportFlow, useImportFlow } from "@/components/ImportFlow";
 import { MailIcon } from "@/components/MailConnect";
 import { useMediaQuery } from "@/components/NavDrawer";
-import { useOrg } from "@/components/org-context";
 import { AppsPickerDialog } from "@/components/new-agent/AppsPicker";
+import { useOrg } from "@/components/org-context";
 import { InstallSkillDialog, SkillPicker } from "@/components/Skills";
 import { AgentBornSky, AgentPreviewSky, OnboardingHorizon } from "@/components/Sky";
 import { StepRail } from "@/components/StepRail";
 import { useFlowExit } from "@/hooks/useFlowExit";
+import { useKeeperName, usePersonalView } from "@/hooks/usePersonalView";
 import { flowReturn } from "@/lib/flow-return";
 import { CARD_MARK, IMPORT_CARDS } from "@/lib/import-flow";
-import { useKeeperName, usePersonalView } from "@/hooks/usePersonalView";
 import {
   BLANK_LOOK,
   cleanHandle,
@@ -395,9 +395,7 @@ function NewAgentFlow({
   const [skillIds, setSkillIds] = useState<Set<string> | null>(was?.skillIds ? new Set(was.skillIds) : null);
   // The channel it was asked for stays picked whatever role is chosen (the roles' presets add theirs).
   const asked = channelId ? [channelId] : [];
-  const [channelIds, setChannelIds] = useState<Set<string>>(
-    new Set(was?.channelIds ?? draft?.channelIds ?? asked),
-  );
+  const [channelIds, setChannelIds] = useState<Set<string>>(new Set(was?.channelIds ?? draft?.channelIds ?? asked));
   const [owner, setOwner] = useState(was?.owner ?? me.user.id);
   // A personal workspace's new agent answers only its owner until they say otherwise (ADR 0159), as the server makes
   // its agents; a team's answers everyone.
@@ -417,8 +415,8 @@ function NewAgentFlow({
     was
       ? was.plan
       : draft?.ai.kind === "account"
-      ? { kind: draft.ai.brain, machineId: draft.ai.machineId, accountId: draft.ai.accountId, label: draft.ai.label }
-      : null,
+        ? { kind: draft.ai.brain, machineId: draft.ai.machineId, accountId: draft.ai.accountId, label: draft.ai.label }
+        : null,
   );
   // Or a plan with nothing to think with yet (a coding plan's key): made on Automático, Connect opens on it after.
   const [connectPlan, setConnectPlan] = useState<AiPlan | null>(was?.connectPlan ?? null);

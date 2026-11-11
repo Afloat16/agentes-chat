@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { agentsByAnyHandle } from "@agenteschat/client/lib/directory";
+import type { ImportCard } from "@agenteschat/client/lib/import/flow";
 import {
   handleAfterRename,
   handleProblemText,
@@ -19,7 +20,6 @@ import {
   sameLook,
   shuffleLook,
 } from "../../src/features/agents/edit";
-import type { ImportCard } from "@agenteschat/client/lib/import/flow";
 import {
   firstBlockedStep,
   IMPORT_MARKS,

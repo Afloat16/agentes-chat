@@ -295,11 +295,7 @@ function LearnedSkillRow({ s }: { s: LearnedSkill }) {
           {open ? t("agentPage.memory.hide") : t("agentPage.memory.view")}
         </Button>
         {!s.canChange ? null : s.archived ? (
-          <Button
-            variant="link"
-            disabled={act.isPending}
-            onClick={() => act.mutate({ type: "restore", id: s.id })}
-          >
+          <Button variant="link" disabled={act.isPending} onClick={() => act.mutate({ type: "restore", id: s.id })}>
             {t("agentPage.memory.restore")}
           </Button>
         ) : (

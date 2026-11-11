@@ -105,10 +105,7 @@ export function OverviewTab() {
               text: t(modeKey(org, "agent.instructionsHelp"), { ...g, org: org.name }),
             }}
             action={
-              <Button
-                variant="link"
-                onClick={() => goTo("instructions")}
-              >
+              <Button variant="link" onClick={() => goTo("instructions")}>
                 {can("instructions") ? t("agent.edit") : t("agentPage.overview.readAll")}
               </Button>
             }

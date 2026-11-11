@@ -365,11 +365,7 @@ export function TaskManagerPage({
                   <small>{computerText(c)}</small>
                 </span>
                 {(c.inLine > 0 || c.working > 0) && (
-                  <Button
-                    variant="link"
-                    aria-label={`${t("queue.see")}: ${c.name}`}
-                    onClick={() => setQueueOf(c.id)}
-                  >
+                  <Button variant="link" aria-label={`${t("queue.see")}: ${c.name}`} onClick={() => setQueueOf(c.id)}>
                     {t("queue.see")}
                   </Button>
                 )}

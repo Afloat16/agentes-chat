@@ -1523,6 +1523,9 @@ describe("Criar agente: what gets created", () => {
 });
 
 describe("Criar agente: nothing leaves the steps", () => {
+  // The step's title while a dialog is open over it (the page behind a dialog is hidden from roles).
+  const stepBehind = () => document.querySelector("h1.newag__title")?.textContent;
+
   test("De outro app is a card beside Do zero, with the first three source apps' marks", async () => {
     await open();
     const [scratch, other] = [...(document.querySelector(".newag__scratch > .newag__roles")?.children ?? [])];
@@ -1547,9 +1550,7 @@ describe("Criar agente: nothing leaves the steps", () => {
     expect(step.textContent).not.toContain("abre Conectores");
     await click(within(step).getByRole("button", { name: "Conectar outro app" }));
     const picker = screen().getByRole("dialog", { name: "Apps da Iris" });
-    expect(picker.textContent).toContain(
-      "Um app conectado entra na lista na hora. Os outros você conecta aqui mesmo.",
-    );
+    expect(picker.textContent).toContain("Um app conectado entra na lista na hora. Os outros você conecta aqui mesmo.");
     expect(picker.textContent).toContain("Na lista");
     expect(picker.textContent).not.toContain("cartão");
     expect(within(picker).queryAllByRole("link")).toEqual([]);
@@ -1557,7 +1558,7 @@ describe("Criar agente: nothing leaves the steps", () => {
     await click(within(picker).getAllByRole("button", { name: "Conectar" })[0] as HTMLElement);
     const kept = JSON.parse(sessionStorage.getItem("agentes.newAgent.draft") ?? "null");
     expect(kept.draft).toMatchObject({ index: 3, role: "qa", name: "Iris", handle: "iris" });
-    expect(title()).toBe("Ferramentas e acesso");
+    expect(stepBehind()).toBe("Ferramentas e acesso");
   });
 
   test("back from a sign-in elsewhere: the steps as they were, on the step that was open", async () => {
@@ -1593,8 +1594,9 @@ describe("Criar agente: nothing leaves the steps", () => {
         },
       }),
     );
-    await renderApp(`/org/${ORG_ID}/agents/new?resume=1&connected=github`, { api: createFakeApi(seedState()) });
-    await settle(8);
+    window.history.replaceState(null, "", `/org/${ORG_ID}/agents/new?resume=1&connected=github`);
+    await open();
+    expect(window.location.search).toBe("");
     expect(title()).toBe("Ferramentas e acesso");
     expect(sessionStorage.getItem("agentes.newAgent.draft")).toBeNull();
     await click(railStep("Instruções"));
@@ -1612,7 +1614,7 @@ describe("Criar agente: nothing leaves the steps", () => {
     expect(skills.querySelector(".newag__sect > .small")).toBeNull();
     await click(within(skills).getByRole("button", { name: "Instalar skill" }));
     const dialog = screen().getByRole("dialog", { name: "Instalar skill" });
-    expect(title()).toBe("Ferramentas e acesso");
+    expect(stepBehind()).toBe("Ferramentas e acesso");
     const write = within(dialog).getByRole("tab", { name: "Escrever" });
     write.focus();
     await press(write, "Enter");
@@ -1637,7 +1639,7 @@ describe("Criar agente: nothing leaves the steps", () => {
     await proceed(3);
     expect(title()).toBe("Onde trabalha e com quem");
     expect(hintOf("Entra nos canais").text).toBe("Entra agora. Dá para chamar em outros canais depois.");
-    expect(hintOf("Responsável").text).toBe("Recebe os pedidos de aprovação e os avisos dela.");
+    expect(hintOf("Responsável").text).toBe("Recebe os avisos de orçamento e aprova as ações sensíveis.");
     const owner = screen().getByRole("combobox", { name: "Responsável" });
     expect(owner.closest(".ac-card")).toBeNull();
     expect(owner.closest(".ac-select")?.className).toBe("ac-select");
@@ -1681,7 +1683,7 @@ describe("Criar agente with Criar agentes alone: an agent of my own, without app
     expect(screen().queryByRole("combobox", { name: "Responsável" })).toBeNull();
     expect(document.querySelector(".newag .agp-person__t")?.textContent).toBe("Walter (você)Membro");
     expect(hintOf("Responsável").text).toBe(
-      "Quem cria o agente é o responsável. Um admin pode passar para outra pessoa depois. Recebe os pedidos de aprovação e os avisos dela.",
+      "Quem cria o agente é o responsável. Um admin pode passar para outra pessoa depois. Recebe os avisos de orçamento e aprova as ações sensíveis.",
     );
     await proceed(2);
     await click(screen().getByRole("button", { name: "Criar Iris" }));

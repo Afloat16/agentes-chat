@@ -96,8 +96,8 @@ import { type FullLook, fullLook } from "./edit";
 import { ErrorLine, HandleInput } from "./HandleInput";
 import { ImportAgents } from "./ImportAgents";
 import { arrivedAgents, landingOf, reportCounts } from "./import";
-import { LookList } from "./LookPicker";
 import { IMPORT_LOGO } from "./import-logos";
+import { LookList } from "./LookPicker";
 import {
   firstBlockedStep,
   importMarkCards,

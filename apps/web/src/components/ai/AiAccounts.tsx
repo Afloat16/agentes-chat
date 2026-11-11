@@ -251,12 +251,7 @@ export function AiAccountsSection() {
                   {copies.length > 0 && (
                     <span className="ai-panel__row">
                       <SettingNote icon="repeat">{t("aiAccounts.page.copies", { count: copies.length })}</SettingNote>
-                      <Button
-                        variant="link"
-                        loading={busy}
-                        disabled={busy}
-                        onClick={() => void removeCopies(copies)}
-                      >
+                      <Button variant="link" loading={busy} disabled={busy} onClick={() => void removeCopies(copies)}>
                         {t("aiAccounts.page.removeCopies")}
                       </Button>
                     </span>
@@ -279,11 +274,7 @@ export function AiAccountsSection() {
                     give.length > 1 && (
                       <Menu
                         label={t("aiAccounts.page.useForMenu")}
-                        trigger={
-                          <Button variant="link">
-                            {t("aiAccounts.page.useForMenu")}
-                          </Button>
-                        }
+                        trigger={<Button variant="link">{t("aiAccounts.page.useForMenu")}</Button>}
                       >
                         {give.map((g) => (
                           <MenuItem key={g.id} onSelect={() => void giveTo(a, g)}>

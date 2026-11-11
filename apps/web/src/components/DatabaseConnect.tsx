@@ -894,11 +894,7 @@ export function DatabaseRow({
             <Button variant="link" aria-label={t("connectors.toolsName", { name })} onClick={onTools}>
               {t("connectors.tools")}
             </Button>
-            <Button
-              variant="link"
-              aria-label={t("connectors.disconnectName", { name })}
-              onClick={onDisconnect}
-            >
+            <Button variant="link" aria-label={t("connectors.disconnectName", { name })} onClick={onDisconnect}>
               {t("connectors.disconnect")}
             </Button>
           </div>
