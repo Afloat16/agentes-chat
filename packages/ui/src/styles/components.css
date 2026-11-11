@@ -12081,9 +12081,15 @@ html:not([data-pointer]) .ac-foldrow__head:focus-visible {
   padding-block: 1px;
   white-space: normal;
 }
-/* Its icon stays on the first line's capitals, as an `.ac-iconline` lead does. */
+/* Its icon stays on the first line's capitals, as an `.ac-iconline` lead does. Without the lh unit: the name's
+   20px line. */
 .ac-foldrow__head .ac-chip > .ac-icon {
-  translate: 0 calc(0.5lh - var(--cap-mid) - 50%);
+  translate: 0 calc(10px - var(--cap-mid) - 50%);
+}
+@supports (top: 1lh) {
+  .ac-foldrow__head .ac-chip > .ac-icon {
+    translate: 0 calc(0.5lh - var(--cap-mid) - 50%);
+  }
 }
 .ac-foldrow__head .ac-chip__text {
   overflow: visible;
