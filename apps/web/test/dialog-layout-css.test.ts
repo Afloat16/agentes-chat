@@ -39,6 +39,9 @@ describe("dialogs laid out on the form's rhythm", () => {
     const title = blocks(css("pages/dashboards.css"), ".nwc__title");
     expect(title).toContain("margin: calc(-1 * var(--space-1)) 0;");
     expect(title).toContain("padding: var(--space-1) var(--space-2);");
+    expect(blocks(css("pages/dashboards.css"), ".nwc__title:first-child")).toContain(
+      "margin-inline-start: calc(-1 * var(--space-2));",
+    );
   });
 
   test("Personalizar a barra lateral: every row's Segmented fills the same column", () => {
