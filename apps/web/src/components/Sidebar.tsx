@@ -1578,9 +1578,10 @@ function SidebarChannels({
   );
 }
 
-/** The tools whose line in More has a personal workspace's words (ADR 0159); Routines' and Drive's fit both. */
-type PersonalWhat = Exclude<SidebarItem, "routines" | "drive">;
-const hasPersonalWhat = (id: SidebarItem): id is PersonalWhat => id !== "routines" && id !== "drive";
+/** The tools whose line in More has a personal workspace's words (ADR 0159); the others' fit both. */
+type PersonalWhat = Exclude<SidebarItem, "routines" | "drive" | "waiting">;
+const hasPersonalWhat = (id: SidebarItem): id is PersonalWhat =>
+  id !== "routines" && id !== "drive" && id !== "waiting";
 
 /**
  * More: the tools the person keeps out of the list, in a panel beside the sidebar (so nothing below moves), each with a
