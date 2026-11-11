@@ -213,10 +213,10 @@ describe("Agentes", () => {
     expect(within(fold).getByRole("link", { name: "Ver perfil" }).getAttribute("href")).toBe(
       `/org/${ORG_ID}/agents/agent-4`,
     );
-    // No AI account: only the way to its page.
+    // No AI account: one quiet line says so over the way to its page.
     const none = agentRow("Sem conta");
     await act(async () => fireEvent.click(within(none).getByRole("button", { name: /^Sem conta/ })));
-    expect(none.querySelector(".ac-foldrow__more")?.textContent).toBe("Ver perfil");
+    expect(none.querySelector(".ac-foldrow__more")?.textContent).toBe("Sem IA conectadaVer perfil");
     // The first stays open.
     expect(head.getAttribute("aria-expanded")).toBe("true");
   });

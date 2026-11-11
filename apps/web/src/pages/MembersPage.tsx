@@ -400,6 +400,9 @@ export function MembersPage({ embedded = false }: { embedded?: boolean } = {}) {
                       })}
                     </span>
                   )}
+                  {!shown.plan && !budget && (
+                    <span className="small muted">{a.brain?.account ?? t("presence.agentWhy.noAi")}</span>
+                  )}
                   <div className="ac-acts">
                     <Button asChild variant="link">
                       <Link to="/org/$orgId/agents/$agentId" params={{ orgId: org.id, agentId: a.id }}>
