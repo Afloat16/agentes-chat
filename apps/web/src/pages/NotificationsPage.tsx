@@ -522,7 +522,7 @@ function RowActions({ n, h }: { n: AppNotification; h: RowHandlers }) {
       type="button"
       className="nt-nb"
       data-act={key}
-      data-tip={tip}
+      title={tip}
       aria-label={label}
       onClick={(e) => {
         e.stopPropagation();

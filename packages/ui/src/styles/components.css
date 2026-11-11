@@ -1462,6 +1462,28 @@ html:not([data-pointer]) .ac-msg__time--details:focus-visible {
     max-width: 420px;
   }
 }
+/*
+ * The tooltip of every `title` and icon-only control (`installTitleTips`): an ink plate, the page's colours swapped, in
+ * both themes. Long words wrap at a label's width, a `title`'s own line breaks are kept.
+ */
+.ac-tip--title {
+  /* Over a toast too: a toast's own buttons carry tips. */
+  z-index: var(--z-toast);
+  max-width: min(280px, calc(100vw - 24px));
+  padding: var(--space-1) var(--space-2);
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--e2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: pre-line;
+}
+/* Right after another tip: it is there at once, as the browser's is. */
+.ac-tip--now {
+  animation: none;
+}
 /* A person-facing state on the header line ("enviando…"): icon + word, muted */
 .ac-msg__status {
   display: inline-flex;
