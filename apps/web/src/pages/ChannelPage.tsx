@@ -215,6 +215,7 @@ import {
 } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
+import { anchorShift, anchorsScroll, type RowResize } from "@/chat/anchor";
 import { tokenizeBody } from "@/chat/body";
 import { ChatMedia } from "@/chat/ChatMedia";
 import { ChatVoice } from "@/chat/ChatVoice";
@@ -1536,7 +1537,29 @@ function ChannelView({
         ownGlide = autoScrollUntil.current;
       } else followRef.current();
     };
-    const ro = new ResizeObserver(() => pin());
+    // Reading further up in a browser with no scroll anchoring: rows drawn late above the top edge would push what
+    // is on screen down, so the list moves by as much (`anchorShift`). Pinned to the end, `pin` already follows.
+    const heights = anchorsScroll() ? null : new WeakMap<Element, number>();
+    const hold = (entries: ResizeObserverEntry[]) => {
+      if (!heights) return;
+      const resized: RowResize[] = [];
+      const listTop = el.getBoundingClientRect().top - el.scrollTop;
+      for (const { target } of entries) {
+        if (!(target instanceof HTMLElement) || target === el) continue;
+        const before = heights.get(target);
+        const after = target.offsetHeight;
+        heights.set(target, after);
+        if (before !== undefined && before !== after)
+          resized.push({ top: target.getBoundingClientRect().top - listTop, before, after });
+      }
+      if (stick.current || Date.now() < autoScrollUntil.current) return;
+      const shift = anchorShift(resized, el.scrollTop);
+      if (shift !== 0) el.scrollTop += shift;
+    };
+    const ro = new ResizeObserver((entries) => {
+      hold(entries);
+      pin();
+    });
     for (const child of Array.from(el.children)) ro.observe(child);
     ro.observe(el);
     // Only rows that came in are watched (observing every row again on each change cost a pass per delta).
