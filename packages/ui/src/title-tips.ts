@@ -1,5 +1,5 @@
 import { hoverPointer, movesByKeys, trackInput } from "./device";
-import { placeTip } from "./floating";
+import { EDGE_ROOM, placeTip } from "./floating";
 
 /** How long a mouse or a pen rests on an element before its tip opens. */
 export const TITLE_TIP_OPEN_MS = 500;
@@ -49,8 +49,8 @@ function said(el: Element): string | null {
  *
  * It opens after `TITLE_TIP_OPEN_MS` under a mouse or a pen (at once within `TITLE_TIP_GRACE_MS` of the last one), at
  * once on the keys' focus, never under a finger (a phone keeps its browser's long press). The pointer leaving, a blur,
- * any key, a press, a scroll or a resize closes it. It is the last thing in <body> on the floating layer, over the
- * dialog or popover its element is in, placed by `placeTip`.
+ * any key, a press, a resize or a scroll that moves it from under the pointer closes it. It is the last thing in <body>,
+ * over the dialog, popover or toast its element is in, placed by `placeTip` and kept whole inside the window.
  */
 export function installTitleTips(doc: Document = document): () => void {
   const win = doc.defaultView;
@@ -60,12 +60,14 @@ export function installTitleTips(doc: Document = document): () => void {
   tip.id = TITLE_TIP_ID;
   tip.className = "ac-tip ac-tip--title";
   tip.setAttribute("role", "tooltip");
+  // Each tip in its own words' direction, whatever the page's.
+  tip.dir = "auto";
 
   let anchor: HTMLElement | null = null;
   let text = "";
   let by: "pointer" | "keys" = "pointer";
   /** What holding the anchor changed on it, to undo on release. */
-  let held = { title: false, name: false, described: false };
+  let held = { title: false, blank: false, name: false, described: false };
   let shown = false;
   let wait: ReturnType<typeof setTimeout> | undefined;
   /** A tip the pointer just left: the next one opens with no wait. */
@@ -91,22 +93,25 @@ export function installTitleTips(doc: Document = document): () => void {
     // Its layout size: the entrance's transform would measure it smaller.
     const to = placeTip(box, { width: tip.offsetWidth, height: tip.offsetHeight }, "center", win.innerWidth);
     tip.style.left = `${to.left}px`;
-    tip.style.top = `${to.top}px`;
+    // A long one beside a low element, with no room over it either: whole in the window, over its element if need be.
+    const low = win.innerHeight - EDGE_ROOM - tip.offsetHeight;
+    tip.style.top = `${Math.max(EDGE_ROOM, Math.min(to.top, low))}px`;
   };
 
-  const watch = new MutationObserver(() => {
+  const watch = new MutationObserver((records) => {
     if (!anchor) return;
     if (!anchor.isConnected) return leave(false);
-    if (!held.title) return;
+    if (!held.title || !records.some((r) => r.type === "attributes")) return;
     const now = anchor.getAttribute("title");
-    if (now === "") return;
     if (!now?.trim()) {
-      // Dropped where it is written: nothing to give back.
+      // Dropped or emptied where it is written: nothing to give back.
       held.title = false;
       return leave(false);
     }
     text = now;
     anchor.setAttribute("title", "");
+    // This write is not the page's: the next call must only see the page's own, an emptied title among them.
+    watch.takeRecords();
     if (held.name) anchor.setAttribute("aria-label", now);
     if (shown) {
       tip.textContent = now;
@@ -124,12 +129,21 @@ export function installTitleTips(doc: Document = document): () => void {
     anchor = el;
     text = words;
     by = how;
-    if (!el.hasAttribute("title")) return;
+    if (!el.hasAttribute("title")) {
+      // Saying its label inside a titled row: an empty `title` here keeps the browser from opening the row's beside it.
+      if (el.parentElement?.closest("[title]")) {
+        el.setAttribute("title", "");
+        held.blank = true;
+      }
+      return;
+    }
     held.title = true;
     const named =
       el.hasAttribute("aria-label") ||
       el.hasAttribute("aria-labelledby") ||
       el.textContent?.trim() ||
+      // A face or a logo inside names it by its own words.
+      el.querySelector('img[alt]:not([alt=""]), [aria-label]') ||
       (el as HTMLInputElement).labels?.length;
     if (!named) {
       el.setAttribute("aria-label", words);
@@ -149,11 +163,16 @@ export function installTitleTips(doc: Document = document): () => void {
       held.title &&
       !held.name &&
       !anchor.hasAttribute("aria-describedby") &&
-      anchor.getAttribute("aria-label") !== text
+      anchor.getAttribute("aria-label") !== text &&
+      // Cut words whose title says them whole.
+      anchor.textContent?.trim() !== text.trim()
     ) {
       anchor.setAttribute("aria-describedby", TITLE_TIP_ID);
       held.described = true;
     }
+    // One that only repeats its element's name is for the eyes: a screen reader never meets the words twice.
+    if (held.described) tip.removeAttribute("aria-hidden");
+    else tip.setAttribute("aria-hidden", "true");
     place();
     observe();
   };
@@ -181,10 +200,11 @@ export function installTitleTips(doc: Document = document): () => void {
     watch.disconnect();
     if (anchor) {
       if (held.title && anchor.getAttribute("title") === "") anchor.setAttribute("title", text);
+      if (held.blank && anchor.getAttribute("title") === "") anchor.removeAttribute("title");
       if (held.name) anchor.removeAttribute("aria-label");
     }
     anchor = null;
-    held = { title: false, name: false, described: false };
+    held = { title: false, blank: false, name: false, described: false };
   };
 
   const find = (start: EventTarget | null) => {
@@ -233,16 +253,27 @@ export function installTitleTips(doc: Document = document): () => void {
     if (by === "keys" && e.target === anchor) leave(false);
   };
   const dismiss = () => hide(false);
+  /**
+   * Only what moves its element counts: a log that scrolls by itself elsewhere on the page does not. Under a pointer
+   * the element leaves it, so the tip closes. Under the keys it follows: the focus itself scrolls its element into view.
+   */
+  const onScroll = (e: Event) => {
+    if (!anchor || !(e.target instanceof Node) || !e.target.contains(anchor)) return;
+    if (by === "keys") place();
+    else hide(false);
+  };
 
   const on = { capture: true, passive: true };
   doc.addEventListener("pointerover", onOver, on);
   doc.addEventListener("pointerout", onOut, on);
   doc.addEventListener("pointermove", onMove, on);
+  // A drag that ends over an element rests there with no new `pointerover`.
+  doc.addEventListener("pointerup", onOver, on);
   doc.addEventListener("focusin", onFocus, on);
   doc.addEventListener("focusout", onBlur, on);
   doc.addEventListener("keydown", dismiss, on);
   doc.addEventListener("pointerdown", dismiss, on);
-  doc.addEventListener("scroll", dismiss, on);
+  doc.addEventListener("scroll", onScroll, on);
   win.addEventListener("resize", dismiss);
   win.addEventListener("blur", dismiss);
   return () => {
@@ -251,11 +282,12 @@ export function installTitleTips(doc: Document = document): () => void {
     doc.removeEventListener("pointerover", onOver, on);
     doc.removeEventListener("pointerout", onOut, on);
     doc.removeEventListener("pointermove", onMove, on);
+  doc.removeEventListener("pointerup", onOver, on);
     doc.removeEventListener("focusin", onFocus, on);
     doc.removeEventListener("focusout", onBlur, on);
     doc.removeEventListener("keydown", dismiss, on);
     doc.removeEventListener("pointerdown", dismiss, on);
-    doc.removeEventListener("scroll", dismiss, on);
+    doc.removeEventListener("scroll", onScroll, on);
     win.removeEventListener("resize", dismiss);
     win.removeEventListener("blur", dismiss);
   };

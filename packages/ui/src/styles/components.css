@@ -1400,6 +1400,8 @@ html:not([data-pointer]) .ac-msg__time--details:focus-visible {
  * both themes. Long words wrap at a label's width, a `title`'s own line breaks are kept.
  */
 .ac-tip--title {
+  /* Over a toast too: a toast's own buttons carry tips. */
+  z-index: var(--z-toast);
   max-width: min(280px, calc(100vw - 24px));
   padding: var(--space-1) var(--space-2);
   background: var(--ink);

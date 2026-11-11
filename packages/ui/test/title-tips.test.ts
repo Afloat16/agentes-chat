@@ -98,6 +98,7 @@ describe("a `title` opens the product's tip, never the browser's", () => {
     await tick(TITLE_TIP_OPEN_MS);
     expect(members.getAttribute("aria-label")).toBe("Membros do canal (4)");
     expect(members.getAttribute("aria-describedby")).toBe(TITLE_TIP_ID);
+    expect(tip()?.hasAttribute("aria-hidden")).toBe(false);
     await out(members);
     expect(members.hasAttribute("aria-describedby")).toBe(false);
 
@@ -107,6 +108,20 @@ describe("a `title` opens the product's tip, never the browser's", () => {
     expect(tip()?.textContent).toBe("Ana reagiu com 🎉");
     expect(chip.hasAttribute("aria-describedby")).toBe(false);
     expect(chip.getAttribute("aria-label")).toBe("Ana reagiu com 🎉");
+
+    // Cut words with their whole text as the title: shown, never read twice.
+    const name = page('<span title="Ana Beatriz Lima">Ana Beatriz Lima</span>');
+    await over(name);
+    await tick(TITLE_TIP_OPEN_MS);
+    expect(name.hasAttribute("aria-describedby")).toBe(false);
+    expect(tip()?.getAttribute("aria-hidden")).toBe("true");
+
+    // Named by the face inside: the title describes it, the name stays the face's.
+    const face = page('<button title="Abrir perfil"><img alt="Ana"></button>');
+    await over(face);
+    await tick(TITLE_TIP_OPEN_MS);
+    expect(face.hasAttribute("aria-label")).toBe(false);
+    expect(face.getAttribute("aria-describedby")).toBe(TITLE_TIP_ID);
   });
 
   test("at once on the keys' focus, not on a pointer's; Escape closes it where the focus is", async () => {
@@ -140,6 +155,30 @@ describe("a `title` opens the product's tip, never the browser's", () => {
       await out(pin);
       expect(pin.getAttribute("title")).toBe("Fixar");
     }
+    // A scroll that does not move it (another column) leaves it open.
+    const log = document.body.appendChild(document.createElement("div"));
+    await out(pin);
+    await over(pin);
+    await tick(TITLE_TIP_OPEN_MS);
+    await step(() => fireEvent.scroll(log));
+    expect(tip()).not.toBeNull();
+    await out(pin);
+    await tick(TITLE_TIP_GRACE_MS);
+    // Under the keys it stays through the scroll that brings its element into view.
+    await tabTo(pin);
+    await step(() => fireEvent.scroll(document));
+    expect(tip()).not.toBeNull();
+    await step(() => pin.blur());
+    await step(() => fireEvent.pointerDown(document.body));
+    // A drag let go over it rests there: the title is held and the tip opens, as after a move onto it.
+    await over(pin, { buttons: 1 });
+    expect(pin.getAttribute("title")).toBe("Fixar");
+    await step(() => fireEvent.pointerUp(pin, { pointerType: "mouse" }));
+    expect(pin.getAttribute("title")).toBe("");
+    await tick(TITLE_TIP_OPEN_MS);
+    expect(tip()?.textContent).toBe("Fixar");
+    await out(pin);
+    await tick(TITLE_TIP_GRACE_MS);
     // A press before it opened: it never opens.
     await over(pin);
     await step(() => fireEvent.pointerDown(pin));
@@ -191,6 +230,18 @@ describe("a `title` opens the product's tip, never the browser's", () => {
     await out(pin);
     expect(pin.hasAttribute("title")).toBe(false);
     expect(pin.hasAttribute("aria-label")).toBe(false);
+
+    // Emptied by the page while held: the old words never come back.
+    pin.setAttribute("title", "Fixar");
+    await over(pin);
+    await tick(TITLE_TIP_OPEN_MS);
+    await step(() => pin.setAttribute("title", "Desafixar"));
+    await tick(0);
+    await step(() => pin.setAttribute("title", ""));
+    await tick(0);
+    expect(tip()).toBeNull();
+    await out(pin);
+    expect(pin.getAttribute("title")).toBe("");
   });
 
   test("it goes with an element the page removes", async () => {
@@ -220,6 +271,20 @@ describe("what carries a tip", () => {
     expect(await shows(page(`<button aria-label="O que é" aria-describedby="hint">${ICON}</button>`))).toBeNull();
     expect(await shows(page(`<button aria-label="Mais" aria-expanded="true">${ICON}</button>`))).toBeNull();
     expect(await shows(page(`<button role="switch" aria-label="Sons">${ICON}</button>`))).toBeNull();
+  });
+
+  test("a label's tip inside a titled row: the row's title stays closed in the browser meanwhile", async () => {
+    const row = page(`<div title="Linha"><button aria-label="Fechar">${ICON}</button></div>`);
+    const close = row.querySelector("button") as HTMLElement;
+    await over(close);
+    expect(close.getAttribute("title")).toBe("");
+    await tick(TITLE_TIP_OPEN_MS);
+    expect(tip()?.textContent).toBe("Fechar");
+    // It repeats the button's name: hidden from a screen reader, which already said it.
+    expect(tip()?.getAttribute("aria-hidden")).toBe("true");
+    await out(close, row);
+    expect(close.hasAttribute("title")).toBe(false);
+    expect(row.getAttribute("title")).toBe("Linha");
   });
 
   test("the nearest title, as the browser picks it; an empty one says nothing", async () => {
@@ -275,6 +340,14 @@ describe("where it goes", () => {
     expect(left.style.left).toBe(`${EDGE_ROOM}px`);
   });
 
+  test("a long one with no room over or under its element stays whole in the window", async () => {
+    wide(1280);
+    TIP.height = 700;
+    const tall = await open(box(600, 400, 32, 32));
+    TIP.height = 24;
+    expect(tall.style.top).toBe(`${window.innerHeight - EDGE_ROOM - 700}px`);
+  });
+
   test("by the pointer on a whole row", async () => {
     wide(1280);
     const row = await open(box(0, 100, 800, 40), { clientX: 700, clientY: 120 });
@@ -289,6 +362,15 @@ describe("where it goes", () => {
     expect(rule).toContain("white-space: pre-line");
     expect(rule).not.toContain("overflow");
     expect(css.split(".ac-tip {")[1]?.split("}")[0]).toContain("overflow-wrap: anywhere");
+    // Over a toast: its buttons carry tips too.
+    expect(rule).toContain("z-index: var(--z-toast)");
     expect(css).toMatch(/\.ac-tip--now \{\s*animation: none;/);
+  });
+
+  test("every window installs it: the web app and the desktop windows", async () => {
+    for (const main of ["../../../apps/web/src/main.tsx", "../../../apps/desktop/src/main.tsx"]) {
+      const source = await Bun.file(new URL(main, import.meta.url).pathname).text();
+      expect(source).toMatch(/^installTitleTips\(\);$/m);
+    }
   });
 });

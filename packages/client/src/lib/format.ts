@@ -233,9 +233,6 @@ export const emailName = (email: string) => email.split("@")[0] || email;
 /** "Ada, Atlas, and Theo", "Ada, Atlas e Theo", "Ada、Atlas、Theo": the language's own list (Intl.ListFormat), in `t`'s language. */
 export const joinNames = (names: readonly string[], t: TFunction): string => t("format.list", { names });
 
-/** Words that wrap whole: a line breaks before or after "Ana Lima", never inside it (no-break spaces). */
-export const unbroken = (words: string) => words.replace(/ /g, "\u00a0");
-
 /** How many names a list of a team says before "and N more" (`namesText`): a ready-made team's four, whole. */
 export const NAMES_SHOWN = 4;
 
