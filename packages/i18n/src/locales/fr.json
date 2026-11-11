@@ -2497,6 +2497,7 @@
         "delete": "Seuls les admins suppriment un agent",
         "audience": "Seuls les admins et son responsable changent qui lui parle",
         "channels": "Seuls les admins et son responsable changent ses canaux",
+        "skill": "Seuls les admins et son responsable changent ses compétences",
         "ai_account": "Seul le propriétaire du compte l’attribue",
         "name": "Seuls les admins renomment un agent",
         "look": "Seuls les admins et son responsable changent son apparence",
@@ -2514,7 +2515,8 @@
       "channel": "Canal",
       "name": "Nom",
       "look": "Apparence",
-      "reports_to": "Rend compte à"
+      "reports_to": "Rend compte à",
+      "skill": "Compétence {{name}}"
     },
     "value": {
       "lookDefault": "L'apparence par défaut",
@@ -2530,7 +2532,9 @@
       "deleted": "Supprimé",
       "notIn": "Pas dans le canal",
       "withoutMention": "De sa propre initiative",
-      "mentionOnly": "Seulement quand on le mentionne"
+      "mentionOnly": "Seulement quand on le mentionne",
+      "skillOn": "Activée",
+      "skillOff": "Désactivée"
     },
     "remove": {
       "archiveTitle_one": "Archiver {{count}} agent ?",

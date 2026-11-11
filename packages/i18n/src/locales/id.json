@@ -2329,6 +2329,7 @@
         "delete": "Hanya admin yang menghapus agen",
         "audience": "Hanya admin dan penanggung jawabnya yang mengubah siapa yang bicara dengannya",
         "channels": "Hanya admin dan penanggung jawabnya yang mengubah kanalnya",
+        "skill": "Hanya admin dan penanggung jawabnya yang mengubah skill-nya",
         "ai_account": "Hanya pemilik akun yang memberikannya",
         "name": "Hanya admin yang mengganti nama agen",
         "look": "Hanya admin dan penanggung jawabnya yang mengubah tampilannya",
@@ -2346,7 +2347,8 @@
       "channel": "Kanal",
       "name": "Nama",
       "look": "Tampilan",
-      "reports_to": "Melapor ke"
+      "reports_to": "Melapor ke",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Tampilan bawaan",
@@ -2362,7 +2364,9 @@
       "deleted": "Dihapus",
       "notIn": "Tidak di kanal",
       "withoutMention": "Atas inisiatif sendiri",
-      "mentionOnly": "Hanya saat disebut"
+      "mentionOnly": "Hanya saat disebut",
+      "skillOn": "Aktif",
+      "skillOff": "Nonaktif"
     },
     "remove": {
       "archiveTitle_other": "Arsipkan {{count}} agen?",

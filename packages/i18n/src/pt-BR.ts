@@ -2467,6 +2467,8 @@ export const ptBR = {
         audience_female: "Só admins e o responsável mudam quem conversa com ela",
         channels: "Só admins e o responsável mudam os canais dele",
         channels_female: "Só admins e o responsável mudam os canais dela",
+        skill: "Só admins e o responsável mudam as skills dele",
+        skill_female: "Só admins e o responsável mudam as skills dela",
         ai_account: "Só o dono da conta a escolhe",
         name: "Só admins mudam o nome de um agente",
         look: "Só admins e o responsável mudam a aparência",
@@ -2485,6 +2487,7 @@ export const ptBR = {
       name: "Nome",
       look: "Aparência",
       reports_to: "Responde a",
+      skill: "Skill {{name}}",
     },
     value: {
       anAgent: "Um agente",
@@ -2501,6 +2504,8 @@ export const ptBR = {
       notIn: "Fora do canal",
       withoutMention: "Por conta própria",
       mentionOnly: "Só quando mencionado",
+      skillOn: "Ligada",
+      skillOff: "Desligada",
     },
     remove: {
       archiveTitle_one: "Arquivar {{count}} agente?",

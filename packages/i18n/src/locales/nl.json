@@ -2410,6 +2410,7 @@
         "delete": "Alleen admins verwijderen een agent",
         "audience": "Alleen admins en de verantwoordelijke wijzigen wie met hem praat",
         "channels": "Alleen admins en de verantwoordelijke wijzigen zijn kanalen",
+        "skill": "Alleen admins en de verantwoordelijke wijzigen zijn skills",
         "ai_account": "Alleen de eigenaar van het account geeft het",
         "name": "Alleen admins hernoemen een agent",
         "look": "Alleen admins en de verantwoordelijke wijzigen het uiterlijk",
@@ -2427,7 +2428,8 @@
       "channel": "Kanaal",
       "name": "Naam",
       "look": "Uiterlijk",
-      "reports_to": "Rapporteert aan"
+      "reports_to": "Rapporteert aan",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Het standaarduiterlijk",
@@ -2443,7 +2445,9 @@
       "deleted": "Verwijderd",
       "notIn": "Niet in het kanaal",
       "withoutMention": "Uit zichzelf",
-      "mentionOnly": "Alleen bij vermelding"
+      "mentionOnly": "Alleen bij vermelding",
+      "skillOn": "Aan",
+      "skillOff": "Uit"
     },
     "remove": {
       "archiveTitle_one": "{{count}} agent archiveren?",

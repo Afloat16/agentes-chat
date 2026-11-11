@@ -2411,6 +2411,7 @@
         "delete": "Nur Admins löschen einen Agenten",
         "audience": "Nur Admins und der Verantwortliche ändern, wer mit ihm spricht",
         "channels": "Nur Admins und der Verantwortliche ändern seine Kanäle",
+        "skill": "Nur Admins und der Verantwortliche ändern seine Skills",
         "ai_account": "Nur die Person, der das Konto gehört, vergibt es",
         "name": "Nur Admins benennen einen Agenten um",
         "look": "Nur Admins und sein Verantwortlicher ändern sein Aussehen",
@@ -2428,7 +2429,8 @@
       "channel": "Kanal",
       "name": "Name",
       "look": "Aussehen",
-      "reports_to": "Berichtet an"
+      "reports_to": "Berichtet an",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Das Standardaussehen",
@@ -2444,7 +2446,9 @@
       "deleted": "Gelöscht",
       "notIn": "Nicht im Kanal",
       "withoutMention": "Von selbst",
-      "mentionOnly": "Nur bei Erwähnung"
+      "mentionOnly": "Nur bei Erwähnung",
+      "skillOn": "An",
+      "skillOff": "Aus"
     },
     "remove": {
       "archiveTitle_one": "{{count}} Agent archivieren?",

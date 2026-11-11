@@ -2328,6 +2328,7 @@
         "delete": "只有管理员能删除智能体",
         "audience": "只有管理员和负责人能更改谁能和它交谈",
         "channels": "只有管理员和负责人能更改它的频道",
+        "skill": "只有管理员和负责人能更改它的技能",
         "ai_account": "只有账户所有者能分配它",
         "name": "只有管理员能重命名智能体",
         "look": "只有管理员和负责人能更改它的外观",
@@ -2345,7 +2346,8 @@
       "channel": "频道",
       "name": "名称",
       "look": "外观",
-      "reports_to": "汇报对象"
+      "reports_to": "汇报对象",
+      "skill": "技能 {{name}}"
     },
     "value": {
       "lookDefault": "默认外观",
@@ -2361,7 +2363,9 @@
       "deleted": "已删除",
       "notIn": "不在频道中",
       "withoutMention": "自主回复",
-      "mentionOnly": "仅在被提及时"
+      "mentionOnly": "仅在被提及时",
+      "skillOn": "已开启",
+      "skillOff": "已关闭"
     },
     "remove": {
       "archiveTitle_other": "归档 {{count}} 个智能体？",

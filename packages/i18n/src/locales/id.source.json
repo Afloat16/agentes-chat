@@ -6014,6 +6014,9 @@
   "rightHand.card.only.channels": {
     "value": "Only admins and its owner change its channels"
   },
+  "rightHand.card.only.skill": {
+    "value": "Only admins and its owner change its skills"
+  },
   "rightHand.card.only.ai_account": {
     "value": "Only the account's owner gives it"
   },
@@ -6059,6 +6062,9 @@
   "rightHand.field.reports_to": {
     "value": "Reports to"
   },
+  "rightHand.field.skill": {
+    "value": "{{name}} skill"
+  },
   "rightHand.value.lookDefault": {
     "value": "The default look"
   },
@@ -6100,6 +6106,12 @@
   },
   "rightHand.value.mentionOnly": {
     "value": "Only when mentioned"
+  },
+  "rightHand.value.skillOn": {
+    "value": "On"
+  },
+  "rightHand.value.skillOff": {
+    "value": "Off"
   },
   "rightHand.remove.archiveTitle": {
     "value": {

@@ -7,6 +7,8 @@ import {
   createSetupToolSource,
   createToolGateway,
   decideProposal,
+  deleteSkill,
+  enabledSkills,
   getAgent,
   insertMessage,
   listAudit,
@@ -17,6 +19,8 @@ import {
   PROPOSE_SETTINGS_TOOL,
   postPersonMessage,
   RIGHT_HAND,
+  saveSkill,
+  setAgentSkills,
   type ToolContext,
   undoAgentAction,
   updateAgent,
@@ -383,5 +387,87 @@ describe("the settings card", () => {
     );
     await undoAgentAction({ db: f.db }, f.owner.id, f.org.id, archived?.id ?? "");
     expect((await getAgent(f.db, f.org.id, f.agent.id))?.archivedAt).toBeNull();
+  });
+});
+
+describe("an agent's skills on the card, as on its page", () => {
+  const install = (fx: Fixture, name: string) =>
+    saveSkill({ db: fx.db, blobs: fx.artifactDeps.blobs }, fx.owner.id, fx.org.id, {
+      name,
+      description: `Trabalha com ${name}.`,
+      body: "1. Abra o arquivo.",
+      metadata: {},
+      source: "manual",
+    });
+  const skillsOf = async (fx: Fixture) => (await enabledSkills(fx.db, fx.org.id, fx.agent.id)).map((k) => k.name);
+
+  test("given and taken at once for who may, by name, with Undo putting them back", async () => {
+    f = await setup({ rightHand: true });
+    const excel = await install(f, "excel");
+    const pdf = await install(f, "pdf");
+    await setAgentSkills(f.db, f.owner.id, f.org.id, f.agent.id, [{ skillId: pdf.id, enabled: true }]);
+    const ctx = await lodiRun(f, f.owner.id, "dá a skill de Excel pro dev e tira a de pdf", true);
+    const out = await call(f, ctx, {
+      changes: [{ agent: "@dev", add_skills: ["Excel"], remove_skills: ["pdf"] }],
+      reason: "pediu",
+    });
+    expect(out.content).toContain("applied at once");
+    expect(await skillsOf(f)).toEqual(["excel"]);
+    const { card, rows } = await cardRows(f, f.owner.id);
+    expect(rows.map((r) => [r.status, r.settings])).toEqual([
+      [
+        "accepted",
+        [
+          { field: "skill", skillId: excel.id, from: false, to: true, label: { to: "excel" } },
+          { field: "skill", skillId: pdf.id, from: true, to: false, label: { to: "pdf" } },
+        ],
+      ],
+    ]);
+    const [receipt] = (await actionsFor(f.db, f.org.id, [card.id])).get(card.id) ?? [];
+    await undoAgentAction({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, receipt?.id ?? "");
+    expect(await skillsOf(f)).toEqual(["pdf"]);
+  });
+
+  test("someone who neither manages agents nor owns it gets the card to send on; its owner may", async () => {
+    f = await setup({ rightHand: true });
+    await install(f, "excel");
+    const bia = await addMember(f.db, f.org.id, "member", "Bia Rocha");
+    const asked = await lodiRun(f, bia.id, "coloca a skill excel no dev", true);
+    const out = await call(f, asked, { changes: [{ agent: "@dev", add_skills: ["excel"] }], reason: "pediu" });
+    expect(out.content).toContain("can't apply it: the card lets them send it to whoever may");
+    const [row] = (await cardRows(f, bia.id)).rows;
+    expect(row).toMatchObject({ status: "pending", canDecide: false });
+    await expect(decideProposal(f.db, bia.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow();
+    expect(await skillsOf(f)).toEqual([]);
+
+    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { ownerUserId: bia.id });
+    const again = await call(f, asked, { changes: [{ agent: "@dev", add_skills: ["excel"] }], reason: "pediu" });
+    expect(again.content).toContain("applied at once");
+    expect(await skillsOf(f)).toEqual(["excel"]);
+  });
+
+  test("clear refusals: a skill not installed, one it already has, the right hand's own, one removed since", async () => {
+    f = await setup({ rightHand: true });
+    const ctx = await lodiRun(f, f.owner.id, "dá a skill excel pro dev");
+    const none = await call(f, ctx, { changes: [{ agent: "@dev", add_skills: ["excel"] }], reason: "pediu" });
+    expect(none).toMatchObject({ isError: true });
+    expect(none.content).toContain("No skill is installed here yet");
+    const excel = await install(f, "excel");
+    await install(f, "pdf");
+    const unknown = await call(f, ctx, { changes: [{ agent: "@dev", add_skills: ["planilhas"] }], reason: "pediu" });
+    expect(unknown).toMatchObject({ isError: true, content: "No skill planilhas. Skills here: excel, pdf." });
+    const taken = await call(f, ctx, { changes: [{ agent: "@dev", remove_skills: ["excel"] }], reason: "pediu" });
+    expect(taken).toMatchObject({ isError: true });
+    expect(taken.content).toContain("@dev doesn't have the skill excel.");
+    const own = await call(f, ctx, { changes: [{ agent: "@lodi", add_skills: ["excel"] }], reason: "pediu" });
+    expect(own.content).toContain("You can't change your own skill");
+
+    // Outside content read: it waits on the card, and goes out of date once the skill is removed.
+    await call(f, ctx, { changes: [{ agent: "@dev", add_skills: ["excel"] }], reason: "pediu" });
+    const [row] = (await cardRows(f, f.owner.id)).rows;
+    expect(row?.status).toBe("pending");
+    await deleteSkill(f.db, f.owner.id, f.org.id, excel.id);
+    await expect(decideProposal(f.db, f.owner.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow(/changed since/);
+    expect(await skillsOf(f)).toEqual([]);
   });
 });

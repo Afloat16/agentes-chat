@@ -53,7 +53,7 @@ import {
 } from "./workspace-actions";
 import { isPersonalWorkspace } from "./workspace-mode";
 
-const { agentActions, agentRuns, channels, machineAccounts, messages, orgRoles } = schema;
+const { agentActions, agentRuns, channels, machineAccounts, messages, orgRoles, skills } = schema;
 
 /** The setup tools' scope: a tool group of its own, loaded when a message is about setting up (ADR 0043). */
 export const SETUP_SCOPE = "setup:write";
@@ -998,7 +998,7 @@ const SETUP_TOOLS_PERSONAL: Record<string, string> = {
   [SET_TEAM_WEEK_TOOL]:
     "Stop, start again or move the card you post in this person's DM: the weekly look at how their agents did (Fridays at 17h in the workspace's time zone), or 'Resumo do dia', the same card every day at an hour ('me manda isso todo dia às 9h'). Use it when they ask you to stop it, send it again, or on another day or hour. It changes only their card.",
   [PROPOSE_SETTINGS_TOOL]:
-    "Change agents' settings with one card in this conversation: the model, the AI account it thinks with, its monthly budget, its owner, who may talk to it, the channels it joins or leaves and whether it answers there without a mention, its name, its look, who it reports to, or archiving it. A change the person who asked may make, with nothing read from outside this turn, applies at once with Undo. Any other waits on the card for who may make it, and one they can't make they send from there. The result says which: never say it is done before it does. Instructions, a role or apps go through propose_instruction_change.",
+    "Change agents' settings with one card in this conversation: the model, the AI account it thinks with, its monthly budget, its owner, who may talk to it, the channels it joins or leaves and whether it answers there without a mention, the skills it has on, its name, its look, who it reports to, or archiving it. A change the person who asked may make, with nothing read from outside this turn, applies at once with Undo. Any other waits on the card for who may make it, and one they can't make they send from there. The result says which: never say it is done before it does. Instructions, a role or apps go through propose_instruction_change.",
   [OFFER_ANSWERS_TOOL]:
     "Ask the person one short question with answers to tap under it, in this conversation: each tap sends the answer as their own message (several at once with `multiple`), and they can always type instead. Use it for the questions that set their agents up (what they want help with, what takes most of their time, when they want to hear from their agents), one per turn, with `step` and `of` ('Pergunta 2 de 3'). The question shows as your message: write nothing else in this turn and end it. Their answer comes as their next message.",
   [PROPOSE_TEAM_TOOL]:
@@ -1327,6 +1327,8 @@ interface SettingsChangeInput {
   join?: unknown;
   leave?: unknown;
   replies?: unknown;
+  add_skills?: unknown;
+  remove_skills?: unknown;
   name?: unknown;
   look?: unknown;
   reports_to?: unknown;
@@ -1427,6 +1429,28 @@ async function wantedLines(ctx: ToolContext, change: SettingsChangeInput): Promi
   for (const r of replies)
     if (!names(change.join).some((n) => channelOf(n)?.id === channelOf(str(r.channel))?.id))
       seat("reply_mode", str(r.channel), r.without_mention === true);
+  const wantedSkills = [...names(change.add_skills), ...names(change.remove_skills)];
+  if (wantedSkills.length > 0) {
+    const installed = await ctx.db
+      .select({ id: skills.id, name: skills.name })
+      .from(skills)
+      .where(and(eq(skills.orgId, ctx.orgId), isNull(skills.deletedAt)))
+      .orderBy(skills.name);
+    const skillOf = (n: string) => installed.find((k) => slug(k.name) === slug(n));
+    const unknown = wantedSkills.filter((n) => !skillOf(n));
+    if (unknown.length > 0)
+      return installed.length
+        ? `No skill ${unknown.join(", ")}. Skills here: ${installed.map((k) => k.name).join(", ")}.`
+        : "No skill is installed here yet: someone who manages agents installs them on the Skills screen (offer_open_page, page skills).";
+    for (const [list, on] of [
+      [names(change.add_skills), true],
+      [names(change.remove_skills), false],
+    ] as const)
+      for (const n of list) {
+        const k = skillOf(n);
+        if (k) lines.push({ field: "skill", skillId: k.id, to: on, label: { to: k.name } });
+      }
+  }
   if (typeof change.name === "string")
     lines.push({ field: "name", to: change.name.trim(), label: { to: change.name } });
   if (change.look) lines.push({ field: "look", to: change.look });
@@ -1453,7 +1477,7 @@ function settingsTool(deps: { pubsub?: PubSub }): ToolDefinition {
   return {
     name: PROPOSE_SETTINGS_TOOL,
     description:
-      "Change teammates' settings with one card in this conversation: the model, the AI account it thinks with, its monthly budget, its owner, who may talk to it, the channels it joins or leaves and whether it answers there without a mention, its name, its look, who it reports to, or archiving it. A change the person who asked may make, with nothing read from outside this turn, applies at once with Undo. Any other waits on the card for who may make it, and one they can't make they send from there. The result says which: never say it is done before it does. Instructions, a role or apps go through propose_instruction_change.",
+      "Change teammates' settings with one card in this conversation: the model, the AI account it thinks with, its monthly budget, its owner, who may talk to it, the channels it joins or leaves and whether it answers there without a mention, the skills it has on, its name, its look, who it reports to, or archiving it. A change the person who asked may make, with nothing read from outside this turn, applies at once with Undo. Any other waits on the card for who may make it, and one they can't make they send from there. The result says which: never say it is done before it does. Instructions, a role or apps go through propose_instruction_change.",
     scope: SETUP_SCOPE,
     inputSchema: {
       type: "object",
@@ -1506,6 +1530,18 @@ function settingsTool(deps: { pubsub?: PubSub }): ToolDefinition {
                   required: ["channel", "without_mention"],
                   additionalProperties: false,
                 },
+              },
+              add_skills: {
+                type: "array",
+                items: { type: "string", minLength: 1, maxLength: 80 },
+                maxItems: 20,
+                description: "Skills to turn on for it, by name as the Skills screen lists them.",
+              },
+              remove_skills: {
+                type: "array",
+                items: { type: "string", minLength: 1, maxLength: 80 },
+                maxItems: 20,
+                description: "Skills to turn off for it.",
               },
               name: { type: "string", minLength: 1, maxLength: 80 },
               look: {

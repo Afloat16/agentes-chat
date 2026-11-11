@@ -2407,6 +2407,7 @@
         "delete": "Bir ajanı yalnızca yöneticiler siler",
         "audience": "Onunla kimin konuşacağını yalnızca yöneticiler ve sorumlusu değiştirir",
         "channels": "Kanallarını yalnızca yöneticiler ve sorumlusu değiştirir",
+        "skill": "Becerilerini yalnızca yöneticiler ve sorumlusu değiştirir",
         "ai_account": "Yalnızca hesabın sahibi verebilir",
         "name": "Bir ajanın adını yalnızca yöneticiler değiştirir",
         "look": "Görünümünü yalnızca yöneticiler ve sorumlusu değiştirir",
@@ -2424,7 +2425,8 @@
       "channel": "Kanal",
       "name": "Ad",
       "look": "Görünüm",
-      "reports_to": "Rapor verdiği"
+      "reports_to": "Rapor verdiği",
+      "skill": "{{name}} becerisi"
     },
     "value": {
       "lookDefault": "Varsayılan görünüm",
@@ -2440,7 +2442,9 @@
       "deleted": "Silindi",
       "notIn": "Kanalda değil",
       "withoutMention": "Kendiliğinden",
-      "mentionOnly": "Yalnızca bahsedilince"
+      "mentionOnly": "Yalnızca bahsedilince",
+      "skillOn": "Açık",
+      "skillOff": "Kapalı"
     },
     "remove": {
       "archiveTitle_one": "{{count}} ajan arşivlensin mi?",

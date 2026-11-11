@@ -2579,6 +2579,7 @@
         "delete": "Tylko admini usuwają agenta",
         "audience": "Tylko admini i opiekun zmieniają, kto z nim rozmawia",
         "channels": "Tylko admini i opiekun zmieniają jego kanały",
+        "skill": "Tylko admini i opiekun zmieniają jego umiejętności",
         "ai_account": "Przydziela je tylko właściciel konta",
         "name": "Tylko admini zmieniają nazwę agenta",
         "look": "Tylko admini i opiekun zmieniają jego wygląd",
@@ -2596,7 +2597,8 @@
       "channel": "Kanał",
       "name": "Nazwa",
       "look": "Wygląd",
-      "reports_to": "Podlega"
+      "reports_to": "Podlega",
+      "skill": "Umiejętność {{name}}"
     },
     "value": {
       "lookDefault": "Domyślny wygląd",
@@ -2612,7 +2614,9 @@
       "deleted": "Usunięty",
       "notIn": "Poza kanałem",
       "withoutMention": "Samodzielnie",
-      "mentionOnly": "Tylko po wzmiance"
+      "mentionOnly": "Tylko po wzmiance",
+      "skillOn": "Włączona",
+      "skillOff": "Wyłączona"
     },
     "remove": {
       "archiveTitle_one": "Zarchiwizować {{count}} agenta?",

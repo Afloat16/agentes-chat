@@ -2492,6 +2492,7 @@
         "delete": "Solo los admins eliminan un agente",
         "audience": "Solo los admins y su responsable cambian quién habla con él",
         "channels": "Solo los admins y su responsable cambian sus canales",
+        "skill": "Solo los admins y su responsable cambian sus habilidades",
         "ai_account": "Solo el dueño de la cuenta la asigna",
         "name": "Solo los admins cambian el nombre de un agente",
         "look": "Solo los admins y su responsable cambian su aspecto",
@@ -2509,7 +2510,8 @@
       "channel": "Canal",
       "name": "Nombre",
       "look": "Aspecto",
-      "reports_to": "Responde a"
+      "reports_to": "Responde a",
+      "skill": "Habilidad {{name}}"
     },
     "value": {
       "lookDefault": "El aspecto predeterminado",
@@ -2525,7 +2527,9 @@
       "deleted": "Eliminado",
       "notIn": "Fuera del canal",
       "withoutMention": "Por su cuenta",
-      "mentionOnly": "Solo cuando lo mencionan"
+      "mentionOnly": "Solo cuando lo mencionan",
+      "skillOn": "Activada",
+      "skillOff": "Desactivada"
     },
     "remove": {
       "archiveTitle_one": "¿Archivar {{count}} agente?",

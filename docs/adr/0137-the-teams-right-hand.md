@@ -1,6 +1,6 @@
 # 0137. The team's right hand
 
-- Status: Accepted; §6 and §7 amended 2026-11-06 by ADR 0079 §7 (built: engine, server, the shared client, the web and the phone app); amended 2026-11-03 (§5, a person alone with the team; §4 and §6 written as decided); amended 2026-11-04 (§8, agents act on agentes.chat through their tools, never by signing in to it); amended 2026-11-04 (§4, it starts everything a person does in the app, as cards); amended 2026-11-04 (§1, §4 and §7: it thinks with a person's plan through Claude Code or OpenCode, locked down and checked before each turn; then through Codex and Cursor too, the owner accepting their residual risk); amended 2026-11-04 (§4: through Grok Build too, checked on its `init` like Claude Code, ADR 0142); amended 2026-11-04 (§4: through the Antigravity CLI too, as an agent with no tool of its own, checked on its `init` and every step, ADR 0143); amended 2026-11-04 (§9, "Semana da equipe": a weekly card in each admin's DM, from stored data); amended 2026-11-04 (§10: the team set up from three questions, one team card, team templates); amended 2026-11-04 (§4: the team map's drag posts its settings card, ADR 0148); amended 2026-11-05 (§11, each person's own AI); amended 2026-11-06 (§12, it reads the Drive and the wiki for the person); amended 2026-11-06 (§13, the one you talk to: it sees the team and hands work on)
+- Status: Accepted; §6 and §7 amended 2026-11-06 by ADR 0079 §7 (built: engine, server, the shared client, the web and the phone app); amended 2026-11-03 (§5, a person alone with the team; §4 and §6 written as decided); amended 2026-11-04 (§8, agents act on agentes.chat through their tools, never by signing in to it); amended 2026-11-04 (§4, it starts everything a person does in the app, as cards); amended 2026-11-04 (§1, §4 and §7: it thinks with a person's plan through Claude Code or OpenCode, locked down and checked before each turn; then through Codex and Cursor too, the owner accepting their residual risk); amended 2026-11-04 (§4: through Grok Build too, checked on its `init` like Claude Code, ADR 0142); amended 2026-11-04 (§4: through the Antigravity CLI too, as an agent with no tool of its own, checked on its `init` and every step, ADR 0143); amended 2026-11-04 (§9, "Semana da equipe": a weekly card in each admin's DM, from stored data); amended 2026-11-04 (§10: the team set up from three questions, one team card, team templates); amended 2026-11-04 (§4: the team map's drag posts its settings card, ADR 0148); amended 2026-11-05 (§11, each person's own AI); amended 2026-11-06 (§12, it reads the Drive and the wiki for the person); amended 2026-11-06 (§13, the one you talk to: it sees the team and hands work on); amended 2026-11-11 (§4: a teammate's skills on its settings card)
 - Date: 2026-11-03
 - Supersedes: ADR 0093 (the team's coordinator)
 - Amends: ADR 0081 (one-click Criar and Criar e testar on the right hand's cards), ADR 0092 §5 (a teammate's settings, on the right hand's card)
@@ -346,3 +346,15 @@ adjusts for them without asking (ADR 0139 §2). "Para todo o workspace", only wi
 quem não tem um" (before "Atende outras pessoas"), its monthly budget where something bills per use, and who may use
 it. A value that changes is one row that opens its choice in a dialog (a sheet on the phone). Alone in a personal
 workspace, lending and the audience are not shown.
+
+## Amendment (2026-11-11): a teammate's skills on its settings card (§4)
+
+Asked to give an agent a skill or take one away, the right hand had no card for it: skills were left for later in the
+amendment of 2026-11-07. They are now lines of `propose_settings_change` (`add_skills`, `remove_skills`, by the name
+Settings › Skills lists), one `skill` line per skill with its id in `skillId`, its name in `label.to` and whether the
+agent has it on as `from` and `to`. They are decided as on the agent's page (`setAgentSkills`): who manages agents or
+the agent's owner (`admin_or_owner`), applied at once with Undo when the person who asked may, on the card otherwise,
+sent on to them with "Pedir a um admin". A name no installed skill has is refused with the names there are, and a skill
+removed before the click leaves the row out of date. The right hand's own skills can't be changed (it has no skill
+tools), and its delegated decisions (ADR 0139) never take a skill line. Nothing reaches its grants, the Vault or any
+secret: a skill is instructions an agent opens, under the agent's own tools.

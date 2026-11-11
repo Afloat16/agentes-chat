@@ -128,6 +128,27 @@ describe("a name and a look on a settings card", () => {
   });
 });
 
+describe("a skill line on a settings card", () => {
+  const names = { model: (id: string) => id, person: () => undefined, channel: () => undefined, role: () => undefined };
+  test("reads as the skill by its name, off to on, and only admins and its owner change it", () => {
+    expect(
+      settingLineText(
+        t,
+        "pt-BR",
+        { field: "skill", skillId: "s-excel", from: false, to: true, label: { to: "excel" } },
+        names,
+      ),
+    ).toEqual({
+      field: 'rightHand.field.skill {"name":"excel"}',
+      from: "rightHand.value.skillOff",
+      to: "rightHand.value.skillOn",
+    });
+    expect(onlyKey({ settings: [{ field: "skill", skillId: "s-excel", from: true, to: false }] })).toBe(
+      "rightHand.card.only.skill",
+    );
+  });
+});
+
 describe("a card of proposals", () => {
   test("its rows: every id, else the one an older server sent; its proposer, else the agent it changes", () => {
     expect(cardProposalIds({ proposalId: "a", proposalIds: ["a", "b"] })).toEqual(["a", "b"]);
