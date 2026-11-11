@@ -8700,6 +8700,81 @@
   "vault.import.close": {
     "value": "Done"
   },
+  "vault.env.open": {
+    "value": "Import .env"
+  },
+  "vault.env.title": {
+    "value": "Import keys"
+  },
+  "vault.env.text": {
+    "value": "Takes a .env file, with one NAME=value line per key, or a JSON object of names and values."
+  },
+  "vault.env.paste": {
+    "value": "Or paste its contents here"
+  },
+  "vault.env.review": {
+    "value": "Review"
+  },
+  "vault.env.none": {
+    "value": "No NAME=value line found. Check the file and try again."
+  },
+  "vault.env.tooLarge": {
+    "value": "This file is too large (512 KB at most)."
+  },
+  "vault.env.tooMany": {
+    "value": "Too many keys at once ({{max}} at most). Split the file and import each part."
+  },
+  "vault.env.duplicates": {
+    "value": "Written more than once, the last value counts: {{names}}"
+  },
+  "vault.env.new": {
+    "value": "New"
+  },
+  "vault.env.exists": {
+    "value": "Already saved"
+  },
+  "vault.env.replace": {
+    "value": "Replace"
+  },
+  "vault.env.show": {
+    "value": "Show the value of {{name}}"
+  },
+  "vault.env.hide": {
+    "value": "Hide the value of {{name}}"
+  },
+  "vault.env.problem.name": {
+    "value": "The name must look like ACME_API_KEY"
+  },
+  "vault.env.problem.reserved": {
+    "value": "Reserved name"
+  },
+  "vault.env.problem.empty": {
+    "value": "No value"
+  },
+  "vault.env.problem.tooLarge": {
+    "value": "Value too large"
+  },
+  "vault.move.toTeam": {
+    "value": "Move to Team"
+  },
+  "vault.move.toTeamPersonal": {
+    "value": "Move to Shared"
+  },
+  "vault.move.toPersonal": {
+    "value": "Move to Personal"
+  },
+  "vault.move.title": {
+    "value": "Move {{title}}?"
+  },
+  "vault.move.toTeamText": {
+    "value": "Everyone in the workspace will see this item, and its agents will use it when anyone asks. People who manage the Vault can edit it."
+  },
+  "vault.move.toPersonalText": {
+    "value": "Only you will see and edit this item, and its agents will use it only when you ask. Everyone else stops seeing it."
+  },
+  "vault.move.moved": {
+    "value": "Moved"
+  },
   "vault.connections.none": {
     "value": "No password manager can be connected here."
   },
@@ -30982,6 +31057,9 @@
   "errors.vault.csvUnrecognized": {
     "value": "This doesn't look like a passwords file. Export it again as CSV."
   },
+  "errors.vault.unreadable": {
+    "value": "The saved value can't be read here. Save it again, then move it."
+  },
   "errors.vault.requestNotDelivered": {
     "value": "Send it first, then save it to the Vault."
   },
@@ -33795,11 +33873,17 @@
   "audit.change.vault.item_deleted": {
     "value": "Deleted a Vault item"
   },
+  "audit.change.vault.item_moved": {
+    "value": "Moved a Vault item between Personal and Team"
+  },
   "audit.change.vault.item_used": {
     "value": "Used a Vault item"
   },
   "audit.change.vault.imported": {
     "value": "Imported passwords into the Vault"
+  },
+  "audit.change.vault.keys_imported": {
+    "value": "Imported keys into the Vault"
   },
   "audit.change.vault.connection_added": {
     "value": "Connected a password manager to the Vault"

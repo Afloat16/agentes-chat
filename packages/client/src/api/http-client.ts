@@ -6,7 +6,14 @@ import { CLOUD_SERVER } from "../lib/server";
 import type { TeamWeekPrefs } from "../lib/team-week";
 import { consultSeeds } from "../realtime/consults";
 import { steerStore } from "../realtime/steer";
-import type { VaultConnection, VaultImportResult, VaultItem, VaultItemDetail, VaultOverview } from "../vault/types";
+import type {
+  VaultConnection,
+  VaultImportResult,
+  VaultItem,
+  VaultItemDetail,
+  VaultKeysImportResult,
+  VaultOverview,
+} from "../vault/types";
 import type { HttpApi, OpenedWorkspace } from "./client";
 import { ApiError, createFileRequester, createRequester, enc, type TransportOptions } from "./http";
 import type {
@@ -492,6 +499,9 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         request<VaultItem>(`${org(orgId)}/vault/items/${enc(itemId)}`, { method: "PATCH", json: patch }),
       remove: (orgId, itemId) => request<void>(`${org(orgId)}/vault/items/${enc(itemId)}`, { method: "DELETE" }),
       importCsv: (orgId, input) => request<VaultImportResult>(`${org(orgId)}/vault/import`, { json: input }),
+      importKeys: (orgId, input) => request<VaultKeysImportResult>(`${org(orgId)}/vault/keys`, { json: input }),
+      move: (orgId, itemId, scope) =>
+        request<VaultItem>(`${org(orgId)}/vault/items/${enc(itemId)}/move`, { json: { scope } }),
       connect: (orgId, input) => request<VaultConnection>(`${org(orgId)}/vault/connections`, { json: input }),
       updateConnection: (orgId, connectionId, patch) =>
         request<VaultConnection>(`${org(orgId)}/vault/connections/${enc(connectionId)}`, {

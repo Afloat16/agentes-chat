@@ -3570,6 +3570,37 @@
       "another": "Andere Datei wählen",
       "close": "Fertig"
     },
+    "env": {
+      "open": ".env importieren",
+      "title": "Schlüssel importieren",
+      "text": "Nimmt eine .env-Datei mit einer Zeile NAME=Wert pro Schlüssel oder ein JSON mit Namen und Werten.",
+      "paste": "Oder füg den Inhalt hier ein",
+      "review": "Prüfen",
+      "none": "Keine Zeile NAME=Wert gefunden. Prüf die Datei und versuch es noch einmal.",
+      "tooLarge": "Diese Datei ist zu groß (höchstens 512 KB).",
+      "tooMany": "Zu viele Schlüssel auf einmal (höchstens {{max}}). Teil die Datei und importier jeden Teil.",
+      "duplicates": "Mehrfach in der Datei, der letzte Wert zählt: {{names}}",
+      "new": "Neu",
+      "exists": "Schon gespeichert",
+      "replace": "Ersetzen",
+      "show": "Wert von {{name}} anzeigen",
+      "hide": "Wert von {{name}} verbergen",
+      "problem": {
+        "name": "Der Name muss wie ACME_API_KEY aussehen",
+        "reserved": "Reservierter Name",
+        "empty": "Kein Wert",
+        "tooLarge": "Wert zu groß"
+      }
+    },
+    "move": {
+      "toTeam": "Zu Team verschieben",
+      "toTeamPersonal": "Zu Geteilt verschieben",
+      "toPersonal": "Zu Persönlich verschieben",
+      "title": "{{title}} verschieben?",
+      "toTeamText": "Alle im Workspace sehen diesen Eintrag, und seine Agenten verwenden ihn, wenn jemand darum bittet. Wer den Vault verwaltet, kann ihn bearbeiten.",
+      "toPersonalText": "Nur du siehst und bearbeitest diesen Eintrag, und seine Agenten verwenden ihn nur, wenn du darum bittest. Alle anderen sehen ihn nicht mehr.",
+      "moved": "Verschoben"
+    },
     "connections": {
       "none": "Hier lässt sich kein Passwort-Manager verbinden.",
       "lead": "Deine Agenten verwenden die {{kinds}}, die du in {{name}} aufbewahrst.",
@@ -12829,6 +12860,7 @@
       "csvTooLarge": "Die Datei ist zu groß. Die Grenze ist 2 MB.",
       "csvTooManyRows": "Die Datei hat mehr als 5.000 Zeilen. Teil sie auf und importiere jeden Teil.",
       "csvUnrecognized": "Das sieht nicht nach einer Passwortdatei aus. Exportiere sie noch einmal als CSV.",
+      "unreadable": "Der gespeicherte Wert lässt sich hier nicht lesen. Speicher ihn neu und verschieb ihn dann.",
       "requestNotDelivered": "Schick es zuerst und speichere es dann im Vault.",
       "requestNotSavable": "Das lässt sich nicht im Vault speichern.",
       "sourceUnknown": "Dieser Passwort-Manager ist hier nicht verfügbar.",
@@ -13960,8 +13992,10 @@
         "item_created": "Hat einen Eintrag im Vault gespeichert",
         "item_changed": "Hat einen Vault-Eintrag geändert",
         "item_deleted": "Hat einen Vault-Eintrag gelöscht",
+        "item_moved": "Hat einen Vault-Eintrag zwischen Persönlich und Team verschoben",
         "item_used": "Hat einen Vault-Eintrag verwendet",
         "imported": "Hat Passwörter in den Vault importiert",
+        "keys_imported": "Hat Schlüssel in den Vault importiert",
         "connection_added": "Hat einen Passwort-Manager mit dem Vault verbunden",
         "connection_changed": "Hat die Verbindung eines Passwort-Managers geändert",
         "connection_removed": "Hat einen Passwort-Manager vom Vault getrennt"

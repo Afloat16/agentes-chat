@@ -3675,6 +3675,37 @@
       "another": "Scegli un altro file",
       "close": "Fatto"
     },
+    "env": {
+      "open": "Importa .env",
+      "title": "Importa chiavi",
+      "text": "Accetta un file .env, con una riga NOME=valore per chiave, o un JSON di nomi e valori.",
+      "paste": "Oppure incolla qui il contenuto",
+      "review": "Controlla",
+      "none": "Nessuna riga NOME=valore trovata. Controlla il file e riprova.",
+      "tooLarge": "Questo file è troppo grande (al massimo 512 KB).",
+      "tooMany": "Troppe chiavi in una volta (al massimo {{max}}). Dividi il file e importa ogni parte.",
+      "duplicates": "Ripetute nel file, vale l'ultimo valore: {{names}}",
+      "new": "Nuova",
+      "exists": "Esiste già",
+      "replace": "Sostituisci",
+      "show": "Mostra il valore di {{name}}",
+      "hide": "Nascondi il valore di {{name}}",
+      "problem": {
+        "name": "Il nome deve essere come ACME_API_KEY",
+        "reserved": "Nome riservato",
+        "empty": "Nessun valore",
+        "tooLarge": "Valore troppo grande"
+      }
+    },
+    "move": {
+      "toTeam": "Sposta in Team",
+      "toTeamPersonal": "Sposta in Condiviso",
+      "toPersonal": "Sposta in Personale",
+      "title": "Spostare {{title}}?",
+      "toTeamText": "Tutti nello spazio di lavoro vedranno questo elemento, e i suoi agenti lo useranno quando qualcuno lo chiede. Chi gestisce il Vault può modificarlo.",
+      "toPersonalText": "Solo tu vedrai e modificherai questo elemento, e i suoi agenti lo useranno solo quando lo chiedi tu. Gli altri non lo vedranno più.",
+      "moved": "Spostato"
+    },
     "connections": {
       "none": "Qui non si può collegare nessun gestore di password.",
       "lead": "I tuoi agenti usano i {{kinds}} che conservi in {{name}}.",
@@ -13284,6 +13315,7 @@
       "csvTooLarge": "Il file è troppo grande. Il limite è 2 MB.",
       "csvTooManyRows": "Il file ha più di 5.000 righe. Dividilo e importa ogni parte.",
       "csvUnrecognized": "Non sembra un file di password. Esportalo di nuovo come CSV.",
+      "unreadable": "Il valore salvato non può essere letto qui. Salvalo di nuovo, poi spostalo.",
       "requestNotDelivered": "Prima invialo, poi salvalo nel Vault.",
       "requestNotSavable": "Questo non si può salvare nel Vault.",
       "sourceUnknown": "Questo gestore di password non è disponibile qui.",
@@ -14433,8 +14465,10 @@
         "item_created": "Ha salvato un elemento nel Vault",
         "item_changed": "Ha modificato un elemento del Vault",
         "item_deleted": "Ha eliminato un elemento del Vault",
+        "item_moved": "Ha spostato un elemento del Vault tra Personale e Team",
         "item_used": "Ha usato un elemento del Vault",
         "imported": "Ha importato password nel Vault",
+        "keys_imported": "Ha importato chiavi nel Vault",
         "connection_added": "Ha collegato un gestore di password al Vault",
         "connection_changed": "Ha modificato il collegamento di un gestore di password",
         "connection_removed": "Ha scollegato un gestore di password dal Vault"

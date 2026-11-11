@@ -3441,6 +3441,37 @@
       "another": "다른 파일 고르기",
       "close": "완료"
     },
+    "env": {
+      "open": ".env 가져오기",
+      "title": "키 가져오기",
+      "text": "키마다 이름=값 한 줄로 된 .env 파일이나, 이름과 값으로 된 JSON을 받아요.",
+      "paste": "또는 내용을 여기에 붙여넣기",
+      "review": "검토",
+      "none": "이름=값 줄을 찾지 못했어요. 파일을 확인하고 다시 시도하세요.",
+      "tooLarge": "이 파일은 너무 커요(최대 512 KB).",
+      "tooMany": "한 번에 가져올 키가 너무 많아요(최대 {{max}}개). 파일을 나눠 각각 가져오세요.",
+      "duplicates": "파일에 여러 번 나와서 마지막 값을 써요: {{names}}",
+      "new": "새 키",
+      "exists": "이미 있음",
+      "replace": "바꾸기",
+      "show": "{{name}}의 값 보기",
+      "hide": "{{name}}의 값 숨기기",
+      "problem": {
+        "name": "이름은 ACME_API_KEY 같은 형식이어야 해요",
+        "reserved": "예약된 이름",
+        "empty": "값 없음",
+        "tooLarge": "값이 너무 커요"
+      }
+    },
+    "move": {
+      "toTeam": "팀으로 옮기기",
+      "toTeamPersonal": "공유됨으로 옮기기",
+      "toPersonal": "개인으로 옮기기",
+      "title": "{{title}}을(를) 옮길까요?",
+      "toTeamText": "워크스페이스의 모든 사람이 이 항목을 보게 되고, 누구든 부탁하면 이 항목의 에이전트가 사용해요. Vault를 관리하는 사람은 편집할 수 있어요.",
+      "toPersonalText": "이 항목은 나만 보고 편집하게 되고, 에이전트는 내가 부탁할 때만 사용해요. 다른 사람에게는 더 이상 보이지 않아요.",
+      "moved": "옮겼어요"
+    },
     "connections": {
       "none": "여기서는 연결할 수 있는 비밀번호 관리자가 없어요.",
       "lead": "에이전트는 {{name}}에 보관된 {{kinds}}을(를) 사용해요.",
@@ -12343,6 +12374,7 @@
       "csvTooLarge": "파일이 너무 커요. 최대 2 MB까지예요.",
       "csvTooManyRows": "파일이 5,000행을 넘어요. 나눠서 하나씩 가져오세요.",
       "csvUnrecognized": "비밀번호 파일이 아닌 것 같아요. CSV로 다시 내보내세요.",
+      "unreadable": "저장된 값을 여기서 읽을 수 없어요. 다시 저장한 다음 옮기세요.",
       "requestNotDelivered": "먼저 보낸 다음 Vault에 저장하세요.",
       "requestNotSavable": "이 항목은 Vault에 저장할 수 없어요.",
       "sourceUnknown": "여기서는 이 비밀번호 관리자를 쓸 수 없어요.",
@@ -13454,8 +13486,10 @@
         "item_created": "Vault에 항목을 저장했어요",
         "item_changed": "Vault 항목을 변경했어요",
         "item_deleted": "Vault 항목을 삭제했어요",
+        "item_moved": "Vault 항목을 개인과 팀 사이에서 옮겼어요",
         "item_used": "Vault 항목을 사용했어요",
         "imported": "Vault로 비밀번호를 가져왔어요",
+        "keys_imported": "Vault로 키를 가져왔어요",
         "connection_added": "Vault에 비밀번호 관리자를 연결했어요",
         "connection_changed": "비밀번호 관리자 연결을 변경했어요",
         "connection_removed": "Vault에서 비밀번호 관리자 연결을 해제했어요"

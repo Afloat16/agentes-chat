@@ -16,6 +16,8 @@ import type {
   VaultItemDetail,
   VaultItemInput,
   VaultItemPatch,
+  VaultKeysImportInput,
+  VaultKeysImportResult,
   VaultOverview,
   VaultScope,
 } from "../vault/types";
@@ -1909,6 +1911,13 @@ export interface ApiClient {
     remove(orgId: string, itemId: string): Promise<void>;
     /** A passwords file's text; `dryRun` only counts. 413 `vault.csv_too_large` past 2 MB. */
     importCsv(orgId: string, input: { csv: string; scope: VaultScope; dryRun: boolean }): Promise<VaultImportResult>;
+    /** Several keys in one save (an imported .env). 403 `vault.team_needs_permission` for the team's without it. */
+    importKeys(orgId: string, input: VaultKeysImportInput): Promise<VaultKeysImportResult>;
+    /**
+     * Moves an item kept here between Personal and Team. Either way takes `manage_credentials`; to Personal it
+     * becomes the mover's. 409 `vault.key_name_taken` when a key of that name is already there.
+     */
+    move(orgId: string, itemId: string, scope: VaultScope): Promise<VaultItem>;
     /** Checked with the password manager first: 400 `vault.source.<code>` when it refuses. */
     connect(orgId: string, input: VaultConnectInput): Promise<VaultConnection>;
     updateConnection(orgId: string, connectionId: string, patch: VaultConnectionPatch): Promise<VaultConnection>;

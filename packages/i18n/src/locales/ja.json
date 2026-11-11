@@ -3443,6 +3443,37 @@
       "another": "別のファイルを選ぶ",
       "close": "完了"
     },
+    "env": {
+      "open": ".envを読み込む",
+      "title": "キーを読み込む",
+      "text": ".envファイル（キーごとに「名前=値」の1行）か、名前と値のJSONを読み込めます。",
+      "paste": "または内容をここに貼り付け",
+      "review": "確認",
+      "none": "「名前=値」の行が見つかりません。ファイルを確認して、もう一度お試しください。",
+      "tooLarge": "このファイルは大きすぎます（最大512 KB）。",
+      "tooMany": "一度に読み込むキーが多すぎます（最大{{max}}個）。ファイルを分けて、それぞれ読み込んでください。",
+      "duplicates": "ファイル内で重複しています。最後の値を使います：{{names}}",
+      "new": "新規",
+      "exists": "保存済み",
+      "replace": "置き換える",
+      "show": "{{name}}の値を表示",
+      "hide": "{{name}}の値を隠す",
+      "problem": {
+        "name": "名前はACME_API_KEYのような形式にしてください",
+        "reserved": "予約されている名前",
+        "empty": "値がありません",
+        "tooLarge": "値が大きすぎます"
+      }
+    },
+    "move": {
+      "toTeam": "チームに移動",
+      "toTeamPersonal": "共有に移動",
+      "toPersonal": "個人に移動",
+      "title": "{{title}}を移動しますか？",
+      "toTeamText": "ワークスペースの全員にこの項目が表示され、誰かが頼んだときにこの項目のエージェントが使います。Vaultを管理する人は編集できます。",
+      "toPersonalText": "この項目を表示・編集できるのはあなただけになり、エージェントはあなたが頼んだときだけ使います。ほかの人には表示されなくなります。",
+      "moved": "移動しました"
+    },
     "connections": {
       "none": "ここではパスワードマネージャーを接続できません。",
       "lead": "エージェントは、{{name}}に保管している{{kinds}}を使います。",
@@ -12349,6 +12380,7 @@
       "csvTooLarge": "ファイルが大きすぎます。上限は2 MBです。",
       "csvTooManyRows": "ファイルの行数が5,000を超えています。分割して、それぞれインポートしてください。",
       "csvUnrecognized": "パスワードのファイルではないようです。CSVでもう一度エクスポートしてください。",
+      "unreadable": "保存された値をここでは読み取れません。もう一度保存してから移動してください。",
       "requestNotDelivered": "先に送信してから、Vaultに保存してください。",
       "requestNotSavable": "これはVaultに保存できません。",
       "sourceUnknown": "このパスワードマネージャーはここでは使えません。",
@@ -13462,8 +13494,10 @@
         "item_created": "Vaultに項目を保存",
         "item_changed": "Vaultの項目を変更",
         "item_deleted": "Vaultの項目を削除",
+        "item_moved": "Vaultの項目を個人とチームの間で移動しました",
         "item_used": "Vaultの項目を使用",
         "imported": "Vaultにパスワードをインポート",
+        "keys_imported": "Vaultにキーを読み込みました",
         "connection_added": "Vaultにパスワードマネージャーを接続",
         "connection_changed": "パスワードマネージャーの接続を変更",
         "connection_removed": "Vaultからパスワードマネージャーを切断"

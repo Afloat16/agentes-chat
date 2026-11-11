@@ -3802,6 +3802,37 @@
       "another": "Wybierz inny plik",
       "close": "Gotowe"
     },
+    "env": {
+      "open": "Importuj .env",
+      "title": "Importuj klucze",
+      "text": "Przyjmuje plik .env z jednym wierszem NAZWA=wartość na klucz albo JSON z nazwami i wartościami.",
+      "paste": "Albo wklej tutaj zawartość",
+      "review": "Sprawdź",
+      "none": "Nie znaleziono żadnego wiersza NAZWA=wartość. Sprawdź plik i spróbuj ponownie.",
+      "tooLarge": "Ten plik jest za duży (najwyżej 512 KB).",
+      "tooMany": "Za dużo kluczy naraz (najwyżej {{max}}). Podziel plik i zaimportuj każdą część.",
+      "duplicates": "Powtórzone w pliku, liczy się ostatnia wartość: {{names}}",
+      "new": "Nowy",
+      "exists": "Już istnieje",
+      "replace": "Zastąp",
+      "show": "Pokaż wartość {{name}}",
+      "hide": "Ukryj wartość {{name}}",
+      "problem": {
+        "name": "Nazwa musi wyglądać jak ACME_API_KEY",
+        "reserved": "Nazwa zarezerwowana",
+        "empty": "Brak wartości",
+        "tooLarge": "Wartość za duża"
+      }
+    },
+    "move": {
+      "toTeam": "Przenieś do: Zespół",
+      "toTeamPersonal": "Przenieś do: Udostępnione",
+      "toPersonal": "Przenieś do: Osobiste",
+      "title": "Przenieść {{title}}?",
+      "toTeamText": "Wszyscy w przestrzeni roboczej zobaczą ten element, a jego agenci użyją go, gdy ktokolwiek o to poprosi. Zarządzający Vault mogą go edytować.",
+      "toPersonalText": "Tylko ty zobaczysz i edytujesz ten element, a jego agenci użyją go tylko wtedy, gdy o to poprosisz. Pozostali przestaną go widzieć.",
+      "moved": "Przeniesiono"
+    },
     "connections": {
       "none": "Tutaj nie można połączyć żadnego menedżera haseł.",
       "lead": "Twoi agenci używają tego, co trzymasz w {{name}}: {{kinds}}.",
@@ -13724,6 +13755,7 @@
       "csvTooLarge": "Plik jest za duży. Limit to 2 MB.",
       "csvTooManyRows": "Plik ma ponad 5000 wierszy. Podziel go i zaimportuj każdą część.",
       "csvUnrecognized": "To nie wygląda na plik z hasłami. Wyeksportuj go ponownie jako CSV.",
+      "unreadable": "Zapisanej wartości nie da się tutaj odczytać. Zapisz ją ponownie, a potem przenieś.",
       "requestNotDelivered": "Najpierw wyślij, potem zapisz w Vault.",
       "requestNotSavable": "Tego nie można zapisać w Vault.",
       "sourceUnknown": "Ten menedżer haseł nie jest tu dostępny.",
@@ -14892,8 +14924,10 @@
         "item_created": "Zapisano element w Vault",
         "item_changed": "Zmieniono element w Vault",
         "item_deleted": "Usunięto element z Vault",
+        "item_moved": "Przeniesiono element Vault między Osobiste a Zespół",
         "item_used": "Użyto elementu z Vault",
         "imported": "Zaimportowano hasła do Vault",
+        "keys_imported": "Zaimportowano klucze do Vault",
         "connection_added": "Połączono menedżer haseł z Vault",
         "connection_changed": "Zmieniono połączenie menedżera haseł",
         "connection_removed": "Odłączono menedżer haseł od Vault"

@@ -3454,6 +3454,37 @@
       "another": "Pilih file lain",
       "close": "Selesai"
     },
+    "env": {
+      "open": "Impor .env",
+      "title": "Impor kunci",
+      "text": "Menerima file .env, dengan satu baris NAMA=nilai per kunci, atau JSON berisi nama dan nilai.",
+      "paste": "Atau tempel isinya di sini",
+      "review": "Tinjau",
+      "none": "Tidak ada baris NAMA=nilai yang ditemukan. Periksa file lalu coba lagi.",
+      "tooLarge": "File ini terlalu besar (paling besar 512 KB).",
+      "tooMany": "Terlalu banyak kunci sekaligus (paling banyak {{max}}). Bagi file lalu impor tiap bagian.",
+      "duplicates": "Tertulis lebih dari sekali di file, nilai terakhir yang dipakai: {{names}}",
+      "new": "Baru",
+      "exists": "Sudah ada",
+      "replace": "Ganti",
+      "show": "Tampilkan nilai {{name}}",
+      "hide": "Sembunyikan nilai {{name}}",
+      "problem": {
+        "name": "Nama harus seperti ACME_API_KEY",
+        "reserved": "Nama dicadangkan",
+        "empty": "Tanpa nilai",
+        "tooLarge": "Nilai terlalu besar"
+      }
+    },
+    "move": {
+      "toTeam": "Pindahkan ke Tim",
+      "toTeamPersonal": "Pindahkan ke Dibagikan",
+      "toPersonal": "Pindahkan ke Pribadi",
+      "title": "Pindahkan {{title}}?",
+      "toTeamText": "Semua orang di ruang kerja akan melihat item ini, dan agennya akan menggunakannya saat siapa pun meminta. Pengelola Vault bisa mengeditnya.",
+      "toPersonalText": "Hanya kamu yang akan melihat dan mengedit item ini, dan agennya hanya menggunakannya saat kamu minta. Orang lain tidak lagi melihatnya.",
+      "moved": "Dipindahkan"
+    },
     "connections": {
       "none": "Tidak ada pengelola kata sandi yang bisa dihubungkan di sini.",
       "lead": "Agenmu menggunakan {{kinds}} yang kamu simpan di {{name}}.",
@@ -12403,6 +12434,7 @@
       "csvTooLarge": "File terlalu besar. Batasnya 2 MB.",
       "csvTooManyRows": "File memiliki lebih dari 5.000 baris. Pisahkan lalu impor setiap bagian.",
       "csvUnrecognized": "Ini tidak tampak seperti file kata sandi. Ekspor lagi sebagai CSV.",
+      "unreadable": "Nilai yang tersimpan tidak bisa dibaca di sini. Simpan lagi, lalu pindahkan.",
       "requestNotDelivered": "Kirim dulu, lalu simpan ke Vault.",
       "requestNotSavable": "Ini tidak bisa disimpan ke Vault.",
       "sourceUnknown": "Pengelola kata sandi ini tidak tersedia di sini.",
@@ -13516,8 +13548,10 @@
         "item_created": "Menyimpan item ke Vault",
         "item_changed": "Mengubah item Vault",
         "item_deleted": "Menghapus item Vault",
+        "item_moved": "Memindahkan item Vault antara Pribadi dan Tim",
         "item_used": "Menggunakan item Vault",
         "imported": "Mengimpor kata sandi ke Vault",
+        "keys_imported": "Mengimpor kunci ke Vault",
         "connection_added": "Menghubungkan pengelola kata sandi ke Vault",
         "connection_changed": "Mengubah koneksi pengelola kata sandi",
         "connection_removed": "Memutus pengelola kata sandi dari Vault"

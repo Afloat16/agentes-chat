@@ -3557,6 +3557,37 @@
       "another": "Başka dosya seç",
       "close": "Bitti"
     },
+    "env": {
+      "open": ".env içe aktar",
+      "title": "Anahtarları içe aktar",
+      "text": "Her anahtar için bir AD=değer satırı olan bir .env dosyasını veya adlardan ve değerlerden oluşan bir JSON'u kabul eder.",
+      "paste": "Ya da içeriği buraya yapıştırın",
+      "review": "Gözden geçir",
+      "none": "AD=değer satırı bulunamadı. Dosyayı kontrol edip yeniden deneyin.",
+      "tooLarge": "Bu dosya çok büyük (en fazla 512 KB).",
+      "tooMany": "Tek seferde çok fazla anahtar var (en fazla {{max}}). Dosyayı bölüp her parçayı içe aktarın.",
+      "duplicates": "Dosyada birden fazla kez geçiyor, son değer geçerli: {{names}}",
+      "new": "Yeni",
+      "exists": "Zaten var",
+      "replace": "Değiştir",
+      "show": "{{name}} değerini göster",
+      "hide": "{{name}} değerini gizle",
+      "problem": {
+        "name": "Ad, ACME_API_KEY gibi olmalı",
+        "reserved": "Ayrılmış ad",
+        "empty": "Değer yok",
+        "tooLarge": "Değer çok büyük"
+      }
+    },
+    "move": {
+      "toTeam": "Ekip'e taşı",
+      "toTeamPersonal": "Paylaşılan'a taşı",
+      "toPersonal": "Kişisel'e taşı",
+      "title": "{{title}} taşınsın mı?",
+      "toTeamText": "Çalışma alanındaki herkes bu öğeyi görür ve ajanları, biri istediğinde onu kullanır. Vault'u yönetenler düzenleyebilir.",
+      "toPersonalText": "Bu öğeyi yalnızca siz görür ve düzenlersiniz, ajanları da yalnızca siz istediğinizde kullanır. Diğerleri artık göremez.",
+      "moved": "Taşındı"
+    },
     "connections": {
       "none": "Burada hiçbir şifre yöneticisi bağlanamıyor.",
       "lead": "Ajanlarınız, {{name}} içinde sakladığınız şu öğeleri kullanır: {{kinds}}.",
@@ -12765,6 +12796,7 @@
       "csvTooLarge": "Dosya çok büyük. Sınır 2 MB.",
       "csvTooManyRows": "Dosyada 5.000'den fazla satır var. Bölüp her parçayı ayrı içe aktarın.",
       "csvUnrecognized": "Bu bir şifre dosyasına benzemiyor. CSV olarak yeniden dışa aktarın.",
+      "unreadable": "Kaydedilen değer burada okunamıyor. Yeniden kaydedip sonra taşıyın.",
       "requestNotDelivered": "Önce gönderin, sonra Vault'a kaydedin.",
       "requestNotSavable": "Bu, Vault'a kaydedilemez.",
       "sourceUnknown": "Bu şifre yöneticisi burada kullanılamıyor.",
@@ -13896,8 +13928,10 @@
         "item_created": "Vault'a bir öğe kaydetti",
         "item_changed": "Bir Vault öğesini değiştirdi",
         "item_deleted": "Bir Vault öğesini sildi",
+        "item_moved": "Bir Vault öğesini Kişisel ile Ekip arasında taşıdı",
         "item_used": "Bir Vault öğesini kullandı",
         "imported": "Vault'a şifre aktardı",
+        "keys_imported": "Vault'a anahtar içe aktardı",
         "connection_added": "Vault'a bir şifre yöneticisi bağladı",
         "connection_changed": "Bir şifre yöneticisinin bağlantısını değiştirdi",
         "connection_removed": "Bir şifre yöneticisinin Vault bağlantısını kesti"

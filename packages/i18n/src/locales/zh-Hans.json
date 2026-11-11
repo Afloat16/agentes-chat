@@ -3444,6 +3444,37 @@
       "another": "选择其他文件",
       "close": "完成"
     },
+    "env": {
+      "open": "导入 .env",
+      "title": "导入密钥",
+      "text": "支持 .env 文件（每个密钥一行“名称=值”），或由名称和值组成的 JSON。",
+      "paste": "或将内容粘贴到这里",
+      "review": "检查",
+      "none": "没有找到“名称=值”的行。请检查文件后重试。",
+      "tooLarge": "此文件太大（最大 512 KB）。",
+      "tooMany": "一次导入的密钥太多（最多 {{max}} 个）。请拆分文件后分别导入。",
+      "duplicates": "在文件中重复出现，以最后一个值为准：{{names}}",
+      "new": "新增",
+      "exists": "已存在",
+      "replace": "替换",
+      "show": "显示 {{name}} 的值",
+      "hide": "隐藏 {{name}} 的值",
+      "problem": {
+        "name": "名称需类似 ACME_API_KEY",
+        "reserved": "保留名称",
+        "empty": "没有值",
+        "tooLarge": "值太大"
+      }
+    },
+    "move": {
+      "toTeam": "移到团队",
+      "toTeamPersonal": "移到共享",
+      "toPersonal": "移到个人",
+      "title": "要移动 {{title}} 吗？",
+      "toTeamText": "工作区所有成员都会看到此项目，任何人提出要求时，它的智能体都会使用它。管理 Vault 的人可以编辑。",
+      "toPersonalText": "只有你能看到和编辑此项目，它的智能体只在你要求时使用。其他人将不再看到它。",
+      "moved": "已移动"
+    },
     "connections": {
       "none": "这里无法连接任何密码管理器。",
       "lead": "你的智能体会使用你保存在 {{name}} 中的{{kinds}}。",
@@ -12412,6 +12443,7 @@
       "csvTooLarge": "文件太大。上限是 2 MB。",
       "csvTooManyRows": "文件超过 5,000 行。请拆分后分别导入。",
       "csvUnrecognized": "这看起来不是密码文件。请重新导出为 CSV。",
+      "unreadable": "这里无法读取已保存的值。请重新保存后再移动。",
       "requestNotDelivered": "请先发送，再保存到 Vault。",
       "requestNotSavable": "此项无法保存到 Vault。",
       "sourceUnknown": "这里无法使用这个密码管理器。",
@@ -13525,8 +13557,10 @@
         "item_created": "在 Vault 中保存了一个项目",
         "item_changed": "修改了一个 Vault 项目",
         "item_deleted": "删除了一个 Vault 项目",
+        "item_moved": "在个人和团队之间移动了一个 Vault 项目",
         "item_used": "使用了一个 Vault 项目",
         "imported": "将密码导入了 Vault",
+        "keys_imported": "向 Vault 导入了密钥",
         "connection_added": "将密码管理器连接到了 Vault",
         "connection_changed": "修改了一个密码管理器的连接",
         "connection_removed": "断开了一个密码管理器与 Vault 的连接"
