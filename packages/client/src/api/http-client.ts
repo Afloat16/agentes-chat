@@ -122,6 +122,9 @@ import type {
   IssueActivity,
   IssueColumn,
   IssueConversationRef,
+  IssueProject,
+  IssueProjectRef,
+  IssueProjects,
   IssuesView,
   JevKey,
   JoinApproval,
@@ -1424,7 +1427,11 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
     },
     issues: {
       list: async (orgId, filters = {}) =>
-        (await request<{ issues: Issue[] }>(`${org(orgId)}/issues`, { query: { q: filters.q } })).issues,
+        (
+          await request<{ issues: Issue[] }>(`${org(orgId)}/issues`, {
+            query: { q: filters.q, projectId: filters.projectId },
+          })
+        ).issues,
       get: (orgId, number) => request<Issue>(`${org(orgId)}/issues/by-number/${number}`),
       create: (orgId, input) => request<Issue>(`${org(orgId)}/issues`, { json: input }),
       update: (orgId, id, patch) => request<Issue>(`${org(orgId)}/issues/${enc(id)}`, { method: "PATCH", json: patch }),
@@ -1464,6 +1471,12 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
             query: { moveTo },
           })
         ).columns,
+      projects: (orgId) => request<IssueProjects>(`${org(orgId)}/issue-projects`),
+      createProject: (orgId, input) => request<IssueProject>(`${org(orgId)}/issue-projects`, { json: input }),
+      updateProject: (orgId, projectId, patch) =>
+        request<IssueProjectRef>(`${org(orgId)}/issue-projects/${enc(projectId)}`, { method: "PATCH", json: patch }),
+      deleteProject: (orgId, projectId) =>
+        request<void>(`${org(orgId)}/issue-projects/${enc(projectId)}`, { method: "DELETE" }),
     },
     threads: {
       list: (orgId, filters = {}) => request<ThreadPage>(`${org(orgId)}/threads`, { query: threadQuery(filters) }),

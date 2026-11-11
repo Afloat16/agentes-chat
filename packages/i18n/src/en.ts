@@ -3014,6 +3014,7 @@ export const en = {
       priority: "the priority",
       assignee: "the assignee",
       labels: "the labels",
+      project: "the project",
       dueDate: "the due date",
       githubUrl: "the GitHub link",
       criteria: "the criteria",
@@ -6757,6 +6758,7 @@ export const en = {
       by: { stage: "Stage", assignee: "Assignee", priority: "Priority" },
       order: { manual: "Manual", priority: "Priority", due: "Due date" },
       field: {
+        project: "Project",
         assignee: "Assignee",
         priority: "Priority",
         due: "Due date",
@@ -6783,6 +6785,24 @@ export const en = {
       prioritized: "#{{number}} now has {{priority}} priority.",
     },
     canceledColumn: "Canceled",
+    /** A task's one project: the toolbar's chip and its menu, the task's field, a project board's ⋯ menu. */
+    projects: {
+      label: "Project",
+      none: "No project",
+      all: "All projects",
+      new: "New project",
+      edit: "Edit project",
+      create: "Create project",
+      archive: "Archive project",
+      unarchive: "Unarchive project",
+      archived: "Archived",
+      /** Beside one archived project's name. */
+      archivedMark: "Archived",
+      delete: "Delete project",
+      deleteTitle: "Delete the project {{name}}?",
+      deleteBody: "Its tasks stay, with no project.",
+      empty: "No tasks in this project yet.",
+    },
     columns: {
       add: "Add column",
       options: "Options for column {{name}}",
@@ -7038,6 +7058,8 @@ export const en = {
       pr_linked: "linked PR #{{number}}",
       github_linked: "linked it to GitHub",
       github_unlinked: "removed the GitHub link",
+      project_set: "moved it to the project {{project}}",
+      project_removed: "took it out of its project",
       artifact_linked: "attached a file",
       files_attached: "attached {{names}}",
       files_removed: "removed {{names}} from the attachments",
@@ -12361,6 +12383,7 @@ export const en = {
     },
     issue: {
       assigneeOutside: "This person can't see this task. Add them to who sees it first.",
+      projectNameTaken: "A project with that name already exists.",
       stageFull: "A stage holds at most {{max}} columns. Delete one of its columns first.",
       deleteForbidden: "Only who created this task or an administrator can delete it.",
       audienceEmpty: "Choose who sees it.",

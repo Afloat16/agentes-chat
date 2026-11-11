@@ -2230,7 +2230,9 @@
       "portrait.options.clothes.polo",
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.dreads"
+      "portrait.options.hair.dreads",
+      "issues.projects.label",
+      "issues.display.field.project"
     ],
     "ja": [
       "devices.system.android",

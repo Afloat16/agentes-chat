@@ -2912,6 +2912,7 @@
       "priority": "önceliği",
       "assignee": "atanan kişiyi",
       "labels": "etiketleri",
+      "project": "projeyi",
       "dueDate": "bitiş tarihini",
       "githubUrl": "GitHub bağlantısını",
       "criteria": "kriterleri",
@@ -6598,6 +6599,7 @@
         "due": "Son tarih"
       },
       "field": {
+        "project": "Proje",
         "assignee": "Atanan",
         "priority": "Öncelik",
         "due": "Son tarih",
@@ -6624,6 +6626,22 @@
       "prioritized": "#{{number}} artık {{priority}} öncelikli."
     },
     "canceledColumn": "İptal edildi",
+    "projects": {
+      "label": "Proje",
+      "none": "Proje yok",
+      "all": "Tüm projeler",
+      "new": "Yeni proje",
+      "edit": "Projeyi düzenle",
+      "create": "Proje oluştur",
+      "archive": "Projeyi arşivle",
+      "unarchive": "Projeyi arşivden çıkar",
+      "archived": "Arşivlenmiş",
+      "archivedMark": "Arşivlendi",
+      "delete": "Projeyi sil",
+      "deleteTitle": "{{name}} projesi silinsin mi?",
+      "deleteBody": "Görevleri projesiz olarak kalır.",
+      "empty": "Bu projede henüz görev yok."
+    },
     "columns": {
       "add": "Sütun ekle",
       "options": "{{name}} sütunu için seçenekler",
@@ -6884,6 +6902,8 @@
       "pr_linked": "PR #{{number}} bağladı",
       "github_linked": "GitHub'a bağladı",
       "github_unlinked": "GitHub bağlantısını kaldırdı",
+      "project_set": "{{project}} projesine taşıdı",
+      "project_removed": "projeden çıkardı",
       "artifact_linked": "bir dosya ekledi",
       "files_attached": "{{names}} ekledi",
       "files_removed": "{{names}} eklerden çıkardı",
@@ -12481,6 +12501,7 @@
     },
     "issue": {
       "assigneeOutside": "Bu kişi bu görevi göremiyor. Önce onu Kimler görüyor listesine ekleyin.",
+      "projectNameTaken": "Bu adla bir proje zaten var.",
       "stageFull": "Bir aşama en fazla {{max}} sütun alır. Önce sütunlarından birini silin.",
       "deleteForbidden": "Bu görevi yalnızca oluşturan kişi veya bir yönetici silebilir.",
       "audienceEmpty": "Kimlerin göreceğini seçin."

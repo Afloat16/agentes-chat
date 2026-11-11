@@ -2925,6 +2925,7 @@
       "priority": "die Priorität",
       "assignee": "die zuständige Person",
       "labels": "die Labels",
+      "project": "das Projekt",
       "dueDate": "das Fälligkeitsdatum",
       "githubUrl": "den GitHub-Link",
       "criteria": "die Kriterien",
@@ -6637,6 +6638,7 @@
         "due": "Fälligkeit"
       },
       "field": {
+        "project": "Projekt",
         "assignee": "Zuständig",
         "priority": "Priorität",
         "due": "Fälligkeit",
@@ -6663,6 +6665,22 @@
       "prioritized": "#{{number}} hat jetzt Priorität {{priority}}."
     },
     "canceledColumn": "Abgebrochen",
+    "projects": {
+      "label": "Projekt",
+      "none": "Kein Projekt",
+      "all": "Alle Projekte",
+      "new": "Neues Projekt",
+      "edit": "Projekt bearbeiten",
+      "create": "Projekt erstellen",
+      "archive": "Projekt archivieren",
+      "unarchive": "Projekt wiederherstellen",
+      "archived": "Archiviert",
+      "archivedMark": "Archiviert",
+      "delete": "Projekt löschen",
+      "deleteTitle": "Projekt {{name}} löschen?",
+      "deleteBody": "Die Aufgaben bleiben erhalten, ohne Projekt.",
+      "empty": "Noch keine Aufgaben in diesem Projekt."
+    },
     "columns": {
       "add": "Spalte hinzufügen",
       "options": "Optionen für Spalte {{name}}",
@@ -6923,6 +6941,8 @@
       "pr_linked": "hat PR #{{number}} verknüpft",
       "github_linked": "hat es mit GitHub verknüpft",
       "github_unlinked": "hat den GitHub-Link entfernt",
+      "project_set": "hat sie in das Projekt {{project}} verschoben",
+      "project_removed": "hat sie aus dem Projekt genommen",
       "artifact_linked": "hat eine Datei angehängt",
       "files_attached": "hat {{names}} angehängt",
       "files_removed": "hat {{names}} aus den Anhängen entfernt",
@@ -12545,6 +12565,7 @@
     },
     "issue": {
       "assigneeOutside": "Diese Person sieht diese Aufgabe nicht. Füge sie zuerst bei Wer es sieht hinzu.",
+      "projectNameTaken": "Ein Projekt mit diesem Namen gibt es schon.",
       "stageFull": "Eine Phase hat höchstens {{max}} Spalten. Lösch zuerst eine ihrer Spalten.",
       "deleteForbidden": "Nur wer diese Aufgabe erstellt hat oder ein Administrator kann sie löschen.",
       "audienceEmpty": "Wähle, wer es sieht."

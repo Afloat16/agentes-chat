@@ -14,6 +14,7 @@ import {
   CardFooter,
   CardHeader,
   Chip,
+  ColorDot,
   Composer,
   EventPill,
   FilterChip,
@@ -1308,5 +1309,79 @@ describe("FilterChip", () => {
     ]);
     expect(options[0]?.querySelector(".ac-tz__check svg")).not.toBeNull();
     expect(options[1]?.querySelector(".ac-tz__check svg")).toBeNull();
+  });
+
+  test("an action row past a line makes a new one and closes the menu; a picked value's mark replaces the icon", async () => {
+    let made = 0;
+    const chip = (value: string[]) => (
+      <FilterChip
+        label="Projeto"
+        icon="layers"
+        clearLabel="Limpar Projeto"
+        value={value}
+        onChange={() => {}}
+        valueText={(o) => o.label}
+        valueLeading
+        action={{ label: "Novo projeto", icon: "plus", onSelect: () => made++ }}
+        options={[
+          { value: "a", label: "Acme", leading: <ColorDot color="teal" />, count: 3 },
+          { value: "none", label: "Sem projeto", leading: <ColorDot /> },
+        ]}
+      />
+    );
+    const { rerender } = render(chip([]));
+    const trigger = () => document.querySelector(".ac-filter__trigger") as HTMLElement;
+    // Nothing picked: the filter's own icon.
+    expect(trigger().querySelector("svg.ac-icon")).not.toBeNull();
+    expect(trigger().querySelector(".ac-colordot")).toBeNull();
+    await act(async () => fireEvent.click(trigger()));
+    const foot = document.querySelector(".ac-filter__foot") as HTMLElement;
+    expect([...foot.children].map((c) => c.getAttribute("class"))).toEqual(["ac-menu__separator", "ac-filter__option"]);
+    // Not an option of the list: it picks nothing.
+    expect(body().getAllByRole("option")).toHaveLength(2);
+    await act(async () => fireEvent.click(within(foot).getByRole("button", { name: "Novo projeto" })));
+    expect(made).toBe(1);
+    expect(document.querySelector(".ac-filter__menu")).toBeNull();
+
+    rerender(chip(["a"]));
+    expect(trigger().textContent).toBe("Acme");
+    expect(trigger().querySelector(".ac-colordot")?.getAttribute("style")).toContain("--dot: #");
+    expect(trigger().querySelector("svg.ac-icon")).toBeNull();
+    expect(body().getByRole("button", { name: "Limpar Projeto" })).toBeTruthy();
+  });
+
+  test("with an action and nothing to pick yet, the menu is that one row: no empty list, no line", async () => {
+    render(
+      <FilterChip
+        label="Projeto"
+        icon="layers"
+        clearLabel="Limpar Projeto"
+        value={[]}
+        onChange={() => {}}
+        action={{ label: "Novo projeto", icon: "plus", onSelect: () => {} }}
+        options={[]}
+      />,
+    );
+    await act(async () => fireEvent.click(document.querySelector(".ac-filter__trigger") as HTMLElement));
+    expect(document.querySelector(".ac-filter__list")?.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelector(".ac-filter__foot .ac-menu__separator")).toBeNull();
+    expect(body().getByRole("button", { name: "Novo projeto" })).toBeTruthy();
+  });
+});
+
+describe("ColorDot", () => {
+  test("a color's middle tone as the dot; no color is a hollow ring", () => {
+    const { container } = render(
+      <>
+        <ColorDot color="amber" />
+        <ColorDot />
+      </>,
+    );
+    const [amber, none] = [...container.querySelectorAll(".ac-colordot")];
+    expect(amber?.getAttribute("style")).toMatch(/--dot: #[0-9a-f]{6}/i);
+    expect(amber?.hasAttribute("data-none")).toBe(false);
+    expect(none?.hasAttribute("data-none")).toBe(true);
+    expect(none?.getAttribute("style")).toBeNull();
+    expect(amber?.getAttribute("aria-hidden")).toBe("true");
   });
 });

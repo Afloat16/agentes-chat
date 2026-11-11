@@ -166,6 +166,9 @@ import type {
   IssueConversationRef,
   IssueInput,
   IssuePatch,
+  IssueProject,
+  IssueProjectRef,
+  IssueProjects,
   IssueStatus,
   IssuesView,
   JevKey,
@@ -1258,7 +1261,8 @@ export interface ApiClient {
     saveToVault?(orgId: string, requestId: string, input: SecretToVaultInput): Promise<VaultItem>;
   };
   issues: {
-    list(orgId: string, filters?: { q?: string }): Promise<Issue[]>;
+    /** `projectId`: only that project's tasks, or `none` for the ones with no project. */
+    list(orgId: string, filters?: { q?: string; projectId?: string }): Promise<Issue[]>;
     get(orgId: string, number: number): Promise<Issue>;
     create(orgId: string, input: IssueInput): Promise<Issue>;
     update(orgId: string, id: string, patch: IssuePatch): Promise<Issue>;
@@ -1286,6 +1290,16 @@ export interface ApiClient {
     updateColumn(orgId: string, columnId: string, patch: { name?: string; index?: number }): Promise<IssueColumn[]>;
     /** Deletes a column; its tasks go to `moveTo`. A stage keeps at least one column. */
     deleteColumn(orgId: string, columnId: string, moveTo: string): Promise<IssueColumn[]>;
+    projects(orgId: string): Promise<IssueProjects>;
+    createProject(orgId: string, input: { name: string; color?: string }): Promise<IssueProject>;
+    /** Rename, recolour, archive or bring back. */
+    updateProject(
+      orgId: string,
+      projectId: string,
+      patch: { name?: string; color?: string; archived?: boolean },
+    ): Promise<IssueProjectRef>;
+    /** Its tasks stay, with no project. */
+    deleteProject(orgId: string, projectId: string): Promise<void>;
   };
   /** Threads (ADR 0029): the Threads page, a thread from a range, moving it, closing and archiving. */
   threads: {

@@ -214,6 +214,7 @@ const KNOWN = {
   "account.not_restorable": "errors.account.notRestorable",
   "issue.assignee_outside": "errors.issue.assigneeOutside",
   "issue_column.stage_full": "errors.issue.stageFull",
+  "issue_project.name_taken": "errors.issue.projectNameTaken",
   "issue.delete_forbidden": "errors.issue.deleteForbidden",
   "issue.audience_empty": "errors.issue.audienceEmpty",
   [REAUTH_PASSWORD]: "errors.reauth.password",

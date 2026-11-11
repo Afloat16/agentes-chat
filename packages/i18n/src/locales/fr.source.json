@@ -7036,6 +7036,9 @@
   "agentActions.issueFields.labels": {
     "value": "the labels"
   },
+  "agentActions.issueFields.project": {
+    "value": "the project"
+  },
   "agentActions.issueFields.dueDate": {
     "value": "the due date"
   },
@@ -15923,6 +15926,9 @@
   "issues.display.order.due": {
     "value": "Due date"
   },
+  "issues.display.field.project": {
+    "value": "Project"
+  },
   "issues.display.field.assignee": {
     "value": "Assignee"
   },
@@ -15982,6 +15988,48 @@
   },
   "issues.canceledColumn": {
     "value": "Canceled"
+  },
+  "issues.projects.label": {
+    "value": "Project"
+  },
+  "issues.projects.none": {
+    "value": "No project"
+  },
+  "issues.projects.all": {
+    "value": "All projects"
+  },
+  "issues.projects.new": {
+    "value": "New project"
+  },
+  "issues.projects.edit": {
+    "value": "Edit project"
+  },
+  "issues.projects.create": {
+    "value": "Create project"
+  },
+  "issues.projects.archive": {
+    "value": "Archive project"
+  },
+  "issues.projects.unarchive": {
+    "value": "Unarchive project"
+  },
+  "issues.projects.archived": {
+    "value": "Archived"
+  },
+  "issues.projects.archivedMark": {
+    "value": "Archived"
+  },
+  "issues.projects.delete": {
+    "value": "Delete project"
+  },
+  "issues.projects.deleteTitle": {
+    "value": "Delete the project {{name}}?"
+  },
+  "issues.projects.deleteBody": {
+    "value": "Its tasks stay, with no project."
+  },
+  "issues.projects.empty": {
+    "value": "No tasks in this project yet."
   },
   "issues.columns.add": {
     "value": "Add column"
@@ -16647,6 +16695,12 @@
   },
   "issues.event.github_unlinked": {
     "value": "removed the GitHub link"
+  },
+  "issues.event.project_set": {
+    "value": "moved it to the project {{project}}"
+  },
+  "issues.event.project_removed": {
+    "value": "took it out of its project"
   },
   "issues.event.artifact_linked": {
     "value": "attached a file"
@@ -30303,6 +30357,9 @@
   },
   "errors.issue.assigneeOutside": {
     "value": "This person can't see this task. Add them to who sees it first."
+  },
+  "errors.issue.projectNameTaken": {
+    "value": "A project with that name already exists."
   },
   "errors.issue.stageFull": {
     "value": "A stage holds at most {{max}} columns. Delete one of its columns first."

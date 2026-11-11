@@ -2817,6 +2817,7 @@
       "priority": "우선순위",
       "assignee": "담당자",
       "labels": "라벨",
+      "project": "프로젝트",
       "dueDate": "마감일",
       "githubUrl": "GitHub 링크",
       "criteria": "기준",
@@ -6399,6 +6400,7 @@
         "due": "마감일"
       },
       "field": {
+        "project": "프로젝트",
         "assignee": "담당자",
         "priority": "우선순위",
         "due": "마감일",
@@ -6425,6 +6427,22 @@
       "prioritized": "#{{number}}의 우선순위가 이제 {{priority}}이에요."
     },
     "canceledColumn": "취소됨",
+    "projects": {
+      "label": "프로젝트",
+      "none": "프로젝트 없음",
+      "all": "모든 프로젝트",
+      "new": "새 프로젝트",
+      "edit": "프로젝트 수정",
+      "create": "프로젝트 만들기",
+      "archive": "프로젝트 보관",
+      "unarchive": "프로젝트 보관 해제",
+      "archived": "보관됨",
+      "archivedMark": "보관됨",
+      "delete": "프로젝트 삭제",
+      "deleteTitle": "{{name}} 프로젝트를 삭제할까요?",
+      "deleteBody": "작업은 프로젝트 없이 그대로 남아요.",
+      "empty": "이 프로젝트에는 아직 작업이 없어요."
+    },
     "columns": {
       "add": "열 추가",
       "options": "{{name}} 열 옵션",
@@ -6677,6 +6695,8 @@
       "pr_linked": "PR #{{number}}을(를) 연결했어요",
       "github_linked": "GitHub에 연결했습니다",
       "github_unlinked": "GitHub 링크를 삭제했습니다",
+      "project_set": "{{project}} 프로젝트로 옮겼어요",
+      "project_removed": "프로젝트에서 뺐어요",
       "artifact_linked": "파일을 첨부했어요",
       "files_attached": "{{names}}을(를) 첨부했어요",
       "files_removed": "{{names}}을(를) 첨부 파일에서 뺐어요",
@@ -12060,6 +12080,7 @@
     },
     "issue": {
       "assigneeOutside": "이 사람은 이 작업을 볼 수 없어요. 먼저 볼 수 있는 사람에 추가하세요.",
+      "projectNameTaken": "같은 이름의 프로젝트가 이미 있어요.",
       "stageFull": "한 단계에는 열을 최대 {{max}}개까지 둘 수 있어요. 먼저 그 단계의 열을 하나 삭제해 주세요.",
       "deleteForbidden": "이 작업은 만든 사람이나 관리자만 삭제할 수 있어요.",
       "audienceEmpty": "볼 수 있는 사람을 선택하세요."

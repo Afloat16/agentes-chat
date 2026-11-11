@@ -2926,6 +2926,7 @@
       "priority": "de prioriteit",
       "assignee": "de toegewezen persoon",
       "labels": "de labels",
+      "project": "het project",
       "dueDate": "de deadline",
       "githubUrl": "de GitHub-link",
       "criteria": "de criteria",
@@ -6678,6 +6679,7 @@
         "due": "Deadline"
       },
       "field": {
+        "project": "Project",
         "assignee": "Toegewezen aan",
         "priority": "Prioriteit",
         "due": "Deadline",
@@ -6704,6 +6706,22 @@
       "prioritized": "#{{number}} heeft nu prioriteit {{priority}}."
     },
     "canceledColumn": "Geannuleerd",
+    "projects": {
+      "label": "Project",
+      "none": "Geen project",
+      "all": "Alle projecten",
+      "new": "Nieuw project",
+      "edit": "Project bewerken",
+      "create": "Project maken",
+      "archive": "Project archiveren",
+      "unarchive": "Project terugzetten",
+      "archived": "Gearchiveerd",
+      "archivedMark": "Gearchiveerd",
+      "delete": "Project verwijderen",
+      "deleteTitle": "Project {{name}} verwijderen?",
+      "deleteBody": "De taken blijven bestaan, zonder project.",
+      "empty": "Nog geen taken in dit project."
+    },
     "columns": {
       "add": "Kolom toevoegen",
       "options": "Opties voor kolom {{name}}",
@@ -6973,6 +6991,8 @@
       "pr_linked": "heeft PR #{{number}} gekoppeld",
       "github_linked": "heeft het aan GitHub gekoppeld",
       "github_unlinked": "heeft de GitHub-link verwijderd",
+      "project_set": "heeft de taak naar het project {{project}} verplaatst",
+      "project_removed": "heeft de taak uit het project gehaald",
       "artifact_linked": "heeft een bestand toegevoegd",
       "files_attached": "heeft {{names}} toegevoegd",
       "files_removed": "heeft {{names}} uit de bijlagen gehaald",
@@ -12608,6 +12628,7 @@
     },
     "issue": {
       "assigneeOutside": "Deze persoon ziet deze taak niet. Voeg die eerst toe bij Wie het ziet.",
+      "projectNameTaken": "Er bestaat al een project met die naam.",
       "stageFull": "Een fase heeft hoogstens {{max}} kolommen. Verwijder eerst een van de kolommen.",
       "deleteForbidden": "Alleen wie deze taak heeft gemaakt of een beheerder kan hem verwijderen.",
       "audienceEmpty": "Kies wie het ziet."

@@ -3115,6 +3115,7 @@
       "priority": "priorytet",
       "assignee": "osobę przypisaną",
       "labels": "etykiety",
+      "project": "projekt",
       "dueDate": "termin",
       "githubUrl": "link do GitHub",
       "criteria": "kryteria",
@@ -7071,6 +7072,7 @@
         "due": "Termin"
       },
       "field": {
+        "project": "Projekt",
         "assignee": "Przypisana osoba",
         "priority": "Priorytet",
         "due": "Termin",
@@ -7097,6 +7099,22 @@
       "prioritized": "#{{number}} ma teraz priorytet {{priority}}."
     },
     "canceledColumn": "Anulowane",
+    "projects": {
+      "label": "Projekt",
+      "none": "Bez projektu",
+      "all": "Wszystkie projekty",
+      "new": "Nowy projekt",
+      "edit": "Edytuj projekt",
+      "create": "Utwórz projekt",
+      "archive": "Zarchiwizuj projekt",
+      "unarchive": "Przywróć projekt",
+      "archived": "Zarchiwizowane",
+      "archivedMark": "Zarchiwizowany",
+      "delete": "Usuń projekt",
+      "deleteTitle": "Usunąć projekt {{name}}?",
+      "deleteBody": "Jego zadania zostają, bez projektu.",
+      "empty": "W tym projekcie nie ma jeszcze zadań."
+    },
     "columns": {
       "add": "Dodaj kolumnę",
       "options": "Opcje kolumny {{name}}",
@@ -7375,6 +7393,8 @@
       "pr_linked": "powiązał(a) PR #{{number}}",
       "github_linked": "połączono z GitHub",
       "github_unlinked": "usunięto link do GitHub",
+      "project_set": "przeniósł(osła) do projektu {{project}}",
+      "project_removed": "usunął(ęła) z projektu",
       "artifact_linked": "załączył(a) plik",
       "files_attached": "załączył(a) {{names}}",
       "files_removed": "usunął(ęła) {{names}} z załączników",
@@ -13438,6 +13458,7 @@
     },
     "issue": {
       "assigneeOutside": "Ta osoba nie widzi tego zadania. Najpierw dodaj ją do Kto to widzi.",
+      "projectNameTaken": "Projekt o tej nazwie już istnieje.",
       "stageFull": "Etap mieści najwyżej {{max}} kolumn. Najpierw usuń jedną z jego kolumn.",
       "deleteForbidden": "Tylko osoba, która utworzyła to zadanie, lub administrator może je usunąć.",
       "audienceEmpty": "Wybierz, kto to widzi."

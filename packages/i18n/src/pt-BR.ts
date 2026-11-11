@@ -2999,6 +2999,7 @@ export const ptBR = {
       priority: "a prioridade",
       assignee: "o responsável",
       labels: "as etiquetas",
+      project: "o projeto",
       dueDate: "o prazo",
       githubUrl: "o link do GitHub",
       criteria: "os critérios",
@@ -6815,6 +6816,7 @@ export const ptBR = {
       by: { stage: "Etapa", assignee: "Responsável", priority: "Prioridade" },
       order: { manual: "Manual", priority: "Prioridade", due: "Prazo" },
       field: {
+        project: "Projeto",
         assignee: "Responsável",
         priority: "Prioridade",
         due: "Prazo",
@@ -6841,6 +6843,24 @@ export const ptBR = {
       prioritized: "#{{number}} agora tem prioridade {{priority}}.",
     },
     canceledColumn: "Canceladas",
+    /** A task's one project: the toolbar's chip and its menu, the task's field, a project board's ⋯ menu. */
+    projects: {
+      label: "Projeto",
+      none: "Sem projeto",
+      all: "Todos os projetos",
+      new: "Novo projeto",
+      edit: "Editar projeto",
+      create: "Criar projeto",
+      archive: "Arquivar projeto",
+      unarchive: "Desarquivar projeto",
+      archived: "Arquivados",
+      /** Beside one archived project's name. */
+      archivedMark: "Arquivado",
+      delete: "Excluir projeto",
+      deleteTitle: "Excluir o projeto {{name}}?",
+      deleteBody: "As tarefas dele continuam, sem projeto.",
+      empty: "Nenhuma tarefa neste projeto ainda.",
+    },
     columns: {
       add: "Adicionar coluna",
       options: "Opções da coluna {{name}}",
@@ -7102,6 +7122,8 @@ export const ptBR = {
       pr_linked: "ligou o PR #{{number}}",
       github_linked: "ligou ao GitHub",
       github_unlinked: "removeu o link do GitHub",
+      project_set: "moveu para o projeto {{project}}",
+      project_removed: "tirou do projeto",
       artifact_linked: "anexou um arquivo",
       files_attached: "anexou {{names}}",
       files_removed: "tirou {{names}} dos anexos",
@@ -12455,6 +12477,7 @@ export const ptBR = {
     },
     issue: {
       assigneeOutside: "Essa pessoa não vê esta tarefa. Inclua ela em Quem vê primeiro.",
+      projectNameTaken: "Já existe um projeto com esse nome.",
       stageFull: "Uma etapa tem no máximo {{max}} colunas. Exclua uma das colunas dela antes.",
       deleteForbidden: "Só quem criou esta tarefa ou um administrador pode excluir.",
       audienceEmpty: "Escolha quem vê.",

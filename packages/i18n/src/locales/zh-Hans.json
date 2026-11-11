@@ -2820,6 +2820,7 @@
       "priority": "优先级",
       "assignee": "负责人",
       "labels": "标签",
+      "project": "项目",
       "dueDate": "截止日期",
       "githubUrl": "GitHub 链接",
       "criteria": "验收标准",
@@ -6442,6 +6443,7 @@
         "due": "截止日期"
       },
       "field": {
+        "project": "项目",
         "assignee": "负责人",
         "priority": "优先级",
         "due": "截止日期",
@@ -6468,6 +6470,22 @@
       "prioritized": "#{{number}} 现在是{{priority}}优先级。"
     },
     "canceledColumn": "已取消",
+    "projects": {
+      "label": "项目",
+      "none": "无项目",
+      "all": "所有项目",
+      "new": "新建项目",
+      "edit": "编辑项目",
+      "create": "创建项目",
+      "archive": "归档项目",
+      "unarchive": "取消归档项目",
+      "archived": "已归档",
+      "archivedMark": "已归档",
+      "delete": "删除项目",
+      "deleteTitle": "删除项目「{{name}}」？",
+      "deleteBody": "其中的任务会保留，不再属于任何项目。",
+      "empty": "这个项目里还没有任务。"
+    },
     "columns": {
       "add": "添加列",
       "options": "{{name}} 列的选项",
@@ -6729,6 +6747,8 @@
       "pr_linked": "关联了 PR #{{number}}",
       "github_linked": "已关联到 GitHub",
       "github_unlinked": "已移除 GitHub 链接",
+      "project_set": "移到了项目「{{project}}」",
+      "project_removed": "移出了项目",
       "artifact_linked": "附加了一个文件",
       "files_attached": "附加了 {{names}}",
       "files_removed": "从附件中移除了 {{names}}",
@@ -12129,6 +12149,7 @@
     },
     "issue": {
       "assigneeOutside": "这个人看不到这个任务。请先把他加入“谁能看到”。",
+      "projectNameTaken": "已有同名项目。",
       "stageFull": "一个阶段最多 {{max}} 列。请先删除其中一列。",
       "deleteForbidden": "只有这项任务的创建者或管理员可以删除它。",
       "audienceEmpty": "请选择谁能看到。"
