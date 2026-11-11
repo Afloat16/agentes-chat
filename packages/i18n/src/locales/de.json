@@ -4815,7 +4815,9 @@
           "codeLabel": "Claude-Code",
           "notCode": "Das sieht nicht nach einem Code von Claude aus.",
           "stepTwoGoogle": "Füge den Code ein, den Google anzeigt",
-          "codeLabelGoogle": "Code oder Link",
+          "codeLabelGoogle": "Code von Google",
+          "codeHintGoogle": "Füge den Code ein, den die Google-Seite anzeigt, nicht die Adresse der Seite.",
+          "notCodeGoogle": "Das ist eine Adresse ohne Code. Füge den Code ein, den die Google-Seite anzeigt.",
           "send": "An {{computer}} senden",
           "sending": "Code wird an {{computer}} gesendet…",
           "sent": "Code gesendet. Die Anmeldung wird auf {{computer}} abgeschlossen.",
@@ -4828,6 +4830,17 @@
           "reconnecting": "Verbindung wird wiederhergestellt…",
           "failed": "Anmeldung bei diesem Konto hat nicht geklappt. Versuch es noch einmal.",
           "expired": "Die Zeit für die Anmeldung ist abgelaufen. Versuch es noch einmal.",
+          "why": {
+            "not_installed": "{{brand}} ist auf {{computer}} nicht installiert. Versuch es noch einmal.",
+            "no_tty": "Der Code kam auf {{computer}} nicht bei {{brand}} an. Versuch es noch einmal.",
+            "network": "{{brand}} war von {{computer}} aus nicht erreichbar. Versuch es noch einmal.",
+            "bad_code": "{{brand}} hat den Code abgelehnt. Versuch es noch einmal und füge nur den Code ein, den die Seite anzeigt.",
+            "cli_exit": "{{brand}} hat auf {{computer}} mit einem Fehler abgebrochen. Versuch es noch einmal.",
+            "not_signed_in_after_login": "{{brand}} hat die Anmeldung angenommen, aber dieses Konto lässt sich hier nicht nutzen, vielleicht deckt der Tarif das nicht ab. Versuch ein anderes Konto oder einen API-Schlüssel.",
+            "status_unknown": "{{brand}} hat nicht gemeldet, ob das Konto angemeldet ist. Versuch es noch einmal.",
+            "no_token": "{{brand}} wurde fertig, ohne das Token des Kontos anzuzeigen. Versuch es noch einmal.",
+            "not_kept": "Das Konto ist angemeldet, aber {{computer}} konnte die Anmeldung nicht speichern. Versuch es noch einmal."
+          },
           "duplicate": {
             "claude_code": "Claude hat sich als {{account}} angemeldet, ein Konto, das du schon verbunden hast. Für ein anderes meldest du dich auf der Seite von Claude ab und versuchst es noch einmal.",
             "codex": "ChatGPT hat sich als {{account}} angemeldet, ein Konto, das du schon verbunden hast. Für ein anderes meldest du dich auf der Seite von ChatGPT ab und versuchst es noch einmal.",

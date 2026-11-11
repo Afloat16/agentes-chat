@@ -4641,7 +4641,9 @@
           "codeLabel": "Claude 코드",
           "notCode": "Claude 코드가 아닌 것 같아요.",
           "stepTwoGoogle": "Google에 표시된 코드를 붙여넣으세요",
-          "codeLabelGoogle": "코드 또는 링크",
+          "codeLabelGoogle": "Google 코드",
+          "codeHintGoogle": "페이지 주소가 아니라 Google 페이지에 표시된 코드를 붙여넣으세요.",
+          "notCodeGoogle": "코드가 없는 주소예요. Google 페이지에 표시된 코드를 붙여넣으세요.",
           "send": "{{computer}}(으)로 보내기",
           "sending": "{{computer}}(으)로 코드를 보내는 중…",
           "sent": "코드를 보냈어요. {{computer}}에서 로그인을 마무리하는 중이에요.",
@@ -4654,6 +4656,17 @@
           "reconnecting": "다시 연결하는 중…",
           "failed": "그 계정에 로그인하지 못했어요. 다시 시도해 주세요.",
           "expired": "로그인 시간이 만료됐어요. 다시 시도해 주세요.",
+          "why": {
+            "not_installed": "{{computer}}에 {{brand}} 설치가 안 되어 있어요. 다시 시도해 주세요.",
+            "no_tty": "{{computer}}에서 {{brand}}에 코드를 전달하지 못했어요. 다시 시도해 주세요.",
+            "network": "{{computer}}에서 {{brand}}에 연결하지 못했어요. 다시 시도해 주세요.",
+            "bad_code": "{{brand}}에서 코드를 거부했어요. 다시 시도하고 페이지에 표시된 코드만 붙여넣으세요.",
+            "cli_exit": "{{computer}}에서 {{brand}} 실행이 오류로 멈췄어요. 다시 시도해 주세요.",
+            "not_signed_in_after_login": "{{brand}}에서 로그인은 받아들였지만 이 계정은 여기서 사용할 수 없어요. 요금제에 포함되지 않았을 수 있어요. 다른 계정이나 API 키를 사용해 보세요.",
+            "status_unknown": "{{brand}}에서 계정 로그인 여부를 알려 주지 않았어요. 다시 시도해 주세요.",
+            "no_token": "{{brand}}에서 계정 토큰을 보여 주지 않고 끝났어요. 다시 시도해 주세요.",
+            "not_kept": "계정은 로그인됐지만 {{computer}}에 로그인을 저장하지 못했어요. 다시 시도해 주세요."
+          },
           "duplicate": {
             "claude_code": "Claude가 이미 연결한 계정인 {{account}}(으)로 로그인했어요. 다른 계정을 쓰려면 Claude 페이지에서 로그아웃하고 다시 시도하세요.",
             "codex": "ChatGPT가 이미 연결한 계정인 {{account}}(으)로 로그인했어요. 다른 계정을 쓰려면 ChatGPT 페이지에서 로그아웃하고 다시 시도하세요.",

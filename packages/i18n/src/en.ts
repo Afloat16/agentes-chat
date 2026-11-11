@@ -5029,9 +5029,11 @@ export const en = {
           stepTwo: "Paste the code Claude shows",
           codeLabel: "Claude code",
           notCode: "That doesn't look like Claude's code.",
-          /** The Gemini sign-in's second step: Google's page shows a code, or lands on one whose link works too. */
+          /** The Gemini sign-in's second step: Google's page shows a code and takes it out of its own address. */
           stepTwoGoogle: "Paste the code Google shows",
-          codeLabelGoogle: "Code or link",
+          codeLabelGoogle: "Google's code",
+          codeHintGoogle: "Paste the code Google's page shows, not the page's address.",
+          notCodeGoogle: "That's an address with no code in it. Paste the code Google's page shows.",
           send: "Send to {{computer}}",
           sending: "Sending the code to {{computer}}…",
           sent: "Code sent. Finishing the sign-in on {{computer}}.",
@@ -5044,6 +5046,18 @@ export const en = {
           reconnecting: "Reconnecting…",
           failed: "Couldn't sign in to that account. Try again.",
           expired: "The time to sign in ran out. Try again.",
+          why: {
+            not_installed: "{{brand}} isn't installed on {{computer}}. Try again.",
+            no_tty: "The code didn't reach {{brand}} on {{computer}}. Try again.",
+            network: "{{brand}} couldn't be reached from {{computer}}. Try again.",
+            bad_code: "{{brand}} refused the code. Try again and paste only the code the page shows.",
+            cli_exit: "{{brand}} stopped with an error on {{computer}}. Try again.",
+            not_signed_in_after_login:
+              "{{brand}} accepted the sign-in, but this account can't be used here, maybe its plan doesn't include it. Try another account or an API key.",
+            status_unknown: "{{brand}} didn't say whether the account signed in. Try again.",
+            no_token: "{{brand}} finished without showing the account's token. Try again.",
+            not_kept: "The account signed in, but {{computer}} couldn't keep the sign-in. Try again.",
+          },
           duplicate: {
             claude_code:
               "Claude signed in as {{account}}, an account you already connected. To use another, sign out on Claude's page and try again.",

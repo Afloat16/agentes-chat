@@ -4954,7 +4954,9 @@
           "codeLabel": "Código de Claude",
           "notCode": "Eso no parece el código de Claude.",
           "stepTwoGoogle": "Pega el código que muestra Google",
-          "codeLabelGoogle": "Código o enlace",
+          "codeLabelGoogle": "Código de Google",
+          "codeHintGoogle": "Pega el código que muestra la página de Google, no la dirección de la página.",
+          "notCodeGoogle": "Eso es una dirección sin código. Pega el código que muestra la página de Google.",
           "send": "Enviar a {{computer}}",
           "sending": "Enviando el código a {{computer}}…",
           "sent": "Código enviado. Terminando el inicio de sesión en {{computer}}.",
@@ -4967,6 +4969,17 @@
           "reconnecting": "Reconectando…",
           "failed": "No se pudo iniciar sesión en esa cuenta. Inténtalo de nuevo.",
           "expired": "Se acabó el tiempo para iniciar sesión. Inténtalo de nuevo.",
+          "why": {
+            "not_installed": "{{brand}} no está instalado en {{computer}}. Inténtalo de nuevo.",
+            "no_tty": "{{computer}} no pudo entregar el código a {{brand}}. Inténtalo de nuevo.",
+            "network": "{{computer}} no pudo conectar con {{brand}}. Inténtalo de nuevo.",
+            "bad_code": "{{brand}} rechazó el código. Inténtalo de nuevo y pega solo el código que muestra la página.",
+            "cli_exit": "{{brand}} se detuvo con un error en {{computer}}. Inténtalo de nuevo.",
+            "not_signed_in_after_login": "{{brand}} aceptó el inicio de sesión, pero esta cuenta no se puede usar aquí, quizá su plan no lo incluye. Prueba con otra cuenta o una clave de API.",
+            "status_unknown": "{{brand}} no indicó si la cuenta inició sesión. Inténtalo de nuevo.",
+            "no_token": "{{brand}} terminó sin mostrar el token de la cuenta. Inténtalo de nuevo.",
+            "not_kept": "La cuenta inició sesión, pero {{computer}} no pudo guardarla. Inténtalo de nuevo."
+          },
           "duplicate": {
             "claude_code": "Claude inició sesión como {{account}}, una cuenta que ya conectaste. Para usar otra, cierra sesión en la página de Claude e inténtalo de nuevo.",
             "codex": "ChatGPT inició sesión como {{account}}, una cuenta que ya conectaste. Para usar otra, cierra sesión en la página de ChatGPT e inténtalo de nuevo.",

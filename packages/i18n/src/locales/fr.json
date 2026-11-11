@@ -4980,7 +4980,9 @@
           "codeLabel": "Code Claude",
           "notCode": "Cela ne ressemble pas à un code Claude.",
           "stepTwoGoogle": "Collez le code affiché par Google",
-          "codeLabelGoogle": "Code ou lien",
+          "codeLabelGoogle": "Code Google",
+          "codeHintGoogle": "Collez le code affiché par la page Google, pas l'adresse de la page.",
+          "notCodeGoogle": "C'est une adresse sans code. Collez le code affiché par la page Google.",
           "send": "Envoyer à {{computer}}",
           "sending": "Envoi du code à {{computer}}…",
           "sent": "Code envoyé. Fin de la connexion sur {{computer}}.",
@@ -4993,6 +4995,17 @@
           "reconnecting": "Reconnexion…",
           "failed": "Impossible de se connecter à ce compte. Réessayez.",
           "expired": "Le délai de connexion est écoulé. Réessayez.",
+          "why": {
+            "not_installed": "{{brand}} n'est pas installé sur {{computer}}. Réessayez.",
+            "no_tty": "Le code n'est pas arrivé à {{brand}} sur {{computer}}. Réessayez.",
+            "network": "{{brand}} est injoignable depuis {{computer}}. Réessayez.",
+            "bad_code": "{{brand}} a refusé le code. Réessayez et collez uniquement le code affiché par la page.",
+            "cli_exit": "{{brand}} s'est arrêté sur une erreur sur {{computer}}. Réessayez.",
+            "not_signed_in_after_login": "{{brand}} a accepté la connexion, mais ce compte ne peut pas être utilisé ici, son forfait ne l'inclut peut-être pas. Essayez un autre compte ou une clé API.",
+            "status_unknown": "{{brand}} n'a pas indiqué si le compte est connecté. Réessayez.",
+            "no_token": "{{brand}} a terminé sans afficher le jeton du compte. Réessayez.",
+            "not_kept": "Le compte est connecté, mais {{computer}} n'a pas pu conserver la connexion. Réessayez."
+          },
           "duplicate": {
             "claude_code": "Claude s'est connecté en tant que {{account}}, un compte que vous avez déjà connecté. Pour en utiliser un autre, déconnectez-vous sur la page de Claude et réessayez.",
             "codex": "ChatGPT s'est connecté en tant que {{account}}, un compte que vous avez déjà connecté. Pour en utiliser un autre, déconnectez-vous sur la page de ChatGPT et réessayez.",

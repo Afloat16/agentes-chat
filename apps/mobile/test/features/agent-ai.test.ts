@@ -327,6 +327,42 @@ describe("the agent's AI", () => {
     expect(t("agentPage.work.brain.add.notCode")).toBe("Isso não parece o código do Claude.");
   });
 
+  test("a sign-in that ended on the computer says why by its code; Google's code field refuses its page's address", async () => {
+    // The flow is a component the tests can't render: what it wires in, as text. The codes' lines are the client's
+    // `loginFailureLine` (its tests pin them).
+    const flow = await Bun.file(new URL("../../src/features/ai/AddAccount.tsx", import.meta.url).pathname).text();
+    expect(flow).toContain("const failure = loginFailureLine(result?.code);");
+    expect(flow).toMatch(
+      /: t\(failure\.key \?\? "agentPage\.work\.brain\.add\.failed", \{\s+brand: plan\?\.label \?\? t\(/,
+    );
+    // The CLI's own words only under the two lines they explain, whole and selectable.
+    expect(flow).toContain("const said = byCode && failure.detail ? result?.message?.trim() || null : null;");
+    expect(flow).toMatch(/<Text variant="small" tone="muted" selectable style=\{\[styles\.said,/);
+    expect(flow).not.toMatch(/styles\.said[^>]*numberOfLines/);
+    // Canceled is no failure: no line, the sign-in starts over.
+    expect(flow).toMatch(/if \(canceled\) onRetry\(\);/);
+    expect(flow).toContain('(!canceled && (result?.state === "failed" || result?.state === "expired"))');
+    // Google's page takes the code out of its address: said behind the step's ⓘ, and that address is never sent.
+    expect(flow).toContain('hint={t("agentPage.work.brain.add.codeHintGoogle")}');
+    expect(flow).toContain("key.length > 0 && !isUrlWithoutCode(key),");
+    expect(flow).toMatch(
+      /!busy && isUrlWithoutCode\(key\) \? \(\s*<Note icon="x">\{t\("agentPage\.work\.brain\.add\.notCodeGoogle"\)\}<\/Note>/,
+    );
+    const t = await translator("pt-BR");
+    expect(t("agentPage.work.brain.add.why.bad_code", { brand: "Gemini", computer: "MacBook" })).toBe(
+      "O Gemini recusou o código. Tente de novo e cole só o código que a página mostrar.",
+    );
+    expect(t("agentPage.work.brain.add.why.network", { brand: "Gemini", computer: "MacBook" })).toBe(
+      "O MacBook não conseguiu falar com o Gemini. Tente de novo.",
+    );
+    expect(t("agentPage.work.brain.add.codeHintGoogle")).toBe(
+      "Cole o código que a página do Google mostra, não o endereço da página.",
+    );
+    expect((await translator("en"))("agentPage.work.brain.add.notCodeGoogle")).toBe(
+      "That's an address with no code in it. Paste the code Google's page shows.",
+    );
+  });
+
   test("while the code or the key goes and the computer signs in, the orbit and a line stand in for the field and Enviar", async () => {
     // The flow is a component the tests can't render: what it wires in, as text.
     const flow = await Bun.file(new URL("../../src/features/ai/AddAccount.tsx", import.meta.url).pathname).text();
