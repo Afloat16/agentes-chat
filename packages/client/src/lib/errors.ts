@@ -330,6 +330,8 @@ const KNOWN = {
   "vault.csv_too_large": "errors.vault.csvTooLarge",
   "vault.csv_too_many_rows": "errors.vault.csvTooManyRows",
   "vault.csv_unrecognized": "errors.vault.csvUnrecognized",
+  "vault.unreadable": "errors.vault.unreadable",
+  "vault.too_many_keys": "vault.env.tooMany",
   "vault.request_not_delivered": "errors.vault.requestNotDelivered",
   "vault.request_not_savable": "errors.vault.requestNotSavable",
   "vault.source_unknown": "errors.vault.sourceUnknown",

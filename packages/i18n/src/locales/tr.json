@@ -3982,6 +3982,37 @@
       "codeShort_one": "Rakamı yazın.",
       "codeShort_other": "{{count}} rakamın hepsini yazın.",
       "codeWhere": "Bunu yalnızca {{agent}} ajanının tarayıcısı, {{host}} üzerinde yazar."
+    },
+    "env": {
+      "open": ".env içe aktar",
+      "title": "Anahtarları içe aktar",
+      "text": "Her anahtar için bir AD=değer satırı olan bir .env dosyasını veya adlardan ve değerlerden oluşan bir JSON'u kabul eder.",
+      "paste": "Ya da içeriği buraya yapıştırın",
+      "review": "Gözden geçir",
+      "none": "AD=değer satırı bulunamadı. Dosyayı kontrol edip yeniden deneyin.",
+      "tooLarge": "Bu dosya çok büyük (en fazla 512 KB).",
+      "tooMany": "Tek seferde çok fazla anahtar var (en fazla {{max}}). Dosyayı bölüp her parçayı içe aktarın.",
+      "duplicates": "Dosyada birden fazla kez geçiyor, son değer geçerli: {{names}}",
+      "new": "Yeni",
+      "exists": "Zaten var",
+      "replace": "Değiştir",
+      "show": "{{name}} değerini göster",
+      "hide": "{{name}} değerini gizle",
+      "problem": {
+        "name": "Ad, ACME_API_KEY gibi olmalı",
+        "reserved": "Ayrılmış ad",
+        "empty": "Değer yok",
+        "tooLarge": "Değer çok büyük"
+      }
+    },
+    "move": {
+      "toTeam": "Ekip'e taşı",
+      "toTeamPersonal": "Paylaşılan'a taşı",
+      "toPersonal": "Kişisel'e taşı",
+      "title": "{{title}} taşınsın mı?",
+      "toTeamText": "Çalışma alanındaki herkes bu öğeyi görür ve ajanları, biri istediğinde onu kullanır. Vault'u yönetenler düzenleyebilir.",
+      "toPersonalText": "Bu öğeyi yalnızca siz görür ve düzenlersiniz, ajanları da yalnızca siz istediğinizde kullanır. Diğerleri artık göremez.",
+      "moved": "Taşındı"
     }
   },
   "question": {
@@ -13191,7 +13222,8 @@
         "unsupported": "Bu şifre yöneticisi burada bağlanamıyor.",
         "invalidInput": "Alanları kontrol edip tekrar deneyin.",
         "tooManyItems": "Vault dolu. Daha fazlasını eşitlemeden önce öğe silin."
-      }
+      },
+      "unreadable": "Kaydedilen değer burada okunamıyor. Yeniden kaydedip sonra taşıyın."
     },
     "feedback": {
       "filesGone": "Eklediğiniz bir dosya artık yok. Yeniden ekleyin.",
@@ -14344,7 +14376,9 @@
         "imported": "Vault'a şifre aktardı",
         "connection_added": "Vault'a bir şifre yöneticisi bağladı",
         "connection_changed": "Bir şifre yöneticisinin bağlantısını değiştirdi",
-        "connection_removed": "Bir şifre yöneticisinin Vault bağlantısını kesti"
+        "connection_removed": "Bir şifre yöneticisinin Vault bağlantısını kesti",
+        "item_moved": "Bir Vault öğesini Kişisel ile Ekip arasında taşıdı",
+        "keys_imported": "Vault'a anahtar içe aktardı"
       },
       "verb": {
         "created": "Oluşturdu",

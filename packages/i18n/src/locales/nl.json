@@ -3997,6 +3997,37 @@
       "codeShort_one": "Typ het cijfer.",
       "codeShort_other": "Typ alle {{count}} cijfers.",
       "codeWhere": "Alleen de browser van {{agent}} typt het, op {{host}}."
+    },
+    "env": {
+      "open": ".env importeren",
+      "title": "Sleutels importeren",
+      "text": "Neemt een .env-bestand, met één regel NAAM=waarde per sleutel, of een JSON met namen en waarden.",
+      "paste": "Of plak de inhoud hier",
+      "review": "Controleren",
+      "none": "Geen regel NAAM=waarde gevonden. Controleer het bestand en probeer het opnieuw.",
+      "tooLarge": "Dit bestand is te groot (maximaal 512 KB).",
+      "tooMany": "Te veel sleutels tegelijk (maximaal {{max}}). Splits het bestand en importeer elk deel.",
+      "duplicates": "Staan meer dan eens in het bestand, de laatste waarde telt: {{names}}",
+      "new": "Nieuw",
+      "exists": "Bestaat al",
+      "replace": "Vervangen",
+      "show": "Waarde van {{name}} tonen",
+      "hide": "Waarde van {{name}} verbergen",
+      "problem": {
+        "name": "De naam moet eruitzien als ACME_API_KEY",
+        "reserved": "Gereserveerde naam",
+        "empty": "Geen waarde",
+        "tooLarge": "Waarde te groot"
+      }
+    },
+    "move": {
+      "toTeam": "Verplaatsen naar Team",
+      "toTeamPersonal": "Verplaatsen naar Gedeeld",
+      "toPersonal": "Verplaatsen naar Persoonlijk",
+      "title": "{{title}} verplaatsen?",
+      "toTeamText": "Iedereen in de werkruimte ziet dit item, en de agenten ervan gebruiken het als iemand erom vraagt. Wie de Vault beheert, kan het bewerken.",
+      "toPersonalText": "Alleen jij ziet en bewerkt dit item, en de agenten ervan gebruiken het alleen als jij erom vraagt. Alle anderen zien het niet meer.",
+      "moved": "Verplaatst"
     }
   },
   "question": {
@@ -13318,7 +13349,8 @@
         "unsupported": "Deze wachtwoordmanager kan hier niet koppelen.",
         "invalidInput": "Controleer de velden en probeer het opnieuw.",
         "tooManyItems": "De Vault is vol. Verwijder items voordat je meer synchroniseert."
-      }
+      },
+      "unreadable": "De opgeslagen waarde kan hier niet worden gelezen. Sla hem opnieuw op en verplaats hem daarna."
     },
     "feedback": {
       "filesGone": "Een bestand dat je hebt toegevoegd is weg. Voeg het opnieuw toe.",
@@ -14471,7 +14503,9 @@
         "imported": "Wachtwoorden in de Vault geïmporteerd",
         "connection_added": "Een wachtwoordmanager aan de Vault gekoppeld",
         "connection_changed": "De koppeling van een wachtwoordmanager gewijzigd",
-        "connection_removed": "Een wachtwoordmanager van de Vault ontkoppeld"
+        "connection_removed": "Een wachtwoordmanager van de Vault ontkoppeld",
+        "item_moved": "Heeft een Vault-item verplaatst tussen Persoonlijk en Team",
+        "keys_imported": "Heeft sleutels in de Vault geïmporteerd"
       },
       "verb": {
         "created": "Aangemaakt",

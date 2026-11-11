@@ -3996,6 +3996,37 @@
       "codeShort_one": "Gib die Ziffer ein.",
       "codeShort_other": "Gib alle {{count}} Ziffern ein.",
       "codeWhere": "Nur der Browser von {{agent}} gibt es ein, auf {{host}}."
+    },
+    "env": {
+      "open": ".env importieren",
+      "title": "Schlüssel importieren",
+      "text": "Nimmt eine .env-Datei mit einer Zeile NAME=Wert pro Schlüssel oder ein JSON mit Namen und Werten.",
+      "paste": "Oder füg den Inhalt hier ein",
+      "review": "Prüfen",
+      "none": "Keine Zeile NAME=Wert gefunden. Prüf die Datei und versuch es noch einmal.",
+      "tooLarge": "Diese Datei ist zu groß (höchstens 512 KB).",
+      "tooMany": "Zu viele Schlüssel auf einmal (höchstens {{max}}). Teil die Datei und importier jeden Teil.",
+      "duplicates": "Mehrfach in der Datei, der letzte Wert zählt: {{names}}",
+      "new": "Neu",
+      "exists": "Schon gespeichert",
+      "replace": "Ersetzen",
+      "show": "Wert von {{name}} anzeigen",
+      "hide": "Wert von {{name}} verbergen",
+      "problem": {
+        "name": "Der Name muss wie ACME_API_KEY aussehen",
+        "reserved": "Reservierter Name",
+        "empty": "Kein Wert",
+        "tooLarge": "Wert zu groß"
+      }
+    },
+    "move": {
+      "toTeam": "Zu Team verschieben",
+      "toTeamPersonal": "Zu Geteilt verschieben",
+      "toPersonal": "Zu Persönlich verschieben",
+      "title": "{{title}} verschieben?",
+      "toTeamText": "Alle im Workspace sehen diesen Eintrag, und seine Agenten verwenden ihn, wenn jemand darum bittet. Wer den Vault verwaltet, kann ihn bearbeiten.",
+      "toPersonalText": "Nur du siehst und bearbeitest diesen Eintrag, und seine Agenten verwenden ihn nur, wenn du darum bittest. Alle anderen sehen ihn nicht mehr.",
+      "moved": "Verschoben"
     }
   },
   "question": {
@@ -13256,7 +13287,8 @@
         "unsupported": "Dieser Passwort-Manager lässt sich hier nicht verbinden.",
         "invalidInput": "Prüf die Felder und versuch es noch einmal.",
         "tooManyItems": "Der Vault ist voll. Lösch Einträge, bevor du mehr synchronisierst."
-      }
+      },
+      "unreadable": "Der gespeicherte Wert lässt sich hier nicht lesen. Speicher ihn neu und verschieb ihn dann."
     },
     "feedback": {
       "filesGone": "Eine Datei, die du hinzugefügt hast, ist weg. Füg sie noch einmal hinzu.",
@@ -14409,7 +14441,9 @@
         "imported": "Hat Passwörter in den Vault importiert",
         "connection_added": "Hat einen Passwort-Manager mit dem Vault verbunden",
         "connection_changed": "Hat die Verbindung eines Passwort-Managers geändert",
-        "connection_removed": "Hat einen Passwort-Manager vom Vault getrennt"
+        "connection_removed": "Hat einen Passwort-Manager vom Vault getrennt",
+        "item_moved": "Hat einen Vault-Eintrag zwischen Persönlich und Team verschoben",
+        "keys_imported": "Hat Schlüssel in den Vault importiert"
       },
       "verb": {
         "created": "Erstellt",

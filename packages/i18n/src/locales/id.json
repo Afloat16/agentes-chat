@@ -3869,6 +3869,37 @@
       "codeBox": "Digit {{n}} dari {{total}}",
       "codeShort_other": "Ketik semua {{count}} digitnya.",
       "codeWhere": "Hanya browser {{agent}} yang mengetiknya, di {{host}}."
+    },
+    "env": {
+      "open": "Impor .env",
+      "title": "Impor kunci",
+      "text": "Menerima file .env, dengan satu baris NAMA=nilai per kunci, atau JSON berisi nama dan nilai.",
+      "paste": "Atau tempel isinya di sini",
+      "review": "Tinjau",
+      "none": "Tidak ada baris NAMA=nilai yang ditemukan. Periksa file lalu coba lagi.",
+      "tooLarge": "File ini terlalu besar (paling besar 512 KB).",
+      "tooMany": "Terlalu banyak kunci sekaligus (paling banyak {{max}}). Bagi file lalu impor tiap bagian.",
+      "duplicates": "Tertulis lebih dari sekali di file, nilai terakhir yang dipakai: {{names}}",
+      "new": "Baru",
+      "exists": "Sudah ada",
+      "replace": "Ganti",
+      "show": "Tampilkan nilai {{name}}",
+      "hide": "Sembunyikan nilai {{name}}",
+      "problem": {
+        "name": "Nama harus seperti ACME_API_KEY",
+        "reserved": "Nama dicadangkan",
+        "empty": "Tanpa nilai",
+        "tooLarge": "Nilai terlalu besar"
+      }
+    },
+    "move": {
+      "toTeam": "Pindahkan ke Tim",
+      "toTeamPersonal": "Pindahkan ke Dibagikan",
+      "toPersonal": "Pindahkan ke Pribadi",
+      "title": "Pindahkan {{title}}?",
+      "toTeamText": "Semua orang di ruang kerja akan melihat item ini, dan agennya akan menggunakannya saat siapa pun meminta. Pengelola Vault bisa mengeditnya.",
+      "toPersonalText": "Hanya kamu yang akan melihat dan mengedit item ini, dan agennya hanya menggunakannya saat kamu minta. Orang lain tidak lagi melihatnya.",
+      "moved": "Dipindahkan"
     }
   },
   "question": {
@@ -12821,7 +12852,8 @@
         "unsupported": "Pengelola kata sandi ini tidak bisa dihubungkan di sini.",
         "invalidInput": "Periksa kolom-kolomnya lalu coba lagi.",
         "tooManyItems": "Vault penuh. Hapus item sebelum menyinkronkan lebih banyak."
-      }
+      },
+      "unreadable": "Nilai yang tersimpan tidak bisa dibaca di sini. Simpan lagi, lalu pindahkan."
     },
     "feedback": {
       "filesGone": "File yang ditambahkan sudah hilang. Tambahkan lagi.",
@@ -13956,7 +13988,9 @@
         "imported": "Mengimpor kata sandi ke Vault",
         "connection_added": "Menghubungkan pengelola kata sandi ke Vault",
         "connection_changed": "Mengubah koneksi pengelola kata sandi",
-        "connection_removed": "Memutus pengelola kata sandi dari Vault"
+        "connection_removed": "Memutus pengelola kata sandi dari Vault",
+        "item_moved": "Memindahkan item Vault antara Pribadi dan Tim",
+        "keys_imported": "Mengimpor kunci ke Vault"
       },
       "verb": {
         "created": "Membuat",

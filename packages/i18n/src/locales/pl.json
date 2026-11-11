@@ -4251,6 +4251,37 @@
       "codeShort_many": "Wpisz wszystkie {{count}} cyfr.",
       "codeShort_other": "Wpisz wszystkie {{count}} cyfry.",
       "codeWhere": "Wpisuje to tylko przeglądarka agenta {{agent}}, na {{host}}."
+    },
+    "env": {
+      "open": "Importuj .env",
+      "title": "Importuj klucze",
+      "text": "Przyjmuje plik .env z jednym wierszem NAZWA=wartość na klucz albo JSON z nazwami i wartościami.",
+      "paste": "Albo wklej tutaj zawartość",
+      "review": "Sprawdź",
+      "none": "Nie znaleziono żadnego wiersza NAZWA=wartość. Sprawdź plik i spróbuj ponownie.",
+      "tooLarge": "Ten plik jest za duży (najwyżej 512 KB).",
+      "tooMany": "Za dużo kluczy naraz (najwyżej {{max}}). Podziel plik i zaimportuj każdą część.",
+      "duplicates": "Powtórzone w pliku, liczy się ostatnia wartość: {{names}}",
+      "new": "Nowy",
+      "exists": "Już istnieje",
+      "replace": "Zastąp",
+      "show": "Pokaż wartość {{name}}",
+      "hide": "Ukryj wartość {{name}}",
+      "problem": {
+        "name": "Nazwa musi wyglądać jak ACME_API_KEY",
+        "reserved": "Nazwa zarezerwowana",
+        "empty": "Brak wartości",
+        "tooLarge": "Wartość za duża"
+      }
+    },
+    "move": {
+      "toTeam": "Przenieś do: Zespół",
+      "toTeamPersonal": "Przenieś do: Udostępnione",
+      "toPersonal": "Przenieś do: Osobiste",
+      "title": "Przenieść {{title}}?",
+      "toTeamText": "Wszyscy w przestrzeni roboczej zobaczą ten element, a jego agenci użyją go, gdy ktokolwiek o to poprosi. Zarządzający Vault mogą go edytować.",
+      "toPersonalText": "Tylko ty zobaczysz i edytujesz ten element, a jego agenci użyją go tylko wtedy, gdy o to poprosisz. Pozostali przestaną go widzieć.",
+      "moved": "Przeniesiono"
     }
   },
   "question": {
@@ -14169,7 +14200,8 @@
         "unsupported": "Tego menedżera haseł nie można tu połączyć.",
         "invalidInput": "Sprawdź pola i spróbuj ponownie.",
         "tooManyItems": "Vault jest pełny. Usuń elementy, zanim zsynchronizujesz więcej."
-      }
+      },
+      "unreadable": "Zapisanej wartości nie da się tutaj odczytać. Zapisz ją ponownie, a potem przenieś."
     },
     "feedback": {
       "filesGone": "Dodany plik zniknął. Dodaj go ponownie.",
@@ -15359,7 +15391,9 @@
         "imported": "Zaimportowano hasła do Vault",
         "connection_added": "Połączono menedżer haseł z Vault",
         "connection_changed": "Zmieniono połączenie menedżera haseł",
-        "connection_removed": "Odłączono menedżer haseł od Vault"
+        "connection_removed": "Odłączono menedżer haseł od Vault",
+        "item_moved": "Przeniesiono element Vault między Osobiste a Zespół",
+        "keys_imported": "Zaimportowano klucze do Vault"
       },
       "verb": {
         "created": "Utworzono",

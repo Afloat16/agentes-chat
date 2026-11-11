@@ -4108,6 +4108,37 @@
       "codeShort_one": "Saisissez le chiffre.",
       "codeShort_other": "Saisissez les {{count}} chiffres.",
       "codeWhere": "Seul le navigateur de {{agent}} le saisit, sur {{host}}."
+    },
+    "env": {
+      "open": "Importer un .env",
+      "title": "Importer des clés",
+      "text": "Accepte un fichier .env, avec une ligne NOM=valeur par clé, ou un JSON de noms et de valeurs.",
+      "paste": "Ou collez son contenu ici",
+      "review": "Vérifier",
+      "none": "Aucune ligne NOM=valeur trouvée. Vérifiez le fichier et réessayez.",
+      "tooLarge": "Ce fichier est trop volumineux (512 Ko au maximum).",
+      "tooMany": "Trop de clés à la fois ({{max}} au maximum). Divisez le fichier et importez chaque partie.",
+      "duplicates": "Présentes plusieurs fois dans le fichier, la dernière valeur compte : {{names}}",
+      "new": "Nouvelle",
+      "exists": "Existe déjà",
+      "replace": "Remplacer",
+      "show": "Afficher la valeur de {{name}}",
+      "hide": "Masquer la valeur de {{name}}",
+      "problem": {
+        "name": "Le nom doit ressembler à ACME_API_KEY",
+        "reserved": "Nom réservé",
+        "empty": "Aucune valeur",
+        "tooLarge": "Valeur trop volumineuse"
+      }
+    },
+    "move": {
+      "toTeam": "Déplacer vers Équipe",
+      "toTeamPersonal": "Déplacer vers Partagé",
+      "toPersonal": "Déplacer vers Personnel",
+      "title": "Déplacer {{title}} ?",
+      "toTeamText": "Tout l'espace de travail verra cet élément, et ses agents l'utiliseront quand quelqu'un le demandera. Les personnes qui gèrent le Vault peuvent le modifier.",
+      "toPersonalText": "Vous seul verrez et modifierez cet élément, et ses agents l'utiliseront seulement quand vous le demanderez. Les autres ne le verront plus.",
+      "moved": "Déplacé"
     }
   },
   "question": {
@@ -13710,7 +13741,8 @@
         "unsupported": "Ce gestionnaire de mots de passe ne peut pas être connecté ici.",
         "invalidInput": "Vérifiez les champs et réessayez.",
         "tooManyItems": "Le Vault est plein. Supprimez des éléments avant d'en synchroniser plus."
-      }
+      },
+      "unreadable": "La valeur enregistrée ne peut pas être lue ici. Enregistrez-la de nouveau, puis déplacez-la."
     },
     "feedback": {
       "filesGone": "Un fichier que vous avez ajouté n'est plus là. Ajoutez-le de nouveau.",
@@ -14881,7 +14913,9 @@
         "imported": "A importé des mots de passe dans le Vault",
         "connection_added": "A connecté un gestionnaire de mots de passe au Vault",
         "connection_changed": "A modifié la connexion d'un gestionnaire de mots de passe",
-        "connection_removed": "A déconnecté un gestionnaire de mots de passe du Vault"
+        "connection_removed": "A déconnecté un gestionnaire de mots de passe du Vault",
+        "item_moved": "A déplacé un élément du Vault entre Personnel et Équipe",
+        "keys_imported": "A importé des clés dans le Vault"
       },
       "verb": {
         "created": "A créé",

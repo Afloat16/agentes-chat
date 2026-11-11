@@ -4109,6 +4109,37 @@
       "codeShort_one": "Digita la cifra.",
       "codeShort_other": "Digita tutte le {{count}} cifre.",
       "codeWhere": "Solo il browser di {{agent}} lo digita, su {{host}}."
+    },
+    "env": {
+      "open": "Importa .env",
+      "title": "Importa chiavi",
+      "text": "Accetta un file .env, con una riga NOME=valore per chiave, o un JSON di nomi e valori.",
+      "paste": "Oppure incolla qui il contenuto",
+      "review": "Controlla",
+      "none": "Nessuna riga NOME=valore trovata. Controlla il file e riprova.",
+      "tooLarge": "Questo file è troppo grande (al massimo 512 KB).",
+      "tooMany": "Troppe chiavi in una volta (al massimo {{max}}). Dividi il file e importa ogni parte.",
+      "duplicates": "Ripetute nel file, vale l'ultimo valore: {{names}}",
+      "new": "Nuova",
+      "exists": "Esiste già",
+      "replace": "Sostituisci",
+      "show": "Mostra il valore di {{name}}",
+      "hide": "Nascondi il valore di {{name}}",
+      "problem": {
+        "name": "Il nome deve essere come ACME_API_KEY",
+        "reserved": "Nome riservato",
+        "empty": "Nessun valore",
+        "tooLarge": "Valore troppo grande"
+      }
+    },
+    "move": {
+      "toTeam": "Sposta in Team",
+      "toTeamPersonal": "Sposta in Condiviso",
+      "toPersonal": "Sposta in Personale",
+      "title": "Spostare {{title}}?",
+      "toTeamText": "Tutti nello spazio di lavoro vedranno questo elemento, e i suoi agenti lo useranno quando qualcuno lo chiede. Chi gestisce il Vault può modificarlo.",
+      "toPersonalText": "Solo tu vedrai e modificherai questo elemento, e i suoi agenti lo useranno solo quando lo chiedi tu. Gli altri non lo vedranno più.",
+      "moved": "Spostato"
     }
   },
   "question": {
@@ -13720,7 +13751,8 @@
         "unsupported": "Questo gestore di password non si può collegare qui.",
         "invalidInput": "Controlla i campi e riprova.",
         "tooManyItems": "Il Vault è pieno. Elimina degli elementi prima di sincronizzarne altri."
-      }
+      },
+      "unreadable": "Il valore salvato non può essere letto qui. Salvalo di nuovo, poi spostalo."
     },
     "feedback": {
       "filesGone": "Un file che hai aggiunto non c'è più. Aggiungilo di nuovo.",
@@ -14891,7 +14923,9 @@
         "imported": "Ha importato password nel Vault",
         "connection_added": "Ha collegato un gestore di password al Vault",
         "connection_changed": "Ha modificato il collegamento di un gestore di password",
-        "connection_removed": "Ha scollegato un gestore di password dal Vault"
+        "connection_removed": "Ha scollegato un gestore di password dal Vault",
+        "item_moved": "Ha spostato un elemento del Vault tra Personale e Team",
+        "keys_imported": "Ha importato chiavi nel Vault"
       },
       "verb": {
         "created": "Ha creato",

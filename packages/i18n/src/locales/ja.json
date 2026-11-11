@@ -3858,6 +3858,37 @@
       "codeBox": "{{total}}桁中{{n}}桁目",
       "codeShort_other": "{{count}}桁の数字をすべて入力してください。",
       "codeWhere": "{{host}}で{{agent}}のブラウザーだけが入力します。"
+    },
+    "env": {
+      "open": ".envを読み込む",
+      "title": "キーを読み込む",
+      "text": ".envファイル（キーごとに「名前=値」の1行）か、名前と値のJSONを読み込めます。",
+      "paste": "または内容をここに貼り付け",
+      "review": "確認",
+      "none": "「名前=値」の行が見つかりません。ファイルを確認して、もう一度お試しください。",
+      "tooLarge": "このファイルは大きすぎます（最大512 KB）。",
+      "tooMany": "一度に読み込むキーが多すぎます（最大{{max}}個）。ファイルを分けて、それぞれ読み込んでください。",
+      "duplicates": "ファイル内で重複しています。最後の値を使います：{{names}}",
+      "new": "新規",
+      "exists": "保存済み",
+      "replace": "置き換える",
+      "show": "{{name}}の値を表示",
+      "hide": "{{name}}の値を隠す",
+      "problem": {
+        "name": "名前はACME_API_KEYのような形式にしてください",
+        "reserved": "予約されている名前",
+        "empty": "値がありません",
+        "tooLarge": "値が大きすぎます"
+      }
+    },
+    "move": {
+      "toTeam": "チームに移動",
+      "toTeamPersonal": "共有に移動",
+      "toPersonal": "個人に移動",
+      "title": "{{title}}を移動しますか？",
+      "toTeamText": "ワークスペースの全員にこの項目が表示され、誰かが頼んだときにこの項目のエージェントが使います。Vaultを管理する人は編集できます。",
+      "toPersonalText": "この項目を表示・編集できるのはあなただけになり、エージェントはあなたが頼んだときだけ使います。ほかの人には表示されなくなります。",
+      "moved": "移動しました"
     }
   },
   "question": {
@@ -12767,7 +12798,8 @@
         "unsupported": "このパスワードマネージャーはここでは接続できません。",
         "invalidInput": "入力欄を確認して、もう一度お試しください。",
         "tooManyItems": "Vaultがいっぱいです。さらに同期する前に項目を削除してください。"
-      }
+      },
+      "unreadable": "保存された値をここでは読み取れません。もう一度保存してから移動してください。"
     },
     "feedback": {
       "filesGone": "追加したファイルがなくなりました。もう一度追加してください。",
@@ -13902,7 +13934,9 @@
         "imported": "Vaultにパスワードをインポート",
         "connection_added": "Vaultにパスワードマネージャーを接続",
         "connection_changed": "パスワードマネージャーの接続を変更",
-        "connection_removed": "Vaultからパスワードマネージャーを切断"
+        "connection_removed": "Vaultからパスワードマネージャーを切断",
+        "item_moved": "Vaultの項目を個人とチームの間で移動しました",
+        "keys_imported": "Vaultにキーを読み込みました"
       },
       "verb": {
         "created": "作成",
