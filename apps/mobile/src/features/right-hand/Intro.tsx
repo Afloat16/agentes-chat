@@ -19,10 +19,10 @@ import Animated, { Easing, FadeIn, FadeInUp, useReducedMotion } from "react-nati
 import { StickerCanvas } from "@/agent/StickerCanvas";
 import { useOrg } from "@/providers/org";
 import { WorkspaceSky } from "@/sky/Sky";
-import { Button, EventPillAction, EventPillText, type IconName, LineIcon, Text } from "@/ui";
+import { Button, type IconName, LineIcon, Text } from "@/ui";
 import { openConnectAi } from "../ai/NoAiCard";
 import { usePlanHold } from "../ai/parts";
-import { AskWaiting } from "../chat/asks";
+import { AskButtons, AskFoot, AskNote } from "../chat/asks";
 import { MESSAGE_STICKER } from "../chat/media";
 import { useFailed } from "../routines/hooks";
 import { AgentFace, OpensAgent } from "../shared/Face";
@@ -120,24 +120,25 @@ export function RightHandIntro({ agent, channelId, waveFrom }: { agent: Agent; c
           </View>
         ) : null}
         {cards.includes("connect") && (
-          <AskWaiting
-            forMe
-            mark="brain"
-            words={t(modeKey(org, "rightHand.intro.connect.title"))}
-            actions={
-              <EventPillAction
-                key="connect"
-                primary
-                label={t("rightHand.intro.connect.action")}
-                onPress={() => openConnectAi({ agentId: agent.id })}
-              />
-            }
-            below={
-              <EventPillText>
-                <Text variant="footnote" tone="muted">
-                  {t(modeKey(org, "rightHand.intro.connect.text"))}
-                </Text>
-              </EventPillText>
+          <AskNote
+            agentId={agent.id}
+            title={t(modeKey(org, "rightHand.intro.connect.title"))}
+            hint={t(modeKey(org, "rightHand.intro.connect.hint"))}
+            text={t("rightHand.intro.connect.text")}
+            foot={
+              <AskFoot>
+                <AskButtons
+                  primary={
+                    <Button
+                      variant="primary"
+                      size="card"
+                      wide
+                      label={t("rightHand.intro.connect.action")}
+                      onPress={() => openConnectAi({ agentId: agent.id })}
+                    />
+                  }
+                />
+              </AskFoot>
             }
           />
         )}

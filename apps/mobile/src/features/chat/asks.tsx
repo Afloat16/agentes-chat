@@ -54,6 +54,7 @@ import {
   Fuse,
   Icon,
   type IconName,
+  InfoHint,
   Text,
   useReducedMotion,
   useTheme,
@@ -563,6 +564,66 @@ export function AskCard({
           {body ? <View style={styles.body}>{body}</View> : null}
           {foot}
           {waitsFor === "you" && expiry ? <View style={styles.expiryRow}>{expiry}</View> : null}
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+/**
+ * A card that says one thing and offers its way out, with no request behind it (the web's `RequestNote`): the request
+ * card's surface under the agent's sky, a title with its detail behind the ⓘ beside it, one sentence, and its buttons
+ * (`AskFoot`).
+ */
+export function AskNote({
+  agentId,
+  title,
+  hint,
+  text,
+  foot,
+}: {
+  agentId: string;
+  title: string;
+  /** Behind the ⓘ beside the title: plain sentences only. */
+  hint?: string;
+  /** The one sentence. */
+  text?: string;
+  foot?: ReactNode;
+}) {
+  const ownTop = useCardTop(12);
+  const { t } = useTranslation();
+  const dir = useDirectory();
+  const surface = useSurface();
+  const reduced = useReducedMotion();
+  const heading = (
+    <Text variant="body" tone="ink" style={styles.semibold}>
+      {title}
+    </Text>
+  );
+  return (
+    <View style={ownTop}>
+      <Animated.View entering={reduced ? undefined : FadeIn.duration(300)} style={[styles.card, surface]}>
+        <View style={styles.clip}>
+          <Sky
+            color={agentLook(dir.agentById.get(agentId)).color}
+            depth={0.55}
+            fade={0.15}
+            surface="raised"
+            style={styles.sky}
+          />
+          {hint ? (
+            <InfoHint name={t("common.about", { label: title })} text={hint} variant="body">
+              {heading}
+            </InfoHint>
+          ) : (
+            heading
+          )}
+          {text ? (
+            <Text variant="subhead" tone="ink2">
+              {text}
+            </Text>
+          ) : null}
+          {foot}
         </View>
       </Animated.View>
     </View>

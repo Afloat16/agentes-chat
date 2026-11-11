@@ -13,7 +13,7 @@ import { aiStateOf, noAiCardOf } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { introCards, introLeadKey, isRightHand, offersTeamSetup } from "@agenteschat/client/lib/right-hand";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
-import { AgentSticker, EventPillAction, Message, MessageText, WAVE_SECONDS } from "@agenteschat/ui";
+import { AgentSticker, Button, Message, MessageText, WAVE_SECONDS } from "@agenteschat/ui";
 import { useTranslation } from "react-i18next";
 import { MESSAGE_STICKER } from "@/chat/ChatMedia";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -24,7 +24,7 @@ import { FirstRunCard, useFirstRun } from "@/components/FirstRun";
 import { useOrg } from "@/components/org-context";
 import { AuthorStatus } from "@/components/Presence";
 import { ProfileTrigger } from "@/components/ProfileCard";
-import { RequestCard, RequestChoices, RequestKeys, RequestOpen } from "@/components/RequestCard";
+import { RequestCard, RequestChoices, RequestKeys, RequestNote } from "@/components/RequestCard";
 import { TextAction } from "@/components/UsagePauseCard";
 import { useDirectory } from "@/hooks/useDirectory";
 import { lookOf } from "@/lib/look";
@@ -103,17 +103,18 @@ export function RightHandIntro({ agent, channelId }: { agent: Agent; channelId: 
         />
       )}
       {cards.includes("connect") && connect && (
-        <RequestOpen
-          mine
-          action={
-            <EventPillAction primary onClick={() => connect.open({ agentId: agent.id })}>
+        <RequestNote
+          agent={agent}
+          title={t(modeKey(org, "rightHand.intro.connect.title"))}
+          hint={t(modeKey(org, "rightHand.intro.connect.hint"))}
+          actions={
+            <Button size="sm" variant="primary" onClick={() => connect.open({ agentId: agent.id })}>
               {t("rightHand.intro.connect.action")}
-            </EventPillAction>
+            </Button>
           }
-          below={<p>{t(modeKey(org, "rightHand.intro.connect.text"))}</p>}
         >
-          {t(modeKey(org, "rightHand.intro.connect.title"))}
-        </RequestOpen>
+          {t("rightHand.intro.connect.text")}
+        </RequestNote>
       )}
       <FirstRunCard agent={agent} channelId={channelId} />
       {cards.includes("style") && <StyleCard agent={agent} />}

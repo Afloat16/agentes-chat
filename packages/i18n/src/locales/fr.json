@@ -2391,8 +2391,9 @@
       "connect": {
         "title": "Connecter une IA pour l’équipe",
         "titlePersonal": "Connecter une IA pour vos agents",
-        "text": "Les agents réfléchissent avec l’IA du workspace. Connectez-vous avec votre abonnement Claude ou ChatGPT, sans clé API.",
-        "textPersonal": "Vos agents réfléchissent avec cette IA. Connectez-vous avec votre abonnement Claude ou ChatGPT, sans clé API.",
+        "text": "Connectez-vous avec votre abonnement Claude ou ChatGPT, sans clé API.",
+        "hint": "Les agents réfléchissent avec l’IA du workspace.",
+        "hintPersonal": "Vos agents réfléchissent avec cette IA.",
         "action": "Connecter"
       },
       "again": {
@@ -2764,10 +2765,16 @@
       "useKey": "Utiliser une clé API"
     },
     "kept": {
-      "title": "J'ai gardé votre message.",
-      "line": "Je répondrai ici dès que le workspace aura un abonnement agentes.chat et une IA connectée.",
+      "title": "J'ai gardé votre message",
+      "wait": {
+        "payment": "Je répondrai ici dès que le workspace aura un abonnement agentes.chat.",
+        "unpaid": "Je répondrai ici dès que le paiement de l'abonnement agentes.chat sera passé.",
+        "ended": "Je répondrai ici dès que le workspace se réabonnera à agentes.chat."
+      },
+      "askAdmin": "Je répondrai ici dès qu'un admin aura réglé l'abonnement agentes.chat.",
       "plan": "L'abonnement apporte l'ordinateur des agents, toujours allumé. L'IA est celle que vous payez déjà : Claude, ChatGPT et d'autres, ou une clé API.",
-      "active": "Abonnement actif. Connectez une IA et {{name}} répond ici.",
+      "activeTitle": "Abonnement actif",
+      "activeLine": "Connectez une IA et {{name}} répond ici.",
       "receipt": "Gardé",
       "channel": "Gardé. Les agents répondent dès que le workspace a un abonnement agentes.chat."
     },
@@ -3750,7 +3757,7 @@
       "clearFilters": "Effacer la recherche",
       "personalNote": "Vous seul voyez ces éléments. Vos agents les utilisent seulement quand vous le demandez.",
       "personalEmpty": "Gardez vos identifiants et clés en sécurité",
-      "personalEmptyText": "Vous seul voyez ces éléments. Vos agents les utilisent seulement quand vous le demandez.",
+      "personalEmptyText": "Vous seul voyez ces éléments, et vos agents les utilisent seulement quand vous le demandez.",
       "teamEmpty": "Partagez des accès sans faire circuler de mots de passe",
       "teamEmptyPersonal": "Gardez les accès partagés au même endroit",
       "teamEmptyText": "Enregistrez une fois un identifiant, une clé ou des coordonnées, et choisissez quels agents peuvent l'utiliser.",

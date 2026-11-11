@@ -81,6 +81,25 @@
   overflow-wrap: anywhere;
   white-space: pre-line;
 }
+/* A note (`RequestNote`): its title in the lead's type with the ⓘ after its last word, one quiet sentence under it. */
+.rq__title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.rq__title b {
+  font-weight: 600;
+}
+.rq__note {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink2);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
 /*
  * The object's line, as an attachment's name under its cover: edge to edge under a hairline, the app's mark loose
  * (no tile), its title and values, "Ver …" under them. Nothing with a background of its own inside the card.

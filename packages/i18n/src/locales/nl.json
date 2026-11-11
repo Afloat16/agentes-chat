@@ -2304,8 +2304,9 @@
       "connect": {
         "title": "Een AI voor het team koppelen",
         "titlePersonal": "Een AI voor je agents koppelen",
-        "text": "De agents denken met de AI van de workspace. Log in met je Claude- of ChatGPT-abonnement, zonder API-sleutel.",
-        "textPersonal": "Je agents denken met deze AI. Log in met je Claude- of ChatGPT-abonnement, zonder API-sleutel.",
+        "text": "Log in met je Claude- of ChatGPT-abonnement, zonder API-sleutel.",
+        "hint": "De agents denken met de AI van de workspace.",
+        "hintPersonal": "Je agents denken met deze AI.",
         "action": "Koppelen"
       },
       "again": {
@@ -2670,10 +2671,16 @@
       "useKey": "API-sleutel gebruiken"
     },
     "kept": {
-      "title": "Ik heb je bericht bewaard.",
-      "line": "Ik antwoord hier zodra de workspace een agentes.chat-abonnement en een gekoppelde AI heeft.",
+      "title": "Ik heb je bericht bewaard",
+      "wait": {
+        "payment": "Ik antwoord hier zodra de workspace een agentes.chat-abonnement heeft.",
+        "unpaid": "Ik antwoord hier zodra de betaling van het agentes.chat-abonnement is gelukt.",
+        "ended": "Ik antwoord hier zodra de workspace zich opnieuw op agentes.chat abonneert."
+      },
+      "askAdmin": "Ik antwoord hier zodra een beheerder het agentes.chat-abonnement heeft geregeld.",
       "plan": "Het abonnement brengt de computer van de agents, altijd aan. De AI is die waarvoor je al betaalt: Claude, ChatGPT en andere, of een API-sleutel.",
-      "active": "Abonnement actief. Koppel een AI en {{name}} antwoordt hier.",
+      "activeTitle": "Abonnement actief",
+      "activeLine": "Koppel een AI en {{name}} antwoordt hier.",
       "receipt": "Bewaard",
       "channel": "Bewaard. De agents antwoorden zodra de workspace een agentes.chat-abonnement heeft."
     },
@@ -3639,7 +3646,7 @@
       "clearFilters": "Zoekopdracht wissen",
       "personalNote": "Alleen jij ziet deze items. Je agenten gebruiken ze alleen als je erom vraagt.",
       "personalEmpty": "Bewaar je logins en sleutels veilig",
-      "personalEmptyText": "Alleen jij ziet deze items. Je agenten gebruiken ze alleen als je erom vraagt.",
+      "personalEmptyText": "Alleen jij ziet deze items, en je agenten gebruiken ze alleen als je erom vraagt.",
       "teamEmpty": "Deel logins zonder wachtwoorden door te geven",
       "teamEmptyPersonal": "Bewaar gedeelde logins op één plek",
       "teamEmptyText": "Sla een login, een sleutel of contactgegevens één keer op en kies welke agenten het mogen gebruiken.",

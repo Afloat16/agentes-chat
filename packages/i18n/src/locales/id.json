@@ -2223,8 +2223,9 @@
       "connect": {
         "title": "Hubungkan AI untuk tim",
         "titlePersonal": "Hubungkan AI untuk agenmu",
-        "text": "Agen berpikir dengan AI workspace. Masuk dengan paket Claude atau ChatGPT Anda, tanpa kunci API.",
-        "textPersonal": "Agenmu berpikir dengan AI ini. Masuk dengan paket Claude atau ChatGPT-mu, tanpa kunci API.",
+        "text": "Masuk dengan paket Claude atau ChatGPT Anda, tanpa kunci API.",
+        "hint": "Agen berpikir dengan AI workspace.",
+        "hintPersonal": "Agenmu berpikir dengan AI ini.",
         "action": "Hubungkan"
       },
       "again": {
@@ -2576,10 +2577,16 @@
       "useKey": "Pakai kunci API"
     },
     "kept": {
-      "title": "Saya menyimpan pesanmu.",
-      "line": "Saya akan menjawab di sini setelah workspace punya paket agentes.chat dan AI yang terhubung.",
+      "title": "Saya menyimpan pesanmu",
+      "wait": {
+        "payment": "Saya akan menjawab di sini setelah workspace punya paket agentes.chat.",
+        "unpaid": "Saya akan menjawab di sini setelah pembayaran paket agentes.chat berhasil.",
+        "ended": "Saya akan menjawab di sini setelah workspace berlangganan agentes.chat lagi."
+      },
+      "askAdmin": "Saya akan menjawab di sini setelah admin membereskan paket agentes.chat.",
       "plan": "Paket ini membawa komputer agen, selalu menyala. AI-nya yang sudah kamu bayar: Claude, ChatGPT dan lainnya, atau kunci API.",
-      "active": "Paket aktif. Hubungkan AI dan {{name}} menjawab di sini.",
+      "activeTitle": "Paket aktif",
+      "activeLine": "Hubungkan AI dan {{name}} menjawab di sini.",
       "receipt": "Disimpan",
       "channel": "Disimpan. Agen menjawab setelah workspace punya paket agentes.chat."
     },
@@ -3529,7 +3536,7 @@
       "clearFilters": "Hapus pencarian",
       "personalNote": "Hanya kamu yang melihat item ini. Agenmu hanya menggunakannya saat kamu minta.",
       "personalEmpty": "Simpan login dan kuncimu dengan aman",
-      "personalEmptyText": "Hanya kamu yang melihat item ini. Agenmu hanya menggunakannya saat kamu minta.",
+      "personalEmptyText": "Hanya kamu yang melihat item ini, dan agenmu hanya menggunakannya saat kamu minta.",
       "teamEmpty": "Bagikan login tanpa mengoper kata sandi",
       "teamEmptyPersonal": "Simpan login bersama di satu tempat",
       "teamEmptyText": "Simpan login, kunci, atau kontak sekali, lalu pilih agen mana yang boleh menggunakannya.",

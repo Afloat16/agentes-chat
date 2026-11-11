@@ -5739,10 +5739,13 @@
     "value": "Connect an AI for your agents"
   },
   "rightHand.intro.connect.text": {
-    "value": "The agents think with the workspace's AI. Sign in with your Claude or ChatGPT plan, no API key needed."
+    "value": "Sign in with your Claude or ChatGPT plan, no API key needed."
   },
-  "rightHand.intro.connect.textPersonal": {
-    "value": "Your agents think with this AI. Sign in with your Claude or ChatGPT plan, no API key needed."
+  "rightHand.intro.connect.hint": {
+    "value": "The agents think with the workspace's AI."
+  },
+  "rightHand.intro.connect.hintPersonal": {
+    "value": "Your agents think with this AI."
   },
   "rightHand.intro.connect.action": {
     "value": "Connect"
@@ -6608,16 +6611,28 @@
     "value": "Use an API key"
   },
   "noAi.kept.title": {
-    "value": "I kept your message."
+    "value": "I kept your message"
   },
-  "noAi.kept.line": {
-    "value": "I'll answer here once the workspace has an agentes.chat plan and an AI connected."
+  "noAi.kept.wait.payment": {
+    "value": "I'll answer here once the workspace has an agentes.chat plan."
+  },
+  "noAi.kept.wait.unpaid": {
+    "value": "I'll answer here once the agentes.chat plan's payment goes through."
+  },
+  "noAi.kept.wait.ended": {
+    "value": "I'll answer here once the workspace subscribes to agentes.chat again."
+  },
+  "noAi.kept.askAdmin": {
+    "value": "I'll answer here once an admin sorts out the agentes.chat plan."
   },
   "noAi.kept.plan": {
     "value": "The plan brings the agents' computer, always on. The AI is the one you already pay for: Claude, ChatGPT and more, or an API key."
   },
-  "noAi.kept.active": {
-    "value": "Plan active. Connect an AI and {{name}} answers here."
+  "noAi.kept.activeTitle": {
+    "value": "Plan active"
+  },
+  "noAi.kept.activeLine": {
+    "value": "Connect an AI and {{name}} answers here."
   },
   "noAi.kept.receipt": {
     "value": "Kept"
@@ -8959,7 +8974,7 @@
     "value": "Keep your logins and keys safe"
   },
   "vault.list.personalEmptyText": {
-    "value": "Only you see these. Your agents use them only when you ask."
+    "value": "Only you see these, and your agents use them only when you ask."
   },
   "vault.list.teamEmpty": {
     "value": "Share logins without passing passwords around"

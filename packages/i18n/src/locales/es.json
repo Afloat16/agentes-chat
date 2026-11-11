@@ -2386,8 +2386,9 @@
       "connect": {
         "title": "Conectar una IA para el equipo",
         "titlePersonal": "Conectar una IA para tus agentes",
-        "text": "Los agentes piensan con la IA del workspace. Inicia sesión con tu plan de Claude o de ChatGPT, sin clave de API.",
-        "textPersonal": "Tus agentes piensan con esta IA. Inicia sesión con tu plan de Claude o de ChatGPT, sin clave de API.",
+        "text": "Inicia sesión con tu plan de Claude o de ChatGPT, sin clave de API.",
+        "hint": "Los agentes piensan con la IA del workspace.",
+        "hintPersonal": "Tus agentes piensan con esta IA.",
         "action": "Conectar"
       },
       "again": {
@@ -2759,10 +2760,16 @@
       "useKey": "Usar una clave de API"
     },
     "kept": {
-      "title": "Guardé tu mensaje.",
-      "line": "Responderé aquí cuando el workspace tenga un plan de agentes.chat y una IA conectada.",
+      "title": "Guardé tu mensaje",
+      "wait": {
+        "payment": "Responderé aquí cuando el workspace tenga un plan de agentes.chat.",
+        "unpaid": "Responderé aquí cuando se complete el pago del plan de agentes.chat.",
+        "ended": "Responderé aquí cuando el workspace vuelva a suscribirse a agentes.chat."
+      },
+      "askAdmin": "Responderé aquí cuando un admin resuelva el plan de agentes.chat.",
       "plan": "El plan trae el ordenador de los agentes, siempre encendido. La IA es la que ya pagas: Claude, ChatGPT y otras, o una clave de API.",
-      "active": "Plan activo. Conecta una IA y {{name}} responde aquí.",
+      "activeTitle": "Plan activo",
+      "activeLine": "Conecta una IA y {{name}} responde aquí.",
       "receipt": "Guardado",
       "channel": "Guardado. Los agentes responden cuando el workspace tenga un plan de agentes.chat."
     },
@@ -3745,7 +3752,7 @@
       "clearFilters": "Borrar la búsqueda",
       "personalNote": "Solo tú ves estos elementos. Tus agentes los usan solo cuando se lo pides.",
       "personalEmpty": "Guarda tus inicios de sesión y claves seguros",
-      "personalEmptyText": "Solo tú ves estos elementos. Tus agentes los usan solo cuando se lo pides.",
+      "personalEmptyText": "Solo tú ves estos elementos, y tus agentes los usan solo cuando se lo pides.",
       "teamEmpty": "Comparte accesos sin pasar contraseñas",
       "teamEmptyPersonal": "Guarda los accesos compartidos en un solo lugar",
       "teamEmptyText": "Guarda una vez un inicio de sesión, una clave o datos de contacto, y elige qué agentes pueden usarlo.",
