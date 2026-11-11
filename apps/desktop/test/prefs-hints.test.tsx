@@ -142,7 +142,7 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
       },
     ));
 
-  test("Servers: what the usage switch sends and what changing it does, both behind its ⓘ", () =>
+  test("Servers: what the usage switch sends and that changing it restarts agentes.chat sit behind its ⓘ", () =>
     pane(
       "here",
       <Servers />,

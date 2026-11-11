@@ -1220,7 +1220,7 @@ pub fn status(app: &AppHandle, welcome: bool) -> Status {
             .as_ref()
             .and_then(|r| r["version"].as_str().map(str::to_string))
             .or_else(|| folder.as_ref().and_then(current_version)),
-        dir: folder.map(|f| f.0.to_string_lossy().into_owned()).unwrap_or_default(),
+        dir: folder.as_ref().map(|f| f.0.to_string_lossy().into_owned()).unwrap_or_default(),
         system_name: (welcome && installed != Installed::App).then(system_name).flatten(),
         serving,
         claim,

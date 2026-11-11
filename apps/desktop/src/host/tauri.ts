@@ -4,7 +4,14 @@ import { LogicalSize } from "@tauri-apps/api/dpi";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Candidate } from "../control/first-run";
-import type { KeepRunning, LocalServerStatus, ReachResult, ReachStage, StepChange, Tailnet } from "../control/local-server";
+import type {
+  KeepRunning,
+  LocalServerStatus,
+  ReachResult,
+  ReachStage,
+  StepChange,
+  Tailnet,
+} from "../control/local-server";
 import type { LinkInfo } from "../control/pair";
 import type { SetupState } from "../control/permissions";
 import { platformOf } from "../control/platform";
