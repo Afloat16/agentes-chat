@@ -915,7 +915,7 @@ function WhoStep({ item, onBack, onClose }: { item: ConnectedItem; onBack: () =>
               </ul>
             </>
           )}
-          <p className="small muted cflow__asks">
+          <p className="small muted cflow__asks ac-iconline">
             <Icon name="lock" />
             {asks > 0 ? t("connectFlow.asksCount", { count: asks }) : t("connectFlow.asksDefault")}
           </p>
