@@ -1,15 +1,6 @@
 import type { Agent } from "@agenteschat/client";
 import { askKindWords } from "@agenteschat/client/lib/approval-words";
-import {
-  EventPill,
-  EventPillMore,
-  ExpiryFuse,
-  Icon,
-  type IconName,
-  InfoHint,
-  Locked,
-  Spinner,
-} from "@agenteschat/ui";
+import { EventPill, EventPillMore, ExpiryFuse, Icon, type IconName, InfoHint, Locked, Spinner } from "@agenteschat/ui";
 import {
   createContext,
   type FormEvent,
