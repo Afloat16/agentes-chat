@@ -1409,6 +1409,10 @@ describe("Criar agente: what gets created", () => {
     const levels = within(screen().getByRole("list", { name: "Conectores e níveis" }));
     expect(levels.queryByRole("radiogroup", { name: "Nível em joao@acme.com.br" })).toBeNull();
     const mine = levels.getByRole("radiogroup", { name: "Nível em ola@acme.com.br" });
+    // The mailbox's label under its address, inside the row.
+    expect(mine.closest("li")?.querySelector(".ac-mediarow__head > .ac-mediarow__meta")?.textContent).toBe(
+      "Atendimento",
+    );
     expect(within(mine).getByRole("radio", { name: "Sem acesso" }).getAttribute("aria-checked")).toBe("true");
     await click(within(mine).getByRole("radio", { name: "Ler" }));
     await proceed(3);

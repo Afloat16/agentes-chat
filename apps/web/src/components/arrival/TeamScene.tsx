@@ -249,17 +249,19 @@ export function ConnectScene({
 }) {
   const day = useDawn(connected);
   const lead = rightHandOf(agents);
+  const team = sceneTeam(agents, lead).slice(0, 3);
   const state = connected ? "done" : waiting ? undefined : "walk";
   return (
     <TeamScene
       className="connect-scene"
-      agents={sceneTeam(agents, lead).slice(0, 3)}
+      agents={team}
       lead={lead?.id}
       asleep={!connected}
       day={day}
       expression={connected ? "happy" : undefined}
     >
-      <Trail from={5} state={state} />
+      {/* No team to walk to (none yet, or still loading): the trail would end in the air. */}
+      {team.length > 0 && <Trail from={5} state={state} />}
       <ComputerPortrait kind={WORKSPACE_COMPUTER_KIND} state={connected ? "online" : "paused"} />
       <Trail from={0} state={state} />
       <span className="connect-scene__marks">

@@ -228,6 +228,8 @@ describe("the agent's AI", () => {
     expect(scene).toContain('accessibilityElementsHidden importantForAccessibility="no-hide-descendants"');
     expect(scene).toContain('mode="sleep"');
     expect(scene).toContain("sceneTeam(agents, lead).slice(0, 2)");
+    // No team yet: no trail ending in the air beside the computer.
+    expect(scene).toContain("{team.length > 0 ? trail : null}");
     expect(screen).toContain("{...(i.account ? { sub: i.account } : {})}");
   });
 

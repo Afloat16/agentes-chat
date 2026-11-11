@@ -36,7 +36,7 @@ export function ConnectScene() {
             <AgentFace key={a.id} agentId={a.id} size={a.id === lead?.id ? 56 : 42} mode="sleep" framed={false} />
           ))}
         </View>
-        {trail}
+        {team.length > 0 ? trail : null}
         <ComputerPortrait kind={WORKSPACE_COMPUTER_KIND} state="paused" />
         {trail}
         <View style={styles.marks}>

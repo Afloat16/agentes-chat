@@ -21,6 +21,7 @@
 }
 .danger-pair__way > p {
   margin: 0;
+  text-wrap: balance;
 }
 @media (max-width: 640px) {
   .danger-pair {
