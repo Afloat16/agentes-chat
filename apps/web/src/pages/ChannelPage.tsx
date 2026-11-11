@@ -2250,7 +2250,8 @@ function ChannelView({
   };
   const inThread = Boolean(thread);
   // A thread with no composer (archived, read only here) has nothing for "Responder" to do.
-  const replies = !thread || !(chrome?.composerReplacement || chrome?.locked || channel.can?.post === false);
+  const replies =
+    !thread || !(chrome?.composerReplacement || chrome?.locked || channel.can?.post === false || org.deletion);
   const actions = useMemo<ChannelActions>(() => {
     const now = () => latestActions.current;
     return {
@@ -2579,7 +2580,7 @@ function ChannelView({
                         )}
                         <div className="channel__composer">
                           <ConnectionBanner status={status} />
-                          {!chrome?.intro && (
+                          {!chrome?.intro && !org.deletion && (
                             <NoAiBanner agentIds={channelAgents.map((a) => a.id)} dmAgentId={chrome?.dmAgentId} />
                           )}
                           <ActivityBar
@@ -2595,6 +2596,12 @@ function ChannelView({
                           />
                           {adjustThreadId ? (
                             <RangeBar adjust={adjust} />
+                          ) : org.deletion ? (
+                            // Being deleted, it reads as ever and takes no message (ADR 0088 §7).
+                            <p className="channel__notice channel__readonly ac-iconline" role="status">
+                              <Icon name="lock" size={16} />
+                              <span>{t("deleting.composer")}</span>
+                            </p>
                           ) : chrome?.composerReplacement ? (
                             chrome.composerReplacement
                           ) : !isMember ? (

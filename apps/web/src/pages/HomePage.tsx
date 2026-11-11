@@ -138,7 +138,8 @@ export function HomePage() {
         </Link>
       )}
 
-      {askable.length > 0 && <AskAgent agents={askable} composer={composer} />}
+      {/* Being deleted, the workspace takes no message: the line on top says why. */}
+      {askable.length > 0 && !org.deletion && <AskAgent agents={askable} composer={composer} />}
 
       <HomeMural
         orgId={org.id}

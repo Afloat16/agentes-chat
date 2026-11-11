@@ -139,8 +139,8 @@ async function runContext(): Promise<ToolContext> {
   };
 }
 
-describe("a workspace being deleted is closed", () => {
-  test("every way in refuses it, the operator's suspension first; back open, they let people in", async () => {
+describe("a workspace being deleted is read-only", () => {
+  test("its people still read it and every other way in refuses it, the operator's suspension first; back open, they let people in", async () => {
     f = await setup();
     const deps = { db: f.db, pubsub: f.pubsub };
     const computer = await pairMachine(deps, f.owner.id, f.org.id, { name: "MacBook" });
@@ -256,8 +256,10 @@ describe("a workspace being deleted is closed", () => {
     expect(await open()).toEqual(all(true));
     const dueAt = new Date(Date.now() + 7 * DAY);
     await closing(f.org.id, dueAt);
-    expect(await open()).toEqual(all(false));
-    await expect(requirePermission(f.db, f.owner.id, f.org.id, "read")).rejects.toMatchObject({
+    // Reading stays open until it goes (the API refuses its changes): what only reads.
+    const reads = ["every permission check", "reading and posting", "brain settings", "usage"];
+    expect(await open()).toEqual({ ...all(false), ...Object.fromEntries(reads.map((way) => [way, true])) });
+    expect(await standingRefusal(f.db, f.org.id)).toMatchObject({
       code: "org.deleting",
       message: "This workspace is being deleted.",
       params: { dueAt: dueAt.toISOString() },
@@ -265,11 +267,8 @@ describe("a workspace being deleted is closed", () => {
     });
     // Past its date, nothing says when.
     await closing(f.org.id, new Date(Date.now() - DAY));
-    await expect(requirePermission(f.db, f.owner.id, f.org.id, "read")).rejects.toMatchObject({
-      code: "org.deleting",
-      params: undefined,
-    });
-    // A hold says less than the deletion; the operator's suspension says more.
+    expect(await standingRefusal(f.db, f.org.id)).toMatchObject({ code: "org.deleting", params: undefined });
+    // A hold says less than the deletion; the operator's suspension says more, and closes reading too.
     await standing("hold");
     expect(await standingRefusal(f.db, f.org.id)).toMatchObject({ code: "org.deleting" });
     await standing("suspended");
@@ -474,7 +473,7 @@ const refused = (call: Promise<unknown>) =>
   );
 
 describe("deleting a workspace", () => {
-  test("an owner's deletion: closed and stopped now, its date 7 days out, the audit row, the feed, one email per member, and the job at the date", async () => {
+  test("an owner's deletion: read-only and stopped now, its date 7 days out, the audit row, the feed, one email per member, and the job at the date", async () => {
     f = await setup();
     enableOperatorEvents();
     const bia = await addMember(f.db, f.org.id, "admin", "bia");
@@ -497,7 +496,8 @@ describe("deleting a workspace", () => {
     const row = await orgRow();
     expect(row).toMatchObject({ deletionDueAt: dueAt, deletionRequestedBy: f.owner.id, deletionHoldAt: null });
     expect(dueAt.getTime() - (row?.deletionRequestedAt?.getTime() ?? 0)).toBe(7 * DAY);
-    expect(await refused(requirePermission(f.db, caio.id, f.org.id, "read"))).toBe("org.deleting");
+    expect(await refused(requirePermission(f.db, caio.id, f.org.id, "read"))).toBeNull();
+    expect(await refused(assertCanWork(f.db, f.org.id))).toBe("org.deleting");
 
     const due = dueAt.toISOString();
     expect(await auditOf("organization.deletion_scheduled")).toMatchObject([

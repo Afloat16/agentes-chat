@@ -16595,14 +16595,14 @@
   "deleteOrg": {
     "card": {
       "title": "Werkruimte verwijderen",
-      "text": "Sluit {{name}} nu voor iedereen. Na 7 dagen wordt hij definitief verwijderd.",
+      "text": "{{name}} wordt nu voor iedereen alleen-lezen. Na 7 dagen wordt hij definitief verwijderd.",
       "button": "Werkruimte verwijderen…"
     },
     "title": "{{name}} verwijderen?",
     "goes": {
       "content": "De gesprekken, bestanden, agents en hun geheugen",
-      "people": "Iedereen verliest nu de toegang en krijgt een e-mail",
-      "peopleQuiet": "Iedereen verliest nu de toegang",
+      "people": "Iedereen kan hem vanaf nu alleen nog lezen en krijgt een e-mail",
+      "peopleQuiet": "Iedereen kan hem vanaf nu alleen nog lezen",
       "computer": "De computer stopt nu en wordt gewist",
       "computers": "Gekoppelde computers worden ontkoppeld. De mappen van de agents blijven erop staan tot de runner verwijderd wordt.",
       "connectors": "Connectors en mailboxen worden ontkoppeld"
@@ -16628,15 +16628,16 @@
   },
   "deleting": {
     "title": "{{name}} wordt verwijderd",
-    "text": "Deze werkruimte wordt al verwijderd. Je hoeft niets te doen, hij verdwijnt op {{date}}.",
-    "textLate": "Deze werkruimte wordt al verwijderd. Je hoeft niets te doen.",
+    "banner": "{{name}} wordt op {{date}} verwijderd",
     "by": "{{by}} heeft hem op {{date}} verwijderd.",
+    "byYou": "Je hebt hem op {{date}} verwijderd.",
     "row": "Wordt verwijderd, weg op {{date}}",
     "rowLate": "Wordt verwijderd",
     "someone": "Iemand",
     "restore": "Werkruimte herstellen",
     "membersOnly": "Alleen een eigenaar kan hem herstellen.",
-    "restored": "{{name}} is terug"
+    "restored": "{{name}} is terug",
+    "composer": "Je kunt geen berichten sturen terwijl deze werkruimte wordt verwijderd"
   },
   "accountDeleting": {
     "title": "Je account wordt verwijderd",

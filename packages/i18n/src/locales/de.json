@@ -16481,14 +16481,14 @@
   "deleteOrg": {
     "card": {
       "title": "Workspace löschen",
-      "text": "Schließt {{name}} sofort für alle. Nach 7 Tagen wird er endgültig gelöscht.",
+      "text": "{{name}} ist ab sofort für alle schreibgeschützt. Nach 7 Tagen wird er endgültig gelöscht.",
       "button": "Workspace löschen…"
     },
     "title": "{{name}} löschen?",
     "goes": {
       "content": "Seine Unterhaltungen, Dateien, Agenten und ihr Gedächtnis",
-      "people": "Alle verlieren sofort den Zugriff und bekommen eine E-Mail",
-      "peopleQuiet": "Alle verlieren sofort den Zugriff",
+      "people": "Alle können ihn ab sofort nur noch lesen und bekommen eine E-Mail",
+      "peopleQuiet": "Alle können ihn ab sofort nur noch lesen",
       "computer": "Sein Computer stoppt sofort und wird gelöscht",
       "computers": "Verbundene Computer werden getrennt. Die Ordner der Agenten bleiben darauf, bis der Runner entfernt wird.",
       "connectors": "Konnektoren und Postfächer werden getrennt"
@@ -16514,15 +16514,16 @@
   },
   "deleting": {
     "title": "{{name}} wird gelöscht",
-    "text": "Dieser Workspace wird bereits gelöscht. Du musst nichts tun, er verschwindet am {{date}}.",
-    "textLate": "Dieser Workspace wird bereits gelöscht. Du musst nichts tun.",
+    "banner": "{{name}} wird am {{date}} gelöscht",
     "by": "{{by}} hat ihn am {{date}} gelöscht.",
+    "byYou": "Du hast ihn am {{date}} gelöscht.",
     "row": "Wird gelöscht, weg am {{date}}",
     "rowLate": "Wird gelöscht",
     "someone": "Jemand",
     "restore": "Workspace wiederherstellen",
     "membersOnly": "Nur ein Inhaber kann ihn wiederherstellen.",
-    "restored": "{{name}} ist zurück"
+    "restored": "{{name}} ist zurück",
+    "composer": "Du kannst keine Nachrichten senden, während dieser Workspace gelöscht wird"
   },
   "accountDeleting": {
     "title": "Dein Konto wird gelöscht",

@@ -16907,14 +16907,14 @@
   "deleteOrg": {
     "card": {
       "title": "Eliminar espacio de trabajo",
-      "text": "Cierra {{name}} para todos ahora. Se elimina para siempre después de 7 días.",
+      "text": "{{name}} queda en solo lectura para todos ahora. Se elimina para siempre después de 7 días.",
       "button": "Eliminar espacio de trabajo…"
     },
     "title": "¿Eliminar {{name}}?",
     "goes": {
       "content": "Sus conversaciones, archivos, agentes y la memoria de ellos",
-      "people": "Todos pierden el acceso ahora y reciben un correo",
-      "peopleQuiet": "Todos pierden el acceso ahora",
+      "people": "Desde ahora todos solo pueden leerlo y reciben un correo",
+      "peopleQuiet": "Desde ahora todos solo pueden leerlo",
       "computer": "Su computadora se detiene ahora y se borra",
       "computers": "Las computadoras conectadas se desconectan. Las carpetas de los agentes se quedan en ellas hasta que se quite el runner.",
       "connectors": "Los conectores y buzones se desconectan"
@@ -16940,15 +16940,16 @@
   },
   "deleting": {
     "title": "{{name}} se está eliminando",
-    "text": "Este espacio de trabajo ya se está eliminando. No tienes que hacer nada, desaparece el {{date}}.",
-    "textLate": "Este espacio de trabajo ya se está eliminando. No tienes que hacer nada.",
+    "banner": "{{name}} se eliminará el {{date}}",
     "by": "{{by}} lo eliminó el {{date}}.",
+    "byYou": "Lo eliminaste el {{date}}.",
     "row": "Eliminándose, desaparece el {{date}}",
     "rowLate": "Eliminándose",
     "someone": "Alguien",
     "restore": "Restaurar espacio de trabajo",
     "membersOnly": "Solo un propietario puede restaurarlo.",
-    "restored": "{{name}} está de vuelta"
+    "restored": "{{name}} está de vuelta",
+    "composer": "No puedes enviar mensajes mientras este espacio de trabajo se está eliminando"
   },
   "accountDeleting": {
     "title": "Tu cuenta se está eliminando",

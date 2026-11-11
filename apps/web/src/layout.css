@@ -8356,26 +8356,6 @@ html:not([data-pointer]) .machine-connect__toggle:focus-visible {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-/* A suspended workspace's screen: where to ask on a line of its own, its other workspaces under the notice. A
-   workspace being deleted: who may restore it, on a line of its own the same way. */
-.suspended-page .support-line,
-.suspended-page .deleting-page__members {
-  display: block;
-  margin-top: 6px;
-}
-.suspended-page__others {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-.suspended-page__others > h2 {
-  flex-basis: 100%;
-}
-.suspended-page__account {
-  margin-top: 32px;
-}
 .computers-agent {
   flex-wrap: wrap;
 }
