@@ -845,6 +845,84 @@ export function AskBar({
   );
 }
 
+/**
+ * What waits on the person in this conversation with its card not loaded (older messages, or one of its threads):
+ * how many, in the bar's own pill, and "Ver" opening the oldest (ADR 0172).
+ */
+export function WaitingHereBar({
+  count,
+  agentId,
+  onSee,
+}: {
+  count: number;
+  /** Who asked the oldest one, when an agent did: its face and color open the pill. */
+  agentId: string | null;
+  onSee: () => void;
+}) {
+  const { t } = useTranslation();
+  const dir = useDirectory();
+  const { colors: c, shadows } = useTheme();
+  const reduced = useReducedMotion();
+  const agent = agentId ? dir.agentById.get(agentId) : undefined;
+  const words = t("ask.bar.here", { count });
+  return (
+    <View style={styles.dock}>
+      <Animated.View
+        entering={reduced ? undefined : FadeIn.duration(160)}
+        style={[styles.pill, { backgroundColor: c.glassSolid, boxShadow: `${shadows.e1}, ${shadows.top}` }]}
+      >
+        {agent ? (
+          <>
+            <Sky
+              color={agentLook(agent).color}
+              surface="raised"
+              depth={0.95}
+              fade={0}
+              style={[StyleSheet.absoluteFill, styles.band]}
+            />
+            <View style={[styles.tok, { backgroundColor: c.glassSolid }]}>
+              <AgentFace agentId={agent.id} size={18} mode="idle" />
+            </View>
+          </>
+        ) : null}
+        <WaitMark />
+        <Pressable
+          onPress={onSee}
+          accessibilityRole="button"
+          accessibilityLabel={`${words}. ${t("ask.bar.see")}`}
+          style={({ pressed }) => [styles.words, pressed && styles.pressed]}
+        >
+          <Text
+            variant="caption"
+            tone="ink"
+            numberOfLines={1}
+            maxFontSizeMultiplier={CHROME_MAX_SCALE}
+            style={styles.semibold}
+          >
+            {words}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={onSee}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          hitSlop={8}
+          style={({ pressed }) => pressed && styles.pressed}
+        >
+          <Text
+            variant="caption"
+            tone="ink"
+            maxFontSizeMultiplier={CHROME_MAX_SCALE}
+            style={[styles.semibold, styles.see, { textDecorationColor: c.line2 }]}
+          >
+            {t("ask.bar.see")}
+          </Text>
+        </Pressable>
+      </Animated.View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   // The app's card (`useSurface`) with its cut corner at the bottom left, as the waiting cards.
   card: { borderRadius: 20, borderBottomLeftRadius: 6 },
