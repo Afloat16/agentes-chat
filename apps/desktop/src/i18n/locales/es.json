@@ -457,6 +457,7 @@
       "launchTitle": "Abrir al iniciar sesión",
       "launchDesc": "Los agentes solo usan esta {{device}} mientras la app está abierta.",
       "launchHere": "agentes.chat en esta {{device}} solo se ejecuta mientras la app está abierta.",
+      "launchWork": "Los agentes solo trabajan mientras la app está abierta.",
       "notifySiteTitle": "Avísame de mensajes y solicitudes",
       "notifySiteDesc": "Menciones, mensajes directos y lo que te espera, mientras la app está en segundo plano.",
       "notifyTitle": "Avísame cuando un agente pida una carpeta",
@@ -493,7 +494,13 @@
       "wider": "Los agentes de otras personas se ejecutan aquí como {{user}} y pueden leer tus archivos.",
       "phoneWho": "{{who}} puede usarlo",
       "signedOut": "Inicia sesión en {{server}} en la app para ver quién puede usar esta {{device}}.",
-      "unreachable": "No se pudo conectar con {{server}}. Revisa la conexión y vuelve a intentarlo."
+      "unreachable": "No se pudo conectar con {{server}}. Revisa la conexión y vuelve a intentarlo.",
+      "placeHere": "En esta {{device}}",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "Más para {{org}}",
+      "otherWorkspace": "Otro espacio de trabajo",
+      "otherWorkspaceDesc": "Deja que un espacio de trabajo de agentes.chat Cloud o de otro servidor use esta {{device}} también. Cada uno mantiene su propio inicio de sesión.",
+      "addWorkspace": "Agregar un espacio de trabajo…"
     },
     "folders": {
       "title": "Carpetas",

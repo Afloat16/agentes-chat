@@ -457,6 +457,7 @@
       "launchTitle": "Apri all'accesso",
       "launchDesc": "Gli agenti usano questo {{device}} solo mentre l'app è aperta.",
       "launchHere": "agentes.chat su questo {{device}} funziona solo mentre l'app è aperta.",
+      "launchWork": "Gli agenti lavorano solo mentre l'app è aperta.",
       "notifySiteTitle": "Avvisami di messaggi e richieste",
       "notifySiteDesc": "Menzioni, messaggi diretti e cosa ti aspetta, mentre l'app è in background.",
       "notifyTitle": "Avvisami quando un agente chiede una cartella",
@@ -493,7 +494,13 @@
       "wider": "Gli agenti delle altre persone girano qui come {{user}} e possono leggere i tuoi file.",
       "phoneWho": "{{who}} può usarlo",
       "signedOut": "Accedi a {{server}} nell'app per vedere chi può usare questo {{device}}.",
-      "unreachable": "Impossibile raggiungere {{server}}. Controlla la connessione e riprova."
+      "unreachable": "Impossibile raggiungere {{server}}. Controlla la connessione e riprova.",
+      "placeHere": "Su questo {{device}}",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "Altro per {{org}}",
+      "otherWorkspace": "Un altro spazio di lavoro",
+      "otherWorkspaceDesc": "Lascia che uno spazio di lavoro su agentes.chat Cloud o su un altro server usi anche questo {{device}}. Ognuno mantiene il proprio accesso.",
+      "addWorkspace": "Aggiungi uno spazio di lavoro…"
     },
     "folders": {
       "title": "Cartelle",

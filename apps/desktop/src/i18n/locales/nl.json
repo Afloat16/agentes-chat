@@ -453,6 +453,7 @@
       "launchTitle": "Openen bij inloggen",
       "launchDesc": "Agents gebruiken deze {{device}} alleen terwijl de app open is.",
       "launchHere": "agentes.chat op deze {{device}} draait alleen terwijl de app open is.",
+      "launchWork": "Agents werken alleen terwijl de app open is.",
       "notifySiteTitle": "Laat me weten bij berichten en verzoeken",
       "notifySiteDesc": "Vermeldingen, directe berichten en wat op je wacht, terwijl de app op de achtergrond staat.",
       "notifyTitle": "Laat me weten als een agent om een map vraagt",
@@ -489,7 +490,13 @@
       "wider": "Agents van anderen draaien hier als {{user}} en kunnen jouw bestanden lezen.",
       "phoneWho": "{{who}} mag hem gebruiken",
       "signedOut": "Log in de app in op {{server}} om te zien wie deze {{device}} mag gebruiken.",
-      "unreachable": "{{server}} was niet bereikbaar. Controleer de verbinding en probeer het opnieuw."
+      "unreachable": "{{server}} was niet bereikbaar. Controleer de verbinding en probeer het opnieuw.",
+      "placeHere": "Op deze {{device}}",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "Meer voor {{org}}",
+      "otherWorkspace": "Nog een werkruimte",
+      "otherWorkspaceDesc": "Laat een werkruimte op agentes.chat Cloud of op een andere server deze {{device}} ook gebruiken. Elke werkruimte houdt zijn eigen aanmelding.",
+      "addWorkspace": "Werkruimte toevoegen…"
     },
     "folders": {
       "title": "Mappen",

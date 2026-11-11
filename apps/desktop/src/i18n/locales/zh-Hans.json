@@ -449,6 +449,7 @@
       "launchTitle": "登录时打开",
       "launchDesc": "只有应用打开时，智能体才会使用这台 {{device}}。",
       "launchHere": "这台 {{device}} 上的 agentes.chat 只在应用打开时运行。",
+      "launchWork": "只有应用打开时，智能体才会工作。",
       "notifySiteTitle": "有消息和请求时通知我",
       "notifySiteDesc": "应用在后台时，通知提及、私信和等你处理的事。",
       "notifyTitle": "智能体请求使用文件夹时通知我",
@@ -485,7 +486,13 @@
       "wider": "其他人的智能体在这里以 {{user}} 的身份运行，可以读取你的文件。",
       "phoneWho": "{{who}}可以使用",
       "signedOut": "在应用中登录 {{server}}，即可查看谁可以使用这台 {{device}}。",
-      "unreachable": "无法连接 {{server}}。请检查网络后重试。"
+      "unreachable": "无法连接 {{server}}。请检查网络后重试。",
+      "placeHere": "在这台 {{device}} 上",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "{{org}} 的更多选项",
+      "otherWorkspace": "另一个工作区",
+      "otherWorkspaceDesc": "让 agentes.chat Cloud 或其他服务器上的工作区也使用这台 {{device}}。每个工作区保留自己的登录。",
+      "addWorkspace": "添加工作区…"
     },
     "folders": {
       "title": "文件夹",

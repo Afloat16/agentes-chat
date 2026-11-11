@@ -453,6 +453,7 @@
       "launchTitle": "Bei der Anmeldung öffnen",
       "launchDesc": "Agenten nutzen diesen {{device}} nur, solange die App offen ist.",
       "launchHere": "agentes.chat läuft auf diesem {{device}} nur, solange die App offen ist.",
+      "launchWork": "Agenten arbeiten nur, solange die App offen ist.",
       "notifySiteTitle": "Über Nachrichten und Anfragen informieren",
       "notifySiteDesc": "Erwähnungen, Direktnachrichten und was auf dich wartet, während die App im Hintergrund ist.",
       "notifyTitle": "Informieren, wenn ein Agent um einen Ordner bittet",
@@ -489,7 +490,13 @@
       "wider": "Agenten anderer Personen laufen hier als {{user}} und können deine Dateien lesen.",
       "phoneWho": "{{who}} darf es nutzen",
       "signedOut": "Melde dich in der App bei {{server}} an, um zu sehen, wer diesen {{device}} nutzen darf.",
-      "unreachable": "{{server}} war nicht erreichbar. Prüf die Verbindung und versuch es erneut."
+      "unreachable": "{{server}} war nicht erreichbar. Prüf die Verbindung und versuch es erneut.",
+      "placeHere": "Auf diesem {{device}}",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "Mehr für {{org}}",
+      "otherWorkspace": "Ein weiterer Workspace",
+      "otherWorkspaceDesc": "Lass einen Workspace auf agentes.chat Cloud oder auf einem anderen Server diesen {{device}} auch nutzen. Jeder behält seine eigene Anmeldung.",
+      "addWorkspace": "Workspace hinzufügen…"
     },
     "folders": {
       "title": "Ordner",

@@ -4,6 +4,7 @@
  * banners, the cover's line, Preferences' words). Pure, so it is tested without the app.
  */
 
+import { CLOUD_SERVER } from "@agenteschat/client/lib/server";
 import type { Platform } from "./platform";
 
 /** `restarting`: it stopped by itself and starts again in a moment (nobody has to start it). */
@@ -237,6 +238,10 @@ export const filesFolder = (dir: string) => `${dir}${dir.includes("\\") ? "\\" :
 /** Whether `server` is the server here, at either of its addresses. */
 export const isHereServer = (status: LocalServerStatus, server: string | null) =>
   status.run && !!server && (server === status.url || server === status.publicUrl);
+
+/** Where a workspace's server runs: on this computer, on agentes.chat's Cloud, or elsewhere. */
+export const serverPlace = (status: LocalServerStatus, server: string | null): "here" | "cloud" | "other" =>
+  isHereServer(status, server) ? "here" : server === CLOUD_SERVER ? "cloud" : "other";
 
 /**
  * The main window's cover over the server here: starting, updating, stopped, not starting, or running at its

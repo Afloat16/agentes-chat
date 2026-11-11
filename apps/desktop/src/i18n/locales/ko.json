@@ -449,6 +449,7 @@
       "launchTitle": "로그인할 때 열기",
       "launchDesc": "에이전트는 앱이 열려 있을 때만 이 {{device}}을(를) 사용해요.",
       "launchHere": "이 {{device}}의 agentes.chat은 앱이 열려 있을 때만 실행돼요.",
+      "launchWork": "에이전트는 앱이 열려 있을 때만 일해요.",
       "notifySiteTitle": "메시지와 요청 알림 받기",
       "notifySiteDesc": "앱이 백그라운드에 있을 때 멘션, 다이렉트 메시지, 나를 기다리는 일을 알려 드려요.",
       "notifyTitle": "에이전트가 폴더를 요청하면 알림 받기",
@@ -485,7 +486,13 @@
       "wider": "다른 사람의 에이전트는 여기서 {{user}}(으)로 실행되고 내 파일을 읽을 수 있어요.",
       "phoneWho": "{{who}} 사용할 수 있어요",
       "signedOut": "이 {{device}}를 사용할 수 있는 사람을 보려면 앱에서 {{server}}에 로그인하세요.",
-      "unreachable": "{{server}}에 연결하지 못했어요. 연결을 확인하고 다시 시도하세요."
+      "unreachable": "{{server}}에 연결하지 못했어요. 연결을 확인하고 다시 시도하세요.",
+      "placeHere": "이 {{device}}에서",
+      "placeCloud": "agentes.chat Cloud",
+      "more": "{{org}} 더 보기",
+      "otherWorkspace": "다른 워크스페이스",
+      "otherWorkspaceDesc": "agentes.chat Cloud나 다른 서버의 워크스페이스도 이 {{device}}을(를) 쓰게 해요. 로그인은 각자 따로 유지돼요.",
+      "addWorkspace": "워크스페이스 추가…"
     },
     "folders": {
       "title": "폴더",
