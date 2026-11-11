@@ -1712,7 +1712,9 @@
               continue;
             }
             // A plate or a control as tall as the row (its whole row a button) holds the row's content: look inside.
-            const full = n.getBoundingClientRect().height >= b.height - 1;
+            // So does the line of a row that opens under it (`.ac-foldrow__head`): the row's room is above what the
+            // line holds and below what it unfolds.
+            const full = n.getBoundingClientRect().height >= b.height - 1 || n.matches(".ac-foldrow__head");
             if ((n.matches(`${HOLDS},${FACE},svg`) || hasSurface(style(n))) && !full) {
               const r = n.getBoundingClientRect();
               add(r.top, r.bottom);

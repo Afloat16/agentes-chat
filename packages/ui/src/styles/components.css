@@ -11956,7 +11956,8 @@ html:not([data-pointer]) .ac-foldrow__head:focus-visible {
     transition: grid-template-rows var(--dur-panel) ease;
   }
 }
-/* A margin under the last thing, not a padding: a padding would keep the closed fold that tall. */
+/* A margin under the last thing, not a padding: a padding would keep the closed fold that tall. As much room under
+   it as the line has above its face. */
 .ac-foldrow__more {
   min-width: 0;
   min-height: 0;
@@ -11967,7 +11968,7 @@ html:not([data-pointer]) .ac-foldrow__head:focus-visible {
   padding: 0 var(--space-4);
 }
 .ac-foldrow__more > :last-child {
-  margin-block-end: var(--space-3);
+  margin-block-end: var(--row-py);
 }
 /* The row's actions wrap under each other on a phone, never past the list's edge. */
 .ac-foldrow__more > .ac-acts {
