@@ -389,9 +389,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "使用你的 Claude 账号，在允许的文件夹中编写和修改代码。",
+    "claudeDesc": "使用你的 Claude 账号，在允许的文件夹中编写和修改代码。即使命令已关闭，也会在智能体的文件夹中运行自己的命令。",
     "codexName": "Codex",
-    "codexDesc": "使用你的 ChatGPT 账号，在允许的文件夹中编写和修改代码。",
+    "codexDesc": "使用你的 ChatGPT 账号，在允许的文件夹中编写和修改代码。即使命令已关闭，也会在智能体的文件夹中运行自己的命令。",
     "found": "已找到",
     "notFound": "未找到",
     "loggedOut": "未登录",
@@ -401,6 +401,14 @@
     "commandsWarnOrgs": "命令可以访问这台 {{device}} 的其他部分，包括其他工作区的文件夹。",
     "commandsWarnHere": "命令以你的身份运行，可以访问这台 {{device}} 的其他部分，包括 agentes.chat 自己的数据。",
     "commandsSome": "仅对 {{orgs}} 开启。为这里的所有工作区开启。",
+    "commandsAbout": "测试、构建和其他终端命令。每条命令都会显示在“动态”中。命令以你的身份运行。它们可以读取你在这台 {{device}} 上能读取的一切，包括 agentes.chat 的数据库和密钥。只为你愿意托付这一切的工作区开启。",
+    "commandsReach": "命令以你的身份运行。它们可以读取你在这台 {{device}} 上能读取的一切，包括 agentes.chat 的数据库和密钥。只为你愿意托付这一切的工作区开启。",
+    "commandsAsk": "为 {{org}} 开启命令？",
+    "commandsTurnOn": "开启",
+    "checkAgain": "重新检查",
+    "lookPath": "agentes.chat 会在你的登录 shell 的 PATH 中查找。",
+    "lookPathWindows": "agentes.chat 会在 PATH 中查找。",
+    "stillMissing": "仍未找到 {{tool}}。运行上面的命令，然后重新检查。",
     "browserName": "浏览器",
     "browserDesc": "在智能体自己的浏览器中为它们打开网站，不使用你的登录信息。",
     "browserLogins": "智能体的登录信息会保存在这台 {{device}} 上它的文件夹中。请只使用测试账号或智能体自己的账号。"
@@ -512,7 +520,7 @@
       "connected": "已连接",
       "protection": "保护",
       "protectedTitle": "保护模式",
-      "protectedDesc": "命令只在允许的文件夹中写入，不读取这台 {{device}} 的其他部分。某些工具可能会变慢。",
+      "protectedDesc": "即将推出：只在允许的文件夹中写入、无法读取这台 {{device}} 其他部分的命令。",
       "commandsOn": "命令已开启"
     },
     "accounts": {

@@ -392,9 +392,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Schrijft en wijzigt code in de toegestane mappen, met je Claude-account.",
+    "claudeDesc": "Schrijft en wijzigt code in de toegestane mappen, met je Claude-account. Voert eigen opdrachten uit in de map van de agent, ook als Opdrachten uit staat.",
     "codexName": "Codex",
-    "codexDesc": "Schrijft en wijzigt code in de toegestane mappen, met je ChatGPT-account.",
+    "codexDesc": "Schrijft en wijzigt code in de toegestane mappen, met je ChatGPT-account. Voert eigen opdrachten uit in de map van de agent, ook als Opdrachten uit staat.",
     "found": "Gevonden",
     "notFound": "Niet gevonden",
     "loggedOut": "Niet ingelogd",
@@ -404,6 +404,14 @@
     "commandsWarnOrgs": "Opdrachten kunnen bij de rest van deze {{device}}, ook bij de mappen van andere werkruimtes.",
     "commandsWarnHere": "Opdrachten draaien onder jouw naam en kunnen bij de rest van deze {{device}}, ook bij de eigen gegevens van agentes.chat.",
     "commandsSome": "Alleen aan voor {{orgs}}. Zet het aan voor elke werkruimte hier.",
+    "commandsAbout": "Tests, builds en andere Terminal-opdrachten. Elke opdracht verschijnt in Activiteit. Opdrachten draaien onder jouw naam. Ze kunnen alles lezen wat jij op deze {{device}} kunt lezen, ook de database en de sleutels van agentes.chat. Zet ze alleen aan voor workspaces die je dat allemaal toevertrouwt.",
+    "commandsReach": "Opdrachten draaien onder jouw naam. Ze kunnen alles lezen wat jij op deze {{device}} kunt lezen, ook de database en de sleutels van agentes.chat. Zet ze alleen aan voor workspaces die je dat allemaal toevertrouwt.",
+    "commandsAsk": "Opdrachten aanzetten voor {{org}}?",
+    "commandsTurnOn": "Aanzetten",
+    "checkAgain": "Opnieuw controleren",
+    "lookPath": "agentes.chat zoekt in de PATH van je login-shell.",
+    "lookPathWindows": "agentes.chat zoekt in de PATH.",
+    "stillMissing": "{{tool}} is nog steeds niet gevonden. Voer de opdracht hierboven uit en controleer dan opnieuw.",
     "browserName": "Browser",
     "browserDesc": "Opent websites voor de agents in een eigen browser, zonder jouw logins.",
     "browserLogins": "Logins van een agent blijven op deze {{device}}, in zijn map. Gebruik alleen testaccounts of het eigen account van de agent."
@@ -516,7 +524,7 @@
       "connected": "Verbonden",
       "protection": "Bescherming",
       "protectedTitle": "Beschermde modus",
-      "protectedDesc": "Opdrachten schrijven alleen in de toegestane mappen en lezen de rest van de {{device}} niet. Sommige tools kunnen trager worden.",
+      "protectedDesc": "Binnenkort: opdrachten die alleen in toegestane mappen schrijven en de rest van deze {{device}} niet kunnen lezen.",
       "commandsOn": "Opdrachten staan aan"
     },
     "accounts": {

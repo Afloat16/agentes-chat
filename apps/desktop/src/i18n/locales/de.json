@@ -392,9 +392,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Schreibt und ändert Code in den erlaubten Ordnern, mit deinem Claude-Konto.",
+    "claudeDesc": "Schreibt und ändert Code in den erlaubten Ordnern, mit deinem Claude-Konto. Führt im Ordner des Agenten eigene Befehle aus, auch wenn Befehle aus sind.",
     "codexName": "Codex",
-    "codexDesc": "Schreibt und ändert Code in den erlaubten Ordnern, mit deinem ChatGPT-Konto.",
+    "codexDesc": "Schreibt und ändert Code in den erlaubten Ordnern, mit deinem ChatGPT-Konto. Führt im Ordner des Agenten eigene Befehle aus, auch wenn Befehle aus sind.",
     "found": "Gefunden",
     "notFound": "Nicht gefunden",
     "loggedOut": "Nicht angemeldet",
@@ -404,6 +404,14 @@
     "commandsWarnOrgs": "Befehle können den Rest dieses {{device}} erreichen, auch die Ordner anderer Workspaces.",
     "commandsWarnHere": "Befehle laufen als du und können den Rest dieses {{device}} erreichen, auch die eigenen Daten von agentes.chat.",
     "commandsSome": "Nur für {{orgs}} an. Schalte sie für jeden Workspace hier ein.",
+    "commandsAbout": "Tests, Builds und andere Terminal-Befehle. Jeder erscheint in der Aktivität. Befehle laufen als du. Sie können alles lesen, was du auf diesem {{device}} lesen kannst, auch die Datenbank und die Schlüssel von agentes.chat. Schalte sie nur für Workspaces ein, denen du all das anvertraust.",
+    "commandsReach": "Befehle laufen als du. Sie können alles lesen, was du auf diesem {{device}} lesen kannst, auch die Datenbank und die Schlüssel von agentes.chat. Schalte sie nur für Workspaces ein, denen du all das anvertraust.",
+    "commandsAsk": "Befehle für {{org}} einschalten?",
+    "commandsTurnOn": "Einschalten",
+    "checkAgain": "Erneut prüfen",
+    "lookPath": "agentes.chat sucht im PATH deiner Login-Shell.",
+    "lookPathWindows": "agentes.chat sucht im PATH.",
+    "stillMissing": "{{tool}} wurde immer noch nicht gefunden. Führe den Befehl oben aus und prüfe dann erneut.",
     "browserName": "Browser",
     "browserDesc": "Öffnet Websites für die Agenten in einem eigenen Browser, ohne deine Anmeldungen.",
     "browserLogins": "Anmeldungen eines Agenten bleiben auf diesem {{device}}, in seinem Ordner. Nutze nur Testkonten oder die eigenen Konten des Agenten."
@@ -516,7 +524,7 @@
       "connected": "Verbunden",
       "protection": "Schutz",
       "protectedTitle": "Geschützter Modus",
-      "protectedDesc": "Befehle schreiben nur in die erlaubten Ordner und lesen den Rest des {{device}} nicht. Manche Tools werden dadurch vielleicht langsamer.",
+      "protectedDesc": "Kommt bald: Befehle, die nur in erlaubte Ordner schreiben und den Rest dieses {{device}} nicht lesen können.",
       "commandsOn": "Befehle sind an"
     },
     "accounts": {

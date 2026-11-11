@@ -395,9 +395,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Escribe y cambia código en las carpetas permitidas, con tu cuenta de Claude.",
+    "claudeDesc": "Escribe y cambia código en las carpetas permitidas, con tu cuenta de Claude. Ejecuta sus propios comandos en la carpeta del agente, incluso con Comandos desactivado.",
     "codexName": "Codex",
-    "codexDesc": "Escribe y cambia código en las carpetas permitidas, con tu cuenta de ChatGPT.",
+    "codexDesc": "Escribe y cambia código en las carpetas permitidas, con tu cuenta de ChatGPT. Ejecuta sus propios comandos en la carpeta del agente, incluso con Comandos desactivado.",
     "found": "Encontrado",
     "notFound": "No encontrado",
     "loggedOut": "Sin sesión iniciada",
@@ -407,6 +407,14 @@
     "commandsWarnOrgs": "Los comandos pueden llegar al resto de esta {{device}}, incluidas las carpetas de otros espacios de trabajo.",
     "commandsWarnHere": "Los comandos se ejecutan como tú y pueden llegar al resto de esta {{device}}, incluidos los datos de agentes.chat.",
     "commandsSome": "Activado solo para {{orgs}}. Actívalo para todos los espacios de trabajo de aquí.",
+    "commandsAbout": "Pruebas, builds y otros comandos de la Terminal. Cada uno aparece en Actividad. Los comandos se ejecutan como tú. Pueden leer todo lo que tú puedes en esta {{device}}, incluidas la base de datos y las claves de agentes.chat. Actívalos solo para workspaces en los que confíes con todo eso.",
+    "commandsReach": "Los comandos se ejecutan como tú. Pueden leer todo lo que tú puedes en esta {{device}}, incluidas la base de datos y las claves de agentes.chat. Actívalos solo para workspaces en los que confíes con todo eso.",
+    "commandsAsk": "¿Activar Comandos para {{org}}?",
+    "commandsTurnOn": "Activar",
+    "checkAgain": "Volver a comprobar",
+    "lookPath": "agentes.chat busca en el PATH de tu shell de inicio de sesión.",
+    "lookPathWindows": "agentes.chat busca en el PATH.",
+    "stillMissing": "{{tool}} sigue sin encontrarse. Ejecuta el comando de arriba y vuelve a comprobar.",
     "browserName": "Navegador",
     "browserDesc": "Abre sitios web para los agentes en un navegador propio, sin tus inicios de sesión.",
     "browserLogins": "Los inicios de sesión que hace un agente quedan en esta {{device}}, en su carpeta. Usa solo cuentas de prueba o las del propio agente."
@@ -520,7 +528,7 @@
       "connected": "Conectadas",
       "protection": "Protección",
       "protectedTitle": "Modo protegido",
-      "protectedDesc": "Los comandos solo escriben en las carpetas permitidas y no leen el resto de la {{device}}. Algunas herramientas pueden ir más lentas.",
+      "protectedDesc": "Próximamente: comandos que solo escriben en las carpetas permitidas y no pueden leer el resto de esta {{device}}.",
       "commandsOn": "Los comandos están activados"
     },
     "accounts": {

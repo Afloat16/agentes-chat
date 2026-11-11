@@ -392,9 +392,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Claude hesabınızla, izin verilen klasörlerde kod yazar ve değiştirir.",
+    "claudeDesc": "Claude hesabınızla, izin verilen klasörlerde kod yazar ve değiştirir. Komutlar kapalıyken bile ajanın klasöründe kendi komutlarını çalıştırır.",
     "codexName": "Codex",
-    "codexDesc": "ChatGPT hesabınızla, izin verilen klasörlerde kod yazar ve değiştirir.",
+    "codexDesc": "ChatGPT hesabınızla, izin verilen klasörlerde kod yazar ve değiştirir. Komutlar kapalıyken bile ajanın klasöründe kendi komutlarını çalıştırır.",
     "found": "Bulundu",
     "notFound": "Bulunamadı",
     "loggedOut": "Giriş yapılmadı",
@@ -404,6 +404,14 @@
     "commandsWarnOrgs": "Komutlar, diğer çalışma alanlarının klasörleri dahil, bu {{device}} üzerindeki diğer her şeye erişebilir.",
     "commandsWarnHere": "Komutlar sizin adınıza çalışır ve agentes.chat'in kendi verileri dahil, bu {{device}} üzerindeki diğer her şeye erişebilir.",
     "commandsSome": "Yalnızca {{orgs}} için açık. Buradaki tüm çalışma alanları için açın.",
+    "commandsAbout": "Testler, derlemeler ve diğer Terminal komutları. Her biri Etkinlik'te görünür. Komutlar sizin adınıza çalışır. agentes.chat'in veritabanı ve anahtarları dahil, bu {{device}} üzerinde sizin okuyabildiğiniz her şeyi okuyabilir. Yalnızca tüm bunları emanet ettiğiniz workspace'ler için açın.",
+    "commandsReach": "Komutlar sizin adınıza çalışır. agentes.chat'in veritabanı ve anahtarları dahil, bu {{device}} üzerinde sizin okuyabildiğiniz her şeyi okuyabilir. Yalnızca tüm bunları emanet ettiğiniz workspace'ler için açın.",
+    "commandsAsk": "{{org}} için Komutlar açılsın mı?",
+    "commandsTurnOn": "Aç",
+    "checkAgain": "Tekrar kontrol et",
+    "lookPath": "agentes.chat, oturum açma kabuğunuzun PATH'ine bakar.",
+    "lookPathWindows": "agentes.chat, PATH'e bakar.",
+    "stillMissing": "{{tool}} hâlâ bulunamadı. Yukarıdaki komutu çalıştırın, sonra tekrar kontrol edin.",
     "browserName": "Tarayıcı",
     "browserDesc": "Ajanlar için, sizin girişleriniz olmadan, onlara ait bir tarayıcıda web sitelerini açar.",
     "browserLogins": "Bir ajanın yaptığı girişler bu {{device}} üzerinde, ajanın klasöründe kalır. Yalnızca test hesaplarını ya da ajanın kendi hesaplarını kullanın."
@@ -516,7 +524,7 @@
       "connected": "Bağlı",
       "protection": "Koruma",
       "protectedTitle": "Korumalı mod",
-      "protectedDesc": "Komutlar yalnızca izin verilen klasörlere yazar ve {{device}} üzerindeki diğer şeyleri okumaz. Bazı araçlar yavaşlayabilir.",
+      "protectedDesc": "Yakında: yalnızca izin verilen klasörlere yazan ve bu {{device}} üzerindeki diğer şeyleri okuyamayan komutlar.",
       "commandsOn": "Komutlar açık"
     },
     "accounts": {

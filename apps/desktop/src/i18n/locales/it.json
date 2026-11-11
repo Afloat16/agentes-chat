@@ -395,9 +395,9 @@
   },
   "tools": {
     "claudeName": "Claude Code",
-    "claudeDesc": "Scrive e modifica il codice nelle cartelle consentite, con il tuo account Claude.",
+    "claudeDesc": "Scrive e modifica il codice nelle cartelle consentite, con il tuo account Claude. Esegue i propri comandi nella cartella dell'agente, anche con Comandi disattivato.",
     "codexName": "Codex",
-    "codexDesc": "Scrive e modifica il codice nelle cartelle consentite, con il tuo account ChatGPT.",
+    "codexDesc": "Scrive e modifica il codice nelle cartelle consentite, con il tuo account ChatGPT. Esegue i propri comandi nella cartella dell'agente, anche con Comandi disattivato.",
     "found": "Trovato",
     "notFound": "Non trovato",
     "loggedOut": "Accesso non eseguito",
@@ -407,6 +407,14 @@
     "commandsWarnOrgs": "I comandi possono raggiungere il resto di questo {{device}}, comprese le cartelle di altri spazi di lavoro.",
     "commandsWarnHere": "I comandi girano come te e possono raggiungere il resto di questo {{device}}, compresi i dati di agentes.chat.",
     "commandsSome": "Attivi solo per {{orgs}}. Attivali per tutti gli spazi di lavoro qui.",
+    "commandsAbout": "Test, build e altri comandi del Terminale. Ognuno compare in Attività recenti. I comandi girano come te. Possono leggere tutto quello che puoi leggere tu su questo {{device}}, compresi il database e le chiavi di agentes.chat. Attivali solo per i workspace a cui affideresti tutto questo.",
+    "commandsReach": "I comandi girano come te. Possono leggere tutto quello che puoi leggere tu su questo {{device}}, compresi il database e le chiavi di agentes.chat. Attivali solo per i workspace a cui affideresti tutto questo.",
+    "commandsAsk": "Attivare i comandi per {{org}}?",
+    "commandsTurnOn": "Attiva",
+    "checkAgain": "Controlla di nuovo",
+    "lookPath": "agentes.chat cerca nel PATH della tua shell di login.",
+    "lookPathWindows": "agentes.chat cerca nel PATH.",
+    "stillMissing": "{{tool}} non è ancora stato trovato. Esegui il comando qui sopra, poi controlla di nuovo.",
     "browserName": "Browser",
     "browserDesc": "Apre siti web per gli agenti in un browser tutto loro, senza i tuoi accessi.",
     "browserLogins": "Gli accessi fatti da un agente restano su questo {{device}}, nella sua cartella. Usa solo account di prova o quelli dell'agente."
@@ -520,7 +528,7 @@
       "connected": "Connesso",
       "protection": "Protezione",
       "protectedTitle": "Modalità protetta",
-      "protectedDesc": "I comandi scrivono solo nelle cartelle consentite e non leggono il resto del {{device}}. Alcuni strumenti potrebbero rallentare.",
+      "protectedDesc": "In arrivo: comandi che scrivono solo nelle cartelle consentite e non possono leggere il resto di questo {{device}}.",
       "commandsOn": "I comandi sono attivi"
     },
     "accounts": {

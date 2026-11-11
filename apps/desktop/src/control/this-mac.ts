@@ -192,17 +192,20 @@ export async function firstTools(store: DesktopStore, homeId: string) {
 }
 
 /**
- * The tools as Preferences › Tools shows them, one switch each for every organization here. Commands may be on
- * for some only (a new organization starts without them): the switch is on when all have them, and
- * `commandsOnlyFor` names the organizations that do while others don't.
+ * The tools as Preferences › Tools shows them: Claude Code, Codex and the browser, one switch each for every
+ * organization here. Commands are each organization's own (`home.access.tools.commands`): here, on when all have them.
  */
-export function toolsHere(homes: readonly Home[]): { tools: RunnerTools; commandsOnlyFor: string[] } {
+export function toolsHere(homes: readonly Home[]): { tools: RunnerTools } {
   const known = homes.filter((h) => h.access);
   const tools = known[0]?.access?.tools ?? { claude: false, codex: false, commands: false, browser: false };
-  const withCommands = known.filter((h) => h.access?.tools.commands);
-  const all = known.length > 0 && withCommands.length === known.length;
-  return { tools: { ...tools, commands: all }, commandsOnlyFor: all ? [] : withCommands.map(orgName) };
+  return { tools: { ...tools, commands: known.length > 0 && known.every((h) => h.access?.tools.commands) } };
 }
+
+/** The line that installs each coding CLI, shown under its row while it isn't found. */
+export const CLI_INSTALL = {
+  claude: "npm i -g @anthropic-ai/claude-code",
+  codex: "npm i -g @openai/codex",
+} as const;
 
 /** Once the pairing is confirmed, the new organization's first tools, then `onDone`. */
 export function whenPaired(store: DesktopStore, homeId: string, onDone?: () => void) {

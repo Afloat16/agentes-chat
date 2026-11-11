@@ -915,13 +915,13 @@
     "value": "Claude Code"
   },
   "tools.claudeDesc": {
-    "value": "Writes and changes code in the allowed folders, with your Claude account."
+    "value": "Writes and changes code in the allowed folders, with your Claude account. Runs its own commands in the agent's folder, even with Commands off."
   },
   "tools.codexName": {
     "value": "Codex"
   },
   "tools.codexDesc": {
-    "value": "Writes and changes code in the allowed folders, with your ChatGPT account."
+    "value": "Writes and changes code in the allowed folders, with your ChatGPT account. Runs its own commands in the agent's folder, even with Commands off."
   },
   "tools.found": {
     "value": "Found"
@@ -949,6 +949,30 @@
   },
   "tools.commandsSome": {
     "value": "On only for {{orgs}}. Turn it on for every workspace here."
+  },
+  "tools.commandsAbout": {
+    "value": "Tests, builds and other Terminal commands. Each one shows in Activity. Commands run as you. They can read anything you can on this {{device}}, agentes.chat's database and keys included. Turn them on only for workspaces you trust with all of it."
+  },
+  "tools.commandsReach": {
+    "value": "Commands run as you. They can read anything you can on this {{device}}, agentes.chat's database and keys included. Turn them on only for workspaces you trust with all of it."
+  },
+  "tools.commandsAsk": {
+    "value": "Turn on Commands for {{org}}?"
+  },
+  "tools.commandsTurnOn": {
+    "value": "Turn on"
+  },
+  "tools.checkAgain": {
+    "value": "Check again"
+  },
+  "tools.lookPath": {
+    "value": "agentes.chat looks in your login shell's PATH."
+  },
+  "tools.lookPathWindows": {
+    "value": "agentes.chat looks in PATH."
+  },
+  "tools.stillMissing": {
+    "value": "{{tool}} still isn't found. Run the command above, then check again."
   },
   "tools.browserName": {
     "value": "Browser"
@@ -1248,7 +1272,7 @@
     "value": "Protected mode"
   },
   "prefs.tools.protectedDesc": {
-    "value": "Commands only write in the allowed folders and don't read the rest of the {{device}}. Some tools may get slower."
+    "value": "Coming: commands that write only in allowed folders and can't read the rest of this {{device}}."
   },
   "prefs.tools.commandsOn": {
     "value": "Commands are on"

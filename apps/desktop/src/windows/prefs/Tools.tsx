@@ -3,45 +3,74 @@ import type { ControlStatus } from "@agenteschat/adapters/runner-control";
 import {
   BrainPortrait,
   type BrainPortraitState,
+  Button,
   Chip,
+  Dialog,
+  DialogFooter,
   Icon,
   type IconName,
+  InfoHint,
   ProviderLogo,
   Switch,
 } from "@agenteschat/ui";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSnapshot, useStore } from "../../app";
-import { pairedHomes } from "../../control/store";
-import { toolsHere } from "../../control/this-mac";
-import { useLocalServer, usePending } from "../../hooks";
+import { useHost, useSnapshot, useStore } from "../../app";
+import { type Home, orgName, pairedHomes } from "../../control/store";
+import { CLI_INSTALL, toolsHere } from "../../control/this-mac";
+import { usePending } from "../../hooks";
+import { CommandCopy, OrgTile } from "../../ui/bits";
 import { CardTitle, hintFor, PrefCard, PrefHead, PrefRow } from "../../ui/settings";
 import { useToast } from "../../ui/Toast";
-import { listNames } from "../../ui/time";
 import { ToolAccounts } from "./Accounts";
 
-/** Tools are for the whole computer: every organization gets the same switch. */
+type Cli = keyof typeof CLI_INSTALL;
+
+/**
+ * Claude Code, Codex and the browser are for the whole computer: every organization gets the same switch. Commands
+ * are each organization's own, since they reach everything the person can on this computer.
+ */
 export function Tools() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const host = useHost();
   const store = useStore();
   const snap = useSnapshot();
   const toast = useToast();
-  const local = useLocalServer();
   const homes = pairedHomes(snap);
-  const { tools, commandsOnlyFor } = toolsHere(homes);
+  const { tools } = toolsHere(homes);
   const executors: ControlStatus["executors"] = homes.find((h) => h.status)?.status?.executors ?? {};
-  // The lines kept in sight under Commands describe its switch too: where it's on, and what commands can reach.
-  const commandsLines = commandsOnlyFor.length > 0 ? "tool-commands-some tool-commands-warn" : "tool-commands-warn";
+  // Turning Commands on asks first, every time: what they reach is said once more before it happens.
+  const [asking, setAsking] = useState<Home | null>(null);
 
-  // One tool's change at a time: its switch, and the others, wait for it.
-  const [pending, run] = usePending<keyof RunnerTools>();
+  // One change at a time: its switch, and the others, wait for it.
+  const [pending, run] = usePending<string>();
   const set = (tool: keyof RunnerTools, on: boolean) =>
     run(tool, async () => {
       try {
         await store.requestAll({ type: "tools.set", tool, on });
-        if (tool === "commands" && on) toast(t("desktop.prefs.tools.commandsOn"), "code");
       } catch {
         toast(t("desktop.common.error"), "alert");
       }
+    });
+  const setCommands = (home: Home, on: boolean) =>
+    run(`commands:${home.homeId}`, async () => {
+      try {
+        await store.request(home.homeId, { type: "tools.set", tool: "commands", on });
+        if (on) toast(t("desktop.prefs.tools.commandsOn"), "code");
+      } catch {
+        toast(t("desktop.common.error"), "alert");
+      }
+      setAsking(null);
+    });
+  const flipCommands = (home: Home, on: boolean) => (on ? setAsking(home) : void setCommands(home, false));
+  // Each organization's runner keeps its own list: all look again, so each server hears of the install too.
+  const checkAgain = (cli: Cli, name: string) =>
+    run(`check:${cli}`, async () => {
+      // An older runner doesn't know the request: its status is still read again.
+      await Promise.allSettled(homes.map((h) => store.request(h.homeId, { type: "executors.check" })));
+      await Promise.all(homes.map((h) => store.refresh(h.homeId)));
+      const found = pairedHomes(store.getSnapshot()).some((h) => h.status?.executors?.[cli]);
+      if (!found) toast(t("desktop.tools.stillMissing", { tool: name }), "alert");
     });
 
   const exec = (info: RunnerExecutorInfo | undefined) =>
@@ -67,84 +96,91 @@ export function Tools() {
     </span>
   );
 
+  const cliRow = (cli: Cli, kind: "claude_code" | "codex", name: string, desc: string) => {
+    const info = executors[cli];
+    const checkLabel = t("desktop.tools.checkAgain");
+    return (
+      <PrefRow
+        lead={<BrainPortrait kind={kind} state={engineState(info)} />}
+        htmlFor={`tool-${cli}`}
+        title={
+          <>
+            <ProviderLogo id={kind} size="xs" />
+            {name}
+          </>
+        }
+        hint={hintFor(t, name, desc)}
+        chip={exec(info)}
+        end={
+          <Switch
+            id={`tool-${cli}`}
+            aria-describedby={`tool-${cli}-hint`}
+            checked={tools[cli] && !!info}
+            disabled={!info || homes.length === 0 || pending !== null}
+            onCheckedChange={(on) => void set(cli, on)}
+          />
+        }
+        under={
+          !info && (
+            <>
+              <CommandCopy command={CLI_INSTALL[cli]} />
+              <div className="dk-ver__acts">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon="refresh"
+                  loading={pending === `check:${cli}`}
+                  disabled={pending !== null}
+                  onClick={() => void checkAgain(cli, name)}
+                >
+                  {checkLabel}
+                </Button>
+                <InfoHint name={t("common.about", { label: checkLabel })}>
+                  {t(host.platform === "windows" ? "desktop.tools.lookPathWindows" : "desktop.tools.lookPath")}
+                </InfoHint>
+              </div>
+            </>
+          )
+        }
+      />
+    );
+  };
+
+  const commandsSwitch = (home: Home, id: string) => (
+    <Switch
+      id={id}
+      aria-describedby="tool-commands-hint"
+      checked={home.access?.tools.commands === true}
+      disabled={!home.access || pending !== null}
+      onCheckedChange={(on) => flipCommands(home, on)}
+    />
+  );
+  // One organization: its switch on the Commands row itself. Several: a row of their own each.
+  const only = homes.length === 1 ? homes[0] : undefined;
+
   return (
     <>
       <PrefHead title={t("desktop.prefs.tools.title")} lead={t("desktop.prefs.tools.lead")} />
       <PrefCard>
-        <PrefRow
-          lead={<BrainPortrait kind="claude_code" state={engineState(executors.claude)} />}
-          htmlFor="tool-claude"
-          title={
-            <>
-              <ProviderLogo id="claude_code" size="xs" />
-              {t("desktop.tools.claudeName")}
-            </>
-          }
-          hint={hintFor(t, t("desktop.tools.claudeName"), t("desktop.tools.claudeDesc"))}
-          chip={exec(executors.claude)}
-          end={
-            <Switch
-              id="tool-claude"
-              aria-describedby="tool-claude-hint"
-              checked={tools.claude && !!executors.claude}
-              disabled={!executors.claude || homes.length === 0 || pending !== null}
-              onCheckedChange={(on) => void set("claude", on)}
-            />
-          }
-        />
-        <PrefRow
-          lead={<BrainPortrait kind="codex" state={engineState(executors.codex)} />}
-          htmlFor="tool-codex"
-          title={
-            <>
-              <ProviderLogo id="codex" size="xs" />
-              {t("desktop.tools.codexName")}
-            </>
-          }
-          hint={hintFor(t, t("desktop.tools.codexName"), t("desktop.tools.codexDesc"))}
-          chip={exec(executors.codex)}
-          end={
-            <Switch
-              id="tool-codex"
-              aria-describedby="tool-codex-hint"
-              checked={tools.codex && !!executors.codex}
-              disabled={!executors.codex || homes.length === 0 || pending !== null}
-              onCheckedChange={(on) => void set("codex", on)}
-            />
-          }
-        />
+        {cliRow("claude", "claude_code", t("desktop.tools.claudeName"), t("desktop.tools.claudeDesc"))}
+        {cliRow("codex", "codex", t("desktop.tools.codexName"), t("desktop.tools.codexDesc"))}
         <PrefRow
           lead={logo("code")}
           htmlFor="tool-commands"
           title={t("desktop.tools.commandsName")}
-          hint={hintFor(t, t("desktop.tools.commandsName"), t("desktop.tools.commandsDesc"))}
-          end={
-            <Switch
-              id="tool-commands"
-              aria-describedby={`tool-commands-hint ${commandsLines}`}
-              checked={tools.commands}
-              disabled={homes.length === 0 || pending !== null}
-              onCheckedChange={(on) => void set("commands", on)}
-            />
-          }
+          hint={hintFor(t, t("desktop.tools.commandsName"), t("desktop.tools.commandsAbout"))}
+          end={only && commandsSwitch(only, "tool-commands")}
           under={
-            <>
-              {commandsOnlyFor.length > 0 && (
-                <span id="tool-commands-some" className="dk-help">
-                  {t("desktop.tools.commandsSome", { orgs: listNames(commandsOnlyFor, i18n.language) })}
-                </span>
-              )}
-              <span className="dk-honest ac-iconline">
-                <Icon name="alert" size={14} />
-                <span id="tool-commands-warn">
-                  {local.run
-                    ? t("desktop.tools.commandsWarnHere")
-                    : homes.length > 1
-                      ? t("desktop.tools.commandsWarnOrgs")
-                      : t("desktop.tools.commandsWarn")}
-                </span>
-              </span>
-            </>
+            !only &&
+            homes.map((h) => (
+              <PrefRow
+                key={h.homeId}
+                lead={<OrgTile logo={h.logo} />}
+                htmlFor={`tool-commands-${h.homeId}`}
+                title={orgName(h)}
+                end={commandsSwitch(h, `tool-commands-${h.homeId}`)}
+              />
+            ))
           }
         />
         <PrefRow
@@ -179,7 +215,6 @@ export function Tools() {
           htmlFor="protected-mode"
           title={t("desktop.prefs.tools.protectedTitle")}
           hint={hintFor(t, t("desktop.prefs.tools.protectedTitle"), t("desktop.prefs.tools.protectedDesc"))}
-          chip={<Chip icon="clock">{t("desktop.common.soon")}</Chip>}
           end={
             <Switch
               id="protected-mode"
@@ -191,6 +226,24 @@ export function Tools() {
           }
         />
       </PrefCard>
+
+      <Dialog
+        open={!!asking}
+        onOpenChange={(open) => !open && pending === null && setAsking(null)}
+        title={t("desktop.tools.commandsAsk", { org: asking ? orgName(asking) : "" })}
+        description={t("desktop.tools.commandsReach")}
+        closeLabel={t("desktop.common.close")}
+        width={440}
+      >
+        <DialogFooter bar>
+          <Button variant="ghost" disabled={pending !== null} onClick={() => setAsking(null)}>
+            {t("desktop.common.cancel")}
+          </Button>
+          <Button variant="primary" loading={pending !== null} onClick={() => asking && void setCommands(asking, true)}>
+            {t("desktop.tools.commandsTurnOn")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
     </>
   );
 }

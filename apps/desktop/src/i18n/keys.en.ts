@@ -423,9 +423,11 @@ export const desktopEn = {
   },
   tools: {
     claudeName: "Claude Code",
-    claudeDesc: "Writes and changes code in the allowed folders, with your Claude account.",
+    claudeDesc:
+      "Writes and changes code in the allowed folders, with your Claude account. Runs its own commands in the agent's folder, even with Commands off.",
     codexName: "Codex",
-    codexDesc: "Writes and changes code in the allowed folders, with your ChatGPT account.",
+    codexDesc:
+      "Writes and changes code in the allowed folders, with your ChatGPT account. Runs its own commands in the agent's folder, even with Commands off.",
     found: "Found",
     notFound: "Not found",
     loggedOut: "Not signed in",
@@ -436,6 +438,16 @@ export const desktopEn = {
     commandsWarnHere:
       "Commands run as you and can reach the rest of this {{device}}, agentes.chat's own data included.",
     commandsSome: "On only for {{orgs}}. Turn it on for every workspace here.",
+    commandsAbout:
+      "Tests, builds and other Terminal commands. Each one shows in Activity. Commands run as you. They can read anything you can on this {{device}}, agentes.chat's database and keys included. Turn them on only for workspaces you trust with all of it.",
+    commandsReach:
+      "Commands run as you. They can read anything you can on this {{device}}, agentes.chat's database and keys included. Turn them on only for workspaces you trust with all of it.",
+    commandsAsk: "Turn on Commands for {{org}}?",
+    commandsTurnOn: "Turn on",
+    checkAgain: "Check again",
+    lookPath: "agentes.chat looks in your login shell's PATH.",
+    lookPathWindows: "agentes.chat looks in PATH.",
+    stillMissing: "{{tool}} still isn't found. Run the command above, then check again.",
     browserName: "Browser",
     browserDesc: "Opens websites for the agents in a browser of their own, without your logins.",
     browserLogins:
@@ -550,8 +562,7 @@ export const desktopEn = {
       connected: "Connected",
       protection: "Protection",
       protectedTitle: "Protected mode",
-      protectedDesc:
-        "Commands only write in the allowed folders and don't read the rest of the {{device}}. Some tools may get slower.",
+      protectedDesc: "Coming: commands that write only in allowed folders and can't read the rest of this {{device}}.",
       commandsOn: "Commands are on",
     },
     accounts: {

@@ -423,9 +423,11 @@ export const desktopPtBR = {
   },
   tools: {
     claudeName: "Claude Code",
-    claudeDesc: "Escreve e muda código nas pastas liberadas, com a sua conta do Claude.",
+    claudeDesc:
+      "Escreve e muda código nas pastas liberadas, com a sua conta do Claude. Roda os próprios comandos na pasta do agente, mesmo com Comandos desligado.",
     codexName: "Codex",
-    codexDesc: "Escreve e muda código nas pastas liberadas, com a sua conta do ChatGPT.",
+    codexDesc:
+      "Escreve e muda código nas pastas liberadas, com a sua conta do ChatGPT. Roda os próprios comandos na pasta do agente, mesmo com Comandos desligado.",
     found: "Encontrado",
     notFound: "Não encontrado",
     loggedOut: "Sem login",
@@ -436,6 +438,16 @@ export const desktopPtBR = {
     commandsWarnHere:
       "Comandos rodam como você e alcançam o resto deste {{device}}, inclusive os dados do próprio agentes.chat.",
     commandsSome: "Ligado só para {{orgs}}. Ligue para todos os workspaces daqui.",
+    commandsAbout:
+      "Testes, builds e outros comandos do Terminal. Cada um aparece em Atividade. Comandos rodam como você. Eles leem tudo o que você lê neste {{device}}, inclusive o banco de dados e as chaves do agentes.chat. Ligue só para workspaces em que você confia com tudo isso.",
+    commandsReach:
+      "Comandos rodam como você. Eles leem tudo o que você lê neste {{device}}, inclusive o banco de dados e as chaves do agentes.chat. Ligue só para workspaces em que você confia com tudo isso.",
+    commandsAsk: "Ligar Comandos para {{org}}?",
+    commandsTurnOn: "Ligar",
+    checkAgain: "Verificar de novo",
+    lookPath: "O agentes.chat procura no PATH do shell de login.",
+    lookPathWindows: "O agentes.chat procura no PATH.",
+    stillMissing: "{{tool}} ainda não foi encontrado. Rode o comando acima e verifique de novo.",
     browserName: "Navegador",
     browserDesc: "Abre sites para os agentes num navegador só deles, sem os seus logins.",
     browserLogins:
@@ -551,8 +563,7 @@ export const desktopPtBR = {
       connected: "Conectado",
       protection: "Proteção",
       protectedTitle: "Modo protegido",
-      protectedDesc:
-        "Comandos só escrevem nas pastas liberadas e não leem o resto do {{device}}. Algumas ferramentas podem ficar mais lentas.",
+      protectedDesc: "Em breve: comandos que só escrevem nas pastas liberadas e não leem o resto deste {{device}}.",
       commandsOn: "Comandos ligados",
     },
     accounts: {
