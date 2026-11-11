@@ -411,7 +411,8 @@ export const desktopEn = {
     noBackup: "No backup yet",
     backupFailed: "The last backup didn't finish. Back up now to try again.",
     copyTo: "Copy to",
-    copyToText: "Each new backup is copied to this folder too, like a USB drive or iCloud Drive. The two newest stay there.",
+    copyToText:
+      "Each new backup is copied to this folder too, like a USB drive or iCloud Drive. The two newest stay there.",
     copyToNone: "Only on this {{device}}",
     copyToStop: "Stop copying",
     choose: "Choose…",
@@ -419,7 +420,8 @@ export const desktopEn = {
     copyFailed: "The last backup didn't reach this folder. Check that it's still there, or choose another.",
     restore: "Restore…",
     restoreTitle: "Restore a backup?",
-    restoreBody: "agentes.chat on this {{device}} goes back to that backup: messages, files and settings. It stops for a minute. What's there now is kept in the backups folder.",
+    restoreBody:
+      "agentes.chat on this {{device}} goes back to that backup: messages, files and settings. It stops for a minute. What's there now is kept in the backups folder.",
     restoreWhich: "Backup to restore",
     backupOf: "Backup from {{time}}",
     restoreConfirm: "Restore",
@@ -432,10 +434,12 @@ export const desktopEn = {
     keepLogin: "Opens at login",
     keepLoginOn: "Turn on",
     keepAutoLogin: "Signs in by itself after a restart",
-    keepAutoLoginText: "After a restart, this {{device}} waits at its sign-in screen and agentes.chat doesn't open. Turn on automatic login in Users & Groups.",
+    keepAutoLoginText:
+      "After a restart, this {{device}} waits at its sign-in screen and agentes.chat doesn't open. Turn on automatic login in Users & Groups.",
     keepAutoLoginOpen: "Open Users & Groups",
     keepPower: "Starts after a power failure",
-    keepPowerText: "After a power cut, this {{device}} stays off until someone presses its button. Energy settings can start it by itself.",
+    keepPowerText:
+      "After a power cut, this {{device}} stays off until someone presses its button. Energy settings can start it by itself.",
     keepPowerOpen: "Open Energy settings",
     keepAwake: "Doesn't sleep while serving",
     keepAwakeText: "This {{device}} stays awake while agentes.chat runs here. Start agentes.chat to keep it awake.",

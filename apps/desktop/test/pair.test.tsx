@@ -382,6 +382,10 @@ describe("pairing from the app", () => {
         () => el.textContent?.includes("Permissions") && rowOf(el, "Screen Recording")?.querySelector("button"),
       );
       expect(el.textContent).not.toContain("agentes.chat opened again");
+      // In Preferences what each one does sits behind its ⓘ.
+      expect(rowOf(el, "Screen Recording")?.querySelector("small")).toBeNull();
+      expect(rowOf(el, "Screen Recording")?.querySelector(".dk-help")).toBeNull();
+      expect(rowOf(el, "Screen Recording")?.querySelector("button.ac-hint")).toBeTruthy();
       await act(async () => button(rowOf(el, "Screen Recording"), "Allow")?.click());
       await until(() => host.mac.setup?.step === "prefs");
       await until(() => el.textContent?.includes("When macOS asks to Quit & Reopen"));

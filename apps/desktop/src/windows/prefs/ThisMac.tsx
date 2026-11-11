@@ -410,7 +410,7 @@ function Permissions() {
   return (
     <>
       <CardTitle hint={hintFor(t, title, t("desktop.prepare.prefsHint"))}>{title}</CardTitle>
-      <MacPermissionCard mac={mac} resumed={resumed} />
+      <MacPermissionCard mac={mac} resumed={resumed} hinted />
     </>
   );
 }

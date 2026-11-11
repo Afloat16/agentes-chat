@@ -410,7 +410,8 @@ export const desktopPtBR = {
     noBackup: "Nenhum backup ainda",
     backupFailed: "O último backup não terminou. Faça backup agora para tentar de novo.",
     copyTo: "Copiar para",
-    copyToText: "Cada backup novo também é copiado para esta pasta, como um pendrive ou o iCloud Drive. Os dois mais novos ficam lá.",
+    copyToText:
+      "Cada backup novo também é copiado para esta pasta, como um pendrive ou o iCloud Drive. Os dois mais novos ficam lá.",
     copyToNone: "Só neste {{device}}",
     copyToStop: "Parar de copiar",
     choose: "Escolher…",
@@ -418,7 +419,8 @@ export const desktopPtBR = {
     copyFailed: "O último backup não chegou a esta pasta. Veja se ela ainda existe, ou escolha outra.",
     restore: "Restaurar…",
     restoreTitle: "Restaurar um backup?",
-    restoreBody: "O agentes.chat deste {{device}} volta para esse backup: mensagens, arquivos e configurações. Ele para por um minuto. O que está lá agora fica guardado na pasta de backups.",
+    restoreBody:
+      "O agentes.chat deste {{device}} volta para esse backup: mensagens, arquivos e configurações. Ele para por um minuto. O que está lá agora fica guardado na pasta de backups.",
     restoreWhich: "Backup a restaurar",
     backupOf: "Backup de {{time}}",
     restoreConfirm: "Restaurar",
@@ -431,13 +433,16 @@ export const desktopPtBR = {
     keepLogin: "Abre ao iniciar a sessão",
     keepLoginOn: "Ativar",
     keepAutoLogin: "Entra sozinho depois de reiniciar",
-    keepAutoLoginText: "Depois de reiniciar, este {{device}} fica na tela de entrada e o agentes.chat não abre. Ative o login automático em Usuários e Grupos.",
+    keepAutoLoginText:
+      "Depois de reiniciar, este {{device}} fica na tela de entrada e o agentes.chat não abre. Ative o login automático em Usuários e Grupos.",
     keepAutoLoginOpen: "Abrir Usuários e Grupos",
     keepPower: "Liga depois de uma queda de energia",
-    keepPowerText: "Depois de uma queda de energia, este {{device}} fica desligado até alguém apertar o botão. Os ajustes de Energia podem ligá-lo sozinho.",
+    keepPowerText:
+      "Depois de uma queda de energia, este {{device}} fica desligado até alguém apertar o botão. Os ajustes de Energia podem ligá-lo sozinho.",
     keepPowerOpen: "Abrir ajustes de Energia",
     keepAwake: "Não dorme enquanto serve",
-    keepAwakeText: "Este {{device}} fica acordado enquanto o agentes.chat roda aqui. Inicie o agentes.chat para mantê-lo acordado.",
+    keepAwakeText:
+      "Este {{device}} fica acordado enquanto o agentes.chat roda aqui. Inicie o agentes.chat para mantê-lo acordado.",
     keepOn: "Feito",
     keepOff: "Ainda não",
   },

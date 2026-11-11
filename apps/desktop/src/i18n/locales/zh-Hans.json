@@ -378,7 +378,7 @@
     "noBackup": "还没有备份",
     "backupFailed": "上一次备份没有完成。现在备份一次重试。",
     "copyTo": "复制到",
-    "copyToText": "每个新备份也会复制到这个文件夹,比如 U 盘或 iCloud 云盘。那里保留最新的两个。",
+    "copyToText": "每个新备份也会复制到这个文件夹,比如 U 盘或 iCloud Drive。那里保留最新的两个。",
     "copyToNone": "只在这台{{device}}上",
     "copyToStop": "停止复制",
     "choose": "选择…",
