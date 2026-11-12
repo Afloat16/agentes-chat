@@ -879,7 +879,8 @@ describe.if(ROOT)("the agents' isolation on this computer, as root", () => {
       await until(() => uidOf(lock?.[5] ?? 0) === null, 10_000);
       holds.sweep();
       expect(holds.report()).toEqual({ live: [], ended: [{ id, reason: "exited" }] });
-      expect(ours()).toEqual([]);
+      // logind lets go of a lock once it sees its holder gone, a moment later.
+      await until(() => ours()?.length === 0, 10_000);
 
       // A person's Stop: the program signaled by root, its lock gone with it.
       const stopped = await program();
@@ -893,8 +894,8 @@ describe.if(ROOT)("the agents' isolation on this computer, as root", () => {
       const later = (h: number) => new Date(Date.now() + h * 3600_000).toISOString();
       await holds.start(agent, A, { op: "keep.start", holdId: id3, until: later(1) });
       await holds.start(agent, A, { op: "keep.start", holdId: id3, until: later(2) });
-      expect(ours()).toHaveLength(1);
       expect(holds.report().live).toEqual([id3]);
+      await until(() => ours()?.length === 1, 10_000);
       await holds.end({ op: "keep.end", holdId: id3 });
       await until(() => ours()?.length === 0, 10_000);
     } finally {
