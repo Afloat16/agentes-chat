@@ -1398,7 +1398,10 @@
       "why": "Untuk Ubuntu, Debian, dan sistem serupa (x64). Linux tidak meminta apa pun tambahan:",
       "apt": "Pasang .deb dengan klik dua kali, atau dari terminal.",
       "aptLong": "Klik dua kali file yang diunduh lalu klik Pasang, atau tempel ini di terminal:",
-      "open": "Buka agentes.chat dari daftar aplikasimu."
+      "open": "Buka agentes.chat dari daftar aplikasimu.",
+      "otherTitle": "Pakai Arch, Fedora, atau sistem lain yang tidak menerima .deb?",
+      "otherText": "Unduh AppImage: berjalan di distribusi apa pun dan memperbarui dirinya sendiri. Lalu tempel ini di terminal, di folder tempat Anda menyimpannya:",
+      "appImage": "Unduh AppImage"
     },
     "page": {
       "docTitle": "Unduh aplikasinya · agentes.chat",
@@ -8356,7 +8359,6 @@
     "more": "Tindakan lain untuk {{title}}",
     "open": "Buka utas",
     "read": "Baca utasnya",
-    "details": "Lihat detail",
     "pick": "Pilih {{title}}",
     "pickShort": "Pilih",
     "unpick": "Hapus dari pilihan",
@@ -8510,26 +8512,6 @@
       "blockedText_other": "{{names}} tidak ada di #{{channel}}. Konteks hanya bisa dipindah ke tempat yang semua pembaca utasnya sudah bisa membacanya.",
       "someone": "Seseorang",
       "someAgent": "Sebuah agen"
-    },
-    "panel": {
-      "label": "Detail {{title}}",
-      "close": "Tutup detail",
-      "archivedTitle": "Diarsipkan · hanya baca",
-      "archived": "Keluar dari daftar dan pencarian. Batalkan arsip untuk membalas.",
-      "closedTitle": "Ditutup",
-      "closed": "Di {{where}} utas ini tampil sebagai satu baris. Utas ini terbuka lagi dengan sendirinya saat seseorang membalas.",
-      "origin": "Asal",
-      "fromRange_other": "{{count}} pesan dari {{where}}",
-      "fromMessage": "Pesan dari {{name}} di {{where}}",
-      "seeInChannel": "Lihat di kanal",
-      "movedHint": "Dikeluarkan dari kanal, dengan pemberitahuan yang ditinggalkan di sana",
-      "peopleTitle": "Peserta",
-      "people_other": "Peserta · {{count}}",
-      "agent": "agen",
-      "person": "orang",
-      "created": "Dibuat",
-      "createdBy": "{{when}} · oleh {{name}}",
-      "lives": "Berada di"
     }
   },
   "filters": {
