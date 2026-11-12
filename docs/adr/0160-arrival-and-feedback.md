@@ -133,9 +133,10 @@ with Postgres alone, and must not need a third-party widget in the apps.
     `FEEDBACK_EMAIL`, and one that did also needed outgoing email, so the people most likely to hit a rough edge
     had no way to say so. A feedback is not like a report the server sends by itself: a person writes it, reads who
     will get it, and presses Send. So §5's default changes.
-    - **Where it goes.** `FEEDBACK_EMAIL` set: as before, to the operator, and nothing leaves for agentes.chat.
-      Unset: to the agentes.chat team's inbox (`FEEDBACK_URL`), unless `FEEDBACK_RELAY=false`, which is §5's old
-      default (no form, no route, no tools). `auth-config.feedbackRelay` tells the apps, which then say "to the
+    - **Where it goes.** To the agentes.chat team's inbox (`FEEDBACK_URL`), unless `FEEDBACK_RELAY=false`, which
+      is §5's old default (no form, no route, no tools). The feedback is about the app, so its makers read it:
+      `FEEDBACK_EMAIL` is no longer something a self-hosted server sets. It is the team's own address, on
+      agentes.chat's servers; a server that does set it still mails its feedback there and sends nothing out. `auth-config.feedbackRelay` tells the apps, which then say "to the
       agentes.chat team" wherever they said "to whoever runs this server", in the form and on an agent's offer.
     - **Same job, another way out.** The route still only queues `feedback.send`; where the destination is the
       inbox the job posts the feedback as JSON instead of mailing it, so the server needs no email of its own. A

@@ -779,7 +779,7 @@ ones a self-hosted instance usually touches:
 | `RUN_MIGRATIONS_ON_BOOT` | `true` | `false` only if you run `docker compose run --rm agentes migrate` yourself before each start. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error`. |
 | `TELEMETRY` | `on` | `off` stops the anonymous usage report (Optional services and what they receive). |
-| `FEEDBACK_EMAIL`, `FEEDBACK_RELAY` | `true` for the relay | Who reads the apps' feedback form: your address when `FEEDBACK_EMAIL` is set (it needs email), else the agentes.chat team. `FEEDBACK_RELAY=false` with no address: no form (Optional services and what they receive). |
+| `FEEDBACK_RELAY` | `true` | The apps' feedback form sends what a person writes to the agentes.chat team. `false`: no form (Optional services and what they receive). |
 | `TYPESAFE_API_KEY` | | Your TypeSafe key for Jev (AI: plans and keys). Wins over the key added in Settings → AI and usage. |
 | `COMPOSIO_API_KEY`, `COMPOSIO_WEBHOOK_SECRET` | | Your Composio project: Gmail and Outlook mailboxes and the services connected through Composio (below). |
 | `COMPOSIO_AUTH_CONFIGS`, `COMPOSIO_CALLS_PER_MONTH` | `0` for the cap (none) | Auth configs of your own per toolkit (`googledrive=ac_…`), and the Composio calls a workspace may make per month. |
@@ -961,7 +961,7 @@ either way:
   person who set it up) sees it.
 
 **Feedback.** The apps have a feedback form (**Send feedback**, at the bottom of the sidebar), and an
-agent can send one when a person asks it to or agrees to its offer. With no `FEEDBACK_EMAIL`, each one
+agent can send one when a person asks it to or agrees to its offer. Each one
 goes to the agentes.chat team, who make the app, and the form says so before the person sends it.
 Nothing goes by itself: only when someone presses **Send**, and only that message, as JSON in a POST to
 `FEEDBACK_URL` (`https://app.agentes.chat/api/feedback/inbox`), through Cloudflare like the usage
@@ -971,12 +971,8 @@ it in; the screen they were on (its path, with its ids), the agent open and what
 language, the browser, the window, the app's build and its last errors; the server's version; and up
 to three pictures they added (a video isn't offered). Never a conversation, and nothing that says which
 server it came from beyond the request's own address. agentes.chat mails it to its team and keeps no
-copy on the server that received it. To change that:
-
-- `FEEDBACK_EMAIL=you@example.com` in `.env`: the feedback goes to you instead, by email (so the
-  server needs `MILLIONSEND_API_KEY` or `SMTP_URL`), pictures and a video as links to your own server,
-  and nothing reaches agentes.chat.
-- `FEEDBACK_RELAY=false`: the apps show no form and agents can't send any.
+copy on the server that received it. To turn it off, set `FEEDBACK_RELAY=false` in `.env` and start the
+server again: the apps show no form and agents can't send any.
 
 **Downloads and updates.** Installing and updating fetch files from agentes.chat, and those requests
 carry nothing about the instance beyond what any download does: the installer
