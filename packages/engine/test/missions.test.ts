@@ -59,6 +59,7 @@ import {
   stopMission,
   syncMissionFiles,
   taskNotice,
+  versionOf,
 } from "../src";
 import { addMember, type Fixture, setup } from "./fixtures";
 import { pairMachine } from "./machine-fixtures";
@@ -1113,6 +1114,9 @@ describe("missions (ADR 0029)", () => {
     };
     expect(missionExecutors({ ...codexHere, os: "windows" }).available).toEqual(["agent"]);
     expect(missionExecutors({ ...codexHere, os: "darwin" }).available).toEqual(["codex", "agent"]);
+    // The version as the runner reports it, read part by part (a long run of digits is no version).
+    expect(versionOf("codex-cli 0.163.0")).toEqual([0, 163, 0]);
+    expect(versionOf("0".repeat(5000))).toBeNull();
     // No update makes it, so an old Codex there isn't worth an "update it".
     const oldCodex = { codex: { version: "codex-cli 0.150.0" }, detectedAt: "x" };
     expect(missionExecutors({ ...codexHere, executors: oldCodex, os: "windows" })).toEqual({

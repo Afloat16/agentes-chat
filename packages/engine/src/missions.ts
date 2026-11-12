@@ -166,9 +166,12 @@ export function agentMissionApproval(agent: { missionCommandApproval?: string | 
  */
 export const CODEX_MIN_VERSION = "0.163.0";
 
-/** `codex-cli 0.163.0` → [0, 163, 0]; null when there is no version in it. */
+/**
+ * `codex-cli 0.163.0` → [0, 163, 0]; null when there is no version in it. Each part is up to nine digits: a runner
+ * reports the text, and unbounded digits would make a long run of them slow to read.
+ */
 export function versionOf(text: string | undefined): number[] | null {
-  const m = /(\d+)\.(\d+)\.(\d+)/.exec(text ?? "");
+  const m = /(\d{1,9})\.(\d{1,9})\.(\d{1,9})/.exec(text ?? "");
   return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
 }
 const atLeast = (have: number[], want: number[]) => {
