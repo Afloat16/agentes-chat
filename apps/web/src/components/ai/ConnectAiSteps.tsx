@@ -105,6 +105,7 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { BillingLinkButton } from "@/components/BillingLinkButton";
 import { useOrg } from "@/components/org-context";
 import { KeyMismatch, KeyRefused, ProviderSelect } from "@/components/ProviderKey";
+import { ToolSteps } from "@/components/ToolSteps";
 import { managedOf, SetupProgress, useSetupWait, useWaitReader } from "@/components/WorkspaceComputer";
 import { useDirectory } from "@/hooks/useDirectory";
 import { planWord } from "@/lib/plan-usage";
@@ -1662,6 +1663,24 @@ function GateWait({
     );
   } else if (gate.state === "offline" && hostConnecting && !signingIn) {
     wait = line(<Spinner size={14} />, t("connectAi.wait.connecting"));
+  } else if (gate.state === "unsupported" && gate.reason === "tool_off" && edition !== "cloud" && !hold) {
+    // The computer is connected and its program is there, switched off: said as that, then the way to its switch,
+    // drawn (the app's three clicks, the command on a server, one button on this very computer).
+    const program = t(`brain.card.${kind}`);
+    wait = (
+      <>
+        <p className="setup-line" role="status">
+          {t("connectAi.wait.toolOff", { computer, program })}
+        </p>
+        <ToolSteps
+          computer={computer}
+          machineId={machineId}
+          tool={kind === "claude_code" ? "claude" : kind}
+          name={program}
+        />
+        {useKey}
+      </>
+    );
   } else if (why && !(gate.state === "offline" && signingIn)) {
     wait = (
       <>

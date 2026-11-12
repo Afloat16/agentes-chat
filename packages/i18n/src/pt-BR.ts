@@ -2933,6 +2933,9 @@ export const ptBR = {
       email: "Avisamos você por e-mail quando o computador ficar pronto. Pode fechar esta página.",
       ready: "O computador está pronto.",
       useKey: "Usar uma chave de API agora",
+      /** `program`: "Claude Code" or "Codex" (`brain.card`), switched off in that computer's own settings. */
+      toolOff:
+        "O {{computer}} está conectado, mas ainda não deixa os agentes usarem o {{program}}. Por segurança, isso só se liga no próprio computador.",
       connecting: "O computador deste servidor conecta em até um minuto. Você entra aqui assim que ele conectar.",
       /** On the onboarding with no computer: one is connected only once the workspace opens. */
       computerLater:
@@ -5255,6 +5258,7 @@ export const ptBR = {
         one: "Clique no ícone do agentes.chat perto do relógio",
         two: "Preferências",
         three: "Ligue o Navegador",
+        turnOn: "Ligue o {{tool}}",
         done: "Pronto. Esta página percebe sozinha, não precisa recarregar.",
         menuOpen: "Abrir agentes",
         menuPrefs: "Preferências…",
@@ -13295,6 +13299,7 @@ export const ptBR = {
       outageTitle: "Este {{device}} perdeu a conexão {{ago}}",
       toolsOff: "Desligado neste {{device}}. Ligue nas Preferências do app, em Ferramentas.",
       browserTitle: "Ligue o navegador neste {{device}}",
+      toolTitle: "Ligue o {{tool}} neste {{device}}",
       browserText: "Um clique nas Preferências do app, em Ferramentas. A página percebe sozinha.",
       noReport: "Este {{device}} ainda não informou o que libera. Atualize o app.",
       update: "Atualizar o app",

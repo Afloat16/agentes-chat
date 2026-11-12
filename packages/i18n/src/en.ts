@@ -3000,6 +3000,9 @@ export const en = {
       email: "We'll email you when the computer is ready. You can close this page.",
       ready: "The computer is ready.",
       useKey: "Use an API key now",
+      /** `program`: "Claude Code" or "Codex" (`brain.card`), switched off in that computer's own settings. */
+      toolOff:
+        "{{computer}} is connected, but it doesn't let agents use {{program}} yet. For safety, that is turned on only on the computer itself.",
       connecting: "This server's computer connects within a minute. You sign in here as soon as it does.",
       /** On the onboarding with no computer: one is connected only once the workspace opens. */
       computerLater:
@@ -5302,6 +5305,7 @@ export const en = {
         one: "Click the agentes.chat icon by the clock",
         two: "Preferences",
         three: "Turn on Browser",
+        turnOn: "Turn on {{tool}}",
         done: "That's it. This page notices on its own, no reload needed.",
         menuOpen: "Open agentes",
         menuPrefs: "Preferences…",
@@ -13255,6 +13259,7 @@ export const en = {
       outageTitle: "This {{device}} lost its connection {{ago}}",
       toolsOff: "Off on this {{device}}. Turn it on in the app's Preferences, under Tools.",
       browserTitle: "Turn the browser on on this {{device}}",
+      toolTitle: "Turn {{tool}} on on this {{device}}",
       browserText: "One click in the app's Preferences, under Tools. This page notices by itself.",
       noReport: "This {{device}} hasn't reported what it allows yet. Update the app.",
       update: "Update the app",
