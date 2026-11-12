@@ -344,6 +344,11 @@ export const machineAccounts = pgTable(
      */
     shared: boolean().notNull().default(false),
     /**
+     * Who it thinks for (ADR 0059 §3): `everyone` in the workspace (people's right hand and any agent), or only its
+     * `owner`'s. Only the person who connected it changes it, for every login of that account.
+     */
+    serves: text().notNull().default("everyone"),
+    /**
      * How it signs in (protocol 50): `cli_login`, `setup_token` or `api_key`. Set when its sign-in starts and from
      * what the runner reports, never cleared by a report that doesn't say; null: unknown.
      */

@@ -160,6 +160,12 @@ export const NOTIFICATION_KINDS = [
    */
   "plan_lent",
   /**
+   * The person's plan serves everyone in the workspace now (ADR 0059 §3, the `plans_serve_everyone` migration): one row
+   * per account and computer (`plan_serves:{accountId}`), `source.accountId` and `source.machineId`, its name in
+   * `latest.plan`. Inbox only, with "Mudar para Só eu"; done once its owner chooses who it serves.
+   */
+  "plan_serves",
+  /**
    * A model an agent thinks with left its plan's live list (`droppedPlanModel`), so its turns run another one: the
    * agent's owner, once per agent and model (`planModelDroppedGroup`), the agent as actor, `source.agentId` and its
    * name in `source.label`, the model in `latest.title`, the plan's name in `latest.plan` and what it runs now in

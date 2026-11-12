@@ -957,6 +957,10 @@ export const MachineAccount = z
       description:
         "Claude's organization it is signed in to (opaque, runner protocol 50); only for its owner. Logins of one email in two organizations are two accounts.",
     }),
+    serves: z.enum(["everyone", "owner"]).openapi({
+      description:
+        "Who it thinks for (ADR 0059 §3): everyone in the workspace (the default), or only its owner. Only its owner changes it.",
+    }),
   })
   .openapi("MachineAccount", {
     description:

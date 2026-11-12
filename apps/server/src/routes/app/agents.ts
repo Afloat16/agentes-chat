@@ -697,11 +697,20 @@ export function agentRoutes(deps: AppDeps) {
                     "plan_inactive",
                     "commands_off",
                     "plan_not_shared",
+                    "plans_not_yours",
                     "runner_outdated",
                     "plan_tools",
                   ])
                   .optional(),
                 own: z.enum(["claude_code", "codex", "cursor", "opencode", "grok", "antigravity"]).optional(),
+                owner: z.string().optional().openapi({
+                  description:
+                    "With `plans_not_yours`: whose the workspace's plans are (each serves only the person who connected it).",
+                }),
+                plan: z
+                  .string()
+                  .optional()
+                  .openapi({ description: 'With `plans_not_yours`: what that plan is ("Claude").' }),
                 provider: z.string().optional().openapi({
                   description: "Ready on an API key with Automático: the maker of the key it thinks with.",
                 }),
