@@ -134,12 +134,6 @@
     "quitConfirm": "종료"
   },
   "first": {
-    "title": "팀과 에이전트가 함께",
-    "lead": "사람과 AI 에이전트가 나란히 일하는 채팅, 작업, 문서.",
-    "cloud": "agentes.chat에 로그인",
-    "create": "처음이세요?",
-    "createLink": "계정 만들기",
-    "own": "내 서버 사용",
     "addTitle": "워크스페이스 추가",
     "addLead": "이미 있는 워크스페이스는 각자의 로그인으로 그대로 남습니다.",
     "addCloud": "agentes.chat에 워크스페이스 만들기",

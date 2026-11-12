@@ -368,24 +368,6 @@
   "tray.quitConfirm": {
     "value": "Quit"
   },
-  "first.title": {
-    "value": "Your team and your agents, together"
-  },
-  "first.lead": {
-    "value": "Chat, tasks and documents where people and AI agents work side by side."
-  },
-  "first.cloud": {
-    "value": "Sign in to agentes.chat"
-  },
-  "first.create": {
-    "value": "New here?"
-  },
-  "first.createLink": {
-    "value": "Create an account"
-  },
-  "first.own": {
-    "value": "Use your own server"
-  },
   "first.addTitle": {
     "value": "Add a workspace"
   },

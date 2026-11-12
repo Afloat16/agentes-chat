@@ -143,12 +143,6 @@
     "quitConfirm": "Zakończ"
   },
   "first": {
-    "title": "Twój zespół i twoi agenci, razem",
-    "lead": "Czat, zadania i dokumenty, gdzie osoby i agenci AI pracują ramię w ramię.",
-    "cloud": "Zaloguj się do agentes.chat",
-    "create": "Pierwszy raz tutaj?",
-    "createLink": "Utwórz konto",
-    "own": "Użyj własnego serwera",
     "addTitle": "Dodaj przestrzeń roboczą",
     "addLead": "Te, które już masz, zostają tutaj, każda z własnym logowaniem.",
     "addCloud": "Utwórz przestrzeń roboczą w agentes.chat",

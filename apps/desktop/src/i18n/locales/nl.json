@@ -137,12 +137,6 @@
     "quitConfirm": "Afsluiten"
   },
   "first": {
-    "title": "Je team en je agents, samen",
-    "lead": "Chat, taken en documenten waar mensen en AI-agents zij aan zij werken.",
-    "cloud": "Inloggen bij agentes.chat",
-    "create": "Nieuw hier?",
-    "createLink": "Een account aanmaken",
-    "own": "Je eigen server gebruiken",
     "addTitle": "Een werkruimte toevoegen",
     "addLead": "Die je al hebt blijven hier, elk met een eigen aanmelding.",
     "addCloud": "Een werkruimte maken bij agentes.chat",

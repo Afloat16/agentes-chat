@@ -137,12 +137,6 @@
     "quitConfirm": "Beenden"
   },
   "first": {
-    "title": "Dein Team und deine Agenten, zusammen",
-    "lead": "Chat, Aufgaben und Dokumente, in denen Personen und KI-Agenten Seite an Seite arbeiten.",
-    "cloud": "Bei agentes.chat anmelden",
-    "create": "Neu hier?",
-    "createLink": "Konto erstellen",
-    "own": "Eigenen Server nutzen",
     "addTitle": "Workspace hinzufügen",
     "addLead": "Die du schon hast, bleiben hier, jeder mit seiner eigenen Anmeldung.",
     "addCloud": "Workspace bei agentes.chat erstellen",

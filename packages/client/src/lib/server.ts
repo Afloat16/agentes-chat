@@ -212,3 +212,23 @@ export const serverPlace = (cloud: boolean, thisComputer = false): ServerPlace =
 
 /** Each place's line icon, the same on every surface. */
 export const SERVER_PLACE_ICON = { cloud: "cloud", here: "computer", own: "globe" } as const;
+
+/**
+ * "Onde fica o seu workspace?": what each option's chosen card says, with its line icon. The Cloud's are what it
+ * takes on, one's own server's what it leaves to you: the same axes, so the two read side by side.
+ */
+export const HOSTING_POINTS = {
+  cloud: [
+    ["hosting.cloud.on", "check"],
+    ["hosting.cloud.care", "check"],
+    ["hosting.cloud.ready", "check"],
+  ],
+  own: [
+    ["hosting.own.server", "database"],
+    ["hosting.own.care", "refresh"],
+    ["hosting.own.off", "power"],
+  ],
+} as const;
+
+/** The quiet line under the chosen card's points. */
+export const HOSTING_FOOT = { cloud: "hosting.cloud.price", own: "hosting.own.license" } as const;

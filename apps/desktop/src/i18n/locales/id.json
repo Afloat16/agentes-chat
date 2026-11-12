@@ -134,12 +134,6 @@
     "quitConfirm": "Keluar"
   },
   "first": {
-    "title": "Timmu dan agenmu, bersama",
-    "lead": "Obrolan, tugas, dan dokumen tempat orang dan agen AI bekerja berdampingan.",
-    "cloud": "Masuk ke agentes.chat",
-    "create": "Baru di sini?",
-    "createLink": "Buat akun",
-    "own": "Pakai servermu sendiri",
     "addTitle": "Tambah ruang kerja",
     "addLead": "Yang sudah kamu punya tetap di sini, masing-masing dengan login sendiri.",
     "addCloud": "Buat ruang kerja di agentes.chat",

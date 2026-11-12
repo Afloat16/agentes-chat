@@ -140,12 +140,6 @@
     "quitConfirm": "Salir"
   },
   "first": {
-    "title": "Tu equipo y tus agentes, juntos",
-    "lead": "Chat, tareas y documentos donde personas y agentes de IA trabajan lado a lado.",
-    "cloud": "Iniciar sesión en agentes.chat",
-    "create": "¿Eres nuevo?",
-    "createLink": "Crear una cuenta",
-    "own": "Usar tu propio servidor",
     "addTitle": "Añadir un espacio de trabajo",
     "addLead": "Los que ya tienes siguen aquí, cada uno con su propio inicio de sesión.",
     "addCloud": "Crear un espacio de trabajo en agentes.chat",

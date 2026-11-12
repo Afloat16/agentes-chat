@@ -140,12 +140,6 @@ export const desktopEn = {
     quitConfirm: "Quit",
   },
   first: {
-    title: "Your team and your agents, together",
-    lead: "Chat, tasks and documents where people and AI agents work side by side.",
-    cloud: "Sign in to agentes.chat",
-    create: "New here?",
-    createLink: "Create an account",
-    own: "Use your own server",
     /** The welcome window opened by the site's "Add workspace" (ADR 0154). */
     addTitle: "Add a workspace",
     addLead: "The ones you have stay here, each with its own sign-in.",

@@ -143,14 +143,8 @@ export const desktopPtBR = {
       "O agentes.chat para neste {{device}}: ninguém consegue usar, aqui, no celular ou na equipe, até você abrir o app de novo.",
     quitConfirm: "Sair",
   },
-  /** First run (FirstRun.tsx): the Cloud is the one big action, your own server a small line under it. */
+  /** First run (FirstRun.tsx), adding a workspace: its title and the Cloud's ways (the choice itself is `hosting`). */
   first: {
-    title: "Sua equipe e seus agentes, juntos",
-    lead: "Conversas, tarefas e documentos onde pessoas e agentes de IA trabalham lado a lado.",
-    cloud: "Entrar no agentes.chat",
-    create: "Primeira vez?",
-    createLink: "Criar uma conta",
-    own: "Usar o seu próprio servidor",
     addTitle: "Adicionar um workspace",
     addLead: "Os que você já tem continuam aqui, cada um com o seu login.",
     addCloud: "Criar um workspace no agentes.chat",

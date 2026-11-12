@@ -1,4 +1,12 @@
-import { CLOUD_SERVER, checkServer, helpUrl, normalizeServer, serverHost } from "@agenteschat/client/lib/server";
+import {
+  CLOUD_SERVER,
+  checkServer,
+  HOSTING_FOOT,
+  HOSTING_POINTS,
+  helpUrl,
+  normalizeServer,
+  serverHost,
+} from "@agenteschat/client/lib/server";
 import { DOWNLOAD_URL } from "@agenteschat/i18n/docs";
 import {
   Button,
@@ -10,7 +18,6 @@ import {
   type Hosting,
   HostingScene,
   Icon,
-  type IconName,
   Input,
   OptionList,
 } from "@agenteschat/ui";
@@ -21,33 +28,18 @@ import "./hosting.css";
 /** What a server of one's own looks like typed: the example in the address field. */
 const EXAMPLE_HOST = "agentes.example.com";
 
-const POINTS = {
-  cloud: [
-    ["hosting.cloud.on", "check"],
-    ["hosting.cloud.care", "check"],
-    ["hosting.cloud.ready", "check"],
-  ],
-  own: [
-    ["hosting.own.server", "database"],
-    ["hosting.own.care", "refresh"],
-    ["hosting.own.off", "power"],
-  ],
-} as const satisfies Record<Hosting, readonly (readonly [string, IconName])[]>;
-
 /** The chosen option's lines: what it gives (the Cloud) or what it asks of you (your own server). */
 function Points({ hosting }: { hosting: Hosting }) {
   const { t } = useTranslation();
   return (
     <span className="hosting-points">
-      {POINTS[hosting].map(([key, icon]) => (
+      {HOSTING_POINTS[hosting].map(([key, icon]) => (
         <span key={key} className="ac-iconline">
           <Icon name={icon} size={14} />
           {t(key)}
         </span>
       ))}
-      <span className="hosting-points__foot">
-        {t(hosting === "cloud" ? "hosting.cloud.price" : "hosting.own.license")}
-      </span>
+      <span className="hosting-points__foot">{t(HOSTING_FOOT[hosting])}</span>
     </span>
   );
 }
