@@ -439,7 +439,7 @@ describe("the viewer's own logins of one account are one row (IA e uso › Conta
     expect(groupUsageAccounts(list, undefined)).toEqual(list);
   });
 
-  test("one seat connected by two people is one row, with how many logins it stands for", () => {
+  test("one seat connected by two people is one row led by the viewer's own login, with how many logins it stands for", () => {
     const t = ((key: string, o?: Record<string, unknown>) =>
       o ? `${key} ${JSON.stringify(o)}` : key) as unknown as TFunction;
     const rows = groupUsageAccounts(
@@ -450,9 +450,10 @@ describe("the viewer's own logins of one account are one row (IA e uso › Conta
       ],
       undefined,
     );
-    expect(rows.map((r) => [r.accountId, r.logins ?? 1])).toEqual([
-      ["a", 2],
-      ["c", 1],
+    // Where Bia's login stood, but Caio's own leads, so he keeps "Quem usa" on it.
+    expect(rows.map((r) => [r.accountId, r.mine, r.logins ?? 1])).toEqual([
+      ["b", true, 2],
+      ["c", true, 1],
     ]);
     expect(rows.map((r) => loginsText(t, r))).toEqual(['usageViews.logins {"count":2}', null]);
   });

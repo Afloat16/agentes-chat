@@ -75,8 +75,9 @@ export interface PlanAccountInfo {
   /** Who it thinks for (ADR 0059 §3); null for the computer's own sign-in, which thinks for its pairer's agents. */
   serves: PlanServes | null;
   /**
-   * The same seat signed in by anyone in the workspace (its maker, plan and email, opaque): logins with one `seat` are
-   * one account, whoever connected them. Null where that isn't known (a key, or no email yet).
+   * The same seat signed in on one computer by anyone in the workspace (its maker, plan and email, opaque): logins with
+   * one `seat` are one account, whoever connected them. Per computer, as "Quem usa" changes a computer's logins
+   * (`sameLogins`). Null where that isn't known (a key, or no email yet).
    */
   seat: string | null;
 }
@@ -351,7 +352,9 @@ function accountOf(ctx: Context, key: string, viewerId: string | null): FoundAcc
       serves: servesOf(row.serves),
       seat:
         row.email && !row.provider
-          ? sha256(`${row.orgId}:${row.kind}:${row.email.toLowerCase()}:${row.providerOrgId ?? ""}`).slice(0, 24)
+          ? sha256(
+              `${row.orgId}:${row.machineId}:${row.kind}:${row.email.toLowerCase()}:${row.providerOrgId ?? ""}`,
+            ).slice(0, 24)
           : null,
     },
     usage: row.usage ?? null,

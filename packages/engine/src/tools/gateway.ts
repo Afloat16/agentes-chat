@@ -1275,7 +1275,7 @@ export function createToolGateway(deps: {
           : null;
       const keysAsk =
         keysAt && UUID.test(keysAt.routineId) && !(await routineKeysAllowed(ctx.db, keysAt, keyNames))
-          ? ((await routineKeysKind(ctx.db, keysAt, tool.name, keyNames)) ?? false)
+          ? (level !== "always" && (await routineKeysKind(ctx.db, keysAt, tool.name, keyNames))) || false
           : null;
       if (keysAsk !== null) approves = true;
       // "Pode fazer merge sem perguntar": a merge in a repository its owner or an admin chose, with no card. An agent

@@ -58,8 +58,9 @@ export async function routineKeysAllowed(
 }
 
 /**
- * What "Sempre nesta rotina" keeps for a routine run's command that asks for these keys, or null when there's no room
- * left among its own actions.
+ * What "Sempre nesta rotina" keeps for a routine run's command that asks for these keys, or null where keeping them
+ * would change nothing (`routineKeysAllowed` would still ask: its creator no longer decides the agent's approvals) or
+ * there's no room left among its own actions.
  */
 export async function routineKeysKind(
   db: Executor,
@@ -68,11 +69,13 @@ export async function routineKeysKind(
   names: readonly string[],
 ) {
   const [row] = await db
-    .select({ ownActions: routines.ownActions })
+    .select({ ownActions: routines.ownActions, creator: routines.createdByUserId, owner: agents.ownerUserId })
     .from(routines)
+    .innerJoin(agents, and(eq(agents.id, routines.agentId), eq(agents.orgId, routines.orgId)))
     .where(and(eq(routines.id, at.routineId), eq(routines.orgId, at.orgId), isNull(routines.deletedAt)));
-  if (!row) return null;
+  if (!row?.creator) return null;
   const actions = names.map(vaultAction);
   if (new Set([...row.ownActions, ...actions]).size > MAX_OWN_ACTIONS) return null;
+  if (!(await decidesAgentApprovals(db, at.orgId, row.creator, row.owner))) return null;
   return { tool, actions, routineId: at.routineId };
 }

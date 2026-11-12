@@ -875,6 +875,11 @@ test("a routine's own run uses the Vault keys its creator allowed, and asks a pe
   expect(v.computer.opened).toEqual([{ use: "env:ACME_API_KEY", value: KEY_VALUE }]);
   // Another key still asks.
   expect((await invoke({ ...withKey, keys: ["ACME_API_KEY", "OTHER_KEY"] }))?.type).toBe("approval");
+  // An agent that always asks asks for every key, listed or not, with no "Sempre nesta rotina" that would change nothing.
+  await f.db.update(schema.agents).set({ approvalsLevel: "always" }).where(eq(schema.agents.id, f.agent.id));
+  const always = await invoke({ ...withKey, why: "The weekly sales export needs the Acme key to read the report." });
+  if (always?.type !== "approval") throw new Error("no approval");
+  expect(always.approval.approveAlways ?? null).toBeNull();
   // An agent that never asks uses any key its creator may use, listed or not.
   await f.db.update(schema.routines).set({ ownActions: [] }).where(eq(schema.routines.id, routine.id));
   await f.db.update(schema.agents).set({ approvalsLevel: "never" }).where(eq(schema.agents.id, f.agent.id));

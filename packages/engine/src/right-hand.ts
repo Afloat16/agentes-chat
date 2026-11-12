@@ -365,6 +365,8 @@ export async function servingPlanFor(
         eq(machineAccounts.orgId, agent.orgId),
         eq(machineAccounts.status, "active"),
         sql`(${machineAccounts.serves} = 'everyone' or ${machineAccounts.createdBy} = ${person})`,
+        // A login made for one agent thinks for that one only (as `setPersonalBrain` keeps it).
+        sql`(${machineAccounts.shared} or not exists (select 1 from ${agents} where ${agents.orgId} = ${machineAccounts.orgId} and ${agents.brainAccountId} = ${machineAccounts.id} and ${agents.archivedAt} is null and ${agents.builtin} is distinct from ${RIGHT_HAND}))`,
       ),
     )
     .orderBy(machineAccounts.createdAt);

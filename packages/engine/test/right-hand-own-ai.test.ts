@@ -174,6 +174,11 @@ test("with no key in the workspace, a person with no AI of their own thinks with
   expect(plan.unavailable).toBeUndefined();
   // Someone with a plan of their own thinks with it first.
   expect(await runIn(bia.id)).toMatchObject({ account: { id: BIAS } });
+  // A login made for one agent that an agent thinks with stays that agent's: the next roomiest answers.
+  await fx.db.update(schema.machineAccounts).set({ shared: false }).where(eq(schema.machineAccounts.id, CAIOS));
+  await fx.db.update(schema.agents).set({ brainAccountId: CAIOS }).where(eq(schema.agents.id, fx.agent.id));
+  const eva = await addMember(fx.db, fx.org.id, "member", "eva");
+  expect(await runIn(eva.id)).toMatchObject({ account: { id: BIAS } });
 });
 
 test("someone else's plan: any that serves everyone, never one its owner keeps to themselves", async () => {

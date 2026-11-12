@@ -404,8 +404,12 @@ export function servesTerms(t: TFunction, a: Pick<PlanAccountInfo, "kind" | "pla
 
 type AccountWindows = NonNullable<PlanAccountUsage["usage"]>;
 
-/** Two logins of one account as one: the newest reading of its windows with both logins' agents, their months summed. */
-function mergeLogin(a: PlanAccountUsage, b: PlanAccountUsage): PlanAccountUsage {
+/**
+ * Two logins of one account as one: the newest reading of its windows with both logins' agents, their months summed.
+ * The viewer's own login leads, so the row keeps their "Quem usa" and actions.
+ */
+function mergeLogin(x: PlanAccountUsage, y: PlanAccountUsage): PlanAccountUsage {
+  const [a, b] = y.mine && !x.mine ? [y, x] : [x, y];
   const newest = (x: AccountWindows | null, y: AccountWindows | null) =>
     x && y ? (Date.parse(y.at) > Date.parse(x.at) ? [y, x] : [x, y]) : [x ?? y, null];
   const [usage, other] = newest(a.usage, b.usage);
