@@ -205,6 +205,8 @@ export const OP_ROUTES: Readonly<Record<MachineOp, "machine" | "agent">> = {
   "phone.pair.status": "machine",
   "phone.pair.cancel": "machine",
   "phone.look": "machine",
+  // The Mac's own pick of iPhones on its Wi-Fi, kept beside its phones' locks.
+  "phone.wifi": "machine",
 };
 
 type AccessRequestOp = Extract<MachineRequest, { op: "access.request" }>;
@@ -661,6 +663,8 @@ async function routeRequest(ctx: HandlerContext, req: MachineRequest, scope: Req
     return ctx.phones.pair(req);
   }
   if (req.op === "phone.look") return { looking: ctx.phones?.look() ?? false } satisfies MachineReplies["phone.look"];
+  if (req.op === "phone.wifi")
+    return ctx.phones ? ctx.phones.wifi(req) : ({ available: [] } satisfies MachineReplies["phone.wifi"]);
   if (isPhoneOp(req)) return handlePhone(ctx, req, scope);
   // Each agent works in its own folder: that folder is its workspace.
   if (req.agent) ctx = { ...ctx, workspaceReal: await agentWorkspace(ctx.workspaceReal, req.agent) };

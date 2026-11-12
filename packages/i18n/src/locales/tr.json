@@ -725,6 +725,7 @@
         "askPersonal": "Başka bir yerde zaten ajan mı kullanıyorsun? Hepsini buraya getiririm.",
         "bring": "İsteği kopyala, {{app}} içine yapıştır ve cevabı getir. Gerisini ben hallederim.",
         "bringFiles": "Uygulamanın dışa aktardığını buraya bırak. Gerisini ben hallederim.",
+        "bringMcp": "Uygulamadaki adımları izle, ajanları buraya kendisi oluşturur. Gelişlerini takip ediyorum.",
         "found": "Ekibini buldum. Herkes burada mı, bir bak.",
         "foundPersonal": "Ajanlarını buldum. Hepsi burada mı, bir bak.",
         "ai": "Son adım. Zaten kullandığın yapay zekayı seç, ekip uyansın.",
@@ -943,18 +944,29 @@
       "title": "Ajanları zaten başka bir uygulamada mı kullanıyorsunuz?",
       "lead": "Talimatları, becerileri, rutinleri ve bellekleriyle birlikte gelirler.",
       "sourcesLabel": "Ajanlar nereden geliyor",
+      "method": {
+        "label": "Nasıl getirilsin",
+        "mcp": "MCP ile bağlan",
+        "prompt": "Yalnızca istek",
+        "file": "Dosyadan"
+      },
       "aiApp": {
-        "title": "Yapay zeka uygulamanızdan (en güvenilir)",
-        "lead": "Yapay zeka uygulamanız, içindeki her ajanı, talimatı, beceriyi ve rutini burada oluşturur.",
-        "connect": "Uygulamayı bu adrese bağlayın:",
+        "lead": "MCP, {{app}} uygulamasının bu çalışma alanına erişmesini sağlar, böylece ajanları burada kendisi oluşturur.",
+        "leadAny": "MCP, yapay zeka uygulamanızın bu çalışma alanına erişmesini sağlar, böylece ajanları burada kendisi oluşturur.",
+        "leadDots": "MCP, dot'unuzun ChatGPT'de eklediğiniz bir eklenti üzerinden bu çalışma alanına erişmesini sağlar, böylece ajanları burada kendisi oluşturur.",
         "howTo": "Uygulama uygulama nasıl bağlanır",
-        "allow": "İzin sayfasında Ajan, rutin ve beceri oluşturma ve düzenleme'yi seçin.",
-        "paste": "Sonra bu isteği uygulamaya yapıştırın:",
-        "prompt": "{{url}} adresine bağlan ve sahip olduğun her ajan, talimat, beceri ve rutin için agentes.chat'te karşılığını oluştur. Hiçbir şey tekrarlanmasın diye önce orada zaten var olanları listele.",
+        "paste": "Bu isteği uygulamaya yapıştırın:",
+        "prompt": "Az önce bağladığın agentes.chat MCP sunucusunu ({{url}}) kullanarak sahip olduklarını agentes.chat'e taşı. Önce orada zaten ne olduğunu görmek ve hiçbir şeyi çoğaltmamak için import_summary'yi çağır. Sonra sahip olduğun her ajan, talimat, beceri ve rutin için create_agent, create_skill ve create_routine ile karşılığını oluştur ve her ajanın hatırlaması gerekenleri add_memory ile kaydet.",
         "promptLabel": "Yapay zeka uygulamanız için istek",
         "copy": "İsteği kopyala",
         "copied": "Şimdi yapay zeka uygulamanıza yapıştırın.",
-        "private": "Yapay zeka uygulamanızdan: bu sunucuda kullanılamıyor, çünkü Claude ve ChatGPT gibi uygulamalar yalnızca herkese açık bir https adresine bağlanır."
+        "waiting": "Ajanların gelmesi bekleniyor…",
+        "arrived_one": "{{count}} ajan geldi",
+        "arrived_other": "{{count}} ajan geldi",
+        "stuck": "Birkaç dakika sonra hâlâ bir şey yok mu? Uygulamayı yeniden bağlayın, {{access}} seçeneğini seçin ve isteği yeniden gönderin.",
+        "private": "MCP ile bağlan bu sunucuda kullanılamıyor, çünkü internetteki uygulamalar yalnızca herkese açık bir https adresine ulaşabilir.",
+        "held": "MCP ile bağlan, çalışma alanının planı etkinleşince kullanılabilir. Şimdilik ajanları bu yolla getirin.",
+        "paused": "Bu çalışma alanı duraklatıldığı sürece MCP ile bağlan kapalı. Şimdilik ajanları bu yolla getirin."
       },
       "otherName": "Başka bir uygulama",
       "agenteschatName": "agentes.chat",
@@ -13506,6 +13518,10 @@
       "no_driverLinux": "Linux bu telefonu açamıyor",
       "os_too_old": "Bu sistem araçlar için çok eski",
       "adb_offline": "Telefon yanıt vermiyor",
+      "wifi_away": "iPhone, Mac'in Wi-Fi ağında değil",
+      "wifi_asleep": "iPhone Wi-Fi üzerinden yanıt vermedi",
+      "tunnel_down": "iPhone ile Wi-Fi bağlantısı koptu",
+      "wifi_untrusted": "iPhone bu Mac'e güvenmiyor",
       "other": "Cihazda bir şey yapılması gerekiyor",
       "iosTooOld": "iOS {{version}} kullanıyor, ajanlar iOS 17 veya daha yenisini gerektirir"
     },
@@ -13530,6 +13546,10 @@
       "no_driverLinux": "Bu telefon için udev kuralları ekleyin",
       "os_too_old": "Telefonu güncelleyin",
       "adb_offline": "Yeniden takın",
+      "wifi_away": "Mac'in Wi-Fi ağına katılın veya kabloyla bağlayın",
+      "wifi_asleep": "iPhone'u uyandırıp kilidini açın",
+      "tunnel_down": "Mac'in yakınında tutun veya kabloyla bağlayın",
+      "wifi_untrusted": "Bir kez kabloyla bağlayıp Güven'e dokunun",
       "other": "Neye ihtiyacı olduğuna bakın"
     },
     "facts": {
@@ -13805,6 +13825,22 @@
         "helper": "{{mac}} test yardımcısını oluşturup iPhone'da başlatır, ilk seferde bu birkaç dakika sürer. iPhone'un kilidini açık ve takılı tutun."
       },
       "ready": "{{name}} ajanlar için hazır.",
+      "wifi": {
+        "list": "{{mac}} Wi-Fi ağındaki iPhone'lar",
+        "also": "Bu Mac'in Wi-Fi ağında da var: {{name}}",
+        "use": "Wi-Fi üzerinden kullan",
+        "hint": "Burada yalnızca bu Mac'e daha önce kabloyla güvenmiş bir iPhone görünür. Mac ona Apple'ın kendi şifreli bağlantısıyla, Xcode'un kullandığı bağlantıyla ulaşır.",
+        "stop": "Wi-Fi üzerinden kullanmayı bırak",
+        "stopTitle": "{{name}} Wi-Fi üzerinden kullanılmasın mı?",
+        "stopText": "Ajanlar artık ona ulaşamaz. Kullanmak için Mac'inde yeniden seçin.",
+        "stopped": "{{name}} artık Wi-Fi üzerinden kullanılmıyor."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} şu an Mac'in Wi-Fi ağında değil. iPhone'u aynı ağa bağlayın veya kabloyla bağlayın.",
+        "wifi_asleep": "{{name}} Wi-Fi üzerinden yanıt vermedi. Uyandırıp kilidini açın ve Mac'in yakınında tutun.",
+        "tunnel_down": "{{name}} ile Wi-Fi bağlantısı koptu. Kilidi açık ve Mac'in yakınında tutun veya kabloyla bağlayın.",
+        "wifi_untrusted": "{{name}} bu Mac'e güvenmiyor. Bir kez kabloyla bağlayın, Güven'e dokunun ve parolasını girin."
+      },
       "path": {
         "settings": "Ayarlar",
         "privacy": "Gizlilik ve Güvenlik",
@@ -14140,9 +14176,13 @@
         "orFile": "Veya <code>{{file}}</code> dosyasına yapıştırın:",
         "pasteConfig": "Yapıştırın:",
         "mode": "Sohbette {{mode}} moduna geçin.",
+        "sendInChat": "Botunuzla sohbette şunu gönderin:",
+        "reload": "Sonra sohbete <code>{{command}}</code> yazın.",
         "loginRun": "Giriş yapmak için <code>{{command}}</code> komutunu çalıştırın.",
         "loginType": "Giriş yapmak için uygulamada <code>{{command}}</code> yazın.",
         "signIn": "Açılan sayfada agentes.chat hesabınızla giriş yapın.",
+        "signInManage": "Açılan sayfada agentes.chat hesabınızla giriş yapın ve {{access}} seçeneğini seçin.",
+        "mention": "Sohbette <code>@</code> yazın ve <code>{{name}}</code> seçeneğini seçin.",
         "signInFirst": "Uygulama, ilk kullandığınızda giriş yapmanızı ister.",
         "token": "Kişisel bir token oluşturup {{placeholder}} yerine koyun.",
         "install": "{{app}} uygulamasına ekle"
