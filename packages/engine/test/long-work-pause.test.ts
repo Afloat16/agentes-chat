@@ -346,7 +346,11 @@ test("a paused slot goes on once a newer reading puts its plan back under the pa
   await drainOutbox(f.db, handlers);
   expect(seen).toHaveLength(0);
   const deps = { db: f.db, pubsub: f.pubsub };
-  const week = (used: number) => reading([{ kind: "seven_day", usedPercent: used, resetsAt }], iso(60_000));
+  const week = (used: number) => ({
+    windows: [{ kind: "seven_day" as const, usedPercent: used, resetsAt }],
+    source: "turn" as const,
+    at: iso(60_000),
+  });
 
   // Still over the line: it keeps waiting for the reset.
   await reportOwnUsage(deps, f.org.id, machineId, { claude_code: week(97) });

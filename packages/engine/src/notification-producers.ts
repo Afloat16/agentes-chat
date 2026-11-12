@@ -796,7 +796,8 @@ async function routineAudience(deps: Pick<NotificationDeps, "db">, orgId: string
       name: routines.name,
       creator: routines.createdByUserId,
       agentId: routines.agentId,
-      draft: sql<boolean>`exists (select 1 from ${schema.dashboardWidgets} w where w.routine_id = ${routines.id} and w.draft)`,
+      // Written out: Drizzle drops a column's table in a one-table select, and `id` would read the widget's.
+      draft: sql<boolean>`exists (select 1 from ${schema.dashboardWidgets} w where w.routine_id = routines.id and w.draft)`,
     })
     .from(routines)
     .where(and(eq(routines.id, routineId), eq(routines.orgId, orgId)));
