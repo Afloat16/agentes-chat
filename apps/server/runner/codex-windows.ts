@@ -1,6 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdirSync, readdirSync } from "node:fs";
-import { homedir } from "node:os";
+import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { accountEnv } from "./accounts";
 import {
@@ -27,10 +26,9 @@ import {
  *   MXC check fails runs no `plan` or `work` turn: it fails with `windows_sandbox`. A `chat` turn needs none: with no
  *   sandbox, Codex refuses every command of its own there, and the turn stops at the first one anyway.
  * - Nothing asks on Windows (`approvalPolicy: never`): the command policy reads POSIX shells, not the PowerShell Codex
- *   runs its commands in, so the sandbox is the whole limit, as for `codex exec` everywhere. So nothing may lift it
- *   either: the person's own rules (`<Codex home>/rules`, where an allow runs a command outside the sandbox, unasked)
- *   are left out (`--ignore-rules`; the app-server can't, so a home with rules runs its turns on exec), and the network
- *   stays off whatever that home's config says.
+ *   runs its commands in, so the sandbox is the whole limit, as for `codex exec` everywhere. Nothing lifts it, on any
+ *   system (`brain-codex.ts`): no one's own Codex rules (an allow there runs a command outside the sandbox, unasked:
+ *   `codexRulesNear`), no network and no folder beyond the agent's, whatever the Codex home's config says.
  */
 
 /** Where npm puts the native Codex for each Windows CPU (`@openai/codex`'s platform packages). */
@@ -129,19 +127,6 @@ export const WINDOWS_SANDBOX_MESSAGE =
  */
 export const codexStdinPrompt = (instructions: string, prompt: string) =>
   instructions.trim() ? `${instructions.trim()}\n\n${prompt}` : prompt;
-
-/** The Codex home a turn runs in: its account's folder (ADR 0041), else the computer's own. */
-export const codexHomeOf = (account?: { home: string }) =>
-  account?.home ?? (envValue(process.env, "CODEX_HOME") || path.join(homedir(), ".codex"));
-
-/** The home has rules of its person's (`rules/*.rules`, which Codex adds when someone picks "don't ask again"). */
-export function codexHomeHasRules(home: string): boolean {
-  try {
-    return readdirSync(path.join(home, "rules")).some((name) => name.endsWith(".rules"));
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Codex's own check of MXC (Codex 0.162.0 and later): `echo MXC_OK` run inside MXC, with the workspace's permissions

@@ -517,7 +517,8 @@ export function executorCommand(
   if (executor === "codex") {
     // `codex exec` (JSONL events) runs unattended with approval_policy=never: the sandbox is the limit, so
     // workspace-write with network (git push, installs) for work, read-only for a plan. No `--full-auto` (removed).
-    // Global options go before `resume`; the prompt comes on stdin (`-`). Always resumed by id, never `--last`.
+    // Nothing in the Codex home lifts it: no one's own rules (an allow there runs a command outside it), no folder
+    // but the agent's. Global options go before `resume`; the prompt comes on stdin (`-`). Always resumed by id.
     const q = (v: string) => shellArg(v, options.platform);
     const c = options.codex;
     return [
@@ -525,9 +526,11 @@ export function executorCommand(
       "exec",
       "--json",
       "--skip-git-repo-check",
+      "--ignore-rules",
       ...(c ? ["-C", q(c.cwd), "--sandbox", c.sandbox] : []),
-      ...(c?.sandbox === "workspace-write" ? ["-c", q("sandbox_workspace_write.network_access=true")] : []),
-      ...(c?.sandbox === "workspace-write" && addDirs.length ? ["-c", q(codexWritableRoots(addDirs))] : []),
+      ...(c?.sandbox === "workspace-write"
+        ? ["-c", q("sandbox_workspace_write.network_access=true"), "-c", q(codexWritableRoots(addDirs))]
+        : []),
       ...(options.extra ?? []),
       ...(c ? ["-o", q(c.lastFile)] : []),
       ...(c?.thread ? ["resume", c.thread] : []),

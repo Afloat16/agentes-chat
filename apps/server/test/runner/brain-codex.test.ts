@@ -15,6 +15,7 @@ import {
   codexContextOverride,
   codexEffort,
   codexProfileOf,
+  codexRulesNear,
   codexThreadKey,
   codexThreadsFile,
   codexTurnArgs,
@@ -74,18 +75,21 @@ test("command line: first turn with instructions, resume by id without them, opt
     instructions: 'Be "brief".\nUse tools.',
     mcp: { command: ["/usr/bin/bun", "/r/runner.js"] },
   });
-  expect(first.slice(0, 7)).toEqual([
+  expect(first.slice(0, 8)).toEqual([
     "exec",
     "--json",
     "--skip-git-repo-check",
+    "--ignore-rules",
     "-C",
     "/w/my app",
     "--sandbox",
     "workspace-write",
   ]);
-  // ADR 0053 §3: never the network (exec can't ask, so the sandbox is the limit), whatever the Codex home's config says.
+  // ADR 0053 §3: never the network (exec can't ask, so the sandbox is the limit), nor a folder but the agent's, nor
+  // anyone's own rules (an allow there runs a command outside the sandbox), whatever the Codex home's config says.
   expect(first[first.indexOf("sandbox_workspace_write.network_access=false") - 1]).toBe("-c");
   expect(first.join(" ")).not.toContain("network_access=true");
+  expect(first[first.indexOf("sandbox_workspace_write.writable_roots=[]") - 1]).toBe("-c");
   expect(first).toContain(`developer_instructions=${JSON.stringify('Be "brief".\nUse tools.')}`);
   expect(first.slice(-5)).toEqual(["-m", "gpt-5.5", "-o", "/r/last.txt", "-"]);
   expect(first).not.toContain("resume");
@@ -103,7 +107,8 @@ test("command line: first turn with instructions, resume by id without them, opt
     profile: "plan",
     writableRoots: ["/w/shared"],
   });
-  expect(plan.slice(5, 7)).toEqual(["--sandbox", "read-only"]);
+  expect(plan.slice(6, 8)).toEqual(["--sandbox", "read-only"]);
+  expect(plan).toContain("--ignore-rules");
   expect(plan.join(" ")).not.toContain("writable_roots");
   expect(plan.join(" ")).not.toContain("network_access");
   expect(codexProfileOf({ permissions: { mode: "plan" } })).toBe("plan");
@@ -144,7 +149,7 @@ test("Windows: the instructions never go on the command line; a plan or work tur
   expect(work.join(" ")).not.toContain("developer_instructions");
   expect(work.join(" ")).not.toContain("Be brief");
   for (const c of CODEX_WINDOWS_CONFIG) expect(work).toContain(c);
-  // The person's own rules left out: an allow there would run a command outside MXC, unasked.
+  // The person's own rules left out (an allow there would run a command outside MXC, unasked), as everywhere.
   expect(work).toContain("--ignore-rules");
   expect(work).toContain("sandbox_workspace_write.network_access=false");
   expect(codexTurnArgs({ ...base, windows: true, profile: "plan" })).toContain('windows.sandbox="mxc"');
@@ -154,7 +159,32 @@ test("Windows: the instructions never go on the command line; a plan or work tur
   // Elsewhere, as before.
   expect(codexTurnArgs(base).join(" ")).toContain("developer_instructions");
   expect(codexTurnArgs(base).join(" ")).not.toContain("windows.sandbox");
-  expect(codexTurnArgs(base)).not.toContain("--ignore-rules");
+  expect(codexTurnArgs(base)).toContain("--ignore-rules");
+});
+
+test("someone's own Codex rules near a turn: its home's, or a trusted project's in its folder or any above it", () => {
+  const root = tempDir("codex-rules-");
+  dirs.push(root);
+  const home = path.join(root, "home");
+  const project = path.join(root, "repos", "app");
+  const work = path.join(project, "src");
+  mkdirSync(path.join(home, "rules"), { recursive: true });
+  mkdirSync(path.join(project, ".codex", "rules"), { recursive: true });
+  mkdirSync(work, { recursive: true });
+  expect(codexRulesNear(home, work)).toBe(false);
+  // Only `*.rules` files are rules.
+  writeFileSync(path.join(home, "rules", "notes.txt"), "");
+  expect(codexRulesNear(home, work)).toBe(false);
+  // A project's, above the turn's folder: Codex reads it only where the home trusts a project (an AI account's
+  // home, the runner's own, trusts none).
+  writeFileSync(path.join(project, ".codex", "rules", "team.rules"), 'prefix_rule(pattern=["npm"])\n');
+  expect(codexRulesNear(home, work)).toBe(false);
+  writeFileSync(path.join(home, "config.toml"), `[projects."${project}"]\ntrust_level = "trusted"\n`);
+  expect(codexRulesNear(home, work)).toBe(true);
+  expect(codexRulesNear(home, path.join(root, "elsewhere"))).toBe(false);
+  // The home's own (Codex writes one when someone picks "don't ask again").
+  writeFileSync(path.join(home, "rules", "default.rules"), 'prefix_rule(pattern=["git", "push"], decision="allow")\n');
+  expect(codexRulesNear(home, path.join(root, "elsewhere"))).toBe(true);
 });
 
 test("Windows: a plan or work turn runs only where MXC holds Codex's commands; a chat turn never asks", async () => {

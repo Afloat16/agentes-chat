@@ -1,6 +1,7 @@
 import { type ChildProcess, execFile, spawn } from "node:child_process";
 import type { EventEmitter } from "node:events";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import { type CommandProfile, shellWords } from "@agenteschat/adapters/command-policy";
@@ -25,8 +26,6 @@ import {
 import { CODEX_ROUTE_OFF } from "./brain-route";
 import {
   CODEX_WINDOWS_CONFIG,
-  codexHomeHasRules,
-  codexHomeOf,
   codexLaunch,
   codexStdinPrompt,
   WINDOWS_SANDBOX_MESSAGE,
@@ -56,7 +55,10 @@ import { agentSecrets } from "./secrets";
  *   network: `plan` is read-only, `work` writes in its folders. `exec` can't
  *   ask for approvals (it forces approval_policy=never), so whatever the
  *   sandbox refuses stays refused; the app-server mode answers Codex's
- *   approvals with the command policy instead (`brain-codex-app.ts`).
+ *   approvals with the command policy instead (`brain-codex-app.ts`). Nothing
+ *   in the Codex home lifts the sandbox: its network and writable roots are
+ *   ours, and no one's own rules apply (`--ignore-rules`; a turn where Codex
+ *   would load some runs on exec, `codexRulesNear`).
  * - Codex picks its thread id (`thread.started`): our session id → that
  *   thread lives in `<runner home>/brain/codex-threads.json`. A runner that
  *   lost it starts a new thread (with the instructions again).
@@ -76,9 +78,8 @@ import { agentSecrets } from "./secrets";
  *   (`xhigh` and `max` are `high`).
  * - Windows (`codex-windows.ts`): the native `codex.exe`, started directly; a
  *   `plan` or `work` turn only where MXC holds its commands (else
- *   `windows_sandbox`), with it named in `-c`, nothing asked and the person's
- *   own rules left out; a thread's instructions lead its first prompt on
- *   stdin, never the command line.
+ *   `windows_sandbox`), with it named in `-c` and nothing asked; a thread's
+ *   instructions lead its first prompt on stdin, never the command line.
  */
 
 /** Same as the engine's `CODEX_MIN_VERSION` (`packages/engine/src/missions.ts`): the release verified on a real machine. */
@@ -225,9 +226,46 @@ export const codexSandbox = (profile: CommandProfile) => (profile === "plan" ? "
 
 /**
  * The workspace sandbox without the network, whatever the Codex home's own config says (a person's `network_access =
- * true` there would reach agents' turns on the computer's own sign-in).
+ * true` there would reach agents' turns on the computer's own sign-in). Its writable roots are ours the same way
+ * (`codexWritableRoots`, an empty list when the agent has no folder besides its own).
  */
 export const CODEX_NO_NETWORK = "sandbox_workspace_write.network_access=false";
+
+/** The Codex home a turn runs in: its account's folder (ADR 0041), else the computer's own. */
+export const codexHomeOf = (account?: { home: string }) =>
+  account?.home ?? (envValue(process.env, "CODEX_HOME") || path.join(homedir(), ".codex"));
+
+/**
+ * Whether Codex would load someone's own rules for a turn in `cwd` (ADR 0053 §3): the home's `rules/*.rules` (Codex
+ * adds one when someone picks "don't ask again"), or a project's `.codex/rules/*.rules` in `cwd` or any folder above
+ * it, where the home trusts a project (Codex reads only a trusted project's; an AI account's home, the runner's own,
+ * trusts none). An allow there runs a matching command outside the sandbox and asks nobody, so such a turn runs on
+ * `codex exec --ignore-rules`: the app-server can't leave them out.
+ */
+export function codexRulesNear(home: string, cwd: string): boolean {
+  const rulesIn = (dir: string) => {
+    try {
+      return readdirSync(dir).some((name) => name.endsWith(".rules"));
+    } catch {
+      return false;
+    }
+  };
+  if (rulesIn(path.join(home, "rules"))) return true;
+  if (!trustsAProject(home)) return false;
+  for (let dir = path.resolve(cwd); ; dir = path.dirname(dir)) {
+    if (rulesIn(path.join(dir, ".codex", "rules"))) return true;
+    if (path.dirname(dir) === dir) return false;
+  }
+}
+
+/** A Codex home whose config trusts a project (`trust_level = "trusted"`), or that can't be read (it may). */
+function trustsAProject(home: string): boolean {
+  try {
+    return /\btrust_level\s*=\s*["']trusted["']/.test(readFileSync(path.join(home, "config.toml"), "utf8"));
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code !== "ENOENT";
+  }
+}
 
 /**
  * Fast mode on a `codex exec` turn. `fast` reaches the provider as `service_tier: "priority"` (codex-cli 0.166.0), and
@@ -425,14 +463,16 @@ export function codexTurnArgs(input: {
   speed?: BrainSpeed;
   /** Protocol 28: `-c model_auto_compact_token_limit` (anything else is left out). */
   contextTokens?: number;
-  /** Protocol 16: the sandbox (default `work`: workspace-write; `plan`: read-only). Never the network. */
+  /**
+   * Protocol 16: the sandbox (default `work`: workspace-write; `plan`: read-only). Never the network, nor a folder
+   * but the agent's (its own and `writableRoots`), whatever the Codex home's config says.
+   */
   profile?: CommandProfile;
   /** Protocol 41: the team's right hand. Read-only, none of the computer's config, rules or features. */
   chat?: boolean;
   /**
    * Windows: the instructions go on stdin (`codexStdinPrompt`), never here; a `plan` or `work` turn names its
-   * sandbox (`CODEX_WINDOWS_CONFIG`) and leaves the person's own rules out (an allow there would run a command
-   * outside it, unasked).
+   * sandbox (`CODEX_WINDOWS_CONFIG`).
    */
   windows?: boolean;
 }): string[] {
@@ -442,23 +482,20 @@ export function codexTurnArgs(input: {
     "exec",
     "--json",
     "--skip-git-repo-check",
+    ...(input.chat ? ["--ignore-user-config"] : []),
+    // No one's own rules on any turn: an allow there runs a command outside the sandbox and asks nobody.
+    "--ignore-rules",
     ...(input.chat
-      ? [
-          "--ignore-user-config",
-          "--ignore-rules",
-          ...CODEX_CHAT_CONFIG.flatMap((c) => ["-c", c]),
-          ...CODEX_CHAT_OFF.flatMap((feature) => ["--disable", feature]),
-        ]
+      ? [...CODEX_CHAT_CONFIG.flatMap((c) => ["-c", c]), ...CODEX_CHAT_OFF.flatMap((feature) => ["--disable", feature])]
       : []),
     "-C",
     input.cwd,
     "--sandbox",
     sandbox,
-    ...(sandbox === "workspace-write" ? ["-c", CODEX_NO_NETWORK] : []),
-    ...(sandbox === "workspace-write" && input.writableRoots?.length
-      ? ["-c", codexWritableRoots(input.writableRoots)]
+    ...(sandbox === "workspace-write"
+      ? ["-c", CODEX_NO_NETWORK, "-c", codexWritableRoots(input.writableRoots ?? [])]
       : []),
-    ...(input.windows && !input.chat ? ["--ignore-rules", ...CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c])] : []),
+    ...(input.windows && !input.chat ? CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c]) : []),
     ...(instructions && !input.thread ? ["-c", `developer_instructions=${JSON.stringify(instructions)}`] : []),
     ...(input.mcp ? codexBridgeOverrides({ runId: input.runId, ...input.mcp }).flatMap((o) => ["-c", o]) : []),
     ...(isBrainEffort(input.effort)
@@ -830,9 +867,9 @@ export async function runCodexTurn(input: CodexTurnInput, opts: CodexTurnOptions
     if (!mxc) return fail("windows_sandbox", WINDOWS_SANDBOX_MESSAGE);
   }
   // A long-lived app-server takes messages mid-turn; exec runs the turns it can't (an older CLI, a failed handshake…).
-  // A `chat` turn's flags exist only for `exec`, and so does leaving the person's own rules out, which a Windows turn
-  // needs when its Codex home has some (an allow there would run a command outside MXC, unasked).
-  const appServer = !windows || !codexHomeHasRules(codexHomeOf(input.account));
+  // A `chat` turn's flags exist only for `exec`, and so does leaving someone's own Codex rules out (`--ignore-rules`),
+  // which a turn needs wherever Codex would load some (an allow there runs a command outside the sandbox, unasked).
+  const appServer = !codexRulesNear(codexHomeOf(input.account), input.cwd);
   const run = (turn: CodexTurnInput, turnOpts: CodexTurnOptions) =>
     turnOpts.app && !turn.chat && appServer
       ? turnOpts.app.turn({ ...turn, version }, turnOpts, () => runCodexExec(turn, turnOpts))

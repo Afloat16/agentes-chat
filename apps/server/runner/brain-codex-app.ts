@@ -88,11 +88,13 @@ import type { Spawn } from "./scope-gate";
  *   `CODEX_APP_MIN_VERSION`, all processes busy, an app-server that fails to
  *   start or to `initialize` (remembered for that binary and version), or one
  *   that dies mid-turn (that turn runs again with exec, resuming the thread).
+ *   A turn where Codex would load someone's own rules runs on exec as well,
+ *   which leaves them out (`codexRulesNear` in `runCodexTurn`): an allow there
+ *   would run a command outside the sandbox and never ask the runner.
  * - Windows (`codex-windows.ts`): MXC named in `-c`, `approvalPolicy: "never"`
  *   (nothing asks: the command policy doesn't read PowerShell, so the sandbox
  *   is the limit, as for exec), and any approval Codex asks all the same is
- *   declined. A Codex home with the person's own rules runs on exec instead,
- *   which leaves them out (`runCodexTurn`).
+ *   declined.
  *
  * The protocol shapes below are the minimum this file reads, copied from
  * `codex app-server generate-ts` of codex-cli 0.163.0 (`ClientRequest`,
@@ -170,7 +172,8 @@ export function codexAtLeast(version: string | undefined, min = CODEX_APP_MIN_VE
 /**
  * The `codex app-server` arguments: our `-c` overrides (a process serves one folder, one set of roots
  * and one permission profile). No network in the sandbox (ADR 0053 §3): a command that needs it asks,
- * and the command policy answers.
+ * and the command policy answers. Its writable roots are ours too (none but the agent's folders),
+ * whatever the Codex home's config says.
  */
 export function codexAppServerArgs(input: {
   /** The process id: our MCP bridge is `mcp --run <id>` (`McpTaskInfo` in the bridge's registry). */
@@ -188,7 +191,8 @@ export function codexAppServerArgs(input: {
     "features.fast_mode=true",
     "-c",
     CODEX_NO_NETWORK,
-    ...(input.writableRoots?.length ? ["-c", codexWritableRoots(input.writableRoots)] : []),
+    "-c",
+    codexWritableRoots(input.writableRoots ?? []),
     ...(input.windows ? CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c]) : []),
     ...codexContextOverride(input.contextTokens),
     ...(input.mcp ? codexBridgeOverrides({ runId: input.processId, ...input.mcp }).flatMap((o) => ["-c", o]) : []),
