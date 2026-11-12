@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { currentQueryCount } from "@agenteschat/db";
+import { and, currentQueryCount, eq, schema } from "@agenteschat/db";
 import {
   createChannel,
   createJobHandlers,
@@ -68,7 +68,7 @@ async function mentionRun(options: { askAgent?: boolean } = {}) {
   expect(p.stages.map((s) => s.stage)).toEqual(["claim", "context", "model#1", "persist", "events"]);
   // Its status line is still picked, in a request of its own beside the run (ADR 0084 §8), counted in neither.
   await until(() => statusPicked.has(p.runId), "the run's status pick");
-  return { beforeModel, total: p.total.queries };
+  return { beforeModel, total: p.total.queries, runId: p.runId };
 }
 
 test("claim → model request stays within 18 statements; a whole mention run within 39", async () => {
@@ -120,4 +120,15 @@ test("with tools, as every production run has them (find_agent among them): with
   // 45 with what already waits on the person, read before the model call above.
   // 46 with the agent's approvals level, read fresh where its tools are listed (ADR 0173).
   expect(run.total).toBeLessThanOrEqual(46);
+});
+
+test("the run keeps its stage profile as a step, for the operator's analytics", async () => {
+  const run = await mentionRun();
+  const { agentRunSteps } = schema;
+  const steps = await f.db
+    .select({ data: agentRunSteps.data })
+    .from(agentRunSteps)
+    .where(and(eq(agentRunSteps.runId, run.runId), eq(agentRunSteps.kind, "context")));
+  const kept = steps.map((s) => s.data.profile).find(Boolean) as { stages: StageTiming[] } | undefined;
+  expect(kept?.stages.map((s) => s.stage)).toEqual(["claim", "context", "model#1", "persist", "events"]);
 });

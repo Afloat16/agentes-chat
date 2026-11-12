@@ -1,4 +1,5 @@
 import {
+  type BrainTurnTimings,
   CODEX_FOLDER_PROTOCOL,
   PERMISSION_TOOL,
   type PlanUsage,
@@ -1029,7 +1030,16 @@ export async function executeRun(deps: EngineDeps, runId: string, options: RunJo
     steerGate.close();
     clearInterval(heartbeat);
     unregisterRunAbort(runId, abort);
-    if (prof.stages.length > 0) deps.onRunProfile?.({ runId, stages: prof.stages, total: prof.total() });
+    if (prof.stages.length > 0) {
+      deps.onRunProfile?.({ runId, stages: prof.stages, total: prof.total() });
+      // Kept with the run, so the operator's work analytics can say where time went (`work-analytics.ts`).
+      if (prof.run) {
+        const brain = prof.brain.length > 0 ? { brain: prof.brain } : {};
+        await addRunStep(deps.db, prof.run, "context", {
+          profile: { stages: prof.stages, total: prof.total(), ...brain },
+        }).catch(() => {});
+      }
+    }
   }
 }
 
@@ -1229,6 +1239,7 @@ async function executeRunInner(
   }
   // status is `running` here.
   prof.mark("claim");
+  prof.run = { id: run.id, orgId: run.orgId };
   steerGate.close = answerNoTurn(deps.pubsub, run.id);
   const claimedAt = Date.now();
   /** Active time across claims (waits excluded): what the long-work safety net counts (ADR 0121 §1). */
@@ -4603,6 +4614,7 @@ async function executeRunInner(
         await kickKeyLine(db, run.orgId, passedLine);
       }
       prof.mark(`model#${run.turns + 1}`);
+      if (result.timings) prof.brain.push(result.timings);
       await deferred;
       // Side effects of the tools a computer brain ran through the bridge (cards, a `react`): for this reply.
       if (turnPlan.kind !== "model") mergeToolEffects(transcript, await takeBridgeEffects(db, run.id));
@@ -5421,6 +5433,8 @@ interface BrainStep {
     Record<"inputTokens" | "outputTokens" | "cacheReadTokens" | "cacheWriteTokens" | "calls" | "maxUncached", number>
   >;
   thinking?: ModelResult["thinking"];
+  /** How the computer started the turn (`done.timings`). */
+  timings?: BrainTurnTimings;
 }
 
 /**
@@ -5473,6 +5487,7 @@ async function thinkOnce(
   let executedCount = 0;
   let taken = false;
   let usage: Extract<BrainEvent, { type: "usage" }> | null = null;
+  let timings: BrainTurnTimings | undefined;
   /** The plan said `limit`: the turn is read on until `deadline`, for the answer the brain may still finish. */
   let limit: { resetsAt?: string; deadline: number } | null = null;
   const limitFailure = (message: string, worked?: boolean) =>
@@ -5548,7 +5563,10 @@ async function thinkOnce(
     } else if (event.type === "steer_read") hooks.onSteerRead?.(event.uuids);
     else if (event.type === "speed_fallback") hooks.onSpeedFallback?.(event.message);
     // `event.session`: computer brains keep a stable session per conversation (`brainSessionId`); nothing to store.
-    else if (event.type === "done") text = event.text;
+    else if (event.type === "done") {
+      text = event.text;
+      timings = event.timings;
+    }
   }
   if (text === null) throw new Error(`The ${brain.kind} brain ended the turn without an answer`);
   if (brain instanceof ModelBrain && brain.last) {
@@ -5576,6 +5594,7 @@ async function thinkOnce(
     stopReason: toolCalls.length > 0 ? "tool_use" : "end_turn",
     toolCalls,
     executedCount,
+    ...(timings ? { timings } : {}),
     model: usage?.model,
     usage: usage
       ? {

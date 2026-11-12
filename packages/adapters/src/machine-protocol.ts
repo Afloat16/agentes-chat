@@ -1797,6 +1797,16 @@ export interface CursorModelInfo {
 export const CURSOR_MODEL_LIMITS = { models: 60, id: 80, label: 80 } as const;
 
 /**
+ * How a brain turn started on the runner (Claude Code; an older runner leaves it out): on a process already open
+ * (`warm`), how long a new one took to say it was ready (`initMs`), and the first event after the turn began.
+ */
+export interface BrainTurnTimings {
+  warm: boolean;
+  initMs?: number;
+  firstEventMs?: number;
+}
+
+/**
  * One event of a brain turn on the wire (`brain.event`), the same shape as
  * the engine's `BrainEvent` (packages/engine/src/brains/types.ts; this file
  * imports nothing).
@@ -1824,7 +1834,7 @@ export type WireBrainEvent =
       maxUncached?: number;
     }
   | { type: "limit"; resetsAt?: string }
-  | { type: "done"; text: string; session?: { id: string } }
+  | { type: "done"; text: string; session?: { id: string }; timings?: BrainTurnTimings }
   /**
    * `worked`: on a `plan_limit`, whether the turn used any tool before it was cut (an older runner leaves it out:
    * the engine counts that as worked).
@@ -3204,7 +3214,24 @@ export function parseBrainEvent(v: unknown): WireBrainEvent | null {
     case "done": {
       if (!isString(v.text)) return null;
       const session = isObject(v.session) && isString(v.session.id) ? { id: v.session.id.slice(0, 64) } : undefined;
-      return { type: "done", text: v.text.slice(0, BRAIN_LIMITS.doneText), ...(session ? { session } : {}) };
+      const ms = (x: unknown) => (finite(x) !== undefined && (x as number) >= 0 ? Math.round(x as number) : undefined);
+      const t = isObject(v.timings) && typeof v.timings.warm === "boolean" ? v.timings : null;
+      const initMs = ms(t?.initMs);
+      const firstEventMs = ms(t?.firstEventMs);
+      return {
+        type: "done",
+        text: v.text.slice(0, BRAIN_LIMITS.doneText),
+        ...(session ? { session } : {}),
+        ...(t
+          ? {
+              timings: {
+                warm: t.warm as boolean,
+                ...(initMs !== undefined ? { initMs } : {}),
+                ...(firstEventMs !== undefined ? { firstEventMs } : {}),
+              },
+            }
+          : {}),
+      };
     }
     case "error":
       if (!isString(v.code)) return null;
