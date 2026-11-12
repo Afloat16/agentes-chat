@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import { ApiError, NetworkError } from "../api/http";
 import type { AuthConfig, OrgStanding } from "../api/types";
+import { widgetWaitOf, widgetWaitText } from "../dashboards/lib";
 import { billingHoldOf } from "./billing";
 import { MAX_UPLOAD_MB } from "./files";
 import { joinNames, lowerFirst } from "./format";
@@ -304,6 +305,8 @@ const KNOWN = {
   "widget.not_agent_message": "dashboards.errors.notAgentMessage",
   "widget.prompt_required": "dashboards.errors.promptRequired",
   "widget.not_tested": "dashboards.errors.notTested",
+  // Worded with its wait by `knownErrorText` (`widgetWaitText`); this line only names its family.
+  "widget.waiting": "widgets.wait.planUnknown",
   // The Vault (ADR 0144): what a person typed, who may see or use an item, an import, a card's "Save to the Vault".
   "vault.invalid": "errors.vault.invalid",
   "vault.not_found": "errors.vault.notFound",
@@ -719,6 +722,12 @@ export function knownErrorText(t: TFunction, error: unknown, locale = "en"): str
   // `provider`: the provider whose key is missing, when the server could name it.
   if (error.code === "missing_credential" && typeof error.params?.provider === "string")
     return t("agentPage.activity.errors.missing_credential", error.params);
+  // A widget's run waits (Update now, Resolve): what for, and when it picks up, on the reader's clock.
+  if (error.code === "widget.waiting") {
+    const wait = widgetWaitOf(error.params);
+    const name = typeof error.params?.agentName === "string" ? error.params.agentName : "";
+    return wait ? widgetWaitText(t, locale, wait, name) : t("widgets.wait.planUnknown", { name });
+  }
   // Own keys only: a code from an address (`/login?error=toString`) names no line of Object's.
   const key = Object.hasOwn(KNOWN, error.code) ? KNOWN[error.code as keyof typeof KNOWN] : undefined;
   if (key) return t(key, { max: MAX_UPLOAD_MB, ...error.params });

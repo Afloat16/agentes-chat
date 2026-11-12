@@ -34,7 +34,7 @@ import {
   textOf,
 } from "@agenteschat/providers";
 import { autoPlanModel, droppedPlanModel, ownLimitsModel, planModel, planOf } from "@agenteschat/providers/plans";
-import { extraUsageLeft, PLAN_NOTICE, PLAN_PAUSE, planBinding } from "@agenteschat/ui/plan-state";
+import { PLAN_NOTICE, PLAN_PAUSE } from "@agenteschat/ui/plan-state";
 import { pendingConnectors } from "./access";
 import { linkRunActions, publishMessageActions } from "./agent-actions";
 import { withTimeout } from "./agent-media";
@@ -176,6 +176,7 @@ import {
 } from "./continuation";
 import { modelInfoFor } from "./credentials";
 import { sha256 } from "./crypto";
+import { widgetRunWaitChanged } from "./dashboards/refresh-fire";
 import { publishDelivery } from "./delivery";
 import { isAgentOnlyDm } from "./dms";
 import {
@@ -347,15 +348,18 @@ import {
   LINE_SAFETY_MS,
   ladderDelay,
   lineHeadLooks,
+  longWorkHasRoom,
   nextMonthStart,
   overrideHolds,
   type PlanReadingRef,
   planName,
+  planReading,
   REPARK_STEADY_MS,
   RESUME_AFTER_MS,
   RESUME_GAP_MS,
   retimeLine,
   routineRunByHand,
+  routineRunRefreshesWidget,
   UNKNOWN_RESET_NOTICE_MS,
   USAGE_WAIT_CODES,
   USAGE_WINDOW_WORDS,
@@ -656,8 +660,8 @@ export interface Transcript {
   usageWait?: { since: number; step: number; noticed?: boolean; parkedAt?: number; resetsAt?: string };
   /**
    * The provider failed every attempt with a retryable error (I5): the run is parked on `OUTAGE_PARK`'s ladder
-   * (`waitId`: the job that resumes it) since `since` (ms), `n` times so far. Cleared by the next model call that
-   * answers. On a rate limit it also waits in its key's line (`key-line.ts`).
+   * (`waitId`: the job that resumes it, at `at`) since `since` (ms), `n` times so far. Cleared by the next model call
+   * that answers. On a rate limit it also waits in its key's line (`key-line.ts`).
    */
   outage?: { since: number; n: number; waitId: string; noteId?: string } & KeyLinePlace;
   /**
@@ -1444,6 +1448,10 @@ async function executeRunInner(
     await publishChannelEvent(deps.pubsub, event("running"));
     await announceAgentStatus(deps.pubsub, run.orgId, run.agentId).catch(() => {});
     await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+    // A widget says it waits for room once that wait is `COMPUTER_QUEUE_NOTE_MS` old: it hears the turn started.
+    const since = transcript?.roomWaitSince;
+    if (since !== undefined && Date.now() - since >= COMPUTER_QUEUE_NOTE_MS)
+      await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
   };
   /** Writes that don't need to finish before the model call (steps, usage log); flushed after it. */
   let deferred: Promise<unknown> = Promise.resolve();
@@ -2355,7 +2363,7 @@ async function executeRunInner(
     const minutes = line && people ? Math.min(step, KEY_LINE_PERSON_MINUTES) : step;
     const at = Date.now() + minutes * 60_000;
     const noteId = t.outage?.noteId;
-    t.outage = { since, n: n + 1, waitId, ...(noteId ? { noteId } : {}), ...(line ? { line, at, people } : {}) };
+    t.outage = { since, n: n + 1, waitId, at, ...(noteId ? { noteId } : {}), ...(line ? { line, people } : {}) };
     // The computer failing on its own waits on the same ladder as a wait for that computer: the apps say it waits for
     // its computer, and the computer coming back resumes it (`resumeRunsWaitingForMachine`).
     const own = error instanceof BrainFailure && computersOwn(error, plan.account) ? error.code : null;
@@ -2406,15 +2414,17 @@ async function executeRunInner(
     const outage = machineId ? undefined : true;
     const computer = machineId ? "away" : undefined;
     await publishChannelEvent(deps.pubsub, event("waiting_input", undefined, outage, computer));
+    await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
     await finished("waiting_input", undefined, outage, computer);
     return true;
   };
 
-  // Back from waiting for the computer: it is tried again below.
+  // Back from waiting for the computer: it is tried again below. Asking for room again ends no wait anyone reads.
   const backFromComputerWait = Boolean(transcript.waitingForBrain);
   if (backFromComputerWait) {
     delete transcript.waitingForBrain;
     await saveTranscript(db, transcript);
+    if (!askingForRoom) await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
   }
   // Resuming after approvals: run what was approved, report what was refused.
   if (transcript.pending) {
@@ -3255,8 +3265,10 @@ async function executeRunInner(
     if (!moved) throw new PermanentJobError("run changed state while executing");
     // A routine's run waits for its own computer, never the API (ADR 0053 §6.4): its people hear it once.
     // Waiting for room is no outage: it ends when a turn there does, and the routine's ledger tells.
-    if (run.background && !busy && quietUntil === null)
+    if (run.background && !busy && quietUntil === null) {
       await routineRunWaitingForComputer({ db, pubsub: deps.pubsub }, run, machineId).catch(() => {});
+      await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    }
     if (note) {
       const [view] = await withWikiLinks(db, run.orgId, [messageView(note)]);
       if (view) await publishMessageCreated(deps.pubsub, view);
@@ -3273,8 +3285,12 @@ async function executeRunInner(
         maxAttempts: 4,
       });
     }
-    // Only a run joining the line changes it: the head asking again and refused again changes nothing.
-    if (busy && !stillBusy) await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+    // Only a run joining the line changes it, and its widget's wait (`since`, said once 10 minutes old): the head
+    // asking again and refused again changes nothing.
+    if (busy && !stillBusy) {
+      await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+      await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    }
     const computer = busy ? ("queued" as const) : ("away" as const);
     await publishChannelEvent(deps.pubsub, event("waiting_input", undefined, undefined, computer));
     await finished("waiting_input", undefined, undefined, computer);
@@ -3772,8 +3788,10 @@ async function executeRunInner(
       if (view) await publishMessageCreated(deps.pubsub, view);
     }
     if (joined) await publishMessageCreated(deps.pubsub, messageView(joined));
-    // A routine's run says nothing in the conversation: its people hear it once per outage instead.
+    // A routine's run says nothing in the conversation: its people hear it once per outage instead, and a widget's
+    // refresh says on its widget what it waits for.
     if (firstPark && !budget) await routineRunWaitingForPlan({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
     if (tellOwner) {
       await notifyPlanResetUnknown(
         { db, pubsub: deps.pubsub },
@@ -3826,18 +3844,13 @@ async function executeRunInner(
         : machineId
           ? await storedPlanUsage(db, run.orgId, machineId, plan.kind, plan.account?.id).catch(() => null)
           : null;
-    const top = planBinding(usage, { model: plan.model ?? null });
-    if (!top) return null;
-    return {
-      source: "plan" as const,
-      used: top.used,
-      window: top.kind,
-      ...(top.resetsAt ? { resetsAt: top.resetsAt } : {}),
-      extra: agent.brainExtraUsage && extraUsageLeft(usage),
-    };
+    return planReading(usage, plan.model ?? null, agent.brainExtraUsage);
   };
-  /** A routine's run started by Rodar agora isn't long by kind (a person just asked for it): read once. */
-  let byHand: boolean | null = null;
+  /**
+   * A routine's run started by Rodar agora (a person just asked for it) or one that refreshes a widget isn't long by
+   * kind: read once.
+   */
+  let notLongByKind: boolean | null = null;
   /**
    * A mission's work is long by kind; a person's message in its thread starts a quick reply (it roots in that
    * person), not more of the mission's work: read once.
@@ -3895,11 +3908,15 @@ async function executeRunInner(
       const now = await usageReading();
       return now && continuesPastPlan(now) ? now : null;
     }
-    if (run.background && byHand === null) byHand = await routineRunByHand(db, run.id).catch(() => false);
+    if (run.background && notLongByKind === null) {
+      notLongByKind =
+        (await routineRunByHand(db, run.id).catch(() => false)) ||
+        (await routineRunRefreshesWidget(db, run.id).catch(() => false));
+    }
     if (plan.missionId && missionWork === null)
       missionWork = !(await personOfMessage(db, run.orgId, run.triggerMessageId).catch(() => null));
     const long = isLongWork({
-      routine: run.background && !byHand,
+      routine: run.background && !notLongByKind,
       // Background work (ADR 0121) is long work by kind.
       mission: Boolean(missionWork) || Boolean(run.workId),
       pausedBefore: Boolean(t.usagePause?.paused),
@@ -3909,8 +3926,7 @@ async function executeRunInner(
     });
     if (!long) return null;
     const now = await usageReading();
-    if (!now || now.used < PLAN_PAUSE || ("extra" in now && now.extra)) return null;
-    return now;
+    return longWorkHasRoom(now) ? null : now;
   };
   // From 90% the agent reads where its plan stands, every turn, so it can tell people a long task may pause.
   if (plan.kind !== "model") {

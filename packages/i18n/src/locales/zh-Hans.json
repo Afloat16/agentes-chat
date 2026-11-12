@@ -16908,6 +16908,15 @@
       "timeout": "更新耗时太长。",
       "invalid_data": "{{name}} 无法把数据做成这种形式。"
     },
+    "wait": {
+      "plan": "正在等待 {{name}} 的套餐在 {{when}} 重置",
+      "planUnknown": "正在等待 {{name}} 的套餐重置",
+      "budget": "正在等待 {{name}} 的预算在 {{when}} 更新",
+      "budgetSoon": "正在短暂等待 {{name}} 的预算",
+      "computer": "正在等待 {{name}} 的电脑",
+      "busy": "正在等待 {{name}} 的电脑空出位置",
+      "provider": "正在等待 {{name}} 的 AI 服务商，将于 {{when}} 重试"
+    },
     "menu": {
       "label": "更多",
       "open": "打开",

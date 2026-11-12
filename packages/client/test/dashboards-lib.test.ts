@@ -1,8 +1,11 @@
 import { describe, expect, test } from "bun:test";
+import { resources } from "@agenteschat/i18n";
 import { QueryClient } from "@tanstack/react-query";
+import i18next from "i18next";
 import {
   applyDashboardEvent,
   boardItems,
+  busyWidgets,
   createHttpApi,
   type Dashboard,
   type DashboardEditPolicy,
@@ -19,12 +22,19 @@ import {
   resizeItem,
   roleSeesBoard,
   toggleEditRole,
+  WIDGET_LINE_NOTE_MS,
   type Widget,
+  widgetCardStatus,
   widgetCostLine,
   widgetFailureKey,
   widgetStepWords,
+  widgetWaitFix,
+  widgetWaiting,
+  widgetWaitOf,
+  widgetWaitText,
   withEditRoles,
 } from "../src/index";
+import { usageWhen } from "../src/lib/plan-usage";
 
 const summary = (over: Partial<DashboardSummary>): DashboardSummary => ({
   id: "d",
@@ -66,6 +76,7 @@ const widget = (id: string, position: number, w: 1 | 2 = 1): Widget => ({
   alert: { enabled: false, condition: "" },
   status: "ok",
   failure: null,
+  wait: null,
   refreshedAt: null,
   nextRunAt: null,
   routineId: null,
@@ -366,5 +377,129 @@ describe("a build's step line", () => {
     expect(widgetStepWords(t, step("web_search"))).toBe("Chat.activity.searchingWeb");
     expect(widgetStepWords(t, step("permission_prompt"))).toBe("Chat.activity.runningCommandAny");
     expect(widgetStepWords(t, step("update_widget"))).toBe("dashboards.newWidget.finishing");
+  });
+});
+
+describe("a refresh that waits (ADR 0135 §6)", () => {
+  const resetsAt = "2026-11-12T16:00:00.000Z";
+  const now = new Date("2026-11-12T12:00:00.000Z");
+  const base = { source: null, resetsAt: null, scope: null, model: null, since: null, canContinue: false } as const;
+  const plan = { ...base, code: "plan_limit", source: "plan", resetsAt } as const;
+  const busy = (wait: Widget["wait"]): Widget => ({ ...widget("w", 0), status: "updating", wait });
+  const t = (() => {
+    const instance = i18next.createInstance();
+    void instance.init({ lng: "en", fallbackLng: "en", resources, initAsync: false });
+    return instance.t;
+  })();
+
+  test("it holds while its reset is ahead or unknown, and its card stands still meanwhile", () => {
+    expect(widgetWaiting(busy(plan), now.getTime())).toEqual(plan);
+    expect(widgetCardStatus(busy(plan), now.getTime())).toBe("ok");
+    expect(widgetWaiting(busy({ ...plan, resetsAt: null }), now.getTime())?.code).toBe("plan_limit");
+    // Past its reset it is about to go on: at work again.
+    expect(widgetWaiting(busy(plan), Date.parse(resetsAt) + 1)).toBeNull();
+    expect(widgetCardStatus(busy(plan), Date.parse(resetsAt) + 1)).toBe("updating");
+    // Done, or nothing waits: no wait.
+    expect(widgetWaiting({ ...busy(plan), status: "ok" }, now.getTime())).toBeNull();
+    expect(widgetWaiting(busy(null), now.getTime())).toBeNull();
+    expect(widgetCardStatus(busy(null), now.getTime())).toBe("updating");
+  });
+
+  test("room on its computer is a wait only once it lasted as long as the chat's note waits", () => {
+    const since = (ms: number) =>
+      ({ ...base, code: "busy", since: new Date(now.getTime() - ms).toISOString() }) as const;
+    expect(widgetWaiting(busy(since(WIDGET_LINE_NOTE_MS - 1)), now.getTime())).toBeNull();
+    expect(widgetWaiting(busy(since(WIDGET_LINE_NOTE_MS)), now.getTime())?.code).toBe("busy");
+    expect(widgetWaiting(busy({ ...base, code: "busy" }), now.getTime())).toBeNull();
+  });
+
+  test("a waiting widget isn't busy: nothing polls it while it waits", () => {
+    const waiting = { ...busy(plan), id: "a" };
+    const working = { ...busy(null), id: "b" };
+    const inLine = { ...busy({ ...base, code: "busy", since: now.toISOString() }), id: "c" };
+    expect(busyWidgets([waiting, working, inLine], now.getTime()).map((w) => w.id)).toEqual(["b", "c"]);
+    expect(busyWidgets([waiting], Date.parse(resetsAt) + 1).map((w) => w.id)).toEqual(["a"]);
+  });
+
+  test("a wait as the server sends it, read safely", () => {
+    expect(widgetWaitOf({ code: "budget", source: "budget", resetsAt, agentName: "Theo" })).toEqual({
+      ...base,
+      code: "budget",
+      source: "budget",
+      resetsAt,
+    });
+    expect(widgetWaitOf({ code: "plan_limit", source: "plan", scope: "region", model: "DeepSeek V4 Pro" })).toEqual({
+      ...base,
+      code: "plan_limit",
+      source: "plan",
+      scope: "region",
+      model: "DeepSeek V4 Pro",
+    });
+    expect(widgetWaitOf({ code: "outage", resetsAt, scope: "nonsense", canContinue: "yes" })).toEqual({
+      ...base,
+      code: "outage",
+      resetsAt,
+    });
+    expect(widgetWaitOf({ code: "work_queue" })).toBeNull();
+    expect(widgetWaitOf(null)).toBeNull();
+  });
+
+  test("in the reader's words: what it waits for, and when it picks up", () => {
+    const when = usageWhen(t, "en", resetsAt, now);
+    expect(widgetWaitText(t, "en", plan, "Theo", now)).toBe(`Waiting for Theo's plan to reset ${when}`);
+    expect(widgetWaitText(t, "en", { ...plan, code: "usage_pause", source: "budget" }, "Theo", now)).toBe(
+      `Waiting for Theo's budget to renew ${when}`,
+    );
+    expect(widgetWaitText(t, "en", { ...plan, resetsAt: null }, "Theo", now)).toBe("Waiting for Theo's plan to reset");
+    // A budget with no reset is other runs holding it, not the month.
+    expect(widgetWaitText(t, "en", { ...base, code: "budget", source: "budget" }, "Theo", now)).toBe(
+      "Waiting a moment for Theo's budget",
+    );
+    expect(widgetWaitText(t, "en", { ...base, code: "computer" }, "Theo", now)).toBe("Waiting for Theo's computer");
+    expect(widgetWaitText(t, "en", { ...base, code: "busy" }, "Theo", now)).toBe("Waiting for room on Theo's computer");
+    expect(widgetWaitText(t, "en", { ...base, code: "outage", resetsAt }, "Theo", now)).toBe(
+      `Waiting for Theo's AI provider, next try ${when}`,
+    );
+  });
+
+  test("a limit of its model alone reads as that model's, as the brain card says it, never as the plan's", () => {
+    const own = (scope: "model" | "region" | "off" | "inactive", reset: string | null = null) => ({
+      ...plan,
+      scope,
+      model: "DeepSeek V4 Pro",
+      resetsAt: reset,
+    });
+    expect(widgetWaitText(t, "en", own("region"), "Theo", now)).toBe(
+      "DeepSeek V4 Pro needs the Global region turned on in OpenCode (Settings\u00a0›\u00a0Privacy). The plan's other models keep working.",
+    );
+    expect(widgetWaitText(t, "en", own("off"), "Theo", now)).toStartWith(
+      "OpenCode refused DeepSeek V4 Pro with this key",
+    );
+    expect(widgetWaitText(t, "en", own("inactive"), "Theo", now)).toStartWith("OpenCode Go isn't active");
+    expect(widgetWaitText(t, "en", own("model", resetsAt), "Theo", now)).toBe(
+      `DeepSeek V4 Pro hit its own limit on this plan and resets ${usageWhen(t, "en", resetsAt, now)}. The plan's other models keep working.`,
+    );
+    expect(widgetWaitText(t, "en", own("model"), "Theo", now)).toBe(
+      "DeepSeek V4 Pro hit its own limit on this plan. The plan's other models keep working.",
+    );
+  });
+
+  test("its way out, for who may take it: a budget for admins, a model for its owner and admins, its computer", () => {
+    const admin = { admin: true, owner: false };
+    const owner = { admin: false, owner: true };
+    const member = { admin: false, owner: false };
+    const month = { ...base, code: "budget", source: "budget", resetsAt } as const;
+    expect(widgetWaitFix(month, admin)).toBe("raiseBudget");
+    expect(widgetWaitFix(month, owner)).toBeNull();
+    // Other runs hold it for a moment: no raise needed.
+    expect(widgetWaitFix({ ...month, resetsAt: null }, admin)).toBeNull();
+    const region = { ...plan, scope: "region", model: "DeepSeek V4 Pro" } as const;
+    expect(widgetWaitFix(region, owner)).toBe("changeModel");
+    expect(widgetWaitFix(region, member)).toBeNull();
+    // Only time ends the plan's own limit.
+    expect(widgetWaitFix(plan, admin)).toBeNull();
+    expect(widgetWaitFix({ ...base, code: "computer" }, member)).toBe("openComputer");
+    expect(widgetWaitFix({ ...base, code: "busy" }, member)).toBe("openComputer");
+    expect(widgetWaitFix({ ...base, code: "outage", resetsAt }, admin)).toBeNull();
   });
 });
