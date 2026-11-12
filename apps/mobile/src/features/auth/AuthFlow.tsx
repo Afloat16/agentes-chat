@@ -1,4 +1,4 @@
-import { invitationQuery, type SignInOptions, useApi, useAuthConfig } from "@agenteschat/client";
+import { invitationQuery, type SignInOptions, type SignInProvider, useApi, useAuthConfig } from "@agenteschat/client";
 import { type HumanAction, humanCheckHeaders, withHumanCheck } from "@agenteschat/client/lib/human-check";
 import {
   emailTypoFix,
