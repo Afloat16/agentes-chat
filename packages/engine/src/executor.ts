@@ -321,6 +321,7 @@ import {
 import { truncateOutput } from "./sandbox";
 import { secretResult } from "./secrets";
 import { enabledSkills } from "./skills";
+import { type SpillRecord, spillMayHelp, spillPlan, spillTarget } from "./spill";
 import { billingHold, standingErrorDetail, standingRefusal } from "./standing";
 import { personAskedLately, rerootRun, runStretchOf } from "./stretch";
 import { isStuck, noteStep, STUCK_END_NOTE, STUCK_END_REPLY_NOTE, STUCK_NOTE, type StuckState } from "./stuck";
@@ -685,6 +686,8 @@ export interface Transcript {
   roomAsked?: boolean;
   /** When this run last sent a turn to its computer: agents' turns there are spaced (`roomGate`). */
   roomAsk?: { machineId: string; at: number };
+  /** Its agent's computer was full: it thinks on another computer of the workspace, in a session of its own there. */
+  spill?: SpillRecord;
   /** Caught up after a long wait on its plan or budget (`catch-up.ts`): since when it paused; whether it may pass. */
   catchUp?: { since: number; mayPass?: true };
   /** The check before that catch-up (`catch-up-triage.ts`): its last verdict, reused while nothing new came in. */
@@ -1068,6 +1071,8 @@ async function executeRunInner(
           string | null
         >`coalesce(${agentRuns.transcript}->'waitingForBrain'->>'waitId', ${agentRuns.transcript}->'outage'->>'waitId')`,
         code: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'code'`,
+        people: sql<boolean | null>`(${agentRuns.transcript}->>'roomPeople')::boolean`,
+        spilled: sql<boolean>`${agentRuns.transcript} ? 'spill'`,
         source: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'source'`,
         cut: sql<string | null>`${agentRuns.transcript}->'interruptedTurn'->>'cause'`,
         orgId: agentRuns.orgId,
@@ -1148,7 +1153,14 @@ async function executeRunInner(
     // claiming.
     if (askingForRoom && row.machineId) {
       const head = await roomHead(db, row.machineId);
-      if (head && head.id !== runId) {
+      // A person's turn behind others looks for another computer itself (spill-over) when one may take it.
+      const spill =
+        row.people === true &&
+        !row.spilled &&
+        !row.workId &&
+        !row.background &&
+        (await spillMayHelp(db, row.orgId, row.machineId).catch(() => false));
+      if (head && head.id !== runId && !spill) {
         const at = Date.now() + COMPUTER_BUSY_RETRY_MS;
         await enqueue(db, {
           orgId: row.orgId,
@@ -2770,6 +2782,20 @@ async function executeRunInner(
       },
     ).catch(() => {});
   }
+  // A run that spilled over thinks on in its session there; that computer gone, its own takes it in a fresh session
+  // (the one there isn't on its disk), the conversation so far in its first prompt.
+  const spilled = transcript.spill;
+  const homeSession = brainPlan.kind !== "model" ? brainPlan.session : undefined;
+  if (spilled && homeSession) {
+    const there = await spillPlan(deps, agent, brainPlan, spilled.to, homeSession);
+    if (there) brainPlan = there;
+    else {
+      const fresh = Bun.randomUUIDv7();
+      await db.update(agentRuns).set({ brainSessionId: fresh }).where(eq(agentRuns.id, run.id));
+      brainPlan = { ...brainPlan, session: { ...homeSession, id: fresh, resume: false } };
+      delete transcript.spill;
+    }
+  }
   // A mission's main session can't be replaced mid-mission: its first turn after an edit reads the settings again.
   if (brainPlan.settingsChanged && needsContext) {
     transcript.system = [
@@ -4161,14 +4187,46 @@ async function executeRunInner(
         transcript.roomAsked ??=
           !personWaiting && (run.background || (await personAskedLately(db, run.orgId, runStretchOf(run))));
         if (options.lineSince) transcript.roomOrderSince ??= options.lineSince;
+        const spillOver = async () => {
+          const personId = accountablePerson(
+            await runAuthority(db, { ...run, transcript: transcript as unknown as Record<string, unknown> }),
+          );
+          // An agent with repositories works in its checkouts, on its own computer.
+          if (!personId || (await agentRepositoryList(db, run.orgId, agent.id)).length > 0) return null;
+          const session = { id: Bun.randomUUIDv7() };
+          const found = await spillTarget(deps, agent, plan, personId, session);
+          if (found) await db.update(agentRuns).set({ brainSessionId: session.id }).where(eq(agentRuns.id, run.id));
+          return found;
+        };
+        const place = {
+          rank: personWaiting ? 0 : transcript.roomAsked ? 1 : 2,
+          since: transcript.roomOrderSince ?? transcript.roomWaitSince ?? Date.now(),
+        } as const;
         // The right hand is how people find out what the line is doing: it never waits behind it. Its turn is
         // locked down, so the runner lets it in on a lower floor (`admit`).
-        const behind = isRightHand(agent)
-          ? null
-          : await roomGate(db, run, roomMachine, {
-              rank: personWaiting ? 0 : transcript.roomAsked ? 1 : 2,
-              since: transcript.roomOrderSince ?? transcript.roomWaitSince ?? Date.now(),
-            });
+        let behind = isRightHand(agent) ? null : await roomGate(db, run, roomMachine, place);
+        let askOn = roomMachine;
+        // Spill-over: behind others, or refused for room before, a person's first turn may think on another computer.
+        const to =
+          (behind || transcript.roomWaitSince !== undefined) &&
+          personWaiting &&
+          run.turns === 0 &&
+          !run.workId &&
+          !run.background &&
+          !plan.missionId &&
+          !isRightHand(agent) &&
+          !transcript.spill
+            ? await spillOver()
+            : null;
+        if (to) {
+          plan = to.plan;
+          askOn = to.machineId;
+          transcript.spill = { from: roomMachine, to: to.machineId };
+          behind = await roomGate(db, run, to.machineId, place);
+          // Its place in its own computer's line is free: the next one there asks now.
+          await kickRoomQueue(db, roomMachine).catch(() => {});
+          later(() => addRunStep(db, run, "context", { spill: transcript.spill }));
+        }
         if (behind) {
           const handled = await brainUnavailable({
             code: "busy",
@@ -4178,8 +4236,8 @@ async function executeRunInner(
           });
           if (handled === "waited" || handled === "failed") return;
         } else {
-          transcript.roomAsk = { machineId: roomMachine, at: Date.now() };
-          admitted = { machineId: roomMachine, fromLine: transcript.roomWaitSince !== undefined };
+          transcript.roomAsk = { machineId: askOn, at: Date.now() };
+          admitted = { machineId: askOn, fromLine: transcript.roomWaitSince !== undefined };
         }
       }
       const turn = run.turns + 1;
