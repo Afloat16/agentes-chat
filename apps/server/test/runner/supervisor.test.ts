@@ -4274,6 +4274,8 @@ test.if(posix)("a turn dropped on purpose ends now: its CLI isn't taken for cras
   expect(await errorCode(() => run)).toBe("dropped");
   await sleep(100);
   stop();
+  // The fake CLI may still be writing its last line when the turn ends: read the log once every line is whole.
+  await waitFor(() => readFileSync(h.log, "utf8").endsWith("\n"));
   const started = readFileSync(h.log, "utf8")
     .trim()
     .split("\n")
