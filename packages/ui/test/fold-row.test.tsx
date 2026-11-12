@@ -55,7 +55,7 @@ describe("FoldRow", () => {
     expect(body(".ac-foldrow__head .ac-chip")).toContain("white-space: normal;");
     expect(body(".ac-foldrow__head .ac-chip__text")).toBe("  overflow: visible;");
     // On a phone the plated action takes its own line, so no bare one is left alone on a third.
-    expect(css).toContain("  .ac-foldrow__more > .ac-acts > .ac-btn--primary {\n    flex: 1 0 100%;\n  }");
+    expect(css).toContain("  .ac-foldrow__more > .ac-acts > :is(.ac-btn--primary) {\n    flex: 1 0 100%;\n  }");
     const moving = css.split(".ac-foldrow__fold {\n    transition:")[0] ?? "";
     expect(moving.slice(moving.lastIndexOf("@media"))).toStartWith("@media (prefers-reduced-motion: no-preference) {");
   });
