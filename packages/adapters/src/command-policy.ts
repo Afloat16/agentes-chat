@@ -370,7 +370,12 @@ const SECRET_VARIABLE =
   /\$\{?(CLAUDE_CONFIG_DIR|CODEX_HOME|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_API_KEY|CLAUDE_CODE_OAUTH_TOKEN)\b/;
 
 /** A word of a line that can't be parsed plainly, without the quotes and substitution marks around it (`$(cat`, `x)`). */
-const bareWord = (w: string) => w.replace(/^[$('"`{]+|[)'"`};]+$/g, "");
+/** The closing marks are trimmed by hand: a `+$` over a long run of quotes backtracks quadratically. */
+const bareWord = (w: string) => {
+  let end = w.length;
+  while (end > 0 && ")'\"`};".includes(w[end - 1] ?? "")) end--;
+  return w.slice(0, end).replace(/^[$('"`{]+/, "");
+};
 
 /**
  * A path or pattern names a secret (resolved in the scope when there is one, if it can leave the folder it
