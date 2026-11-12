@@ -21,7 +21,7 @@
 }
 .hosting-sheet__title {
   margin: 0;
-  padding: var(--space-5) var(--dialog-pad) var(--space-3);
+  padding: var(--space-6) var(--dialog-pad) var(--space-3);
   font-size: 20px;
   font-weight: 650;
   line-height: 26px;
@@ -49,7 +49,7 @@
   font-size: 12.5px;
 }
 .hosting-sheet__none {
-  margin: var(--space-3) 0 0;
+  margin: 0;
   font-size: 13px;
   color: var(--muted);
 }
