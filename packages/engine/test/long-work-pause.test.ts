@@ -11,6 +11,7 @@ import {
   cancelRun,
   clearPlanLimits,
   continueRoutineUsagePause,
+  createDashboard,
   createJobHandlers,
   createRoutine,
   drainOutbox,
@@ -23,7 +24,9 @@ import {
   type MachineStatus,
   postPersonMessage,
   RESUME_AFTER_MS,
+  storeOwnUsage as reportOwnUsage,
   runRoutineNow,
+  testWidget,
 } from "../src";
 import { monthStartUtc } from "../src/usage";
 import { addMember, type Fixture, setup } from "./fixtures";
@@ -332,6 +335,30 @@ test("a routine's slot at 96% of the plan parks before its first turn and picks 
   expect(seen).toHaveLength(1);
 });
 
+test("a paused slot goes on once a newer reading puts its plan back under the pause line, not at a reset a day away", async () => {
+  f = await setup();
+  const machineId = await computerAgent(f);
+  const resetsAt = iso(26 * 3600_000);
+  await storeOwnUsage(f, machineId, reading([{ kind: "seven_day", usedPercent: 96, resetsAt }]));
+  const { brain, seen } = scripted(() => [{ type: "done", text: "Deploys ok." }]);
+  const handlers = handlersWith(f, brain);
+  await scheduledSlot(f);
+  await drainOutbox(f.db, handlers);
+  expect(seen).toHaveLength(0);
+  const deps = { db: f.db, pubsub: f.pubsub };
+  const week = (used: number) => reading([{ kind: "seven_day", usedPercent: used, resetsAt }], iso(60_000));
+
+  // Still over the line: it keeps waiting for the reset.
+  await reportOwnUsage(deps, f.org.id, machineId, { claude_code: week(97) });
+  await drainOutbox(f.db, handlers, { now: later(5 * 60_000) });
+  expect(seen).toHaveLength(0);
+  // The sign-in reads under the line again (another run went through on it): the slot goes on now.
+  await reportOwnUsage(deps, f.org.id, machineId, { claude_code: week(60) });
+  await drainOutbox(f.db, handlers, { now: later(5 * 60_000) });
+  expect(seen).toHaveLength(1);
+  expect((await runs(f))[0]?.status).toBe("done");
+});
+
 test("the plan's paid extra usage lets long work go on, unless its switch is off", async () => {
   f = await setup();
   const machineId = await computerAgent(f);
@@ -479,6 +506,33 @@ test("a routine's paused slot: its people hear it, and Rodar agora runs it now",
   expect(seen).toHaveLength(1);
   const [paused] = await runs(f);
   expect(paused?.status).not.toBe("waiting_input");
+});
+
+test("a widget's test parked on its plan raises no notice: it goes with its routine, which nothing would resolve", async () => {
+  f = await setup();
+  const machineId = await computerAgent(f);
+  await storeOwnUsage(f, machineId, reading([{ kind: "five_hour", usedPercent: 100, resetsAt: iso(3600_000) }]));
+  const { brain, seen } = scripted(() => [{ type: "done", text: "ok" }]);
+  const deps = { db: f.db, pubsub: f.pubsub, context: f.context };
+  const board = await createDashboard(deps, f.owner.id, f.org.id, {
+    title: "Vendas",
+    audience: "private",
+    editPolicy: "owner",
+  });
+  await testWidget(deps, f.owner.id, f.org.id, board.id, {
+    agentId: f.agent.id,
+    prompt: "vendas de hoje",
+    format: "auto",
+    schedule: "manual",
+  });
+  await drainOutbox(f.db, handlersWith(f, brain));
+  expect(seen).toHaveLength(0);
+  expect((await runs(f))[0]?.status).toBe("waiting_input");
+  const heard = await f.db
+    .select()
+    .from(schema.notifications)
+    .where(eq(schema.notifications.kind, "routine_waiting_plan"));
+  expect(heard).toEqual([]);
 });
 
 test("a run canceled while paused: its card says it won't run, and Continuar agora on it starts nothing", async () => {

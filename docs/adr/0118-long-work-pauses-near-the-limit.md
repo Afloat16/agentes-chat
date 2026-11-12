@@ -78,3 +78,9 @@ With 300 messages over a weekly limit, every channel ask parked a turn of its ow
 8. **Long work in the agent's line of work** (`work_queue`, ADR 0121) reads "Ada começa quando terminar outro trabalho" in its receipts (phase `line`), not "Esperando sua resposta".
 
 Routines, missions and long work at 95% keep their own rules (one open routine run, slots more than 12 h late are missed; a mission's own keep-going check; long work keeps its card and Continuar agora). The Jev check before each catch-up (closing one when every asker's ask is clearly closed) is [ADR 0136](0136-a-check-before-each-catch-up.md).
+
+## Addendum (2026-11-11): a newer reading lifts the pause
+
+Widget refreshes paused near a plan's weekly limit waited for a reset more than a day away, while other runs kept going through on the same sign-in. A pause had only its own timer: the wakes on a plan's line (`wakePlanWaits`, after a turn goes through and on a reading with room, `wakeOnRoom`) woke `plan_limit` waits only. So a reading that said the plan was back under 95% changed nothing, and a pause behind the head of an unknown reset slept on the line's 24 h safety timer (`LINE_SAFETY_MS`) even after the head got through, though `usageWaitPlace` and `retimeLine` keep both kinds in one line. A routine's slot that sleeps that long is then missed (`waiting_plan_late`), and its widget says the plan is at its limit.
+
+Now a reading of a sign-in's plan that the runner reports (`wakeOnRoom`) also wakes, in line order and 60 s apart, every long-work pause on that sign-in that parked before the reading and that the reading puts back under the pause line for its own model, or into extra usage its agent may use (`longWorkHasRoom`, the executor's gate). A quick reply going through still says nothing about the 95% line: only the reading does. A reading still at 95% or more wakes nothing, and the woken run checks the gate again on its claim.

@@ -152,8 +152,9 @@ people than asked.
     Routines, the agents' tools), raises no alert or notice, and is its creator's alone: anyone else gets
     `widget.not_found`, and its events go to the creator's own topic. Its routine never has a schedule. Testing again or
     closing the dialog deletes it with its routine and stops its run; a person keeps five at most (the oldest go), and
-    the server's workers delete those nobody confirmed within a day. Pinning a chart needs no test: its data is
-    already real. Agents' `create_widget` is unchanged.
+    the server's workers delete those nobody confirmed within a day. Its build is a person's work in the job lanes
+    (ADR 0053 §10): its routine's firing and its run take a person's slots, never the background ones, since its creator
+    watches the preview. Pinning a chart needs no test: its data is already real. Agents' `create_widget` is unchanged.
 17. **Who names a widget, and notes that fit.** The ask is never the title. The agent names the widget on its first
     build (a draft's test included): `update_widget` requires a short `title` then (at most 40 characters, sentence
     case, in the person's language, no period at the end) and refuses a longer one rather than cutting it; it may rename
