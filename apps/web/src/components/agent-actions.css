@@ -123,7 +123,7 @@ a.ag-rcpop__words {
   color: var(--faint);
   translate: 0 calc(10px - var(--cap-mid) - 50%);
 }
-@supports (height: 1lh) {
+@supports (top: 1lh) {
   .ag-rcpop__cue {
     translate: 0 calc(0.5lh - var(--cap-mid) - 50%);
   }

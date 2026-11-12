@@ -153,7 +153,8 @@ describe("receipts on one line, as on the web", () => {
     // A second tap in the message's window is its double tap, so the sheet waits for that window first.
     expect(sentence).toContain("onPress={whole || onTap ? press : undefined}");
     expect(sentence).toContain("}, DOUBLE_TAP_MS);");
-    expect(sentence.match(/onLongPress=\{onLongPress\}/g)).toHaveLength(2);
+    expect(sentence.match(/onLongPress=\{onLongPress\}/g)).toHaveLength(1);
+    expect(sentence).toContain("onLongPress={href ? onLongPress : undefined}");
     expect(src).toContain("onPress={() => close(() => router.push(href))}");
     expect(src).not.toContain("WhoSeesLine");
     const row = readFileSync(join(import.meta.dir, "../../src/features/chat/MessageRow.tsx"), "utf8");

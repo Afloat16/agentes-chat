@@ -199,7 +199,8 @@ function Sentence({
             tone={struck ? "faint" : p.bold ? "ink" : "ink2"}
             style={p.bold && styles.bold}
             onPress={href ? () => router.push(href) : undefined}
-            onLongPress={onLongPress}
+            // A nested Text with a press of its own takes the touch: one that opens nothing leaves it to the sentence.
+            onLongPress={href ? onLongPress : undefined}
             accessibilityRole={href ? "link" : undefined}
             suppressHighlighting
           >

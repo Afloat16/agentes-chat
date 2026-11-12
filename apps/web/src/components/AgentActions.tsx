@@ -167,7 +167,8 @@ function Receipt({
             role: "button",
             tabIndex: 0,
             onKeyDown: (e: KeyboardEvent) => {
-              if (e.key !== "Enter" && e.key !== " ") return;
+              // A link inside the words keeps its own Enter.
+              if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " ")) return;
               e.preventDefault();
               setListed(true);
             },

@@ -321,7 +321,13 @@ describe("receipts under the agent's reply", () => {
       ),
     );
     const second = issues[1] as { number: number; title: string };
-    await click(within(receipts()).getByRole("link", { name: `#${second.number}` }));
+    const number = within(receipts()).getByRole("link", { name: `#${second.number}` });
+    // Enter on the number, from the keys, is the number's own: it never opens the list around it.
+    number.focus();
+    await act(async () => fireEvent.keyDown(number, { key: "Enter" }));
+    await settle(3);
+    expect(screen().queryByRole("dialog", { name: "Mudanças de Ada" })).toBeNull();
+    await click(number);
     expect(screen().queryByRole("dialog", { name: "Mudanças de Ada" })).toBeNull();
     expect(screen().queryAllByRole("menu")).toHaveLength(0);
     expect(screen().getByRole("dialog", { name: second.title })).toBeTruthy();
