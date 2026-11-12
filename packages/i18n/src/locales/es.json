@@ -2479,6 +2479,14 @@
       "groupWorkspace": "Para todo el workspace",
       "groupAdmins": "solo admins"
     },
+    "powers": {
+      "title": "Poderes del workspace",
+      "help": "Solo tu mano derecha hace esto.",
+      "team": "Monta y cambia todo el equipo con tarjetas que una persona aplica: agentes, personas y ajustes del workspace",
+      "routines": "Ejecuta y elimina rutinas de cualquier agente que puedas gestionar",
+      "asYou": "En tu propia conversación, lee el Drive, la wiki y las tareas que puedes ver",
+      "mentions": "Responde a una @mención en cualquier canal sin ser miembro"
+    },
     "card": {
       "settings": "{{name}} · Configuración",
       "apply": "Aplicar",

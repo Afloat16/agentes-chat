@@ -5966,6 +5966,24 @@
   "rightHand.settings.groupAdmins": {
     "value": "admins only"
   },
+  "rightHand.powers.title": {
+    "value": "Workspace powers"
+  },
+  "rightHand.powers.help": {
+    "value": "Only your right hand does these."
+  },
+  "rightHand.powers.team": {
+    "value": "Sets up and changes the whole team with cards a person applies: agents, people and workspace settings"
+  },
+  "rightHand.powers.routines": {
+    "value": "Runs and deletes any agent's routine you may manage"
+  },
+  "rightHand.powers.asYou": {
+    "value": "In your own conversation, reads the Drive, the wiki and the tasks you can see"
+  },
+  "rightHand.powers.mentions": {
+    "value": "Answers an @mention in any channel without being a member"
+  },
   "rightHand.card.settings": {
     "value": "{{name}} · Settings"
   },

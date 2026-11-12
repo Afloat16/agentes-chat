@@ -2394,6 +2394,14 @@
       "groupWorkspace": "Tüm çalışma alanı için",
       "groupAdmins": "yalnızca yöneticiler"
     },
+    "powers": {
+      "title": "Çalışma alanı yetkileri",
+      "help": "Bunları yalnızca sağ kolun yapar.",
+      "team": "Bir kişinin uyguladığı kartlarla tüm ekibi kurar ve değiştirir: ajanlar, kişiler ve çalışma alanı ayarları",
+      "routines": "Yönetebildiğin her ajanın rutinini çalıştırır ve siler",
+      "asYou": "Kendi sohbetinde, görebildiğin Drive'ı, wikiyi ve görevleri okur",
+      "mentions": "Üyesi olmadan her kanaldaki bir @bahsetmeye yanıt verir"
+    },
     "card": {
       "settings": "{{name}} · Ayarlar",
       "apply": "Uygula",

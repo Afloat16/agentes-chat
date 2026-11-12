@@ -2455,6 +2455,14 @@ export const ptBR = {
       groupWorkspace: "Para todo o workspace",
       groupAdmins: "só admins",
     },
+    powers: {
+      title: "Poderes do workspace",
+      help: "Só o seu braço direito faz isto.",
+      team: "Monta e muda o time inteiro por cards que uma pessoa aplica: agentes, pessoas e ajustes do workspace",
+      routines: "Roda e apaga rotinas de qualquer agente que você pode gerenciar",
+      asYou: "Na sua conversa, lê o Drive, a wiki e as tarefas que você pode ver",
+      mentions: "Responde a um @ em qualquer canal sem ser membro",
+    },
     card: {
       settings: "{{name}} · Configurações",
       apply: "Aplicar",

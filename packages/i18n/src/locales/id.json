@@ -2316,6 +2316,14 @@
       "groupWorkspace": "Untuk seluruh workspace",
       "groupAdmins": "khusus admin"
     },
+    "powers": {
+      "title": "Kemampuan di workspace",
+      "help": "Hanya tangan kanan Anda yang melakukan ini.",
+      "team": "Menyiapkan dan mengubah seluruh tim lewat kartu yang diterapkan seseorang: agen, orang, dan pengaturan workspace",
+      "routines": "Menjalankan dan menghapus rutinitas agen mana pun yang boleh Anda kelola",
+      "asYou": "Dalam percakapan Anda sendiri, membaca Drive, wiki, dan tugas yang bisa Anda lihat",
+      "mentions": "Menjawab @mention di kanal mana pun tanpa menjadi anggota"
+    },
     "card": {
       "settings": "{{name}} · Pengaturan",
       "apply": "Terapkan",

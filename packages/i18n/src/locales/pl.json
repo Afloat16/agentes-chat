@@ -2566,6 +2566,14 @@
       "groupWorkspace": "Dla całej przestrzeni roboczej",
       "groupAdmins": "tylko admini"
     },
+    "powers": {
+      "title": "Uprawnienia w przestrzeni roboczej",
+      "help": "To robi tylko Twoja prawa ręka.",
+      "team": "Buduje i zmienia cały zespół kartami, które zatwierdza człowiek: agenci, osoby i ustawienia przestrzeni roboczej",
+      "routines": "Uruchamia i usuwa rutyny dowolnego agenta, którymi możesz zarządzać",
+      "asYou": "W Twojej własnej rozmowie czyta Drive, wiki i zadania, które możesz zobaczyć",
+      "mentions": "Odpowiada na @wzmiankę w dowolnym kanale, nie będąc jego członkiem"
+    },
     "card": {
       "settings": "{{name}} · Ustawienia",
       "apply": "Zastosuj",
