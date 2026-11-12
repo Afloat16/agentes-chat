@@ -39,7 +39,7 @@ import { agentSecrets } from "./secrets";
  *   (settings, our MCP server alone, Lodi's agent; anything an earlier turn planted removed). The run and its token
  *   reach our server through the env it inherits, so the account's turns of several agents share one config. One
  *   root keeps for all agents (protocol 57) is the agent's own folder for it instead, with a copy of root's sign-in
- *   for as long as the agent's turns on it run.
+ *   for as long as the agent's turns on it run (a worker killed mid-turn leaves it until the agent's next one starts).
  * - The chat: `init` names the conversation; our session → that conversation lives in
  *   `<runner home>/brain/antigravity-chats.json` (per account), resumed with `--conversation`. A new chat leads its
  *   prompt with the engine's context (`cursorPrompt`); a resume that comes back as another conversation (the CLI

@@ -1469,9 +1469,9 @@ own and reads the token on a file descriptor as it starts, never from its enviro
 commands it runs don't get it; a key goes in its environment. When the agent moves to another account
 or brain, or the account is disconnected, the processes that had it close. A ChatGPT sign-in made for
 all agents is Codex's own `auth.json` there, and a Gemini one the Antigravity CLI's own sign-in file:
-each turn gets a copy in the agent's own folder (Gemini's goes when that agent's turns on it end).
-Disconnecting a Claude account deletes its token from the computer: to end it on Claude too, revoke it
-in Claude's settings.
+each turn gets a copy in the agent's own folder (Gemini's goes when that agent's turns on it end, or,
+if its worker was killed mid-turn, when its next worker starts). Disconnecting a Claude account
+deletes its token from the computer: to end it on Claude too, revoke it in Claude's settings.
 
 **Who can reach an account.** With every agent running as the runner's own user (the default
 install), any agent on that computer could reach every account folder there; the runner keeps them

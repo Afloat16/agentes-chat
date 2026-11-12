@@ -1112,7 +1112,10 @@ export const ACCOUNT_LOGIN_FAILURES = [
   "cli_exit",
   /** The CLI finished, but its status says the account isn't signed in (its words in `message`). */
   "not_signed_in_after_login",
-  /** The CLI finished, but its status didn't answer in time. */
+  /**
+   * The CLI finished, but its status didn't answer in time; or a Gemini sign-in for all agents' copy said nothing for
+   * sure (its words, if any, in `message`).
+   */
   "status_unknown",
   /** `claude setup-token` finished without showing its token. */
   "no_token",

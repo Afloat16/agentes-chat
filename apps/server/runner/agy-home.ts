@@ -124,7 +124,8 @@ const holding = new Map<string, number>();
 
 /**
  * In an agent's worker: its copy of a sign-in root keeps, placed for a turn and gone once its last turn on it ends
- * (`release`), so the agent's user keeps no Google sign-in between turns, nor after the account goes.
+ * (`release`), so the agent's user keeps no Google sign-in between turns. A worker killed mid-turn leaves its copy
+ * until that agent's next worker starts (`dropAgySignIns`), even if the account is removed meanwhile.
  */
 export function holdAgySignIn(home: string, signIn: AgySignIn): () => void {
   placeAgySignIn(home, signIn);
@@ -136,7 +137,11 @@ export function holdAgySignIn(home: string, signIn: AgySignIn): () => void {
     const left = (holding.get(home) ?? 1) - 1;
     if (left > 0) return void holding.set(home, left);
     holding.delete(home);
-    rmSync(path.join(home, AGY_SIGN_IN_FILE), { force: true });
+    try {
+      rmSync(path.join(home, AGY_SIGN_IN_FILE), { force: true });
+    } catch {
+      // the turn's own shell may have put anything there, and the turn it ends already ended
+    }
   };
 }
 

@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { accountCodeAad } from "@agenteschat/adapters/machine-protocol";
 import { cutAtWord } from "@agenteschat/adapters/redact";
@@ -56,6 +56,7 @@ afterEach(async () => {
   delete process.env.FAKE_AGY_BOUND;
   delete process.env.FAKE_AGY_KEYRING;
   delete process.env.FAKE_AGY_REFRESH_MS;
+  delete process.env.FAKE_AGY_CHECK;
   removeDirs(dirs);
 });
 
@@ -552,6 +553,12 @@ test("a Gemini sign-in for all agents as a turn gets it: root's file and seat, i
   expect(agyAuthOf(own)).toBe("oauth-business");
   left.release?.();
   dropAgySignIns(path.join(root, "nothing"));
+  // The agent's own shell put a file where the CLI's folder was: the turn that ends still ends as it did.
+  const odd = await accountSignIn(folders, "antigravity", ACCOUNT, grant);
+  if (typeof odd === "string") throw new Error("no sign-in");
+  rmSync(path.dirname(file), { recursive: true, force: true });
+  writeFileSync(path.dirname(file), "x");
+  expect(() => odd.release?.()).not.toThrow();
 });
 
 test.skipIf(!posix)(
@@ -675,6 +682,53 @@ test.skipIf(!posix)(
     expect(await m.grant("antigravity", again.id)).toEqual({ kind: "none" });
     m.invalidate();
     expect((await m.list()).find((a) => a.id === again.id)).toMatchObject({ loggedIn: false, shared: true });
+  },
+  45_000,
+);
+
+test.skipIf(!posix)(
+  "a Gemini sign-in for all agents whose copy says nothing for sure fails with Try again, and signs no agent out",
+  async () => {
+    const home = tempDir("agy-accounts-");
+    dirs.push(home);
+    const m = new AccountManager({
+      root: path.join(home, "accounts"),
+      orgId: () => ORG,
+      platform: "linux",
+      commands: { antigravity: [process.execPath, FAKE] },
+      lending: { chown: async () => {} },
+      statusTimeoutMs: 2000,
+    });
+    managers.push(m);
+    const signInAs = async (n: number, again = false) => {
+      const id = `0193eeee-0000-7000-8000-0000000000e${n}`;
+      const begun = await m.begin("antigravity", id, again, undefined, undefined, true);
+      const aad = accountCodeAad(id, ORG);
+      await m.code(id, aad, await sealSecret(begun.publicKey as string, "4/0AbCdEf-code", aad));
+      await waitFor(() => m.status(id).state !== "waiting", 8000);
+      return { id, status: m.status(id) };
+    };
+    // Root's own CLI signed in; its copy, in the empty home, didn't answer in time.
+    process.env.FAKE_AGY_CHECK = "slow";
+    const slow = await signInAs(1);
+    expect(slow.status).toMatchObject({ state: "failed", code: "status_unknown" });
+    expect(slow.status.error).toContain("a copy of that sign-in didn't answer in time");
+    expect(slow.status.error).toContain("Try again.");
+    // Signed in again, its copy couldn't reach Google: what each agent's turn gets stays as it was.
+    delete process.env.FAKE_AGY_CHECK;
+    expect((await signInAs(2)).status).toMatchObject({ state: "done" });
+    process.env.FAKE_AGY_CHECK = "offline";
+    const offline = await signInAs(2, true);
+    expect(offline.status).toMatchObject({
+      state: "failed",
+      code: "status_unknown",
+      message:
+        'Error: Post "https://oauth2.googleapis.com/token": dial tcp: lookup oauth2.googleapis.com: no such host',
+    });
+    expect(offline.status.error).toContain("a copy of that sign-in didn't say whether it signs in");
+    expect(await m.grant("antigravity", offline.id)).toMatchObject({ kind: "agy_auth" });
+    m.invalidate();
+    expect((await m.list()).find((a) => a.id === offline.id)).toMatchObject({ loggedIn: true, shared: true });
   },
   45_000,
 );

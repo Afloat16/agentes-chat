@@ -5,7 +5,8 @@
 // a copy in another home isn't signed in). `--version` prints a version line, `models` the models as Antigravity CLI
 // 1.5.0 does (seen on Linux, 2026-11-11): "Fetching available models..." on stderr, then one model a line on stdout,
 // its slug and name split by a tab; signed out "Please sign in…", an account Google won't serve "Eligibility check
-// failed…", exit 1.
+// failed…", exit 1. $FAKE_AGY_CHECK, in a home named `.check` only (root's try of a copy): "slow" answers after a
+// minute, "offline" can't reach Google.
 // `acp --login` prints its Google sign-in link and prompt as 1.5.0 does and, as 1.5.x does, reads the pasted code only
 // from its terminal (none: "no controlling terminal", exit 1), then exchanges it: a code with "bad" in it, or with paste
 // marks it never turned on, is refused by Google (`invalid_grant`), one with "offline" can't reach Google, one with
@@ -56,6 +57,15 @@ if (args[0] === "--version") {
 }
 if (args[0] === "models") {
   process.stderr.write("Fetching available models...\n");
+  if (path.basename(env.HOME ?? "") === ".check" && env.FAKE_AGY_CHECK === "slow") {
+    await new Promise((r) => setTimeout(r, 60_000));
+  }
+  if (path.basename(env.HOME ?? "") === ".check" && env.FAKE_AGY_CHECK === "offline") {
+    process.stderr.write(
+      'Error: Post "https://oauth2.googleapis.com/token": dial tcp: lookup oauth2.googleapis.com: no such host\n',
+    );
+    process.exit(1);
+  }
   const token = stored();
   if (!token || (env.FAKE_AGY_BOUND && token.home !== env.HOME)) {
     process.stderr.write(

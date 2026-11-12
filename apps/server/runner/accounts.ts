@@ -1063,6 +1063,9 @@ export function parseAgyLoginUrl(output: string, final = false): string | null {
   return urlsIn(stripAnsi(output), (h) => hostIs(h, "accounts.google.com"), final)[0]?.url ?? null;
 }
 
+/** What the Antigravity CLI says when it has no sign-in to think with. */
+const AGY_SIGN_IN_WORDS = /auth(?:entication)? required|not (?:authenticated|logged in|signed in)|sign in/i;
+
 /**
  * `agy models`: signed in when it lists models and says nothing about signing in. An Enterprise sign-in says so in its
  * settings (`provider: "enterprise"`). Signed out, 1.5.0 exits 1 with "Please sign in to view available models"; an
@@ -1075,10 +1078,7 @@ export function parseAgyStatus(
 ): Omit<RunnerAccountInfo, "id" | "kind"> {
   const text = stripAnsi(output);
   // 1.5.0 lists one model a line, its slug and its name split by a tab (`gemini-4-argon-high\tGemini 4 Argon (High)`).
-  const loggedIn =
-    status === 0 &&
-    /^[ \t]*gemini-[\w.-]+[ \t]+\S/im.test(text) &&
-    !/auth(?:entication)? required|not (?:authenticated|logged in|signed in)|sign in/i.test(text);
+  const loggedIn = status === 0 && /^[ \t]*gemini-[\w.-]+[ \t]+\S/im.test(text) && !AGY_SIGN_IN_WORDS.test(text);
   // A seat: "Atende outras pessoas" says a seat's words for it.
   return {
     loggedIn,
@@ -1204,6 +1204,8 @@ export interface AccountManagerOptions {
   usageTtlMs?: number;
   usageNotifyMs?: number;
   usageTimeoutMs?: number;
+  /** Tests: how long a status look may take (`STATUS_TIMEOUT_MS`). */
+  statusTimeoutMs?: number;
   fetch?: typeof fetch;
   log?: (line: string) => void;
   /** An account was added or removed, a fresh look changed the list (`hello`, the app's status), or usage moved. */
@@ -2001,7 +2003,7 @@ export class AccountManager {
           const unshared =
             login.shared && login.kind === "antigravity" ? await this.agyCopyFails(login.id, login.dir) : null;
           // Signed in again, the folder now holds that sign-in, which no agent can think with: signed out for all.
-          if (unshared && login.again) await this.refused(login.kind, login.id);
+          if (unshared && !unshared.unsure && login.again) await this.refused(login.kind, login.id);
           if (login.state !== "waiting") return;
           if (!unshared) {
             await rm(path.join(login.dir, SIGNING_IN), { force: true }).catch(() => undefined);
@@ -2016,17 +2018,27 @@ export class AccountManager {
             this.log(`account ${login.id.slice(0, 8)} (${login.kind}) signed in`);
             return;
           }
-          this.failWith(
-            login,
-            "failed",
-            "not_kept",
-            `${LABEL[login.kind]} signed in, but ${unshared.why}, so it can't think for every agent here. Use a Gemini API key instead.`,
-            unshared.said,
-          );
-          // The server hears it now: the list it has may still say signed in.
-          if (login.again) {
-            this.invalidate();
-            void this.refresh(true).catch(() => undefined);
+          if (unshared.unsure) {
+            this.failWith(
+              login,
+              "failed",
+              "status_unknown",
+              `${LABEL[login.kind]} signed in, but ${unshared.why}, so this computer couldn't tell whether it can think for every agent here. Try again.`,
+              unshared.said,
+            );
+          } else {
+            this.failWith(
+              login,
+              "failed",
+              "not_kept",
+              `${LABEL[login.kind]} signed in, but ${unshared.why}, so it can't think for every agent here. Use a Gemini API key instead.`,
+              unshared.said,
+            );
+            // The server hears it now: the list it has may still say signed in.
+            if (login.again) {
+              this.invalidate();
+              void this.refresh(true).catch(() => undefined);
+            }
           }
         } else if (info.statusUnknown) {
           this.failWith(
@@ -2066,9 +2078,11 @@ export class AccountManager {
 
   /**
    * A Gemini sign-in for all agents, tried the way each turn gets it: a copy in an empty home (`.check` in root's
-   * folder) that the CLI lists models with. Null when it does; otherwise why not, and the CLI's words.
+   * folder) that the CLI lists models with. Null when it does; otherwise why not, and the CLI's words. `unsure`: the
+   * try said nothing for sure (no answer in time, a copy that couldn't be written, an error that isn't the CLI asking
+   * for a sign-in), so another try may pass.
    */
-  private async agyCopyFails(id: string, dir: string): Promise<{ why: string; said?: string } | null> {
+  private async agyCopyFails(id: string, dir: string): Promise<{ why: string; said?: string; unsure?: true } | null> {
     const signIn = await this.agySignIn(id);
     if (!signIn) return { why: `kept that sign-in where this computer can't copy it (no ${AGY_SIGN_IN_FILE})` };
     const check = path.join(dir, ".check");
@@ -2079,15 +2093,19 @@ export class AccountManager {
         this.command("antigravity"),
         STATUS_ARGS.antigravity,
         this.env("antigravity", check),
-        STATUS_TIMEOUT_MS,
+        this.opts.statusTimeoutMs ?? STATUS_TIMEOUT_MS,
       );
-      if (r.status === null) return { why: "a copy of that sign-in didn't answer in time" };
-      const text = `${r.stdout}\n${r.stderr}`;
+      if (r.status === null) return { why: "a copy of that sign-in didn't answer in time", unsure: true };
+      const text = stripAnsi(`${r.stdout}\n${r.stderr}`);
       if (parseAgyStatus(r.status, text, signIn.type).loggedIn) return null;
-      const said = saidIn(withoutTokens(stripAnsi(text)));
-      return { why: "a copy of that sign-in doesn't sign in", ...(said ? { said } : {}) };
+      const said = saidIn(withoutTokens(text));
+      const words = said ? { said } : {};
+      if (!AGY_SIGN_IN_WORDS.test(text)) {
+        return { why: "a copy of that sign-in didn't say whether it signs in", unsure: true, ...words };
+      }
+      return { why: "a copy of that sign-in doesn't sign in", ...words };
     } catch (err) {
-      return { why: `a copy of that sign-in couldn't be made (${errnoCode(err) ?? "error"})` };
+      return { why: `a copy of that sign-in couldn't be made (${errnoCode(err) ?? "error"})`, unsure: true };
     } finally {
       await rm(check, { recursive: true, force: true }).catch(() => undefined);
     }
@@ -2253,7 +2271,7 @@ export class AccountManager {
         const { command, env } = cliShared
           ? this.sharedCli(id)
           : { command: this.command(kind), env: this.env(kind, dir) };
-        return runCli(command, STATUS_ARGS[kind], env, STATUS_TIMEOUT_MS);
+        return runCli(command, STATUS_ARGS[kind], env, this.opts.statusTimeoutMs ?? STATUS_TIMEOUT_MS);
       },
       this.cliOps,
     ).catch((err: unknown): CliResult => ({ status: null, stdout: "", stderr: String(err) }));
@@ -2340,9 +2358,13 @@ export class AccountManager {
     return this.cache ? this.withUsage(this.cache.value) : undefined;
   }
 
-  /** The next `list` asks the CLIs again (an account turned out signed out in a turn). */
+  /**
+   * The next `list` asks the CLIs again (an account turned out signed out in a turn). A look still running may have read
+   * before the change, so its answer is never kept (nor announced) for the list's whole TTL.
+   */
   invalidate() {
     if (this.cache) this.cache = { ...this.cache, at: 0 };
+    this.listing = null;
   }
 
   private added(info: RunnerAccountInfo) {
