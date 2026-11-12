@@ -131,12 +131,36 @@ async function takeToHandOn(db: Database, run: Pick<AgentRun, "id" | "orgId">, o
 
 /**
  * The run just paused on something a message can't move (`holdsMessages`): what it hadn't read yet gets
- * a run of its own instead of waiting behind the decision. A no-op for any other pause.
+ * a run of its own instead of waiting behind the decision. A no-op for any other pause. What was passed on to its
+ * background work stays: the work reads it once the decision comes, or its end takes it (`endWork`).
  */
 export async function releaseHeldInbox(db: Database, pubsub: PubSub | undefined, runId: string) {
   const [row] = await db.select().from(agentRuns).where(eq(agentRuns.id, runId));
   if (!row || row.pendingMessageIds.length === 0 || !(await holdsMessages(db, row))) return null;
-  return releaseInbox(db, pubsub, row, { reason: "held" });
+  const kept = row.workId ? await passedOnTo(db, row.orgId, row.workId, row.pendingMessageIds) : [];
+  if (kept.length === 0) return releaseInbox(db, pubsub, row, { reason: "held" });
+  return handOnMessages(
+    db,
+    pubsub,
+    row,
+    row.pendingMessageIds.filter((id) => !kept.includes(id)),
+  );
+}
+
+/** Of these messages, the ones passed on to that background work with `steer_work` (`meta.steeredWorkIds`). */
+export async function passedOnTo(db: Executor, orgId: string, workId: string, ids: string[]) {
+  if (ids.length === 0) return [];
+  const rows = await db
+    .select({ id: messages.id })
+    .from(messages)
+    .where(
+      and(
+        eq(messages.orgId, orgId),
+        inArray(messages.id, ids),
+        sql`${messages.meta}->'steeredWorkIds' ? ${workId}::text`,
+      ),
+    );
+  return rows.map((m) => m.id);
 }
 
 /**

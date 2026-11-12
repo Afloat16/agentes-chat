@@ -224,18 +224,31 @@ export async function runChain(
  */
 export async function steeredByOthers(db: Executor, orgId: string, forUserId: string, runIds: string[]) {
   const runs = await db
-    .select({ channelId: agentRuns.channelId, createdAt: agentRuns.createdAt })
+    .select({ channelId: agentRuns.channelId, createdAt: agentRuns.createdAt, triggerId: agentRuns.triggerMessageId })
     .from(agentRuns)
     .where(and(eq(agentRuns.orgId, orgId), inArray(agentRuns.id, runIds)));
   if (runs.length === 0) return false;
   const since = new Date(Math.min(...runs.map((r) => r.createdAt.getTime())));
+  // Where they were asked too: a run sent on elsewhere (`moveRun`) keeps what reached it there.
+  const asked = await db
+    .select({ channelId: messages.channelId })
+    .from(messages)
+    .where(
+      and(
+        eq(messages.orgId, orgId),
+        inArray(
+          messages.id,
+          runs.map((r) => r.triggerId),
+        ),
+      ),
+    );
   const written = await db
     .select({ id: messages.id, authorType: messages.authorType, authorUserId: messages.authorUserId })
     .from(messages)
     .where(
       and(
         eq(messages.orgId, orgId),
-        inArray(messages.channelId, [...new Set(runs.map((r) => r.channelId))]),
+        inArray(messages.channelId, [...new Set([...runs, ...asked].map((r) => r.channelId))]),
         gte(messages.createdAt, since),
         sql`${messages.meta} -> 'steeredRunIds' ?| ${`{${runIds.join(",")}}`}::text[]`,
       ),

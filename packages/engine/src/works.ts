@@ -18,9 +18,9 @@ import { missionOfThread } from "./missions";
 import { enqueue } from "./outbox";
 import { lineLocale } from "./requester";
 import { personCanPost } from "./routine-state";
-import { ACTIVE_RUN_STATUSES } from "./run-inbox";
+import { ACTIVE_RUN_STATUSES, passedOnTo } from "./run-inbox";
 import { deliverNoticeToRun } from "./run-resume";
-import { type AgentRun, isTerminal, replyThreadOf, runErrorDetail } from "./runs";
+import { type AgentRun, continuableEnd, isTerminal, replyThreadOf, runErrorDetail } from "./runs";
 import { runStretchOf } from "./stretch";
 import { ago, stepLine } from "./talker-snapshot";
 import { nameConversation } from "./thread-assess";
@@ -837,7 +837,7 @@ export async function workQueued(db: Executor, workId: string) {
  */
 export async function endWork(
   deps: { db: Database; pubsub?: PubSub },
-  run: Pick<AgentRun, "id" | "orgId" | "workId" | "error" | "replyMessageId" | "hop">,
+  run: Pick<AgentRun, "id" | "orgId" | "workId" | "error" | "replyMessageId" | "hop" | "transcript">,
   runStatus: "done" | "failed" | "canceled",
   now = new Date(),
 ): Promise<WorkRow | null> {
@@ -900,10 +900,11 @@ export async function endWork(
       .set({ resultMessageId: resultId })
       .where(eq(agentWorks.id, work.id))
       .returning();
-    // What people passed on to it: a `done` end follows it up; a failed one goes on with Continuar, which carries its
-    // transcript (what it read) and what it never read. A person who stopped it meant that too.
-    if (status === "done") await queueWorkFollowUp(tx, work, run.id);
-    else if (status === "failed") await takeUnreadAsks(tx, work, run.id, { keep: true });
+    // What people passed on to it, unless a person stopped it (they meant that too): an end Continuar can go on from
+    // carries it (its transcript holds what it read, `unreadAsks` the rest); any other is followed up now.
+    if (status === "failed" && continuableEnd({ ...run, status: runStatus }, reply))
+      await takeUnreadAsks(tx, work, run.id, { keep: true });
+    else if (status !== "canceled") await queueWorkFollowUp(tx, work, run.id);
     const released = await releaseQueuedWorks(tx, work.orgId);
     return { work: closed ?? work, end, released, status };
   });
@@ -913,22 +914,6 @@ export async function endWork(
   await announceWork(deps.pubsub, db, ended.work.orgId, ended.work.id);
   for (const id of ended.released) await announceWork(deps.pubsub, db, ended.work.orgId, id);
   return ended.work;
-}
-
-/** Of these messages, the ones passed on to the work with `steer_work` (`meta.steeredWorkIds`). */
-async function passedOnTo(tx: Executor, work: WorkRow, ids: string[]) {
-  if (ids.length === 0) return [];
-  const rows = await tx
-    .select({ id: messages.id })
-    .from(messages)
-    .where(
-      and(
-        eq(messages.orgId, work.orgId),
-        inArray(messages.id, ids),
-        sql`${messages.meta}->'steeredWorkIds' ? ${work.id}::text`,
-      ),
-    );
-  return rows.map((m) => m.id);
 }
 
 /**
@@ -943,7 +928,7 @@ async function takeUnreadAsks(tx: Executor, work: WorkRow, runId: string, option
     .where(eq(agentRuns.id, runId))
     .for("update");
   const pending = row?.pending ?? [];
-  const asks = await passedOnTo(tx, work, pending);
+  const asks = await passedOnTo(tx, work.orgId, work.id, pending);
   if (asks.length === 0) return [];
   await tx
     .update(agentRuns)
@@ -958,8 +943,9 @@ async function takeUnreadAsks(tx: Executor, work: WorkRow, runId: string, option
 }
 
 /**
- * A work that ended `done`: what people passed on to it that its runs read (reading one doesn't mean the work did it)
- * or never read is followed up once (`followUpWork`), since nothing else brings the agent back to it.
+ * A work that ended for good (done, or failed where Continuar can't go on): what people passed on to it that its runs
+ * read (reading one doesn't mean the work did it) or never read is followed up once (`followUpWork`), since nothing
+ * else brings the agent back to it.
  */
 async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string) {
   const reads = await tx
@@ -977,13 +963,14 @@ async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string) {
   const read = [
     ...new Set(reads.flatMap((r) => (Array.isArray(r.data.steeredMessageIds) ? r.data.steeredMessageIds : []))),
   ].filter((id): id is string => typeof id === "string");
-  const asks = [...new Set([...(await passedOnTo(tx, work, read)), ...(await takeUnreadAsks(tx, work, runId))])];
+  const readAsks = await passedOnTo(tx, work.orgId, work.id, read);
+  const asks = [...new Set([...readAsks, ...(await takeUnreadAsks(tx, work, runId))])];
   if (asks.length === 0) return;
   await enqueue(tx, {
     orgId: work.orgId,
     kind: WORK_FOLLOW_UP_JOB,
     payload: { workId: work.id, messageIds: asks },
-    // Only a failed or stopped work is continued: one that ended `done` never ends again.
+    // A work followed up was never continued (`continuableEnd`), so it never ends again.
     dedupeKey: `${WORK_FOLLOW_UP_JOB}:${work.id}`,
     maxAttempts: 4,
   });
@@ -993,7 +980,7 @@ async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string) {
 const ASK_QUOTE_MAX = 4000;
 
 /**
- * Job `agent_work.follow_up`: a work ended `done` after people passed messages on to it. For each person who wrote
+ * Job `agent_work.follow_up`: a work ended for good after people passed messages on to it. For each person who wrote
  * them, while they may still ask the agent there, an agent-only notice where the work reports quotes theirs alone
  * (`work_follow_up`) and starts or joins a run on their own authority (`authority.ts`): it does what the work left
  * undone and didn't say why, or passes. A retry, or another replica, finds the notices already written, per person.
@@ -1010,7 +997,7 @@ export async function followUpWork(
       .from(agentWorks)
       .where(and(eq(agentWorks.orgId, orgId), eq(agentWorks.id, input.workId)))
       .for("update");
-    if (work?.status !== "done") return [];
+    if (!work?.finishedAt || (work.status !== "done" && work.status !== "failed")) return [];
     const [run] = await tx
       .select()
       .from(agentRuns)
