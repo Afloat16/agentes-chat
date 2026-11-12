@@ -1232,9 +1232,10 @@ export function createToolGateway(deps: {
           };
         }
       }
-      // The routine's own job: an action its creator allowed when they set it up runs like an allowed one, every run.
+      // The routine's own job: an action its creator allowed when they set it up runs like an allowed one, every run,
+      // unless its agent always asks.
       const ownJob =
-        approves && authority?.kind === "routine" && authority.brief
+        approves && level !== "always" && authority?.kind === "routine" && authority.brief
           ? await ownJobCovers(ctx, authority.brief, tool, call.input)
           : false;
       if (ownJob) approves = false;
@@ -1407,9 +1408,10 @@ export function createToolGateway(deps: {
       };
       if (approves) {
         // A routine's card offers "Sempre nesta rotina" instead: `rememberable` keeps "Aprovar sempre" off its runs.
+        // Not for an agent that always asks: its routine's own actions ask too.
         const kept =
           remember ??
-          (authority?.kind === "routine" && authority.brief
+          (level !== "always" && authority?.kind === "routine" && authority.brief
             ? await routineKind(ctx, authority.brief, tool, call.input)
             : null);
         return askPerson(why, kept);

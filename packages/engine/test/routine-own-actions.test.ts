@@ -328,6 +328,17 @@ describe("a routine's own job (routines.own_actions)", () => {
     expect((await updateRoutine(deps, cora.id, f.org.id, own.id, { ownActions: [] })).ownActions).toEqual([]);
   });
 
+  test("an agent that always asks: its routine's own actions ask too, and the card offers no way around it", async () => {
+    f = await setup();
+    const { mcp, gateway } = await world(f);
+    const { id } = await created(gateway, ["SLACK_SEND_MESSAGE"]);
+    await f.db.update(schema.agents).set({ approvalsLevel: "always" }).where(eq(schema.agents.id, f.agent.id));
+    const run = await routineRun(f, id);
+    expect(asked(await invoke(gateway, run, EXEC, { ...exec("SLACK_SEND_MESSAGE"), why: WHY })).approveAlways).toBeNull();
+    expect(asked(await invoke(gateway, run, EXEC, { ...exec("GMAIL_SEND_EMAIL"), why: WHY })).approveAlways).toBeNull();
+    expect(mcp.calls).toEqual([]);
+  });
+
   test("a routine with no own actions asks for every write, as before", async () => {
     f = await setup();
     const { mcp, gateway } = await world(f);
