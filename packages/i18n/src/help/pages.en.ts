@@ -42,8 +42,8 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
         id: "agents",
         heading: "Your agents work here too",
         blocks: [
-          "Your agents work on this computer too, in folders of their own, with a browser, and with Claude Code or Codex when they're installed here. Commands stay off until you turn them on for a workspace in **Preferences\u00a0›\u00a0Tools**.",
-          "Agents here run as you. With Commands on, they can reach the rest of this computer, `.agentes` included: the database, `.env` with `AGENTES_SECRET`, the owner key and this computer's token. That holds for each workspace you turn Commands on for, one on agentes.chat Cloud included. See [What agents can reach](/help/computers#reach).",
+          "Your agents work on this computer too, in folders of their own, with a browser, and with Claude Code or Codex when they're installed here.",
+          "Agents here run as you. **Commands** are on by default, and with them the agents of every workspace that uses this computer can reach everything on it, the server's data included. Turn them off in **Preferences\u00a0›\u00a0Tools**. See [What agents can reach](/help/computers#reach).",
         ],
       },
       {
@@ -51,7 +51,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
         heading: "Lend it to another workspace too",
         blocks: [
           "The workspaces of the server you run here use this computer by themselves. To let a workspace somewhere else use it too, such as one on agentes.chat Cloud, press **Add a workspace…** at the bottom of the first card in **Preferences\u00a0›\u00a0General**, or **Add a server…** in **Preferences\u00a0›\u00a0Servers**. Sign in to that workspace and press **Allow** when the app asks.",
-          "Each workspace gets its own agents and folders here, and its own **Commands** switch in **Preferences\u00a0›\u00a0Tools**. Commands start on for it, unless you turn them off in the app's ask before you press **Allow**. Leave them on only for a workspace whose agents you trust with all of this computer.",
+          "Each workspace gets its own agents and folders here. **Commands** are on by default for it too. Turn them off in the app's ask before you press **Allow**, or later in **Preferences\u00a0›\u00a0Tools**, where each workspace has its own switch and the app asks before turning one back on.",
         ],
       },
       {
@@ -80,7 +80,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
         id: "backups",
         heading: "Backups",
         blocks: [
-          "With **Back up every night** on (app 0.7.1 and later), in **Preferences\u00a0›\u00a0Servers**, the app saves the database, the files and `.env` in `.agentes/backups`, in your home folder, every night at 3:00. A computer that was asleep then backs up once it's awake. **Back up now** does the same at once. Each backup stops the server for a moment, and the two newest stay.",
+          "With **Back up every night** on (app 0.7.2 and later), in **Preferences\u00a0›\u00a0Servers**, the app saves the database, the files and `.env` in `.agentes/backups`, in your home folder, every night at 3:00. A computer that was asleep then backs up once it's awake. **Back up now** does the same at once. Each backup stops the server for a moment, and the two newest stay.",
           "**Copy to** also puts each new backup in a folder you pick, like a USB drive or iCloud Drive, where the two newest stay. They hold your keys: keep them private. **Restore…** takes agentes.chat back to a backup: messages, files and settings. It stops for a minute, and what was there before is kept in the backups folder.",
         ],
       },
@@ -236,7 +236,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
               "on a computer that also runs agentes.chat, its database and keys in `.agentes`",
             ],
           },
-          "agentes.chat refuses commands that name its keys, tokens and sign-ins, but that's a rule, not a wall. **Commands** start on. Turn them off in the app's ask before you press **Allow**, or later in **Preferences\u00a0›\u00a0Tools**, where each workspace has its own switch (app 0.7.1 and later) and the app asks before turning one back on. Leave them on only for a workspace whose agents, and the people they work for, you'd trust with everything on the computer. Claude Code and Codex run their own commands in the agent's folder, even with Commands off.",
+          "agentes.chat refuses commands that name its keys, tokens and sign-ins, but that's a rule, not a wall. **Commands** are on by default. Turn them off in the app's ask before you press **Allow**, or later in **Preferences\u00a0›\u00a0Tools**, where each workspace has its own switch (app 0.7.2 and later) and the app asks before turning one back on. Claude Code and Codex run their own commands in the agent's folder, under their own rules, even with Commands off.",
           "For a real wall, use a Linux server. On Debian 13, installed with `--system`, each agent is a user of its own. On Ubuntu, agents share one user, `agentes`: they see each other's folders, not yours or the server's. Or give the agents a computer of their own.",
         ],
       },
@@ -495,7 +495,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
               "Open https://console.typesafe.ai and sign in with Google or your email. A new account is made the same way.",
               "Add credit in the console. Jev is prepaid.",
               "Open https://console.typesafe.ai/keys, create a key and copy it right away.",
-              "In agentes.chat, open **Settings\u00a0›\u00a0AI accounts** and paste it under **Jev**. Only the person who set up this server sees it.",
+              "In agentes.chat, open **Settings\u00a0›\u00a0AI and usage** and paste it under **Jev**. Only the person who set up this server sees it.",
             ],
           },
           "On a server you run with Docker, you can put the key in `.env` as `TYPESAFE_API_KEY` instead. That one wins over the one in Settings.",
@@ -509,7 +509,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
             list: [
               "US$ 0.042 per million tokens Jev reads. Its answers are free. Picking who answers reads about 2,500 tokens, so about US$ 0.0001. A screenshot is about 3,900 tokens.",
               "Credits you buy last 12 months. Turn on automatic refills in the console so Jev doesn't run out.",
-              "**Settings\u00a0›\u00a0AI accounts** shows how many decisions Jev made this month, and what they cost.",
+              "**Settings\u00a0›\u00a0AI and usage** shows how many decisions Jev made this month, and what they cost.",
             ],
           },
         ],
@@ -540,7 +540,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
         blocks: [
           {
             list: [
-              "**Key not accepted:** create a new key and paste it in **Settings\u00a0›\u00a0AI accounts**.",
+              "**Key not accepted:** create a new key and paste it in **Settings\u00a0›\u00a0AI and usage**.",
               "**Out of credit:** add credit in the console. Jev tries again within 30 minutes, or click **Check again**.",
               "**Busy or unreachable:** TypeSafe may limit requests per second, or stop answering for a while. Jev picks up again by itself. Your limits: https://console.typesafe.ai/rate-limits. For higher ones, write to sales@typesafe.ai.",
             ],

@@ -43,8 +43,8 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Je agents werken hier ook",
         blocks: [
-          "Je agents werken ook op deze computer, in hun eigen mappen, met een browser, en met Claude Code of Codex als die hier zijn geïnstalleerd. Opdrachten staan uit tot je ze voor een werkruimte aanzet in **Voorkeuren\u00a0›\u00a0Tools**.",
-          "Agents draaien hier onder jouw naam. Met Opdrachten aan kunnen ze bij de rest van deze computer, ook bij `.agentes`: de database, `.env` met `AGENTES_SECRET`, de eigenaarssleutel en het token van deze computer. Dat geldt voor elke werkruimte waarvoor je Opdrachten aanzet, ook een op agentes.chat Cloud. Zie [Waar agents bij kunnen](/help/computers#reach).",
+          "Je agents werken ook op deze computer, in hun eigen mappen, met een browser, en met Claude Code of Codex als die hier zijn geïnstalleerd.",
+          "Agents draaien hier onder jouw naam. **Opdrachten** staan standaard aan, en daarmee kunnen de agents van elke werkruimte die deze computer gebruikt bij alles op deze computer, ook bij de gegevens van de server. Zet ze uit in **Voorkeuren\u00a0›\u00a0Tools**. Zie [Waar agents bij kunnen](/help/computers#reach).",
         ],
       },
       {
@@ -52,7 +52,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Leen hem ook uit aan een andere werkruimte",
         blocks: [
           "De werkruimtes van de server die je hier draait, gebruiken deze computer vanzelf. Wil je dat een werkruimte ergens anders hem ook gebruikt, zoals een op agentes.chat Cloud, druk dan op **Werkruimte toevoegen…** onderaan de eerste kaart in **Voorkeuren\u00a0›\u00a0Algemeen**, of op **Een server toevoegen…** in **Voorkeuren\u00a0›\u00a0Servers**. Meld je aan bij die werkruimte en druk op **Toestaan** als de app het vraagt.",
-          "Elke werkruimte krijgt hier eigen agents en mappen, en een eigen schakelaar voor **Opdrachten** in **Voorkeuren › Tools**. Opdrachten staan er eerst aan, tenzij je ze uitzet in de vraag van de app voordat je op **Toestaan** drukt. Laat ze alleen aan voor een werkruimte waarvan je de agents met heel deze computer vertrouwt.",
+          "Elke werkruimte krijgt hier eigen agents en mappen. Ook daar staan **Opdrachten** standaard aan. Zet ze uit in de vraag van de app voordat je op **Toestaan** drukt, of later in **Voorkeuren\u00a0›\u00a0Tools**, waar elke werkruimte een eigen schakelaar heeft en de app het eerst vraagt voordat er een weer aangaat.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Back-ups",
         blocks: [
-          "Met **Elke nacht een back-up maken** aan (app 0.7.1 en nieuwer), in **Voorkeuren\u00a0›\u00a0Servers**, bewaart de app elke nacht om 3:00 de database, de bestanden en `.env` in `.agentes/backups`, in je thuismap. Een computer die toen sliep, maakt de back-up zodra hij wakker is. **Nu een back-up maken** doet hetzelfde meteen. Elke back-up stopt de server even, en de twee nieuwste blijven bewaard.",
+          "Met **Elke nacht een back-up maken** aan (app 0.7.2 en nieuwer), in **Voorkeuren\u00a0›\u00a0Servers**, bewaart de app elke nacht om 3:00 de database, de bestanden en `.env` in `.agentes/backups`, in je thuismap. Een computer die toen sliep, maakt de back-up zodra hij wakker is. **Nu een back-up maken** doet hetzelfde meteen. Elke back-up stopt de server even, en de twee nieuwste blijven bewaard.",
           "**Kopiëren naar** zet elke nieuwe back-up ook in een map die je kiest, zoals een USB-stick of iCloud Drive, waar de twee nieuwste blijven. Ze bevatten je sleutels: houd ze privé. **Terugzetten…** zet agentes.chat terug naar een back-up: berichten, bestanden en instellingen. Het stopt een minuut, en wat er eerst stond, blijft bewaard in de back-upmap.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
               "op een computer die ook agentes.chat draait, de database en sleutels ervan in `.agentes`",
             ],
           },
-          "agentes.chat weigert opdrachten die zijn sleutels, tokens en aanmeldingen noemen, maar dat is een regel, geen muur. **Opdrachten** staan eerst aan. Zet ze uit in de vraag van de app voordat je op **Toestaan** drukt, of later in **Voorkeuren › Tools**, waar elke werkruimte een eigen schakelaar heeft (app 0.7.1 en nieuwer) en de app het eerst vraagt voordat er een weer aangaat. Laat ze alleen aan voor een werkruimte waarvan je de agents, en de mensen voor wie ze werken, met alles op de computer zou vertrouwen. Claude Code en Codex voeren hun eigen opdrachten uit in de map van de agent, ook als Opdrachten uit staan.",
+          "agentes.chat weigert opdrachten die zijn sleutels, tokens en aanmeldingen noemen, maar dat is een regel, geen muur. **Opdrachten** staan standaard aan. Zet ze uit in de vraag van de app voordat je op **Toestaan** drukt, of later in **Voorkeuren\u00a0›\u00a0Tools**, waar elke werkruimte een eigen schakelaar heeft (app 0.7.2 en nieuwer) en de app het eerst vraagt voordat er een weer aangaat. Claude Code en Codex voeren hun eigen opdrachten uit in de map van de agent, volgens hun eigen regels, ook als Opdrachten uit staan.",
           "Voor een echte muur gebruik je een Linux-server. Op Debian 13, geïnstalleerd met `--system`, is elke agent een eigen gebruiker. Op Ubuntu delen agents één gebruiker, `agentes`: ze zien elkaars mappen, niet die van jou of van de server. Of geef de agents een eigen computer.",
         ],
       },
@@ -502,7 +502,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
               "Open https://console.typesafe.ai en log in met Google of je e-mailadres. Een nieuw account maak je op dezelfde manier.",
               "Zet tegoed in de console. Jev is prepaid.",
               "Open https://console.typesafe.ai/keys, maak een sleutel aan en kopieer hem meteen.",
-              "Open in agentes.chat **Instellingen › AI-accounts** en plak hem onder **Jev**. Alleen degene die deze server heeft ingericht, ziet hem.",
+              "Open in agentes.chat **Instellingen › AI en gebruik** en plak hem onder **Jev**. Alleen degene die deze server heeft ingericht, ziet hem.",
             ],
           },
           "Op een server die je met Docker draait, kun je de sleutel ook in `.env` zetten als `TYPESAFE_API_KEY`. Die gaat voor op de sleutel in Instellingen.",
@@ -516,7 +516,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
             list: [
               "US$ 0,042 per miljoen tokens die Jev leest. Zijn antwoorden zijn gratis. Kiezen wie antwoordt leest ongeveer 2.500 tokens, dus ongeveer US$ 0,0001. Een screenshot is ongeveer 3.900 tokens.",
               "Tegoed dat je koopt, blijft 12 maanden geldig. Zet automatisch opwaarderen aan in de console, zodat Jev niet zonder komt te zitten.",
-              "**Instellingen › AI-accounts** laat zien hoeveel beslissingen Jev deze maand nam, en wat ze kostten.",
+              "**Instellingen › AI en gebruik** laat zien hoeveel beslissingen Jev deze maand nam, en wat ze kostten.",
             ],
           },
         ],
@@ -547,7 +547,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         blocks: [
           {
             list: [
-              "**Sleutel niet geaccepteerd:** maak een nieuwe sleutel aan en plak hem in **Instellingen › AI-accounts**.",
+              "**Sleutel niet geaccepteerd:** maak een nieuwe sleutel aan en plak hem in **Instellingen › AI en gebruik**.",
               "**Tegoed op:** zet tegoed in de console. Jev probeert het binnen 30 minuten opnieuw, of klik op **Opnieuw controleren**.",
               "**Druk of onbereikbaar:** TypeSafe kan het aantal verzoeken per seconde beperken, of een tijdje niet antwoorden. Jev pakt het vanzelf weer op. Je limieten: https://console.typesafe.ai/rate-limits. Voor hogere limieten schrijf je naar sales@typesafe.ai.",
             ],

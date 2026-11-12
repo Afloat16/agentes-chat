@@ -43,8 +43,8 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Twoi agenci też tu pracują",
         blocks: [
-          "Twoi agenci też pracują na tym komputerze, we własnych folderach, z przeglądarką oraz z Claude Code lub Codexem, jeśli są tu zainstalowane. Polecenia są wyłączone, dopóki nie włączysz ich dla przestrzeni roboczej w **Preferencje\u00a0›\u00a0Narzędzia**.",
-          "Agenci działają tu jako ty. Z włączonymi poleceniami mają dostęp do reszty tego komputera, także do `.agentes`: bazy danych, `.env` z `AGENTES_SECRET`, klucza właściciela i tokenu tego komputera. Dotyczy to każdej przestrzeni roboczej, w której włączysz polecenia, także tej w agentes.chat Cloud. Zobacz [Do czego mają dostęp agenci](/help/computers#reach).",
+          "Twoi agenci też pracują na tym komputerze, we własnych folderach, z przeglądarką oraz z Claude Code lub Codexem, jeśli są tu zainstalowane.",
+          "Agenci działają tu jako ty. **Polecenia** są domyślnie włączone, a z nimi agenci każdej przestrzeni roboczej, która używa tego komputera, mają dostęp do wszystkiego na nim, także do danych serwera. Wyłączysz je w **Preferencje\u00a0›\u00a0Narzędzia**. Zobacz [Do czego mają dostęp agenci](/help/computers#reach).",
         ],
       },
       {
@@ -52,7 +52,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Udostępnij go też innej przestrzeni roboczej",
         blocks: [
           "Przestrzenie robocze serwera, który tu uruchamiasz, korzystają z tego komputera same. Żeby mogła z niego korzystać także przestrzeń robocza gdzie indziej, na przykład w agentes.chat Cloud, naciśnij **Dodaj przestrzeń roboczą…** na dole pierwszej karty w **Preferencje\u00a0›\u00a0Ogólne** albo **Dodaj serwer…** w **Preferencje\u00a0›\u00a0Serwery**. Zaloguj się do tej przestrzeni roboczej i naciśnij **Zezwól**, gdy aplikacja zapyta.",
-          "Każda przestrzeń robocza ma tu własnych agentów i foldery oraz własny przełącznik **Polecenia** w **Preferencje › Narzędzia**. Polecenia są w niej na początku włączone, chyba że wyłączysz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**. Zostaw je włączone tylko w przestrzeni roboczej, której agentom powierzasz cały ten komputer.",
+          "Każda przestrzeń robocza ma tu własnych agentów i foldery. **Polecenia** są dla niej też domyślnie włączone. Wyłącz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**, albo później w **Preferencje\u00a0›\u00a0Narzędzia**, gdzie każda przestrzeń robocza ma własny przełącznik, a aplikacja pyta, zanim ponownie jakiś włączy.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Kopie zapasowe",
         blocks: [
-          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.7.1 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
+          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.7.2 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
           "**Kopiuj do** umieszcza też każdą nową kopię w wybranym folderze, na przykład na pendrivie albo w iCloud Drive, gdzie zostają dwie najnowsze. Zawierają twoje klucze: trzymaj je w tajemnicy. **Przywróć…** cofa agentes.chat do kopii: wiadomości, plików i ustawień. Zatrzymuje się na minutę, a to, co było wcześniej, zostaje w folderze kopii.",
         ],
       },
@@ -237,7 +237,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
               "na komputerze, który uruchamia też agentes.chat, jego bazę danych i klucze w `.agentes`",
             ],
           },
-          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. **Polecenia** są na początku włączone. Wyłącz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**, albo później w **Preferencje › Narzędzia**, gdzie każda przestrzeń robocza ma własny przełącznik (aplikacja 0.7.1 i nowsze), a aplikacja pyta, zanim ponownie jakiś włączy. Zostaw je włączone tylko w przestrzeni roboczej, której agentom i osobom, dla których pracują, powierzyłbyś wszystko, co jest na komputerze. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, nawet przy wyłączonych poleceniach.",
+          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. **Polecenia** są domyślnie włączone. Wyłącz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**, albo później w **Preferencje\u00a0›\u00a0Narzędzia**, gdzie każda przestrzeń robocza ma własny przełącznik (aplikacja 0.7.2 i nowsze), a aplikacja pyta, zanim ponownie jakiś włączy. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, według własnych zasad, nawet przy wyłączonych poleceniach.",
           "Prawdziwy mur da ci serwer z Linuksem. Na Debianie 13, zainstalowanym z `--system`, każdy agent jest osobnym użytkownikiem. Na Ubuntu agenci dzielą jednego użytkownika, `agentes`: widzą nawzajem swoje foldery, ale nie twoje ani serwera. Możesz też dać agentom osobny komputer.",
         ],
       },
@@ -496,7 +496,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
               "Otwórz https://console.typesafe.ai i zaloguj się przez Google albo e-mailem. Nowe konto zakłada się tak samo.",
               "Doładuj środki w konsoli. Jev działa na przedpłatę.",
               "Otwórz https://console.typesafe.ai/keys, utwórz klucz i od razu go skopiuj.",
-              "W agentes.chat otwórz **Ustawienia › Konta AI** i wklej go w sekcji **Jev**. Widzi go tylko osoba, która skonfigurowała ten serwer.",
+              "W agentes.chat otwórz **Ustawienia › AI i zużycie** i wklej go w sekcji **Jev**. Widzi go tylko osoba, która skonfigurowała ten serwer.",
             ],
           },
           "Na serwerze uruchomionym przez Docker możesz zamiast tego wpisać klucz do `.env` jako `TYPESAFE_API_KEY`. Ten ma pierwszeństwo przed kluczem z Ustawień.",
@@ -510,7 +510,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
             list: [
               "0,042 USD za milion tokenów, które Jev przeczyta. Jego odpowiedzi są bezpłatne. Wybór, kto odpowiada, to około 2500 tokenów, czyli około 0,0001 USD. Zrzut ekranu to około 3900 tokenów.",
               "Kupione środki są ważne 12 miesięcy. Włącz w konsoli automatyczne doładowania, żeby Jevowi ich nie zabrakło.",
-              "**Ustawienia › Konta AI** pokazują, ile decyzji Jev podjął w tym miesiącu i ile kosztowały.",
+              "**Ustawienia › AI i zużycie** pokazują, ile decyzji Jev podjął w tym miesiącu i ile kosztowały.",
             ],
           },
         ],
@@ -541,7 +541,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         blocks: [
           {
             list: [
-              "**Klucz nie został przyjęty:** utwórz nowy klucz i wklej go w **Ustawienia › Konta AI**.",
+              "**Klucz nie został przyjęty:** utwórz nowy klucz i wklej go w **Ustawienia › AI i zużycie**.",
               "**Brak środków:** doładuj środki w konsoli. Jev spróbuje ponownie w ciągu 30 minut, możesz też kliknąć **Sprawdź ponownie**.",
               "**Zajęty lub nieosiągalny:** TypeSafe może ograniczać liczbę żądań na sekundę albo na jakiś czas przestać odpowiadać. Jev sam wróci do pracy. Twoje limity: https://console.typesafe.ai/rate-limits. Po wyższe napisz na sales@typesafe.ai.",
             ],

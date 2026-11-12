@@ -1,6 +1,7 @@
 import type { ComputerDevice, DeviceAudience, DevicesList, Member, OrgRole, PhoneDevice } from "@agenteschat/client";
 import {
   audienceWords,
+  iosOf,
   portraitOf,
   reasonText,
   sameAudience,
@@ -726,7 +727,9 @@ function PhoneRow({
   const line =
     s.kind === "needs_you"
       ? reasonText(t, s.reason)
-      : [org, statusDetail(t, i18n.language, s, { host: computer.name }), who].filter(Boolean).join(" · ");
+      : [org, statusDetail(t, i18n.language, s, { host: computer.name, ios: iosOf(phone) }), who]
+          .filter(Boolean)
+          .join(" · ");
   const icon: IconName | undefined =
     look === "ready"
       ? "check"

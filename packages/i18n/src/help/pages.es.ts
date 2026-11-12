@@ -43,8 +43,8 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Tus agentes también trabajan aquí",
         blocks: [
-          "Tus agentes también trabajan en esta computadora, en carpetas propias, con un navegador, y con Claude Code o Codex cuando están instalados aquí. Los comandos quedan desactivados hasta que los actives para un espacio de trabajo en **Preferencias\u00a0›\u00a0Herramientas**.",
-          "Aquí los agentes se ejecutan como tú. Con los comandos activados, pueden llegar al resto de esta computadora, `.agentes` incluida: la base de datos, el `.env` con `AGENTES_SECRET`, la clave del propietario y el token de esta computadora. Eso vale para cada espacio de trabajo en el que actives los comandos, incluido uno en agentes.chat Cloud. Consulta [A qué pueden llegar los agentes](/help/computers#reach).",
+          "Tus agentes también trabajan en esta computadora, en carpetas propias, con un navegador, y con Claude Code o Codex cuando están instalados aquí.",
+          "Aquí los agentes se ejecutan como tú. Los **Comandos** vienen activados, y con ellos los agentes de cada espacio de trabajo que usa esta computadora pueden llegar a todo lo que hay en ella, incluidos los datos del servidor. Desactívalos en **Preferencias\u00a0›\u00a0Herramientas**. Consulta [A qué pueden llegar los agentes](/help/computers#reach).",
         ],
       },
       {
@@ -52,7 +52,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Préstala también a otro espacio de trabajo",
         blocks: [
           "Los espacios de trabajo del servidor que ejecutas aquí ya usan esta computadora sin que hagas nada. Para que un espacio de trabajo de otro lugar también la use, como uno en agentes.chat Cloud, pulsa **Agregar un espacio de trabajo…** al final de la primera tarjeta de **Preferencias\u00a0›\u00a0General**, o **Agregar un servidor…** en **Preferencias\u00a0›\u00a0Servidores**. Inicia sesión en ese espacio de trabajo y pulsa **Permitir** cuando la app te lo pregunte.",
-          "Cada espacio de trabajo tiene aquí sus propios agentes y carpetas, y su propio interruptor de **Comandos** en **Preferencias › Herramientas**. Los comandos empiezan activados para él, salvo que los desactives en la pregunta de la app antes de pulsar **Permitir**. Déjalos activados solo en un espacio de trabajo a cuyos agentes les confiarías toda esta computadora.",
+          "Cada espacio de trabajo tiene aquí sus propios agentes y carpetas. Los **Comandos** también vienen activados para él. Desactívalos en la pregunta de la app antes de pulsar **Permitir**, o más tarde en **Preferencias\u00a0›\u00a0Herramientas**, donde cada espacio de trabajo tiene su propio interruptor y la app pregunta antes de volver a activar uno.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Copias de seguridad",
         blocks: [
-          "Con **Hacer una copia cada noche** activado (app 0.7.1 y posteriores), en **Preferencias\u00a0›\u00a0Servidores**, la app guarda la base de datos, los archivos y el `.env` en `.agentes/backups`, en tu carpeta personal, cada noche a las 3:00. Una computadora que estaba dormida hace la copia cuando despierta. **Hacer una copia ahora** hace lo mismo al momento. Cada copia detiene el servidor un momento, y se conservan las dos más recientes.",
+          "Con **Hacer una copia cada noche** activado (app 0.7.2 y posteriores), en **Preferencias\u00a0›\u00a0Servidores**, la app guarda la base de datos, los archivos y el `.env` en `.agentes/backups`, en tu carpeta personal, cada noche a las 3:00. Una computadora que estaba dormida hace la copia cuando despierta. **Hacer una copia ahora** hace lo mismo al momento. Cada copia detiene el servidor un momento, y se conservan las dos más recientes.",
           "**Copiar en** también pone cada copia nueva en una carpeta que elijas, como una memoria USB o iCloud Drive, donde se conservan las dos más recientes. Contienen tus claves: guárdalas en privado. **Restaurar…** devuelve agentes.chat a una copia: mensajes, archivos y ajustes. Se detiene un minuto, y lo que había antes se guarda en la carpeta de copias.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
               "en una computadora que también ejecuta agentes.chat, su base de datos y sus claves en `.agentes`",
             ],
           },
-          "agentes.chat rechaza los comandos que nombran sus claves, tokens e inicios de sesión, pero es una regla, no un muro. Los **Comandos** empiezan activados. Desactívalos en la pregunta de la app antes de pulsar **Permitir**, o más tarde en **Preferencias › Herramientas**, donde cada espacio de trabajo tiene su propio interruptor (app 0.7.1 y posteriores) y la app pregunta antes de volver a activar uno. Déjalos activados solo en un espacio de trabajo a cuyos agentes, y a las personas para las que trabajan, les confiarías todo lo que hay en la computadora. Claude Code y Codex ejecutan sus propios comandos en la carpeta del agente, incluso con los comandos desactivados.",
+          "agentes.chat rechaza los comandos que nombran sus claves, tokens e inicios de sesión, pero es una regla, no un muro. Los **Comandos** vienen activados. Desactívalos en la pregunta de la app antes de pulsar **Permitir**, o más tarde en **Preferencias\u00a0›\u00a0Herramientas**, donde cada espacio de trabajo tiene su propio interruptor (app 0.7.2 y posteriores) y la app pregunta antes de volver a activar uno. Claude Code y Codex ejecutan sus propios comandos en la carpeta del agente, con sus propias reglas, incluso con los comandos desactivados.",
           "Para un muro de verdad, usa un servidor Linux. En Debian 13, instalado con `--system`, cada agente es un usuario propio. En Ubuntu, los agentes comparten un usuario, `agentes`: ven las carpetas de los demás, no las tuyas ni las del servidor. O dales a los agentes una computadora propia.",
         ],
       },
@@ -504,7 +504,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
               "Abre https://console.typesafe.ai e inicia sesión con Google o tu correo. Una cuenta nueva se crea de la misma forma.",
               "Agrega saldo en la consola. Jev es prepago.",
               "Abre https://console.typesafe.ai/keys, crea una clave y cópiala de inmediato.",
-              "En agentes.chat, abre **Configuración › Cuentas de IA** y pégala en **Jev**. Solo la persona que configuró este servidor la ve.",
+              "En agentes.chat, abre **Configuración › IA y uso** y pégala en **Jev**. Solo la persona que configuró este servidor la ve.",
             ],
           },
           "En un servidor que ejecutas con Docker, también puedes poner la clave en `.env` como `TYPESAFE_API_KEY`. Esa tiene prioridad sobre la de Configuración.",
@@ -518,7 +518,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
             list: [
               "US$ 0.042 por millón de tokens que lee Jev. Sus respuestas son gratis. Elegir quién responde lee unos 2500 tokens, es decir, unos US$ 0.0001. Una captura de pantalla son unos 3900 tokens.",
               "El saldo que compras dura 12 meses. Activa las recargas automáticas en la consola para que Jev no se quede sin saldo.",
-              "**Configuración › Cuentas de IA** muestra cuántas decisiones tomó Jev este mes y cuánto costaron.",
+              "**Configuración › IA y uso** muestra cuántas decisiones tomó Jev este mes y cuánto costaron.",
             ],
           },
         ],
@@ -549,7 +549,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         blocks: [
           {
             list: [
-              "**Clave no aceptada:** crea una clave nueva y pégala en **Configuración › Cuentas de IA**.",
+              "**Clave no aceptada:** crea una clave nueva y pégala en **Configuración › IA y uso**.",
               "**Sin saldo:** agrega saldo en la consola. Jev vuelve a intentarlo en menos de 30 minutos, o haz clic en **Comprobar de nuevo**.",
               "**Ocupado o inaccesible:** TypeSafe puede limitar las solicitudes por segundo, o dejar de responder por un rato. Jev se recupera solo. Tus límites: https://console.typesafe.ai/rate-limits. Para límites más altos, escribe a sales@typesafe.ai.",
             ],

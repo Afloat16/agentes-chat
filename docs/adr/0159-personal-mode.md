@@ -40,7 +40,8 @@ same shape.
 - **Sidebar:** the person's face and name on top (their menu: account, settings, switch workspace, sign out), with
   notifications and collapse beside it. Agents come first, with "New agent" under them: it asks in one sentence what
   the agent should do and sends it to the right hand, which proposes the agent (the full form stays one link away).
-  Channels show as "Group conversations" only once there is one to show. "More" closes the list: Home, "Go to…" and
+  Channels show as "Group conversations": with none to show, the section holds one row, "New group conversation"
+  (for who may create one), and after the first the header's + creates the next. "More" closes the list: Home, "Go to…" and
   every tool start there (approvals show in the list while one waits); the sidebar's existing per-person choices still
   win.
 - **A family:** every workspace has `#general`, and a personal one hides it, and the people with their direct messages,
@@ -52,8 +53,8 @@ same shape.
 - **Chat:** every conversation opens in bubbles (DMs already did); a person's own choice still wins. The panels on the
   right of a conversation (the agent's panel beside its DM, a channel's members column) start closed at every width;
   the person's own toggle is remembered and wins.
-- **Settings:** six sections in one list (Your account, About you, AI and apps, Plan and usage, Vault, Computers) and
-  the rest under Advanced, collapsed. People joins the list once others are members. Every section still opens by its
+- **Settings:** six sections in one list (Your account, About you, AI and usage, Connectors, Vault, Computers) and
+  the rest under Advanced, collapsed. AI and usage also holds the plan and billing. People joins the list once others are members. Every section still opens by its
   address, from ⌘K and from the right hand's cards.
 - **An agent's page:** its bar is Overview, Instructions, Memory, "Can use" (its apps and mailboxes), Settings (name,
   look and budget) and Advanced, with no "More". Advanced holds the rest, whole: Activity, Files and Usage a click away,

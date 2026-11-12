@@ -42,8 +42,8 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         id: "agents",
         heading: "Os agentes também trabalham aqui",
         blocks: [
-          "Os agentes também trabalham neste computador, em pastas só deles, com um navegador e com o Claude Code ou o Codex quando estão instalados aqui. Comandos ficam desligados até você ligar para um workspace em **Preferências\u00a0›\u00a0Ferramentas**.",
-          "Os agentes aqui rodam como você. Com Comandos ligado, eles alcançam o resto deste computador, inclusive a `.agentes`: o banco de dados, o `.env` com o `AGENTES_SECRET`, a chave do dono e o token deste computador. Isso vale para cada workspace em que você ligar Comandos, inclusive um no agentes.chat Cloud. Veja [O que os agentes alcançam](/help/computers#reach).",
+          "Os agentes também trabalham neste computador, em pastas só deles, com um navegador e com o Claude Code ou o Codex quando estão instalados aqui.",
+          "Os agentes aqui rodam como você. Os **Comandos** já vêm ligados, e com eles os agentes de todo workspace que usa este computador alcançam tudo o que há nele, inclusive os dados do servidor. Desligue em **Preferências\u00a0›\u00a0Ferramentas**. Veja [O que os agentes alcançam](/help/computers#reach).",
         ],
       },
       {
@@ -51,7 +51,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         heading: "Emprestar para outro workspace também",
         blocks: [
           "Os workspaces do servidor que roda aqui já usam este computador, sem nada a fazer. Para um workspace de outro lugar usar também, como um no agentes.chat Cloud, aperte **Adicionar um workspace…** no fim do primeiro cartão de **Preferências\u00a0›\u00a0Geral**, ou **Adicionar um servidor…** em **Preferências\u00a0›\u00a0Servidores**. Entre nesse workspace e aperte **Permitir** quando o app perguntar.",
-          "Cada workspace tem aqui os próprios agentes e pastas, e a própria chave de **Comandos** em **Preferências\u00a0›\u00a0Ferramentas**. Os Comandos começam ligados para ele, a não ser que você desligue na pergunta do app antes de apertar **Permitir**. Deixe ligado só num workspace a cujos agentes você confiaria este computador inteiro.",
+          "Cada workspace tem aqui os próprios agentes e pastas. Os **Comandos** também já vêm ligados para ele. Desligue na pergunta do app antes de apertar **Permitir**, ou depois em **Preferências\u00a0›\u00a0Ferramentas**, onde cada workspace tem a própria chave e o app pergunta antes de ligar de novo.",
         ],
       },
       {
@@ -80,7 +80,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         id: "backups",
         heading: "Backup",
         blocks: [
-          "Com **Fazer backup toda noite** ligado (app 0.7.1 ou mais novo), em **Preferências\u00a0›\u00a0Servidores**, o app guarda o banco de dados, os arquivos e o `.env` em `.agentes/backups`, na sua pasta pessoal, toda noite às 3:00. Um computador que estava dormindo faz o backup quando acorda. **Fazer backup agora** faz o mesmo na hora. Cada backup para o servidor por um instante, e os dois mais novos ficam.",
+          "Com **Fazer backup toda noite** ligado (app 0.7.2 ou mais novo), em **Preferências\u00a0›\u00a0Servidores**, o app guarda o banco de dados, os arquivos e o `.env` em `.agentes/backups`, na sua pasta pessoal, toda noite às 3:00. Um computador que estava dormindo faz o backup quando acorda. **Fazer backup agora** faz o mesmo na hora. Cada backup para o servidor por um instante, e os dois mais novos ficam.",
           "**Copiar para** também põe cada backup novo numa pasta que você escolhe, como um pendrive ou o iCloud Drive, onde os dois mais novos ficam. Eles guardam as suas chaves: mantenha em sigilo. **Restaurar…** volta o agentes.chat para um backup: mensagens, arquivos e ajustes. Ele para por um minuto, e o que havia antes fica guardado na pasta de backups.",
         ],
       },
@@ -236,7 +236,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
               "num computador que também roda o agentes.chat, o banco de dados e as chaves dele em `.agentes`",
             ],
           },
-          "O agentes.chat recusa comandos que citam as chaves, os tokens e os logins, mas isso é uma regra, não uma parede. Os **Comandos** começam ligados. Desligue na pergunta do app antes de apertar **Permitir**, ou depois em **Preferências\u00a0›\u00a0Ferramentas**, onde cada workspace tem a própria chave (app 0.7.1 ou mais novo) e o app pergunta antes de ligar de novo. Deixe ligado só num workspace a cujos agentes, e às pessoas para quem eles trabalham, você confiaria tudo o que há no computador. O Claude Code e o Codex rodam os próprios comandos na pasta do agente, mesmo com Comandos desligado.",
+          "O agentes.chat recusa comandos que citam as chaves, os tokens e os logins, mas isso é uma regra, não uma parede. Os **Comandos** já vêm ligados. Desligue na pergunta do app antes de apertar **Permitir**, ou depois em **Preferências\u00a0›\u00a0Ferramentas**, onde cada workspace tem a própria chave (app 0.7.2 ou mais novo) e o app pergunta antes de ligar de novo. O Claude Code e o Codex rodam os próprios comandos na pasta do agente, com as próprias regras, mesmo com Comandos desligado.",
           "Para uma parede de verdade, use um servidor Linux. No Debian 13, instalado com `--system`, cada agente é um usuário só dele. No Ubuntu, os agentes dividem um usuário, `agentes`: eles veem as pastas uns dos outros, não as suas nem as do servidor. Ou dê aos agentes um computador só deles.",
         ],
       },
@@ -497,7 +497,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
               "Abra https://console.typesafe.ai e entre com o Google ou o seu e-mail. Uma conta nova é criada do mesmo jeito.",
               "Adicione crédito no console. O Jev é pré-pago.",
               "Abra https://console.typesafe.ai/keys, crie uma chave e copie na hora.",
-              "No agentes.chat, abra **Configurações\u00a0›\u00a0Contas de IA** e cole em **Jev**. Só quem configurou este servidor vê essa parte.",
+              "No agentes.chat, abra **Configurações\u00a0›\u00a0IA e uso** e cole em **Jev**. Só quem configurou este servidor vê essa parte.",
             ],
           },
           "Num servidor que você roda com Docker, dá para colocar a chave no `.env` como `TYPESAFE_API_KEY`. Essa vale mais que a das Configurações.",
@@ -511,7 +511,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
             list: [
               "US$ 0,042 por milhão de tokens que o Jev lê. As respostas são grátis. Escolher quem responde lê cerca de 2.500 tokens, ou seja, cerca de US$ 0,0001. Uma captura de tela tem cerca de 3.900 tokens.",
               "O crédito comprado vale por 12 meses. Ligue a recarga automática no console para o Jev não ficar sem crédito.",
-              "**Configurações\u00a0›\u00a0Contas de IA** mostra quantas decisões o Jev tomou no mês e quanto custaram.",
+              "**Configurações\u00a0›\u00a0IA e uso** mostra quantas decisões o Jev tomou no mês e quanto custaram.",
             ],
           },
         ],
@@ -542,7 +542,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         blocks: [
           {
             list: [
-              "**Chave recusada:** crie uma chave nova e cole em **Configurações\u00a0›\u00a0Contas de IA**.",
+              "**Chave recusada:** crie uma chave nova e cole em **Configurações\u00a0›\u00a0IA e uso**.",
               "**Sem crédito:** adicione crédito no console. O Jev tenta de novo em até 30 minutos, ou clique em **Verificar de novo**.",
               "**Ocupado ou fora do ar:** a TypeSafe pode limitar os pedidos por segundo, ou parar de responder por um tempo. O Jev volta sozinho. Os seus limites: https://console.typesafe.ai/rate-limits. Para limites maiores, escreva para sales@typesafe.ai.",
             ],

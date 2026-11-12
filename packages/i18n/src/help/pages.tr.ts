@@ -43,8 +43,8 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Ajanlarınız da burada çalışır",
         blocks: [
-          "Ajanlarınız da bu bilgisayarda, kendi klasörlerinde, bir tarayıcıyla ve burada kuruluysa Claude Code ya da Codex ile çalışır. Komutlar, siz bir çalışma alanı için **Tercihler\u00a0›\u00a0Araçlar** bölümünden açana kadar kapalı kalır.",
-          "Buradaki ajanlar sizin adınıza çalışır. Komutlar açıkken bu bilgisayarın geri kalanına, `.agentes` dahil, ulaşabilirler: veritabanı, `AGENTES_SECRET` içeren `.env`, sahip anahtarı ve bu bilgisayarın jetonu. Bu, agentes.chat Cloud'daki bir çalışma alanı dahil, Komutları açtığınız her çalışma alanı için geçerlidir. [Ajanlar nelere ulaşabilir](/help/computers#reach) bölümüne bakın.",
+          "Ajanlarınız da bu bilgisayarda, kendi klasörlerinde, bir tarayıcıyla ve burada kuruluysa Claude Code ya da Codex ile çalışır.",
+          "Buradaki ajanlar sizin adınıza çalışır. **Komutlar** varsayılan olarak açıktır. Açıkken bu bilgisayarı kullanan her çalışma alanının ajanları, sunucunun verileri dahil, bu bilgisayardaki her şeye ulaşabilir. Onları **Tercihler\u00a0›\u00a0Araçlar** içinde kapatabilirsiniz. [Ajanlar nelere ulaşabilir](/help/computers#reach) bölümüne bakın.",
         ],
       },
       {
@@ -52,7 +52,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Başka bir çalışma alanına da açın",
         blocks: [
           "Burada çalıştırdığınız sunucunun çalışma alanları bu bilgisayarı kendiliğinden kullanır. Başka bir yerdeki bir çalışma alanının da, örneğin agentes.chat Cloud'daki birinin, kullanmasını istiyorsanız **Tercihler\u00a0›\u00a0Genel** içindeki ilk kartın en altında bulunan **Çalışma alanı ekle…** düğmesine ya da **Tercihler\u00a0›\u00a0Sunucular** içindeki **Sunucu ekle…** düğmesine basın. O çalışma alanında oturum açın ve uygulama sorduğunda **İzin ver** düğmesine basın.",
-          "Her çalışma alanının burada kendi ajanları ve klasörleri, **Tercihler › Araçlar** içinde de kendi **Komutlar** anahtarı olur. Komutlar onun için açık başlar, uygulamanın sorusunda **İzin ver**'e basmadan önce kapatmazsanız. Komutları yalnızca ajanlarına bu bilgisayarın tamamını emanet edebileceğiniz bir çalışma alanında açık bırakın.",
+          "Her çalışma alanının burada kendi ajanları ve klasörleri olur. **Komutlar** onun için de varsayılan olarak açıktır. Onları uygulamanın sorusunda **İzin ver**'e basmadan önce ya da daha sonra **Tercihler\u00a0›\u00a0Araçlar** içinde kapatın. Orada her çalışma alanının kendi anahtarı vardır ve uygulama birini yeniden açmadan önce sorar.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Yedekler",
         blocks: [
-          "**Tercihler\u00a0›\u00a0Sunucular** içinde **Her gece yedekle** açıksa (uygulama 0.7.1 ve sonrası), uygulama her gece saat 3:00'te veritabanını, dosyaları ve `.env` dosyasını ana klasörünüzdeki `.agentes/backups` içine kaydeder. O saatte uykuda olan bir bilgisayar uyandığında yedekler. **Şimdi yedekle** aynısını hemen yapar. Her yedekleme sunucuyu kısa bir süre durdurur ve en yeni iki yedek kalır.",
+          "**Tercihler\u00a0›\u00a0Sunucular** içinde **Her gece yedekle** açıksa (uygulama 0.7.2 ve sonrası), uygulama her gece saat 3:00'te veritabanını, dosyaları ve `.env` dosyasını ana klasörünüzdeki `.agentes/backups` içine kaydeder. O saatte uykuda olan bir bilgisayar uyandığında yedekler. **Şimdi yedekle** aynısını hemen yapar. Her yedekleme sunucuyu kısa bir süre durdurur ve en yeni iki yedek kalır.",
           "**Şuraya kopyala**, her yeni yedeği seçtiğiniz bir klasöre de koyar, örneğin bir USB belleğe ya da iCloud Drive'a, ve orada da en yeni iki yedek kalır. İçlerinde anahtarlarınız var: onları gizli tutun. **Geri yükle…** agentes.chat'i bir yedeğe döndürür: mesajlar, dosyalar ve ayarlar. Bir dakikalığına durur ve önceden orada olanlar yedek klasöründe kalır.",
         ],
       },
@@ -199,7 +199,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
               "agentes.chat'i de çalıştıran bir bilgisayarda, onun `.agentes` içindeki veritabanı ve anahtarları",
             ],
           },
-          "agentes.chat anahtarların, token'ların ve oturum bilgilerinin adını geçiren komutları reddeder, ama bu bir kuraldır, duvar değil. **Komutlar** açık başlar. Onları uygulamanın sorusunda **İzin ver**'e basmadan önce ya da daha sonra **Tercihler › Araçlar** içinde kapatın. Orada her çalışma alanının kendi anahtarı vardır (uygulama 0.7.1 ve sonrası) ve uygulama birini yeniden açmadan önce sorar. Yalnızca ajanlarına ve onların çalıştığı kişilere bilgisayardaki her şeyi emanet edebileceğiniz bir çalışma alanında açık bırakın. Claude Code ve Codex, Komutlar kapalıyken bile kendi komutlarını ajanın klasöründe çalıştırır.",
+          "agentes.chat anahtarların, token'ların ve oturum bilgilerinin adını geçiren komutları reddeder, ama bu bir kuraldır, duvar değil. **Komutlar** varsayılan olarak açıktır. Onları uygulamanın sorusunda **İzin ver**'e basmadan önce ya da daha sonra **Tercihler\u00a0›\u00a0Araçlar** içinde kapatın. Orada her çalışma alanının kendi anahtarı vardır (uygulama 0.7.2 ve sonrası) ve uygulama birini yeniden açmadan önce sorar. Claude Code ve Codex, Komutlar kapalıyken bile kendi komutlarını ajanın klasöründe, kendi kurallarıyla çalıştırır.",
           "Gerçek bir duvar için bir Linux sunucu kullanın. Debian 13'te `--system` ile kurulduğunda her ajan ayrı bir kullanıcıdır. Ubuntu'da ajanlar tek bir kullanıcıyı, `agentes` kullanıcısını paylaşır: birbirlerinin klasörlerini görürler, sizinkileri ya da sunucununkileri görmezler. Ya da ajanlara kendilerine ait bir bilgisayar verin.",
         ],
       },
@@ -502,7 +502,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
               "https://console.typesafe.ai adresini açın ve Google ya da e-postanızla giriş yapın. Yeni hesap da aynı şekilde açılır.",
               "Konsolda kredi ekleyin. Jev ön ödemelidir.",
               "https://console.typesafe.ai/keys adresini açın, bir anahtar oluşturun ve hemen kopyalayın.",
-              "agentes.chat'te **Ayarlar › Yapay zeka hesapları** bölümünü açın ve anahtarı **Jev** altına yapıştırın. Onu yalnızca bu sunucuyu kuran kişi görür.",
+              "agentes.chat'te **Ayarlar › Yapay zeka ve kullanım** bölümünü açın ve anahtarı **Jev** altına yapıştırın. Onu yalnızca bu sunucuyu kuran kişi görür.",
             ],
           },
           "Docker ile çalıştırdığınız bir sunucuda anahtarı bunun yerine `.env` dosyasına `TYPESAFE_API_KEY` olarak koyabilirsiniz. Bu anahtar, Ayarlar'dakinin önüne geçer.",
@@ -516,7 +516,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
             list: [
               "Jev'in okuduğu her milyon token için US$ 0,042. Yanıtları ücretsizdir. Kimin yanıtlayacağını seçmek yaklaşık 2.500 token okur, yani yaklaşık US$ 0,0001. Bir ekran görüntüsü yaklaşık 3.900 token eder.",
               "Satın aldığınız krediler 12 ay geçerlidir. Jev'in kredisi bitmesin diye konsolda otomatik yüklemeyi açın.",
-              "**Ayarlar › Yapay zeka hesapları**, Jev'in bu ay kaç karar verdiğini ve bunların ne kadar tuttuğunu gösterir.",
+              "**Ayarlar › Yapay zeka ve kullanım**, Jev'in bu ay kaç karar verdiğini ve bunların ne kadar tuttuğunu gösterir.",
             ],
           },
         ],
@@ -547,7 +547,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         blocks: [
           {
             list: [
-              "**Anahtar kabul edilmedi:** yeni bir anahtar oluşturun ve **Ayarlar › Yapay zeka hesapları** bölümüne yapıştırın.",
+              "**Anahtar kabul edilmedi:** yeni bir anahtar oluşturun ve **Ayarlar › Yapay zeka ve kullanım** bölümüne yapıştırın.",
               "**Kredi bitti:** konsolda kredi ekleyin. Jev 30 dakika içinde yeniden dener ya da **Tekrar kontrol et** düğmesine tıklayın.",
               "**Meşgul ya da ulaşılamıyor:** TypeSafe saniye başına istekleri sınırlayabilir ya da bir süre yanıt vermeyebilir. Jev kendiliğinden yeniden devreye girer. Limitleriniz: https://console.typesafe.ai/rate-limits. Daha yüksek limitler için sales@typesafe.ai adresine yazın.",
             ],

@@ -1017,7 +1017,6 @@
     "proposalsWaiting_other": "{{count}}개 대기 중",
     "drive": "Drive",
     "connectors": "커넥터와 MCP",
-    "usage": "사용량",
     "preferences": "환경설정",
     "editProfile": "프로필 편집",
     "switchWorkspace": "워크스페이스 전환",
@@ -1706,6 +1705,8 @@
       "helper_missing": "테스트 도우미가 아직 설정되지 않았어요",
       "helper_expired": "테스트 도우미를 갱신해야 해요",
       "apple_account_missing": "Mac의 Xcode에 Apple 계정이 필요해요",
+      "apple_team_missing": "Mac의 Xcode에 아직 팀이 표시되지 않아요",
+      "ui_not_authorized": "이 iPhone이 테스트 도우미의 탭을 거부했어요",
       "team_limit": "직접 만든 앱을 이 iPhone에서 삭제하세요",
       "helper_untrusted": "이 iPhone에서 테스트 도우미를 신뢰하세요",
       "booting": "시작하는 중",
@@ -1863,7 +1864,16 @@
       "step5Hint": "에이전트가 이 iPhone에서 탭하고 입력할 수 있도록 {{host}}이(가) 설치하는 앱이에요. 설치되면 이 목록에 나타나요.",
       "step5Text": "설정 › 일반 › VPN 및 기기 관리. 개발자 이름을 탭한 다음 신뢰를 탭하세요.",
       "waiting": "{{host}}이(가) 인식하기를 기다리는 중",
-      "footer": "나머지는 Mac이 해요. Mac이 켜져 있는 동안 7일마다 테스트 도우미를 갱신해요."
+      "footer": "나머지는 Mac이 해요. Mac이 켜져 있는 동안 7일마다 테스트 도우미를 갱신해요.",
+      "tooOld": "이 iPhone은 iOS {{version}}을(를) 쓰는데 에이전트에는 iOS 17 이상이 필요해요. 가능하면 업데이트하거나 더 새로운 iPhone을 쓰세요.",
+      "xcodeOld": "이 iPhone은 {{host}}의 Xcode가 아는 것보다 새로운 iOS {{version}}을(를) 써요. 그 Mac에 Xcode {{major}}을(를) 설치한 다음 터미널에서 xcrun devicectl manage ddis update를 실행하세요.",
+      "teamMissing": "Xcode에 로그인되어 있지만 아직 팀이 표시되지 않아요. Xcode에서 아무 iOS 앱이나 만들고 Signing & Capabilities에서 팀을 고른 다음 이 iPhone에서 한 번 실행하세요.",
+      "uiRefused": "이 iPhone이 테스트 도우미의 탭을 거부했어요. 잠금을 해제하고 요청하면 암호를 입력하세요. 계속 그러면 설정 › 개발자 › UI 자동화 활성화를 껐다가 다시 켜세요.",
+      "pluggedIn": "연결했어요",
+      "stall": {
+        "plug": "{{host}}이(가) 아직 이 iPhone을 인식하지 못해요. 충전 전용이 아닌 데이터 케이블을 쓰고, 이 iPhone 잠금을 해제해 둔 채 요청하면 신뢰를 탭하세요.",
+        "devmode": "개발자 모드는 이 iPhone을 재시동한 뒤에만 켜져요. 재시동을 탭하고 다시 켜지면 켜기를 탭하세요. 스위치가 없나요? 이 iPhone을 뽑았다가 다시 연결하세요."
+      }
     },
     "notice": {
       "kind": "기기",
@@ -2106,16 +2116,13 @@
     "editSub": "이름, 로고, 시간대, 에이전트가 아는 내용",
     "group": {
       "org": "워크스페이스",
-      "people": "사람",
-      "agents": "에이전트",
-      "costs": "비용과 데이터"
+      "people": "사람"
     },
     "section": {
       "members": "멤버",
       "roles": "역할",
       "access": "에이전트 접근 권한",
-      "connectors": "커넥터",
-      "usage": "사용량과 예산"
+      "connectors": "커넥터"
     },
     "ofOnline": "{{count}}대 중 {{online}}대",
     "deleteName": "{{name}} 삭제",
@@ -2199,7 +2206,7 @@
       "guide": "{{name}} 안내서 열기",
       "fields": "입력 정보",
       "private": "이 정보는 암호화되어 보관되고 다시는 표시되지 않아요.",
-      "teamHelp": "항목은 처음에 워크스페이스의 모든 사람에게 보이고, 어떤 에이전트도 쓰지 않아요. 에이전트는 다음에 골라요.",
+      "teamHelp": "워크스페이스의 모든 사람이 항목을 보고, 모든 에이전트가 쓸 수 있어요. 다음에 조정할 수 있어요.",
       "personalHelp": "항목은 나만 볼 수 있고, 내가 부탁할 때 에이전트가 사용해요.",
       "checking": "{{name}}에서 확인하는 중…",
       "connected": "{{name}} 연결됨",

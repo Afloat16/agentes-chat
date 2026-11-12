@@ -616,6 +616,29 @@ describe("Docker", () => {
       check: "disk",
     });
     expect(diagnoseCompose("something new went wrong", "linux")).toBeNull();
+    // A refused image is the cause, not the "No such image" lines Compose adds about the others.
+    const refused = diagnoseCompose(
+      [
+        "Image ghcr.io/agentes-chat/agentes:latest Error Head",
+        '"https://ghcr.io/v2/agentes-chat/agentes/manifests/latest": denied',
+        "Error response from daemon: No such image: pgvector/pgvector:0.8.7-pg18",
+      ].join("\n"),
+      "darwin",
+    );
+    expect(refused).toMatchObject({
+      check: "image",
+      error: "Docker couldn't download ghcr.io/agentes-chat/agentes:latest: the registry refused it.",
+    });
+    expect(refused?.fix).toContain("docker login ghcr.io");
+    // Docker 29 says it on the image's line alone.
+    expect(
+      diagnoseCompose(
+        "Image ghcr.io/agentes-chat/agentes:latest Error error from registry: denied\ndenied\nError response from daemon: error from registry: denied",
+        "linux",
+      ),
+    ).toMatchObject({
+      error: "Docker couldn't download ghcr.io/agentes-chat/agentes:latest: the registry refused it.",
+    });
   });
 
   test("the app's own refusal names the values to fix", () => {
@@ -805,8 +828,8 @@ describe("the agents' computer", () => {
       });
     });
 
-    test("on a Mac a second question, commands, no by default", () => {
-      expect(decide(mac, { answers: { on: true } })).toEqual({ ask: "commands", yes: false });
+    test("on a Mac a second question, commands, yes by default", () => {
+      expect(decide(mac, { answers: { on: true } })).toEqual({ ask: "commands", yes: true });
       const no = plan(decide(mac, { answers: { on: true, commands: false } }));
       expect(no).toMatchObject({ state: "on", mac: true, commands: false });
       expect(no?.state === "on" && no.install.args).toContain("--no-exec");
@@ -823,8 +846,8 @@ describe("the agents' computer", () => {
       for (const installed of [true, false]) {
         expect(plan(decide(mac, { content: TOKEN, installed }))).toMatchObject({ commands: installed, kept: true });
       }
-      // On before, but nothing installed yet (the first run stopped short): still no question, commands off.
-      expect(plan(decide(mac, { content: TOKEN }))).toMatchObject({ state: "on", commands: false, kept: true });
+      // On before, but nothing installed yet (the first run stopped short): still no question, commands on.
+      expect(plan(decide(mac, { content: TOKEN }))).toMatchObject({ state: "on", commands: true, kept: true });
     });
 
     test("flags answer without asking; one given sets the computer up again", () => {
@@ -1498,7 +1521,27 @@ describe("what the agents need", () => {
     // System mode: only the coding CLIs are asked about.
     const system = checkRequirements({ mac: false, simple: false, arch: "x64", exists: has([]) });
     expect(askableRequirements(system).map((c) => c.id)).toEqual(["claude", "codex"]);
-    expect(checkRequirements({ mac: true, simple: false, arch: "arm64", exists: has([]) })).toEqual([]);
+    // A Mac: only the coding CLIs, found in ~/.local/bin (where the installer puts them) or Homebrew's.
+    const mac = checkRequirements({
+      mac: true,
+      simple: false,
+      arch: "arm64",
+      home: "/Users/ana",
+      exists: has(["/opt/homebrew/bin/codex"]),
+    });
+    expect(mac.map((c) => [c.id, c.present])).toEqual([
+      ["claude", false],
+      ["codex", true],
+    ]);
+    expect(askableRequirements(mac).map((c) => c.id)).toEqual(["claude"]);
+    const local = checkRequirements({
+      mac: true,
+      simple: false,
+      arch: "arm64",
+      home: "/Users/ana",
+      exists: has(["/Users/ana/.local/bin/claude"]),
+    });
+    expect(local[0]?.present).toBe(true);
   });
 
   test("Ubuntu (no BPF_FRAMEWORK) is offered simple mode, yes by default where there's room and apt", () => {

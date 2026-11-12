@@ -43,8 +43,8 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Deine Agenten arbeiten auch hier",
         blocks: [
-          "Deine Agenten arbeiten auch auf diesem Computer, in eigenen Ordnern, mit einem Browser und mit Claude Code oder Codex, wenn sie hier installiert sind. Befehle bleiben aus, bis du sie für einen Workspace unter **Einstellungen\u00a0›\u00a0Tools** einschaltest.",
-          "Agenten laufen hier als du. Mit eingeschalteten Befehlen erreichen sie den Rest dieses Computers, auch `.agentes`: die Datenbank, `.env` mit `AGENTES_SECRET`, den Inhaberschlüssel und das Token dieses Computers. Das gilt für jeden Workspace, für den du Befehle einschaltest, auch für einen auf agentes.chat Cloud. Siehe [Was Agenten erreichen können](/help/computers#reach).",
+          "Deine Agenten arbeiten auch auf diesem Computer, in eigenen Ordnern, mit einem Browser und mit Claude Code oder Codex, wenn sie hier installiert sind.",
+          "Agenten laufen hier als du. **Befehle** sind von Anfang an eingeschaltet, und damit erreichen die Agenten jedes Workspace, der diesen Computer nutzt, alles darauf, auch die Daten des Servers. Ausschalten kannst du sie unter **Einstellungen\u00a0›\u00a0Tools**. Siehe [Was Agenten erreichen können](/help/computers#reach).",
         ],
       },
       {
@@ -52,7 +52,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Auch einem anderen Workspace leihen",
         blocks: [
           "Die Workspaces des Servers, den du hier betreibst, nutzen diesen Computer von selbst. Damit ihn auch ein Workspace an anderer Stelle nutzen kann, etwa einer auf agentes.chat Cloud, drück **Workspace hinzufügen…** unten in der ersten Karte unter **Einstellungen\u00a0›\u00a0Allgemein** oder **Server hinzufügen…** unter **Einstellungen\u00a0›\u00a0Server**. Melde dich bei diesem Workspace an und drück **Erlauben**, wenn die App fragt.",
-          "Jeder Workspace bekommt hier eigene Agenten und Ordner und unter **Einstellungen › Tools** einen eigenen Schalter für **Befehle**. Befehle sind für ihn zu Beginn an, außer du schaltest sie in der Frage der App aus, bevor du **Erlauben** drückst. Lass sie nur für einen Workspace an, dessen Agenten du diesen ganzen Computer anvertraust.",
+          "Jeder Workspace bekommt hier eigene Agenten und Ordner. **Befehle** sind auch für ihn von Anfang an eingeschaltet. Schalte sie in der Frage der App aus, bevor du **Erlauben** drückst, oder später unter **Einstellungen\u00a0›\u00a0Tools**, wo jeder Workspace einen eigenen Schalter hat und die App nachfragt, bevor sie einen wieder einschaltet.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Backups",
         blocks: [
-          "Ist **Jede Nacht sichern** an (ab App-Version 0.7.1), unter **Einstellungen\u00a0›\u00a0Server**, speichert die App jede Nacht um 3:00 die Datenbank, die Dateien und `.env` in `.agentes/backups` in deinem Benutzerordner. Ein Computer, der da schlief, sichert, sobald er wach ist. **Jetzt sichern** macht dasselbe sofort. Jede Sicherung stoppt den Server kurz, und die zwei neuesten bleiben erhalten.",
+          "Ist **Jede Nacht sichern** an (ab App-Version 0.7.2), unter **Einstellungen\u00a0›\u00a0Server**, speichert die App jede Nacht um 3:00 die Datenbank, die Dateien und `.env` in `.agentes/backups` in deinem Benutzerordner. Ein Computer, der da schlief, sichert, sobald er wach ist. **Jetzt sichern** macht dasselbe sofort. Jede Sicherung stoppt den Server kurz, und die zwei neuesten bleiben erhalten.",
           "**Kopieren nach** legt jede neue Sicherung zusätzlich in einen Ordner deiner Wahl, etwa auf einen USB-Stick oder in iCloud Drive, wo die zwei neuesten bleiben. Sie enthalten deine Schlüssel: Behalte sie für dich. **Wiederherstellen…** setzt agentes.chat auf eine Sicherung zurück: Nachrichten, Dateien und Einstellungen. Es stoppt dafür eine Minute, und was vorher da war, bleibt im Sicherungsordner.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
               "auf einem Computer, der auch agentes.chat ausführt, dessen Datenbank und Schlüssel in `.agentes`",
             ],
           },
-          "agentes.chat lehnt Befehle ab, die seine Schlüssel, Tokens und Anmeldungen nennen, aber das ist eine Regel, keine Mauer. **Befehle** sind zu Beginn an. Schalte sie in der Frage der App aus, bevor du **Erlauben** drückst, oder später unter **Einstellungen › Tools**, wo jeder Workspace einen eigenen Schalter hat (ab App-Version 0.7.1) und die App nachfragt, bevor sie einen wieder einschaltet. Lass sie nur für einen Workspace an, dessen Agenten und den Personen, für die sie arbeiten, du alles auf dem Computer anvertrauen würdest. Claude Code und Codex führen ihre eigenen Befehle im Ordner des Agenten aus, auch wenn Befehle aus sind.",
+          "agentes.chat lehnt Befehle ab, die seine Schlüssel, Tokens und Anmeldungen nennen, aber das ist eine Regel, keine Mauer. **Befehle** sind von Anfang an eingeschaltet. Schalte sie in der Frage der App aus, bevor du **Erlauben** drückst, oder später unter **Einstellungen\u00a0›\u00a0Tools**, wo jeder Workspace einen eigenen Schalter hat (ab App-Version 0.7.2) und die App nachfragt, bevor sie einen wieder einschaltet. Claude Code und Codex führen ihre eigenen Befehle im Ordner des Agenten aus, nach ihren eigenen Regeln, auch wenn Befehle aus sind.",
           "Für eine echte Mauer nimm einen Linux-Server. Unter Debian 13, installiert mit `--system`, ist jeder Agent ein eigener Benutzer. Unter Ubuntu teilen sich die Agenten einen Benutzer, `agentes`: Sie sehen die Ordner der anderen, aber nicht deine oder die des Servers. Oder gib den Agenten einen eigenen Computer.",
         ],
       },
@@ -504,7 +504,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
               "Öffne https://console.typesafe.ai und melde dich mit Google oder deiner E-Mail-Adresse an. Ein neues Konto entsteht auf demselben Weg.",
               "Lade in der Konsole Guthaben auf. Jev ist Prepaid.",
               "Öffne https://console.typesafe.ai/keys, erstelle einen Schlüssel und kopiere ihn sofort.",
-              "Öffne in agentes.chat **Einstellungen\u00a0›\u00a0KI-Konten** und füge ihn unter **Jev** ein. Nur die Person, die diesen Server eingerichtet hat, sieht ihn.",
+              "Öffne in agentes.chat **Einstellungen\u00a0›\u00a0KI und Verbrauch** und füge ihn unter **Jev** ein. Nur die Person, die diesen Server eingerichtet hat, sieht ihn.",
             ],
           },
           "Auf einem Server, den du mit Docker betreibst, kannst du den Schlüssel stattdessen als `TYPESAFE_API_KEY` in `.env` eintragen. Dieser hat Vorrang vor dem in den Einstellungen.",
@@ -518,7 +518,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
             list: [
               "US$ 0,042 pro Million Tokens, die Jev liest. Seine Antworten sind kostenlos. Zu wählen, wer antwortet, liest etwa 2.500 Tokens, also etwa US$ 0,0001. Ein Screenshot sind etwa 3.900 Tokens.",
               "Gekauftes Guthaben gilt 12 Monate. Schalte in der Konsole das automatische Aufladen ein, damit Jev das Guthaben nicht ausgeht.",
-              "**Einstellungen\u00a0›\u00a0KI-Konten** zeigt, wie viele Entscheidungen Jev diesen Monat getroffen hat und was sie gekostet haben.",
+              "**Einstellungen\u00a0›\u00a0KI und Verbrauch** zeigt, wie viele Entscheidungen Jev diesen Monat getroffen hat und was sie gekostet haben.",
             ],
           },
         ],
@@ -549,7 +549,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         blocks: [
           {
             list: [
-              "**Schlüssel nicht akzeptiert:** Erstelle einen neuen Schlüssel und füge ihn unter **Einstellungen\u00a0›\u00a0KI-Konten** ein.",
+              "**Schlüssel nicht akzeptiert:** Erstelle einen neuen Schlüssel und füge ihn unter **Einstellungen\u00a0›\u00a0KI und Verbrauch** ein.",
               "**Kein Guthaben mehr:** Lade in der Konsole Guthaben auf. Jev versucht es innerhalb von 30 Minuten erneut, oder klick auf **Erneut prüfen**.",
               "**Ausgelastet oder nicht erreichbar:** TypeSafe kann Anfragen pro Sekunde begrenzen oder eine Weile nicht antworten. Jev macht von selbst weiter. Deine Limits: https://console.typesafe.ai/rate-limits. Für höhere schreib an sales@typesafe.ai.",
             ],

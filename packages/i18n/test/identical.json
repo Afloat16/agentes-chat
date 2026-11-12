@@ -180,7 +180,6 @@
       "settings.media.gifs",
       "settings.orgTitle",
       "settings.section.skills",
-      "settings.tileState.skills",
       "shell.soundPixel",
       "shell.threads",
       "skills.agentTitle",
@@ -280,7 +279,11 @@
       "portrait.options.hair.undercut",
       "portrait.options.hair.mullet",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "es": [
       "devices.iphone.path.general",
@@ -454,7 +457,6 @@
       "run.ctx.minutes",
       "settings.media.gifs",
       "settings.section.general",
-      "settings.tileState.plans",
       "skills.version",
       "storage.bucket",
       "storage.endpoint",
@@ -515,7 +517,11 @@
       "portrait.options.hair.undercut",
       "portrait.options.hair.mullet",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.general",
+      "devices.armBuild"
     ],
     "fr": [
       "calendar.moreRuns",
@@ -794,11 +800,9 @@
       "searchPage.pickDate",
       "searchPage.words.author.agent",
       "searchPage.words.has.image",
-      "settings.group.agents",
       "settings.kinds.agent",
       "settings.media.agentsTitle",
       "settings.section.notifications",
-      "settings.tileState.agents",
       "shell.agents",
       "shell.notifications",
       "shell.routines",
@@ -917,7 +921,12 @@
       "portrait.options.hair.undercut",
       "portrait.options.hair.dreads",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.scene.finder",
+      "install.scene.applications",
+      "install.page.version",
+      "install.page.versionSize",
+      "devices.armBuild"
     ],
     "de": [
       "devices.iphone.steps.account",
@@ -1336,7 +1345,17 @@
       "portrait.options.hair.dreads",
       "agentPage.work.brain.v2.computer",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.page.version",
+      "install.page.versionSize",
+      "install.page.system",
+      "install.scene.finder",
+      "install.scene.displays",
+      "install.scene.account",
+      "install.scene.appLabel",
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "it": [
       "calendar.moreRuns",
@@ -1591,7 +1610,6 @@
       "searchPage.words.has.link",
       "searchPage.words.ops.in",
       "settings.provider",
-      "settings.tileState.skills",
       "shell.account",
       "shell.home",
       "shell.soundPixel",
@@ -1678,7 +1696,11 @@
       "portrait.options.hair.mullet",
       "agentPage.work.brain.v2.computer",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.password",
+      "devices.armBuild"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -2055,15 +2077,12 @@
       "searchPage.words.author.agent",
       "searchPage.words.has.link",
       "searchPage.words.ops.in",
-      "settings.group.agents",
       "settings.kinds.agent",
       "settings.kinds.router",
       "settings.media.agentsTitle",
       "settings.section.computers",
       "settings.section.connectors",
       "settings.section.skills",
-      "settings.tileState.agents",
-      "settings.tileState.skills",
       "shell.account",
       "shell.agents",
       "shell.routines",
@@ -2228,6 +2247,7 @@
       "openOnPhone.googlePlay",
       "arrival.beta.word",
       "feedback.mark",
+      "usageViews.accounts.title",
       "portrait.sections.blush",
       "portrait.options.hair.afro",
       "portrait.options.hair.bob",
@@ -2245,7 +2265,13 @@
       "portrait.options.hair.dreads",
       "agentPage.work.brain.v2.computer",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.account",
+      "install.scene.appLabel",
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "ja": [
       "devices.system.android",
@@ -2398,7 +2424,10 @@
       "openOnPhone.googlePlay",
       "arrival.beta.word",
       "feedback.mark",
-      "devices.android.drivers.samsung"
+      "devices.android.drivers.samsung",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "ko": [
       "devices.system.android",
@@ -2546,7 +2575,10 @@
       "openOnPhone.appStore",
       "openOnPhone.googlePlay",
       "arrival.beta.word",
-      "feedback.mark"
+      "feedback.mark",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "zh-Hans": [
       "devices.system.android",
@@ -2686,7 +2718,9 @@
       "openOnPhone.appStore",
       "openOnPhone.googlePlay",
       "arrival.beta.word",
-      "feedback.mark"
+      "feedback.mark",
+      "install.page.beta",
+      "devices.armBuild"
     ],
     "id": [
       "devices.cpus",
@@ -2967,7 +3001,12 @@
       "portrait.options.hair.undercut",
       "portrait.options.hair.mullet",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.edit",
+      "install.scene.desktopDock",
+      "devices.armBuild"
     ],
     "tr": [
       "devices.cpus",
@@ -3096,7 +3135,6 @@
       "routines.form.kind.webhook",
       "routines.target.dmShort",
       "routines.webhook.callTest",
-      "settings.tileState.plans",
       "skills.version",
       "storage.bucket",
       "taskManager.program.agentes",
@@ -3142,7 +3180,10 @@
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
       "portrait.options.hair.mullet",
-      "devices.android.drivers.samsung"
+      "devices.android.drivers.samsung",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "pl": [
       "devices.cpus",
@@ -3342,8 +3383,6 @@
       "searchPage.words.has.link",
       "settings.import.title",
       "settings.kinds.router",
-      "settings.tileState.agents",
-      "settings.tileState.plans",
       "skills.source.url",
       "skills.version",
       "storage.bucket",
@@ -3417,7 +3456,11 @@
       "portrait.options.hair.undercut",
       "portrait.options.hair.mullet",
       "devices.android.drivers.samsung",
-      "onboarding.flow.area.options.marketing"
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.page.system",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "ru": [
       "devices.system.android",
@@ -3556,7 +3599,10 @@
       "openOnPhone.googlePlay",
       "arrival.beta.word",
       "feedback.mark",
-      "devices.android.drivers.samsung"
+      "devices.android.drivers.samsung",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ]
   },
   "mobile-base": {
@@ -3719,8 +3765,7 @@
       "approval.sheet.service",
       "plus.media",
       "find.filterWord.date",
-      "invite.ask.step.code",
-      "settings.group.agents"
+      "invite.ask.step.code"
     ],
     "de": [
       "devices.status.offline",
@@ -3928,7 +3973,6 @@
       "me.dashboards",
       "wiki.links",
       "invite.ask.step.code",
-      "settings.group.agents",
       "settings.section.connectors",
       "threads.title",
       "connectors.accountTitle"

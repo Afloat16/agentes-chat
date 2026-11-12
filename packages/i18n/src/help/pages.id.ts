@@ -43,8 +43,8 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "agents",
         heading: "Agen-agenmu juga bekerja di sini",
         blocks: [
-          "Agen-agenmu juga bekerja di komputer ini, di folder mereka sendiri, dengan browser, dan dengan Claude Code atau Codex kalau terpasang di sini. Perintah tetap mati sampai kamu menyalakannya untuk sebuah ruang kerja di **Preferensi\u00a0›\u00a0Alat**.",
-          "Agen di sini berjalan sebagai kamu. Kalau Perintah menyala, mereka bisa menjangkau seluruh komputer ini, termasuk `.agentes`: database, `.env` berisi `AGENTES_SECRET`, kunci pemilik, dan token komputer ini. Itu berlaku untuk setiap ruang kerja yang Perintahnya kamu nyalakan, termasuk ruang kerja di agentes.chat Cloud. Lihat [Apa yang bisa dijangkau agen](/help/computers#reach).",
+          "Agen-agenmu juga bekerja di komputer ini, di folder mereka sendiri, dengan browser, dan dengan Claude Code atau Codex kalau terpasang di sini.",
+          "Agen di sini berjalan sebagai kamu. **Perintah** menyala sejak awal, dan dengan itu agen dari setiap ruang kerja yang memakai komputer ini bisa menjangkau semua isinya, termasuk data server. Matikan di **Preferensi\u00a0›\u00a0Alat**. Lihat [Apa yang bisa dijangkau agen](/help/computers#reach).",
         ],
       },
       {
@@ -52,7 +52,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         heading: "Pinjamkan juga ke ruang kerja lain",
         blocks: [
           "Ruang kerja dari server yang kamu jalankan di sini memakai komputer ini dengan sendirinya. Supaya ruang kerja di tempat lain juga bisa memakainya, misalnya ruang kerja di agentes.chat Cloud, tekan **Tambah ruang kerja…** di bagian bawah kartu pertama di **Preferensi\u00a0›\u00a0Umum**, atau **Tambah server…** di **Preferensi\u00a0›\u00a0Server**. Masuk ke ruang kerja itu, lalu tekan **Izinkan** saat aplikasi bertanya.",
-          "Tiap ruang kerja punya agen dan foldernya sendiri di sini, juga sakelar **Perintah** sendiri di **Preferensi › Alat**. Perintah awalnya menyala untuknya, kecuali kamu mematikannya di pertanyaan aplikasi sebelum menekan **Izinkan**. Biarkan menyala hanya untuk ruang kerja yang agennya kamu percaya memegang seluruh komputer ini.",
+          "Tiap ruang kerja punya agen dan foldernya sendiri di sini. **Perintah** juga menyala sejak awal untuknya. Matikan di pertanyaan aplikasi sebelum menekan **Izinkan**, atau nanti di **Preferensi\u00a0›\u00a0Alat**, tempat tiap ruang kerja punya sakelarnya sendiri dan aplikasi bertanya dulu sebelum menyalakannya lagi.",
         ],
       },
       {
@@ -81,7 +81,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Cadangan",
         blocks: [
-          "Kalau **Cadangkan setiap malam** menyala (aplikasi 0.7.1 ke atas), di **Preferensi\u00a0›\u00a0Server**, aplikasi menyimpan database, file, dan `.env` di `.agentes/backups`, di folder pribadimu, setiap malam pukul 3:00. Komputer yang sedang tidur saat itu mencadangkan begitu bangun. **Cadangkan sekarang** melakukan hal yang sama saat itu juga. Setiap pencadangan menghentikan server sebentar, dan dua cadangan terbaru yang disimpan.",
+          "Kalau **Cadangkan setiap malam** menyala (aplikasi 0.7.2 ke atas), di **Preferensi\u00a0›\u00a0Server**, aplikasi menyimpan database, file, dan `.env` di `.agentes/backups`, di folder pribadimu, setiap malam pukul 3:00. Komputer yang sedang tidur saat itu mencadangkan begitu bangun. **Cadangkan sekarang** melakukan hal yang sama saat itu juga. Setiap pencadangan menghentikan server sebentar, dan dua cadangan terbaru yang disimpan.",
           "**Salin ke** juga menaruh setiap cadangan baru di folder pilihanmu, seperti flashdisk atau iCloud Drive, tempat dua cadangan terbaru disimpan. Isinya kunci-kuncimu: jaga kerahasiaannya. **Pulihkan…** mengembalikan agentes.chat ke sebuah cadangan: pesan, file, dan pengaturan. agentes.chat berhenti selama semenit, dan isi sebelumnya tetap disimpan di folder cadangan.",
         ],
       },
@@ -199,7 +199,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
               "di komputer yang juga menjalankan agentes.chat, database dan kuncinya di `.agentes`",
             ],
           },
-          "agentes.chat menolak perintah yang menyebut kunci, token, dan data login, tapi itu aturan, bukan tembok. **Perintah** awalnya menyala. Matikan di pertanyaan aplikasi sebelum menekan **Izinkan**, atau nanti di **Preferensi › Alat**, tempat tiap ruang kerja punya sakelarnya sendiri (aplikasi 0.7.1 ke atas) dan aplikasi bertanya dulu sebelum menyalakannya lagi. Biarkan menyala hanya untuk ruang kerja yang agennya, dan orang-orang yang mereka bantu, kamu percaya memegang semua isi komputer itu. Claude Code dan Codex menjalankan perintahnya sendiri di folder agen, bahkan saat Perintah mati.",
+          "agentes.chat menolak perintah yang menyebut kunci, token, dan data login, tapi itu aturan, bukan tembok. **Perintah** menyala sejak awal. Matikan di pertanyaan aplikasi sebelum menekan **Izinkan**, atau nanti di **Preferensi\u00a0›\u00a0Alat**, tempat tiap ruang kerja punya sakelarnya sendiri (aplikasi 0.7.2 ke atas) dan aplikasi bertanya dulu sebelum menyalakannya lagi. Claude Code dan Codex menjalankan perintahnya sendiri di folder agen, dengan aturannya sendiri, bahkan saat Perintah mati.",
           "Untuk tembok sungguhan, pakai server Linux. Di Debian 13, kalau dipasang dengan `--system`, tiap agen jadi pengguna tersendiri. Di Ubuntu, agen berbagi satu pengguna, `agentes`: mereka bisa melihat folder satu sama lain, tapi bukan foldermu atau folder server. Atau beri agen komputer milik mereka sendiri.",
         ],
       },
@@ -500,7 +500,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
               "Buka https://console.typesafe.ai lalu masuk dengan Google atau emailmu. Akun baru dibuat dengan cara yang sama.",
               "Tambahkan saldo di konsol. Jev memakai sistem prabayar.",
               "Buka https://console.typesafe.ai/keys, buat kunci, lalu langsung salin.",
-              "Di agentes.chat, buka **Pengaturan › Akun AI** lalu tempel di bawah **Jev**. Hanya orang yang menyiapkan server ini yang bisa melihatnya.",
+              "Di agentes.chat, buka **Pengaturan › AI dan pemakaian** lalu tempel di bawah **Jev**. Hanya orang yang menyiapkan server ini yang bisa melihatnya.",
             ],
           },
           "Di server yang kamu jalankan dengan Docker, kamu juga bisa menaruh kuncinya di `.env` sebagai `TYPESAFE_API_KEY`. Kunci itu lebih diutamakan daripada yang ada di Pengaturan.",
@@ -514,7 +514,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
             list: [
               "US$ 0,042 per sejuta token yang dibaca Jev. Jawabannya gratis. Memilih siapa yang menjawab membaca sekitar 2.500 token, jadi sekitar US$ 0,0001. Satu tangkapan layar sekitar 3.900 token.",
               "Saldo yang kamu beli berlaku 12 bulan. Nyalakan isi ulang otomatis di konsol supaya saldo Jev tidak habis.",
-              "**Pengaturan › Akun AI** menampilkan berapa banyak keputusan yang dibuat Jev bulan ini, dan biayanya.",
+              "**Pengaturan › AI dan pemakaian** menampilkan berapa banyak keputusan yang dibuat Jev bulan ini, dan biayanya.",
             ],
           },
         ],
@@ -545,7 +545,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         blocks: [
           {
             list: [
-              "**Kunci tidak diterima:** buat kunci baru lalu tempel di **Pengaturan › Akun AI**.",
+              "**Kunci tidak diterima:** buat kunci baru lalu tempel di **Pengaturan › AI dan pemakaian**.",
               "**Saldo habis:** tambahkan saldo di konsol. Jev mencoba lagi dalam 30 menit, atau klik **Periksa lagi**.",
               "**Sibuk atau tidak bisa dijangkau:** TypeSafe bisa membatasi permintaan per detik, atau berhenti menjawab sementara. Jev akan lanjut lagi dengan sendirinya. Batasmu: https://console.typesafe.ai/rate-limits. Untuk batas yang lebih tinggi, kirim email ke sales@typesafe.ai.",
             ],

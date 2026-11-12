@@ -1017,7 +1017,6 @@
     "proposalsWaiting_other": "{{count}} 条待处理",
     "drive": "Drive",
     "connectors": "连接器和 MCP",
-    "usage": "用量",
     "preferences": "偏好设置",
     "editProfile": "编辑资料",
     "switchWorkspace": "切换工作区",
@@ -1706,6 +1705,8 @@
       "helper_missing": "测试助手还没有设置好",
       "helper_expired": "测试助手需要续期",
       "apple_account_missing": "Mac 上的 Xcode 需要登录 Apple 账户",
+      "apple_team_missing": "Mac 上的 Xcode 还没有显示团队",
+      "ui_not_authorized": "这台 iPhone 拒绝了测试助手的点按",
       "team_limit": "从这台 iPhone 上删除一个你自己构建的 App",
       "helper_untrusted": "在这台 iPhone 上信任测试助手",
       "booting": "正在启动",
@@ -1863,7 +1864,16 @@
       "step5Hint": "这是 {{host}} 安装的应用，让智能体可以在这台 iPhone 上点按和输入。安装后它会出现在这个列表中。",
       "step5Text": "设置 › 通用 › VPN 与设备管理。点按开发者的名称，然后点按“信任”。",
       "waiting": "正在等待 {{host}} 发现它",
-      "footer": "其余的交给你的 Mac，它开机时每 7 天续期一次测试助手。"
+      "footer": "其余的交给你的 Mac，它开机时每 7 天续期一次测试助手。",
+      "tooOld": "这台 iPhone 运行 iOS {{version}}，而智能体需要 iOS 17 或更新版本。能更新就更新，或者换一台更新的 iPhone。",
+      "xcodeOld": "这台 iPhone 运行 iOS {{version}}，比 {{host}} 上的 Xcode 支持的版本更新。请在那台 Mac 上安装 Xcode {{major}}，然后在终端中运行 xcrun devicectl manage ddis update。",
+      "teamMissing": "Xcode 已登录，但还没有显示团队。在 Xcode 中新建任意 iOS App，在 Signing & Capabilities 下选择你的团队，然后在这台 iPhone 上运行一次。",
+      "uiRefused": "这台 iPhone 拒绝了测试助手的点按。请解锁它，如有要求就输入密码。如果反复出现，把 设置 › 开发者 › 启用 UI 自动化 关闭再打开。",
+      "pluggedIn": "已经插好了",
+      "stall": {
+        "plug": "{{host}} 还没有看到这台 iPhone。请使用能传输数据的线，而不是只能充电的线，保持这台 iPhone 解锁，如有提示就点按“信任”。",
+        "devmode": "开发者模式要在这台 iPhone 重启后才会打开。点按“重新启动”，开机后点按“打开”。没有这个开关？拔下这台 iPhone 再重新插上。"
+      }
     },
     "notice": {
       "kind": "设备",
@@ -2106,16 +2116,13 @@
     "editSub": "名称、标志、时区和智能体知道的内容",
     "group": {
       "org": "工作区",
-      "people": "人员",
-      "agents": "智能体",
-      "costs": "费用和数据"
+      "people": "人员"
     },
     "section": {
       "members": "成员",
       "roles": "角色",
       "access": "智能体的权限",
-      "connectors": "连接器",
-      "usage": "用量和预算"
+      "connectors": "连接器"
     },
     "ofOnline": "{{online}}/{{count}} 台在线",
     "deleteName": "删除 {{name}}",
@@ -2199,7 +2206,7 @@
       "guide": "打开 {{name}} 指南",
       "fields": "填写信息",
       "private": "这些信息会加密保存，不会再次显示。",
-      "teamHelp": "其中的项目一开始对工作区所有成员可见，不由任何智能体使用。之后再选择智能体。",
+      "teamHelp": "工作区所有成员都能看到其中的项目，所有智能体都可以使用。之后可以调整。",
       "personalHelp": "只有你能看到其中的项目，你提出要求时智能体会使用它们。",
       "checking": "正在向 {{name}} 确认…",
       "connected": "已连接 {{name}}",
