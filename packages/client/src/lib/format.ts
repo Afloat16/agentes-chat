@@ -97,6 +97,9 @@ export const capitalize = (s: string, locale?: string) => s.charAt(0).toLocaleUp
  */
 export const keepWhole = (fact: string) => fact.replace(/ /g, "\u00a0");
 
+/** A row's id as the server writes it (a UUID): a value that means nothing to a person. */
+export const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
 /** Words written with `<code>` tags, as plain text where the tags can't be drawn. */
 export const stripCodeTags = (words: string) => words.replace(/<\/?code>/g, "");
 

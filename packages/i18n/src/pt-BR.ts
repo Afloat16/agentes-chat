@@ -4444,6 +4444,9 @@ export const ptBR = {
       bcc: "Cco",
       subject: "Assunto",
       noSubject: "(sem assunto)",
+      /** A connector's reply: who it goes to is the message's sender, not in its call. */
+      toSender: "Para quem enviou a mensagem",
+      toList: "Para {{to}}",
       more: "Ler tudo",
       less: "Mostrar menos",
       answers: "Responde a <b>“{{subject}}”</b>",
@@ -4493,6 +4496,8 @@ export const ptBR = {
     outcomeApprovedByYou: "Aprovado por você",
     outcomeRefusedBy: "Recusado por {{name}}",
     outcomeRefusedByYou: "Recusado por você",
+    /** The agent asked for the same action again in a later turn: that newer request is on the card under it. */
+    outcomeSuperseded: "Substituída pela versão abaixo",
     /** Decided by someone covering the person it was asked of (ADR 0139). */
     outcomeApprovedCovering: "Aprovado por {{name}}, cobrindo {{for}}",
     outcomeRefusedCovering: "Recusado por {{name}}, cobrindo {{for}}",
@@ -4931,6 +4936,8 @@ export const ptBR = {
     },
     expiredLine: "Ninguém decidiu em 24 h, então nada foi feito.",
     canceledLine: "A execução parou antes da decisão.",
+    /** Replaced by the agent's newer request for the same action (`supersededById`). */
+    supersededLine: "O agente pediu de novo com uma versão nova; esta não foi feita.",
     lesson: "{{name}} vai levar em conta: {{reason}}",
     again: "Pedir de novo",
     againBody: "@{{handle}} o pedido “{{title}}” expirou sem decisão. Se ainda fizer sentido, pede de novo.",
