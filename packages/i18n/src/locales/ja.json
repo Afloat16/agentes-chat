@@ -2343,6 +2343,7 @@
         "delete": "エージェントを削除できるのは管理者だけです",
         "audience": "話せる人を変えられるのは管理者と責任者だけです",
         "channels": "チャンネルを変えられるのは管理者と責任者だけです",
+        "skill": "エージェントのスキルを変えられるのは管理者だけです",
         "ai_account": "割り当てられるのはアカウントの持ち主だけです",
         "name": "エージェントの名前を変えられるのは管理者だけです",
         "look": "見た目を変えられるのは管理者と責任者だけです",
@@ -2360,7 +2361,8 @@
       "channel": "チャンネル",
       "name": "名前",
       "look": "見た目",
-      "reports_to": "報告先"
+      "reports_to": "報告先",
+      "skill": "スキル「{{name}}」"
     },
     "value": {
       "lookDefault": "標準の見た目",
@@ -2376,7 +2378,9 @@
       "deleted": "削除済み",
       "notIn": "チャンネル外",
       "withoutMention": "自分の判断で",
-      "mentionOnly": "メンションされたときだけ"
+      "mentionOnly": "メンションされたときだけ",
+      "skillOn": "オン",
+      "skillOff": "オフ"
     },
     "remove": {
       "archiveTitle_other": "{{count}}体のエージェントをアーカイブしますか？",
@@ -2606,6 +2610,17 @@
       "gemini": "Geminiのプランを接続",
       "zen": "OpenCodeを接続",
       "api_key": "APIキーを追加"
+    },
+    "toolOff": {
+      "text": "{{computer}}は接続されていますが、{{program}}がオフになっています。安全のため、オンにできるのはそのコンピューター上だけです。",
+      "where": "{{computer}}で",
+      "one": "時計の横にあるagentes.chatのアイコン<mark/>をクリック",
+      "oneWindows": "Windowsでは、タスクバーの矢印 ^ の中にあることがあります。",
+      "two": "<b>環境設定</b>を開く",
+      "three": "<b>ツール</b>で<b>{{program}}</b>をオンにする",
+      "terminal": "コンピューターのターミナルで実行:",
+      "here": "<b>ツール</b>で<b>{{program}}</b>をオンにしてください。",
+      "waiting": "オンになるのを待っています。この画面は自動で切り替わります。"
     },
     "titleFor": "{{name}}のAIを接続",
     "have": {
@@ -8851,6 +8866,9 @@
     "pickAll": "すべて",
     "pickMissing": "スキルを1つ以上選んでください。",
     "pickSkipped": "インストールできません。{{reason}}",
+    "pickReplaces": "インストール済みのスキル {{name}} を置き換えます",
+    "pickReplacesRemoved": "削除されたスキル {{name}} を置き換えます",
+    "forAgent_other": "{{agent}} でオンにする",
     "installedMany": "{{count}}件のスキルをインストールしました。",
     "zipHelp": "ルートにSKILL.mdがある.zip。",
     "zipPick": ".zipを選択",
@@ -12647,6 +12665,7 @@
       "targetNotFound": "そのコンピューターはもう存在しません。別のものを選んでください。",
       "targetSame": "エージェントはすでにそのコンピューターにいます。",
       "targetPaused": "そのコンピューターは一時停止中です。別のものを選んでください。",
+      "pausePast": "未来の時刻を選んでください。",
       "accountMethodUnsupported": "このコンピューターでは、まだこの方法でClaudeを接続できません。コンピューターのagentes.chatプログラムを更新するか、APIキーを使ってください。",
       "offline": "{{name}}は現在オフラインです。戻ったらもう一度お試しください。",
       "paused": "{{name}}は一時停止中です。再開されるまで新しいものは始まりません。",
@@ -12688,7 +12707,8 @@
       "ownerOrAdmin": "これができるのは、エージェントのオーナーか管理者だけです。",
       "detailsHidden": "仕組みを見られるのは、{{agentName}} と話す人だけです。",
       "extraOwnerOnly": "プランの有料の追加使用量をオンまたはオフにできるのは、エージェントのオーナーだけです。",
-      "undoForbidden": "元に戻せるのは、エージェントが作業した相手、そのオーナー、または管理者だけです。"
+      "undoForbidden": "元に戻せるのは、エージェントが作業した相手、そのオーナー、または管理者だけです。",
+      "undoSkillsAdmins": "エージェントのスキルの変更を元に戻したりやり直したりできるのは管理者だけです。"
     },
     "account": {
       "notRestorable": "このアカウントはもう復元できません。",
@@ -12778,6 +12798,21 @@
     "paused": "一時停止中",
     "pausedUntil": "{{time}}まで一時停止中",
     "pausedHint": "接続した人がコンピューター本体で一時停止しています。",
+    "remotePause": {
+      "button": "一時停止",
+      "menu": "{{name}}を一時停止",
+      "oneHour": "1時間",
+      "tomorrow": "明日の午前9時まで",
+      "manual": "再開するまで",
+      "resume": "再開",
+      "byYou": "あなたが一時停止しました。",
+      "byYouUntil": "あなたが{{time}}まで一時停止しました。",
+      "byName": "{{name}}さんが一時停止しました。",
+      "byNameUntil": "{{name}}さんが{{time}}まで一時停止しました。",
+      "outdated": "ここから一時停止するには、このコンピューターのagentes.chatアプリを更新してください。",
+      "paused": "{{name}}を一時停止しました",
+      "resumed": "{{name}}が作業を再開しました"
+    },
     "seenNow": "接続中",
     "seen": "最終接続 {{when}}",
     "neverSeen": "まだ接続されていません",
@@ -13189,6 +13224,8 @@
       "openApp": "アプリを開く",
       "server": "サーバーまたはVPS",
       "serverLine": "ターミナルに1行貼り付けるだけ",
+      "httpLine": "ターミナルに1行貼り付けるだけ。httpsのアドレスなら、アプリがワンクリックで接続します。",
+      "httpHow": "方法",
       "other": "ほかのコンピューター",
       "otherLine": "アプリをインストール",
       "android": "Androidスマートフォン",
@@ -15202,6 +15239,7 @@
       "agent_proposal": "新しいエージェントを提案しました: {{name}}",
       "team_proposal": "チームを提案しました：{{names}}",
       "settings_proposal": "{{names}}への変更を提案しました",
+      "settings_request": "自分の設定の変更を依頼しています",
       "approval_request": "承認リクエスト: {{title}}",
       "secret_request": "{{agent}}がキーを求めました: {{name}}",
       "secret_requestAnon": "キーを求めました: {{name}}",

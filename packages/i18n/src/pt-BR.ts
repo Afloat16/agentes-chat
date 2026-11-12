@@ -2485,6 +2485,7 @@ export const ptBR = {
         audience_female: "Só admins e o responsável mudam quem conversa com ela",
         channels: "Só admins e o responsável mudam os canais dele",
         channels_female: "Só admins e o responsável mudam os canais dela",
+        skill: "Só admins mudam as skills de um agente",
         ai_account: "Só o dono da conta a escolhe",
         name: "Só admins mudam o nome de um agente",
         look: "Só admins e o responsável mudam a aparência",
@@ -2503,6 +2504,7 @@ export const ptBR = {
       name: "Nome",
       look: "Aparência",
       reports_to: "Responde a",
+      skill: "Skill {{name}}",
     },
     value: {
       anAgent: "Um agente",
@@ -2519,6 +2521,8 @@ export const ptBR = {
       notIn: "Fora do canal",
       withoutMention: "Por conta própria",
       mentionOnly: "Só quando mencionado",
+      skillOn: "Ligada",
+      skillOff: "Desligada",
     },
     remove: {
       archiveTitle_one: "Arquivar {{count}} agente?",
@@ -2802,6 +2806,24 @@ export const ptBR = {
       gemini: "Conectar o seu plano do Gemini",
       zen: "Conectar o OpenCode",
       api_key: "Adicionar uma chave de API",
+    },
+    /**
+     * A plan whose program is switched off on a computer the person connected. `program`: "Claude Code" or "Codex"
+     * (`brain.card`), as its switch is named in that computer's own settings.
+     */
+    toolOff: {
+      text: "O {{computer}} está conectado, mas o {{program}} está desligado nele. Por segurança, só dá para ligar no próprio computador.",
+      where: "No {{computer}}",
+      /** `<mark/>`: the app's icon, drawn. */
+      one: "Clique no ícone do agentes.chat <mark/> perto do relógio",
+      oneWindows: "No Windows, ele pode estar atrás da seta ^ da barra de tarefas.",
+      two: "Abra <b>Preferências</b>",
+      three: "Em <b>Ferramentas</b>, ligue <b>{{program}}</b>",
+      /** On a computer that may have no app: its command follows. */
+      terminal: "No terminal do computador, rode:",
+      /** In the app on that very computer: Open Tools follows. */
+      here: "Ligue <b>{{program}}</b> em <b>Ferramentas</b>.",
+      waiting: "Esperando você ligar. Esta tela muda sozinha.",
     },
     titleFor: "Conectar uma IA para o {{name}}",
     titleFor_female: "Conectar uma IA para a {{name}}",
@@ -9376,6 +9398,10 @@ export const ptBR = {
     pickAll: "Todas",
     pickMissing: "Escolha pelo menos uma skill.",
     pickSkipped: "Não dá para instalar. {{reason}}",
+    pickReplaces: "Substitui a skill {{name}} já instalada",
+    pickReplacesRemoved: "Substitui a skill {{name}} removida",
+    forAgent_one: "Fica ligada para {{agent}}",
+    forAgent_other: "Ficam ligadas para {{agent}}",
     installedMany: "{{count}} skills instaladas.",
     zipHelp: "Um .zip com o SKILL.md na raiz.",
     zipPick: "Escolher .zip",
@@ -13125,6 +13151,7 @@ export const ptBR = {
       targetNotFound: "Esse computador não existe mais. Escolha outro.",
       targetSame: "Os agentes já estão nesse computador.",
       targetPaused: "Esse computador está pausado. Escolha outro.",
+      pausePast: "Escolha um horário no futuro.",
       accountMethodUnsupported:
         "Este computador ainda não conecta o Claude desse jeito. Atualize o programa do agentes.chat nele, ou use uma chave de API.",
       offline: "{{name}} está fora do ar agora. Tente de novo quando ele voltar.",
@@ -13172,6 +13199,7 @@ export const ptBR = {
       detailsHidden: "Só quem conversa com {{agentName}} vê como funciona.",
       extraOwnerOnly: "Só o dono do agente liga ou desliga o uso extra pago do plano.",
       undoForbidden: "Só a pessoa para quem o agente trabalhou, o dono dele ou um admin pode desfazer isso.",
+      undoSkillsAdmins: "Só um admin desfaz ou refaz uma mudança nas skills de um agente.",
     },
     account: {
       notRestorable: "Esta conta não pode mais ser restaurada.",
@@ -13265,6 +13293,21 @@ export const ptBR = {
     paused: "Pausado",
     pausedUntil: "Pausado até {{time}}",
     pausedHint: "Pausado no próprio computador por quem o conectou.",
+    remotePause: {
+      button: "Pausar",
+      menu: "Pausar {{name}}",
+      oneHour: "Por 1 hora",
+      tomorrow: "Até amanhã às 9h",
+      manual: "Até eu retomar",
+      resume: "Retomar",
+      byYou: "Pausado por você.",
+      byYouUntil: "Pausado por você até {{time}}.",
+      byName: "Pausado por {{name}}.",
+      byNameUntil: "Pausado por {{name}} até {{time}}.",
+      outdated: "Atualize o app agentes.chat neste computador para pausá-lo daqui.",
+      paused: "{{name}} está pausado",
+      resumed: "{{name}} voltou a trabalhar",
+    },
     seenNow: "conectado agora",
     seen: "visto {{when}}",
     neverSeen: "ainda não conectou",
@@ -13663,6 +13706,8 @@ export const ptBR = {
       openApp: "Abrir o app",
       server: "Um servidor ou VPS",
       serverLine: "Uma linha para colar no terminal dele",
+      httpLine: "Uma linha para colar no terminal dele. O app conecta com um clique num endereço https.",
+      httpHow: "Como",
       other: "Outro computador",
       otherLine: "Instale o app nele",
       android: "Celular Android",
@@ -15821,6 +15866,7 @@ export const ptBR = {
       agent_proposal: "Propôs um novo agente: {{name}}",
       team_proposal: "Propôs um time: {{names}}",
       settings_proposal: "Propôs uma mudança para {{names}}",
+      settings_request: "Pede uma mudança nas próprias configurações",
       approval_request: "Pedido de aprovação: {{title}}",
       secret_request: "{{agent}} pediu uma chave: {{name}}",
       secret_requestAnon: "Pediu uma chave: {{name}}",

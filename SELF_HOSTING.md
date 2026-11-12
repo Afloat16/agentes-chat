@@ -200,8 +200,8 @@ sign-in.
   this Mac** (**Use this PC** on Windows, **Use this computer** on Linux). The app asks first, in its
   own dialog naming the instance and the organization. Its agents start with commands, the browser and
   Claude Code or Codex when the computer has them, and no folders of yours. Commands are on by
-  default. Turn them off in the app's **Preferences › Tools**, where one switch counts for every
-  workspace on the computer. Folders are added in **Preferences › Folders**. The app pairs a computer
+  default. Turn them off in the app's **Preferences › Tools**, where each workspace on the computer
+  has its own switch. Folders are added in **Preferences › Folders**. The app pairs a computer
   with agentes.chat Cloud the same way. Until you pair it,
   nothing of the computer is used. The app never offers the computer that runs the instance: its agents
   work there through the instance itself (This server as the agents' computer, below).
