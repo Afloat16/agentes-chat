@@ -586,7 +586,7 @@ test("a widget's test raises no notice that its computer is away either, where a
   expect(heard.every((n) => n.groupKey.startsWith(`routine_stalled:${routine.id}:`))).toBe(true);
 });
 
-test("a widget's refresh in line for its computer: asking again tells its widget nothing, its turn starting does", async () => {
+test("a widget's refresh in line for its computer: joining it tells its widget, asking again nothing, its turn starting does", async () => {
   f = await setup();
   await computerAgent(f);
   let room = false;
@@ -613,10 +613,13 @@ test("a widget's refresh in line for its computer: asking again tells its widget
     format: "kpi",
     schedule: "manual",
   });
+  const queued = statuses.length;
   await drainOutbox(f.db, handlers);
   const [run] = await runs(f);
   if (!run) throw new Error("no run");
   expect(run.transcript).toMatchObject({ waitingForBrain: { code: "busy" } });
+  // Its run starting, then its joining the line: the apps read its wait again, said once it is ten minutes old.
+  expect(statuses.slice(queued)).toEqual(["building", "building"]);
   const parked = statuses.length;
   await drainOutbox(f.db, handlers, { now: later(COMPUTER_BUSY_RETRY_MS + 1_000) });
   await drainOutbox(f.db, handlers, { now: later(2 * (COMPUTER_BUSY_RETRY_MS + 1_000)) });

@@ -3285,8 +3285,12 @@ async function executeRunInner(
         maxAttempts: 4,
       });
     }
-    // Only a run joining the line changes it: the head asking again and refused again changes nothing.
-    if (busy && !stillBusy) await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+    // Only a run joining the line changes it, and its widget's wait (`since`, said once 10 minutes old): the head
+    // asking again and refused again changes nothing.
+    if (busy && !stillBusy) {
+      await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+      await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    }
     const computer = busy ? ("queued" as const) : ("away" as const);
     await publishChannelEvent(deps.pubsub, event("waiting_input", undefined, undefined, computer));
     await finished("waiting_input", undefined, undefined, computer);
