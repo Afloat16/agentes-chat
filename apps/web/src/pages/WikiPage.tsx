@@ -557,13 +557,9 @@ function WikiNav({
         </section>
       )}
       {can(org, "edit_wiki") && (
-        <button type="button" className="wiki-import-card ac-iconline" onClick={onImport}>
-          <Icon name="upload" size={20} />
-          <span>
-            <b>{t("wiki.import.cta")}</b>
-            <small>{t("wiki.import.ctaText")}</small>
-          </span>
-        </button>
+        <Button icon="upload" className="wiki-import-btn" onClick={onImport}>
+          {t("wiki.import.cta")}
+        </Button>
       )}
     </aside>
   );

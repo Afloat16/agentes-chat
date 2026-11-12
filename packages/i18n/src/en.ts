@@ -10781,11 +10781,16 @@ export const en = {
     },
     import: {
       cta: "Import",
-      ctaText: "From Obsidian, GitHub or .md files",
       short: "Import",
       title: "Import into the wiki",
-      text: "Choose where the notes come from. Folders, tags and [[links]] keep working here.",
-      /** The tabs' name: where the notes come from. */
+      text: "Choose where the notes come from.",
+      titleFrom: { obsidian: "Import from Obsidian", github: "Import from GitHub", files: "Import files" },
+      textFrom: {
+        obsidian: "Bring the whole vault: folders, tags, aliases and [[links]] keep working here.",
+        github: "The repository's Markdown notes become pages, in its folders.",
+        files: "Markdown notes from any app: .md files, a folder or a .zip.",
+      },
+      /** The source cards' group: where the notes come from. */
       from: "Where to import from",
       source: { obsidian: "Obsidian", github: "GitHub", files: "Files" },
       files: {

@@ -14,9 +14,8 @@ import {
   HintLine,
   Icon,
   Input,
+  OptionCard,
   Segmented,
-  TabPanel,
-  Tabs,
 } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -27,6 +26,7 @@ import { useApi } from "@/api/context";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { ConnectFlow, type FlowState } from "@/components/ConnectFlow";
 import { ConnectorIcon } from "@/components/ConnectorCatalog";
+import { GitHubMark } from "@/components/GitHubMark";
 import { useOrg } from "@/components/org-context";
 import { WikiSky } from "@/components/Sky";
 import { useDirectory } from "@/hooks/useDirectory";
@@ -47,6 +47,7 @@ import {
 } from "@/lib/obsidian";
 import { useToast } from "@/lib/toast";
 import { ObsidianMark } from "./ObsidianMark";
+import "@/components/import-flow.css";
 import "./vault.css";
 
 /** Picking a vault: a .zip or .md files, or a whole folder. Both inputs stay hidden. */
@@ -385,10 +386,12 @@ export function VaultReading({
 }
 
 const GITHUB_MARK = { iconUrl: "/connectors/github.svg", brandColor: null };
+const SOURCES: WikiImportSource[] = ["obsidian", "github", "files"];
 
 /**
- * "Importar": where the notes come from (an Obsidian vault, a GitHub link, Markdown files), then the same for all:
- * review what it holds and how it lands, then import (attachments to the Drive, notes as pages). A GitHub link is
+ * "Importar", in two steps: where the notes come from, as a grid of cards (an Obsidian vault, a GitHub link,
+ * Markdown files), then that source's own way in ("Voltar" picks another). From there the same for all: review what
+ * it holds and how it lands, then import (attachments to the Drive, notes as pages). A GitHub link is
  * read on the server, a private repository through the workspace's GitHub; when none reaches it, the dialog offers
  * to connect GitHub, as Instalar skill does. `files` starts it already reading (dropped on the page).
  */
@@ -419,7 +422,8 @@ export function WikiImportDialog({
   const stop = useRef(false);
   const [stopping, setStopping] = useState(false);
 
-  const [from, setFrom] = useState<WikiImportSource>("obsidian");
+  /** The second step's source; null on the first, where it is picked. */
+  const [from, setFrom] = useState<WikiImportSource | null>(null);
   const [url, setUrl] = useState("");
   const [fetching, setFetching] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -551,7 +555,9 @@ export function WikiImportDialog({
       : t("wiki.import.doneTitle")
     : report && reader.state.step === "ready"
       ? report.name
-      : t("wiki.import.title");
+      : from
+        ? t(`wiki.import.titleFrom.${from}`)
+        : t("wiki.import.title");
   const description = done
     ? undefined
     : importing
@@ -560,7 +566,9 @@ export function WikiImportDialog({
         ? t("wiki.import.readingText")
         : report
           ? t("wiki.import.reviewText")
-          : t("wiki.import.text");
+          : from
+            ? t(`wiki.import.textFrom.${from}`)
+            : t("wiki.import.text");
 
   let body: ReactNode;
   let footer: ReactNode;
@@ -771,84 +779,104 @@ export function WikiImportDialog({
   } else {
     const mayConnect = can(org, "manage_connectors") && Boolean(github);
     const said = hidden ? hiddenRepoText(t, hidden, mayConnect) : null;
-    body = (
-      <Tabs
-        value={from}
-        onValueChange={(v) => {
-          setFrom(v);
-          setLinkError(null);
-          setHidden(null);
-        }}
-        label={t("wiki.import.from")}
-        items={[
-          { value: "obsidian", label: t("wiki.import.source.obsidian") },
-          { value: "github", label: t("wiki.import.source.github") },
-          { value: "files", label: t("wiki.import.source.files") },
-        ]}
-      >
-        <TabPanel value="obsidian">
-          <div className="vault-dialog">
-            <VaultDropZone onFiles={(f, n) => void read(f, n, "obsidian")} />
-            <p className="vault-notice">
-              <HintLine name={t("common.about", { label: t("wiki.import.howToLabel") })} hint={t("wiki.import.howTo")}>
-                {t("wiki.import.howToLabel")}
-              </HintLine>
-            </p>
-          </div>
-        </TabPanel>
-        <TabPanel value="github">
-          <form
-            className="vault-dialog"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void readLink();
+    body =
+      from === null ? (
+        // biome-ignore lint/a11y/useSemanticElements: pressable cards, not a native fieldset
+        <div className="imp-sources" role="group" aria-label={t("wiki.import.from")}>
+          {SOURCES.map((source) => (
+            <OptionCard key={source} stacked pressed={false} className="imp-source" onClick={() => setFrom(source)}>
+              <span className="imp-mark" aria-hidden="true">
+                {source === "obsidian" ? (
+                  <ObsidianMark size={20} />
+                ) : source === "github" ? (
+                  <GitHubMark size={20} />
+                ) : (
+                  <Icon name="file" />
+                )}
+              </span>
+              <span className="ac-option__title">{t(`wiki.import.source.${source}`)}</span>
+            </OptionCard>
+          ))}
+        </div>
+      ) : from === "github" ? (
+        <form
+          id="wiki-import-link"
+          className="vault-dialog"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void readLink();
+          }}
+        >
+          <Field
+            label={t("wiki.import.github.label")}
+            id="wiki-import-url"
+            error={linkError ?? undefined}
+            hint={{ name: t("common.about", { label: t("wiki.import.github.label") }), text: t("wiki.import.github.help") }}
+          >
+            <Input
+              value={url}
+              autoFocus
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setLinkError(null);
+                setHidden(null);
+              }}
+              placeholder="https://github.com/…"
+              inputMode="url"
+            />
+          </Field>
+          {said && (
+            <div className="skill-hidden">
+              <Alert tone="neutral">{said.text}</Alert>
+              {said.connect && github && (
+                <div className="row">
+                  <Button size="sm" variant="primary" onClick={() => setFlow({ step: 0, def: github })}>
+                    <ConnectorIcon def={GITHUB_MARK} label="GitHub" />
+                    {t("skills.hidden.connectButton")}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </form>
+      ) : from === "obsidian" ? (
+        <>
+          <VaultDropZone onFiles={(f, n) => void read(f, n, "obsidian")} />
+          <p className="vault-notice">
+            <HintLine name={t("common.about", { label: t("wiki.import.howToLabel") })} hint={t("wiki.import.howTo")}>
+              {t("wiki.import.howToLabel")}
+            </HintLine>
+          </p>
+        </>
+      ) : (
+        <VaultDropZone plain onFiles={(f, n) => void read(f, n, "files")} />
+      );
+    footer =
+      from === null ? null : (
+        <>
+          <span className="small muted vault-foot-hint">{t("wiki.import.nothingYet")}</span>
+          <Button
+            onClick={() => {
+              setFrom(null);
+              setLinkError(null);
+              setHidden(null);
             }}
           >
-            <Field
-              label={t("wiki.import.github.label")}
-              id="wiki-import-url"
-              error={linkError ?? undefined}
-              hint={{ name: t("common.about", { label: t("wiki.import.github.label") }), text: t("wiki.import.github.help") }}
+            {t("common.back")}
+          </Button>
+          {from === "github" && (
+            <Button
+              type="submit"
+              form="wiki-import-link"
+              variant="primary"
+              disabled={!url.trim() || fetching}
+              loading={fetching}
             >
-              <Input
-                value={url}
-                onChange={(e) => {
-                  setUrl(e.target.value);
-                  setLinkError(null);
-                  setHidden(null);
-                }}
-                placeholder="https://github.com/…"
-                inputMode="url"
-              />
-            </Field>
-            {said && (
-              <div className="skill-hidden">
-                <Alert tone="neutral">{said.text}</Alert>
-                {said.connect && github && (
-                  <div className="row">
-                    <Button size="sm" variant="primary" onClick={() => setFlow({ step: 0, def: github })}>
-                      <ConnectorIcon def={GITHUB_MARK} label="GitHub" />
-                      {t("skills.hidden.connectButton")}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="row">
-              <Button type="submit" variant="primary" disabled={!url.trim() || fetching} loading={fetching}>
-                {t("wiki.import.github.read")}
-              </Button>
-            </div>
-          </form>
-        </TabPanel>
-        <TabPanel value="files">
-          <div className="vault-dialog">
-            <VaultDropZone plain onFiles={(f, n) => void read(f, n, "files")} />
-          </div>
-        </TabPanel>
-      </Tabs>
-    );
-    footer = <span className="small muted vault-foot-hint">{t("wiki.import.nothingYet")}</span>;
+              {t("wiki.import.github.read")}
+            </Button>
+          )}
+        </>
+      );
   }
 
   return (

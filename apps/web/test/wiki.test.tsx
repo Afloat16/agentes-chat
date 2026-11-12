@@ -811,6 +811,7 @@ describe("Obsidian vaults", () => {
     const { state, router } = await go("wiki");
     await click(screen().getByRole("button", { name: /^Importar$/ }));
     const dialog = screen().getByRole("dialog", { name: "Importar para a wiki" });
+    await click(within(dialog).getByRole("button", { name: "Obsidian" }));
     const input = within(dialog).getByLabelText("Escolher .zip ou .md") as HTMLInputElement;
     await act(async () => {
       fireEvent.change(input, {

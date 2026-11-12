@@ -10836,11 +10836,16 @@ export const ptBR = {
     },
     import: {
       cta: "Importar",
-      ctaText: "Do Obsidian, do GitHub ou de arquivos .md",
       short: "Importar",
       title: "Importar para a wiki",
-      text: "Escolha de onde vêm as notas. Pastas, tags e [[links]] continuam funcionando aqui.",
-      /** The tabs' name: where the notes come from. */
+      text: "Escolha de onde vêm as notas.",
+      titleFrom: { obsidian: "Importar do Obsidian", github: "Importar do GitHub", files: "Importar arquivos" },
+      textFrom: {
+        obsidian: "Traga a vault inteira: pastas, tags, apelidos e [[links]] continuam funcionando aqui.",
+        github: "As notas em Markdown do repositório viram páginas, com as pastas dele.",
+        files: "Notas em Markdown de qualquer app: arquivos .md, uma pasta ou um .zip.",
+      },
+      /** The source cards' group: where the notes come from. */
       from: "De onde importar",
       source: { obsidian: "Obsidian", github: "GitHub", files: "Arquivos" },
       files: {
