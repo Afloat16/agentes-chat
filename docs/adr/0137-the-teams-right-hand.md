@@ -486,6 +486,8 @@ threw its rows away. The owner decided it has every tool an agent can have, by d
 - This replaces §2's "its memory tools are denied", §4's "its tools are fixed in code" and "`add_agent_to_channel` is
   denied to it" (it is any agent's tool, with the rights of the person who asked and Undo), §12's "reading only" and
   "`request_permission` is denied", and §13's "no web or file writing, no `post_message` or `send_dm`, no long work".
+- It also replaces, in the amendments of 2026-11-11 and 2026-11-12, "the right hand's own skills can't be changed"
+  and the install box and `turnOnFor` leaving it out.
 - Its prompt's "# Your tools" says what it has, that it has no computer yet, and that what is one person's stays in
   their own conversation with it. Its first paragraph no longer says it does no hands-on work: small things it does
   itself, work that is a teammate's job or needs a computer it hands on.
