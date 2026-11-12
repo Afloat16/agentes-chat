@@ -356,8 +356,6 @@
     "switchWorking": "sedang bekerja",
     "join": "Gabung ke kanal",
     "sending": "Mengirim…",
-    "failed": "Tidak terkirim · Coba lagi",
-    "notSent": "Pesan tidak terkirim.",
     "toLatest": "Ke pesan terbaru",
     "toLatestNew": "Ke pesan terbaru: {{text}}",
     "stopAgent": "Hentikan {{name}}",

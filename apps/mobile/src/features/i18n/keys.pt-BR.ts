@@ -386,8 +386,6 @@ export const featureKeysPtBR = {
     switchWorking: "trabalhando",
     join: "Entrar no canal",
     sending: "Enviando…",
-    failed: "Não foi enviada · Tentar de novo",
-    notSent: "A mensagem não foi enviada.",
     toLatest: "Ir para as mensagens mais recentes",
     toLatestNew: "Ir para as mensagens mais recentes: {{text}}",
     stopAgent: "Parar {{name}}",

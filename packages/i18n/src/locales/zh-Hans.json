@@ -2138,7 +2138,19 @@
     "correctionSent": "纠正已发送。{{name}} 会从中学习。",
     "correctionSent_female": "纠正已发送。{{name}} 会从中学习。",
     "sending": "发送中…",
-    "notSent": "未发送",
+    "tooLong": {
+      "text": "消息有 {{length}} 个字符，上限为 {{max}} 个。",
+      "fix": "请将文本作为文件发送。",
+      "asFile": "作为文件发送",
+      "fileName": "message.txt"
+    },
+    "notSentWhy": "未发送。{{why}}",
+    "notSentUnknown": "出了点问题。",
+    "editSend": "编辑",
+    "long": {
+      "more": "查看更多",
+      "title": "{{name}} 的消息"
+    },
     "retrySend": "重试",
     "thinking": "{{name}} 正在思考…",
     "typing_other": "{{names}} 正在输入…",

@@ -2135,7 +2135,19 @@
     "sendCorrection": "Kirim koreksi",
     "correctionSent": "Koreksi terkirim. {{name}} akan belajar darinya.",
     "sending": "mengirim…",
-    "notSent": "Tidak terkirim",
+    "tooLong": {
+      "text": "Pesan ini {{length}} karakter dan batasnya {{max}}.",
+      "fix": "Kirim teksnya sebagai file.",
+      "asFile": "Kirim sebagai file",
+      "fileName": "pesan.txt"
+    },
+    "notSentWhy": "Tidak terkirim. {{why}}",
+    "notSentUnknown": "Terjadi kesalahan.",
+    "editSend": "Ubah",
+    "long": {
+      "more": "Lihat selengkapnya",
+      "title": "Pesan dari {{name}}"
+    },
     "retrySend": "Coba lagi",
     "thinking": "{{name}} sedang berpikir…",
     "typing_other": "{{names}} sedang mengetik…",

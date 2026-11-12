@@ -2272,7 +2272,19 @@
     "correctionSent": "Correzione inviata. {{name}} ne terrà conto.",
     "correctionSent_female": "Correzione inviata. {{name}} ne terrà conto.",
     "sending": "invio…",
-    "notSent": "Non inviato",
+    "tooLong": {
+      "text": "Il messaggio ha {{length}} caratteri e il limite è {{max}}.",
+      "fix": "Invia il testo come file.",
+      "asFile": "Invia come file",
+      "fileName": "messaggio.txt"
+    },
+    "notSentWhy": "Non inviato. {{why}}",
+    "notSentUnknown": "Qualcosa è andato storto.",
+    "editSend": "Modifica",
+    "long": {
+      "more": "Mostra altro",
+      "title": "Messaggio di {{name}}"
+    },
     "retrySend": "Riprova",
     "thinking": "{{name}} sta pensando…",
     "typing_one": "{{names}} sta scrivendo…",

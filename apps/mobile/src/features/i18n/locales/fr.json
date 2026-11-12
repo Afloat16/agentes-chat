@@ -384,8 +384,6 @@
     "switchWorking": "au travail",
     "join": "Rejoindre le canal",
     "sending": "Envoi…",
-    "failed": "Non envoyé · Réessayer",
-    "notSent": "Le message n'a pas été envoyé.",
     "toLatest": "Aller aux derniers messages",
     "toLatestNew": "Aller aux derniers messages : {{text}}",
     "stopAgent": "Arrêter {{name}}",

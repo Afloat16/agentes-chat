@@ -893,12 +893,6 @@
   "chat.sending": {
     "value": "Sending…"
   },
-  "chat.failed": {
-    "value": "Not sent · Try again"
-  },
-  "chat.notSent": {
-    "value": "The message wasn't sent."
-  },
   "chat.toLatest": {
     "value": "Go to the latest messages"
   },

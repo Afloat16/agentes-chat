@@ -2135,7 +2135,19 @@
     "sendCorrection": "정정 보내기",
     "correctionSent": "정정을 보냈어요. {{name}}이(가) 이걸로 배울 거예요.",
     "sending": "보내는 중…",
-    "notSent": "보내지 못함",
+    "tooLong": {
+      "text": "메시지가 {{length}}자이고 한도는 {{max}}자입니다.",
+      "fix": "텍스트를 파일로 보내세요.",
+      "asFile": "파일로 보내기",
+      "fileName": "message.txt"
+    },
+    "notSentWhy": "전송되지 않았습니다. {{why}}",
+    "notSentUnknown": "문제가 발생했습니다.",
+    "editSend": "편집",
+    "long": {
+      "more": "더 보기",
+      "title": "{{name}}의 메시지"
+    },
     "retrySend": "다시 시도",
     "thinking": "{{name}}이(가) 생각 중…",
     "typing_other": "{{names}}이(가) 입력 중…",

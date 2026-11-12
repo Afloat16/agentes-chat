@@ -2204,7 +2204,19 @@
     "correctionSent": "Correctie verstuurd. {{name}} leert ervan.",
     "correctionSent_female": "Correctie verstuurd. {{name}} leert ervan.",
     "sending": "versturen…",
-    "notSent": "Niet verstuurd",
+    "tooLong": {
+      "text": "Het bericht heeft {{length}} tekens en de limiet is {{max}}.",
+      "fix": "Stuur de tekst als bestand.",
+      "asFile": "Als bestand sturen",
+      "fileName": "bericht.txt"
+    },
+    "notSentWhy": "Niet verzonden. {{why}}",
+    "notSentUnknown": "Er ging iets mis.",
+    "editSend": "Bewerken",
+    "long": {
+      "more": "Meer tonen",
+      "title": "Bericht van {{name}}"
+    },
     "retrySend": "Opnieuw proberen",
     "thinking": "{{name}} denkt na…",
     "typing_one": "{{names}} typt…",

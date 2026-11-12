@@ -398,8 +398,6 @@
     "switchWorking": "pracuje",
     "join": "Dołącz do kanału",
     "sending": "Wysyłanie…",
-    "failed": "Nie wysłano · Spróbuj ponownie",
-    "notSent": "Wiadomość nie została wysłana.",
     "toLatest": "Przejdź do najnowszych wiadomości",
     "toLatestNew": "Przejdź do najnowszych wiadomości: {{text}}",
     "stopAgent": "Zatrzymaj: {{name}}",

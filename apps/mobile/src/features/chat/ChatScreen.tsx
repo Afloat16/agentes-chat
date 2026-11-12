@@ -6,6 +6,7 @@ import {
   type ConnectionStatus,
   heldTakeoversHere,
   inMainTimeline,
+  keys,
   type LiveRun,
   MESSAGES_PAGE,
   type Message,
@@ -53,7 +54,7 @@ import {
   consultNoticeFolds,
   consultsForLine,
 } from "@agenteschat/client/lib/consult-group";
-import { errorCode, errorText } from "@agenteschat/client/lib/errors";
+import { errorText, sendNeedsEdit } from "@agenteschat/client/lib/errors";
 import { mentionsReader, offersEveryone } from "@agenteschat/client/lib/everyone";
 import { capitalize } from "@agenteschat/client/lib/format";
 import { issueTakenOf, issueWorkOf, taskConversationOf } from "@agenteschat/client/lib/issues";
@@ -80,6 +81,7 @@ import { KeyboardAwareLegendList, useKeyboardChatComposerInset } from "@legendap
 import type { LegendListRef, OnViewableItemsChanged } from "@legendapp/list/react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
+import { Directory, File, Paths } from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useIsFocused, useIsPreview } from "expo-router";
@@ -863,10 +865,9 @@ function Chat({
       // A GIF or a sticker alone routes to nobody, so it gets no clock to keep.
       if (channel && channelAgents.length > 0 && !isMediaAlone(message)) live.picking(message.id);
     },
+    // Why, in words: the failed row under it says the same and keeps the text.
     onFailed: (error, { waits }) => {
-      if (waits) return;
-      const gone = errorCode(error) === "message.reply_not_found";
-      toast({ title: gone ? errorText(t, error) : t("mobile.chat.notSent"), icon: "x" });
+      if (!waits) toast({ title: errorText(t, error, i18n.language), icon: "x" });
     },
   });
   const { send, retry } = sendHelpers(post);
@@ -894,9 +895,13 @@ function Chat({
     (m: Message) => {
       // A voice note waits in its own outbox: tried again there, now.
       if (voiceOf(m.meta) && m.local) retryVoice(qc, m.clientId, voiceRefused);
-      else retryRef.current(m);
+      // Only a change to its text can make it go: it leaves the list and the text returns to the field.
+      else if (sendNeedsEdit(m.sendFailure)) {
+        qc.setQueryData<Message[]>(keys.messages(orgId, channelId), (list) => list?.filter((x) => x.id !== m.id));
+        setCaptionBack({ text: m.body, at: Date.now(), join: true });
+      } else retryRef.current(m);
     },
-    [qc, voiceRefused],
+    [qc, voiceRefused, orgId, channelId],
   );
   // "Tentar de novo" under a message no agent could answer: the agent answers that same message again; only when it
   // can't, the same words go again, here (the web's `resend`).
@@ -1042,7 +1047,7 @@ function Chat({
   // send uploads them and sends everything as one message. A thumbnail dims while its upload runs; one that fails
   // stays, marked, and the caption comes back to the field, so nothing typed is lost.
   const [pending, setPending] = useState<PendingFile[]>([]);
-  const [captionBack, setCaptionBack] = useState<{ text: string; at: number } | null>(null);
+  const [captionBack, setCaptionBack] = useState<{ text: string; at: number; join?: boolean } | null>(null);
   const addPending = (files: { uri: string; name: string; type: string }[]) => {
     if (files.length === 0) return;
     const at = Date.now();
@@ -1052,6 +1057,14 @@ function Chat({
     setPending((now) => [...now, ...picked].slice(0, MAX_PENDING));
   };
   const removePending = (id: string) => setPending((now) => now.filter((f) => f.id !== id));
+  // A draft past the length limit goes as a text file instead, which agents open like any other.
+  const longAsFile = (text: string) => {
+    const dir = new Directory(Paths.cache, "drafts", String(Date.now()));
+    dir.create({ intermediates: true, idempotent: true });
+    const file = new File(dir, t("channel.tooLong.fileName"));
+    file.write(text);
+    addPending([{ uri: file.uri, name: file.name, type: "text/plain" }]);
+  };
   const uploadOne = async (file: PendingFile): Promise<ArtifactRef> => {
     // React Native's FormData sends `{ uri, name, type }` as a file part.
     const part = { uri: file.uri, name: file.name, type: file.type };
@@ -2330,6 +2343,7 @@ function Chat({
                       ) : undefined
                     }
                     sendEmpty={pending.length > 0}
+                    {...(pending.length < MAX_PENDING ? { onLongAsFile: longAsFile } : {})}
                     mention={({ query, sigil, pick }) =>
                       sigil === "#" ? (
                         <ChannelPicker query={query} pick={pick} />

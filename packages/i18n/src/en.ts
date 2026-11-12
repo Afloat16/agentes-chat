@@ -2308,7 +2308,23 @@ export const en = {
     sendCorrection: "Send correction",
     correctionSent: "Correction sent. {{name}} will learn from it.",
     sending: "sending…",
-    notSent: "Not sent",
+    notSentWhy: "Not sent. {{why}}",
+    /** The `why` of a failed message when the server gave no reason. */
+    notSentUnknown: "Something went wrong.",
+    /** A failed message whose text must change before it can go: it returns to the field. */
+    editSend: "Edit",
+    /** A draft past the length limit, said above the field before sending: its sizes, then the way out. */
+    tooLong: {
+      text: "The message has {{length}} characters and the limit is {{max}}.",
+      fix: "Send the text as a file.",
+      asFile: "Send as a file",
+      fileName: "message.txt",
+    },
+    /** A tall message, clipped in the conversation: the button under it and the dialog that shows it whole. */
+    long: {
+      more: "See more",
+      title: "Message from {{name}}",
+    },
     retrySend: "Try again",
     thinking: "{{name}} is thinking…",
     typing_one: "{{names}} is typing…",

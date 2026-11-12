@@ -2341,7 +2341,19 @@
     "correctionSent": "Wysłano poprawkę. {{name}} się na niej nauczy.",
     "correctionSent_female": "Wysłano poprawkę. {{name}} się na niej nauczy.",
     "sending": "wysyłanie…",
-    "notSent": "Nie wysłano",
+    "tooLong": {
+      "text": "Wiadomość ma {{length}} znaków, a limit to {{max}}.",
+      "fix": "Wyślij tekst jako plik.",
+      "asFile": "Wyślij jako plik",
+      "fileName": "wiadomosc.txt"
+    },
+    "notSentWhy": "Nie wysłano. {{why}}",
+    "notSentUnknown": "Coś poszło nie tak.",
+    "editSend": "Edytuj",
+    "long": {
+      "more": "Pokaż więcej",
+      "title": "Wiadomość od: {{name}}"
+    },
     "retrySend": "Spróbuj ponownie",
     "thinking": "{{name}} myśli…",
     "typing_one": "{{names}} pisze…",

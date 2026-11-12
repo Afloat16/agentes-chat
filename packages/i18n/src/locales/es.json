@@ -2268,7 +2268,19 @@
     "sendCorrection": "Enviar corrección",
     "correctionSent": "Corrección enviada. {{name}} aprenderá de ella.",
     "sending": "enviando…",
-    "notSent": "No enviado",
+    "tooLong": {
+      "text": "El mensaje tiene {{length}} caracteres y el límite es {{max}}.",
+      "fix": "Envía el texto como archivo.",
+      "asFile": "Enviar como archivo",
+      "fileName": "mensaje.txt"
+    },
+    "notSentWhy": "No enviado. {{why}}",
+    "notSentUnknown": "Algo salió mal.",
+    "editSend": "Editar",
+    "long": {
+      "more": "Ver más",
+      "title": "Mensaje de {{name}}"
+    },
     "retrySend": "Intentar de nuevo",
     "thinking": "{{name}} está pensando…",
     "typing_one": "{{names}} está escribiendo…",
