@@ -1795,6 +1795,39 @@ test.if(posix)(
 );
 
 test.if(posix)(
+  "a browser its agent holds waits a day at most for a newer Chrome, then restarts on it, on its page, unwatched",
+  async () => {
+    let now = 1_000_000;
+    let version = CHROME_VERSION;
+    const t = setup({ now: () => now, chromeVersion: () => version, kept: () => true });
+    await t.act("open", ["https://shop.example/cart"]);
+    // The update lands and is read 6 minutes on; the hold keeps Chrome as it is for the day after.
+    version = "157.0.8100.10";
+    now += 6 * 60_000;
+    await t.manager.sweep();
+    now += 23 * 3600_000;
+    await t.manager.sweep();
+    await Bun.sleep(50);
+    expect(t.chromes).toHaveLength(1);
+    // Past the day, a person's turn on it still holds it off, and so does its end for a while.
+    now += 3600_000;
+    t.manager.setHandoff(dev.id, { status: "pending" });
+    await t.manager.sweep();
+    t.manager.setHandoff(dev.id, null);
+    await t.manager.sweep();
+    await Bun.sleep(50);
+    expect(t.chromes).toHaveLength(1);
+    now += 11 * 60_000;
+    await t.manager.sweep();
+    await waitFor(() => t.chromes.length === 2);
+    const [before, after] = t.chromes;
+    expect(before?.killed || before?.closed).toBe(true);
+    expect(after?.args.at(-1)).toBe("https://shop.example/cart");
+    expect(after?.profile).toBe(before?.profile);
+  },
+);
+
+test.if(posix)(
   "a help request forgotten on a dropped connection still holds its browser for the idle time",
   async () => {
     let now = 1_000_000;
