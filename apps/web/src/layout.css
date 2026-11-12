@@ -3607,9 +3607,9 @@ html:not([data-pointer]) .channel-ref:focus-visible {
 .level-row:first-child {
   border-top: 0;
 }
-/* The card's own padding ends its last row. */
-.agp-card > .level-list:last-child > .level-row:last-child:not([data-changed]) {
-  padding-bottom: 0;
+/* The last row's own padding ends the card: the list takes the card's bottom padding back. */
+.agp-card > .level-list:last-child {
+  margin-bottom: calc(-1 * var(--agp-card-py));
 }
 .level-row > .ac-mediarow__body[hidden],
 .level-row__below[hidden] {
