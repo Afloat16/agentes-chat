@@ -183,9 +183,13 @@ describe("what agents did under each reply: the person's own setting, off by def
   });
 });
 
-describe("what an agent changed reads whole", () => {
-  test("receipts and team checks wrap: no line limit cuts their words", () => {
-    for (const file of ["Receipts.tsx", "TeamChecks.tsx"]) expect(source(file)).not.toContain("numberOfLines");
+describe("what an agent changed reads in one line a row, whole in its sheet", () => {
+  test("a receipt's sentence and each line under it are one line (the sheet says them whole); team checks wrap", () => {
+    // No renderer for the phone's components in these tests: the line limits are read from the source.
+    const receipts = source("Receipts.tsx");
+    expect(receipts.match(/numberOfLines=\{1\}/g)).toHaveLength(4);
+    expect(receipts).toContain("<ChangesSheet row={r}");
+    expect(source("TeamChecks.tsx")).not.toContain("numberOfLines");
   });
 
   test("a receipt is its sentence alone: no Desfazer, no Refazer, no time left, no clock", () => {
@@ -196,7 +200,7 @@ describe("what an agent changed reads whole", () => {
     expect(receipts).not.toContain("ACT_LINE");
     // One undone elsewhere stays as history.
     expect(receipts).toContain("struck={Boolean(a.undoneAt)}");
-    expect(receipts).toContain("{a.undoneAt ? <UndoneBy action={a} /> : <HandyLines action={a} />}");
+    expect(receipts).toContain("{a.undoneAt ? <UndoneBy action={a} /> : r.refs ? null : <CopyHook action={a} />}");
   });
 
   test("a team check's icon stays outside its action line: Abrir goes under the words, from their edge", () => {

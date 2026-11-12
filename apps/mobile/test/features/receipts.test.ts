@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { AGENT_ACTION_KINDS, type AgentAction, type AgentActionKind } from "@agenteschat/client";
-import { receiptPieces, receiptRows } from "@agenteschat/client/lib/actions";
+import { type ReceiptRow, receiptLines, receiptPieces, receiptRows, rowFiles } from "@agenteschat/client/lib/actions";
 import {
   boldRuns,
   groupStart,
@@ -81,8 +81,17 @@ describe("receipts on one line, as on the web", () => {
   const task = (n: number) =>
     action({
       id: `a${n}`,
-      target: { type: "issue", id: `i${n}`, number: n, title: `Página de preços: o botão Assinar não responde no tablet ${n}` },
-      params: { number: n, title: `Página de preços: o botão Assinar não responde no tablet ${n}`, audience: "everyone" },
+      target: {
+        type: "issue",
+        id: `i${n}`,
+        number: n,
+        title: `Página de preços: o botão Assinar não responde no tablet ${n}`,
+      },
+      params: {
+        number: n,
+        title: `Página de preços: o botão Assinar não responde no tablet ${n}`,
+        audience: "everyone",
+      },
     });
 
   test("tasks made together are one row, each number opening its own task", async () => {
@@ -104,14 +113,38 @@ describe("receipts on one line, as on the web", () => {
     ).toBe("Created tasks #58 and #59");
   });
 
-  test("a row is one line: its sentence never wraps, and no line under it says who sees the task", () => {
+  test("a tap on a row's words lists each change whole, each opening its own; one with nothing to open is words", async () => {
+    const t = await translator("pt-BR");
+    const merged = action({
+      id: "pr",
+      kind: "pr.merged",
+      target: { type: "repository", id: "acme/loja", title: "acme/loja" },
+      params: { repo: "acme/loja", number: 12 },
+    });
+    const files = action({ ...task(61), params: { ...task(61).params, files: ["print.png"] } });
+    const [tasks, merge] = receiptRows([task(58), files, merged], t);
+    const sheet = (row: ReceiptRow | undefined) =>
+      receiptLines(row as ReceiptRow, t).map((l) => [l.text, l.files, targetHref(l.action.target, "c1")]);
+    expect(sheet(tasks)).toEqual([
+      ["Criei a tarefa #58 · Página de preços: o botão Assinar não responde no tablet 58", null, "/issues/58"],
+      [
+        "Criei a tarefa #61 · Página de preços: o botão Assinar não responde no tablet 61",
+        "Anexei print.png",
+        "/issues/61",
+      ],
+    ]);
+    expect(sheet(merge)).toEqual([["Fiz o merge do PR #12 em acme/loja", null, null]]);
+    // The line under the row names the files once.
+    expect(rowFiles(tasks as ReceiptRow)).toEqual(["print.png"]);
+  });
+
+  test("a row is one line and opens its sheet; the sheet's lines go where the phone has their screen", () => {
+    // No renderer for the phone's components in these tests: what only the source can say is read from it.
     const src = readFileSync(join(import.meta.dir, "../../src/features/chat/Receipts.tsx"), "utf8");
-    const sentence = src.slice(src.indexOf("function Sentence("), src.indexOf("function CopyHook("));
+    const sentence = src.slice(src.indexOf("function Sentence("), src.indexOf("function ChangesSheet("));
     expect(sentence).toContain("numberOfLines={1}");
-    // Several: each reference opens its own; one change: the whole line opens it.
-    expect(sentence).toContain("const each = row.refs ? opener(p.opens) : undefined;");
-    expect(sentence).toContain("const open = row.refs ? undefined : opener(row.actions[0]);");
-    expect(src).toContain("receiptRows(list, t, meId ?? undefined)");
+    expect(sentence).toContain("onPress={whole}");
+    expect(src).toContain("onPress={() => close(() => router.push(href))}");
     expect(src).not.toContain("WhoSeesLine");
   });
 });

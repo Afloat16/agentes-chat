@@ -3357,13 +3357,13 @@
     "several": {
       "issue": {
         "created": "Creé las tareas {{refs}}",
-        "updated": "Cambié las tareas {{refs}}",
+        "updated": "Cambié {{fields}} de las tareas {{refs}}",
         "assigned": "Asigné a {{assignee}} las tareas {{refs}}",
         "assigned_self": "Me asigné las tareas {{refs}}"
       },
       "routine": {
         "created": "Creé las rutinas {{refs}}",
-        "updated": "Cambié las rutinas {{refs}}",
+        "updated": "Cambié {{fields}} de las rutinas {{refs}}",
         "deleted": "Eliminé las rutinas {{refs}}"
       },
       "channel": {

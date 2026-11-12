@@ -3363,13 +3363,13 @@
     "several": {
       "issue": {
         "created": "Ho creato le attività {{refs}}",
-        "updated": "Ho cambiato le attività {{refs}}",
+        "updated": "Ho cambiato {{fields}} delle attività {{refs}}",
         "assigned": "Ho assegnato a {{assignee}} le attività {{refs}}",
         "assigned_self": "Ho preso io le attività {{refs}}"
       },
       "routine": {
         "created": "Ho creato le routine {{refs}}",
-        "updated": "Ho cambiato le routine {{refs}}",
+        "updated": "Ho cambiato {{fields}} delle routine {{refs}}",
         "deleted": "Ho eliminato le routine {{refs}}"
       },
       "channel": {

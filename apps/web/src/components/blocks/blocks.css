@@ -171,7 +171,20 @@
 .poll__option:disabled {
   cursor: default;
 }
-.poll__option > :not(.poll__fill) {
+/* The box and the label on the share's fill, which spans the option up to its faces: out to its left edge, top to
+   bottom. */
+.poll__track {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-self: stretch;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: -6px 0 -6px -12px;
+  padding: 6px 0 6px 12px;
+}
+.poll__track > :not(.poll__fill) {
   position: relative;
 }
 .poll__fill {

@@ -52,11 +52,11 @@ describe("an internal id in a text on the phone", () => {
 });
 
 describe("the receipt of a task an agent made with a file, on the phone", () => {
-  test("keeps to its one line: the files are on the task it opens", async () => {
+  test("says which files went with it, on a line of its own under the row", async () => {
     const t = await translator("pt-BR");
     const files = receiptFiles({ kind: "issue.created", params: { number: 13, files: ["print.png", "log.txt"] } });
     expect(t("agentActions.issue.files", { names: joinNames(files, t) })).toBe("Anexei print.png e log.txt");
     expect(receiptFiles({ kind: "routine.created", params: { files: ["x"] } })).toEqual([]);
-    expect(source("Receipts.tsx")).not.toContain("FilesLine");
+    expect(source("Receipts.tsx")).toContain("const files = rowFiles(r);");
   });
 });

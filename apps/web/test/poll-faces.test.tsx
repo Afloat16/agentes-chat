@@ -60,6 +60,10 @@ test("each voter is their face as the conversation shows it, in the kit's stack:
   expect(faces.querySelector(".poll__more")).toBeNull();
   // An option nobody chose shows no faces at all.
   expect(document.querySelectorAll(".poll__faces")).toHaveLength(1);
+  // The share fills the option up to the faces, never under their rings.
+  const option = faces.closest(".poll__option") as HTMLElement;
+  expect(option.querySelector(".poll__track > .poll__fill")).not.toBeNull();
+  expect(faces.closest(".poll__track")).toBeNull();
 });
 
 test("seven voters: five faces, then how many more, those named in its tip", async () => {

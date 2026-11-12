@@ -5,17 +5,19 @@ import {
   actionErrorKey,
   hookToCopy,
   type ReceiptRow,
+  receiptLines,
   receiptPieces,
   receiptRows,
   receiptTip,
   routineOwnActions,
+  rowFiles,
 } from "@agenteschat/client/lib/actions";
 import { ownActionName } from "@agenteschat/client/lib/approval-words";
 import { joinNames, relativeTime, toYmd } from "@agenteschat/client/lib/format";
 import { handedTasksOf } from "@agenteschat/client/lib/issues";
 import { can } from "@agenteschat/client/lib/permissions";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
-import { cx, Icon, type IconName } from "@agenteschat/ui";
+import { cx, Icon, type IconName, Popover, TOUCH, useMatchMedia } from "@agenteschat/ui";
 import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
 import { type ReactNode, useState } from "react";
@@ -35,8 +37,9 @@ import "./agent-actions.css";
 /**
  * What an agent changed with this reply (ADR 0037 round 2), under the message. One change: a quiet row (A). Several:
  * "3 mudanças · há 1 min" and a row each, those of one kind said once ("Criei as tarefas #58, #59 e #60") (B). Every
- * row is one line, cut with "…" (its whole words are its tip). The bold target opens the thing itself, where it is
- * fixed or removed. One undone elsewhere stays as history: struck through, "Desfeito por …".
+ * row and every line under it is one line, cut with "…": its whole words are its tip, and on a touch screen a tap on
+ * its words lists each change whole. The bold target opens the thing itself, where it is fixed or removed. One undone
+ * elsewhere stays as history: struck through, "Desfeito por …".
  */
 export function AgentActionReceipts({ message }: { message: Message }) {
   // The right hand's settings card says what was applied and has its own Desfazer (ADR 0137).
@@ -101,14 +104,15 @@ function Receipts({ message, list }: { message: Message; list: AgentAction[] }) 
   const rows = receiptRows(list, t, me.user.id);
   const row = (r: ReceiptRow, single: boolean) => {
     const a = r.actions[0] as AgentAction;
-    return <Receipt key={a.id} row={r} single={single} undoneBy={a.undoneAt ? byName(a) : null} />;
+    return <Receipt key={a.id} row={r} single={single} undoneBy={a.undoneAt ? byName(a) : null} label={label} />;
   };
 
   const agentName = dir.agentById.get(message.author.id ?? "")?.name ?? dir.authorName(message.author);
+  const label = t("agentActions.group", { name: agentName });
   if (list.length === 1) {
     return (
       // biome-ignore lint/a11y/useSemanticElements: a labelled group inside a message, not a fieldset
-      <div className="ag-rcs" role="group" aria-label={t("agentActions.group", { name: agentName })}>
+      <div className="ag-rcs" role="group" aria-label={label}>
         {rows.map((r) => row(r, true))}
       </div>
     );
@@ -116,7 +120,7 @@ function Receipts({ message, list }: { message: Message; list: AgentAction[] }) 
   const first = list.reduce((min, a) => (a.createdAt < min ? a.createdAt : min), list[0]?.createdAt ?? "");
   return (
     // biome-ignore lint/a11y/useSemanticElements: a labelled group inside a message, not a fieldset
-    <div className="ag-rcg" role="group" aria-label={t("agentActions.group", { name: agentName })}>
+    <div className="ag-rcg" role="group" aria-label={label}>
       <div className="ag-rcg__hd">
         <span>
           <b>{t("agentActions.changes", { count: list.length })}</b> · {relativeTime(t, i18n.language, first)}
@@ -127,9 +131,23 @@ function Receipts({ message, list }: { message: Message; list: AgentAction[] }) 
   );
 }
 
-function Receipt({ row, single, undoneBy }: { row: ReceiptRow; single: boolean; undoneBy: string | null }) {
+function Receipt({
+  row,
+  single,
+  undoneBy,
+  label,
+}: {
+  row: ReceiptRow;
+  single: boolean;
+  undoneBy: string | null;
+  /** The receipts' name ("Mudanças de Ada"), the list's on a touch screen. */
+  label: string;
+}) {
   const { t, i18n } = useTranslation();
   const { me } = useOrg();
+  // A touch screen shows no tip: a tap on the words lists each change whole instead.
+  const touch = useMatchMedia(TOUCH);
+  const [listed, setListed] = useState(false);
   const a = row.actions[0] as AgentAction;
   // A routine's schedule from its rule, in the person's language (the server's words are English).
   const words: Parameters<typeof receiptPieces>[3] = {
@@ -137,6 +155,35 @@ function Receipt({ row, single, undoneBy }: { row: ReceiptRow; single: boolean; 
   };
   const struck = Boolean(a.undoneAt);
   const ownActions = routineOwnActions(a);
+  const files = rowFiles(row);
+  const under = [
+    files.length > 0 && t("agentActions.issue.files", { names: joinNames(files, t) }),
+    ownActions.length > 0 &&
+      t("agentActions.routine.ownActions", {
+        actions: joinNames(
+          ownActions.map((name) => ownActionName(t, name)),
+          t,
+        ),
+      }),
+    undoneBy && t("agentActions.undoneBy", { name: undoneBy }),
+  ].filter((line): line is string => Boolean(line));
+  const sentence = (
+    <span className="ag-rc__sentence ag-rc__line" title={touch ? undefined : receiptTip(row, t, me.user.id, words)}>
+      {receiptPieces(row, t, me.user.id, words).map((p, i) =>
+        p.opens ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one sentence, in order
+          <ReceiptTarget key={i} action={p.opens}>
+            {p.text}
+          </ReceiptTarget>
+        ) : p.bold ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: same
+          <b key={i}>{p.text}</b>
+        ) : (
+          p.text
+        ),
+      )}
+    </span>
+  );
   return (
     <div className={cx(single ? "ag-rc" : "ag-rcg__it", struck && "is-undone")}>
       {single ? (
@@ -147,32 +194,34 @@ function Receipt({ row, single, undoneBy }: { row: ReceiptRow; single: boolean; 
         <Icon name={iconOf(row)} size={14} className="ag-rcg__ic" />
       )}
       <span className="ag-rc__tx">
-        <span className="ag-rc__sentence ag-rc__line" title={receiptTip(row, t, me.user.id, words)}>
-          {receiptPieces(row, t, me.user.id, words).map((p, i) =>
-            p.opens ? (
-              // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one sentence, in order
-              <ReceiptTarget key={i} action={p.opens}>
-                {p.text}
-              </ReceiptTarget>
-            ) : p.bold ? (
-              // biome-ignore lint/suspicious/noArrayIndexKey: same
-              <b key={i}>{p.text}</b>
-            ) : (
-              p.text
-            ),
-          )}
-        </span>
-        {ownActions.length > 0 && (
-          <span className="ag-rc__by">
-            {t("agentActions.routine.ownActions", {
-              actions: joinNames(
-                ownActions.map((name) => ownActionName(t, name)),
-                t,
-              ),
-            })}
-          </span>
+        {touch ? (
+          <Popover label={label} trigger={sentence} side="top" align="start" open={listed} onOpenChange={setListed}>
+            <div className="ac-popover__title">{label}</div>
+            {receiptLines(row, t, me.user.id, words).map((l) => (
+              // What a line opens (a task's dialog, the memory beside the conversation) takes the list's place.
+              // biome-ignore lint/a11y/useKeyWithClickEvents: the link inside is the keyboard's way, this only closes the list
+              // biome-ignore lint/a11y/noStaticElementInteractions: same
+              <div key={l.action.id} className="ac-popover__row ag-rcpop" onClick={() => setListed(false)}>
+                <ReceiptTarget action={l.action} className="ag-rcpop__words" plain>
+                  {l.text}
+                </ReceiptTarget>
+                {l.files && <span className="ag-rcpop__by">{l.files}</span>}
+              </div>
+            ))}
+            {under.slice(files.length > 0 ? 1 : 0).map((line) => (
+              <div key={line} className="ac-popover__row ag-rcpop">
+                <span className="ag-rcpop__by">{line}</span>
+              </div>
+            ))}
+          </Popover>
+        ) : (
+          sentence
         )}
-        {undoneBy && <span className="ag-rc__by">{t("agentActions.undoneBy", { name: undoneBy })}</span>}
+        {under.map((line) => (
+          <span key={line} className="ag-rc__by ag-rc__line" title={touch ? undefined : line}>
+            {line}
+          </span>
+        ))}
         {!row.refs && <CopyHookButton action={a} />}
       </span>
     </div>
@@ -218,7 +267,18 @@ function CopyHookButton({ action: a }: { action: AgentAction }) {
  * dialog over it, the thread and the memory in the panel beside it; the link still goes to their page (a new tab, a
  * middle click).
  */
-function ReceiptTarget({ action: a, children }: { action: AgentAction; children?: ReactNode }) {
+function ReceiptTarget({
+  action: a,
+  children,
+  className = "ag-rc__target",
+  plain = false,
+}: {
+  action: AgentAction;
+  children?: ReactNode;
+  className?: string;
+  /** With nothing to open, the words as they are (a change's whole sentence), not in bold. */
+  plain?: boolean;
+}) {
   const { org } = useOrg();
   const orgId = org.id;
   const managesAgents = can(org, "manage_agents");
@@ -234,7 +294,7 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
       <Link
         to="/org/$orgId/issues/$number"
         params={{ orgId, number: String(number) }}
-        className="ag-rc__target"
+        className={className}
         onClick={inPlace ? (e) => inPlaceClick(e, () => inPlace.issue(number)) : undefined}
       >
         {children}
@@ -243,7 +303,7 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
   }
   if (tg.type === "routine")
     return (
-      <DetailsLink item={{ kind: "routine", id: tg.id }} className="ag-rc__target">
+      <DetailsLink item={{ kind: "routine", id: tg.id }} className={className}>
         {children}
       </DetailsLink>
     );
@@ -252,14 +312,14 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
       <Link
         to="/org/$orgId/wiki/$slug"
         params={{ orgId, slug: tg.slug ?? String(a.params.slug) }}
-        className="ag-rc__target"
+        className={className}
       >
         {children}
       </Link>
     );
   if (tg.type === "channel")
     return (
-      <Link to="/org/$orgId/c/$channelId" params={{ orgId, channelId: tg.id }} className="ag-rc__target">
+      <Link to="/org/$orgId/c/$channelId" params={{ orgId, channelId: tg.id }} className={className}>
         {children}
       </Link>
     );
@@ -268,7 +328,7 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
       <Link
         to="/org/$orgId/threads/$threadId"
         params={{ orgId, threadId: tg.id }}
-        className="ag-rc__target"
+        className={className}
         onClick={openThread ? (e) => inPlaceClick(e, () => openThread(tg.id)) : undefined}
       >
         {children}
@@ -281,7 +341,7 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
         to="/org/$orgId/settings/$section"
         params={{ orgId, section: "skills" }}
         search={{ skill: tg.id }}
-        className="ag-rc__target"
+        className={className}
       >
         {children}
       </Link>
@@ -292,7 +352,7 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
         to="/org/$orgId/agents/$agentId/memory"
         params={{ orgId, agentId: a.agentId }}
         search={{ item: tg.id }}
-        className="ag-rc__target"
+        className={className}
         onClick={
           openPanel && !rightHand ? (e) => inPlaceClick(e, () => openPanel(a.agentId, "memory", tg.id)) : undefined
         }
@@ -300,5 +360,5 @@ function ReceiptTarget({ action: a, children }: { action: AgentAction; children?
         {children}
       </Link>
     );
-  return <b>{children}</b>;
+  return plain ? <span className={className}>{children}</span> : <b>{children}</b>;
 }

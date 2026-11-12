@@ -3256,13 +3256,13 @@
     "several": {
       "issue": {
         "created": "Aufgaben erstellt: {{refs}}",
-        "updated": "Aufgaben geändert: {{refs}}",
+        "updated": "{{fields}} der Aufgaben geändert: {{refs}}",
         "assigned": "Aufgaben {{assignee}} zugewiesen: {{refs}}",
         "assigned_self": "Aufgaben selbst übernommen: {{refs}}"
       },
       "routine": {
         "created": "Routinen erstellt: {{refs}}",
-        "updated": "Routinen geändert: {{refs}}",
+        "updated": "{{fields}} der Routinen geändert: {{refs}}",
         "deleted": "Routinen gelöscht: {{refs}}"
       },
       "channel": {

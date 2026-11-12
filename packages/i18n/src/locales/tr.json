@@ -3242,13 +3242,13 @@
     "several": {
       "issue": {
         "created": "Görevleri oluşturdum: {{refs}}",
-        "updated": "Görevleri değiştirdim: {{refs}}",
+        "updated": "Görevlerde {{fields}} değiştirdim: {{refs}}",
         "assigned": "Görevleri {{assignee}} kişisine atadım: {{refs}}",
         "assigned_self": "Görevleri kendim üstlendim: {{refs}}"
       },
       "routine": {
         "created": "Rutinleri oluşturdum: {{refs}}",
-        "updated": "Rutinleri değiştirdim: {{refs}}",
+        "updated": "Rutinlerde {{fields}} değiştirdim: {{refs}}",
         "deleted": "Rutinleri sildim: {{refs}}"
       },
       "channel": {

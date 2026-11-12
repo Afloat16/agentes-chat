@@ -56,9 +56,10 @@
   overflow-wrap: anywhere;
 }
 /* What an agent changed reads in one line, cut with "…": its whole words are its tip. The clip stands 4px out, so a
-   link's focus ring at the line's edge shows whole. */
+   link's focus ring at the line's edge shows whole; `clip`, not `hidden`, so tabbing to a link past the cut never
+   scrolls the words. */
 .ag-rc__line {
-  overflow: hidden;
+  overflow: clip;
   margin: calc(-1 * var(--space-1));
   padding: var(--space-1);
   white-space: nowrap;
@@ -80,6 +81,30 @@
 .ag-rc__by {
   font-size: 12.5px;
   color: var(--faint);
+}
+/* On a touch screen, a row's changes listed whole in a popover (the kit's rows): each sentence opens its own thing. */
+.ag-rcpop {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.ag-rcpop__words {
+  color: var(--ink2);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+a.ag-rcpop__words {
+  color: var(--ink);
+}
+a.ag-rcpop__words:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ag-rcpop__by {
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--faint);
+  overflow-wrap: anywhere;
 }
 /* A row's action: words only, as `.cq-link`; its height is the first line's, so the sentence and it share a middle. */
 .ag-rc__btn {

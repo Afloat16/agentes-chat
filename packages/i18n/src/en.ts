@@ -3447,13 +3447,13 @@ export const en = {
     several: {
       issue: {
         created: "Created tasks {{refs}}",
-        updated: "Changed tasks {{refs}}",
+        updated: "Changed {{fields}} of tasks {{refs}}",
         assigned: "Assigned {{assignee}} tasks {{refs}}",
         assigned_self: "Took on tasks {{refs}}",
       },
       routine: {
         created: "Created the routines {{refs}}",
-        updated: "Changed the routines {{refs}}",
+        updated: "Changed {{fields}} of the routines {{refs}}",
         deleted: "Deleted the routines {{refs}}",
       },
       channel: {

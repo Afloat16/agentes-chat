@@ -3142,13 +3142,13 @@
     "several": {
       "issue": {
         "created": "タスクを作成しました: {{refs}}",
-        "updated": "タスクを変更しました: {{refs}}",
+        "updated": "タスクの{{fields}}を変更しました: {{refs}}",
         "assigned": "タスクを{{assignee}}に割り当てました: {{refs}}",
         "assigned_self": "タスクを自分で引き受けました: {{refs}}"
       },
       "routine": {
         "created": "ルーティンを作成しました: {{refs}}",
-        "updated": "ルーティンを変更しました: {{refs}}",
+        "updated": "ルーティンの{{fields}}を変更しました: {{refs}}",
         "deleted": "ルーティンを削除しました: {{refs}}"
       },
       "channel": {

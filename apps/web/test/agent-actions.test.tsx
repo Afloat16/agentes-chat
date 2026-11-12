@@ -11,7 +11,23 @@ import { RECEIPT_ICONS } from "@/components/AgentActions";
 import { ADA_ID, ATLAS_ID, createFakeApi, ENG_ID, type FakeState, ORG_ID, seedDm, seedState } from "./fake-api";
 import { renderApp, screen, settle } from "./render";
 
-afterEach(() => cleanup());
+let untouch: (() => void) | undefined;
+afterEach(() => {
+  cleanup();
+  untouch?.();
+  untouch = undefined;
+});
+
+/** A touch screen until the test ends: `(pointer: coarse)` matches. */
+const onTouch = () => {
+  const real = window.matchMedia.bind(window);
+  const media = spyOn(window, "matchMedia").mockImplementation((query: string) =>
+    query === "(pointer: coarse)"
+      ? ({ matches: true, addEventListener: () => {}, removeEventListener: () => {} } as unknown as MediaQueryList)
+      : real(query),
+  );
+  untouch = () => media.mockRestore();
+};
 
 const BODY = "Olhei o código: o prompt dispara em ReviewPrompt.swift:41.";
 const inMs = (ms: number) => new Date(Date.now() + ms).toISOString();
@@ -218,6 +234,61 @@ describe("receipts under the agent's reply", () => {
     const rows = [...group.querySelectorAll(".ag-rcg__it")] as HTMLElement[];
     expect(rows.map((r) => r.className.includes("is-undone"))).toEqual([false, true]);
     expect(rows[1]?.textContent).toContain("Desfeito por João");
+    // The line under a row is one line too, cut with "…", whole in its tip.
+    const by = rows[1]?.querySelector(".ag-rc__by") as HTMLElement;
+    expect(by.className).toContain("ag-rc__line");
+    expect(by.title).toBe("Desfeito por João");
+  });
+
+  test("the files a change brought: one line of their own under it", async () => {
+    await open(withActions([action({ params: { ...action().params, files: ["print.png", "registro.txt"] } })]));
+    const row = receipts().querySelector(".ag-rc") as HTMLElement;
+    const files = row.querySelector(".ag-rc__by") as HTMLElement;
+    expect(files.textContent).toBe("Anexei print.png e registro.txt");
+    expect(files.className).toContain("ag-rc__line");
+  });
+
+  test("on a touch screen, a tap on a row's words lists each change whole, each opening its own; a number opens its task", async () => {
+    onTouch();
+    const made = (n: number) =>
+      action({
+        id: `act-${n}`,
+        target: { type: "issue", id: `iss-${n}`, number: n, title: `Página de preços ${n}` },
+        params: { number: n, title: `Página de preços ${n}` },
+      });
+    const merged = action({
+      id: "act-pr",
+      kind: "pr.merged",
+      target: { type: "repository", id: "acme/loja", title: "acme/loja" },
+      params: { repo: "acme/loja", number: 12 },
+    });
+    await open(withActions([made(58), made(59), merged]));
+    const rows = [...receipts().querySelectorAll<HTMLElement>(".ag-rcg__it")];
+    const words = rows[0]?.querySelector(".ag-rc__sentence") as HTMLElement;
+    // No tip on a touch screen: nothing would show it.
+    expect(words.title).toBe("");
+    await click(words);
+    const list = screen().getByRole("dialog", { name: "Mudanças de Ada" });
+    expect(
+      within(list)
+        .getAllByRole("link")
+        .map((l) => [l.textContent, l.getAttribute("href")]),
+    ).toEqual([58, 59].map((n) => [`Criei a tarefa #${n} · Página de preços ${n}`, `/org/${ORG_ID}/issues/${n}`]));
+    await act(async () => fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" }));
+    await settle(3);
+    // A change with nothing to open is said whole there too, as words.
+    await click(rows[1]?.querySelector(".ag-rc__sentence") as HTMLElement);
+    const merge = screen().getByRole("dialog", { name: "Mudanças de Ada" });
+    expect(within(merge).queryAllByRole("link")).toHaveLength(0);
+    expect(merge.textContent).toContain("Fiz o merge do PR #12 em acme/loja");
+    await act(async () => fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" }));
+    await settle(3);
+    // A number still opens its own task, never the list.
+    expect(
+      within(rows[0] as HTMLElement)
+        .getByRole("link", { name: "#59" })
+        .getAttribute("href"),
+    ).toBe(`/org/${ORG_ID}/issues/59`);
   });
 
   test("live: message.actions replaces the receipts for everyone", async () => {

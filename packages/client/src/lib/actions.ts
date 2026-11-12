@@ -107,7 +107,8 @@ export function actionTextValues(
       const assigned = a.kind === "issue.assigned" || fields.includes("assignee");
       if (assigned) {
         if (p.assigneeIsSelf === true && a.kind === "issue.assigned") v.context = "self";
-        const isViewer = viewerUserId && p.assigneeType === "user" && p.assigneeId === viewerUserId;
+        // The server writes "person" for a member, "agent" for an agent.
+        const isViewer = viewerUserId && p.assigneeType === "person" && p.assigneeId === viewerUserId;
         v.assignee = isViewer ? t("agentActions.you") : str(p.assigneeName) || t("agentActions.someone");
       }
       return v;
@@ -209,27 +210,38 @@ type Values = Record<string, string>;
 const hashed = (key: string) => (v: Values) => (v[key] ? `#${v[key]}` : "");
 const named = (key: string) => (v: Values) => v[key] ?? "";
 
+interface Blend {
+  /** Each change's reference in the row ("#58", a routine's name). */
+  ref: (v: Values) => string;
+  /** What the changes of one row share besides the kind (one assignee, one agent, one repository, the same fields). */
+  same?: (a: AgentAction, v: Values) => unknown;
+  /** Contexts with a sentence of their own when several are said together (`_self`, `_rule`). */
+  contexts?: string[];
+  /** Said in words rather than named (a memory): the kind's own sentence, with all of them in this value. */
+  slot?: string;
+}
+
 /**
- * The kinds whose changes blend into one row (`receiptRows`): each one's reference there ("#58", a routine's name), the
- * words of the sentence that its changes share (one assignee, one repository) and the contexts that keep a sentence of
- * their own (`_self`, `_rule`). The row says `agentActions.several.<kind>`, or, for what is said in words rather than
- * named (a memory), the kind's own sentence with all of them in its `slot`.
+ * The kinds whose changes blend into one row (`receiptRows`). The row says `agentActions.several.<kind>`, or the kind's
+ * own sentence for a `slot`.
  * ponytail: a workspace change, a renamed conversation, a branch merge and a restricted page stay one row each, their
  * sentences saying more than a name. Give them `several` sentences once agents make many of them in one reply.
  */
-const BLENDS: Partial<
-  Record<AgentActionKind, { ref: (v: Values) => string; keep?: string[]; contexts?: string[]; slot?: string }>
-> = {
+const BLENDS: Partial<Record<AgentActionKind, Blend>> = {
   "issue.created": { ref: hashed("number") },
-  "issue.updated": { ref: hashed("number") },
-  "issue.assigned": { ref: hashed("number"), keep: ["assignee"], contexts: ["self"] },
+  "issue.updated": { ref: hashed("number"), same: (a) => a.params.fields },
+  "issue.assigned": {
+    ref: hashed("number"),
+    same: (a) => [a.params.assigneeType ?? null, a.params.assigneeId ?? null],
+    contexts: ["self"],
+  },
   "memory.saved": { ref: named("text"), contexts: ["rule"], slot: "text" },
   "memory.updated": { ref: named("text"), slot: "text" },
   "memory.forgotten": { ref: named("text"), slot: "text" },
   "routine.created": { ref: named("name") },
-  "routine.updated": { ref: named("name") },
+  "routine.updated": { ref: named("name"), same: (a) => a.params.fields },
   "routine.deleted": { ref: named("name") },
-  "channel.agent_added": { ref: hashed("channel"), keep: ["agentName"] },
+  "channel.agent_added": { ref: hashed("channel"), same: (a, v) => a.params.agentId ?? v.agentName },
   "channel.created": { ref: hashed("name") },
   "wiki.page_created": { ref: named("title") },
   "wiki.page_edited": { ref: named("title") },
@@ -237,18 +249,25 @@ const BLENDS: Partial<
   "skill.created": { ref: named("name") },
   "skill.updated": { ref: named("name") },
   "agent.settings_changed": { ref: named("agentName") },
-  "pr.merged": { ref: hashed("number"), keep: ["repo"] },
+  "pr.merged": { ref: hashed("number"), same: (_a, v) => v.repo },
 };
+
+/**
+ * A sentence that says what changed (a status, a priority, paused or resumed, an agent's instructions, role or apps): a
+ * row of several would drop it, so each such change keeps its row.
+ */
+const SAYS_WHAT = new Set(["status", "priority", "paused", "resumed", "instructions", "role", "apps"]);
 
 /** One key for the changes a row may say together; null for a change that keeps a row of its own. */
 function blendKey(a: AgentAction, v: Values): string | null {
   const how = BLENDS[a.kind];
   // A webhook routine's row copies its own address.
-  if (!how?.ref(v) || (a.kind.startsWith("routine.") && a.params.trigger === "webhook")) return null;
+  const own = a.kind.startsWith("routine.") && a.params.trigger === "webhook";
+  if (!how?.ref(v) || own || SAYS_WHAT.has(v.context ?? "")) return null;
   const context = v.context && how.contexts?.includes(v.context) ? v.context : "";
   // Undone by one person, or doing the same on its own: the line under the row stays true for all of it.
   const undone = a.undoneAt ? (a.undoneByUserId ?? "") : null;
-  return JSON.stringify([a.kind, context, how.keep?.map((k) => v[k] ?? ""), undone, routineOwnActions(a)]);
+  return JSON.stringify([a.kind, context, how.same?.(a, v) ?? null, undone, routineOwnActions(a)]);
 }
 
 /** A row of an agent's receipts: one change, or several of one kind said once. */
@@ -262,7 +281,8 @@ export interface ReceiptRow {
 /**
  * The receipts in rows: two or more changes of one kind about different things are one row, where the first of them
  * was ("Criei as tarefas #58, #59 e #60"); any other change is a row of its own, and so is each change of a thing
- * changed twice with nothing else beside it.
+ * changed twice with nothing else beside it. Things are told apart by target and reference both: the pull requests a
+ * merge names share their repository's target.
  */
 export function receiptRows(list: readonly AgentAction[], t: TFunction, viewerUserId?: string): ReceiptRow[] {
   const groups = new Map<string, { a: AgentAction; ref: string }[]>();
@@ -285,11 +305,17 @@ export function receiptRows(list: readonly AgentAction[], t: TFunction, viewerUs
   return order.flatMap((entry): ReceiptRow[] => {
     if (typeof entry !== "string") return [{ actions: [entry], refs: null }];
     const group = groups.get(entry) ?? [];
-    const refs = [...new Map(group.map(({ a, ref }) => [a.target.id || ref, { text: ref, action: a }])).values()];
+    const things = new Map(group.map(({ a, ref }) => [JSON.stringify([a.target.id, ref]), { text: ref, action: a }]));
+    const refs = [...things.values()];
     const actions = group.map(({ a }) => a);
     return refs.length < 2 ? actions.map((a) => ({ actions: [a], refs: null })) : [{ actions, refs }];
   });
 }
+
+/** The files a row's changes brought, each once, for the line under it ("Anexei print.png e log.txt"). */
+export const rowFiles = (row: ReceiptRow): string[] => [
+  ...new Set(row.actions.flatMap((a) => (a.undoneAt ? [] : receiptFiles(a)))),
+];
 
 /** A part of a row's sentence: bold where it names a thing, with the change whose target it opens. */
 export interface ReceiptPiece {
@@ -307,9 +333,15 @@ const SLOT_CLOSE = "\uE001";
 const slot = (i: number) => `${SLOT_OPEN}${i}${SLOT_CLOSE}`;
 const SLOTS = new RegExp(`${SLOT_OPEN}(\\d+)${SLOT_CLOSE}`);
 
-/** `t` with a key built at run time (a kind and its context), which the app's typed keys can't name. */
-const say = (t: TFunction, key: string, values: Record<string, string>) =>
-  (t as unknown as (key: string, values: Record<string, string>) => string)(key, values);
+/**
+ * `t` with a key built at run time (a kind), which the app's typed keys can't name. Its `context` picks the context's
+ * own sentence (`issue.assigned_self`), falling back to the kind's where a language has none.
+ */
+const say = (t: TFunction, key: string, values: Record<string, string>, context?: string) =>
+  (t as unknown as (key: string, values: Record<string, string>) => string)(
+    key,
+    context ? { ...values, context } : values,
+  );
 
 /**
  * A row's sentence in parts: a change on its own says its sentence with its target in bold ("Criei a tarefa **#58** ·
@@ -328,8 +360,6 @@ export function receiptPieces(
   const refs = row.refs;
   const how = BLENDS[first.kind];
   if (!refs || how?.slot) {
-    // i18next contexts: `issue.assigned_self`, `routine.updated_paused`…
-    const key = `${actionTextKey(first)}${context ? `_${context}` : ""}`;
     const all =
       refs && how?.slot
         ? {
@@ -339,16 +369,15 @@ export function receiptPieces(
             ),
           }
         : {};
-    return boldRuns(say(t, key, { ...values, ...all })).map((r) => (r.bold ? { ...r, opens: first } : r));
+    const text = say(t, actionTextKey(first), { ...values, ...all }, context);
+    return boldRuns(text).map((r) => (r.bold ? { ...r, opens: first } : r));
   }
-  const own = context && how?.contexts?.includes(context) ? `_${context}` : "";
-  const text = say(t, `agentActions.several.${first.kind}${own}`, {
-    ...values,
-    refs: joinNames(
-      refs.map((_, i) => slot(i)),
-      t,
-    ),
-  });
+  const own = context && how?.contexts?.includes(context) ? context : undefined;
+  const refsText = joinNames(
+    refs.map((_, i) => slot(i)),
+    t,
+  );
+  const text = say(t, `agentActions.several.${first.kind}`, { ...values, refs: refsText }, own);
   return text.split(SLOTS).flatMap((part, i): ReceiptPiece[] => {
     if (i % 2 === 0) return boldRuns(part);
     const ref = refs[Number(part)];
@@ -356,20 +385,28 @@ export function receiptPieces(
   });
 }
 
-/** A row's whole words, for its tip: each change's sentence as a row of its own says it and its files, one a line. */
-export function receiptTip(
+/** Each change of a row on its own: its sentence as a row of its own says it, and the files that went with it. */
+export function receiptLines(
   row: ReceiptRow,
   t: TFunction,
   viewerUserId?: string,
   options: { schedule?: (rule: ApiRule) => string } = {},
-): string {
-  return row.actions
-    .flatMap((a) => {
-      const line = receiptPieces({ actions: [a], refs: null }, t, viewerUserId, options)
-        .map((p) => p.text)
-        .join("");
-      const files = a.undoneAt ? [] : receiptFiles(a);
-      return files.length ? [line, t("agentActions.issue.files", { names: joinNames(files, t) })] : [line];
-    })
-    .join("\n");
+): { action: AgentAction; text: string; files: string | null }[] {
+  return row.actions.map((a) => {
+    const text = receiptPieces({ actions: [a], refs: null }, t, viewerUserId, options)
+      .map((p) => p.text)
+      .join("");
+    const files = rowFiles({ actions: [a], refs: null });
+    return {
+      action: a,
+      text,
+      files: files.length ? t("agentActions.issue.files", { names: joinNames(files, t) }) : null,
+    };
+  });
 }
+
+/** A row's whole words, for its tip: each change and its files, one a line. */
+export const receiptTip = (...args: Parameters<typeof receiptLines>): string =>
+  receiptLines(...args)
+    .flatMap((l) => (l.files ? [l.text, l.files] : [l.text]))
+    .join("\n");

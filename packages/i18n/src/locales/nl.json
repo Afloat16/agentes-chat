@@ -3257,13 +3257,13 @@
     "several": {
       "issue": {
         "created": "Taken aangemaakt: {{refs}}",
-        "updated": "Taken gewijzigd: {{refs}}",
+        "updated": "{{fields}} van taken gewijzigd: {{refs}}",
         "assigned": "Taken toegewezen aan {{assignee}}: {{refs}}",
         "assigned_self": "Taken zelf opgepakt: {{refs}}"
       },
       "routine": {
         "created": "Routines aangemaakt: {{refs}}",
-        "updated": "Routines gewijzigd: {{refs}}",
+        "updated": "{{fields}} van routines gewijzigd: {{refs}}",
         "deleted": "Routines verwijderd: {{refs}}"
       },
       "channel": {

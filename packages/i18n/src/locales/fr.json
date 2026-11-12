@@ -3362,13 +3362,13 @@
     "several": {
       "issue": {
         "created": "A créé les tâches {{refs}}",
-        "updated": "A modifié les tâches {{refs}}",
+        "updated": "A modifié {{fields}} des tâches {{refs}}",
         "assigned": "A assigné à {{assignee}} les tâches {{refs}}",
         "assigned_self": "J'ai pris moi-même les tâches {{refs}}"
       },
       "routine": {
         "created": "A créé les routines {{refs}}",
-        "updated": "A modifié les routines {{refs}}",
+        "updated": "A modifié {{fields}} des routines {{refs}}",
         "deleted": "A supprimé les routines {{refs}}"
       },
       "channel": {

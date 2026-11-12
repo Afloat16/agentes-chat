@@ -3463,13 +3463,13 @@
     "several": {
       "issue": {
         "created": "Созданы задачи {{refs}}",
-        "updated": "Изменены задачи {{refs}}",
+        "updated": "Изменено в задачах ({{fields}}): {{refs}}",
         "assigned": "Назначены на {{assignee}} задачи {{refs}}",
         "assigned_self": "Беру на себя задачи {{refs}}"
       },
       "routine": {
         "created": "Созданы регулярные задачи {{refs}}",
-        "updated": "Изменены регулярные задачи {{refs}}",
+        "updated": "Изменено в регулярных задачах ({{fields}}): {{refs}}",
         "deleted": "Удалены регулярные задачи {{refs}}"
       },
       "channel": {

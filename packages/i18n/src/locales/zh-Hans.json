@@ -3143,13 +3143,13 @@
     "several": {
       "issue": {
         "created": "创建了任务 {{refs}}",
-        "updated": "修改了任务 {{refs}}",
+        "updated": "修改了任务的{{fields}}：{{refs}}",
         "assigned": "将任务分配给 {{assignee}}：{{refs}}",
         "assigned_self": "自己接手了任务 {{refs}}"
       },
       "routine": {
         "created": "创建了例行工作 {{refs}}",
-        "updated": "修改了例行工作 {{refs}}",
+        "updated": "修改了例行工作的{{fields}}：{{refs}}",
         "deleted": "删除了例行工作 {{refs}}"
       },
       "channel": {

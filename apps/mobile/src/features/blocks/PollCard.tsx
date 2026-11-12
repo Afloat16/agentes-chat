@@ -10,6 +10,7 @@ import { Face } from "../shared/Face";
 import { useColors, useDirectory, useMeId, useOrgId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
 import { tapHaptic } from "../shared/parts";
+import { faceOverlap } from "./logic";
 
 const FACES = 4;
 
@@ -45,6 +46,10 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
   const tally = pollTally(options, poll);
   const top = Math.max(...tally.map((o) => o.voters.length));
   const nameOf = (userId: string) => dir.memberById.get(userId)?.name ?? t("mobile.blocks.someone");
+  const hasPhoto = (userId: string | undefined) => {
+    const member = userId ? dir.memberById.get(userId) : undefined;
+    return Boolean(member?.avatarUrl ?? member?.image);
+  };
   // An option's label wraps: its box, mark and faces sit on its first line, not centred on the whole option.
   const line = textLineOf("body", fontScale);
   const closes = new Intl.DateTimeFormat(i18n.language, { dateStyle: "short", timeStyle: "short" }).format(
@@ -87,27 +92,37 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
               }}
               style={[styles.option, { borderColor: c.line2 }]}
             >
-              <View style={[styles.fill, { width: `${o.share * 100}%`, backgroundColor: c.line }]} />
-              <View style={leadBox(line, 20)}>
-                <View
-                  style={[styles.box, { borderColor: c.faint }, mine && { backgroundColor: c.ink, borderColor: c.ink }]}
-                >
-                  {mine ? <Icon name="check" size={13} color={c.raised} /> : null}
+              {/* The share fills the option up to its faces, never under them: their rings stay the card's face. */}
+              <View style={styles.track}>
+                <View style={[styles.fill, { width: `${o.share * 100}%`, backgroundColor: c.line }]} />
+                <View style={leadBox(line, 20)}>
+                  <View
+                    style={[
+                      styles.box,
+                      { borderColor: c.faint },
+                      mine && { backgroundColor: c.ink, borderColor: c.ink },
+                    ]}
+                  >
+                    {mine ? <Icon name="check" size={13} color={c.raised} /> : null}
+                  </View>
                 </View>
+                <Text variant="body" style={[styles.label, styles.bold]}>
+                  {o.label}
+                </Text>
+                {won ? (
+                  <View style={leadBox(line, 5)}>
+                    <View style={[styles.mark, { backgroundColor: c.ok }]} />
+                  </View>
+                ) : null}
               </View>
-              <Text variant="body" style={[styles.label, styles.bold]}>
-                {o.label}
-              </Text>
-              {won ? (
-                <View style={leadBox(line, 5)}>
-                  <View style={[styles.mark, { backgroundColor: c.ok }]} />
-                </View>
-              ) : null}
               <View style={[styles.faces, { minHeight: line.height }]}>
                 {/* Each voter's face as the conversation shows it (the photo, else the initials), ringed in the
                     option's face. */}
-                {o.voters.slice(0, FACES).map((v, i) => (
-                  <View key={v} style={[styles.ring, { backgroundColor: c.raised }, i > 0 && styles.overlap]}>
+                {o.voters.slice(0, FACES).map((v, i, shown) => (
+                  <View
+                    key={v}
+                    style={[styles.ring, { backgroundColor: c.raised }, i > 0 && faceOverlap(hasPhoto(shown[i - 1]))]}
+                  >
                     <Face who={{ type: "person", id: v }} size={20} />
                   </View>
                 ))}
@@ -178,7 +193,18 @@ const styles = StyleSheet.create({
   faces: { flexDirection: "row", alignItems: "center" },
   // A 20 face in a 2-point ring: 24 in all, the ring's corner the face's 30% plus the 2 between them.
   ring: { padding: 2, borderRadius: 8 },
-  overlap: { marginLeft: -6 },
+  // The box, the label and the share's fill behind them, out to the option's left edge, top to bottom.
+  track: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    minWidth: 0,
+    marginLeft: -12,
+    paddingLeft: 12,
+    marginVertical: -12,
+    paddingVertical: 12,
+  },
   note: { marginTop: -8, marginBottom: 10, paddingHorizontal: 14 },
   foot: {
     flexDirection: "row",

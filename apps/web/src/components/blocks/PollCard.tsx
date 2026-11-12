@@ -69,9 +69,12 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
                 })
               }
             >
-              <span className="poll__fill" style={{ width: `${o.share * 100}%` }} />
-              <span className="poll__box">{mine && <Icon name="check" size={14} />}</span>
-              <span className="poll__label">{o.label}</span>
+              {/* The share fills the option up to its faces, never under them: their rings stay the card's face. */}
+              <span className="poll__track">
+                <span className="poll__fill" style={{ width: `${o.share * 100}%` }} />
+                <span className="poll__box">{mine && <Icon name="check" size={14} />}</span>
+                <span className="poll__label">{o.label}</span>
+              </span>
               {o.voters.length > 0 && (
                 // Each voter's face as the conversation shows it: the photo, else the initials.
                 <span className="poll__faces" role="img" aria-label={o.voters.map(nameOf).join(", ")}>

@@ -104,7 +104,8 @@ test("a row's sentence and a tool's line wrap, whole; what an agent changed is o
   // A change's line (its whole words in its tip): the clip stands out of the line, so a focused link's ring shows whole.
   expect(value(".ag-rc__line", "white-space")).toBe("nowrap");
   expect(value(".ag-rc__line", "text-overflow")).toBe("ellipsis");
-  expect(value(".ag-rc__line", "overflow")).toBe("hidden");
+  // Clipped, not a scroller: tabbing to a link past the cut never scrolls the words.
+  expect(value(".ag-rc__line", "overflow")).toBe("clip");
   expect(value(".ag-rc__line", "padding")).toBe("var(--space-1)");
   expect(value(".ag-rc__line", "margin")).toBe("calc(-1 * var(--space-1))");
 });

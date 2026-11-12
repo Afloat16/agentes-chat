@@ -7952,7 +7952,7 @@
     "value": "Created tasks {{refs}}"
   },
   "agentActions.several.issue.updated": {
-    "value": "Changed tasks {{refs}}"
+    "value": "Changed {{fields}} of tasks {{refs}}"
   },
   "agentActions.several.issue.assigned": {
     "value": "Assigned {{assignee}} tasks {{refs}}"
@@ -7964,7 +7964,7 @@
     "value": "Created the routines {{refs}}"
   },
   "agentActions.several.routine.updated": {
-    "value": "Changed the routines {{refs}}"
+    "value": "Changed {{fields}} of the routines {{refs}}"
   },
   "agentActions.several.routine.deleted": {
     "value": "Deleted the routines {{refs}}"

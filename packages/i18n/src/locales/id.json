@@ -3153,13 +3153,13 @@
     "several": {
       "issue": {
         "created": "Membuat tugas {{refs}}",
-        "updated": "Mengubah tugas {{refs}}",
+        "updated": "Mengubah {{fields}} di tugas {{refs}}",
         "assigned": "Menugaskan ke {{assignee}}: tugas {{refs}}",
         "assigned_self": "Mengambil sendiri tugas {{refs}}"
       },
       "routine": {
         "created": "Membuat rutinitas {{refs}}",
-        "updated": "Mengubah rutinitas {{refs}}",
+        "updated": "Mengubah {{fields}} di rutinitas {{refs}}",
         "deleted": "Menghapus rutinitas {{refs}}"
       },
       "channel": {

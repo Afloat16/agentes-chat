@@ -3377,13 +3377,13 @@ export const ptBR = {
     several: {
       issue: {
         created: "Criei as tarefas {{refs}}",
-        updated: "Mudei as tarefas {{refs}}",
+        updated: "Mudei {{fields}} das tarefas {{refs}}",
         assigned: "Passei para {{assignee}} as tarefas {{refs}}",
         assigned_self: "Peguei para mim as tarefas {{refs}}",
       },
       routine: {
         created: "Criei as rotinas {{refs}}",
-        updated: "Mudei as rotinas {{refs}}",
+        updated: "Mudei {{fields}} das rotinas {{refs}}",
         deleted: "Apaguei as rotinas {{refs}}",
       },
       channel: {
