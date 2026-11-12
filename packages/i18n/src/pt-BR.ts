@@ -17731,6 +17731,15 @@ export const ptBR = {
       timeout: "A atualização demorou demais.",
       invalid_data: "{{name}} não conseguiu montar os dados neste formato.",
     },
+    wait: {
+      plan: "Esperando o plano de {{name}} renovar {{when}}",
+      planUnknown: "Esperando o plano de {{name}} renovar",
+      budget: "Esperando o orçamento de {{name}} renovar {{when}}",
+      budgetSoon: "Esperando um instante pelo orçamento de {{name}}",
+      computer: "Esperando o computador de {{name}}",
+      busy: "Esperando vaga no computador de {{name}}",
+      provider: "Esperando o provedor de IA de {{name}}, próxima tentativa {{when}}",
+    },
     menu: {
       label: "Mais",
       open: "Abrir",

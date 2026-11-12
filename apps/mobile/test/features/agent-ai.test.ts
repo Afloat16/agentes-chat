@@ -366,7 +366,9 @@ describe("the agent's AI", () => {
       /: t\(failure\.key \?\? "agentPage\.work\.brain\.add\.failed", \{\s+brand: plan\?\.label \?\? t\(/,
     );
     // The CLI's own words only under the two lines they explain, whole and selectable.
-    expect(flow).toContain("const said = byCode && !notShared && failure.detail ? result?.message?.trim() || null : null;");
+    expect(flow).toContain(
+      "const said = byCode && !notShared && failure.detail ? result?.message?.trim() || null : null;",
+    );
     expect(flow).toMatch(/<Text variant="small" tone="muted" selectable style=\{\[styles\.said,/);
     expect(flow).not.toMatch(/styles\.said[^>]*numberOfLines/);
     // Canceled is no failure: no line, the sign-in starts over.

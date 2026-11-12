@@ -9,7 +9,9 @@ import type {
   WidgetSchedule,
   WidgetSpec,
   WidgetStatus,
+  WidgetWait,
 } from "@agenteschat/client";
+import { widgetCardStatus } from "@agenteschat/client";
 import type { ChartSpec } from "@agenteschat/client/lib/chart";
 import type { AgentColorName } from "@agenteschat/ui/agent/engine";
 import {
@@ -33,7 +35,17 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { CardHorizon, CHROME_MAX_SCALE, Icon, PixelOrbit, PressScale, Text, useReducedMotion, useTheme } from "@/ui";
+import {
+  CardHorizon,
+  CHROME_MAX_SCALE,
+  Icon,
+  LineIcon,
+  PixelOrbit,
+  PressScale,
+  Text,
+  useReducedMotion,
+  useTheme,
+} from "@/ui";
 import { Line } from "../chat/ChartCard";
 import { AgentFace } from "../shared/Face";
 import { useSurface } from "../shared/parts";
@@ -547,11 +559,21 @@ function Summary({ spec, color, compact = false }: { spec: TextWidgetSpec; color
 
 /**
  * The first build: a field of the agent's dither with a denser band sweeping across it (still with reduced
- * motion), and what is happening under it.
+ * motion, or while its run waits: `still`), and what is happening under it.
  */
-export function BuildingSweep({ color, text, height = 56 }: { color: AgentColorName; text: string; height?: number }) {
+export function BuildingSweep({
+  color,
+  text,
+  height = 56,
+  still = false,
+}: {
+  color: AgentColorName;
+  text: string;
+  height?: number;
+  still?: boolean;
+}) {
   const { scheme } = useTheme();
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion() || still;
   const tones = widgetTones(color, scheme === "dark");
   const [width, onLayout] = useWidth();
   const band = Math.max(24, Math.round(width * 0.4));
@@ -565,7 +587,7 @@ export function BuildingSweep({ color, text, height = 56 }: { color: AgentColorN
   const sweep = useAnimatedStyle(() => ({ transform: [{ translateX: -band + at.value * (width + band) }] }));
   const box = roundRectPath(0, 0, width, height, 6);
   return (
-    <View style={styles.building} accessibilityRole="progressbar" accessibilityLabel={text}>
+    <View style={styles.building} accessibilityRole={still ? "text" : "progressbar"} accessibilityLabel={text}>
       <View onLayout={onLayout} style={[styles.field, { height }]}>
         {width > 0 ? (
           <>
@@ -609,6 +631,8 @@ export interface WidgetCardData {
   w: 1 | 2;
   /** Its height on the board: 2 (L) stands taller on the phone. */
   h?: 1 | 2;
+  /** What its refresh waits on: said in place of its sweep or "updating…". */
+  wait?: WidgetWait | null;
 }
 
 /** The card's soft surface (no border, no shadow): its background, by theme. */
@@ -660,10 +684,20 @@ export function WidgetCard({
   // The home's strip: the app's card (lit top, cut corner), as every card that stands on the page.
   const surface = compact ? [card, styles.compact] : soft;
   const look = useAgentLook(w.agentId);
+  const words = useWidgetWords();
   // A 2-high (L) widget on a board draws its data big, as on its own screen.
   const large = big || isTall(w.h ?? 1);
   const title = shownWidgetTitle(w.title, w.kind, (key) => t(key));
-  const drawn = body === undefined && (w.status === "ok" || w.status === "updating" || w.status === "failed");
+  // A refresh that waits stands still and says what for: its data as it was, or (with none yet) under a still sweep.
+  const status = widgetCardStatus({ status: w.status, wait: w.wait ?? null }, words.now);
+  const waits = status !== w.status;
+  const shownBody =
+    body !== undefined ? (
+      body
+    ) : waits && !w.spec ? (
+      <BuildingSweep still color={look.color} text={words.wait(w)} />
+    ) : undefined;
+  const drawn = shownBody === undefined && (status === "ok" || status === "updating" || status === "failed");
   const bleed = drawn ? bleedSeries(w.spec, large) : null;
   const bleedHeight = compact ? 34 : w.spec?.kind === "line" ? (large ? 120 : 76) : large ? 72 : 48;
   const foot = footer !== undefined ? footer : compact ? null : <WidgetFoot widget={w} />;
@@ -711,9 +745,10 @@ export function WidgetCard({
           <Text variant="caption" tone="muted" numberOfLines={large ? 2 : 1} style={[styles.title, styles.grow]}>
             {title}
           </Text>
-          {/* The strip has no footer: updating is its orbit, a failure its mark, on the title line. */}
-          {compact && w.status === "updating" ? <PixelOrbit color={look.color} size={16} /> : null}
-          {compact && w.status === "failed" ? <Icon name="info" size={13} color={c.warn} /> : null}
+          {/* The strip has no footer: updating is its orbit, a wait or a failure its mark, on the title line. */}
+          {compact && status === "updating" ? <PixelOrbit color={look.color} size={16} /> : null}
+          {compact && waits ? <Icon name="pause" size={13} color={c.muted} /> : null}
+          {compact && status === "failed" ? <Icon name="info" size={13} color={c.warn} /> : null}
         </View>
       ) : (
         head
@@ -723,10 +758,10 @@ export function WidgetCard({
         style={compact ? [styles.bodyCompact, w.spec?.kind === "bars" && styles.toEdge] : styles.body}
         onLayout={horizon ? (e) => setBodyTop(e.nativeEvent.layout.y) : undefined}
       >
-        {body === undefined ? (
+        {shownBody === undefined ? (
           <WidgetBody
             spec={w.spec}
-            status={w.status}
+            status={status}
             agentId={w.agentId}
             big={large}
             bleed={Boolean(bleed)}
@@ -734,12 +769,12 @@ export function WidgetCard({
             {...(horizon ? { onLayout: (e: LayoutChangeEvent) => setDataHeight(e.nativeEvent.layout.height) } : {})}
           />
         ) : (
-          body
+          shownBody
         )}
       </View>
       {foot}
       {bleed ? (
-        <View style={[styles.bleedBox, w.status === "ok" || compact ? null : styles.dim]}>
+        <View style={[styles.bleedBox, status === "ok" || compact ? null : styles.dim]}>
           <BleedLine values={bleed} color={look.color} height={bleedHeight} />
         </View>
       ) : null}
@@ -761,13 +796,26 @@ export function WidgetCard({
   );
 }
 
-/** "12 min ago · every hour" (how often only when there's room), "Theo updating…", or "Didn't update · Resolve". */
+/**
+ * "12 min ago · every hour" (how often only when there's room), "Theo updating…", what its refresh waits for, or
+ * "Didn't update · Resolve".
+ */
 function WidgetFoot({ widget: w }: { widget: WidgetCardData }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
   const look = useAgentLook(w.agentId);
   const words = useWidgetWords();
   if (w.status === "building") return null;
+  const wait = words.wait(w);
+  if (wait)
+    return (
+      <View style={styles.waitFoot}>
+        <LineIcon variant="caption" name="pause" size={13} color={c.muted} />
+        <Text variant="caption" tone="muted" style={styles.grow}>
+          {wait}
+        </Text>
+      </View>
+    );
   if (w.status === "updating")
     return (
       <View style={styles.foot}>
@@ -860,6 +908,7 @@ const styles = StyleSheet.create({
   field: { borderRadius: 6, overflow: "hidden" },
   band: { position: "absolute", top: 0, bottom: 0 },
   foot: { flexDirection: "row", alignItems: "center", gap: 6 },
+  waitFoot: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   // Out to the card's edges and its bottom: the card's padding cancelled.
   bleedBox: { marginHorizontal: -PAD_X, marginBottom: -PAD_Y, marginTop: -4 },
   bleed: { width: "100%" },

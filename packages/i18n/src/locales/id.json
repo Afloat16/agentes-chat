@@ -16962,6 +16962,15 @@
       "timeout": "Pembaruan terlalu lama.",
       "invalid_data": "{{name}} tidak bisa menyusun data dalam format ini."
     },
+    "wait": {
+      "plan": "Menunggu paket {{name}} direset {{when}}",
+      "planUnknown": "Menunggu paket {{name}} direset",
+      "budget": "Menunggu anggaran {{name}} diperbarui {{when}}",
+      "budgetSoon": "Menunggu sebentar anggaran {{name}}",
+      "computer": "Menunggu komputer {{name}}",
+      "busy": "Menunggu tempat di komputer {{name}}",
+      "provider": "Menunggu penyedia AI {{name}}, percobaan berikutnya {{when}}"
+    },
     "menu": {
       "label": "Lainnya",
       "open": "Buka",
