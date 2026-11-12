@@ -228,6 +228,11 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "devices.fix.device_support",
     "devices.fix.helper_missing",
     "devices.fix.helper_expired",
+    // An iPhone over Wi-Fi is reached through its Mac, on the Mac's network.
+    "devices.reason.wifi_away",
+    "devices.reason.wifi_untrusted",
+    "devices.fix.wifi_away",
+    "devices.fix.tunnel_down",
     "devices.who.followsHint",
     "devices.choose.thisMac",
     "devices.screen.needsHelper",
