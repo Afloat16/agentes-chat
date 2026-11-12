@@ -231,7 +231,8 @@ const styles = StyleSheet.create({
   pillText: { flex: 1, minWidth: 0, ...systemText("subhead") },
   semibold: { fontWeight: weights.semibold },
   deadline: { flexDirection: "row", alignItems: "center", gap: 8 },
-  fuse: { width: 36, height: 6 },
+  // `flex: 0`: the fuse grows by default, and here it would take the whole line and leave the words no room.
+  fuse: { flex: 0, width: 36, height: 6 },
   left: { ...systemText("footnote", weights.semibold), fontVariant: ["tabular-nums"] },
   more: { flexDirection: "row", alignItems: "center", gap: 8 },
   faces: { flexDirection: "row" },
