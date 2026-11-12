@@ -2,7 +2,7 @@ import type { AppNotification } from "@agenteschat/client";
 import { useNotificationAction, useNotificationReply } from "@agenteschat/client";
 import { type IslandItem, islandLead, noticeLine } from "@agenteschat/client/lib/island";
 import { mediaWord } from "@agenteschat/client/lib/media";
-import { replyTarget, waitingCardOf } from "@agenteschat/client/lib/notifications";
+import { quickReply, waitingCardOf } from "@agenteschat/client/lib/notifications";
 import { StatusBar } from "expo-status-bar";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
@@ -404,12 +404,8 @@ function IslandRow({ n, onOpened }: { n: AppNotification; onOpened: () => void }
     return () => island.pause(`typing:${n.id}`, false);
   }, [typing, n.id]);
 
-  // Being deleted, the workspace takes no answer (ADR 0088 §7): the quick reply's place says why, as on the web.
-  const deleting = Boolean(useOrg().org?.deletion);
-  const answerable = replyTarget(n);
-  const target = deleting ? null : answerable;
+  const { target, suggestions, readOnly } = quickReply(n, Boolean(useOrg().org?.deletion));
   const waiting = n.waiting ? waitingCardOf(n) : null;
-  const suggestions = !deleting && n.kind === "agent_question" ? (n.latest.suggestions ?? []) : [];
   const { canOpen, open } = useOpenNotice(n, onOpened);
 
   const read = () => {
@@ -480,7 +476,7 @@ function IslandRow({ n, onOpened }: { n: AppNotification; onOpened: () => void }
           </View>
         ) : (
           <>
-            {deleting && answerable ? (
+            {readOnly ? (
               <View style={styles.done}>
                 <LineIcon name="lock" size={13} color={MUTED} variant="footnote" />
                 <Text variant="footnote" style={[styles.readonly, styles.grow]}>

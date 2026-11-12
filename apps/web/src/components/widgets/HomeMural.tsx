@@ -1,5 +1,5 @@
 import type { Dashboard, HomeTile } from "@agenteschat/client";
-import { useHomeBoard } from "@agenteschat/client";
+import { frozenBoard, useHomeBoard } from "@agenteschat/client";
 import { GroupHeading } from "@agenteschat/ui";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
@@ -37,17 +37,17 @@ const DEFAULT_TILES: HomeTile[] = [
  */
 export function HomeMural({ orgId, waiting, working }: { orgId: string; waiting: MuralTile; working: MuralTile }) {
   const { t } = useTranslation();
+  const { org } = useOrg();
   const home = useHomeBoard(orgId);
   const [arranging, setArranging] = useState(false);
   const [adding, setAdding] = useState(false);
   const [widgetId, setWidgetId] = useOpenParam("widget");
-  const own = withTiles(home.own ?? placeholder(orgId));
-  const chosen = home.chosen;
+  const own = withTiles(frozenBoard(home.own ?? placeholder(orgId), org));
+  const chosen = home.chosen && frozenBoard(home.chosen, org);
   // While a chosen board loads, only the own home's fixed tiles; its widgets stay in "My Home".
   const tilesBoard = home.chosenId ? { ...own, widgets: [] } : own;
-  const ownEditable = Boolean(home.own?.canEdit);
-  // Being deleted, the workspace changes nothing (ADR 0088 §7): no Organize, no "+".
-  const editable = !useOrg().org.deletion && (chosen ? chosen.canEdit || ownEditable : ownEditable);
+  const ownEditable = own.canEdit;
+  const editable = chosen ? chosen.canEdit || ownEditable : ownEditable;
   const title = home.chosenId ? (chosen?.title ?? home.chosenTitle ?? "") : t("widgets.home");
   const count = home.chosenId ? (chosen?.widgets.length ?? 0) : own.widgets.length;
   const tile = (it: MuralTile) => (organize: TileOrganize | null) => (

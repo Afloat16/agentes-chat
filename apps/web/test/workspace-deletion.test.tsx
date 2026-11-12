@@ -252,10 +252,34 @@ describe("a workspace being deleted opens as ever, read-only, under a line on to
     cleanup();
     await open(`/org/${ORG_ID}/settings/account`, { deletion: deletion(soon(6)) });
     expect(frozen()).toBeNull();
-    // What is read through its rows and tabs stays as ever (the Vault, roles, skills): the server refuses its writes.
+    // What is read through its rows and tabs stays as ever (the Vault, roles, skills, the agents' access): the server
+    // refuses its writes.
     cleanup();
     await open(`/org/${ORG_ID}/settings/roles`, { deletion: deletion(soon(6)) });
     expect(frozen()).toBeNull();
+    cleanup();
+    await open(`/org/${ORG_ID}/settings/access`, { deletion: deletion(soon(6)) });
+    expect(frozen()).toBeNull();
+    expect(screen().getByRole("radio", { name: "Nativos" })).toBeTruthy();
+    // Importar e exportar keeps the workspace as a file and brings no agent in.
+    const card = (name: string) => screen().queryByRole("region", { name });
+    cleanup();
+    await open(`/org/${ORG_ID}/settings/import`);
+    expect([card("Importar") !== null, card("Exportar") !== null]).toEqual([true, true]);
+    cleanup();
+    await open(`/org/${ORG_ID}/settings/import`, { deletion: deletion(soon(6)) });
+    expect([card("Importar") !== null, card("Exportar") !== null]).toEqual([false, true]);
+
+    // Equipe with no agent yet speaks as to someone who can't make one, since no button follows.
+    const team = async (deleting: boolean) => {
+      cleanup();
+      const state = seedState();
+      state.agents = [];
+      await open(`/org/${ORG_ID}/team`, { state, ...(deleting ? { deletion: deletion(soon(6)) } : {}) });
+      return document.querySelector(".team .ac-empty__title")?.textContent;
+    };
+    expect(await team(false)).toBe("Monte seu time de agentes");
+    expect(await team(true)).toBe("Seu time de agentes aparece aqui");
 
     cleanup();
     await open(`/org/${ORG_ID}/agents/new`, { deletion: deletion(soon(6)) });

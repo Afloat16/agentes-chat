@@ -7,7 +7,7 @@ import {
   opensConnectAi,
   opensOnComputer,
   openTarget,
-  replyTarget,
+  quickReply,
   waitingCardOf,
 } from "@agenteschat/client/lib/notifications";
 import { Button, CountBadge, cx, Icon, Kbd, Locked, prefersReducedMotion } from "@agenteschat/ui";
@@ -296,12 +296,8 @@ function NoticeRow({ n, dir, channelName }: { n: AppNotification; dir: Dir; chan
     if (typing) input.current?.focus();
   }, [typing]);
 
-  // Being deleted, the workspace takes no answer (ADR 0088 §7): the quick reply's place says why.
-  const deleting = Boolean(org.deletion);
-  const answerable = replyTarget(n);
-  const target = deleting ? null : answerable;
+  const { target, suggestions, readOnly } = quickReply(n, Boolean(org.deletion));
   const waiting = n.waiting ? waitingCardOf(n) : null;
-  const suggestions = !deleting && n.kind === "agent_question" ? (n.latest.suggestions ?? []) : [];
   const canOpen = opener.canOpen(n);
 
   const read = () => {
@@ -344,7 +340,7 @@ function NoticeRow({ n, dir, channelName }: { n: AppNotification; dir: Dir; chan
           </p>
         ) : (
           <>
-            {deleting && answerable && (
+            {readOnly && (
               <p className="ni__readonly ac-iconline" role="status">
                 <Icon name="lock" size={16} />
                 <span>{t("deleting.composer")}</span>

@@ -1,5 +1,6 @@
 import type { Dashboard } from "@agenteschat/client";
 import {
+  frozenBoard,
   useDashboard,
   useDashboards,
   useDeleteDashboard,
@@ -91,7 +92,7 @@ export function DashboardPage({ dashboardId }: { dashboardId: string }) {
     );
   }
   if (board.kind === "home" && !homeElsewhere) return null;
-  return <Board board={board} widgetId={widgetId} onWidget={setWidgetId} />;
+  return <Board board={frozenBoard(board, org)} widgetId={widgetId} onWidget={setWidgetId} />;
 }
 
 function BackCrumb() {
@@ -127,8 +128,6 @@ function Board({
   const toast = useToast();
   const count = board.widgets.length;
   const empty = count === 0;
-  // Being deleted, the workspace changes nothing (ADR 0088 §7): no Organize, no "+".
-  const adds = board.canEdit && !org.deletion;
   // The empty state's agent: who made the board when an agent did, else the first one.
   const artAgent = dir.anyAgent(board.owner?.kind === "agent" ? board.owner.id : (dir.agents[0]?.id ?? ""));
   const setPinned = (pinned: boolean) =>
@@ -165,7 +164,7 @@ function Board({
                   {t("dashboards.share.action")}
                 </Button>
               )}
-              {adds && (
+              {board.canEdit && (
                 <BoardActionsPill
                   label={title}
                   arranging={arranging}
@@ -226,14 +225,14 @@ function Board({
           agent={lookOf(artAgent) ?? true}
           title={t("dashboards.empty.title")}
           actions={
-            adds && (
+            board.canEdit && (
               <Button variant="primary" icon="plus" onClick={() => setAdding(true)}>
                 {t("widgets.add.label")}
               </Button>
             )
           }
         >
-          {t(adds ? "dashboards.empty.text" : "dashboards.empty.viewer")}
+          {t(board.canEdit ? "dashboards.empty.text" : "dashboards.empty.viewer")}
         </EmptyState>
       ) : (
         <WidgetBoard

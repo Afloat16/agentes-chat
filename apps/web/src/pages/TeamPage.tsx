@@ -78,9 +78,10 @@ export function TeamPage() {
   const shown = view !== "usage" && data && agents.length > 0 && lookups.every((q) => q.data) ? data : null;
   const noAgents = view !== "usage" && !!data && agents.length === 0;
   const look = useRightHandLook();
-  const maker = can(org, "create_agents");
+  // Its words match its button: one who may not make agents now (a workspace being deleted) reads a viewer's.
+  const maker = makesAgents(org);
   // The empty state takes over the head's buttons: one way in, in the middle of the page.
-  const makes = makesAgents(org) && (
+  const makes = maker && (
     <>
       <Button asChild icon="archiveBox">
         <Link to="/org/$orgId/settings/$section" params={{ orgId: org.id, section: "import" }}>

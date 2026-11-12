@@ -36,7 +36,8 @@ export function deletedByText(t: TFunction, locale: string, deletion: OrgDeletio
 /**
  * The settings sections (the web's ids, which the phone's share) that stay as ever while the workspace is being
  * deleted (ADR 0088 §7): the person's own, what only reads, what is mostly read through rows and tabs (the Vault,
- * roles, skills: their writes are refused in words), taking its data out (import and export) and its billing.
+ * roles, skills, the agents' access: their writes are refused in words), taking its data out (import and export) and
+ * its billing.
  */
 export const SETTINGS_OPEN_WHILE_DELETING: ReadonlySet<string> = new Set([
   "account",
@@ -50,6 +51,7 @@ export const SETTINGS_OPEN_WHILE_DELETING: ReadonlySet<string> = new Set([
   "vault",
   "roles",
   "skills",
+  "access",
 ]);
 
 /** A settings section greyed out: the workspace is being deleted and the section would change it. */

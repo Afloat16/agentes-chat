@@ -30,13 +30,12 @@ import {
   Text,
   useReducedMotion,
   useTheme,
-  useToast,
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { chatHref } from "../links/logic";
 import { askTargets } from "../new/logic";
 import { AgentFace } from "../shared/Face";
-import { useDirectory, useOrgId } from "../shared/hooks";
+import { useDirectory, useErrorToast, useOrgId } from "../shared/hooks";
 import { goBack } from "../shared/parts";
 import { useConversations } from "../shared/queries";
 import { handShare } from "./handoff";
@@ -72,7 +71,7 @@ export function ShareScreen() {
   const orgId = useOrgId();
   const creates = makesAgents(useOrg().org);
   const qc = useQueryClient();
-  const toast = useToast();
+  const failed = useErrorToast();
   const dir = useDirectory();
   const list = useConversations();
   const shared = useShared();
@@ -122,10 +121,10 @@ export function ShareScreen() {
       // The catch plays out (it started with the tap), then the conversation: no wait added past a slow network.
       const rest = reduced ? 0 : Math.max(0, CATCH_MS - (Date.now() - started));
       setTimeout(() => router.replace(chatHref(channelId)), rest);
-    } catch {
+    } catch (e) {
       sent.set(withTiming(0, { duration: 160, easing: EASE_OUT }));
       setSending(false);
-      toast({ title: t("mobile.app.failed"), icon: "x" });
+      failed(e);
     }
   };
 

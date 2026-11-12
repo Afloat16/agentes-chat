@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   addsAgentsTo,
+  addsConnectors,
   editsMemory,
   leavesChannel,
   makesAgents,
@@ -75,4 +76,11 @@ test("a way into a new agent shows for who creates agents, never in a workspace 
   expect(makesAgents(member)).toBe(false);
   expect(makesAgents({ ...maker, deletion: { dueAt: null, requestedAt: null, requestedBy: null } })).toBe(false);
   expect(makesAgents(null)).toBe(false);
+});
+
+test("a way into connecting a service shows for who manages connectors, never in a workspace being deleted", () => {
+  const admin = { permissions: ["read", "manage_connectors"] };
+  expect(addsConnectors(admin)).toBe(true);
+  expect(addsConnectors(member)).toBe(false);
+  expect(addsConnectors({ ...admin, deletion: { dueAt: null, requestedAt: null, requestedBy: null } })).toBe(false);
 });

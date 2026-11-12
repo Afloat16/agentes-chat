@@ -9,9 +9,10 @@ import {
 } from "@agenteschat/client/lib/deletion";
 import { suspendedText } from "@agenteschat/client/lib/errors";
 import { type OutageTargetLike, targetOptions } from "@agenteschat/client/lib/machine-outages";
+import { quickReply } from "@agenteschat/client/lib/notifications";
 import { computerIcon, type MachineOutage, targetText } from "../../src/features/outages/logic";
 import { suspendedOf } from "../../src/lib/org-choice";
-import { translator } from "./fixtures";
+import { notification, translator } from "./fixtures";
 
 /** The workspace's own computer (ADR 0056 §10): the server names it ("Computador da Acme"), its system never said. */
 const managed: OutageTargetLike = {
@@ -65,16 +66,61 @@ describe("an organization being deleted on the phone", () => {
     const home = read("features/chats/ChatsScreen.tsx");
     expect(home.indexOf("<DeletingNotice />")).toBeLessThan(home.indexOf("<SetupNotice />"));
     expect(read("features/chat/ChatScreen.tsx")).toContain('{t("deleting.composer")}');
-    expect(read("features/island/NoticeIsland.tsx")).toContain('{t("deleting.composer")}');
+  });
+
+  test("the island takes no answer: no Responder, no choices, the line in their place; Abrir stays", () => {
+    const question = notification({
+      id: "n1",
+      kind: "agent_question",
+      waiting: true,
+      source: { questionId: "q1" },
+      latest: { text: "Publico agora?", suggestions: ["Sim", "Depois"] },
+    });
+    expect(quickReply(question, false)).toEqual({
+      target: { kind: "question", questionId: "q1" },
+      suggestions: ["Sim", "Depois"],
+      readOnly: false,
+    });
+    expect(quickReply(question, true)).toEqual({ target: null, suggestions: [], readOnly: true });
+    // Nothing it could answer says nothing either: an approval only opens, as ever.
+    const approval = notification({ id: "n2", kind: "approval", waiting: true, source: { approvalId: "a1" } });
+    expect(quickReply(approval, true)).toEqual({ target: null, suggestions: [], readOnly: false });
+    // Responder and the choices come from it alone, the line from `readOnly`.
+    const island = read("features/island/NoticeIsland.tsx");
+    expect(island).toContain("quickReply(n, Boolean(useOrg().org?.deletion))");
+    expect(island).not.toContain("replyTarget(");
+    expect(island).toMatch(/\{readOnly \? \([\s\S]*?\{t\("deleting\.composer"\)\}/);
   });
 
   test("Settings greys out what would change it, as the web does; the person's own and what reads stay", () => {
-    for (const section of ["general", "media", "members", "access", "connectors", "apps", "devices", "storage"])
+    for (const section of ["general", "media", "members", "connectors", "apps", "devices", "storage"])
       expect(settingsFrozen(orgs[0], section)).toBe(true);
-    for (const section of ["usage", "audit", "import", "vault", "roles", "skills"])
+    for (const section of ["usage", "audit", "import", "vault", "roles", "skills", "access"])
       expect(settingsFrozen(orgs[0], section)).toBe(false);
     expect(settingsFrozen({ deletion: undefined }, "general")).toBe(false);
-    expect(read("features/settings/GeneralScreen.tsx")).toContain('frozen={settingsFrozen(org, "general")}');
+  });
+
+  test("each settings screen greys out exactly what the shared rule freezes, by its own section", () => {
+    const screens = {
+      general: "settings/GeneralScreen.tsx",
+      media: "settings/MediaSettingsScreen.tsx",
+      members: "members/MembersPage.tsx",
+      connectors: "connectors/ConnectorsScreen.tsx",
+      apps: "settings/AppsScreen.tsx",
+      devices: "devices/DevicesScreen.tsx",
+      storage: "settings/StorageScreen.tsx",
+      access: "settings/AccessScreen.tsx",
+      usage: "usage/UsageScreen.tsx",
+      audit: "settings/AuditScreen.tsx",
+      import: "settings/ImportScreen.tsx",
+      vault: "vault/VaultScreen.tsx",
+      roles: "settings/RolesScreen.tsx",
+      skills: "settings/SkillsScreen.tsx",
+    };
+    for (const [section, file] of Object.entries(screens)) {
+      const greys = read(`features/${file}`).includes(`settingsFrozen(org, "${section}")`);
+      expect({ section, greys }).toEqual({ section, greys: settingsFrozen(orgs[0], section) });
+    }
   });
 
   test("when it goes and who deleted it; only owners restore it, and only before that", async () => {

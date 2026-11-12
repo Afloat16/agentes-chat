@@ -45,6 +45,10 @@ export const can = (org: { permissions?: readonly string[] } | null | undefined,
 export const makesAgents = (org: { permissions?: readonly string[]; deletion?: unknown } | null | undefined) =>
   can(org, "create_agents") && !org?.deletion;
 
+/** Whether a way into connecting a service shows: `manage_connectors`, in a workspace not being deleted. */
+export const addsConnectors = (org: { permissions?: readonly string[]; deletion?: unknown } | null | undefined) =>
+  can(org, "manage_connectors") && !org?.deletion;
+
 type Membership = Parameters<typeof can>[0];
 
 type ChannelLike = {

@@ -8,19 +8,18 @@ import {
   nextLevel,
   resourcesOf,
 } from "@agenteschat/client/lib/access-levels";
-import { settingsFrozen } from "@agenteschat/client/lib/deletion";
-import { can } from "@agenteschat/client/lib/permissions";
+import { addsConnectors, can } from "@agenteschat/client/lib/permissions";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
-import { GroupedFooter, GroupedHeader, GroupedList, GroupedRow, InfoHint, Segmented, Text, useToast } from "@/ui";
+import { GroupedFooter, GroupedHeader, GroupedList, GroupedRow, InfoHint, Segmented, Text } from "@/ui";
 import { router } from "@/ui/navigation";
 import { Note } from "../ai/parts";
 import { ConnectorIcon } from "../connectors/ConnectorIcon";
 import { mayCreate } from "../new/logic";
 import { FirstUse } from "../shared/FirstUse";
-import { useColors } from "../shared/hooks";
+import { useColors, useErrorToast } from "../shared/hooks";
 import { errorHaptic, tapHaptic } from "../shared/parts";
 import { resourceName, useAgentsAccess, useConnectedById, useSetLevels } from "./hooks";
 import { type AccessKind, AREA_ICON, accessColumns } from "./logic";
@@ -35,7 +34,7 @@ import { SettingsPage } from "./parts";
 export function AccessScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const toast = useToast();
+  const failed = useErrorToast();
   const { orgId, org } = useOrg();
   const admin = can(org, "manage_agents");
   const agents = useAgents(orgId);
@@ -59,9 +58,9 @@ export function AccessScreen() {
     set.mutate(
       { agentId: agent.id, changes: { [r.id]: level } },
       {
-        onError: () => {
+        onError: (e) => {
           errorHaptic();
-          toast({ title: t("mobile.app.failed"), icon: "x" });
+          failed(e);
         },
         onSettled: () =>
           setPending((p) => {
@@ -83,7 +82,7 @@ export function AccessScreen() {
     );
   }
   return (
-    <SettingsPage title={t("settings.section.access")} frozen={settingsFrozen(org, "access")}>
+    <SettingsPage title={t("settings.section.access")}>
       <GroupedFooter>{t("settings.sectionText.access")}</GroupedFooter>
       <View style={styles.head}>
         <InfoHint
@@ -121,7 +120,7 @@ export function AccessScreen() {
         <FirstUse
           place="access"
           size="panel"
-          acts={can(org, "manage_connectors")}
+          acts={addsConnectors(org)}
           label={t("mobile.empty.access.action")}
           onPress={() => router.push("/connectors")}
         />
