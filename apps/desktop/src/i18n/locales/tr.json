@@ -421,7 +421,7 @@
     "cursorName": "Cursor",
     "cursorDesc": "Cursor hesabınızla, izin verilen klasörlerde kod yazar ve değiştirir.",
     "opencodeName": "OpenCode",
-    "opencodeDesc": "OpenCode'un ücretsiz modelleri veya anahtarınızla, izin verilen klasörlerde kod yazar ve değiştirir.",
+    "opencodeDesc": "OpenCode'un ücretsiz modelleriyle veya anahtarınızla, izin verilen klasörlerde kod yazar ve değiştirir.",
     "grokName": "Grok Build",
     "grokDesc": "Grok hesabınızla, izin verilen klasörlerde kod yazar ve değiştirir.",
     "antigravityName": "Antigravity CLI",

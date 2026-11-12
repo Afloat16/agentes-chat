@@ -418,7 +418,7 @@
     "cursorName": "Cursor",
     "cursorDesc": "あなたのCursorアカウントで、許可されたフォルダ内のコードを書いたり変更したりします。",
     "opencodeName": "OpenCode",
-    "opencodeDesc": "OpenCodeの無料モデルかあなたのキーで、許可されたフォルダ内のコードを書いたり変更したりします。",
+    "opencodeDesc": "OpenCodeの無料モデルまたはあなたのキーで、許可されたフォルダ内のコードを書いたり変更したりします。",
     "grokName": "Grok Build",
     "grokDesc": "あなたのGrokアカウントで、許可されたフォルダ内のコードを書いたり変更したりします。",
     "antigravityName": "Antigravity CLI",
