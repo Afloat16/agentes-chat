@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 const FAKE = path.join(import.meta.dir, "fake-phone-tools.mjs");
-const IPHONE = "00008110-001475263AC0A01E";
+const IPHONE = "00008110-000A1B2C3D4E5F60";
 const SIM = "5C5C62E5-74E2-4E25-93AD-65E264BE78A4";
 const TEAM = { id: "A1B2C3D4E5", name: "Sam Rivera", free: true };
 
