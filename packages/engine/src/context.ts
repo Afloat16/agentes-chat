@@ -200,25 +200,25 @@ export const REQUEST_APPROVAL_LINE =
 export const REQUEST_APPROVAL_LINE_PERSONAL = inPersonalWords(REQUEST_APPROVAL_LINE);
 
 /**
- * Several actions that each need a person's approval are asked in one go: they show as one card the person
- * approves at once, instead of one card and one wait per action. Every brain reads it ("# How to reply").
- */
-/**
  * What waits for a person's approval, by the agent's approvals level (ADR 0173), in "# How to reply": an agent that
  * never asks is told nothing waits, and one that always asks that every change does.
  */
 export function approvalsLine(level: ApprovalsLevel, personal: boolean): string {
   const request = personal ? REQUEST_APPROVAL_LINE_PERSONAL : REQUEST_APPROVAL_LINE;
   if (level === "never") {
-    return `- You are set to never ask: none of your tools waits for a person's approval, whatever its description says. A merge, a deploy, a rollback, a send, a delete, a payment and a command on your computer run the moment you call them, in a routine too, so call one only when it is what was asked or what your instructions say. Never tell anyone an action waits for their approval. Only the tools whose job is asking still open a card (request_approval, request_permission, ask_user). ${request}`;
+    return `- You are set to never ask: none of your tools waits for a person's approval, whatever its description or another line here says. A merge, a deploy, a rollback, a send, a delete, a payment and a command on your computer run the moment you call them, in a routine too, so call one only when it is what was asked or what your instructions say. Never tell anyone an action waits for their approval. Only the tools whose job is asking still open a card (request_approval, request_permission, ask_user). ${request}`;
   }
   const waits =
     level === "always"
-      ? "You are set to always ask: every call that changes something (a task, a file, a memory, a message in another conversation, a routine, a command on your computer, a click or typing in your browser, anything in a connected app) waits for a person's approval, whatever its description says. Reading, and replying here, never do"
+      ? "You are set to always ask: every call that changes something (a task, a file, a memory, a message in another conversation, a routine, a command on your computer, a click or typing in your browser, anything in a connected app) waits for a person's approval, whatever its description or another line here says, the internal changes you can undo included. Reading, and replying here, never do"
       : "Actions marked sensitive (merge, deploy, rollback and similar) wait for a person's approval";
   return `- ${waits}; you will be told the outcome. Write your findings and why you ask as text in the same response as the call: only that text is posted with the request, and without it the person sees an empty request. ${ASK_APPROVALS_TOGETHER} ${request}`;
 }
 
+/**
+ * Several actions that each need a person's approval are asked in one go: they show as one card the person
+ * approves at once, instead of one card and one wait per action. Every brain reads it ("# How to reply").
+ */
 export const ASK_APPROVALS_TOGETHER =
   "When a task needs several such actions (four monthly goals to record, three issues to close), plan them first and call them all in the same response, one tool call each: the person approves them together on one card. Don't ask for one, wait for the decision, then ask for the next.";
 
