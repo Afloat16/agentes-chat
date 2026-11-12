@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, setSystemTime, test } from "bun:test";
+import { afterEach, describe, expect, setSystemTime, spyOn, test } from "bun:test";
 import type { OrgRole } from "@agenteschat/client";
 import { setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
 
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
+import { COMPACT_QUERY } from "@/components/NavDrawer";
 import {
   ADA_ID,
   ADMIN_ROLE_ID,
@@ -18,6 +19,7 @@ import {
   seedState,
 } from "./fake-api";
 import type { FakeDashboards } from "./fakes/dashboards";
+import { shownText } from "./hint";
 import { pick } from "./new-agent-flow";
 import { renderApp, screen, settle } from "./render";
 
@@ -103,6 +105,8 @@ describe("New dashboard (ADR 0135 §8, §10)", () => {
     expect(dialog.textContent).toContain("Você também pode pedir a um agente, numa conversa, que monte um.");
     expect(editorsShown(dialog)).toBe("Só você e a administração");
     // What whoever sees it sees, said where the audience is chosen (ADR 0135 §12).
+    expect(shownText(dialog)).toContain("Quem vê o painel vê estes dados.");
+    expect(shownText(dialog)).not.toContain("Quem vê o painel vê o que os agentes trouxeram");
     expect(dialog.textContent).toContain("Quem vê o painel vê o que os agentes trouxeram");
     await type(within(dialog).getByLabelText("Nome"), "Metas do trimestre");
     await click(create);
@@ -287,6 +291,24 @@ describe("New widget (ADR 0135 §3)", () => {
       .getAllByRole("button")
       .find((b) => b.classList.contains("apk-row") && b.querySelector("b")?.textContent === name) as HTMLElement;
 
+  test("on a phone the title's placeholder is the field's name alone, never a cut hint", async () => {
+    const media = spyOn(window, "matchMedia").mockImplementation(
+      (q: string) =>
+        ({
+          matches: q === COMPACT_QUERY,
+          media: q,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+        }) as unknown as MediaQueryList,
+    );
+    try {
+      const { dialog } = await start();
+      expect((within(card(dialog)).getByLabelText("Título") as HTMLInputElement).placeholder).toBe("Título");
+    } finally {
+      media.mockRestore();
+    }
+  });
+
   test("the card is the form: the ask in its body, suggestions, the format and the schedule as dropdowns", async () => {
     const { dialog } = await start();
     // Nothing asked yet: nothing to test, and the other way to make one under the card.
@@ -297,6 +319,10 @@ describe("New widget (ADR 0135 §3)", () => {
     expect((within(card(dialog)).getByLabelText("Título") as HTMLInputElement).placeholder).toBe(
       "Título · Ada sugere ao testar",
     );
+    // The small card has no room for the hint beside the face and the bell: the field's own name, whole.
+    await pick(combo(dialog, "Tamanho"), /^Pequeno/);
+    expect((within(card(dialog)).getByLabelText("Título") as HTMLInputElement).placeholder).toBe("Título");
+    await pick(combo(dialog, "Tamanho"), /^Médio/);
 
     // A suggestion fills the ask (and the alert's condition); the suggestions go once something is asked.
     await click(within(dialog).getByRole("button", { name: "PRs esperando revisão" }));
@@ -751,6 +777,8 @@ describe("New widget (ADR 0135 §3)", () => {
     const pin = within(dialog).getByRole("button", { name: "Fixar" }) as HTMLButtonElement;
     expect(pin.disabled).toBe(true);
     expect(dialog.textContent).toContain("Escolha um bloco que um agente já mandou:");
+    // No block picked, so nobody before the schedule: no separator opens the card's foot.
+    expect(card(dialog).querySelector(".wg__foot .wg__dot")).toBeNull();
     const block = segment(dialog, "Blocos que os agentes mandaram no chat", /Deploys da semana/);
     expect(block.textContent).toContain("Ada em #eng");
     await click(block);
@@ -759,6 +787,7 @@ describe("New widget (ADR 0135 §3)", () => {
     expect((within(pinned).getByLabelText("Título") as HTMLInputElement).value).toBe("Deploys da semana");
     expect([...pinned.querySelectorAll(".wk-bar__v")].map((v) => v.textContent)).toEqual(["3", "5", "2"]);
     expect(within(pinned).queryByRole("button", { name: "Aviso" })).toBeNull();
+    expect(pinned.querySelector(".wg__foot .nwc-who + .wg__dot")).toBeTruthy();
     await pick(combo(dialog, "Atualiza"), "Não atualizar");
     expect(dialog.textContent).toContain("Fica como está, sem rotina");
     await click(pin);

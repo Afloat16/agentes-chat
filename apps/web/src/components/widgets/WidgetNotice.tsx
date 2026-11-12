@@ -98,7 +98,7 @@ export function WidgetNoticeActions({
           {t("dashboards.proposal.keep")}
         </Button>
         {open && (
-          <Button size="sm" variant="ghost" onClick={stop(onOpen)}>
+          <Button variant="link" onClick={stop(onOpen)}>
             {t("widgets.notice.openBoard")}
           </Button>
         )}
