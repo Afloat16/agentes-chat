@@ -17789,6 +17789,20 @@
     "closeAsk": "{{name}} aspetta 2 min che tu torni.",
     "closeAsk_female": "{{name}} aspetta 2 min che tu torni.",
     "openAccess": "Apri Strumenti e accesso",
+    "kept": {
+      "title": "Mantenuto attivo",
+      "meta": "{{name}} · da {{since}} · {{until}}",
+      "untilStops": "finché non si ferma",
+      "untilClosed": "finché il suo browser non si chiude",
+      "until": "fino a {{time}}",
+      "stop": "Ferma",
+      "stopOf": "Ferma “{{what}}”",
+      "actions": "Azioni per “{{what}}”",
+      "count_one": "Mantenuto attivo · {{count}}",
+      "count_many": "Mantenuti attivi · {{count}}",
+      "count_other": "Mantenuti attivi · {{count}}",
+      "stopFailed": "Impossibile fermarlo. Riprova."
+    },
     "phone": {
       "now": "Ora",
       "trackpad": "Trackpad",

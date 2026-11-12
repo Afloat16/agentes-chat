@@ -16794,6 +16794,18 @@
     "closeAsk": "{{name}} 会等你 2 分钟。",
     "closeAsk_female": "{{name}} 会等你 2 分钟。",
     "openAccess": "打开“工具和权限”",
+    "kept": {
+      "title": "保持运行",
+      "meta": "{{name}} · 自 {{since}} 起 · {{until}}",
+      "untilStops": "直到它停止",
+      "untilClosed": "直到其浏览器关闭",
+      "until": "直到 {{time}}",
+      "stop": "停止",
+      "stopOf": "停止“{{what}}”",
+      "actions": "“{{what}}”的操作",
+      "count_other": "保持运行 · {{count}}",
+      "stopFailed": "无法停止，请重试。"
+    },
     "phone": {
       "now": "现在",
       "trackpad": "触控板",

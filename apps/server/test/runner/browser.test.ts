@@ -1724,6 +1724,24 @@ test.if(posix)("an idle browser's Chrome stops, but not while someone watches or
 });
 
 test.if(posix)(
+  "a browser its agent holds (keep_running) stays open however idle, and closes as idle once let go",
+  async () => {
+    let now = 1_000_000;
+    const kept = new Set([ops.id]);
+    const t = setup({ now: () => now, idleMs: 60_000, kept: (agentId) => kept.has(agentId) });
+    await t.act("open", ["https://a.example"]);
+    await t.act("open", ["https://b.example"], { agent: ops });
+    now += 61_000;
+    await t.manager.sweep();
+    expect(t.chromes[0]?.killed).toBe(true);
+    expect(t.chromes[1]?.killed).toBe(false);
+    kept.clear();
+    await t.manager.sweep();
+    expect(t.chromes[1]?.killed).toBe(true);
+  },
+);
+
+test.if(posix)(
   "a Chrome that updated itself restarts on the new version once idle, on the same page, once; never mid-task",
   async () => {
     let now = 1_000_000;

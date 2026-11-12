@@ -16720,6 +16720,18 @@
     },
     "closeAsk": "{{name}} menunggu 2 menit sampai kamu kembali.",
     "openAccess": "Buka Alat dan akses",
+    "kept": {
+      "title": "Tetap berjalan",
+      "meta": "{{name}} · sejak {{since}} · {{until}}",
+      "untilStops": "sampai berhenti",
+      "untilClosed": "sampai browsernya ditutup",
+      "until": "sampai {{time}}",
+      "stop": "Hentikan",
+      "stopOf": "Hentikan “{{what}}”",
+      "actions": "Tindakan untuk “{{what}}”",
+      "count_other": "Tetap berjalan · {{count}}",
+      "stopFailed": "Tidak bisa menghentikannya. Coba lagi."
+    },
     "phone": {
       "now": "Sekarang",
       "trackpad": "Trackpad",

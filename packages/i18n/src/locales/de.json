@@ -17159,6 +17159,19 @@
     },
     "closeAsk": "{{name}} wartet 2 Min., bis du zurückkommst.",
     "openAccess": "Tools und Zugriff öffnen",
+    "kept": {
+      "title": "Läuft weiter",
+      "meta": "{{name}} · seit {{since}} · {{until}}",
+      "untilStops": "bis es endet",
+      "untilClosed": "bis sein Browser schließt",
+      "until": "bis {{time}}",
+      "stop": "Beenden",
+      "stopOf": "„{{what}}“ beenden",
+      "actions": "Aktionen für „{{what}}“",
+      "count_one": "Läuft weiter · {{count}}",
+      "count_other": "Laufen weiter · {{count}}",
+      "stopFailed": "Konnte nicht beendet werden. Versuch es noch einmal."
+    },
     "phone": {
       "now": "Jetzt",
       "trackpad": "Trackpad",

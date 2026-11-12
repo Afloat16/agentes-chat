@@ -3,7 +3,9 @@ import {
   type ExecRequest,
   type ExecResult,
   isReservedSecretName,
+  KEEP_RUNNING_PROTOCOL,
   MAX_INLINE_FILE_BYTES,
+  type MachineRequest,
   PASSWORD_CLASSES,
   PASSWORD_LENGTH,
   type PubSub,
@@ -42,7 +44,17 @@ import { copyToComputer } from "./file-pulls";
 import { cutText, formatBytes, textOfBytes } from "./format";
 import { mergeReposOfCall } from "./git/repos";
 import { fullMachinePath, pathInOwnFolder, requestFolderAccess } from "./machine-access";
-import { MachineRequestError, type MachineStatus } from "./machine-hub";
+import {
+  HOLD_MAX_MS,
+  type HoldRow,
+  holdsText,
+  holdView,
+  liveHold,
+  MAX_HOLDS_PER_AGENT,
+  releaseHold,
+  takeHold,
+} from "./machine-holds";
+import { callWhenBack, MachineRequestError, type MachineStatus } from "./machine-hub";
 import {
   foldersFixedMessage,
   notAllowedMessage,
@@ -130,6 +142,7 @@ const WRITE_TOOLS = new Set([
   "run_skill_script",
   "import_file",
   "cancel_task",
+  "keep_running",
   MAKE_KEY_TOOL,
 ]);
 
@@ -351,6 +364,18 @@ export function claudeCodeSentence(sessionId: string, tasks = false, managed = f
     ? `${run} For anything that takes more than a couple of minutes (building a feature, a refactor, a long test run), use start_task with executor "claude" instead: it runs in the background in the same session, survives the connection dropping, and you are woken here when it finishes. Keep run_code for short commands and quick questions.`
     : `${run} Give it a long timeout_seconds (real tasks take minutes) and pass on what it reports.`;
 }
+
+/** Where `keep_running` can hold: a Linux computer whose runner knows it (ADR 0176); system mode is asked at the call. */
+const keepsRunning = (info: ComputerInfo): info is Extract<ComputerInfo, { kind: "machine" }> =>
+  info.kind === "machine" && info.os === "linux" && info.protocol >= KEEP_RUNNING_PROTOCOL;
+
+/** How long a hold lasts, for its agent. */
+const holdUntil = (row: HoldRow) => {
+  const at = row.until?.toISOString();
+  if (row.pid !== null) return at ? `until it stops, ${at} at the latest` : "until it stops";
+  if (row.browser) return at ? `while your browser is open, ${at} at the latest` : "while your browser is open";
+  return `until ${at}`;
+};
 
 /** A connected machine that can run background tasks: commands allowed and a runner of protocol 4+. */
 const tasksOn = (info: ComputerInfo) => info.kind === "machine" && info.execAllowed && info.protocol >= TASKS_PROTOCOL;
@@ -1621,12 +1646,127 @@ export function createSandboxToolSource(
     },
   });
 
+  /**
+   * `keep_running` (ADR 0176): a program the agent left running, its browser or a time, kept running on its own
+   * computer and shown to people, who may stop it. `holds`: what it keeps now and what ended lately, for its turn.
+   */
+  const keepTool = (
+    requireApproval: boolean,
+    info: Extract<ComputerInfo, { kind: "machine" }>,
+    holds: string,
+  ): ToolDefinition => ({
+    name: "keep_running",
+    description: `Keep a program you started on your computer running while nobody uses it (a bot, a tunnel, a server called from outside, a job on its own timer), or a page in your browser that must stay live (\`browser\`), and show people what runs for them: they see it on your computer and can stop it. Give \`what\` (a few words people read) and \`why\`, with the program's \`pid\` (the hold ends when it exits), \`browser: true\`, or \`until\` alone (an ISO date and time, at most 7 days ahead; call again before then to keep it). The same pid or the browser again changes that hold. \`end\` with a hold's id ends it (the program keeps running until you stop it); no arguments lists them. At most ${MAX_HOLDS_PER_AGENT} at once.${holds ? `\n${holds}` : ""}`,
+    scope: SANDBOX_SCOPE,
+    sensitive: requireApproval,
+    inputSchema: {
+      type: "object",
+      properties: {
+        what: { type: "string", minLength: 1, maxLength: 80, description: "What is kept, as people will read it" },
+        why: { type: "string", minLength: 1, maxLength: 200, description: "Why it must keep running" },
+        pid: {
+          type: "integer",
+          minimum: 2,
+          maximum: 4_194_304,
+          description: "The program's process id on your computer",
+        },
+        browser: { type: "boolean", description: "Your browser, with the page it shows" },
+        until: { type: "string", maxLength: 40, description: "When it ends at the latest, ISO (2026-11-20T18:00:00Z)" },
+        end: { type: "string", minLength: 36, maxLength: 36, description: "A hold's id, to end it now" },
+      },
+      additionalProperties: false,
+    },
+    describe: (input) =>
+      str(input.end)
+        ? { title: "End what it keeps running" }
+        : { title: `Keep ${str(input.what) || "a program"} running`, detail: str(input.why).slice(0, 500) },
+    async execute(input, ctx) {
+      try {
+        const hub = hubOf();
+        const call = (<Op extends "keep.start" | "keep.end">(
+          machineId: string,
+          request: Extract<MachineRequest, { op: Op }>,
+        ) => callWhenBack(hub, machineId, () => hub.call<Op>(machineId, request), ctx.signal)) as Parameters<
+          typeof takeHold
+        >[0]["call"];
+        const holdDeps = { db: ctx.db, ...(deps.pubsub ? { pubsub: deps.pubsub } : {}), call };
+        const end = str(input.end).trim();
+        if (end) {
+          const row = await liveHold(ctx.db, ctx.orgId, ctx.agentId, end);
+          if (!row) return { content: "No hold of yours with that id is live.", isError: true };
+          await releaseHold(holdDeps, row, { reason: "ended_by_agent", ...(ctx.runId ? { runId: ctx.runId } : {}) });
+          return {
+            content: `Ended hold ${row.id} ("${row.what}").${row.pid !== null ? " Its program runs on until you stop it." : ""}`,
+          };
+        }
+        const what = str(input.what).trim();
+        const why = str(input.why).trim();
+        const pid = typeof input.pid === "number" ? input.pid : undefined;
+        const browser = input.browser === true;
+        const untilText = str(input.until).trim();
+        if (!what && !why && pid === undefined && !browser && !untilText) {
+          const text = await holdsText(ctx.db, ctx.orgId, ctx.agentId);
+          return { content: text || "You keep nothing running." };
+        }
+        if (!what || !why) return { content: "Give `what` and `why`: people read both.", isError: true };
+        if (pid !== undefined && browser)
+          return { content: "One hold is for a program or your browser.", isError: true };
+        if (pid === undefined && !browser && !untilText) {
+          return { content: "Give the program's `pid`, `browser: true`, or `until`.", isError: true };
+        }
+        const until = untilText ? new Date(Date.parse(untilText)) : undefined;
+        if (until && Number.isNaN(until.getTime())) {
+          return { content: "`until` is an ISO date and time, like 2026-11-20T18:00:00Z.", isError: true };
+        }
+        if (until && until.getTime() <= Date.now()) return { content: "That time has passed.", isError: true };
+        if (until && until.getTime() > Date.now() + HOLD_MAX_MS + 60_000) {
+          return { content: "At most 7 days ahead: call again before then to keep it.", isError: true };
+        }
+        const status = await hub.status(info.machineId);
+        if (status?.executors?.mode !== "system" || status.os !== "linux") {
+          return {
+            content: `${info.name} can't keep programs running for you: it needs Linux, each agent as its own user.`,
+            isError: true,
+          };
+        }
+        const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
+        const out = await takeHold(holdDeps, {
+          orgId: ctx.orgId,
+          agent: { id: ctx.agentId, handle: agent?.handle ?? "agent" },
+          machineId: info.machineId,
+          runId: ctx.runId ?? null,
+          what,
+          why,
+          ...(pid !== undefined ? { pid } : {}),
+          ...(browser ? { browser } : {}),
+          ...(until ? { until } : {}),
+        });
+        if ("full" in out) {
+          return {
+            content: `You already keep ${MAX_HOLDS_PER_AGENT} things running: end one first (\`end\` with its id).`,
+            isError: true,
+          };
+        }
+        return {
+          content: `${out.updated ? "Changed" : "Holding"} "${what}" (hold ${out.row.id}) ${holdUntil(out.row)}. People see it on your computer and can stop it.`,
+          data: { hold: holdView(out.row) },
+        };
+      } catch (error) {
+        if (error instanceof MachineRequestError && error.code !== "timeout" && error.code !== "canceled") {
+          return { content: `Not held: ${error.message}.`, isError: true, data: { code: `keep.${error.code}` } };
+        }
+        return failed(error);
+      }
+    },
+  });
+
   const build = (
     requireApproval: boolean,
     execTimeout: number,
     computerInfo: ComputerInfo = { kind: "none", preparing: false },
     sessionId?: string,
     devices = false,
+    holds = "",
   ): ToolDefinition[] => [
     ...baseTools(requireApproval, execTimeout, computerInfo, sessionId, devices),
     ...(computerInfo.kind === "machine" && tasksOn(computerInfo)
@@ -1635,6 +1775,7 @@ export function createSandboxToolSource(
     ...(computerInfo.kind === "machine" && computerInfo.protocol >= ACCESS_PROTOCOL
       ? [folderAccessTool(computerInfo)]
       : []),
+    ...(keepsRunning(computerInfo) ? [keepTool(requireApproval, computerInfo, holds)] : []),
   ];
 
   return {
@@ -1661,6 +1802,7 @@ export function createSandboxToolSource(
           "task_status",
           "cancel_task",
           "request_folder_access",
+          "keep_running",
         ].some((n) => keys.has(grantKey(null, toolAllowScope(n))));
       // `request_secret` only when it is this agent's to use here; otherwise the browser offers its own (ADR 0040).
       const secretsHere = isAllowed(toolAccess(keys, { name: REQUEST_SECRET_TOOL, scope: SANDBOX_SCOPE }));
@@ -1681,8 +1823,9 @@ export function createSandboxToolSource(
         await deviceRoster(ctx.db, ctx.orgId),
         computer.kind === "machine" ? computer.machineId : null,
       );
+      const holds = keepsRunning(computer) ? await holdsText(ctx.db, ctx.orgId, ctx.agentId) : "";
       const tools = keep(
-        build(settings.requireApproval, settings.execTimeoutSeconds, computer, ctx.threadRootId, devices),
+        build(settings.requireApproval, settings.execTimeoutSeconds, computer, ctx.threadRootId, devices, holds),
       );
       if (!mission) return tools;
       return tools.map((t) => ({

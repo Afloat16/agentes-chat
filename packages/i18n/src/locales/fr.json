@@ -17785,6 +17785,20 @@
     "closeAsk": "{{name}} vous attend 2 min.",
     "closeAsk_female": "{{name}} vous attend 2 min.",
     "openAccess": "Ouvrir Outils et accès",
+    "kept": {
+      "title": "Maintenu en marche",
+      "meta": "{{name}} · depuis {{since}} · {{until}}",
+      "untilStops": "jusqu'à son arrêt",
+      "untilClosed": "jusqu'à la fermeture de son navigateur",
+      "until": "jusqu'à {{time}}",
+      "stop": "Arrêter",
+      "stopOf": "Arrêter « {{what}} »",
+      "actions": "Actions pour « {{what}} »",
+      "count_one": "Maintenu en marche · {{count}}",
+      "count_many": "Maintenus en marche · {{count}}",
+      "count_other": "Maintenus en marche · {{count}}",
+      "stopFailed": "Impossible de l'arrêter. Réessayez."
+    },
     "phone": {
       "now": "Maintenant",
       "trackpad": "Pavé tactile",

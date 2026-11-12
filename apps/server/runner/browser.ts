@@ -1364,6 +1364,11 @@ export interface BrowserManagerOptions {
   sharedDir?: string;
   maxSessions?: number;
   idleMs?: number;
+  /**
+   * The agent holds its browser (`keep_running`, ADR 0176): a page that must stay live, so meanwhile it is never
+   * closed as idle, restarted for an update or moved to or from the agent's desktop.
+   */
+  kept?: (agentId: string) => boolean;
   now?: () => number;
   /** Tests: opens the session's stream socket. */
   connectStream?: (url: string) => StreamSocket;
@@ -3567,9 +3572,13 @@ export class BrowserManager {
     this.sessions.get(agentId)?.acting?.abort();
   }
 
-  /** A person's turn is open on the agent's browser, or was when the server connection dropped. */
+  /** A person's turn is open on the agent's browser, or was when the server connection dropped; or the agent holds it. */
   private held(agentId: string) {
-    return this.handoffs.has(agentId) || (this.heldUntil.get(agentId) ?? 0) > this.now();
+    return (
+      this.handoffs.has(agentId) ||
+      (this.heldUntil.get(agentId) ?? 0) > this.now() ||
+      this.opts.kept?.(agentId) === true
+    );
   }
 
   /** The agent's Chrome process while it runs: its window on the agent's desktop is the browser's, not the desktop's. */

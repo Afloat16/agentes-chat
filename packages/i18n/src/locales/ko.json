@@ -16610,6 +16610,18 @@
     },
     "closeAsk": "{{name}}은(는) 돌아오기를 2분 동안 기다려요.",
     "openAccess": "도구 및 접근 권한 열기",
+    "kept": {
+      "title": "계속 실행 중",
+      "meta": "{{name}} · {{since}}부터 · {{until}}",
+      "untilStops": "멈출 때까지",
+      "untilClosed": "브라우저가 닫힐 때까지",
+      "until": "{{time}}까지",
+      "stop": "중지",
+      "stopOf": "“{{what}}” 중지",
+      "actions": "“{{what}}” 작업",
+      "count_other": "계속 실행 중 · {{count}}",
+      "stopFailed": "중지할 수 없어요. 다시 시도하세요."
+    },
     "phone": {
       "now": "지금",
       "trackpad": "트랙패드",

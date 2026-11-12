@@ -16618,6 +16618,18 @@
     },
     "closeAsk": "{{name}}はあなたが戻るのを2分間待ちます。",
     "openAccess": "「ツールとアクセス」を開く",
+    "kept": {
+      "title": "実行を維持中",
+      "meta": "{{name}} · {{since}}から · {{until}}",
+      "untilStops": "停止するまで",
+      "untilClosed": "ブラウザーが閉じるまで",
+      "until": "{{time}}まで",
+      "stop": "停止",
+      "stopOf": "「{{what}}」を停止",
+      "actions": "「{{what}}」の操作",
+      "count_other": "実行を維持中 · {{count}}",
+      "stopFailed": "停止できませんでした。もう一度お試しください。"
+    },
     "phone": {
       "now": "現在",
       "trackpad": "トラックパッド",

@@ -41497,6 +41497,39 @@
   "agentComputer.openAccess": {
     "value": "Open Tools and access"
   },
+  "agentComputer.kept.title": {
+    "value": "Kept running"
+  },
+  "agentComputer.kept.meta": {
+    "value": "{{name}} · since {{since}} · {{until}}"
+  },
+  "agentComputer.kept.untilStops": {
+    "value": "until it stops"
+  },
+  "agentComputer.kept.untilClosed": {
+    "value": "until its browser closes"
+  },
+  "agentComputer.kept.until": {
+    "value": "until {{time}}"
+  },
+  "agentComputer.kept.stop": {
+    "value": "Stop"
+  },
+  "agentComputer.kept.stopOf": {
+    "value": "Stop “{{what}}”"
+  },
+  "agentComputer.kept.actions": {
+    "value": "Actions for “{{what}}”"
+  },
+  "agentComputer.kept.count": {
+    "value": {
+      "one": "Kept running · {{count}}",
+      "other": "Kept running · {{count}}"
+    }
+  },
+  "agentComputer.kept.stopFailed": {
+    "value": "Couldn't stop it. Try again."
+  },
   "agentComputer.phone.now": {
     "value": "Now"
   },

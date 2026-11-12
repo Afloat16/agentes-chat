@@ -17335,6 +17335,19 @@
     "closeAsk": "{{name}} wacht 2 min tot je terug bent.",
     "closeAsk_female": "{{name}} wacht 2 min tot je terug bent.",
     "openAccess": "Tools en toegang openen",
+    "kept": {
+      "title": "Blijft draaien",
+      "meta": "{{name}} · sinds {{since}} · {{until}}",
+      "untilStops": "tot het stopt",
+      "untilClosed": "tot de browser sluit",
+      "until": "tot {{time}}",
+      "stop": "Stoppen",
+      "stopOf": "“{{what}}” stoppen",
+      "actions": "Acties voor “{{what}}”",
+      "count_one": "Blijft draaien · {{count}}",
+      "count_other": "Blijven draaien · {{count}}",
+      "stopFailed": "Kon het niet stoppen. Probeer het opnieuw."
+    },
     "phone": {
       "now": "Nu",
       "trackpad": "Trackpad",

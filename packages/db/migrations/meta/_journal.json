@@ -1772,6 +1772,13 @@
       "when": 1794675300000,
       "tag": "0254_agent_approvals_level",
       "breakpoints": true
+    },
+    {
+      "idx": 257,
+      "version": "7",
+      "when": 1794675700000,
+      "tag": "0257_machine_holds",
+      "breakpoints": true
     }
   ]
 }

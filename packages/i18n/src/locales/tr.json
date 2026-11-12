@@ -17088,6 +17088,19 @@
     },
     "closeAsk": "{{name}}, geri dönmeniz için 2 dakika bekler.",
     "openAccess": "Araçlar ve erişimi aç",
+    "kept": {
+      "title": "Çalışır tutuluyor",
+      "meta": "{{name}} · {{since}} itibarıyla · {{until}}",
+      "untilStops": "durana kadar",
+      "untilClosed": "tarayıcısı kapanana kadar",
+      "until": "{{time}} saatine kadar",
+      "stop": "Durdur",
+      "stopOf": "“{{what}}” durdur",
+      "actions": "“{{what}}” için işlemler",
+      "count_one": "Çalışır tutuluyor · {{count}}",
+      "count_other": "Çalışır tutuluyor · {{count}}",
+      "stopFailed": "Durdurulamadı. Tekrar deneyin."
+    },
     "phone": {
       "now": "Şimdi",
       "trackpad": "İzleme paneli",

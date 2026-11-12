@@ -1,0 +1,121 @@
+# 0176. Agents say what must keep running, and a runner can stand by
+
+- Status: Proposed
+- Date: 2026-11-12
+- Amends: ADR 0161 (an operator puts the workspace's computer to sleep: the runner can now stand by instead of
+  stopping), ADR 0029 (background tasks end, a hold doesn't)
+
+## Context
+
+An agent leaves programs running on its computer that must keep answering while nobody uses it: a bot waiting for
+messages, a tunnel, a small server called from outside, a job on its own timer, a page in its browser that must stay
+live. Nothing says so. People can't see what runs for them, and whoever decides whether a computer may sleep (an
+operator's control plane, ADR 0161) can only guess from its CPU, which a quiet program barely uses.
+
+Operating systems settled this long ago: a program that must not be interrupted takes a lock that names who holds it
+and why, ends with the program, and can be listed (`systemd-inhibit`, `caffeinate -w`, `powercfg /requests`).
+
+And when an operator pauses a computer, ADR 0161 stops the runner first, so the server sees it leave. That stop also
+closes the agents' Chrome, so a page that was live is gone when the computer comes back.
+
+## Decision
+
+### 1. `keep_running`
+
+A computer tool of the agent (scope `sandbox:run`, approvals as `start_task`'s: `sensitive` where the workspace asks
+for every command, and the agent's approvals level, ADR 0173). Arguments:
+
+- `what` (up to 80 characters, what people read), `why` (up to 200);
+- one of `pid` (one of the agent's own programs: the hold ends when it exits), `browser: true` (its browser, with the
+  page it shows, which must be open), or `until` alone (an ISO time, at most 7 days ahead; the agent calls again to
+  keep it). `until` also bounds a program's or the browser's hold;
+- `end` (a hold's id) ends it; no arguments lists the agent's holds.
+
+The same pid, or the browser, again changes that hold instead of adding one. An agent has at most 10 live holds.
+The tool is offered on a Linux computer whose runner speaks `KEEP_RUNNING_PROTOCOL` (61); a computer whose agents
+aren't each their own OS user refuses with why. Its description lists the agent's holds now and those that ended in
+the last 7 days with why, so the next turn after a restart sees "the computer restarted".
+
+### 2. The lock on the computer
+
+The runner (system mode, under systemd) takes each hold as the agent's own user, in the agent's slice, through its
+launcher, in a scope named after the hold, `agentes-keep-<hold id>.scope`:
+
+```
+systemd-inhibit --what=idle --mode=block --who=agentes.chat --why=keep_running <wait>
+```
+
+- `<wait>` ends with what the hold binds to: `kill -0` on the program once a second; its browser's slice
+  (`agents-<uid>-browser.slice`) empty three looks in a row, two seconds apart (a Chrome moving to the desktop isn't a
+  close); or `sleep` for the time. The runner also ends a hold at its `until`.
+- `idle` is the lock that says "don't do what you do when idle", and the one block lock any process may take without
+  an admin (systemd's default polkit policy).
+- No words of the agent's go in the lock: every user may list them. The words stay on the server, and an operator's
+  guard ties a lock to its hold by its scope.
+- A program's pid must be the agent's: its owner is the agent's uid and its cgroup is under the agent's slice
+  (`not_allowed` otherwise). Its start time is kept, so a pid used again by another process is never signaled.
+- While its browser is held, the agent's worker never closes it as idle, restarts it for an update or moves it to or
+  from its desktop.
+- The scopes outlive the runner. `<runner home>/holds.json` keeps what each one holds, so a runner that restarts goes on
+  with the holds still living and reports those that ended meanwhile.
+
+### 3. The server's record
+
+`machine_holds` (migration 0257): the hold's id (the runner's too), its organization, agent, computer and run, `what`,
+`why`, `pid`, `browser`, `until`, and how it ended (`exited`, `expired`, `stopped_by_person`, `ended_by_agent`,
+`restarted`) with who stopped it. The server asks the computer first and writes the row once it holds, so a hold
+people see is one the computer holds. Audit: `machine.hold_started`, `machine.hold_changed`, `machine.hold_ended`.
+
+On the wire (protocol 61): `keep.start { holdId, pid?, browser?, until? }`, `keep.end { holdId, stop? }`, the runner's
+`keep.ended { holdId, reason }` when one ends by itself, and `hello.holds { live, ended }`. At each hello the server
+reconciles: a live hold the computer no longer holds ends with the reason it gives, or as `restarted`; a time's hold is
+taken again for its time left (after a restart or a move); a hold the computer holds that ended here meanwhile (a
+person's Stop while it was away) ends there too. A runner before protocol 61 holds none.
+
+### 4. People see it, and may stop it
+
+"Kept running" on the agent's computer, on the web (its fact sheet's row under the computer, and a count in the
+computer dialog's head whose menu has each line) and on the phone (its profile, under the computer's picture, and a
+button on the computer's screen opening the same list): each hold's `what`, which agent kept it, since when and until
+when ("until it stops", "until its browser closes", "until Fri 18:00"). The words never say awake, sleep or pause:
+people see what runs for them, whatever the computer does.
+
+`GET …/agents/{agentId}/holds` for whoever may watch the agent's computer. Stop
+(`DELETE …/agents/{agentId}/holds/{holdId}`) for whoever may use it as the agent (`mayDriveComputer`) and for the
+admins of computers (`control_computers`), in the hold's ⋯: the hold ends and what it held stops, its program signaled
+as the agent (SIGTERM, SIGKILL 10 s later while it is still the same process) or its browser closed. A computer away
+learns it at its next hello.
+
+### 5. What agents are told
+
+One line in their capabilities, true in every workspace whatever its computer does while nobody uses it: a program
+that must keep working while nobody uses the computer (a bot, a tunnel, a server called from outside, a job on its own
+timer, a page in its browser that must stay live) gets `keep_running`, jobs that end go in `start_task`, schedules in a
+routine, and a hold ends once it's no longer needed. Nothing about computers sleeping or turning off.
+
+### 6. Standby
+
+`agentes-runner standby [--minutes <n>]` and `agentes-runner resume`, for whoever pauses the computer: in standby the
+running runner drops its link to the server (as on any disconnect: what ran on it is aborted, so the server sees the
+computer leave) and its live views, and keeps everything else running: background tasks, the agents' Chrome and
+desktops, their programs and holds. `resume` dials at once.
+
+- The ask is a file in the runner's home (`standby.json`), which the runner reads every second and answers in
+  `standby-ack.json`. The commands wait for that answer (20 s at most), and exit 0 once nothing there links to the
+  server, or the resume was taken. An older runner answers `Unknown command`.
+- It lapses by itself after `n` minutes (5 by default, 60 at most) of the computer's own running time (`os.uptime`,
+  which a paused computer doesn't count), unless asked again; another boot's ask is void. A runner nobody resumes
+  comes back.
+- A runner that starts during a standby stays in it.
+
+## Consequences
+
+- Whoever decides whether a computer may sleep reads each hold as a standard lock, from any program on the computer,
+  not only ours, and can tell ours apart by their scopes.
+- A pause no longer has to close the agents' Chrome: an operator that stands the runner by keeps its live pages.
+- A program's hold ends with a restart even when a service brings the program back: the program still runs, but people
+  no longer see it as kept running. The agent sees it ended, and why, in its next turns.
+- A time's hold ends silently at its time. The agent sees it listed with its end every turn before then.
+- A lock that holds needs logind and polkit as systemd ships them. Where they refuse, the tool says the computer refused
+  the lock.
+- An agent can end its own hold's lock (it runs as its user); the hold then ends as `exited`.

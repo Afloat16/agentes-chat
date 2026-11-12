@@ -69,6 +69,7 @@ import { openConnectAi } from "../ai/NoAiCard";
 import { usePlanHold } from "../ai/parts";
 import { LetMeTalkButton } from "../chat/ReachLines";
 import { AgentComputerButton, AgentComputerPicture } from "../computer/AgentComputerRow";
+import { KeptRunningList } from "../computer/KeptRunning";
 import { ConnectorIcon } from "../connectors/ConnectorIcon";
 import { chatHref } from "../links/logic";
 import { UsageQueueSheet } from "../queue/UsageQueueSheet";
@@ -478,6 +479,8 @@ function Profile({ id }: { id: string }) {
     <>
       {nowBlock}
       <AgentComputerPicture agentId={id} />
+      {/* What it keeps running there (ADR 0176), for whoever may watch its computer. */}
+      <KeptRunningList agentId={id} />
       {/* What it thinks with and how much of it is used this month, one row (ADR 0063 §5): the plan or key as its
           name, the usage under it. The usage page has the rest. */}
       <GroupedHeader>{t("mobile.intentAgents.thinks")}</GroupedHeader>

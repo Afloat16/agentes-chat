@@ -18250,6 +18250,21 @@
     "closeAsk": "{{name}} czeka 2 min na twój powrót.",
     "closeAsk_female": "{{name}} czeka 2 min na twój powrót.",
     "openAccess": "Otwórz Narzędzia i dostęp",
+    "kept": {
+      "title": "Utrzymywane w działaniu",
+      "meta": "{{name}} · od {{since}} · {{until}}",
+      "untilStops": "dopóki nie przestanie działać",
+      "untilClosed": "dopóki jego przeglądarka się nie zamknie",
+      "until": "do {{time}}",
+      "stop": "Zatrzymaj",
+      "stopOf": "Zatrzymaj „{{what}}”",
+      "actions": "Działania dla „{{what}}”",
+      "count_one": "Utrzymywane w działaniu · {{count}}",
+      "count_few": "Utrzymywane w działaniu · {{count}}",
+      "count_many": "Utrzymywane w działaniu · {{count}}",
+      "count_other": "Utrzymywane w działaniu · {{count}}",
+      "stopFailed": "Nie udało się zatrzymać. Spróbuj ponownie."
+    },
     "phone": {
       "now": "Teraz",
       "trackpad": "Gładzik",
