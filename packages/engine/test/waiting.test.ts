@@ -11,6 +11,7 @@ import {
   listWaiting,
   notify,
   postPersonMessage,
+  waitingOnPerson,
   waitingOnPersonBlock,
 } from "../src";
 import { addMember, type Fixture, setup } from "./fixtures";
@@ -44,8 +45,7 @@ const reply = (req: ModelRequest) => {
   return { chunks: ["Feito."] };
 };
 
-const post = (body: string, userId = f.owner.id) =>
-  postPersonMessage(deps(), userId, f.org.id, f.general.id, { body });
+const post = (body: string, userId = f.owner.id) => postPersonMessage(deps(), userId, f.org.id, f.general.id, { body });
 
 const systemOf = (said: string) =>
   systemText(f.provider.calls.find((c) => JSON.stringify(c.request.messages).includes(said))?.request.system ?? "");
@@ -137,18 +137,16 @@ test("another agent reads what already waits on the person, only while something
 
   await post("@dev deploy it");
   await drainOutbox(f.db, f.handlers);
+  // Dev's own question is under its "Your open requests": never said to it again here.
+  expect(await waitingOnPerson(f.db, f.org.id, f.owner.id, f.agent.id)).toEqual([]);
+  expect(await waitingOnPerson(f.db, f.org.id, f.owner.id, ops.id)).toEqual([
+    { agentName: "Dev", channelId: f.general.id, question: "Qual ambiente?" },
+  ]);
   await post("@ops second hello");
   await drainOutbox(f.db, f.handlers);
   const system = systemOf("@ops second hello");
   expect(system).toContain("# Already waiting on this person");
   expect(system).toContain('- Dev, here: "Qual ambiente?"');
-
-  // Dev reads its own question under "Your open requests", not here.
-  await post("@dev third hello");
-  await drainOutbox(f.db, f.handlers);
-  const own = systemOf("@dev third hello");
-  expect(own).toContain("# Your open requests");
-  expect(own).not.toContain("# Already waiting on this person");
 });
 
 test("what was asked in another conversation is counted, never quoted", () => {

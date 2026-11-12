@@ -1647,11 +1647,11 @@ export function NotificationsPage({ waitingOnly = false }: { waitingOnly?: boole
     : nothing
       ? t("notifications.summaryNothing")
       : [
-        waitingTotal ? t("notifications.summaryWaiting", { count: waitingTotal }) : "",
-        unreadTotal ? t("notifications.summaryUnread", { count: unreadTotal }) : t("notifications.summaryAllRead"),
-      ]
-        .filter(Boolean)
-        .join(" · ");
+          waitingTotal ? t("notifications.summaryWaiting", { count: waitingTotal }) : "",
+          unreadTotal ? t("notifications.summaryUnread", { count: unreadTotal }) : t("notifications.summaryAllRead"),
+        ]
+          .filter(Boolean)
+          .join(" · ");
   const calmLook = lookOf(dir.agents[0]) ?? true;
   // What the keys act on: Atalhos' rows other than moving wait for one.
   const onCur = cur !== null && items.some((x) => x.id === cur);

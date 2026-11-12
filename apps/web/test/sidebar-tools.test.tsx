@@ -431,8 +431,7 @@ describe("the tools on top", () => {
         "Tarefas",
       ]);
       // At the top its up arrow turns off: the focus goes to the row's down arrow, not out of the dialog.
-      for (let i = 0; i < 3; i++)
-        await click(within(dialog).getByRole("button", { name: "Mover para cima: Threads" }));
+      for (let i = 0; i < 3; i++) await click(within(dialog).getByRole("button", { name: "Mover para cima: Threads" }));
       expect(document.activeElement === within(dialog).getByRole("button", { name: "Mover para baixo: Threads" })).toBe(
         true,
       );
