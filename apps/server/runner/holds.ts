@@ -111,10 +111,13 @@ export interface HoldsOptions {
   takeMs?: number;
 }
 
-/** The 22nd field of `/proc/<pid>/stat` (after the parenthesized name, which may hold spaces). */
+/**
+ * The 22nd field of `/proc/<pid>/stat` (after the parenthesized name, which may hold spaces); null for a zombie, which
+ * has exited (a lock its parent hasn't reaped yet is gone all the same).
+ */
 export function statStart(stat: string): string | null {
   const fields = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
-  return fields[19] ?? null;
+  return fields[0] === "Z" ? null : (fields[19] ?? null);
 }
 
 export function defaultSystem(proc = "/proc", cgroupRoot = "/sys/fs/cgroup"): HoldsSystem {

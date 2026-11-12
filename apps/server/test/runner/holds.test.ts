@@ -256,10 +256,11 @@ test("another agent can't take or reach a hold", async () => {
   ).toBe("not_allowed");
 });
 
-test("statStart reads the start time past a name with spaces and parentheses", () => {
+test("statStart reads the start time past a name with spaces and parentheses; a zombie has none", () => {
   // Field n holds `f<n>`: the pid is field 1, the name field 2, the state field 3.
   const rest = Array.from({ length: 40 }, (_, i) => `f${i + 4}`).join(" ");
   expect(statStart(`123 (my (odd) bot) S ${rest}`)).toBe("f22");
+  expect(statStart(`123 (my (odd) bot) Z ${rest}`)).toBeNull();
 });
 
 // The lock's own commands, run for real (systemd-inhibit and the scope left out): each ends when what it holds does.
