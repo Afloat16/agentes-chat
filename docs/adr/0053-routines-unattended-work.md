@@ -232,3 +232,12 @@ What went wrong: in a busy hour, agents' runs and a burst of routines held every
 This changes §10's last bullet: background jobs take at most half of the long slots, and quick jobs keep slots of their own. ADR 0046's priority column stays a proposal: lanes by kind need no migration.
 
 ADR 0163 takes this further: workspaces take turns in each lane, the long lane grows as far as memory allows instead of 4 jobs per database connection, and worker processes add slots.
+
+## Addendum 2026-11-12: Codex on Windows (§3)
+
+Codex runs on Windows from runner protocol 58 (ADR 0032, "Codex"). There §3 holds through Windows' own isolation, not the command policy:
+
+1. **The sandbox is MXC** (Microsoft Execution Containers, Windows 11 24H2 and later), named on every Codex process of a `plan` or `work` turn. It keeps the network out and writes to the turn's folders, with no setup. Codex picks no sandbox on Windows by itself, and its other two don't do: `unelevated` keeps the network out only through proxy variables, and `elevated` needs an administrator's setup that several Codex homes (each AI account's folder, ADR 0041) can't share. A computer without MXC runs no `plan` or `work` Codex turn: it fails with `windows_sandbox`, saying what Windows needs.
+2. **Nothing asks** (`approvalPolicy: never`, as `codex exec` everywhere). Codex runs its commands in PowerShell there, which the command policy doesn't read: answering its approvals with POSIX rules would let through what they can't see, and an approved command that its sandbox refuses runs again outside it. So whatever MXC refuses stays refused, and an approval Codex asks all the same is declined. So on Windows, what needs the network (a push, an install) doesn't run from Codex's own shell.
+3. **The right hand** (`chat`) needs no sandbox: with none, Codex refuses every command of its own, and the turn stops at the first one anyway.
+4. **Not reached yet.** MXC lets a command reach services on the computer's own loopback (Codex's documentation says so): whatever listens there, the agent browser's debugging port included, is reachable from a turn, which POSIX sandboxes refuse. The agent browser on a pipe instead of a port would close that. Background Codex tasks are refused on Windows until they run inside the same sandbox.
