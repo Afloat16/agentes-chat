@@ -134,6 +134,7 @@ import {
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { AgentSetupIntro, useSetupSteps } from "../agents/setup/SetupCard";
+import { DmModelButton, mayPickModel } from "../ai/ModelPickerSheet";
 import { usePlanHold } from "../ai/parts";
 import { BrowserCard, BrowserRunCard } from "../browser/BrowserCard";
 import { OpenHandoffProvider } from "../browser/open";
@@ -1377,6 +1378,9 @@ function Chat({
         ? // People and agents counted apart: "1 pessoa · 3 agentes", never "4 membros · 3 agentes".
           `${t("mobile.chat.people", { count: roster.data.length - agentsHere })} · ${t("mobile.chat.agentsHere", { count: agentsHere })}`
         : undefined;
+  // Its AI and model, changed in place from the header (an admin or its owner; never the right hand's).
+  const dmModelAgent = dmAgentId && !isThread ? dir.agentById.get(dmAgentId) : undefined;
+  const dmModel = mayPickModel(dmModelAgent, meId, can(org, "manage_agents")) ? dmModelAgent : undefined;
   // An agent's DM while it works: the pill's quiet line says what it does ("Consultando o GitHub").
   const dmDoing = useMemo(() => {
     if (!dmAgentId || isThread) return null;
@@ -1597,7 +1601,12 @@ function Chat({
         working={Boolean(dmDoing)}
         // Reading far up, only the face stays (the screen is the messages); a new reply opens it again.
         collapsed={far && unseen.messages === 0}
-        extraActions={(dmAgentId ? 1 : 0) + (queueShown ? 1 : 0) + (agentTasks ? tasksBadge(agentTasks).room : 0)}
+        extraActions={
+          (dmAgentId ? 1 : 0) +
+          (dmModel ? 1 : 0) +
+          (queueShown ? 1 : 0) +
+          (agentTasks ? tasksBadge(agentTasks).room : 0)
+        }
         onPress={dmAgentId ? () => router.push(`/agent/${dmAgentId}`) : openOptions}
         {...hold}
         label={
@@ -1657,6 +1666,7 @@ function Chat({
             }}
           />
         ) : null}
+        {dmModel ? <DmModelButton agent={dmModel} /> : null}
         {queueShown && barQueue && queueMachineId ? (
           dmComputer ? (
             <DmQueueButton

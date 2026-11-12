@@ -10,6 +10,9 @@ import {
   brainPickText,
   brainPickValue,
   keyModelGroups,
+  modelPickerModels,
+  modelPickerSave,
+  modelPickerTiles,
   needsOwnSignIn,
   newPlanAccountOption,
   pickGroups,
@@ -358,4 +361,99 @@ test("a key's models for every agent: the one that answered, the refused ones an
   const total = groups.works.length + groups.refused.length + groups.untested.length;
   expect(total).toBe(CODING_PLANS.opencode.claudeCode.models.length);
   expect(keyModelGroups(CODING_PLANS.opencode, null).works).toEqual([]);
+});
+
+describe("the model picker: the agent's AI changed in place", () => {
+  const at = new Date().toISOString();
+  const go = {
+    ...goKey,
+    usage: { windows: [], source: "turn" as const, at, models: { "minimax-m3": { at, off: true as const } } },
+  };
+  const otherClaude = {
+    ...goKey,
+    id: "acc-claude",
+    label: "Max",
+    provider: null,
+    usage: { windows: [{ kind: "five_hour" as const, usedPercent: 10 }], source: "probe" as const, at },
+  };
+  const someoneElses = { ...otherClaude, id: "acc-theirs", mine: false, ownerId: "u9" };
+  const view = {
+    brain: "claude_code" as const,
+    model: "auto",
+    effectiveModel: "sonnet",
+    options: [claudeCode, codexOff],
+    accounts: [go, otherClaude, someoneElses],
+    account: "acc-go",
+    ownSignIn: true,
+    ownUsage: {},
+    effort: "medium" as const,
+  };
+  const api = modelChoices(MODELS, [{ id: "k0", provider: "anthropic" } as never], false);
+
+  test("tiles: the plans the computer runs with the owner's accounts and its own sign-in, then the keys", () => {
+    const tiles = modelPickerTiles(t, view, "u1", api, "auto", MODELS);
+    expect(tiles.map((x) => [x.key, x.current])).toEqual([
+      ["claude", false],
+      ["opencode", true],
+      ["api:anthropic", false],
+    ]);
+    // Someone else's account isn't the owner's to pick; the computer's own sign-in is. The most room first.
+    expect(tiles[0]?.accounts.map((a) => a.id)).toEqual([null, "acc-claude"]);
+    // Without a computer brain that runs, no plan tile.
+    expect(
+      modelPickerTiles(
+        t,
+        { ...view, options: [codexOff], brain: "model", account: null },
+        "u1",
+        api,
+        "auto",
+        MODELS,
+      ).map((x) => x.key),
+    ).toEqual(["api:anthropic"]);
+  });
+
+  test("models: Automático first, the one it runs checked on its own tile, a refused one dimmed", () => {
+    const tiles = modelPickerTiles(t, view, "u1", api, "auto", MODELS);
+    const goTile = tiles.find((x) => x.key === "opencode");
+    if (!goTile) throw new Error("no OpenCode tile");
+    const rows = modelPickerModels(t, "pt-BR", view, goTile, goTile.accounts[0], api, "auto");
+    expect(rows[0]).toMatchObject({ value: "auto", auto: true, checked: false });
+    expect(rows.find((r) => r.checked)?.value).toBe("sonnet");
+    expect(rows.find((r) => r.value === "sonnet")?.refused).toBe(true);
+    expect(rows.find((r) => r.value === "deepseek-v4.1-flash")?.textOnly).toBe(true);
+    // Another tile: nothing checked there.
+    const claudeTile = tiles.find((x) => x.key === "claude");
+    if (!claudeTile) throw new Error("no Claude tile");
+    const claude = modelPickerModels(t, "pt-BR", view, claudeTile, claudeTile.accounts[1], api, "auto");
+    expect(claude.map((r) => r.label)).toEqual(["brain.auto.label", "Opus", "Sonnet", "Haiku"]);
+    expect(claude.some((r) => r.checked)).toBe(false);
+    const keys = tiles.find((x) => x.key === "api:anthropic");
+    if (!keys) throw new Error("no key tile");
+    expect(modelPickerModels(t, "pt-BR", view, keys, undefined, api, "auto").map((r) => r.value)).toEqual([
+      "auto",
+      "claude-sonnet-5-5",
+    ]);
+  });
+
+  test("a pick saves the model in place, switches the plan or account, or moves onto the API", () => {
+    const tiles = modelPickerTiles(t, view, "u1", api, "auto", MODELS);
+    const [claudeTile, goTile, keys] = tiles;
+    if (!claudeTile || !goTile || !keys) throw new Error("missing tiles");
+    expect(modelPickerSave(view, goTile, goTile.accounts[0], "glm-5.3")).toEqual({
+      brain: { brain: "claude_code", model: "glm-5.3" },
+    });
+    expect(modelPickerSave(view, goTile, goTile.accounts[0], "auto")).toEqual({
+      brain: { brain: "claude_code", model: "auto", effort: "auto" },
+    });
+    expect(modelPickerSave(view, claudeTile, claudeTile.accounts[1], "opus")).toEqual({
+      brain: { brain: "claude_code", account: "acc-claude", model: "opus" },
+    });
+    expect(modelPickerSave(view, claudeTile, claudeTile.accounts[0], "auto")).toEqual({
+      brain: { brain: "claude_code", account: null, model: "auto", effort: "auto" },
+    });
+    expect(modelPickerSave(view, keys, undefined, "claude-sonnet-5-5")).toEqual({
+      brain: { brain: "model" },
+      model: "claude-sonnet-5-5",
+    });
+  });
 });

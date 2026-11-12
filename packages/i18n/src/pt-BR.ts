@@ -11072,6 +11072,23 @@ export const ptBR = {
     },
   },
   brain: {
+    /** The model picker in place (a DM's header, the profile card, the side panel): the agent's AI and model. */
+    picker: {
+      open: "Mudar o modelo de {{agent}}",
+      ownSignIn: "Conta deste computador",
+      apiKey: "{{provider}} por chave de API",
+      default: "padrão",
+      refused: "Recusado por esta chave",
+      textOnly: "Só lê texto",
+      search: "Buscar modelos",
+      account: "Conta",
+      connect: "Conectar uma IA",
+      applies: "Vale a partir da próxima resposta.",
+      more: "Mais opções",
+      undo: "Desfazer",
+      saved: "{{agent}} agora pensa com o {{model}}.",
+      readOnly: "Só admins e quem é dono do agente mudam o modelo.",
+    },
     title: "Quem pensa",
     auto: {
       label: "Automático",

@@ -97,7 +97,7 @@ export function KeyForAllScreen({ accountId, machineId }: { accountId: string; m
             <View style={styles.lead}>
               <ProviderLogo id={account.provider ?? ""} size="tile" />
               <View style={styles.leadText}>
-                <Text variant="headline">{t("aiAccounts.page.useAllTitle", { plan: plan.label })}</Text>
+                <Text variant="label">{t("aiAccounts.page.useAllTitle", { plan: plan.label })}</Text>
                 <Text variant="footnote" tone="muted">
                   {t("aiAccounts.page.useAllSub")}
                 </Text>

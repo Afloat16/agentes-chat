@@ -27,7 +27,7 @@ import { ConflictError, ForbiddenError, isUniqueViolation, NotFoundError, Valida
 import { publishAgentsChanged } from "./events";
 import type { CommandApproval } from "./missions";
 import { recordOperatorEvent } from "./operator-events";
-import { can, getMembership, type Membership, requirePermission } from "./organizations";
+import { can, getMembership, type Membership, requireActiveMembership, requirePermission } from "./organizations";
 import { isRightHand, RIGHT_HAND_EDITABLE, refuseRightHand, rightHandPermanent } from "./right-hand";
 import { newSetup, type SetupExtras, setupOf } from "./setup-checklist";
 import { APPROVALS_LEVELS, type ApprovalsLevel } from "./tools/run-policy";
@@ -398,6 +398,34 @@ async function refuseRightHandFields(db: Database, orgId: string, agentId: strin
     throw rightHandPermanent(`changed this way (${fixed.join(", ")})`);
 }
 
+/** What an agent's owner may change besides admins: its API model, among the keys the workspace connected. */
+const OWNER_MODEL_FIELDS: ReadonlySet<string> = new Set(["model", "credentialId"]);
+
+/**
+ * Who may make this change: admins anything; the agent's owner only its API model and which of the workspace's keys
+ * it uses (`OWNER_MODEL_FIELDS`), as they choose its plan's model. Connecting keys and budgets stay admins'.
+ */
+async function updateAgentMembership(
+  db: Database,
+  actorId: string,
+  orgId: string,
+  agentId: string,
+  patch: Partial<AgentInput>,
+) {
+  const membership = await requireActiveMembership(db, actorId, orgId);
+  if (can(membership, "manage_agents")) return membership;
+  const fields = Object.entries(patch).filter(([, v]) => v !== undefined);
+  const modelOnly = fields.length > 0 && fields.every(([k]) => OWNER_MODEL_FIELDS.has(k));
+  const [row] = modelOnly
+    ? await db
+        .select({ ownerUserId: agents.ownerUserId })
+        .from(agents)
+        .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId), isNull(agents.deletedAt)))
+    : [];
+  if (row?.ownerUserId !== actorId) throw new ForbiddenError();
+  return membership;
+}
+
 export async function updateAgent(
   db: Database,
   actorId: string,
@@ -406,7 +434,7 @@ export async function updateAgent(
   patch: Partial<AgentInput>,
   options: { remember?: boolean; pubsub?: PubSub } = {},
 ): Promise<Agent> {
-  const membership = await requirePermission(db, actorId, orgId, "manage_agents");
+  const membership = await updateAgentMembership(db, actorId, orgId, agentId, patch);
   await refuseRightHandFields(db, orgId, agentId, patch);
   // The connect flow may send only the key when the agent is already on Automatic.
   if (patch.credentialId !== undefined || isAutoModel(patch.model)) {

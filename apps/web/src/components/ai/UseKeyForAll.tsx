@@ -106,7 +106,7 @@ function KeyForAllDialog({ account, plan, onClose }: { account: Row; plan: Codin
       onOpenChange={(o) => !o && !busy && onClose()}
       title={t("aiAccounts.page.useAllTitle", { plan: plan.label })}
       description={t("aiAccounts.page.useAllSub")}
-      leading={<ProviderLogo id={account.provider} />}
+      leading={<ProviderLogo id={account.provider ?? account.kind} />}
       closeLabel={t("common.close")}
       width={520}
       className="ai-keyall"

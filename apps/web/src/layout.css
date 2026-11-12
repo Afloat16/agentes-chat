@@ -1028,9 +1028,7 @@ html:not([data-pointer]) .sidebar__user:focus-visible {
 .dm-who:has(> .dm-who__hit:hover) {
   background: var(--plate);
 }
-/* Who thinks, after the owner: "Sonnet pelo plano do Claude" with its mark. */
 /* The engine line (an `.ac-iconline`) inside a line of text. */
-.channel__brain,
 .profile-card__brain {
   display: inline-flex;
   gap: 6px;

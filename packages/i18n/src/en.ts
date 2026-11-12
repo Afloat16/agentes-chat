@@ -11014,6 +11014,23 @@ export const en = {
     },
   },
   brain: {
+    /** The model picker in place (a DM's header, the profile card, the side panel): the agent's AI and model. */
+    picker: {
+      open: "Change {{agent}}'s model",
+      ownSignIn: "This computer's account",
+      apiKey: "{{provider}} with an API key",
+      default: "default",
+      refused: "Refused for this key",
+      textOnly: "Reads text only",
+      search: "Search models",
+      account: "Account",
+      connect: "Connect an AI",
+      applies: "Applies from the next reply.",
+      more: "More options",
+      undo: "Undo",
+      saved: "{{agent}} now thinks with {{model}}.",
+      readOnly: "Only admins and the agent's owner change its model.",
+    },
     title: "Who thinks",
     auto: {
       label: "Automatic",

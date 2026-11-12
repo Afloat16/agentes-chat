@@ -12,7 +12,16 @@ import { accountChoices, accountTitle, ownSignInReady } from "./ai-accounts";
 import { thinksWith } from "./brain";
 import { isClaudeAlias } from "./brain-advanced";
 import { namesComputers } from "./machines";
-import { kindOf, PLAN_CHOICES, type PlanChoice, planLabel, planMark, planOfAccount, planSearchNames } from "./no-ai";
+import {
+  kindOf,
+  PLAN_CHOICES,
+  type PlanChoice,
+  planLabel,
+  planMark,
+  planOfAccount,
+  planOfKind,
+  planSearchNames,
+} from "./no-ai";
 import {
   type BrainModelChoice,
   brainModelChoice,
@@ -24,7 +33,7 @@ import {
   planModelValue,
   planOf,
 } from "./plans";
-import { AUTO, isAuto, type ModelChoice, providerLabel } from "./providers";
+import { AUTO, apiProviderOf, isAuto, type ModelChoice, providerLabel } from "./providers";
 
 /*
  * "Quem pensa" as one searchable list (web and phone): the new agent's step offers what the agent's page offers,
@@ -489,4 +498,213 @@ export function keyModelGroups(
     else out.untested.push(row);
   }
   return out;
+}
+
+// ── The model picker (the agent's AI in place: the DM's header, its profile card, its side panel) ──
+
+/** An account a plan tile thinks with: one of the owner's on the agent's computer, or that computer's own sign-in. */
+export interface PickerAccount {
+  /** Null: the computer's own sign-in. */
+  id: string | null;
+  label: string;
+  usage: PlanUsage | null;
+  provider: string | null;
+}
+
+/** One AI the agent could think with, as a logo tile: a plan on its computer, or an API provider's key. */
+export interface PickerTile {
+  /** A `PlanChoice`, or `api:<provider>`. */
+  key: string;
+  /** A `ProviderLogo` id. */
+  mark: string;
+  name: string;
+  kind: MachineAccountKind | "model";
+  /** Plan tiles: its accounts, the one in use first, then the one with the most room. */
+  accounts: PickerAccount[];
+  /** API tiles: the provider. */
+  provider?: string;
+  /** The agent thinks with it now. */
+  current: boolean;
+}
+
+/** A model row of the picker. */
+export interface PickerModel {
+  value: string;
+  label: string;
+  sub?: string;
+  /** Automático: what new agents start with. */
+  auto: boolean;
+  /** The agent runs it now (on this tile and account). */
+  checked: boolean;
+  /** The plan refused it for this key (switched off there, its region): dimmed, still pickable to ask again. */
+  refused: boolean;
+  /** It reads text only. */
+  textOnly: boolean;
+}
+
+/** How full an account is: its tightest window's use, unknown as empty. */
+const usedOf = (u: PlanUsage | null) => Math.max(0, ...(u?.windows.map((w) => w.usedPercent) ?? []));
+
+/**
+ * The picker's tiles (web and phone): the plans the agent's computer runs that it has an account for (its owner's, or
+ * the one it uses) or a sign-in of its own, in `PLAN_CHOICES` order, then each API provider with a model the workspace
+ * can use (and the one it thinks with). Nothing the agent can't switch to in one pick: computers, sign-ins and
+ * connecting stay in "Quem pensa".
+ */
+export function modelPickerTiles(
+  t: TFunction,
+  view: Pick<AgentBrain, "brain" | "model" | "options" | "accounts" | "account" | "ownSignIn" | "ownUsage">,
+  ownerUserId: string | null,
+  api: [string, ModelChoice[]][],
+  apiModel: string | null,
+  models: readonly Model[],
+): PickerTile[] {
+  const runs = (k: MachineAccountKind) => view.options.some((o) => o.kind === k && (o.available || view.brain === k));
+  const byChoice = new Map<PlanChoice, PickerAccount[]>();
+  const add = (choice: PlanChoice, a: PickerAccount) => byChoice.set(choice, [...(byChoice.get(choice) ?? []), a]);
+  for (const a of view.accounts) {
+    const theirs = a.mine || a.ownerId === ownerUserId || a.id === view.account;
+    if (!theirs || !runs(a.kind) || (a.status !== "active" && a.id !== view.account)) continue;
+    add(planOfAccount(a), { id: a.id, label: accountTitle(a), usage: a.usage, provider: a.provider });
+  }
+  for (const o of view.options) {
+    if (o.kind === "model" || !runs(o.kind)) continue;
+    const k = o.kind as MachineAccountKind;
+    const own = view.brain === k && view.account === null;
+    if (own || (view.ownSignIn && o.available))
+      add(planOfKind(k), {
+        id: null,
+        label: t("brain.picker.ownSignIn"),
+        usage: view.ownUsage[k] ?? null,
+        provider: null,
+      });
+  }
+  const plans = PLAN_CHOICES.flatMap((choice): PickerTile[] => {
+    const accounts = byChoice.get(choice);
+    if (!accounts?.length) return [];
+    const inUse = (a: PickerAccount) => view.brain !== "model" && (a.id ?? null) === (view.account ?? null);
+    const sorted = [...accounts].sort(
+      (a, b) => Number(inUse(b)) - Number(inUse(a)) || usedOf(a.usage) - usedOf(b.usage),
+    );
+    return [
+      {
+        key: choice,
+        mark: planMark(choice),
+        name: planLabel(t, choice),
+        kind: kindOf(choice),
+        accounts: sorted,
+        current: sorted.some(inUse) && view.brain === kindOf(choice),
+      },
+    ];
+  });
+  const currentProvider = view.brain === "model" ? apiProviderOf(apiModel, models) : undefined;
+  const keys = api.flatMap(([provider, list]): PickerTile[] =>
+    list.some((c) => c.available) || provider === currentProvider
+      ? [
+          {
+            key: `api:${provider}`,
+            mark: provider,
+            name: t("brain.picker.apiKey", { provider: providerLabel(provider) }),
+            kind: "model",
+            accounts: [],
+            provider,
+            current: provider === currentProvider,
+          },
+        ]
+      : [],
+  );
+  return [...plans, ...keys];
+}
+
+/**
+ * The models of a tile (and account), Automático first: a plan's as "Quem pensa" lists them (`modelRows`), the
+ * one it runs checked when it is the tile and account in use, those the plan refused for that key dimmed; an API
+ * provider's the workspace can use.
+ */
+export function modelPickerModels(
+  t: TFunction,
+  locale: string,
+  view: Pick<AgentBrain, "brain" | "effectiveModel" | "options" | "account" | "accounts">,
+  tile: PickerTile,
+  account: PickerAccount | undefined,
+  api: [string, ModelChoice[]][],
+  apiModel: string | null,
+  now = Date.now(),
+): PickerModel[] {
+  if (tile.kind === "model") {
+    const list = api.find(([p]) => p === tile.provider)?.[1] ?? [];
+    return [
+      {
+        value: AUTO,
+        label: t("brain.auto.label"),
+        sub: t("brain.auto.hint"),
+        auto: true,
+        checked: tile.current && isAuto(apiModel),
+        refused: false,
+        textOnly: false,
+      },
+      ...list
+        .filter((c) => c.available || (tile.current && c.model.id === apiModel))
+        .map(({ model: m }) => ({
+          value: m.id,
+          label: m.label,
+          sub: modelDescription(t, locale, m),
+          auto: false,
+          checked: tile.current && m.id === apiModel,
+          refused: false,
+          textOnly: false,
+        })),
+    ];
+  }
+  const kind = tile.kind;
+  const here = tile.current && (account?.id ?? null) === (view.account ?? null);
+  const plan = planOf(account?.provider);
+  const rows = modelRows(
+    t,
+    {
+      brain: kind,
+      effectiveModel: here ? view.effectiveModel : AUTO,
+      options: view.options,
+      account: account?.id ?? null,
+      accounts: view.accounts,
+    },
+    plan,
+  );
+  const planModels = plan?.claudeCode.models ?? [];
+  return rows.map((r) => {
+    const m = planModels.find((x) => planModelValue(x) === r.value);
+    const limit = m ? modelLimitOf(account?.usage?.models, m.id, now) : null;
+    return {
+      value: r.value,
+      label: r.label,
+      ...(r.sub ? { sub: r.sub } : {}),
+      auto: isAuto(r.value),
+      checked: here && r.checked,
+      refused: Boolean(limit && (limit.off || limit.region || limit.inactive)),
+      textOnly: m?.images === false,
+    };
+  });
+}
+
+/**
+ * What a pick saves: on the tile and account in use, only the model (and Automático's effort, `modelInput`); on
+ * another plan or account, the switch the new-agent step makes (`brainPickInput`); on an API tile, the API brain
+ * (`brain`: null when it already thinks there) and the model (`model`).
+ */
+export function modelPickerSave(
+  view: Pick<AgentBrain, "brain" | "account" | "effort" | "options">,
+  tile: PickerTile,
+  account: PickerAccount | undefined,
+  value: string,
+): { brain: AgentBrainInput | null; model?: string } {
+  if (tile.kind === "model") return { brain: view.brain === "model" ? null : { brain: "model" }, model: value };
+  const same = view.brain === tile.kind && (account?.id ?? null) === (view.account ?? null);
+  if (same) return { brain: { brain: tile.kind, ...modelInput(value, { ...view, brain: tile.kind }) } };
+  return {
+    brain: {
+      ...brainPickInput({ kind: tile.kind, ...(account?.id ? { accountId: account.id } : {}), model: value }),
+      ...(account?.id ? {} : { account: null }),
+      ...(isAuto(value) ? { model: AUTO, effort: AUTO } : {}),
+    },
+  };
 }
