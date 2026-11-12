@@ -2550,7 +2550,7 @@ export const en = {
         delete: "Only admins delete an agent",
         audience: "Only admins and its owner change who talks to it",
         channels: "Only admins and its owner change its channels",
-        skill: "Only admins and its owner change its skills",
+        skill: "Only admins change an agent's skills",
         ai_account: "Only the account's owner gives it",
         name: "Only admins rename an agent",
         look: "Only admins and its owner change its look",

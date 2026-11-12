@@ -623,15 +623,16 @@ const REPOS_SHOWN = 30;
  * connection read it; when none can, "Conectar o GitHub" opens the connect sheet over it (or it says whom to ask),
  * and the link is read again once GitHub is connected.
  */
-export function InstallSkillScreen({ initialUrl }: { initialUrl?: string }) {
+export function InstallSkillScreen({ initialUrl, forAgentId }: { initialUrl?: string; forAgentId?: string }) {
   return (
     <SheetHostProvider>
-      <InstallSkill initialUrl={initialUrl} />
+      <InstallSkill initialUrl={initialUrl} forAgentId={forAgentId} />
     </SheetHostProvider>
   );
 }
 
-function InstallSkill({ initialUrl }: { initialUrl?: string }) {
+/** `forAgentId`: opened from that agent's card, what a link installs goes on for it. */
+function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgentId?: string }) {
   const { t } = useTranslation();
   const c = useColors();
   const toast = useToast();
@@ -673,8 +674,9 @@ function InstallSkill({ initialUrl }: { initialUrl?: string }) {
   const read = (link: string, list = false) => {
     setError(null);
     setHidden(null);
+    const forAgent = forAgentId ? { forAgentId } : {};
     action.mutate(
-      { type: "import", input: list ? { url: link, list } : { url: link } },
+      { type: "import", input: list ? { url: link, list, ...forAgent } : { url: link, ...forAgent } },
       {
         onSuccess: (result) => {
           const found = skillPickOf(result);
@@ -756,7 +758,7 @@ function InstallSkill({ initialUrl }: { initialUrl?: string }) {
         toast({ title: t("skills.installedMany", { count: list.length }), icon: "check" });
         goBack();
       };
-      action.mutate({ type: "importPicked", url: url.trim(), paths }, { onSuccess, onError });
+      action.mutate({ type: "importPicked", url: url.trim(), paths, forAgentId }, { onSuccess, onError });
       return;
     }
     if (tab === "zip") {

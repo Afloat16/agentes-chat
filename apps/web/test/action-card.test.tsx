@@ -648,7 +648,7 @@ describe("an agent's card to install or update a skill", () => {
     meta: { bodyCode: "action_install_skill", actionCard: { kind, forUserId: "u-walter", params } },
   });
 
-  test("Instalar opens Instalar skill on the link, its skills read to pick; nothing installs from the card", async () => {
+  test("Instalar opens Instalar skill on the link, its skills read to pick, and what installs goes on for the agent", async () => {
     const state = seedState();
     const link = "https://github.com/acme/skills/tree/main/deploy";
     state.messages.push(offer("c-skill", "install_skill", { url: link, why: "Faz deploys." }));
@@ -660,7 +660,15 @@ describe("an agent's card to install or update a skill", () => {
     const install = dialog("Instalar skill") as HTMLElement;
     expect((within(install).getByRole("textbox", { name: "Link do GitHub" }) as HTMLInputElement).value).toBe(link);
     expect(state.calls.filter((c) => c.method === "skills.import").map((c) => c.args[1])).toEqual([
-      { url: link, list: true },
+      { url: link, list: true, forAgentId: ATLAS_ID },
+    ]);
+    await click(within(install).getByRole("checkbox", { name: /deploy/ }));
+    await click(within(install).getByRole("button", { name: "Instalar" }));
+    await settle(6);
+    expect(state.calls.find((c) => c.method === "skills.importPicked")?.args.slice(1)).toEqual([
+      link,
+      ["skills/deploy"],
+      ATLAS_ID,
     ]);
   });
 

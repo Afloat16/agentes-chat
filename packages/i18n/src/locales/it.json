@@ -2495,7 +2495,7 @@
         "delete": "Solo gli admin eliminano un agente",
         "audience": "Solo gli admin e il responsabile cambiano chi gli parla",
         "channels": "Solo gli admin e il responsabile cambiano i suoi canali",
-        "skill": "Solo gli admin e il responsabile cambiano le sue skill",
+        "skill": "Solo gli admin cambiano le skill di un agente",
         "ai_account": "Solo il proprietario dell’account lo assegna",
         "name": "Solo gli admin rinominano un agente",
         "look": "Solo gli admin e il responsabile cambiano il suo aspetto",

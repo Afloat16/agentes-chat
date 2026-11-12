@@ -2332,7 +2332,7 @@
         "delete": "Hanya admin yang menghapus agen",
         "audience": "Hanya admin dan penanggung jawabnya yang mengubah siapa yang bicara dengannya",
         "channels": "Hanya admin dan penanggung jawabnya yang mengubah kanalnya",
-        "skill": "Hanya admin dan penanggung jawabnya yang mengubah skill-nya",
+        "skill": "Hanya admin yang mengubah skill agen",
         "ai_account": "Hanya pemilik akun yang memberikannya",
         "name": "Hanya admin yang mengganti nama agen",
         "look": "Hanya admin dan penanggung jawabnya yang mengubah tampilannya",

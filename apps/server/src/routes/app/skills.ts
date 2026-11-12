@@ -324,6 +324,10 @@ export function skillRoutes(deps: AppDeps) {
               list: z.boolean().optional().openapi({
                 description: "Answer with the skills the link holds to pick, even one, installing none.",
               }),
+              forAgentId: z.uuid().optional().openapi({
+                description:
+                  "The agent whose card (`offer_install_skill`) opened the install: what installs goes on for it when the installer may change its skills, else the install stands alone.",
+              }),
             }),
             z.object({
               zipBase64: z
@@ -360,10 +364,12 @@ export function skillRoutes(deps: AppDeps) {
       const actor = c.get("user").id;
       if ("url" in input) {
         if (!(await linkReadAllowed(actor))) return apiError(c, 429, "rate_limited", tooManyReads);
+        const forAgentId = input.forAgentId;
         if (input.paths) {
-          return c.json({ skills: await importPickedSkills(skills(), actor, orgId, input.url, input.paths) }, 201);
+          const installed = await importPickedSkills(skills(), actor, orgId, input.url, input.paths, { forAgentId });
+          return c.json({ skills: installed }, 201);
         }
-        const result = await importSkillFromUrl(skills(), actor, orgId, input.url, { list: input.list });
+        const result = await importSkillFromUrl(skills(), actor, orgId, input.url, { list: input.list, forAgentId });
         return "choices" in result ? c.json(result, 200) : c.json(result, 201);
       }
       let zip: Uint8Array;

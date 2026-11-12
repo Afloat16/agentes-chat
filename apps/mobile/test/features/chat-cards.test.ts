@@ -445,5 +445,11 @@ describe("an agent's offer card is done for everyone once it's done", () => {
     const install = offer.slice(offer.indexOf("function InstallSkill("), offer.indexOf("\nfunction UpdateSkills("));
     expect(install).toContain("useSkills(orgId)");
     expect(install).toContain('action={may ? t("actionCard.install_skill.open") : null}');
+    // What installs from it goes on for the agent that posted it, as on the web.
+    expect(install).toContain("&agent=");
+    expect(install).toContain("encodeURIComponent(agentId)");
+    const screen = readFileSync(join(import.meta.dir, "../../src/features/settings/SkillsScreen.tsx"), "utf8");
+    expect(screen).toContain("{ url: link, list, ...forAgent }");
+    expect(screen).toContain('{ type: "importPicked", url: url.trim(), paths, forAgentId }');
   });
 });

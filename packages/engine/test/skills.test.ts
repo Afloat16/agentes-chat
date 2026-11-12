@@ -346,6 +346,28 @@ describe("import", () => {
     expect(github.fetched.filter((u) => /api\.github\.com|raw\.githubusercontent\.com/.test(u))).toEqual([]);
   });
 
+  test("installed from an agent's card (offer_install_skill), what the link holds goes on for that agent", async () => {
+    f = await setup();
+    const deps = { ...skillDeps(), fetch: fakeGithub().fetch };
+    const on = async () => (await enabledSkills(f.db, f.org.id, f.agent.id)).map((k) => k.name);
+    const forAgentId = f.agent.id;
+    await importSkillFromUrl(deps, f.owner.id, f.org.id, "https://github.com/acme/skills/tree/main/team/deploy", {
+      forAgentId,
+    });
+    expect(await on()).toEqual(["deploy"]);
+    await importPickedSkills(deps, f.owner.id, f.org.id, "https://github.com/acme/skills", ["team/review"], {
+      forAgentId,
+    });
+    expect(await on()).toEqual(["deploy", "review"]);
+    // An agent gone since the card: the install still stands, on for nobody.
+    const url = "https://github.com/acme/skills/tree/main/relatorio-semanal";
+    const gone = crypto.randomUUID();
+    expect(await importSkillFromUrl(deps, f.owner.id, f.org.id, url, { forAgentId: gone })).toMatchObject({
+      name: "relatorio-semanal",
+    });
+    expect(await on()).toEqual(["deploy", "review"]);
+  });
+
   test("the skills a link holds that can't be installed are listed apart with why, never offered", async () => {
     f = await setup();
     const md = (name: string, description: string) => `---\nname: ${name}\ndescription: ${description}\n---\n# ${name}`;

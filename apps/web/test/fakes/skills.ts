@@ -195,8 +195,8 @@ export function createFakeSkills(
         files: [{ path: "SKILL.md", size: 10, mime: "text/markdown", status: "stored" }],
       });
     },
-    importPicked: async (orgId, url, paths) => {
-      log("skills.importPicked", orgId, url, paths);
+    importPicked: async (orgId, url, paths, forAgentId) => {
+      log("skills.importPicked", orgId, url, paths, ...(forAgentId ? [forAgentId] : []));
       const installed: SkillDetail[] = [];
       for (const path of paths) {
         const choice = CHOICES.find((c) => c.path === path);

@@ -2414,7 +2414,7 @@
         "delete": "Nur Admins löschen einen Agenten",
         "audience": "Nur Admins und der Verantwortliche ändern, wer mit ihm spricht",
         "channels": "Nur Admins und der Verantwortliche ändern seine Kanäle",
-        "skill": "Nur Admins und der Verantwortliche ändern seine Skills",
+        "skill": "Nur Admins ändern die Skills eines Agenten",
         "ai_account": "Nur die Person, der das Konto gehört, vergibt es",
         "name": "Nur Admins benennen einen Agenten um",
         "look": "Nur Admins und sein Verantwortlicher ändern sein Aussehen",

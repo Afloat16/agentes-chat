@@ -6024,7 +6024,7 @@
     "value": "Only admins and its owner change its channels"
   },
   "rightHand.card.only.skill": {
-    "value": "Only admins and its owner change its skills"
+    "value": "Only admins change an agent's skills"
   },
   "rightHand.card.only.ai_account": {
     "value": "Only the account's owner gives it"

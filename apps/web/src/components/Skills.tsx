@@ -369,7 +369,8 @@ const returnHere = (orgId: string, url: string) => {
  * GitHub, and the dialog says which connection read it. When none can, it says the repository looks private or
  * missing and offers to connect GitHub (or to ask whoever manages connectors). Once GitHub is connected it reads the
  * link again while the connect flow goes on to what GitHub does and who uses it, as from Conectores (`initialUrl`
- * and `connected` when signing in on GitHub left the page).
+ * and `connected` when signing in on GitHub left the page). `forAgentId`: opened from that agent's card, what a link
+ * installs goes on for it.
  */
 export function InstallSkillDialog({
   open,
@@ -377,12 +378,14 @@ export function InstallSkillDialog({
   onInstalled,
   initialUrl,
   connected = false,
+  forAgentId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInstalled: (id: string) => void;
   initialUrl?: string;
   connected?: boolean;
+  forAgentId?: string;
 }) {
   const { t } = useTranslation();
   const { org } = useOrg();
@@ -428,8 +431,9 @@ export function InstallSkillDialog({
   const read = (link: string, list = false) => {
     setError(null);
     setHidden(null);
+    const forAgent = forAgentId ? { forAgentId } : {};
     action.mutate(
-      { type: "import", input: list ? { url: link, list } : { url: link } },
+      { type: "import", input: list ? { url: link, list, ...forAgent } : { url: link, ...forAgent } },
       {
         onSuccess: (result) => {
           const found = skillPickOf(result);
@@ -483,7 +487,12 @@ export function InstallSkillDialog({
       if (!choices) return read(url.trim());
       if (picked.size === 0) return setError(t("skills.pickMissing"));
       action.mutate(
-        { type: "importPicked", url: url.trim(), paths: choices.map((c) => c.path).filter((p) => picked.has(p)) },
+        {
+          type: "importPicked",
+          url: url.trim(),
+          paths: choices.map((c) => c.path).filter((p) => picked.has(p)),
+          forAgentId,
+        },
         {
           onSuccess: (installed) => {
             const list = installed as SkillDetail[];

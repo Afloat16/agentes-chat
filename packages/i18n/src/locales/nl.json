@@ -2413,7 +2413,7 @@
         "delete": "Alleen admins verwijderen een agent",
         "audience": "Alleen admins en de verantwoordelijke wijzigen wie met hem praat",
         "channels": "Alleen admins en de verantwoordelijke wijzigen zijn kanalen",
-        "skill": "Alleen admins en de verantwoordelijke wijzigen zijn skills",
+        "skill": "Alleen admins wijzigen de skills van een agent",
         "ai_account": "Alleen de eigenaar van het account geeft het",
         "name": "Alleen admins hernoemen een agent",
         "look": "Alleen admins en de verantwoordelijke wijzigen het uiterlijk",

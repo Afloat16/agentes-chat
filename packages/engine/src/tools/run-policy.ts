@@ -137,6 +137,7 @@ const HERE = new Set([
   "offer_install_skill",
   "propose_agent",
   "propose_settings_change",
+  "request_settings_change",
   "propose_remove_agents",
   "propose_team",
   "offer_answers",

@@ -2,12 +2,14 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { and, eq, schema } from "@agenteschat/db";
 import {
   actionsFor,
+  addChannelMember,
   askProposal,
   createChannel,
   createSetupToolSource,
   createToolGateway,
   decideProposal,
   deleteSkill,
+  describeCapabilities,
   enabledSkills,
   getAgent,
   insertMessage,
@@ -16,10 +18,14 @@ import {
   MAX_CARDS_PER_RUN,
   MAX_CARDS_PER_RUN_RIGHT_HAND,
   openPersonAgentDm,
+  ownWords,
   PROPOSE_SETTINGS_TOOL,
   postPersonMessage,
+  presentTools,
+  REQUEST_SETTINGS_TOOL,
   RIGHT_HAND,
   saveSkill,
+  setAgentScopes,
   setAgentSkills,
   type ToolContext,
   undoAgentAction,
@@ -390,17 +396,31 @@ describe("the settings card", () => {
   });
 });
 
-describe("an agent's skills on the card, as on its page", () => {
-  const install = (fx: Fixture, name: string) =>
-    saveSkill({ db: fx.db, blobs: fx.artifactDeps.blobs }, fx.owner.id, fx.org.id, {
-      name,
-      description: `Trabalha com ${name}.`,
-      body: "1. Abra o arquivo.",
-      metadata: {},
-      source: "manual",
-    });
-  const skillsOf = async (fx: Fixture) => (await enabledSkills(fx.db, fx.org.id, fx.agent.id)).map((k) => k.name);
+const install = (fx: Fixture, name: string) =>
+  saveSkill({ db: fx.db, blobs: fx.artifactDeps.blobs }, fx.owner.id, fx.org.id, {
+    name,
+    description: `Trabalha com ${name}.`,
+    body: "1. Abra o arquivo.",
+    metadata: {},
+    source: "manual",
+  });
+const skillsOf = async (fx: Fixture) => (await enabledSkills(fx.db, fx.org.id, fx.agent.id)).map((k) => k.name);
+/** What the agent that posted a card was told once its rows were decided. */
+const notices = async (fx: Fixture) =>
+  (await fx.db.select().from(schema.messages).where(eq(schema.messages.orgId, fx.org.id)))
+    .map((m) => m.meta.notice as { kind?: string; text?: string } | undefined)
+    .filter((n) => n?.kind === "proposal_result")
+    .map((n) => n?.text ?? "");
+/** Who "Pedir a um admin" reached. */
+const askedOf = async (fx: Fixture) =>
+  (
+    await fx.db
+      .select({ userId: schema.notifications.userId })
+      .from(schema.notifications)
+      .where(and(eq(schema.notifications.orgId, fx.org.id), eq(schema.notifications.kind, "change_request")))
+  ).map((n) => n.userId);
 
+describe("an agent's skills on the card, as on its page", () => {
   test("given and taken at once for who may, by name, with Undo putting them back", async () => {
     f = await setup({ rightHand: true });
     const excel = await install(f, "excel");
@@ -428,10 +448,11 @@ describe("an agent's skills on the card, as on its page", () => {
     expect(await skillsOf(f)).toEqual(["pdf"]);
   });
 
-  test("someone who neither manages agents nor owns it gets the card to send on; its owner may", async () => {
+  test("only who manages agents decides it, as on its page: its owner sends the card on, an admin applies it", async () => {
     f = await setup({ rightHand: true });
     await install(f, "excel");
     const bia = await addMember(f.db, f.org.id, "member", "Bia Rocha");
+    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { ownerUserId: bia.id });
     const asked = await lodiRun(f, bia.id, "coloca a skill excel no dev", true);
     const out = await call(f, asked, { changes: [{ agent: "@dev", add_skills: ["excel"] }], reason: "pediu" });
     expect(out.content).toContain("can't apply it: the card lets them send it to whoever may");
@@ -439,10 +460,9 @@ describe("an agent's skills on the card, as on its page", () => {
     expect(row).toMatchObject({ status: "pending", canDecide: false });
     await expect(decideProposal(f.db, bia.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow();
     expect(await skillsOf(f)).toEqual([]);
-
-    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { ownerUserId: bia.id });
-    const again = await call(f, asked, { changes: [{ agent: "@dev", add_skills: ["excel"] }], reason: "pediu" });
-    expect(again.content).toContain("applied at once");
+    await askProposal({ db: f.db, pubsub: f.pubsub }, bia.id, f.org.id, row?.id ?? "");
+    expect(await askedOf(f)).toEqual([f.owner.id]);
+    await decideProposal(f.db, f.owner.id, f.org.id, row?.id ?? "", "accept", { pubsub: f.pubsub });
     expect(await skillsOf(f)).toEqual(["excel"]);
   });
 
@@ -455,7 +475,8 @@ describe("an agent's skills on the card, as on its page", () => {
     const excel = await install(f, "excel");
     await install(f, "pdf");
     const unknown = await call(f, ctx, { changes: [{ agent: "@dev", add_skills: ["planilhas"] }], reason: "pediu" });
-    expect(unknown).toMatchObject({ isError: true, content: "No skill planilhas. Skills here: excel, pdf." });
+    expect(unknown).toMatchObject({ isError: true });
+    expect(unknown.content).toStartWith("No skill planilhas. Skills here: excel, pdf. One not installed yet:");
     const taken = await call(f, ctx, { changes: [{ agent: "@dev", remove_skills: ["excel"] }], reason: "pediu" });
     expect(taken).toMatchObject({ isError: true });
     expect(taken.content).toContain("@dev doesn't have the skill excel.");
@@ -469,5 +490,135 @@ describe("an agent's skills on the card, as on its page", () => {
     await deleteSkill(f.db, f.owner.id, f.org.id, excel.id);
     await expect(decideProposal(f.db, f.owner.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow(/changed since/);
     expect(await skillsOf(f)).toEqual([]);
+  });
+
+  test("a name finds its own skill before one that differs only by a hyphen", async () => {
+    f = await setup({ rightHand: true });
+    await install(f, "pdf-tools");
+    const plain = await install(f, "pdftools");
+    const ctx = await lodiRun(f, f.owner.id, "dá a skill pdftools pro dev");
+    await call(f, ctx, { changes: [{ agent: "@dev", add_skills: ["pdftools"] }], reason: "pediu" });
+    expect((await cardRows(f, f.owner.id)).rows[0]?.settings).toMatchObject([{ field: "skill", skillId: plain.id }]);
+  });
+
+  test("the proposer hears each skill on or off by its name", async () => {
+    f = await setup({ rightHand: true });
+    const pdf = await install(f, "pdf");
+    await setAgentSkills(f.db, f.owner.id, f.org.id, f.agent.id, [{ skillId: pdf.id, enabled: true }]);
+    const ctx = await lodiRun(f, f.owner.id, "tira a skill pdf do dev");
+    await call(f, ctx, { changes: [{ agent: "@dev", remove_skills: ["pdf"] }], reason: "pediu" });
+    const [row] = (await cardRows(f, f.owner.id)).rows;
+    await decideProposal(f.db, f.owner.id, f.org.id, row?.id ?? "", "accept", { pubsub: f.pubsub });
+    expect(await skillsOf(f)).toEqual([]);
+    const [notice] = await notices(f);
+    expect(notice).toContain(`@dev's settings: skill "pdf" off.`);
+  });
+});
+
+describe("an agent asks for its own settings on the same card (request_settings_change)", () => {
+  /** A run of @dev on what `userId` wrote to it in #general, in their own words. */
+  async function devRun(fx: Fixture, userId: string, body: string): Promise<ToolContext> {
+    const trigger = await postPersonMessage({ db: fx.db, pubsub: fx.pubsub }, userId, fx.org.id, fx.general.id, {
+      body: `@dev ${body}`,
+    });
+    const [run] = await fx.db
+      .select()
+      .from(schema.agentRuns)
+      .where(and(eq(schema.agentRuns.triggerMessageId, trigger.id), eq(schema.agentRuns.agentId, fx.agent.id)));
+    if (!run) throw new Error("no run");
+    return {
+      db: fx.db,
+      orgId: fx.org.id,
+      agentId: fx.agent.id,
+      runId: run.id,
+      channelId: fx.general.id,
+      threadRootId: run.threadRootId,
+      triggerMessageId: trigger.id,
+    };
+  }
+  async function ask(fx: Fixture, ctx: ToolContext, input: Record<string, unknown>) {
+    const res = await gatewayOf(fx).invoke(ctx, {
+      toolUseId: `tu_${crypto.randomUUID()}`,
+      name: REQUEST_SETTINGS_TOOL,
+      input,
+    });
+    if (res.type !== "result") throw new Error(`not a result: ${res.type}`);
+    return res.output;
+  }
+
+  test("every agent but the right hand holds it in any run, without the setup tools, and is told to ask with it", async () => {
+    f = await setup({ rightHand: true });
+    const ctx = await devRun(f, f.owner.id, "liga a skill excel pra você");
+    await setAgentScopes(f.db, f.owner.id, f.org.id, f.agent.id, [{ connectionId: null, scope: "skills:read" }]);
+    const granted = await gatewayOf(f).granted(ctx);
+    expect(granted.map((t) => t.name)).toContain(REQUEST_SETTINGS_TOOL);
+    expect(granted.map((t) => t.name)).not.toContain(PROPOSE_SETTINGS_TOOL);
+    // No group loaded for this message: it waits on demand, and what the agent can do names it.
+    expect(describeCapabilities(presentTools(granted, undefined, []))).toContain("ask with `request_settings_change`");
+    const lodi = await lodiRun(f, f.owner.id, "oi");
+    expect((await gatewayOf(f).granted(lodi)).map((t) => t.name)).not.toContain(REQUEST_SETTINGS_TOOL);
+  });
+
+  test("it waits for a click even when an admin asked in their own words, and no other agent is a target", async () => {
+    f = await setup({ rightHand: true });
+    const excel = await install(f, "excel");
+    const ctx = await devRun(f, f.owner.id, "liga a skill excel pra você");
+    // Lodi's card would apply this at once: the admin wrote it, and may.
+    expect(await ownWords(ctx)).toBe(f.owner.id);
+    const other = await ask(f, ctx, { agent: "@lodi", add_skills: ["excel"], reason: "pediu" });
+    expect(other).toMatchObject({ isError: true });
+    expect(other.content).toContain("input.agent: not allowed");
+    const out = await ask(f, ctx, { add_skills: ["excel"], reason: "Preciso dela para ler a planilha" });
+    expect(out.content).toContain("Posted the card for your settings; the person who asked applies it from the card.");
+    expect(out.content).toContain("Your own settings wait for that click");
+    expect(out.content).toContain("Nothing has changed yet");
+    const { rows } = await cardRows(f, f.owner.id);
+    expect(rows).toMatchObject([
+      {
+        status: "pending",
+        canDecide: true,
+        agentId: f.agent.id,
+        proposedByAgentId: f.agent.id,
+        requestedByUserId: f.owner.id,
+        settings: [{ field: "skill", skillId: excel.id, from: false, to: true }],
+      },
+    ]);
+    expect(await skillsOf(f)).toEqual([]);
+  });
+
+  test("an admin's click applies it as them, Undo puts it back, and the agent hears its own settings changed", async () => {
+    f = await setup({ rightHand: true });
+    await install(f, "excel");
+    const ctx = await devRun(f, f.owner.id, "liga a skill excel pra você");
+    await ask(f, ctx, { add_skills: ["excel"], reason: "pediu" });
+    const { card, rows } = await cardRows(f, f.owner.id);
+    await decideProposal(f.db, f.owner.id, f.org.id, rows[0]?.id ?? "", "accept", { pubsub: f.pubsub });
+    expect(await skillsOf(f)).toEqual(["excel"]);
+    expect((await notices(f))[0]).toContain(`your settings: skill "excel" on.`);
+    const [receipt] = (await actionsFor(f.db, f.org.id, [card.id])).get(card.id) ?? [];
+    expect(receipt).toMatchObject({
+      kind: "agent.settings_changed",
+      agentId: f.agent.id,
+      requestedByUserId: f.owner.id,
+    });
+    await undoAgentAction({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, receipt?.id ?? "");
+    expect(await skillsOf(f)).toEqual([]);
+  });
+
+  test("a member who can't decide it sends it with Pedir a um admin; only who manages agents gets it", async () => {
+    f = await setup({ rightHand: true });
+    await install(f, "excel");
+    const bia = await addMember(f.db, f.org.id, "member", "Bia Rocha");
+    await addChannelMember(f.db, f.owner.id, f.org.id, f.general.id, { userId: bia.id });
+    const ctx = await devRun(f, bia.id, "liga a skill excel pra você");
+    const out = await ask(f, ctx, { add_skills: ["excel"], reason: "pediu" });
+    expect(out.content).toContain("can't apply it: the card lets them send it to whoever may");
+    const [row] = (await cardRows(f, bia.id)).rows;
+    expect(row).toMatchObject({ status: "pending", canDecide: false, askedAt: null, requestedByUserId: bia.id });
+    await expect(decideProposal(f.db, bia.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow();
+    await askProposal({ db: f.db, pubsub: f.pubsub }, bia.id, f.org.id, row?.id ?? "");
+    expect(await askedOf(f)).toEqual([f.owner.id]);
+    await decideProposal(f.db, f.owner.id, f.org.id, row?.id ?? "", "accept", { pubsub: f.pubsub });
+    expect(await skillsOf(f)).toEqual(["excel"]);
   });
 });

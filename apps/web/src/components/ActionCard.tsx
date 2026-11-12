@@ -135,7 +135,7 @@ export function ActionCard({ message }: { message: Message }) {
   if (card.kind === "person_limit") return <PersonLimitCardView message={message} card={card} />;
   if (card.kind === "connect_app") return <ConnectAppCardView card={card} />;
   if (card.kind === "invite_people") return <InviteCardView card={card} />;
-  if (card.kind === "install_skill") return <InstallSkillCardView card={card} />;
+  if (card.kind === "install_skill") return <InstallSkillCardView card={card} agentId={message.author.id} />;
   if (card.kind === "update_skills") return <UpdateSkillsCardView message={message} card={card} />;
   if (card.kind === "autonomy_proposal") return <CostlyProposalCardView message={message} card={card} />;
   if (card.kind === "team_week") return <TeamWeekCardView message={message} card={card} />;
@@ -249,10 +249,10 @@ function ConnectAppCardView({ card }: { card: ConnectAppCard }) {
 
 /**
  * "Install a skill" (`offer_install_skill`) as a waiting pill, its why and link under it: "Install" opens Install
- * skill with the link read, its skills listed to pick; who manages agents installs there. Done once the library has a
- * skill from that link.
+ * skill with the link read, its skills listed to pick; who manages agents installs there, and what installs goes on
+ * for the agent that posted the card (`agentId`). Done once the library has a skill from that link.
  */
-function InstallSkillCardView({ card }: { card: InstallSkillCard }) {
+function InstallSkillCardView({ card, agentId }: { card: InstallSkillCard; agentId?: string | null }) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const may = can(org, "manage_agents");
@@ -297,6 +297,7 @@ function InstallSkillCardView({ card }: { card: InstallSkillCard }) {
           onOpenChange={setOpen}
           onInstalled={() => {}}
           initialUrl={open ? card.url : undefined}
+          forAgentId={agentId ?? undefined}
         />
       )}
     </>

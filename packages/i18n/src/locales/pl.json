@@ -2582,7 +2582,7 @@
         "delete": "Tylko admini usuwają agenta",
         "audience": "Tylko admini i opiekun zmieniają, kto z nim rozmawia",
         "channels": "Tylko admini i opiekun zmieniają jego kanały",
-        "skill": "Tylko admini i opiekun zmieniają jego umiejętności",
+        "skill": "Tylko admini zmieniają umiejętności agenta",
         "ai_account": "Przydziela je tylko właściciel konta",
         "name": "Tylko admini zmieniają nazwę agenta",
         "look": "Tylko admini i opiekun zmieniają jego wygląd",

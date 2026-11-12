@@ -2500,7 +2500,7 @@
         "delete": "Seuls les admins suppriment un agent",
         "audience": "Seuls les admins et son responsable changent qui lui parle",
         "channels": "Seuls les admins et son responsable changent ses canaux",
-        "skill": "Seuls les admins et son responsable changent ses compétences",
+        "skill": "Seuls les admins changent les compétences d’un agent",
         "ai_account": "Seul le propriétaire du compte l’attribue",
         "name": "Seuls les admins renomment un agent",
         "look": "Seuls les admins et son responsable changent son apparence",

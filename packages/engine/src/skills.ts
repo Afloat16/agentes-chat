@@ -1085,19 +1085,22 @@ export interface SkillPick {
  * name is already installed makes a new version. A private repository is read through the workspace's GitHub (the
  * GitHub App, else the connection): installing skills (`manage_agents`) is what lets a person read through it.
  * `through`: that connection first, with no read without credentials (a skill updated from the link it came from).
+ * `forAgentId`: the agent whose card opened the install (`turnOnFor`).
  */
 export async function importSkillFromUrl(
   deps: SkillDeps,
   actorId: string,
   orgId: string,
   url: string,
-  options: { list?: boolean; through?: SkillVia | null } = {},
+  options: { list?: boolean; through?: SkillVia | null; forAgentId?: string } = {},
 ): Promise<SkillDetail | SkillPick> {
   await requirePermission(deps.db, actorId, orgId, "manage_agents");
   const link = await readGithubLink(deps, orgId, url, options.through);
   const [only, ...more] = link.found.keys();
   if (!options.list && only !== undefined && more.length === 0) {
-    return saveSkill(deps, actorId, orgId, link.skillAt(only));
+    const skill = await saveSkill(deps, actorId, orgId, link.skillAt(only));
+    await turnOnFor(deps.db, actorId, orgId, options.forAgentId, [skill.id]);
+    return skill;
   }
   const choices: SkillChoice[] = [];
   const skipped: SkillSkipped[] = [];
@@ -1116,6 +1119,24 @@ export async function importSkillFromUrl(
   return { choices, ...(skipped.length > 0 ? { skipped } : {}), ...(link.via ? { via: link.via } : {}) };
 }
 
+/**
+ * Skills installed from an agent's card (`offer_install_skill`) go on for that agent when the installer may change its
+ * skills, as on its page. When they may not, or the agent is gone, the install still stands: the agent asks for them
+ * on its own settings card (`request_settings_change`).
+ */
+async function turnOnFor(db: Database, actorId: string, orgId: string, agentId: string | undefined, ids: string[]) {
+  if (!agentId || ids.length === 0) return;
+  await setAgentSkills(
+    db,
+    actorId,
+    orgId,
+    agentId,
+    ids.map((skillId) => ({ skillId, enabled: true })),
+  ).catch((error: unknown) => {
+    if (!(error instanceof ForbiddenError || error instanceof NotFoundError)) throw error;
+  });
+}
+
 /** Installs the skills picked among a link's choices (`paths`, as `importSkillFromUrl` gave them). */
 export async function importPickedSkills(
   deps: SkillDeps,
@@ -1123,6 +1144,7 @@ export async function importPickedSkills(
   orgId: string,
   url: string,
   paths: string[],
+  options: { forAgentId?: string } = {},
 ) {
   await requirePermission(deps.db, actorId, orgId, "manage_agents");
   const link = await readGithubLink(deps, orgId, url);
@@ -1155,6 +1177,13 @@ export async function importPickedSkills(
       ),
     );
   }
+  await turnOnFor(
+    deps.db,
+    actorId,
+    orgId,
+    options.forAgentId,
+    installed.map((k) => k.id),
+  );
   return installed;
 }
 

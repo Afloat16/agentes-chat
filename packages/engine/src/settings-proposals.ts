@@ -42,10 +42,10 @@ type Proposal = typeof contextProposals.$inferSelect;
 
 /**
  * Who decides a line (ADR 0137, amending 0092 §5): whoever may make that change on the agent's page. `admin`: who
- * manages agents (model, budget, owner, archive, delete); `admin_or_owner`: they or the agent's owner (who talks to
- * it, its channels and how it replies there, its skills); `account`: only the owner of the AI account, who must own
- * the agent too (a personal plan is assigned by its owner alone, ADR 0059 §3). One row per agent and group, so a row
- * is decided by one rule.
+ * manages agents (model, budget, owner, archive, delete, its skills); `admin_or_owner`: they or the agent's owner (who
+ * talks to it, its channels and how it replies there); `account`: only the owner of the AI account, who must own the
+ * agent too (a personal plan is assigned by its owner alone, ADR 0059 §3). One row per agent and group, so a row is
+ * decided by one rule.
  */
 export const SETTING_GROUP: Record<SettingField, "admin" | "admin_or_owner" | "account"> = {
   model: "admin",
@@ -57,7 +57,8 @@ export const SETTING_GROUP: Record<SettingField, "admin" | "admin_or_owner" | "a
   channel_add: "admin_or_owner",
   channel_remove: "admin_or_owner",
   reply_mode: "admin_or_owner",
-  skill: "admin_or_owner",
+  // The page keeps skills for who manages agents, though `setAgentSkills` takes the owner too.
+  skill: "admin",
   name: "admin",
   look: "admin_or_owner",
   // Who manages agents sets a line, as on the page (ADR 0148 addendum).

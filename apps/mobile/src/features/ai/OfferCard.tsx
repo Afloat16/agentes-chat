@@ -50,7 +50,7 @@ export function OfferCard({ message: m }: { message: Message }) {
   if (m.author.type !== "agent" || !card) return null;
   if (card.kind === "connect_app") return <ConnectApp card={card} />;
   if (card.kind === "invite_people") return <Invite card={card} />;
-  if (card.kind === "install_skill") return <InstallSkill card={card} />;
+  if (card.kind === "install_skill") return <InstallSkill card={card} agentId={m.author.id} />;
   if (card.kind === "update_skills") return <UpdateSkills card={card} postedAt={m.createdAt} />;
   if (card.kind === "approvals") return <Approvals card={card} />;
   if (card.kind === "member_changes") return <People card={card} />;
@@ -113,7 +113,8 @@ function Invite({ card }: { card: Extract<Card, { kind: "invite_people" }> }) {
   );
 }
 
-function InstallSkill({ card }: { card: Extract<Card, { kind: "install_skill" }> }) {
+/** What installs from the card goes on for the agent that posted it (`agentId`), as on the web. */
+function InstallSkill({ card, agentId }: { card: Extract<Card, { kind: "install_skill" }>; agentId: string | null }) {
   const { t } = useTranslation();
   const { orgId, org } = useOrg();
   const may = can(org, "manage_agents");
@@ -126,7 +127,11 @@ function InstallSkill({ card }: { card: Extract<Card, { kind: "install_skill" }>
       detail={card.url}
       done={installSkillDone(card, skills.data ?? []) ? `${t("actionCard.install_skill.done")}: ${card.url}` : null}
       action={may ? t("actionCard.install_skill.open") : null}
-      onAction={() => router.push(`/settings/skills/new?url=${encodeURIComponent(card.url)}` as never)}
+      onAction={() =>
+        router.push(
+          `/settings/skills/new?url=${encodeURIComponent(card.url)}${agentId ? `&agent=${encodeURIComponent(agentId)}` : ""}` as never,
+        )
+      }
       blocked={t("actionCard.install_skill.adminOnly")}
     />
   );
