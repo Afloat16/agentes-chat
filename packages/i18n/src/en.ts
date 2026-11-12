@@ -2570,6 +2570,7 @@ export const en = {
         delete: "Only admins delete an agent",
         audience: "Only admins and its owner change who talks to it",
         channels: "Only admins and its owner change its channels",
+        skill: "Only admins change an agent's skills",
         ai_account: "Only the account's owner gives it",
         name: "Only admins rename an agent",
         look: "Only admins and its owner change its look",
@@ -2588,6 +2589,7 @@ export const en = {
       name: "Name",
       look: "Look",
       reports_to: "Reports to",
+      skill: "{{name}} skill",
     },
     value: {
       lookDefault: "The default look",
@@ -2604,6 +2606,8 @@ export const en = {
       notIn: "Not in it",
       withoutMention: "On its own",
       mentionOnly: "Only when mentioned",
+      skillOn: "On",
+      skillOff: "Off",
     },
     /** One card that archives or deletes several agents (`propose_remove_agents`), each with its switch. */
     remove: {
@@ -9375,6 +9379,13 @@ export const en = {
     pickAll: "All",
     pickMissing: "Pick at least one skill.",
     pickSkipped: "Can't be installed. {{reason}}",
+    /** A pick named like a skill already installed: installing it makes a new version of that one, for every agent. */
+    pickReplaces: "Replaces the installed skill {{name}}",
+    /** A pick named like a removed skill: it comes back under that name, on for none of its old agents. */
+    pickReplacesRemoved: "Replaces the removed skill {{name}}",
+    /** Opened from an agent's card (`offer_install_skill`): what installs goes on for that agent, unless unchecked. */
+    forAgent_one: "Turn it on for {{agent}}",
+    forAgent_other: "Turn them on for {{agent}}",
     installedMany: "{{count}} skills installed.",
     zipHelp: "A .zip with SKILL.md at its root.",
     zipPick: "Choose .zip",
@@ -13156,6 +13167,8 @@ export const en = {
       detailsHidden: "Only who talks to {{agentName}} sees how it works.",
       extraOwnerOnly: "Only the agent's owner turns its plan's paid extra usage on or off.",
       undoForbidden: "Only the person the agent worked for, its owner or an admin can undo this.",
+      /** `action.skills_admins`: skills are only admins' on the agent's page, so are their Undo and Redo. */
+      undoSkillsAdmins: "Only an admin can undo or redo a change to an agent's skills.",
     },
     account: {
       notRestorable: "This account can't be restored anymore.",
@@ -15843,6 +15856,8 @@ export const en = {
       agent_proposal: "Proposed a new agent: {{name}}",
       team_proposal: "Proposed a team: {{names}}",
       settings_proposal: "Proposed a change to {{names}}",
+      /** An agent's card asking for a change to its own settings (`request_settings_change`). */
+      settings_request: "Asks for a change to its own settings",
       approval_request: "Approval request: {{title}}",
       secret_request: "{{agent}} asked for a key: {{name}}",
       secret_requestAnon: "Asked for a key: {{name}}",

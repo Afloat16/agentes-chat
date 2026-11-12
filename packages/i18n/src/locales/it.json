@@ -2508,6 +2508,7 @@
         "delete": "Solo gli admin eliminano un agente",
         "audience": "Solo gli admin e il responsabile cambiano chi gli parla",
         "channels": "Solo gli admin e il responsabile cambiano i suoi canali",
+        "skill": "Solo gli admin cambiano le skill di un agente",
         "ai_account": "Solo il proprietario dell’account lo assegna",
         "name": "Solo gli admin rinominano un agente",
         "look": "Solo gli admin e il responsabile cambiano il suo aspetto",
@@ -2525,7 +2526,8 @@
       "channel": "Canale",
       "name": "Nome",
       "look": "Aspetto",
-      "reports_to": "Risponde a"
+      "reports_to": "Risponde a",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "L'aspetto predefinito",
@@ -2541,7 +2543,9 @@
       "deleted": "Eliminato",
       "notIn": "Fuori dal canale",
       "withoutMention": "In autonomia",
-      "mentionOnly": "Solo quando menzionato"
+      "mentionOnly": "Solo quando menzionato",
+      "skillOn": "Attiva",
+      "skillOff": "Disattiva"
     },
     "remove": {
       "archiveTitle_one": "Archiviare {{count}} agente?",
@@ -9569,6 +9573,11 @@
     "pickAll": "Tutte",
     "pickMissing": "Scegli almeno una skill.",
     "pickSkipped": "Non si può installare. {{reason}}",
+    "pickReplaces": "Sostituisce la skill {{name}} già installata",
+    "pickReplacesRemoved": "Sostituisce la skill {{name}} rimossa",
+    "forAgent_one": "Attivala per {{agent}}",
+    "forAgent_many": "Attivale per {{agent}}",
+    "forAgent_other": "Attivale per {{agent}}",
     "installedMany": "{{count}} skill installate.",
     "zipHelp": "Un .zip con SKILL.md nella cartella principale.",
     "zipPick": "Scegli .zip",
@@ -13650,7 +13659,8 @@
       "ownerOrAdmin": "Solo il responsabile dell'agente o un admin può farlo.",
       "detailsHidden": "Solo chi parla con {{agentName}} vede come funziona.",
       "extraOwnerOnly": "Solo il responsabile dell'agente attiva o disattiva l'utilizzo extra a pagamento del piano.",
-      "undoForbidden": "Solo la persona per cui l'agente ha lavorato, il suo responsabile o un admin può annullarlo."
+      "undoForbidden": "Solo la persona per cui l'agente ha lavorato, il suo responsabile o un admin può annullarlo.",
+      "undoSkillsAdmins": "Solo un admin può annullare o ripetere una modifica alle skill di un agente."
     },
     "account": {
       "notRestorable": "Questo account non si può più ripristinare.",
@@ -16244,6 +16254,7 @@
       "agent_proposal": "Ha proposto un nuovo agente: {{name}}",
       "team_proposal": "Ha proposto un team: {{names}}",
       "settings_proposal": "Ha proposto una modifica per {{names}}",
+      "settings_request": "Chiede una modifica alle proprie impostazioni",
       "approval_request": "Richiesta di approvazione: {{title}}",
       "secret_request": "{{agent}} ha chiesto una chiave: {{name}}",
       "secret_requestAnon": "Ha chiesto una chiave: {{name}}",

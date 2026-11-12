@@ -2343,6 +2343,7 @@
         "delete": "Hanya admin yang menghapus agen",
         "audience": "Hanya admin dan penanggung jawabnya yang mengubah siapa yang bicara dengannya",
         "channels": "Hanya admin dan penanggung jawabnya yang mengubah kanalnya",
+        "skill": "Hanya admin yang mengubah skill agen",
         "ai_account": "Hanya pemilik akun yang memberikannya",
         "name": "Hanya admin yang mengganti nama agen",
         "look": "Hanya admin dan penanggung jawabnya yang mengubah tampilannya",
@@ -2360,7 +2361,8 @@
       "channel": "Kanal",
       "name": "Nama",
       "look": "Tampilan",
-      "reports_to": "Melapor ke"
+      "reports_to": "Melapor ke",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Tampilan bawaan",
@@ -2376,7 +2378,9 @@
       "deleted": "Dihapus",
       "notIn": "Tidak di kanal",
       "withoutMention": "Atas inisiatif sendiri",
-      "mentionOnly": "Hanya saat disebut"
+      "mentionOnly": "Hanya saat disebut",
+      "skillOn": "Aktif",
+      "skillOff": "Nonaktif"
     },
     "remove": {
       "archiveTitle_other": "Arsipkan {{count}} agen?",
@@ -8911,6 +8915,9 @@
     "pickAll": "Semua",
     "pickMissing": "Pilih setidaknya satu skill.",
     "pickSkipped": "Tidak bisa dipasang. {{reason}}",
+    "pickReplaces": "Menggantikan skill {{name}} yang sudah terpasang",
+    "pickReplacesRemoved": "Menggantikan skill {{name}} yang sudah dihapus",
+    "forAgent_other": "Aktifkan untuk {{agent}}",
     "installedMany": "{{count}} skill terpasang.",
     "zipHelp": "File .zip dengan SKILL.md di folder utamanya.",
     "zipPick": "Pilih .zip",
@@ -12753,7 +12760,8 @@
       "ownerOrAdmin": "Hanya pemilik agen atau Admin yang bisa melakukan ini.",
       "detailsHidden": "Hanya orang yang berbicara dengan {{agentName}} yang bisa melihat cara kerjanya.",
       "extraOwnerOnly": "Hanya pemilik agen yang bisa menyalakan atau mematikan penggunaan ekstra berbayar pada paket.",
-      "undoForbidden": "Hanya orang yang dibantu agen, pemiliknya, atau Admin yang bisa membatalkan ini."
+      "undoForbidden": "Hanya orang yang dibantu agen, pemiliknya, atau Admin yang bisa membatalkan ini.",
+      "undoSkillsAdmins": "Hanya Admin yang bisa membatalkan atau mengulang perubahan pada skill agen."
     },
     "account": {
       "notRestorable": "Akun ini sudah tidak bisa dipulihkan.",
@@ -15267,6 +15275,7 @@
       "agent_proposal": "Mengusulkan agen baru: {{name}}",
       "team_proposal": "Mengusulkan tim: {{names}}",
       "settings_proposal": "Mengusulkan perubahan untuk {{names}}",
+      "settings_request": "Meminta perubahan pada pengaturannya sendiri",
       "approval_request": "Permintaan persetujuan: {{title}}",
       "secret_request": "{{agent}} meminta kunci: {{name}}",
       "secret_requestAnon": "Meminta kunci: {{name}}",

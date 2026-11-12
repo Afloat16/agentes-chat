@@ -1139,14 +1139,15 @@ export interface ApiClient {
      * A GitHub link (a skill's folder or a file in it) or the folder as a zip in base64 (writes are JSON only). A link
      * holding several skills (or any, with `list`) installs nothing and answers with them to pick from
      * (`importPicked`), those that can't be installed apart. A private repository is read through the workspace's
-     * GitHub, on the server.
+     * GitHub, on the server. `forAgentId`: the agent whose card opened the install, which gets what installs turned on
+     * when the installer may change its skills.
      */
     import(
       orgId: string,
-      input: { url: string; list?: boolean } | { zipBase64: string },
+      input: { url: string; list?: boolean; forAgentId?: string } | { zipBase64: string },
     ): Promise<SkillDetail | SkillPick>;
-    /** Installs the skills picked among a link's choices (their `path`). */
-    importPicked(orgId: string, url: string, paths: string[]): Promise<SkillDetail[]>;
+    /** Installs the skills picked among a link's choices (their `path`), on for `forAgentId` as `import` does. */
+    importPicked(orgId: string, url: string, paths: string[], forAgentId?: string): Promise<SkillDetail[]>;
     update(orgId: string, id: string, patch: SkillPatch): Promise<SkillDetail>;
     /** Fetch the link again (`url` skills). */
     reimport(orgId: string, id: string): Promise<SkillDetail>;
