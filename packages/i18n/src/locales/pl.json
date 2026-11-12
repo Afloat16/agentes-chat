@@ -1518,7 +1518,10 @@
       "why": "Dla Ubuntu, Debiana i podobnych systemów (x64). Linux o nic więcej nie pyta:",
       "apt": "Zainstaluj plik .deb dwukrotnym kliknięciem albo z terminala.",
       "aptLong": "Kliknij dwukrotnie pobrany plik i kliknij Zainstaluj albo wklej to w terminalu:",
-      "open": "Otwórz agentes.chat z listy aplikacji."
+      "open": "Otwórz agentes.chat z listy aplikacji.",
+      "otherTitle": "Używasz Archa, Fedory lub innego systemu, który nie obsługuje .deb?",
+      "otherText": "Pobierz AppImage: działa w każdej dystrybucji i sam się aktualizuje. Potem wklej to w terminalu, w folderze, w którym go zapisano:",
+      "appImage": "Pobierz AppImage"
     },
     "page": {
       "docTitle": "Pobierz aplikację · agentes.chat",
@@ -9272,7 +9275,6 @@
     "more": "Więcej akcji dla: {{title}}",
     "open": "Otwórz wątek",
     "read": "Przeczytaj wątek",
-    "details": "Zobacz szczegóły",
     "pick": "Zaznacz: {{title}}",
     "pickShort": "Zaznacz",
     "unpick": "Usuń z zaznaczenia",
@@ -9489,32 +9491,6 @@
       "blockedText_other": "{{names}} nie ma na #{{channel}}. Kontekst trafia tylko tam, gdzie wszyscy czytający wątek mogli go już przeczytać.",
       "someone": "Ktoś",
       "someAgent": "Agent"
-    },
-    "panel": {
-      "label": "Szczegóły: {{title}}",
-      "close": "Zamknij szczegóły",
-      "archivedTitle": "Zarchiwizowany · tylko do odczytu",
-      "archived": "Poza listami i wyszukiwaniem. Przywróć z archiwum, aby odpowiedzieć.",
-      "closedTitle": "Zamknięty",
-      "closed": "W {{where}} to jedna linia. Otworzy się sam, gdy ktoś odpowie.",
-      "origin": "Pochodzenie",
-      "fromRange_one": "{{count}} wiadomość z {{where}}",
-      "fromRange_few": "{{count}} wiadomości z {{where}}",
-      "fromRange_many": "{{count}} wiadomości z {{where}}",
-      "fromRange_other": "{{count}} wiadomości z {{where}}",
-      "fromMessage": "Wiadomość od {{name}} w {{where}}",
-      "seeInChannel": "Zobacz na kanale",
-      "movedHint": "Wyjęte z kanału, z pozostawioną tam informacją",
-      "peopleTitle": "Uczestnicy",
-      "people_one": "Uczestnicy · {{count}}",
-      "people_few": "Uczestnicy · {{count}}",
-      "people_many": "Uczestnicy · {{count}}",
-      "people_other": "Uczestnicy · {{count}}",
-      "agent": "agent",
-      "person": "osoba",
-      "created": "Utworzono",
-      "createdBy": "{{when}} · przez {{name}}",
-      "lives": "Znajduje się w"
     }
   },
   "filters": {

@@ -1398,7 +1398,10 @@
       "why": "Ubuntu, Debian 및 비슷한 시스템(x64)용이에요. Linux는 따로 확인을 요청하지 않아요:",
       "apt": ".deb 파일을 더블클릭하거나 터미널에서 설치하세요.",
       "aptLong": "다운로드한 파일을 더블클릭하고 ‘설치’를 클릭하거나, 이걸 터미널에 붙여 넣으세요:",
-      "open": "앱 목록에서 agentes.chat을 여세요."
+      "open": "앱 목록에서 agentes.chat을 여세요.",
+      "otherTitle": "Arch, Fedora 등 .deb를 쓸 수 없는 시스템인가요?",
+      "otherText": "AppImage를 내려받으세요. 어떤 배포판에서도 실행되고 스스로 업데이트됩니다. 그런 다음 저장한 폴더에서 터미널에 이것을 붙여넣으세요:",
+      "appImage": "AppImage 다운로드"
     },
     "page": {
       "docTitle": "앱 다운로드 · agentes.chat",
@@ -8373,7 +8376,6 @@
     "more": "{{title}} 작업 더 보기",
     "open": "스레드 열기",
     "read": "스레드 읽기",
-    "details": "세부 정보 보기",
     "pick": "{{title}} 선택",
     "pickShort": "선택",
     "unpick": "선택 해제",
@@ -8527,26 +8529,6 @@
       "blockedText_other": "{{names}}이(가) #{{channel}}에 없어요. 컨텍스트는 스레드를 읽는 모든 사람이 이미 읽을 수 있는 곳에만 들어가요.",
       "someone": "누군가",
       "someAgent": "에이전트"
-    },
-    "panel": {
-      "label": "{{title}} 세부 정보",
-      "close": "세부 정보 닫기",
-      "archivedTitle": "보관됨 · 읽기 전용",
-      "archived": "목록과 검색에서 빠져 있어요. 답하려면 보관을 해제하세요.",
-      "closedTitle": "닫힘",
-      "closed": "{{where}}에서는 한 줄로 표시돼요. 누군가 답하면 자동으로 다시 열려요.",
-      "origin": "출처",
-      "fromRange_other": "{{where}}의 메시지 {{count}}개",
-      "fromMessage": "{{where}}에 있는 {{name}}의 메시지",
-      "seeInChannel": "채널에서 보기",
-      "movedHint": "채널에서 꺼냈고, 채널에는 알림을 남겼어요",
-      "peopleTitle": "참여자",
-      "people_other": "참여자 · {{count}}",
-      "agent": "에이전트",
-      "person": "사람",
-      "created": "만든 날짜",
-      "createdBy": "{{when}} · {{name}}",
-      "lives": "위치"
     }
   },
   "filters": {

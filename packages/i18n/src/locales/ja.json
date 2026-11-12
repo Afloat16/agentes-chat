@@ -1398,7 +1398,10 @@
       "why": "Ubuntu、Debianなどのシステム向け（x64）です。Linuxでは追加の確認はありません:",
       "apt": ".debをダブルクリックするか、ターミナルからインストールします。",
       "aptLong": "ダウンロードしたファイルをダブルクリックして「インストール」をクリックするか、これをターミナルに貼り付けます:",
-      "open": "アプリの一覧からagentes.chatを開きます。"
+      "open": "アプリの一覧からagentes.chatを開きます。",
+      "otherTitle": "Arch、Fedora など、.deb を使えないシステムですか？",
+      "otherText": "AppImage をダウンロードしてください。どのディストリビューションでも動作し、自動で更新されます。保存したフォルダーで、ターミナルに次を貼り付けてください:",
+      "appImage": "AppImage をダウンロード"
     },
     "page": {
       "docTitle": "アプリをダウンロード · agentes.chat",
@@ -8379,7 +8382,6 @@
     "more": "{{title}}のその他のアクション",
     "open": "スレッドを開く",
     "read": "スレッドを読む",
-    "details": "詳細を見る",
     "pick": "{{title}}を選択",
     "pickShort": "選択",
     "unpick": "選択から外す",
@@ -8533,26 +8535,6 @@
       "blockedText_other": "{{names}}は#{{channel}}にいません。コンテキストは、スレッドを読む全員がすでに読めるものに限られます。",
       "someone": "誰か",
       "someAgent": "エージェント"
-    },
-    "panel": {
-      "label": "{{title}}の詳細",
-      "close": "詳細を閉じる",
-      "archivedTitle": "アーカイブ済み · 閲覧のみ",
-      "archived": "リストや検索には表示されません。返信するにはアーカイブを解除してください。",
-      "closedTitle": "終了",
-      "closed": "{{where}}では1行で表示されます。誰かが返信すると自動で再開します。",
-      "origin": "元の場所",
-      "fromRange_other": "{{where}}の{{count}}件のメッセージ",
-      "fromMessage": "{{where}}での{{name}}のメッセージ",
-      "seeInChannel": "チャンネルで見る",
-      "movedHint": "チャンネルから切り出し、お知らせを残しました",
-      "peopleTitle": "参加者",
-      "people_other": "参加者 · {{count}}",
-      "agent": "エージェント",
-      "person": "人",
-      "created": "作成",
-      "createdBy": "{{when}} · {{name}}",
-      "lives": "場所"
     }
   },
   "filters": {
