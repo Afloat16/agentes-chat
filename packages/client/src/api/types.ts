@@ -7629,6 +7629,21 @@ export interface ConnectLinkState {
   machineId?: string;
 }
 
+/** An iPhone on a Mac's Wi-Fi that trusts it, not used until the person who manages the Mac picks it. */
+export interface WifiIphone {
+  /** Its UDID: the phone's `serial` once picked. */
+  serial: string;
+  model: string;
+  name?: string;
+  osVersion: string;
+}
+
+/** The iPhones a Mac offers over Wi-Fi; `update`: its agentes.chat is too old for it. */
+export interface WifiIphones {
+  available: WifiIphone[];
+  update?: true;
+}
+
 /** Pairing an Android phone over Wi-Fi with a computer: where it stands. */
 export interface WifiPairing {
   id: string;

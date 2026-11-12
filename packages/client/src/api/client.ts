@@ -319,6 +319,7 @@ import type {
   UsageReport,
   WebhookProvider,
   WebhookSetup,
+  WifiIphones,
   WifiPairing,
   WikiBulkFailed,
   WikiBulkTarget,
@@ -1063,6 +1064,10 @@ export interface ApiClient {
     cancelWifiPairing(orgId: string, machineId: string, pairingId: string): Promise<void>;
     /** Asks the computer to also look for a plugged phone it has no driver for, which adb never lists (Windows). */
     lookForPhones(orgId: string, machineId: string): Promise<void>;
+    /** The iPhones on this Mac's Wi-Fi that trust it and aren't used yet (its owner or an admin). */
+    wifiIphones(orgId: string, machineId: string): Promise<WifiIphones>;
+    /** Uses that iPhone over Wi-Fi from now on; forgetting the phone stops it. */
+    pickIphoneOverWifi(orgId: string, machineId: string, serial: string): Promise<WifiIphones>;
   };
   /** Connected computers (ADR 0025): machines running `agentes-runner`. */
   machines: {
