@@ -11,11 +11,11 @@ import { Fragment, type ReactNode, useEffect, useId, useMemo, useState } from "r
 import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { GitHubMark } from "@/components/GitHubMark";
 import { HelpLink } from "@/components/HelpLink";
 import { ErrorState, LoadingCards, LoadingList } from "@/components/Loading";
 import { useOrg } from "@/components/org-context";
 import { WikiGraphView } from "@/components/WikiGraph";
-import { GitHubMark } from "@/components/GitHubMark";
 import { ObsidianMark } from "@/components/wiki/ObsidianMark";
 import { WikiAudienceDialog } from "@/components/wiki/WikiAudience";
 import { WikiBulkAgentsDialog, WikiBulkDeleteDialog, WikiTrash } from "@/components/wiki/WikiBulk";

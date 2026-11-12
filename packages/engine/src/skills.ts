@@ -920,12 +920,7 @@ type GithubConnectionState = "none" | "refused" | "ok";
  * workspace no longer has the connection `through` names, else `github.repo_missing` with the connection's state and
  * whether the GitHub App is installed on some account (`app`).
  */
-async function readRepository(
-  deps: GithubReadDeps,
-  orgId: string,
-  target: GithubTarget,
-  through: SkillVia | null,
-) {
+async function readRepository(deps: GithubReadDeps, orgId: string, target: GithubTarget, through: SkillVia | null) {
   if (!through) {
     const open = await publicRepository(deps, target);
     if (open) return { ...open, via: null };

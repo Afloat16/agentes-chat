@@ -135,7 +135,9 @@ export function VaultDropZone({
         }}
       >
         {!compact && (
-          <span className="vault-drop__icon">{plain ? <Icon name="upload" size={30} /> : <ObsidianMark size={30} />}</span>
+          <span className="vault-drop__icon">
+            {plain ? <Icon name="upload" size={20} /> : <ObsidianMark size={30} />}
+          </span>
         )}
         {compact && <Icon name="upload" />}
         <b>{t(plain ? "wiki.import.files.dropTitle" : "wiki.import.dropTitle")}</b>
@@ -811,7 +813,10 @@ export function WikiImportDialog({
             label={t("wiki.import.github.label")}
             id="wiki-import-url"
             error={linkError ?? undefined}
-            hint={{ name: t("common.about", { label: t("wiki.import.github.label") }), text: t("wiki.import.github.help") }}
+            hint={{
+              name: t("common.about", { label: t("wiki.import.github.label") }),
+              text: t("wiki.import.github.help"),
+            }}
           >
             <Input
               value={url}
