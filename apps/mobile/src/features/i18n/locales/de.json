@@ -1678,13 +1678,7 @@
       "open": "Öffnen",
       "expandHint": "Zum Vergrößern tippen",
       "stop": "Stoppen",
-      "giveUp": "Aufgeben",
-      "done": "Erledigt: {{title}}",
-      "failed": "Nicht geschafft: {{title}}",
-      "failedNote": "Nicht geschafft: {{note}}",
-      "expired": "Niemand hat es rechtzeitig geöffnet: {{title}}",
-      "cancelled": "Abgebrochen: {{title}}",
-      "withdrawn": "{{name}} braucht das nicht mehr: {{title}}"
+      "giveUp": "Aufgeben"
     },
     "live": {
       "inControl": "Du hast die Steuerung",

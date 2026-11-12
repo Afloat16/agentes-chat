@@ -1711,12 +1711,6 @@ export const featureKeysPtBR = {
       expandHint: "Toque para expandir",
       stop: "Parar",
       giveUp: "Desistir",
-      done: "Feito: {{title}}",
-      failed: "Não deu: {{title}}",
-      failedNote: "Não deu: {{note}}",
-      expired: "Ninguém abriu a tempo: {{title}}",
-      cancelled: "Cancelado: {{title}}",
-      withdrawn: "{{name}} não precisa mais disso: {{title}}",
     },
     live: {
       inControl: "Você está no controle",

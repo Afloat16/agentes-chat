@@ -1,4 +1,4 @@
-import type { Agent } from "@agenteschat/client";
+import type { Agent, AgentStyle } from "@agenteschat/client";
 import {
   useAiStatus,
   useComputerSetup,
@@ -14,7 +14,8 @@ import { can } from "@agenteschat/client/lib/permissions";
 import { introCards, introLeadKey, isRightHand, offersTeamSetup } from "@agenteschat/client/lib/right-hand";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import { AgentSticker, EventPillAction, Message, MessageText, WAVE_SECONDS } from "@agenteschat/ui";
-import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { MESSAGE_STICKER } from "@/chat/ChatMedia";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { usePlanHold } from "@/components/ai/ConnectAiSteps";
@@ -65,6 +66,8 @@ export function RightHandIntro({ agent, channelId }: { agent: Agent; channelId: 
     checklist,
     answered: useTeamAnswered(org.id, team),
   });
+  // Picked here: its card stays where it was, answered, instead of leaving the moment the workspace has a style.
+  const [styled, setStyled] = useState<AgentStyle | null>(null);
   const profile = { actor: { type: "agent", id: agent.id }, label: t("profile.of", { name: agent.name }) } as const;
   return (
     <Message
@@ -116,7 +119,7 @@ export function RightHandIntro({ agent, channelId }: { agent: Agent; channelId: 
         </RequestOpen>
       )}
       <FirstRunCard agent={agent} channelId={channelId} />
-      {cards.includes("style") && <StyleCard agent={agent} />}
+      {(cards.includes("style") || styled) && <StyleCard agent={agent} picked={styled} onPicked={setStyled} />}
       {offersTeamSetup({ noAi, aiKnown, createsAgents, hasTeam: team.length > 0, cards, held, checklist }) && (
         <p className="rh-intro__again small muted">
           {t(modeKey(org, "rightHand.intro.again.question"))}{" "}
@@ -129,17 +132,31 @@ export function RightHandIntro({ agent, channelId }: { agent: Agent; channelId: 
   );
 }
 
-const STYLES = ["simple", "technical"] as const;
+const STYLES = ["simple", "technical"] as const satisfies readonly AgentStyle[];
 
-/** "Como prefere que eu fale com você?": two answers, saved for every agent here; gone once the person picks. */
-function StyleCard({ agent }: { agent: Agent }) {
+/**
+ * "Como prefere que eu fale com você?": two answers, saved for every agent here. Once the person picks (`picked`), the
+ * same card says what they answered where the answers were.
+ */
+function StyleCard({
+  agent,
+  picked,
+  onPicked,
+}: {
+  agent: Agent;
+  picked: AgentStyle | null;
+  onPicked: (style: AgentStyle) => void;
+}) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const toast = useToast();
   const save = useSetAgentStyle(org.id);
   const question = t("rightHand.intro.style.question");
-  const pick = (style: "simple" | "technical") =>
-    save.mutate(style, { onError: () => toast.show(t("settings.account.activityFailed"), "error") });
+  const pick = (style: AgentStyle) =>
+    save.mutate(style, {
+      onSuccess: () => onPicked(style),
+      onError: () => toast.show(t("settings.account.activityFailed"), "error"),
+    });
   return (
     <RequestCard
       id={`right-hand-style-${agent.id}`}
@@ -150,21 +167,37 @@ function StyleCard({ agent }: { agent: Agent }) {
       lead={question}
       what={question}
       locked={save.isPending}
+      answer={
+        picked
+          ? {
+              done: true,
+              text: (
+                <Trans
+                  i18nKey="question.answeredByYou"
+                  values={{ answer: t(`rightHand.intro.style.${picked}`) }}
+                  components={{ b: <b /> }}
+                />
+              ),
+            }
+          : undefined
+      }
       body={
-        <>
-          <p>{t("rightHand.intro.style.text")}</p>
-          <RequestChoices
-            choices={STYLES.map((style) => ({
-              label: t(`rightHand.intro.style.${style}`),
-              busy: save.isPending && save.variables === style,
-            }))}
-            onPick={(i) => {
-              const style = STYLES[i];
-              if (style) pick(style);
-            }}
-            disabled={save.isPending}
-          />
-        </>
+        !picked && (
+          <>
+            <p>{t("rightHand.intro.style.text")}</p>
+            <RequestChoices
+              choices={STYLES.map((style) => ({
+                label: t(`rightHand.intro.style.${style}`),
+                busy: save.isPending && save.variables === style,
+              }))}
+              onPick={(i) => {
+                const style = STYLES[i];
+                if (style) pick(style);
+              }}
+              disabled={save.isPending}
+            />
+          </>
+        )
       }
       actions={<RequestKeys count={STYLES.length} />}
     />

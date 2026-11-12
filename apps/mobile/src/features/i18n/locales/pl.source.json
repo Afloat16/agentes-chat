@@ -4115,24 +4115,6 @@
   "browser.card.giveUp": {
     "value": "Give up"
   },
-  "browser.card.done": {
-    "value": "Done: {{title}}"
-  },
-  "browser.card.failed": {
-    "value": "Couldn't: {{title}}"
-  },
-  "browser.card.failedNote": {
-    "value": "Couldn't: {{note}}"
-  },
-  "browser.card.expired": {
-    "value": "Nobody opened it in time: {{title}}"
-  },
-  "browser.card.cancelled": {
-    "value": "Canceled: {{title}}"
-  },
-  "browser.card.withdrawn": {
-    "value": "{{name}} no longer needs this: {{title}}"
-  },
   "browser.live.inControl": {
     "value": "You're in control"
   },

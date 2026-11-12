@@ -1769,13 +1769,7 @@
       "open": "Apri",
       "expandHint": "Tocca per espandere",
       "stop": "Ferma",
-      "giveUp": "Rinuncia",
-      "done": "Fatto: {{title}}",
-      "failed": "Non riuscito: {{title}}",
-      "failedNote": "Non riuscito: {{note}}",
-      "expired": "Nessuno l'ha aperto in tempo: {{title}}",
-      "cancelled": "Annullato: {{title}}",
-      "withdrawn": "A {{name}} non serve più: {{title}}"
+      "giveUp": "Rinuncia"
     },
     "live": {
       "inControl": "Hai il controllo",

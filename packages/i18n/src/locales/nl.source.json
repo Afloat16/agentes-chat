@@ -3884,9 +3884,6 @@
   "rightHandApprovals.card.undoneBy": {
     "value": "Undone by {{name}}"
   },
-  "rightHandApprovals.card.why": {
-    "value": "Why?"
-  },
   "rightHandApprovals.card.undo": {
     "value": "Undo"
   },
@@ -7518,6 +7515,12 @@
   },
   "actionCard.agentProposal.created": {
     "value": "Created"
+  },
+  "actionCard.agentProposal.createdBy": {
+    "value": "Created by {{name}}"
+  },
+  "actionCard.agentProposal.createdByYou": {
+    "value": "Created by you"
   },
   "actionCard.agentProposal.aiAccount": {
     "value": "Thinks with {{account}}"
@@ -39444,12 +39447,6 @@
   "browser.card.group": {
     "value": "{{name}}'s request for help in the browser"
   },
-  "browser.card.asked": {
-    "value": "asked {{people}} for help"
-  },
-  "browser.card.askedShort": {
-    "value": "needs help"
-  },
   "browser.card.left": {
     "value": "{{time}} left"
   },
@@ -39491,21 +39488,6 @@
   },
   "browser.card.withdrawn": {
     "value": "{{name}} no longer needs this."
-  },
-  "browser.card.settledDone": {
-    "value": "asked for help · resolved"
-  },
-  "browser.card.settledFailed": {
-    "value": "asked for help · didn't work"
-  },
-  "browser.card.settledExpired": {
-    "value": "asked for help · expired"
-  },
-  "browser.card.settledCancelled": {
-    "value": "asked for help · cancelled"
-  },
-  "browser.card.settledWithdrawn": {
-    "value": "asked for help · no longer needed"
   },
   "browser.card.busy": {
     "value": "Someone else is already helping."
@@ -39812,12 +39794,6 @@
   },
   "browser.inCard.otherHelp": {
     "value": "{{person}} is in control. You're watching."
-  },
-  "browser.inCard.helpingHere": {
-    "value": "You're helping · in this card"
-  },
-  "browser.inCard.helpingOther": {
-    "value": "{{person}} is helping · in this card"
   },
   "browser.inCard.doneLine": {
     "value": "Done. {{name}} will read the page again and carry on."

@@ -1260,10 +1260,13 @@ describe("memory changes and proposals in the chat", () => {
       "prop-1",
       "Só PRs pequenos.",
     ]);
-    // Decided: one line takes its place (another element).
+    // Decided: the same card, who accepted where the buttons were, and nothing left to edit.
     const done = screen().getByRole("group", { name: "Proposta de mudança de Ada" });
+    expect(done.classList.contains("rq--ended")).toBe(true);
     expect(done.querySelector(".rq-done__mark[data-done]")).not.toBeNull();
-    expect(done.textContent).toContain("Aceita");
+    expect(done.querySelector(".rq__answer-text")?.textContent).toBe("Aplicado por você");
+    expect(within(done).queryByRole("textbox")).toBeNull();
+    expect(within(done).queryByRole("button", { name: "Aceitar com ajustes" })).toBeNull();
   });
 });
 

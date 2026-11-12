@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, Text as RNText, StyleSheet, useWindowDimensions, View } from "react-native";
 import Animated, {
   FadeIn,
+  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -414,6 +415,22 @@ export const ASK_ICON: Record<AskKind, IconName> = {
   firstTask: "target",
 };
 
+/** How a request ended, where its decision was: the card keeps its box, its words and what it is about. */
+export interface AskAnswer {
+  /** It went through. */
+  done: boolean;
+  /** How it ended and who did it ("Você respondeu: X", "Aprovado por Ana"); what `markName` wraps reads in bold. */
+  words: string;
+  /** When. */
+  time?: string | undefined;
+  /** A quiet line under it (when one approved ahead goes out, why it was refused). */
+  note?: string | null | undefined;
+  /** What can still be done about it (Desfazer, Cancelar): ghost card buttons. */
+  actions?: ReactNode;
+  /** You approved it just now: the check bursts once in the agent's tones (its color). Never on an old card. */
+  celebrate?: string | null | undefined;
+}
+
 /**
  * The request card, the same as Atividade's and Conversas' waiting cards (`WaitingCard`): the app's card with its cut
  * corner, the kind on top with its icon and, at its right, who else decides (`waitsFor`: "esperando Ana", "Aguardando
@@ -424,6 +441,10 @@ export const ASK_ICON: Record<AskKind, IconName> = {
  * no preview). `body` sits under it (a secret's field); `foot` holds the decision (`AskFoot`) and, at its end, the fuse
  * to `expiry` (`ExpiryLine`) while the person decides. In a conversation the card tells it where it is (`id`), for the
  * line above the composer.
+ *
+ * Decided (`answer`), it is the same card: the kind, the words and the name line stay where they were, and under a
+ * hairline a check or an ×, how it ended, who did it and when stand where the decision was. Its height slides to
+ * the new one when the same card is answered on screen.
  */
 export function AskCard({
   id,
@@ -437,6 +458,8 @@ export function AskCard({
   body,
   expiry,
   foot,
+  answer,
+  ended: over = false,
 }: {
   id: string;
   kind: AskKind;
@@ -452,6 +475,10 @@ export function AskCard({
   /** Its deadline (`ExpiryLine`), at the foot's end while the person decides. */
   expiry?: ReactNode;
   foot?: ReactNode;
+  /** Decided: said in place of `foot` and `expiry`; `body` is then what stays to read. */
+  answer?: AskAnswer | null | undefined;
+  /** Decided with nothing to say at the foot (a card of several requests: each says how it ended). */
+  ended?: boolean;
 }) {
   const ownTop = useCardTop(12);
   const { t } = useTranslation();
@@ -470,11 +497,13 @@ export function AskCard({
     if (well?.more?.onToggle) well.more.onToggle();
     else setOpen((o) => !o);
   };
+  const ended = over || Boolean(answer);
+  // Only a request still waiting tells the conversation where it is.
   useLayoutEffect(() => {
     const card = slot.current;
-    if (!store || !card) return;
+    if (!store || !card || ended) return;
     return store.register(id, card);
-  }, [store, id]);
+  }, [store, id, ended]);
   const more = well?.more;
   // The thing it is about, edge to edge: its mark and its title on one line, its details under them across the whole
   // width (from the title's column to the card's edge), then "Ver …" on their edge, never a column beside the words.
@@ -513,11 +542,15 @@ export function AskCard({
         {more.content}
       </Animated.View>
     ) : null;
-  const kindWords = askKindWords(t, kind, waitsFor === "you");
+  const kindWords = askKindWords(t, kind, waitsFor === "you" && !ended);
   return (
     // A plain view the conversation measures (never flattened away), around the card that fades in.
     <View ref={slot} collapsable={false} style={ownTop}>
-      <Animated.View entering={reduced ? undefined : FadeIn.duration(300)} style={[styles.card, surface]}>
+      <Animated.View
+        entering={reduced ? undefined : FadeIn.duration(300)}
+        layout={reduced ? undefined : LinearTransition.duration(220)}
+        style={[styles.card, surface]}
+      >
         <View style={styles.clip}>
           <Sky color={sky} depth={0.55} fade={0.15} surface="raised" style={styles.sky} />
           <View style={styles.head}>
@@ -525,7 +558,7 @@ export function AskCard({
             <Text variant="footnote" tone="muted" numberOfLines={1} style={[styles.medium, styles.grow]}>
               {kindNote ? `${kindWords} · ${kindNote}` : kindWords}
             </Text>
-            {waitsFor && waitsFor !== "you" ? (
+            {waitsFor && waitsFor !== "you" && !ended ? (
               <Text variant="footnote" tone="muted" numberOfLines={1} style={styles.shrink}>
                 {waitsFor}
               </Text>
@@ -561,8 +594,42 @@ export function AskCard({
           ) : null}
           {preview ? null : opened}
           {body ? <View style={styles.body}>{body}</View> : null}
-          {foot}
-          {waitsFor === "you" && expiry ? <View style={styles.expiryRow}>{expiry}</View> : null}
+          {answer ? (
+            <Animated.View
+              entering={reduced ? undefined : FadeIn.duration(220)}
+              // Under the name line its hairline is enough: no second one.
+              style={[styles.edge, styles.answer, { borderTopColor: c.line }, line && !body ? styles.noTop : null]}
+            >
+              <View style={styles.answerRow}>
+                <View style={styles.answerMark}>
+                  {answer.done && answer.celebrate ? (
+                    <SparkCheck size={14} color={c.ok} tone={answer.celebrate} />
+                  ) : (
+                    <Icon name={answer.done ? "check" : "x"} size={14} color={answer.done ? c.ok : c.faint} />
+                  )}
+                </View>
+                <Text variant="footnote" style={[styles.grow, { color: c.ink2 }]}>
+                  {pillWords(answer.words, c.ink)}
+                </Text>
+                {answer.time ? (
+                  <Text variant="caption" tone="faint" numberOfLines={1} style={styles.answerTime}>
+                    {answer.time}
+                  </Text>
+                ) : null}
+              </View>
+              {answer.note ? (
+                <Text variant="caption" tone="faint" style={styles.answerNote}>
+                  {answer.note}
+                </Text>
+              ) : null}
+              {answer.actions ? <View style={styles.answerActs}>{answer.actions}</View> : null}
+            </Animated.View>
+          ) : ended ? null : (
+            <>
+              {foot}
+              {waitsFor === "you" && expiry ? <View style={styles.expiryRow}>{expiry}</View> : null}
+            </>
+          )}
         </View>
       </Animated.View>
     </View>
@@ -885,6 +952,14 @@ const styles = StyleSheet.create({
   noTop: { borderTopWidth: 0 },
   body: { gap: 8 },
   foot: { marginTop: 4, gap: 10 },
+  // How it ended, where the decision was: a strip edge to edge under a hairline, its mark on the words' first line.
+  answer: { paddingTop: 12, gap: 4 },
+  answerRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  answerMark: { width: 14, height: 18, alignItems: "center", justifyContent: "center" },
+  answerTime: { flexShrink: 0, lineHeight: 18, fontVariant: ["tabular-nums"] },
+  // On the words' column, past the mark and its gap.
+  answerNote: { marginLeft: 22 },
+  answerActs: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginLeft: 22, marginTop: 4 },
   buttons: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 },
   primary: { flexGrow: 1.5, flexShrink: 1, minWidth: 0 },
   secondary: { flexGrow: 1, flexShrink: 1, minWidth: 0 },

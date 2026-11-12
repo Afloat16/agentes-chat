@@ -1756,12 +1756,6 @@ export const featureKeysEn = {
       expandHint: "Tap to expand",
       stop: "Stop",
       giveUp: "Give up",
-      done: "Done: {{title}}",
-      failed: "Couldn't: {{title}}",
-      failedNote: "Couldn't: {{note}}",
-      expired: "Nobody opened it in time: {{title}}",
-      cancelled: "Canceled: {{title}}",
-      withdrawn: "{{name}} no longer needs this: {{title}}",
     },
     live: {
       inControl: "You're in control",

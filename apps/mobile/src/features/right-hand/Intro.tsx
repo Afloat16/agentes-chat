@@ -1,5 +1,6 @@
 import {
   type Agent,
+  type AgentStyle,
   useAiStatus,
   useComputerSetup,
   useMessages,
@@ -12,7 +13,7 @@ import { can } from "@agenteschat/client/lib/permissions";
 import { introCards, introLeadKey, isRightHand, offersTeamSetup } from "@agenteschat/client/lib/right-hand";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import { WAVE_SECONDS } from "@agenteschat/ui/agent/stickers";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import Animated, { Easing, FadeIn, FadeInUp, useReducedMotion } from "react-native-reanimated";
@@ -56,6 +57,8 @@ export function RightHandIntro({ agent, channelId, waveFrom }: { agent: Agent; c
   const noAi = aiStateOf(status.data, agent.id) === "no_ai";
   const aiKnown = Boolean(status.data) && !setup.isPending;
   const createsAgents = can(org, "create_agents");
+  // Picked here: its card stays where it was, answered, instead of leaving the moment the workspace has a style.
+  const [styled, setStyled] = useState<AgentStyle | null>(null);
   const cards = introCards({
     noAi: noAi && aiKnown,
     aiKnown,
@@ -142,7 +145,7 @@ export function RightHandIntro({ agent, channelId, waveFrom }: { agent: Agent; c
           />
         )}
         <FirstRunCard agent={agent} channelId={channelId} />
-        {cards.includes("style") && <StyleCard />}
+        {(cards.includes("style") || styled) && <StyleCard picked={styled} onPicked={setStyled} />}
         {offersTeamSetup({ noAi, aiKnown, createsAgents, hasTeam: team.length > 0, cards, held, checklist }) ? (
           <View>
             <Text variant="small" tone="muted">
@@ -161,30 +164,46 @@ export function RightHandIntro({ agent, channelId, waveFrom }: { agent: Agent; c
   );
 }
 
-/** "Como prefere que eu fale com você?": two answers, saved for every agent here; gone once the person picks. */
-function StyleCard() {
+/**
+ * "Como prefere que eu fale com você?": two answers, saved for every agent here. Once the person picks (`picked`),
+ * the same card says what they answered where the answers were.
+ */
+function StyleCard({ picked, onPicked }: { picked: AgentStyle | null; onPicked: (style: AgentStyle) => void }) {
   const { t } = useTranslation();
   const { orgId } = useOrg();
+  const c = useColors();
   const failed = useFailed();
   const save = useSetAgentStyle(orgId);
+  const pick = (style: AgentStyle) => save.mutate(style, { onSuccess: () => onPicked(style), onError: failed });
   return (
     <IntroCard icon="chat" title={t("rightHand.intro.style.question")} text={t("rightHand.intro.style.text")}>
-      <Button
-        variant="primary"
-        size="card"
-        wide
-        label={t("rightHand.intro.style.simple")}
-        disabled={save.isPending}
-        onPress={() => save.mutate("simple", { onError: failed })}
-      />
-      <Button
-        variant="secondary"
-        size="card"
-        wide
-        label={t("rightHand.intro.style.technical")}
-        disabled={save.isPending}
-        onPress={() => save.mutate("technical", { onError: failed })}
-      />
+      {picked ? (
+        <View style={styles.cardHead}>
+          <LineIcon name="check" size={14} color={c.ok} variant="footnote" />
+          <Text variant="footnote" tone="ink2" style={styles.fill}>
+            {t("mobile.chat.question.answeredByYou", { answer: t(`rightHand.intro.style.${picked}`) })}
+          </Text>
+        </View>
+      ) : (
+        <>
+          <Button
+            variant="primary"
+            size="card"
+            wide
+            label={t("rightHand.intro.style.simple")}
+            disabled={save.isPending}
+            onPress={() => pick("simple")}
+          />
+          <Button
+            variant="secondary"
+            size="card"
+            wide
+            label={t("rightHand.intro.style.technical")}
+            disabled={save.isPending}
+            onPress={() => pick("technical")}
+          />
+        </>
+      )}
     </IntroCard>
   );
 }

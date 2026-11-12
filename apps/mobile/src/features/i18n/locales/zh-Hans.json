@@ -1582,13 +1582,7 @@
       "open": "打开",
       "expandHint": "点按展开",
       "stop": "停止",
-      "giveUp": "放弃",
-      "done": "已完成：{{title}}",
-      "failed": "未能完成：{{title}}",
-      "failedNote": "未能完成：{{note}}",
-      "expired": "没有人及时打开：{{title}}",
-      "cancelled": "已取消：{{title}}",
-      "withdrawn": "{{name}} 不再需要这个：{{title}}"
+      "giveUp": "放弃"
     },
     "live": {
       "inControl": "由你控制",

@@ -52,7 +52,6 @@ const PARTS = [
   "rq-open",
   "cn-pill",
   "ac-eventpill",
-  "brw-rq",
   "consult-pair",
   "channel__unread",
 ];

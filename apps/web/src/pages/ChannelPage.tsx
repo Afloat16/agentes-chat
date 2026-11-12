@@ -228,7 +228,6 @@ import { AgentActionReceipts } from "@/components/AgentActions";
 import { ActorAvatar, AgentAvatar, PersonAvatar } from "@/components/AgentAvatar";
 import { AgentPanel } from "@/components/AgentPanel";
 import { ApprovalAsk, ApprovalGroupAsk } from "@/components/ApprovalAsk";
-import { InlineApproval } from "@/components/ApprovalItem";
 import { AgentPanelContext, AgentPanelShownContext, useOpenAgentPanel } from "@/components/agent-panel-context";
 import { AgentSidebar } from "@/components/agents/AgentSidebar";
 import { ArtifactCard } from "@/components/artifacts/ArtifactCard";
@@ -2723,9 +2722,8 @@ function ChannelView({
                                   search: mentionSearch,
                                   listLabel: t("mentions.list"),
                                   onPick: (item) => {
-                                    // A DM takes no new member, so there is nothing to offer there.
-                                    const dm = Boolean(chrome?.dmAgentId || chrome?.dmPersonId);
-                                    if (item.note && !dm && item.key.startsWith("agent:")) setOffer(item.key.slice(6));
+                                    // Only a channel's list carries the note (a DM takes no new member).
+                                    if (item.note && item.key.startsWith("agent:")) setOffer(item.key.slice(6));
                                   },
                                 }}
                               />
@@ -4690,33 +4688,13 @@ function MessageApproval({
   const card = useCardApprovals(org.id, messageId, !listed && approvals.isSuccess);
   const approval = listed ?? one.data;
   const items = approvalCardItems([...(approvals.data ?? []), ...(card.data ?? [])], messageId, approval);
-  // Past its deadline it has expired, even before the server's event says so.
-  const expired = useExpired(approval?.status === "pending" ? approval.expiresAt : null);
   // Drawn again when the card's earliest deadline passes.
   useExpired(cardDeadline(items));
   if (!approval) return null;
-  if (items.length > 1) {
-    const now = items.map((a) => asOfNow(a));
-    if (now.some((a) => a.status === "pending"))
-      return <ApprovalGroupAsk items={now} agent={agent} members={members} />;
-    return (
-      <>
-        {now.map((a) => (
-          <InlineApproval key={a.id} approval={a} agent={agent} members={members} />
-        ))}
-      </>
-    );
-  }
-  // Waiting: the agent asking, in the conversation; decided or expired: one line.
-  if (approval.status === "pending" && !expired)
-    return <ApprovalAsk approval={approval} agent={agent} members={members} />;
-  return (
-    <InlineApproval
-      approval={expired ? { ...approval, status: "expired" } : approval}
-      agent={agent}
-      members={members}
-    />
-  );
+  // One card, waiting or decided: several requests list on it, each row with how it ended.
+  if (items.length > 1)
+    return <ApprovalGroupAsk items={items.map((a) => asOfNow(a))} agent={agent} members={members} />;
+  return <ApprovalAsk approval={approval} agent={agent} members={members} />;
 }
 
 /** Above this many members the channel details list gets a search field. */

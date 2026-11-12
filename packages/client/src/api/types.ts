@@ -3158,6 +3158,8 @@ export interface AgentQuestion {
   status: "open" | "answered";
   answer: string | null;
   answeredByUserId: string | null;
+  /** When a person answered or skipped it; absent on a card an older server wrote. */
+  answeredAt?: string | null;
   /** The agent took it back: it no longer needs an answer. */
   withdrawn?: true;
   /** A person (`answeredByUserId`) skipped it: the agent went on without an answer. */
