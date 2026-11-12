@@ -61,7 +61,6 @@ export const featureKeysEn = {
     failed: "Your pick didn't go through. Try again.",
   },
   chart: {
-    pending: "Building the chart…",
     table: "Table",
     item: "Item",
     share: "Share",
@@ -400,12 +399,6 @@ export const featureKeysEn = {
     toLatestNew: "Go to the latest messages: {{text}}",
     stopAgent: "Stop {{name}}",
     offlineWait: "Goes out when the connection is back",
-    turn: {
-      thinking: "thinking",
-      working: "working",
-      writing: "writing",
-      stopped: "stopped",
-    },
     steer: {
       waiting: "{{name}} reads it at the next pause",
       /** Sent to an agent waiting for its computer: it has no pause, it reads it once it gets the computer. */
@@ -1159,7 +1152,6 @@ export const featureKeysEn = {
     proposalsWaiting_other: "{{count}} waiting",
     drive: "Drive",
     connectors: "Connectors and MCPs",
-    usage: "Usage",
     preferences: "Preferences",
     editProfile: "Edit profile",
     switchWorkspace: "Switch workspace",
@@ -1887,10 +1879,13 @@ export const featureKeysEn = {
       helper_missing: "The test helper isn't set up yet",
       helper_expired: "The test helper needs renewing",
       apple_account_missing: "Xcode on the Mac needs an Apple Account",
+      apple_team_missing: "Xcode on the Mac shows no team yet",
+      ui_not_authorized: "This iPhone refused the test helper's taps",
       team_limit: "Remove an app you built from this iPhone",
       helper_untrusted: "Trust the test helper on this iPhone",
       booting: "Starting up",
-      no_driver: "Windows needs this phone's USB driver",
+      no_driver: "Windows needs the phone maker's USB driver",
+      no_driverLinux: "Linux needs udev rules for this phone",
       os_too_old: "This phone's system is too old",
       adb_offline: "Unplug the cable and plug it in again",
       other: "Not ready yet",
@@ -1988,13 +1983,13 @@ export const featureKeysEn = {
       noHost: "This phone works through a computer of yours. Connect one first.",
       hostOffline: "{{host}} is offline. Turn it on and open agentes.chat there.",
       step1: "Turn on Developer options",
-      step1Text: "Tap Build number 7 times, then enter your PIN.",
+      /** Android's own setting names; Samsung's own where its path differs. */
+      step1Text:
+        "Tap Build number 7 times, then enter your PIN. On Samsung: Software information\u00a0›\u00a0Build number.",
       openAbout: "Open About phone",
       step2: "Turn on USB debugging",
       openDev: "Open Developer options",
       step3: "Plug it into {{host}}",
-      step3Hint:
-        "Use a cable that carries data, not one that only charges. If the phone asks what the USB is for, pick File transfer.",
       looking: "Looking for this phone",
       step4: "Tap Allow on this phone",
       step4Text: "Check Always allow from this computer first.",
@@ -2013,7 +2008,8 @@ export const featureKeysEn = {
       wifi1: "Turn on Wireless debugging",
       wifi1Text: "Check Always allow on this network, then tap Allow.",
       wifi2: "Scan the code on a computer",
-      wifi2Text: "From Wireless debugging\u00a0›\u00a0Pair device with QR code.",
+      wifi2Text:
+        "From Wireless debugging\u00a0›\u00a0Pair device with QR code. Don't use the camera: it reads the code as a Wi-Fi network and takes the phone off your Wi-Fi.",
       wifi2Hint:
         "In agentes.chat on a computer, open Connect a device\u00a0›\u00a0Android phone\u00a0›\u00a0Over Wi-Fi and pick {{host}}.",
       codeHead: "Pair with a pairing code",
@@ -2045,6 +2041,25 @@ export const featureKeysEn = {
         "Settings\u00a0›\u00a0General\u00a0›\u00a0VPN & Device Management. Tap the developer's name, then Trust.",
       waiting: "Waiting for {{host}} to see it",
       footer: "Your Mac does the rest, and renews the test helper every 7 days while it's on.",
+      /** An iPhone below iOS 17: the guide ends here. */
+      tooOld:
+        "This iPhone runs iOS {{version}}, and agents need iOS 17 or newer. Update it if it can, or use a newer iPhone.",
+      /** The command stays as is in every language. */
+      xcodeOld:
+        "This iPhone runs iOS {{version}}, newer than Xcode on {{host}} knows. Install Xcode {{major}} there, then run xcrun devicectl manage ddis update in Terminal.",
+      /** Xcode's names (Signing & Capabilities) stay in English. */
+      teamMissing:
+        "Xcode is signed in but shows no team yet. In Xcode, make any iOS app, pick your team under Signing & Capabilities and run it on this iPhone once.",
+      uiRefused:
+        "This iPhone refused the test helper's taps. Unlock it and enter its passcode if it asks. If it keeps happening, turn Settings\u00a0›\u00a0Developer\u00a0›\u00a0Enable UI Automation off and on.",
+      /** A button on step 1: the person says it's plugged in, and the guide says what to check. */
+      pluggedIn: "It's plugged in",
+      /** Under a step that sat unchanged for a while: what most likely holds it, and one way out. */
+      stall: {
+        plug: "{{host}} doesn't see this iPhone yet. Use a cable that carries data, not only power, keep this iPhone unlocked and tap Trust if it asks.",
+        devmode:
+          "Developer Mode turns on only after this iPhone restarts. Tap Restart, then Turn On once it's back. No switch there? Unplug this iPhone and plug it in again.",
+      },
     },
     /**
      * Notifications about devices, in the inbox. `{{names}}`: the agent, drawn bold. No "your": device names are
@@ -2256,7 +2271,7 @@ export const featureKeysEn = {
     zoneTitle: "Time zone",
     /** A second workspace from Adicionar workspace (ADR 0154): where it lives, and that nothing is left. */
     anotherTitle: "What's the new workspace called?",
-    /** Its first question (ADR 0159), before the name: "For me" or "For my company or team". */
+    /** Its first question (ADR 0159), before the name: "For me" or "For my team". */
     anotherPurpose: "What's the new workspace for?",
     anotherLead: "On agentes.chat. You stay in {{org}} and can switch any time.",
     /** The first run's name, suggested from a work address's domain. */
@@ -2320,8 +2335,6 @@ export const featureKeysEn = {
     group: {
       org: "Workspace",
       people: "People",
-      agents: "Agents",
-      costs: "Costs and data",
     },
     /** Shorter names for the rows whose group already says the rest (the web's are `settings.section.*`). */
     section: {
@@ -2329,7 +2342,6 @@ export const featureKeysEn = {
       roles: "Roles",
       access: "Agents' access",
       connectors: "Connectors",
-      usage: "Usage and budget",
     },
     /** The computers row's value: how many are on, of how many. */
     ofOnline: "{{online}} of {{count}}",
@@ -2419,8 +2431,7 @@ export const featureKeysEn = {
       guide: "Open the {{name}} guide",
       fields: "Details",
       private: "These details are kept encrypted and never shown again.",
-      teamHelp:
-        "Its items start visible to everyone in the workspace and used by no agent. You choose the agents next.",
+      teamHelp: "Everyone in the workspace sees its items and every agent can use them. You can adjust it next.",
       personalHelp: "Only you see its items, and your agents use them when you ask.",
       checking: "Checking with {{name}}…",
       connected: "{{name}} connected",

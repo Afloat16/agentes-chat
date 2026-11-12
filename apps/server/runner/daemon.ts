@@ -156,7 +156,7 @@ import {
 } from "./supervisor";
 import { type SettledTask, TaskManager } from "./tasks";
 import { runnerTerminalUser, systemTerminalUser, Terminals, type TerminalUser } from "./terminal";
-import { cachedToolchains, TOOLCHAINS_FILE } from "./toolchains";
+import { appleToolchains, cachedToolchains, TOOLCHAINS_FILE } from "./toolchains";
 
 /**
  * The runner's long-lived core, shared by `agentes-runner start` (terminal,
@@ -567,7 +567,7 @@ export class RunnerDaemon implements RequestObserver {
   private startContainers(u: AgentUser) {
     if (this.opts.workers || !rootlessContainers()) return;
     const problem = keepContainers(u, this.containersAllowed(u.id));
-    if (problem) this.opts.log(`[${u.user}] its containers service didn't start: ${problem}`);
+    if (problem) this.opts.log(`[${u.user}] containers unavailable: ${problem}`);
   }
 
   /** The agents frame lets it have a containers service (`MachineAgent.containers`). */
@@ -1382,7 +1382,17 @@ export class RunnerDaemon implements RequestObserver {
     if (!supervisor && this.access().tools.browser === true) void browser.prepareInBackground();
     this.toolchains ??= this.opts.toolchains
       ? { get: this.opts.toolchains, stop: () => {} }
-      : cachedToolchains(path.join(home, TOOLCHAINS_FILE));
+      : cachedToolchains(
+          path.join(home, TOOLCHAINS_FILE),
+          undefined,
+          process.platform === "darwin"
+            ? {
+                look: () => appleToolchains(),
+                // An older server drops the frame: its next hello carries the same.
+                onChange: (toolchains) => this.send({ type: "toolchains.changed", toolchains }),
+              }
+            : null,
+        );
     // Phones are reached as the person (adb's key, the Mac's pairing with the iPhone): a system-mode runner has none.
     if (!this.phones && config.mode !== "system" && this.opts.phones !== false) {
       this.phones = new PhoneManager({
@@ -1970,7 +1980,7 @@ export class RunnerDaemon implements RequestObserver {
             try {
               const u = agentUser(a);
               const problem = keepContainers(u, true);
-              if (problem) this.opts.log(`[${u.user}] its containers service didn't start: ${problem}`);
+              if (problem) this.opts.log(`[${u.user}] containers unavailable: ${problem}`);
             } catch (err) {
               // Its network is switching, say: its worker's next start brings the service.
               this.opts.log(`${a.handle}: its containers service waits (${err instanceof Error ? err.message : err})`);

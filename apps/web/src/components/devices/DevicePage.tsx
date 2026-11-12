@@ -3,6 +3,7 @@ import { useMachinePause, useMachines } from "@agenteschat/client";
 import {
   deviceName,
   findPhone,
+  iosOf,
   osName,
   personInControl,
   phoneLink,
@@ -143,17 +144,22 @@ function OwnerChip({ userId }: { userId: string | null }) {
 function StatusLine({
   status,
   host,
+  hostOs,
   action,
+  ios,
   text,
 }: {
   status: PhoneDevice["status"];
   host?: string;
+  /** The host's system: a phone with no driver reads by it. */
+  hostOs?: string;
   action?: ReactNode;
+  ios?: string | null;
   /** In place of the status's own sentence. */
   text?: string | null;
 }) {
   const { t, i18n } = useTranslation();
-  const sentence = text ?? statusSentence(t, i18n.language, status, { host });
+  const sentence = text ?? statusSentence(t, i18n.language, status, { host, hostOs, ios });
   const label = status.kind === "in_use" && status.label ? status.label : null;
   return (
     <div className="dv-statusline" data-status={statusLook(status)} role="status">
@@ -578,7 +584,7 @@ function PhonePage({ phoneId }: { phoneId: string }) {
             )
           }
         />
-        <StatusLine status={p.status} host={host.name} action={action} />
+        <StatusLine status={p.status} host={host.name} hostOs={host.os} action={action} ios={iosOf(p)} />
         <Facts facts={facts} />
       </Card>
       <PhoneLive key={p.id} phone={p} host={host.name} />

@@ -33,7 +33,13 @@ import { and, type Database, eq, inArray, lt, schema } from "@agenteschat/db";
 import { getAgentCached } from "./agents";
 import { type MachinePhoneRow, publishDevicesChanged, syncMachinePhones } from "./devices";
 import { cutText } from "./format";
-import { applyAccessDecided, storedExecutors, storeMachineAccess, storeMachineExecutors } from "./machine-access";
+import {
+  applyAccessDecided,
+  storedExecutors,
+  storeMachineAccess,
+  storeMachineExecutors,
+  storeMachineToolchains,
+} from "./machine-access";
 import {
   accountsToRemove,
   forgetRemovedAccount,
@@ -362,6 +368,8 @@ export function isNewWork(request: MachineRequest) {
     case "phone.pair.cancel":
     // Pausing or resuming the computer itself: a resume must reach a paused one.
     case "pause.set":
+    // A person's guide asking the computer to look for a phone.
+    case "phone.look":
       return false;
     case "secret":
       return request.action !== "discard" && request.action !== "remove" && request.action !== "activate";
@@ -1453,6 +1461,10 @@ export function createMachineHub(deps: MachineHubDeps) {
               ),
           );
         }
+      } else if (frame.type === "toolchains.changed") {
+        await storeMachineToolchains({ db, pubsub }, conn.machineId, frame.toolchains).catch((error) =>
+          deps.log?.warn("toolchains.changed failed", { machineId: conn.machineId, error: String(error) }),
+        );
       } else if (frame.type === "phones.changed") {
         if (conn.protocol >= PHONES_PROTOCOL && conn.orgId) {
           const row = await getMachineById(db, conn.machineId).catch(() => null);

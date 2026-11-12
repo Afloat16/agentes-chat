@@ -13,7 +13,7 @@ const at = (text: string, pieces: string[]) =>
   });
 const ascending = (xs: number[]) => xs.every((x, i) => i === 0 || (xs[i - 1] ?? 0) < x);
 
-describe("a reply's tools sit last, live and saved", () => {
+describe("a reply's tools sit last", () => {
   test("saved: its words, what it changed and its cards, then its tools", () => {
     const row = source("MessageRow.tsx");
     expect(
@@ -61,16 +61,10 @@ describe("a reply's tools sit last, live and saved", () => {
       expect([card, last.includes(card)]).toEqual([card, true]);
   });
 
-  test("live: the words stream above its tools, where the saved reply keeps them", () => {
+  test("live: none drawn, nor any of its words: the reply brings them whole", () => {
     const live = source("LiveRows.tsx");
-    expect(
-      ascending(
-        at(live, [
-          "{run.text && !wordsOnTop ? (\n                  <RevealText",
-          '<TurnTools items={lines} agentName={agent?.name ?? ""}',
-        ]),
-      ),
-    ).toBe(true);
+    for (const part of ["<TurnTools", "<RevealText", "run.text"])
+      expect([part, live.includes(part)]).toEqual([part, false]);
   });
 });
 
@@ -85,12 +79,18 @@ describe("agents it asked first: one pair row right before the reply, never insi
     expect(row.slice(bodyAt, endAt)).not.toContain("Consult");
   });
 
-  test("live: a turn that posted nothing yet carries the row above its working row", () => {
+  test("live: the working line carries the pair, the one asking and the one asked, while the turn works", () => {
     const live = source("LiveRows.tsx");
-    expect(live).toContain("const consults = useRunConsults(run.runId, run, null);");
-    // Before its words only the row stands (no thinking row); after them, right above the measured row.
-    expect(live).toContain("if (waiting) return pair;");
-    expect(live).toContain("{pair}\n      <View\n        ref={seen}\n        collapsable={false}");
+    expect(live).not.toContain("useRunConsults");
+    expect(
+      ascending(
+        at(live, [
+          "if (asking && e.consult === asking)",
+          '<AgentFace agentId={e.id} size={18} mode="idle" />',
+          '<AgentFace agentId={asking.to} size={18} mode="think" />',
+        ]),
+      ),
+    ).toBe(true);
   });
 
   test("the row says no answer: only faces, names, a short word and the time", () => {
@@ -250,24 +250,59 @@ describe("a stretch's pause on the phone (ADR 0089)", () => {
   });
 });
 
-describe("a plan account's agents on the phone (Contas dos planos)", () => {
-  test("bars split by agent, then one list, then when it renews and how old, then the month", () => {
-    const screen = source("../usage/UsageScreen.tsx");
-    const block = screen.slice(...at(screen, ["function AccountBlock(", "function AgentShares("]));
-    expect(ascending(at(block, ["<PlanMeter usage={splitUsage(", "{list}", "usageViews.monthTokens"]))).toBe(true);
-    expect(block).not.toContain("account.agents.map");
+describe("a plan account on the phone (IA e uso › Contas): a row that opens", () => {
+  const screen = source("../usage/UsageScreen.tsx");
+
+  test("closed: its mark, name, plan and owner, one meter for the fullest window, the alert; it says it opens", () => {
+    const row = screen.slice(...at(screen, ["function AccountRow(", "function AgentShares("]));
+    const head = row.slice(...at(row, ["<Pressable", "</Pressable>"]));
+    expect(head).toContain("accessibilityState={{ expanded: open }}");
+    expect(
+      ascending(
+        at(head, ["<ProviderLogo", "accountName(t, account)", "{owner}", "text.short(line.top)", "line.alert"]),
+      ),
+    ).toBe(true);
+    // Near its limit it starts open; every other one starts closed.
+    expect(row).toContain('useState(line != null && line.state !== "ok")');
+    // Nothing of the open row is drawn while it is closed.
+    expect(row.indexOf("{open ? (")).toBeGreaterThan(row.indexOf("</Pressable>"));
+  });
+
+  test("open: bars split by agent, then one list, then when it renews and how old, then the month, then the way to the AI accounts screen", () => {
+    const row = screen.slice(...at(screen, ["function AccountRow(", "function AgentShares("]));
+    const body = row.slice(row.indexOf("{open ? ("));
+    expect(
+      ascending(
+        at(body, ["brandOf(account)", "usage={splitUsage(", "{list}", "usageViews.monthTokens", "mobile.ai.row"]),
+      ),
+    ).toBe(true);
+    // The row already says where the plan stands: the meter doesn't say it again.
+    expect(body).toMatch(/<PlanMeter\s+plain/);
+    // Only its owner manages it, on the AI accounts screen.
+    expect(body).toContain("account.mine && account.accountId ?");
+    expect(row).not.toContain("account.agents.map");
     const list = screen.slice(...at(screen, ["function AgentShares(", "/** The API per agent:"]));
-    expect(ascending(at(list, ["usageViews.thisMonth", "openAgentUsage(a.agentId)", "usageViews.moreAgents"]))).toBe(
-      true,
-    );
+    // One line of words per agent, no column titles over them.
+    expect(list).not.toContain("usageViews.thisMonth");
+    expect(ascending(at(list, ["openAgentUsage(a.agentId)", "usageViews.moreAgents"]))).toBe(true);
     // "Usa agora" only for an agent using it now, never for the folded row.
-    expect(list).toContain("tokens(a.tokens, a.now)");
-    expect(list).toContain("tokens(shares.restTokens)");
+    expect(list).toContain("shareFacts(t, i18n.language, window, a)");
+    expect(list).toContain(
+      "shareFacts(t, i18n.language, window, { share: shares.restShare, tokens: shares.restTokens })",
+    );
     // The renewal moves under the list, once.
     const parts = source("../usage/parts.tsx");
     expect(
       ascending(at(parts, ["!children ? (", "{children}\n      {children && renews ?", "text.updated(usage.at)"])),
     ).toBe(true);
+  });
+
+  test("no budget on plans alone: the API per agent, its spend by kind and the default budget wait for the API", () => {
+    expect(screen).toContain("const usesApi = useWorkspaceUsesApi(orgId);");
+    expect(screen).toContain("{usesApi ? <ApiCard data={data} /> : null}");
+    expect(screen).toContain('{view === "summary" && allowed && usesApi && report.data ? (');
+    expect(screen).toContain('{view === "summary" && allowed && usesApi ? <DefaultBudgetCard /> : null}');
+    expect(screen).toContain("useUsageReport(orgId, allowed && usesApi)");
   });
 });
 
@@ -278,12 +313,19 @@ describe("an approval card's layout", () => {
     return cards.slice(start, cards.indexOf("\nfunction ", start + 1));
   };
 
-  test("the buttons sit in one row (a grouped request's at its row's end), Aprovar, Aprovar sempre on a grouped request, Recusar, what it covers under them", () => {
+  test("the buttons sit in one row (a grouped request's at its row's end), Aprovar, Aprovar sempre and its ⓘ on a grouped request, Recusar, and only buttons there: what it covers opens from the ⓘ, under them", () => {
     const rows: [string, string[]][] = [
       ["ApprovalAsk", ['variant="primary"', 't("mobile.approval.refuse")', "</View>"]],
       [
         "ApprovalGroupItem",
-        ['variant="primary"', "<ApproveAlwaysButton", 't("mobile.approval.refuse")', "</View>", "<ApproveAlwaysHint"],
+        [
+          'variant="primary"',
+          "<ApproveAlwaysButton",
+          "{info.button}",
+          't("mobile.approval.refuse")',
+          "</View>",
+          "{info.text}",
+        ],
       ],
     ];
     for (const [name, pieces] of rows) {

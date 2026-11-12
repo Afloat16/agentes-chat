@@ -2,11 +2,18 @@
  * The iPhone setup, in the welcome window (Preferences › This Mac's Show me how, iPhone steps): the Mac does what it
  * can by itself and says what only the person can do. Xcode (or the App Store, and the step goes on once it's
  * there), the iOS platform's download, the Apple Account in Xcode, then the iPhone's own steps as it reports them
- * (plugged in and trusted, Developer Mode, UI Automation, the test helper the Mac builds). A QR opens the same steps
- * on the iPhone.
+ * (plugged in and trusted, Developer Mode, UI Automation, the test helper the Mac builds). Once our phone app is in the
+ * App Store, a QR opens the same steps on the iPhone.
  */
 import type { ControlIphoneSetup } from "@agenteschat/adapters/runner-control";
-import { reasonText } from "@agenteschat/client/lib/devices";
+import {
+  DDIS_UPDATE,
+  iosMajor,
+  PHONE_APP_IN_STORE,
+  reasonText,
+  tooOldVersion,
+  useStalled,
+} from "@agenteschat/client/lib/devices";
 import { Button, Icon, InfoHint, PixelSpinner, QrCode, SettingsPath } from "@agenteschat/ui";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +33,10 @@ import { hintFor } from "../ui/settings";
 
 /** How often the Mac is asked while the window is open: Xcode installed, the download's progress, a new account. */
 const ASK_MS = 2000;
+
+/** Without the QR the steps take its column too, and the tip and the way out make one footer row under them. */
+const NO_QR = { gridTemplateColumns: "minmax(0, 1fr)", gridTemplateRows: "1fr auto" };
+const NO_QR_SIDE = { flexDirection: "row", alignItems: "center", justifyContent: "space-between" } as const;
 
 export function IphoneSetup({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -96,6 +107,27 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
   const orgId = home?.status?.org?.id;
   const reason = phone?.state === "ready" ? undefined : phone?.reason;
   const platform = setup?.platform;
+  const macName = mac?.name ?? "";
+  const phoneName = phone ? (phone.name ?? phone.model) : "";
+  const tooOld = phone?.state === "unsupported";
+  // A step that sits unchanged gets what most likely holds it. A download that moves is no stall, and an iPhone below
+  // iOS 17 gets nothing, nor a step whose own text already says what to do (a helper the person must act on, no team).
+  const progress = platform?.state === "downloading" ? `${platform.percent ?? ""}/${platform.done ?? ""}` : "";
+  const quiet =
+    (tooOld && current === "connected") ||
+    (current === "helper" && states.helper === "needs") ||
+    (current === "account" && (!!setup?.noTeam || reason === "apple_team_missing"));
+  const stalled = useStalled(
+    current && !quiet
+      ? [current, setup ? "" : "asking", phone?.serial, reason, platform?.state, progress].join(":")
+      : null,
+  );
+  const [plugged, setPlugged] = useState(false);
+  const looking = current === "connected" && !phone;
+  const stall = (step: IphoneSetupStep) =>
+    !setup
+      ? t("desktop.iphone.checkingStall")
+      : t(`devices.iphone.stall.${step === "connected" && phone ? "trust" : step}`, { mac: macName });
 
   const found: Partial<Record<IphoneSetupStep, ReactNode>> = {
     xcode: setup?.xcode,
@@ -122,8 +154,24 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
     switch (step) {
       case "xcode":
         if (!setup) return t("desktop.iphone.checking");
-        return reason === "xcode_too_old" ? (
-          <Act text={t("desktop.iphone.xcodeOld")}>
+        return reason === "xcode_too_old" && phone?.osVersion ? (
+          <>
+            {t(setup.sdk ? "devices.iphone.xcodeOld" : "devices.iphone.xcodeOldAny", {
+              name: phoneName,
+              version: phone.osVersion,
+              major: iosMajor(phone.osVersion),
+              sdk: setup.sdk,
+              mac: macName,
+            })}
+            <code className="dk-code-inline">{DDIS_UPDATE}</code>
+            <span className="dk-ip__act">
+              <Button size="sm" icon="external" onClick={() => open("appStore")}>
+                {t("desktop.iphone.updateXcode")}
+              </Button>
+            </span>
+          </>
+        ) : reason === "xcode_too_old" ? (
+          <Act text={reasonText(t, reason)}>
             <Button size="sm" icon="external" onClick={() => open("appStore")}>
               {t("desktop.iphone.updateXcode")}
             </Button>
@@ -169,20 +217,34 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
         return reason === "device_support" ? reasonText(t, reason) : t("desktop.iphone.toolsStarting");
       case "account":
         return (
-          <Act text={t("desktop.iphone.accountText")}>
+          <Act
+            text={
+              setup?.noTeam || reason === "apple_team_missing"
+                ? t("devices.iphone.teamMissingText")
+                : t("desktop.iphone.accountText")
+            }
+          >
             <Button size="sm" icon="external" onClick={() => open("xcode")}>
               {t("desktop.iphone.openXcode")}
             </Button>
           </Act>
         );
       case "connected":
-        return reason === "untrusted"
-          ? t("devices.iphone.trustText")
-          : reason === "locked"
-            ? t("desktop.iphone.unlockText")
-            : reason === "os_too_old"
-              ? t("desktop.iphone.oldText")
-              : t("devices.iphone.connectedText", { mac: mac?.name ?? "" });
+        return reason === "untrusted" ? (
+          t("devices.iphone.trustText")
+        ) : reason === "locked" ? (
+          t("desktop.iphone.unlockText")
+        ) : tooOld && phone ? (
+          t("devices.iphone.tooOld", { name: phoneName, version: tooOldVersion(t, phone.osVersion) })
+        ) : looking && !plugged && !stalled ? (
+          <Act text={t("devices.iphone.connectedText", { mac: macName })}>
+            <Button size="sm" onClick={() => setPlugged(true)}>
+              {t("devices.iphone.pluggedIn")}
+            </Button>
+          </Act>
+        ) : (
+          t("devices.iphone.connectedText", { mac: macName })
+        );
       case "developerMode":
         return (
           <>
@@ -200,7 +262,7 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
       case "uiAutomation":
         return (
           <>
-            {t("devices.iphone.uiAutomationText")}
+            {reason === "ui_not_authorized" ? t("devices.iphone.uiRefusedText") : t("devices.iphone.uiAutomationText")}
             <SettingsPath
               label={t("devices.onTheIphone")}
               segments={[
@@ -236,7 +298,7 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
       <div className="dk-fr__body">
         <h1 className="dk-fr__h1sm">{t("devices.iphone.title")}</h1>
         <p className="dk-lead dk-fr__wide">{t("desktop.iphone.lead")}</p>
-        <div className="dk-ip">
+        <div className="dk-ip" style={PHONE_APP_IN_STORE.ios ? undefined : NO_QR}>
           <div className="dk-ip__main">
             <ol className="dk-fr__steps" aria-label={t("desktop.iphone.progress")}>
               {IPHONE_SETUP_STEPS.map((step) => {
@@ -280,6 +342,12 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
                       {(step === current || (step === "helper" && state === "todo")) && (
                         <span className="dk-fr__stepline" role={step === current ? "status" : undefined}>
                           {line(step)}
+                          {step === current && (stalled || (looking && plugged)) && (
+                            <span className="dk-ip__stall ac-iconline">
+                              <Icon name="info" size={14} />
+                              <span>{stall(step)}</span>
+                            </span>
+                          )}
                         </span>
                       )}
                     </span>
@@ -304,8 +372,8 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
               </p>
             )}
           </div>
-          <aside className="dk-ip__side">
-            {server && orgId && mac && (
+          <aside className="dk-ip__side" style={PHONE_APP_IN_STORE.ios ? undefined : NO_QR_SIDE}>
+            {PHONE_APP_IN_STORE.ios && server && orgId && mac && (
               <div className="dk-card dk-ip__qr" data-padded="">
                 <QrCode text={iphoneStepsUrl(server, orgId, mac.id)} label={t("desktop.iphone.qrLabel")} />
                 <p>{t("desktop.iphone.qr")}</p>

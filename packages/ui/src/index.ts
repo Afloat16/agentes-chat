@@ -219,6 +219,7 @@ export {
   Menu,
   MenuAt,
   MenuCheckboxItem,
+  MenuFace,
   MenuHeading,
   MenuItem,
   MenuNote,
@@ -477,6 +478,7 @@ export { pixelBurst, pixelConfetti } from "./sky/burst";
 export { ditherCells, ditherSvg, ditherTones, ditherUrl } from "./sky/dither";
 export {
   drawSprite,
+  holdSkies,
   prefersReducedMotion,
   redrawSkies,
   type SkyBlob,

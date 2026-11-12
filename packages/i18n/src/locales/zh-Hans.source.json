@@ -59,6 +59,9 @@
   "common.retry": {
     "value": "Try again"
   },
+  "common.soon": {
+    "value": "Soon"
+  },
   "common.unknownError": {
     "value": "Something went wrong. Try again."
   },
@@ -100,9 +103,6 @@
   },
   "common.chartShare": {
     "value": "Share"
-  },
-  "common.chartPending": {
-    "value": "Building the chart…"
   },
   "common.you": {
     "value": "you"
@@ -1781,6 +1781,12 @@
   "onboarding.flow.lodi.planThen": {
     "value": "Once the plan is on, the next screen is where you connect your AI."
   },
+  "onboarding.flow.lodi.area": {
+    "value": "One last thing before the team."
+  },
+  "onboarding.flow.lodi.areaPersonal": {
+    "value": "One last thing before your agents."
+  },
   "onboarding.flow.lodi.ask": {
     "value": "Already have a team somewhere else? I'll bring all of it here."
   },
@@ -1825,6 +1831,36 @@
   },
   "onboarding.flow.lodi.peopleLink": {
     "value": "Now the people. Send them the link and I'll show you each request."
+  },
+  "onboarding.flow.area.title": {
+    "value": "And you, what do you work on?"
+  },
+  "onboarding.flow.area.lead": {
+    "value": "Just so we know who uses agentes.chat."
+  },
+  "onboarding.flow.area.skip": {
+    "value": "Skip this step"
+  },
+  "onboarding.flow.area.options.dev": {
+    "value": "Development"
+  },
+  "onboarding.flow.area.options.marketing": {
+    "value": "Marketing"
+  },
+  "onboarding.flow.area.options.sales": {
+    "value": "Sales"
+  },
+  "onboarding.flow.area.options.finance": {
+    "value": "Finance"
+  },
+  "onboarding.flow.area.options.ops": {
+    "value": "Operations"
+  },
+  "onboarding.flow.area.options.support": {
+    "value": "Customer support"
+  },
+  "onboarding.flow.area.options.other": {
+    "value": "Something else"
   },
   "onboarding.flow.preview.label": {
     "value": "Your workspace, as you answer"
@@ -2133,7 +2169,7 @@
     "value": "Agents that look after your day."
   },
   "onboarding.purpose.team": {
-    "value": "For my company or team"
+    "value": "For my team"
   },
   "onboarding.purpose.teamText": {
     "value": "People and agents work together, with channels, roles and approvals."
@@ -2143,6 +2179,39 @@
   },
   "onboarding.purpose.teamExamples": {
     "value": "Customer support · Finance · Reports"
+  },
+  "onboarding.purpose.personalLine": {
+    "value": "Agents that look after your day."
+  },
+  "onboarding.purpose.teamLine": {
+    "value": "People and agents in one place."
+  },
+  "onboarding.purpose.activities.agenda": {
+    "value": "Daily agenda"
+  },
+  "onboarding.purpose.activities.home": {
+    "value": "Home"
+  },
+  "onboarding.purpose.activities.bills": {
+    "value": "Bills"
+  },
+  "onboarding.purpose.activities.studies": {
+    "value": "Studies"
+  },
+  "onboarding.purpose.activities.travel": {
+    "value": "Trips"
+  },
+  "onboarding.purpose.activities.support": {
+    "value": "Support"
+  },
+  "onboarding.purpose.activities.finance": {
+    "value": "Finance"
+  },
+  "onboarding.purpose.activities.reports": {
+    "value": "Reports"
+  },
+  "onboarding.purpose.activities.sales": {
+    "value": "Sales"
   },
   "onboarding.personal.name": {
     "value": "Personal"
@@ -3371,6 +3440,288 @@
   "contextMenu.restoreOrder": {
     "value": "Restore default order"
   },
+  "install.frames": {
+    "value": "How to install on {{system}}"
+  },
+  "install.step": {
+    "value": "Step {{n}}"
+  },
+  "install.previous": {
+    "value": "Previous step"
+  },
+  "install.next": {
+    "value": "Next step"
+  },
+  "install.fullGuide": {
+    "value": "Full step by step"
+  },
+  "install.copied": {
+    "value": "Copied. Paste it in the terminal."
+  },
+  "install.mac.why": {
+    "value": "<b>The app is in beta.</b> So the first time, your Mac asks you to confirm:"
+  },
+  "install.mac.drag": {
+    "value": "Drag agentes.chat to Applications."
+  },
+  "install.mac.dragLong": {
+    "value": "Open the downloaded file and drag agentes.chat to Applications."
+  },
+  "install.mac.blocked": {
+    "value": "Open the app and click Done."
+  },
+  "install.mac.blockedSub": {
+    "value": "Don't click Move to Trash."
+  },
+  "install.mac.settings": {
+    "value": "In Settings › Privacy & Security, click Open Anyway."
+  },
+  "install.mac.settingsLong": {
+    "value": "Right after, open System Settings › Privacy & Security, scroll to Security and click Open Anyway."
+  },
+  "install.mac.settingsSub": {
+    "value": "The button shows there only after you try to open the app (step 2), and goes away after about an hour. Not there? Open the app again and come back."
+  },
+  "install.mac.settingsShort": {
+    "value": "It shows only right after step 2."
+  },
+  "install.mac.openSettings": {
+    "value": "Open Privacy & Security"
+  },
+  "install.mac.confirm": {
+    "value": "Confirm with Touch ID or your password."
+  },
+  "install.mac.confirmLong": {
+    "value": "Click Open Anyway again and confirm with Touch ID or your Mac's password."
+  },
+  "install.mac.done": {
+    "value": "Done: from now on it opens straight away."
+  },
+  "install.mac.stuckTitle": {
+    "value": "Still no button, or your Mac says the app is damaged?"
+  },
+  "install.mac.stuckText": {
+    "value": "Paste this in Terminal and open the app again:"
+  },
+  "install.windows.why": {
+    "value": "<b>The app is in beta.</b> So the first time, Windows asks you to confirm:"
+  },
+  "install.windows.keep": {
+    "value": "If your browser asks, choose Keep."
+  },
+  "install.windows.more": {
+    "value": "Open the installer and click More info."
+  },
+  "install.windows.moreLong": {
+    "value": "Open the installer. If Windows protected your PC shows up, click More info."
+  },
+  "install.windows.run": {
+    "value": "Click Run anyway."
+  },
+  "install.windows.runLong": {
+    "value": "Click Run anyway and follow the installer."
+  },
+  "install.windows.done": {
+    "value": "Done: from now on it opens straight away."
+  },
+  "install.linux.why": {
+    "value": "For Ubuntu, Debian and similar systems (x64). Linux doesn't ask for anything extra:"
+  },
+  "install.linux.apt": {
+    "value": "Install the .deb with a double-click, or from the terminal."
+  },
+  "install.linux.aptLong": {
+    "value": "Double-click the downloaded file and click Install, or paste this in the terminal:"
+  },
+  "install.linux.open": {
+    "value": "Open agentes.chat from your apps."
+  },
+  "install.page.docTitle": {
+    "value": "Download the app · agentes.chat"
+  },
+  "install.page.title": {
+    "value": "Download the agentes.chat app"
+  },
+  "install.page.beta": {
+    "value": "Beta"
+  },
+  "install.page.text": {
+    "value": "Your workspace in a window of its own, with your system's notifications. With one click, agents work on this computer, in folders of their own."
+  },
+  "install.page.open": {
+    "value": "Open agentes.chat"
+  },
+  "install.page.version": {
+    "value": "Version {{version}}"
+  },
+  "install.page.versionSize": {
+    "value": "Version {{version}} · {{size}}"
+  },
+  "install.page.soon": {
+    "value": "There's no version for {{system}} yet."
+  },
+  "install.page.useArm": {
+    "value": "Computer with an ARM chip? Get the ARM version"
+  },
+  "install.page.useX64": {
+    "value": "Get the x64 version"
+  },
+  "install.page.unavailable": {
+    "value": "The app can't be downloaded from here right now. Try again in a moment."
+  },
+  "install.page.installOn": {
+    "value": "Install on {{system}}"
+  },
+  "install.page.system": {
+    "value": "System"
+  },
+  "install.page.whyTitle": {
+    "value": "Why does my computer ask to confirm?"
+  },
+  "install.page.whyText": {
+    "value": "agentes.chat is in beta: the Mac version isn't notarized by Apple yet, and the Windows installer doesn't carry a Microsoft certificate yet. Without them, your computer asks once before it opens an app downloaded from the internet. After that, it opens straight away and updates itself. Before the beta ends, this step goes away."
+  },
+  "install.page.openSource": {
+    "value": "Open source"
+  },
+  "install.page.onlyHere": {
+    "value": "Published only here and in the project's releases"
+  },
+  "install.page.signedUpdates": {
+    "value": "Signed updates"
+  },
+  "install.scene.finder": {
+    "value": "Finder"
+  },
+  "install.scene.file": {
+    "value": "File"
+  },
+  "install.scene.edit": {
+    "value": "Edit"
+  },
+  "install.scene.view": {
+    "value": "View"
+  },
+  "install.scene.window": {
+    "value": "Window"
+  },
+  "install.scene.applications": {
+    "value": "Applications"
+  },
+  "install.scene.notOpened": {
+    "value": "“{{app}}” Not Opened"
+  },
+  "install.scene.notOpenedText": {
+    "value": "Apple could not verify “{{app}}” is free of malware that may harm your Mac or compromise your privacy."
+  },
+  "install.scene.done": {
+    "value": "Done"
+  },
+  "install.scene.moveToTrash": {
+    "value": "Move to Trash"
+  },
+  "install.scene.search": {
+    "value": "Search"
+  },
+  "install.scene.account": {
+    "value": "Apple Account"
+  },
+  "install.scene.general": {
+    "value": "General"
+  },
+  "install.scene.appearance": {
+    "value": "Appearance"
+  },
+  "install.scene.accessibility": {
+    "value": "Accessibility"
+  },
+  "install.scene.privacy": {
+    "value": "Privacy & Security"
+  },
+  "install.scene.desktopDock": {
+    "value": "Desktop & Dock"
+  },
+  "install.scene.displays": {
+    "value": "Displays"
+  },
+  "install.scene.security": {
+    "value": "Security"
+  },
+  "install.scene.allowFrom": {
+    "value": "Allow applications from"
+  },
+  "install.scene.allowValue": {
+    "value": "App Store & Known Developers"
+  },
+  "install.scene.blocked": {
+    "value": "“{{app}}” was blocked to protect your Mac."
+  },
+  "install.scene.openAnyway": {
+    "value": "Open Anyway"
+  },
+  "install.scene.confirmTitle": {
+    "value": "Open “{{app}}”?"
+  },
+  "install.scene.confirmText": {
+    "value": "Open it only if you trust where it came from."
+  },
+  "install.scene.touchIdTitle": {
+    "value": "System Settings"
+  },
+  "install.scene.touchIdText": {
+    "value": "Use Touch ID or enter your password to allow this."
+  },
+  "install.scene.password": {
+    "value": "Password"
+  },
+  "install.scene.downloads": {
+    "value": "Downloads"
+  },
+  "install.scene.rare": {
+    "value": "This file isn't commonly downloaded. Make sure you trust it before you open it."
+  },
+  "install.scene.delete": {
+    "value": "Delete"
+  },
+  "install.scene.keep": {
+    "value": "Keep"
+  },
+  "install.scene.protectedTitle": {
+    "value": "Windows protected your PC"
+  },
+  "install.scene.protectedText": {
+    "value": "Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk."
+  },
+  "install.scene.protectedShort": {
+    "value": "Microsoft Defender SmartScreen prevented an unrecognized app from starting."
+  },
+  "install.scene.moreInfo": {
+    "value": "More info"
+  },
+  "install.scene.dontRun": {
+    "value": "Don't run"
+  },
+  "install.scene.appLabel": {
+    "value": "App:"
+  },
+  "install.scene.publisher": {
+    "value": "Publisher:"
+  },
+  "install.scene.unknownPublisher": {
+    "value": "Unknown publisher"
+  },
+  "install.scene.runAnyway": {
+    "value": "Run anyway"
+  },
+  "install.scene.activities": {
+    "value": "Activities"
+  },
+  "install.scene.readingLists": {
+    "value": "Reading package lists... Done"
+  },
+  "install.scene.settingUp": {
+    "value": "Setting up agentes-chat ({{version}}) ..."
+  },
   "legal.updated": {
     "value": "Last updated {{date}}"
   },
@@ -3422,11 +3773,8 @@
   "approvalCover.risky": {
     "value": "Merge, deploy and other risky actions"
   },
-  "approvalCover.riskyOff": {
-    "value": "Off, these stay with you only."
-  },
   "approvalCover.riskyOn": {
-    "value": "On, this person decides these too."
+    "value": "This person decides these too."
   },
   "approvalCover.lock": {
     "value": "Always yours: money, people and roles, AI keys, your mailbox and deleting."
@@ -3453,7 +3801,7 @@
     "value": "Couldn't save. Try again."
   },
   "rightHandApprovals.title": {
-    "value": "{{name}} approves for you"
+    "value": "{{name}} creates and adjusts agents for you"
   },
   "rightHandApprovals.subtitle": {
     "value": "Only what came from a request of yours. What it wouldn't approve, it passes to you."
@@ -4269,7 +4617,7 @@
     "value": "Making the code…"
   },
   "openOnPhone.stepApp": {
-    "value": "Install the agentes app on your phone (App Store or Google Play)."
+    "value": "Install the agentes app on your phone."
   },
   "openOnPhone.stepTailscale": {
     "value": "Install Tailscale on your phone and sign in with the same Tailscale account as this server."
@@ -5495,9 +5843,6 @@
   "rightHand.settings.audit": {
     "value": "See what {{name}} did"
   },
-  "rightHand.settings.change": {
-    "value": "Change"
-  },
   "rightHand.settings.planHelp": {
     "value": "The plan's owner pays. When its computer is away, the conversation says so and offers an API key."
   },
@@ -5505,7 +5850,10 @@
     "value": "Change {{name}}'s look"
   },
   "rightHand.settings.planOwner": {
-    "value": "from {{owner}}"
+    "value": "{{owner}}'s account"
+  },
+  "rightHand.settings.planName": {
+    "value": "{{name}} plan"
   },
   "rightHand.settings.mine": {
     "value": "Your AI"
@@ -5559,31 +5907,25 @@
     "value": "Without your own plan, {{name}} can't answer you: the workspace's plan serves only {{owner}}."
   },
   "rightHand.settings.workspace": {
-    "value": "Workspace AI"
+    "value": "AI for people without their own plan"
   },
   "rightHand.settings.workspaceHelp": {
     "value": "People without their own plan talk to {{name}} through this AI."
   },
-  "rightHand.settings.workspacePlan": {
-    "value": "Workspace plan"
-  },
-  "rightHand.settings.workspacePlanHelp": {
-    "value": "A plan in place of the key. It serves other people only when its owner lets it."
-  },
   "rightHand.settings.noPlans": {
-    "value": "Connect a plan in AI accounts to use it here."
+    "value": "Connect a plan in AI and usage to use it here."
   },
-  "rightHand.settings.pickPlan": {
-    "value": "Choose a plan"
+  "rightHand.settings.lend": {
+    "value": "Lend this plan to people without one"
   },
-  "rightHand.settings.sharesOn": {
-    "value": "On: people without their own plan talk to {{name}} through this plan."
+  "rightHand.settings.groupMine": {
+    "value": "Just for you"
   },
-  "rightHand.settings.sharesOff": {
-    "value": "Off: only {{owner}} talks through it. People without their own plan get no answer."
+  "rightHand.settings.groupWorkspace": {
+    "value": "For the whole workspace"
   },
-  "rightHand.settings.sharesOffYou": {
-    "value": "Off: only you talk through it. People without their own plan get no answer."
+  "rightHand.settings.groupAdmins": {
+    "value": "admins only"
   },
   "rightHand.card.settings": {
     "value": "{{name}} · Settings"
@@ -6234,6 +6576,9 @@
   },
   "noAi.rightHand.cli_failed": {
     "value": "{{name}} can't answer now: the plan's AI stopped with an error."
+  },
+  "noAi.rightHand.cli_failedWhy": {
+    "value": "{{name}} can't answer now: the plan's AI stopped with an error ({{why}})."
   },
   "noAi.rightHand.plan_limit": {
     "value": "{{name}} can't answer now: the plan reached its limit."
@@ -8010,9 +8355,6 @@
   "profile.nowIn": {
     "value": "now, in #{{channel}}"
   },
-  "profile.answersHere": {
-    "value": "Answers here without an @"
-  },
   "profile.more": {
     "value": "More"
   },
@@ -9281,6 +9623,12 @@
   },
   "vault.connections.accessText": {
     "value": "Its items follow this, unless you change one of them. Each change saves at once."
+  },
+  "vault.connections.noAgents": {
+    "value": "No agent uses this connection."
+  },
+  "vault.connections.giveAccess": {
+    "value": "Give access"
   },
   "vault.connections.actionsName": {
     "value": "More for {{name}}"
@@ -11531,6 +11879,9 @@
   },
   "agentPage.work.brain.signInAgain": {
     "value": "Sign in again"
+  },
+  "agentPage.work.brain.connectPlan": {
+    "value": "Connect another plan"
   },
   "agentPage.work.brain.fallbackTitle": {
     "value": "If {{computer}} stops answering, answer through the API"
@@ -20078,7 +20429,7 @@
     "value": "{{name}} is offline. The plan starts when it's back."
   },
   "missions.new.needsMachine": {
-    "value": "Missions run on a connected computer. Connect one to {{name}} in Settings › Computers."
+    "value": "Missions run on a connected computer. Connect one to {{name}} in Settings › Devices."
   },
   "missions.new.commandHint": {
     "value": "You can also start one by typing in any conversation's composer:"
@@ -22615,9 +22966,6 @@
   },
   "aiAccounts.page.hint": {
     "value": "Each plan stays on the computer it was connected on, and whoever runs that computer can reach it. agentes.chat keeps only its name, email and usage."
-  },
-  "aiAccounts.page.empty": {
-    "value": "Sign in with your account and agents think with it."
   },
   "aiAccounts.page.emptyTitle": {
     "value": "Use the AI plan you already pay for"
@@ -32122,12 +32470,6 @@
   "machines.download.step1Install": {
     "value": "Open the downloaded file to install it."
   },
-  "machines.download.step2": {
-    "value": "Open it, click Use your own server, then Connect to my server, and type this page's address. Sign in, then click Use this {{device}} in Settings → Computers."
-  },
-  "machines.download.other": {
-    "value": "Other ways: server or Linux"
-  },
   "machines.download.otherText": {
     "value": "Run this in the computer's terminal, then confirm the code it shows."
   },
@@ -32415,6 +32757,9 @@
   "devices.menu": {
     "value": "{{name}} actions"
   },
+  "devices.settings": {
+    "value": "Settings"
+  },
   "devices.rename": {
     "value": "Rename"
   },
@@ -32501,6 +32846,9 @@
   },
   "devices.otherSystems": {
     "value": "Other systems"
+  },
+  "devices.armBuild": {
+    "value": "{{system}} (ARM)"
   },
   "devices.onThePhone": {
     "value": "On the phone"
@@ -32703,6 +33051,12 @@
   "devices.reason.apple_account_missing": {
     "value": "Xcode isn't signed in to an Apple Account"
   },
+  "devices.reason.apple_team_missing": {
+    "value": "Xcode shows no team yet"
+  },
+  "devices.reason.ui_not_authorized": {
+    "value": "The iPhone refused the test helper's taps"
+  },
   "devices.reason.team_limit": {
     "value": "The free Apple Account reached its app limit"
   },
@@ -32713,7 +33067,10 @@
     "value": "Starting"
   },
   "devices.reason.no_driver": {
-    "value": "Windows has no driver for this phone"
+    "value": "Windows has no USB driver for this phone"
+  },
+  "devices.reason.no_driverLinux": {
+    "value": "Linux can't open this phone"
   },
   "devices.reason.os_too_old": {
     "value": "This system is too old for the tools"
@@ -32723,6 +33080,9 @@
   },
   "devices.reason.other": {
     "value": "It needs something on the device"
+  },
+  "devices.reason.iosTooOld": {
+    "value": "It runs iOS {{version}}, agents need iOS 17 or newer"
   },
   "devices.fix.locked": {
     "value": "Unlock it"
@@ -32757,6 +33117,12 @@
   "devices.fix.apple_account_missing": {
     "value": "Sign in to Xcode"
   },
+  "devices.fix.apple_team_missing": {
+    "value": "Run an app on the iPhone from Xcode once"
+  },
+  "devices.fix.ui_not_authorized": {
+    "value": "Unlock the iPhone"
+  },
   "devices.fix.team_limit": {
     "value": "Remove an app you built"
   },
@@ -32767,7 +33133,10 @@
     "value": "Wait for it to start"
   },
   "devices.fix.no_driver": {
-    "value": "Install the phone's USB driver"
+    "value": "Install the phone maker's USB driver"
+  },
+  "devices.fix.no_driverLinux": {
+    "value": "Add udev rules for this phone"
   },
   "devices.fix.os_too_old": {
     "value": "Update the phone"
@@ -33124,13 +33493,19 @@
     "value": "Turn on Developer options"
   },
   "devices.android.devOptionsText": {
-    "value": "Settings › About phone, then tap Build number 7 times."
+    "value": "Settings › About phone, then tap Build number 7 times. On Samsung: About phone › Software information › Build number."
   },
   "devices.android.usbDebugging": {
     "value": "Turn on USB debugging"
   },
   "devices.android.usbDebuggingText": {
-    "value": "Settings › System › Developer options › USB debugging."
+    "value": "Settings › System › Developer options › USB debugging. On Samsung: Settings › Developer options."
+  },
+  "devices.android.done": {
+    "value": "Done"
+  },
+  "devices.android.notYet": {
+    "value": "Not done yet"
   },
   "devices.android.plug": {
     "value": "Plug the phone in"
@@ -33141,9 +33516,6 @@
   "devices.android.looking": {
     "value": "Looking for a phone on {{computer}}…"
   },
-  "devices.android.found": {
-    "value": "Done on {{name}}"
-  },
   "devices.android.allow": {
     "value": "Tap Allow on the phone"
   },
@@ -33153,11 +33525,47 @@
   "devices.android.wifiNote": {
     "value": "Wireless debugging turns off when the phone restarts. A cable is more reliable."
   },
-  "devices.android.notShowing": {
-    "value": "Phone not showing up?"
+  "devices.android.noDriver": {
+    "value": "{{computer}} sees the phone but has no USB driver for it. Install the phone maker's driver, then plug the phone in again."
   },
-  "devices.android.notShowingHelp": {
-    "value": "Try another cable or port, and pick File transfer if the phone asks what the USB is for. On Samsung, turn off Auto Blocker in Settings › Security and privacy."
+  "devices.android.noDriverLinux": {
+    "value": "{{computer}} sees the phone but can't open it. Add udev rules for it, then plug the phone in again."
+  },
+  "devices.android.udev": {
+    "value": "How to add udev rules"
+  },
+  "devices.android.slow": {
+    "value": "Still not showing up?"
+  },
+  "devices.android.help.cable": {
+    "value": "A cable that carries data. Some only charge. Or try another port."
+  },
+  "devices.android.help.unlocked": {
+    "value": "The phone unlocked, with its screen on."
+  },
+  "devices.android.help.fileTransfer": {
+    "value": "If the phone asks how to use USB, pick File transfer."
+  },
+  "devices.android.help.usbDebugging": {
+    "value": "USB debugging on."
+  },
+  "devices.android.help.seeStep": {
+    "value": "See step 2"
+  },
+  "devices.android.help.samsung": {
+    "value": "On Samsung, Auto Blocker off: Settings › Security and privacy › Auto Blocker."
+  },
+  "devices.android.help.driver": {
+    "value": "On Windows, the phone maker's USB driver:"
+  },
+  "devices.android.drivers.google": {
+    "value": "Google, for Pixel"
+  },
+  "devices.android.drivers.samsung": {
+    "value": "Samsung"
+  },
+  "devices.android.drivers.others": {
+    "value": "Other makers"
   },
   "devices.android.qrLabel": {
     "value": "QR code that opens these steps on the phone"
@@ -33217,7 +33625,7 @@
     "value": "Developer options › Wireless debugging. Check Always allow on this network, then tap Allow."
   },
   "devices.wifiPair.scan": {
-    "value": "Scan the code with the phone"
+    "value": "Scan it from Wireless debugging, not the camera"
   },
   "devices.wifiPair.code": {
     "value": "Type what the phone shows"
@@ -33265,16 +33673,22 @@
     "value": "QR code for Wireless debugging on the phone"
   },
   "devices.wifiPair.qrLine": {
-    "value": "Scan with the phone"
+    "value": "Not with the camera"
   },
   "devices.wifiPair.qrCaption": {
-    "value": "Phone and computer on the same Wi-Fi."
+    "value": "It offers a Wi-Fi network named agentes-…, which doesn't exist. Keep the phone on the computer's Wi-Fi."
   },
   "devices.wifiPair.fail.mdns_off": {
     "value": "{{computer}} can't look for phones on the Wi-Fi. Update Android platform-tools there, or use a cable."
   },
+  "devices.wifiPair.fail.mdns_offMac": {
+    "value": "{{computer}} can't look for phones on the Wi-Fi. On that Mac, turn on agentes.chat in System Settings › Privacy & Security › Local Network, then try again."
+  },
   "devices.wifiPair.fail.same_wifi": {
-    "value": "Couldn't reach the phone. Put it on the same Wi-Fi as {{computer}} and try again."
+    "value": "Couldn't reach the phone. It's not on the same network as {{computer}}. Put it on the same Wi-Fi and try again."
+  },
+  "devices.wifiPair.fail.same_wifiMac": {
+    "value": "Couldn't reach the phone. Put it on the same Wi-Fi as {{computer}}. On that Mac, also turn on agentes.chat in System Settings › Privacy & Security › Local Network."
   },
   "devices.wifiPair.fail.refused": {
     "value": "The phone stopped the pairing. Keep its pairing screen open and try again."
@@ -33283,7 +33697,10 @@
     "value": "The phone didn't take that code. Check the code and the address, then pair again."
   },
   "devices.wifiPair.fail.timed_out": {
-    "value": "Nothing scanned the code in 2 minutes. Check the phone is on the same Wi-Fi as {{computer}} and try again."
+    "value": "No phone paired in 2 minutes. If the camera scanned the code or the phone left the Wi-Fi, put it on the same Wi-Fi as {{computer}} and scan from Wireless debugging."
+  },
+  "devices.wifiPair.fail.timed_outMac": {
+    "value": "No phone paired in 2 minutes. If the camera scanned the code or the phone left the Wi-Fi, put it on the same Wi-Fi as {{computer}} and scan from Wireless debugging. On that Mac, also turn on agentes.chat in System Settings › Privacy & Security › Local Network."
   },
   "devices.wifiPair.fail.outdated": {
     "value": "Wi-Fi pairing needs Android 14 or newer with the May 2026 security update. Update the phone, or use a cable."
@@ -33358,7 +33775,10 @@
     "value": "Added"
   },
   "devices.iphone.accountText": {
-    "value": "Add a free or paid one in Xcode on {{mac}}: Settings › Accounts."
+    "value": "Add a free or paid one in Xcode on {{mac}}: Settings › Apple Accounts."
+  },
+  "devices.iphone.teamMissingText": {
+    "value": "Xcode is signed in but shows no team yet. In Xcode, make any iOS app, pick your team under Signing & Capabilities and run it on the iPhone once."
   },
   "devices.iphone.connectedDone": {
     "value": "{{name}} · iOS {{version}}"
@@ -33389,6 +33809,48 @@
   },
   "devices.iphone.teamLimitText": {
     "value": "Remove an app you built yourself from the iPhone: a free Apple Account allows 3."
+  },
+  "devices.iphone.xcodeOld": {
+    "value": "{{name}} runs iOS {{version}} and Xcode on {{mac}} knows iOS {{sdk}} at most. Install Xcode {{major}}, then run this in Terminal."
+  },
+  "devices.iphone.xcodeOldAny": {
+    "value": "{{name}} runs iOS {{version}}, newer than Xcode on {{mac}} knows. Install Xcode {{major}}, then run this in Terminal."
+  },
+  "devices.iphone.uiRefusedText": {
+    "value": "The iPhone refused the test helper's taps. Unlock it and enter its passcode if it asks. If it keeps happening, turn Settings › Developer › Enable UI Automation off and on."
+  },
+  "devices.iphone.tooOld": {
+    "value": "{{name}} runs iOS {{version}}, and agents need iOS 17 or newer. Update it if it can, or plug in a newer iPhone."
+  },
+  "devices.iphone.tooOldVersion": {
+    "value": "16 or older"
+  },
+  "devices.iphone.pluggedIn": {
+    "value": "It's plugged in"
+  },
+  "devices.iphone.stall.xcode": {
+    "value": "Installed already? Open Xcode once and agree to its terms, so {{mac}} can use it."
+  },
+  "devices.iphone.stall.tools": {
+    "value": "The download needs {{mac}} awake and online, about 8 GB. If it stopped, get iOS in Xcode › Settings › Components."
+  },
+  "devices.iphone.stall.account": {
+    "value": "Signed in already? In Xcode, make any iOS app, pick your team under Signing & Capabilities and run it on the iPhone once."
+  },
+  "devices.iphone.stall.connected": {
+    "value": "{{mac}} doesn't see an iPhone yet. Use a cable that carries data, not only power, unlock the iPhone and tap Trust if it asks."
+  },
+  "devices.iphone.stall.trust": {
+    "value": "No Trust prompt? Unplug the iPhone, unlock it and plug it in again, then tap Trust and enter its passcode."
+  },
+  "devices.iphone.stall.developerMode": {
+    "value": "Developer Mode turns on only after the iPhone restarts. Tap Restart, then Turn On once it's back. No switch there? Unplug the iPhone and plug it in again."
+  },
+  "devices.iphone.stall.uiAutomation": {
+    "value": "The switch shows once Developer Mode is on and the iPhone restarted. Keep it unlocked while you look."
+  },
+  "devices.iphone.stall.helper": {
+    "value": "{{mac}} builds the test helper and starts it on the iPhone, which takes a few minutes the first time. Keep the iPhone unlocked and plugged in."
   },
   "devices.iphone.ready": {
     "value": "{{name}} is ready for agents."
@@ -33549,12 +34011,6 @@
   "computers.agents.saved": {
     "value": "{{name}} now uses {{computer}}."
   },
-  "computers.lead": {
-    "value": "Where your agents work: this server and any computer you connect."
-  },
-  "computers.leadCloud": {
-    "value": "Where your agents work: a computer just for this workspace, always on."
-  },
   "computers.about": {
     "value": "About this computer"
   },
@@ -33563,24 +34019,6 @@
   },
   "computers.hostMissing": {
     "value": "This server can be your agents' computer too: <guide>here's how</guide>."
-  },
-  "computers.other.title": {
-    "value": "Other computers"
-  },
-  "computers.other.text": {
-    "value": "Connected with a code, like a Mac mini at home or another server. What each one allows is set on that computer."
-  },
-  "computers.other.emptyTitle": {
-    "value": "Run agents on any computer"
-  },
-  "computers.other.emptyText": {
-    "value": "Connect a Mac mini at home or another server with a code, and agents work on it."
-  },
-  "computers.other.emptyViewerTitle": {
-    "value": "The team's computers show up here"
-  },
-  "computers.other.emptyViewer": {
-    "value": "Whoever can connect computers adds one, and it shows up here."
   },
   "outage.region": {
     "value": "Offline computers"
@@ -34935,17 +35373,8 @@
   "settings.nav": {
     "value": "Settings sections"
   },
-  "settings.group.you": {
-    "value": "You"
-  },
   "settings.group.org": {
     "value": "Workspace"
-  },
-  "settings.group.agents": {
-    "value": "Agents"
-  },
-  "settings.group.costs": {
-    "value": "Costs and data"
   },
   "settings.section.account": {
     "value": "Your account"
@@ -34977,9 +35406,6 @@
   "settings.section.skills": {
     "value": "Skills"
   },
-  "settings.section.keys": {
-    "value": "AI accounts"
-  },
   "settings.section.storage": {
     "value": "Storage"
   },
@@ -34990,7 +35416,7 @@
     "value": "Devices"
   },
   "settings.section.usage": {
-    "value": "Budget and usage"
+    "value": "AI and usage"
   },
   "settings.section.audit": {
     "value": "Audit log"
@@ -35022,14 +35448,14 @@
   "settings.section.keysPersonal": {
     "value": "AI and apps"
   },
-  "settings.section.usagePersonal": {
-    "value": "Plan and usage"
-  },
   "settings.section.membersPersonal": {
     "value": "People"
   },
   "settings.advanced": {
     "value": "Advanced"
+  },
+  "settings.tab.account": {
+    "value": "Profile"
   },
   "settings.sectionText.account": {
     "value": "Your profile and how the app looks for you."
@@ -35061,14 +35487,11 @@
   "settings.sectionText.skills": {
     "value": "Markdown instructions agents open when they need them."
   },
-  "settings.sectionText.keys": {
-    "value": "Your plans and the workspace's API keys."
-  },
   "settings.sectionText.storage": {
     "value": "Where the workspace's files live."
   },
   "settings.sectionText.usage": {
-    "value": "How much AI each person and each agent uses, and the month's limits."
+    "value": "The workspace's AI accounts, and how much each person and agent uses."
   },
   "settings.sectionText.audit": {
     "value": "What agents did outside the conversation and what people changed."
@@ -35096,9 +35519,6 @@
   },
   "settings.sectionText.generalPersonal": {
     "value": "What your agents know about you, and how this workspace works."
-  },
-  "settings.sectionText.keysPersonal": {
-    "value": "The AI your agents think with, and the apps and skills they use."
   },
   "settings.sectionText.usagePersonal": {
     "value": "How much AI your agents use, and your plan."
@@ -35400,83 +35820,11 @@
   "settings.telemetry.dialogText": {
     "value": "Once a day. This is the next report, exactly."
   },
-  "settings.tilesTitle": {
-    "value": "Everything in the workspace"
-  },
   "settings.tileState.members": {
     "value": {
       "one": "{{count}} member",
       "other": "{{count}} members"
     }
-  },
-  "settings.tileState.invitations": {
-    "value": {
-      "one": "{{count}} invitation waiting",
-      "other": "{{count}} invitations waiting"
-    }
-  },
-  "settings.tileState.agents": {
-    "value": {
-      "one": "{{count}} agent",
-      "other": "{{count}} agents"
-    }
-  },
-  "settings.tileState.connectors": {
-    "value": {
-      "one": "{{count}} connected",
-      "other": "{{count}} connected"
-    }
-  },
-  "settings.tileState.noConnectors": {
-    "value": "No apps connected yet"
-  },
-  "settings.tileState.skills": {
-    "value": {
-      "one": "{{count}} skill",
-      "other": "{{count}} skills"
-    }
-  },
-  "settings.tileState.computers": {
-    "value": {
-      "one": "{{online}} of {{count}} on",
-      "other": "{{online}} of {{count}} on"
-    }
-  },
-  "settings.tileState.noComputers": {
-    "value": "No computer yet"
-  },
-  "settings.tileState.devices": {
-    "value": {
-      "one": "{{online}} of {{count}} on",
-      "other": "{{online}} of {{count}} on"
-    }
-  },
-  "settings.tileState.noDevices": {
-    "value": "No device yet"
-  },
-  "settings.tileState.usage": {
-    "value": "{{percent}} of the budget used this month"
-  },
-  "settings.tileState.keys": {
-    "value": {
-      "one": "{{count}} key",
-      "other": "{{count}} keys"
-    }
-  },
-  "settings.tileState.platformKey": {
-    "value": "Using this server's key"
-  },
-  "settings.tileState.noKeys": {
-    "value": "No keys yet"
-  },
-  "settings.tileState.plans": {
-    "value": {
-      "one": "{{count}} plan",
-      "other": "{{count}} plans"
-    }
-  },
-  "settings.tileState.noPlans": {
-    "value": "No plans yet"
   },
   "settings.import.title": {
     "value": "Import"
@@ -36270,9 +36618,6 @@
   "usageViews.apiPriceHint": {
     "value": "When agents use plans, nobody pays by use. This amount is what the same use would cost through the API."
   },
-  "usageViews.thisMonth": {
-    "value": "This month"
-  },
   "usageViews.moreAgents": {
     "value": {
       "one": "+{{count}} agent",
@@ -36289,7 +36634,7 @@
     "value": "Plans only tell how much the whole account used. Each agent's part is an estimate, from what each one spent on it."
   },
   "usageViews.accounts.title": {
-    "value": "Plan accounts"
+    "value": "Accounts"
   },
   "usageViews.accounts.empty": {
     "value": "Connect a plan and follow here how much each agent uses."
@@ -38053,6 +38398,9 @@
   },
   "chat.body.no_ai_cli_failed": {
     "value": "I can't answer now: my plan's AI stopped with an error."
+  },
+  "chat.body.no_ai_cli_failedWhy": {
+    "value": "I can't answer now: my plan's AI stopped with an error ({{why}})."
   },
   "chat.body.no_ai_plan_limit": {
     "value": "I can't answer now: the plan I think with reached its limit."
@@ -40763,7 +41111,7 @@
     "value": "Message {{name}}"
   },
   "agentComputer.phone.chooseOnWeb": {
-    "value": "Choose it on agentes.chat, in Settings › Computers."
+    "value": "Choose it on agentes.chat, in Settings › Devices."
   },
   "taskManager.title": {
     "value": "Task manager"
@@ -40845,9 +41193,6 @@
   },
   "taskManager.columns.time": {
     "value": "Time"
-  },
-  "taskManager.columns.computer": {
-    "value": "Runs on"
   },
   "taskManager.sections.asked": {
     "value": "Asked by people"
@@ -40995,9 +41340,6 @@
   },
   "taskManager.askedByYou": {
     "value": "You asked"
-  },
-  "taskManager.servers": {
-    "value": "Our servers"
   },
   "taskManager.plan": {
     "value": "{{done}} of {{total}} done"
@@ -42052,9 +42394,6 @@
   "dashboards.newWidget.testAgain": {
     "value": "Test again"
   },
-  "dashboards.newWidget.testing": {
-    "value": "{{name}} is building it with real data…"
-  },
   "dashboards.newWidget.tested": {
     "value": "Real data · {{when}}"
   },
@@ -42117,6 +42456,18 @@
   },
   "dashboards.newWidget.buildingFoot": {
     "value": "{{name}} building…"
+  },
+  "dashboards.newWidget.thinking": {
+    "value": "Thinking"
+  },
+  "dashboards.newWidget.finishing": {
+    "value": "Building the widget"
+  },
+  "dashboards.newWidget.stop": {
+    "value": "Stop"
+  },
+  "dashboards.newWidget.stillWorking": {
+    "value": "Still working. Real data can take a minute or two."
   },
   "dashboards.newWidget.failedTitle": {
     "value": "{{name}} couldn't build it"

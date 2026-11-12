@@ -3,17 +3,12 @@ import { and, type Database, type Executor, eq, inArray, isNull, type SQL, schem
 import { linkRunActions, publishMessageActions } from "./agent-actions";
 import { followWork } from "./agent-status";
 import { openApprovalCard, publishApproval } from "./approvals";
+import { runAuthorityById } from "./authority";
 import type { BrainTool, ToolResult } from "./brains/types";
 import { readableChannelIds } from "./channels";
 import { consultationCardThread, consultationOrigin } from "./consultations";
 import { NotFoundError } from "./errors";
-import {
-  liveTurnToolStarted,
-  type MemoryUpdate,
-  publishChannelEvent,
-  publishMessageCreated,
-  takeStepWords,
-} from "./events";
+import { type MemoryUpdate, publishChannelEvent, publishMessageCreated, takeStepWords } from "./events";
 import { type PendingFeedbackOffer, pendingFeedbackOfferOf } from "./feedback-offers";
 import { pgSafeStringify } from "./format";
 import type { Judge } from "./judge";
@@ -37,7 +32,7 @@ import { publishSecret, type SecretRequestRow, secretLabelOf, secretRequestView,
 import { artifactToolDetail, promptAnswer, promptPoll, toolCode, toolCommand, toolDetail } from "./tool-detail";
 import { directoryRole, HARNESS_PREFIX, ON_DEMAND_USE, resolveDirectoryTool } from "./tools/directory";
 import { type Approval, type InvokeResult, isSensitive, type ToolGateway } from "./tools/gateway";
-import { withWhy } from "./tools/run-policy";
+import { WIDGET_UP_FRONT_MAX, widgetUpFront, withWhy } from "./tools/run-policy";
 import type { ToolContext, ToolDefinition, ToolOutput } from "./tools/types";
 import { withWikiLinks } from "./wiki-links";
 
@@ -502,7 +497,6 @@ export async function invokeWithChip(
   const command = toolCommand(use.name, input);
   // The agent's line follows what it does now (ADR 0084 §10), beside the call, never in its way.
   if (def) void followWork(deps, ctx, def).catch(() => {});
-  liveTurnToolStarted(where.runId);
   const said = takeStepWords(where.runId);
   await publishChannelEvent(deps.pubsub, {
     type: "agent.tool",
@@ -622,10 +616,15 @@ const loadedGroupsOf = (transcript: unknown): string[] | null => {
  */
 export async function bridgeToolsFor(deps: RunToolsDeps, id: BridgeIdentity): Promise<BrainTool[]> {
   if (!deps.tools) return [];
-  const { ctx } = await locate(deps.db, id);
+  const { ctx, run } = await locate(deps.db, id);
   const tools = await deps.tools.list(ctx);
   // Our own tools before the connectors': a cap on the list (`MCP_TOOLS_MAX`) only ever drops connector tools.
-  return [...tools.filter((t) => !t.connectionId), ...tools.filter((t) => t.connectionId)].map(brainToolOf);
+  const ordered = [...tools.filter((t) => !t.connectionId), ...tools.filter((t) => t.connectionId)];
+  const authority = run ? await runAuthorityById(deps.db, run.orgId, run.id) : null;
+  if (!(authority?.kind === "routine" && authority.brief?.widget)) return ordered.map(brainToolOf);
+  // A widget's refresh (ADR 0135 §5): what it reads with and answers through, in hand from the first round.
+  let room = WIDGET_UP_FRONT_MAX;
+  return ordered.map((t) => (widgetUpFront(t) && room-- > 0 ? { ...brainToolOf(t), upFront: true } : brainToolOf(t)));
 }
 
 /** The gateway's own refusals, as codes (the gateway returns them as plain error text). */
@@ -786,15 +785,9 @@ export function runMessageMeta(
  * posts them where it reports (`brief.deliverTo`), never in its room. Each approval card carries the agent's
  * `why` and where it came from (`origin`); a consulted agent's approvals, questions and secret requests go to
  * whoever asked (ADR 0034), and its question and secret rows with them: answered from there, they resume it.
- * `at`: the place of the reply they end where the run replies (its first words, `PLACE_KEPT_MS`), in order from it.
  * Runs inside the caller's transaction; nothing is published here (`publishPauseCards`).
  */
-export async function postPauseCards(
-  tx: Executor,
-  run: AgentRun,
-  requests: PauseRequests,
-  at?: Date,
-): Promise<PostedPause> {
+export async function postPauseCards(tx: Executor, run: AgentRun, requests: PauseRequests): Promise<PostedPause> {
   const out: PostedPause = { messages: [], approvals: [], questions: [], secrets: [], withReceipts: [] };
   if (requests.approvals.length + requests.questions.length + requests.secretRequestIds.length === 0) return out;
   const trigger = await runTriggerOf(tx, run);
@@ -813,10 +806,6 @@ export async function postPauseCards(
     body: string,
     meta: Record<string, unknown>,
   ): Promise<Message> => {
-    const placed =
-      at && !brief && to.channelId === home.channelId && to.threadId === home.threadId
-        ? new Date(at.getTime() + out.messages.length)
-        : undefined;
     const message = await insertMessage(tx, {
       orgId: run.orgId,
       channelId: to.channelId,
@@ -824,7 +813,6 @@ export async function postPauseCards(
       author: { type: "agent", agentId: run.agentId, runId: run.id, hop: run.hop },
       body,
       meta: { ...meta, ...extra },
-      ...(placed ? { createdAt: placed } : {}),
     });
     // Act with undo (ADR 0037): what the run changed so far rides on its first message (its receipts).
     if ((await linkRunActions(tx, run.orgId, run.id, message.id)) > 0) out.withReceipts.push(message.id);

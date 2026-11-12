@@ -13,7 +13,7 @@ import type {
   VaultOverview,
 } from "@agenteschat/client";
 import { ApiError } from "@agenteschat/client";
-import { act, cleanup, fireEvent, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { generateSecretKeyPair } from "../../../packages/adapters/src/secret-box";
 import { ADA_ID, createFakeApi, ENG_ID, type FakeState, ORG_ID, seedState } from "./fake-api";
 import { renderApp, screen, settle } from "./render";
@@ -323,6 +323,43 @@ describe("Settings › Vault (ADR 0144)", () => {
     expect(within(card).getByRole("alert").textContent).toBe(t("errors.vault.source.rateLimited"));
   });
 
+  test("connecting ends as a tool's: who can use it, Ajustar (its access) and Pronto", async () => {
+    const made = { ...(overviewOf().connections[0] as VaultOverview["connections"][number]) };
+    made.access = access({ allAgents: true });
+    const r = await openVault(seedState(), overviewOf({ connections: [] }));
+    const { t } = r;
+    const vault = r.services.api.vault as NonNullable<ApiClient["vault"]>;
+    vault.connect = async () => structuredClone(made);
+    const views = screen().getByRole("radiogroup", { name: t("vault.tab.label") });
+    await click(within(views).getByRole("radio", { name: new RegExp(`^${t("vault.tab.connections")}`) }));
+    const card = screen().getByRole("region", { name: "1Password" });
+    await click(within(card).getByRole("button", { name: t("vault.connections.connect") }));
+    await type(within(card).getByLabelText(t("vault.source.onepassword.field.token")), `ops_${"a".repeat(40)}`);
+    await click(within(card).getByRole("button", { name: t("vault.connections.connect") }));
+    await settle();
+    const done = screen().getByRole("dialog", { name: t("connectFlow.done.title", { name: "1Password" }) });
+    expect(done.textContent).toContain(t("vault.summary.everyone", { agents: t("vault.summary.allAgents"), count: 1 }));
+    expect(within(done).getByRole("button", { name: t("connectFlow.done.ok") })).toBeTruthy();
+    await click(within(done).getByRole("button", { name: t("connectFlow.done.adjust") }));
+    await settle();
+    expect(
+      screen().getByRole("dialog", { name: t("vault.connections.accessTitle", { label: "Agents" }) }),
+    ).toBeTruthy();
+  });
+
+  test("a connection no agent uses says so, with the way to give access", async () => {
+    const { t } = await openVault();
+    const views = screen().getByRole("radiogroup", { name: t("vault.tab.label") });
+    await click(within(views).getByRole("radio", { name: new RegExp(`^${t("vault.tab.connections")}`) }));
+    const card = screen().getByRole("region", { name: "1Password" });
+    expect(card.textContent).toContain(t("vault.connections.noAgents"));
+    await click(within(card).getByRole("button", { name: t("vault.connections.giveAccess") }));
+    await settle();
+    expect(
+      screen().getByRole("dialog", { name: t("vault.connections.accessTitle", { label: "Agents" }) }),
+    ).toBeTruthy();
+  });
+
   test("a write the server refuses says why in a toast, never nothing", async () => {
     const r = await openVault();
     const { t } = r;
@@ -537,8 +574,11 @@ describe("the secret request card: Save to the Vault (ADR 0144)", () => {
     const filled = within(code).getAllByRole("textbox") as HTMLInputElement[];
     expect(filled.map((b) => b.value)).toEqual(["4", "8", "2", "1", "0", "7"]);
     await click(within(card()).getByRole("button", { name: t("secret.send") }));
-    await settle(6);
-    expect(state.calls.some((c) => c.method === "secrets.deliver")).toBe(true);
+    // Sealing the code is WebCrypto, which runs off the JS thread: on a loaded machine it outlasts any number of
+    // ticks, so this waits for the delivery instead of counting them.
+    await waitFor(() => expect(state.calls.some((c) => c.method === "secrets.deliver")).toBe(true), {
+      timeout: 10_000,
+    });
     expect(state.calls.some((c) => c.method === "secrets.saveToVault")).toBe(false);
   });
 });

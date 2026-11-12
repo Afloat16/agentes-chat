@@ -65,6 +65,7 @@ import {
   Kbd,
   Menu,
   MenuCheckboxItem,
+  MenuFace,
   MenuHeading,
   MenuItem,
   MenuOverlay,
@@ -133,6 +134,7 @@ import {
   useMoveAgent,
 } from "./AgentGroups";
 import { ArchivedChannelsDialog } from "./ArchivedChannelsDialog";
+import { ChangeAvatarDialog } from "./AvatarBuilder";
 import { FeedbackMark } from "./arrival/FeedbackDialog";
 import { MoveChannelDialog, NewCategoryDialog, RenameCategoryDialog } from "./ChannelCategoryDialogs";
 import { openPalette } from "./CommandMenu";
@@ -514,13 +516,14 @@ export function Sidebar() {
     : [];
   const groupsClosed = groupIds.every((id) => !sections.isOpen(id, groupsOpen));
   // The channels the sidebar lists. A personal workspace (ADR 0159) leaves out #general while no one else is in it
-  // (unless it is open or something new waits there), and shows its group conversations only once there is one.
+  // (unless it is open or something new waits there). With none to list, its group conversations show only for who
+  // may create one: the section then holds a "New group conversation" row, the way to the first.
   const quietGeneral = (c: Channel) =>
     c.name === "general" && !looksUnread(c) && !c.mentionCount && !pathname.endsWith(`/c/${c.id}`);
   const listedChannels = (channels.data ?? []).filter(
     (c) => !dmChannels.has(c.id) && !(personal && alone && quietGeneral(c)),
   );
-  const channelsShown = !personal || listedChannels.length > 0;
+  const channelsShown = !personal || listedChannels.length > 0 || newChannelItem.length > 0;
   // A tool's link keeps the browser's menu, from the mouse and the keyboard alike.
   const spaceEvent = (e: { target: EventTarget }) => !(e.target instanceof Element && e.target.closest("a[href]"));
   const sidebarMenu = entityMenu(() => [
@@ -1474,6 +1477,14 @@ function SidebarChannels({
         {pinnedChannels.map((c) => row(c, true))}
         {pinnedChannels.length > 0 && (loose.length > 0 || shown.length > 0) && <hr className="sidebar__pins-end" />}
         {loose.map((c) => row(c))}
+        {/* A personal workspace with no group conversation yet (ADR 0159): a row to create the first; after it, the
+            header's + does. */}
+        {isPersonal(org) && mayCreate && !loading && all.length === 0 && (
+          <button type="button" className="sidebar__item sidebar__new-channel" onClick={() => onNewChannel(null)}>
+            <Icon name="plus" className="sidebar__channel-icon" />
+            <span className="sidebar__item-label">{t("shell.sidebarMenu.newChannelPersonal")}</span>
+          </button>
+        )}
         {others.length > 0 && (
           <Menu
             label={t(modeKey(org, "shell.otherChannels"))}
@@ -1971,9 +1982,10 @@ function UnreadCount({
  * The account button: your face with your presence badge; under the name, your line (or how you appear). It opens a
  * menu right above it: you on top (face, name, @ and how you appear, your line in a well, a plan near its limit), then
  * your status (how you appear, or what you're up to), your profile, your settings (Configurações › Sua conta) and
- * signing out. Deleting the account starts at the bottom of Sua conta, not here beside Sair, where a slip would open
- * it. It and adding a password keep their dialogs here, in the address (`?account=delete`, `?account=password`) on any
- * page: adding a password may ask for a sign-in again, which comes back.
+ * signing out. The face on top changes your photo, as Editar perfil's Trocar foto does. Deleting the account starts at
+ * the bottom of Sua conta, not here beside Sair, where a slip would open it. It and adding a password keep their
+ * dialogs here, in the address (`?account=delete`, `?account=password`) on any page: adding a password may ask for a
+ * sign-in again, which comes back.
  *
  * In a personal workspace (`personal`, ADR 0159) it is the sidebar's top row (face, name and ▾, no foot) and its menu,
  * opening down, also holds what the workspace menu held for one person: Your account, Settings and the person's
@@ -1989,6 +2001,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
   const compact = useMediaQuery(COMPACT_QUERY);
   const saveStatus = useSaveStatus();
   const [profile, setProfile] = useState(false);
+  const [photo, setPhoto] = useState(false);
   const [phone, setPhone] = useState(false);
   const [account, setAccount] = useOpenParam("account");
   const [statusOpen, setStatusOpen] = useState(false);
@@ -2068,7 +2081,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
             // On top, as the workspace's header is in a team's: the face (how you appear on it) and the name.
             <button
               type="button"
-              className="sidebar__org-button"
+              className="sidebar__org-button sidebar__org-button--me"
               aria-label={`${t("shell.account")}: ${who}`}
               title={who}
             >
@@ -2101,9 +2114,11 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
         }
       >
         <div className="profile-card__head profile-menu__head">
-          <MyFace size="lg" presence={presence} presenceLabel={presenceWord} />
+          <MenuFace label={t("photo.change")} onSelect={openAfter(() => setPhoto(true))}>
+            <MyFace size="lg" presence={presence} presenceLabel={presenceWord} />
+          </MenuFace>
           <span className="list-col">
-            <span className="profile-card__name">{me.user.name}</span>
+            <span className="profile-card__name ac-captop">{me.user.name}</span>
             <span className="small muted">{[handle && `@${handle}`, presenceWord].filter(Boolean).join(" · ")}</span>
           </span>
         </div>
@@ -2160,6 +2175,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
         </MenuItem>
       </Menu>
       <ProfileDialog focus={profile ? "name" : null} onClose={() => setProfile(false)} />
+      <ChangeAvatarDialog open={photo} onClose={() => setPhoto(false)} />
       <SetStatusDialog open={statusOpen} onClose={() => setStatusOpen(false)} />
       <OpenOnPhoneDialog open={phone} onClose={() => setPhone(false)} />
       <AddPasswordDialog open={account === "password"} onClose={() => setAccount(null)} />

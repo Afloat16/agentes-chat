@@ -292,6 +292,8 @@
     (s.display.includes("grid") && s.gridTemplateColumns.split(" ").length > 1);
   /** What a row can lead with besides a glyph: a face, a tile, a picture. */
   const FACE = ".ac-avatar,.ac-rolemark,img,canvas,video,picture";
+  /** A menu item that is a face and nothing else (`MenuFace`, on a menu's top): no row, so no row's room or height. */
+  const FACE_ITEM = ".ac-face-edit";
   /** The box that lays `node` out: its parent, or past a `display: contents` one. */
   const layoutParent = (node) => {
     let p = node.parentElement;
@@ -983,6 +985,33 @@
       }
     },
     /**
+     * A bubble's time in its corner never covers the bubble's words: the last line keeps the room of the time as it
+     * is written (a 12-hour "11:43 PM" is half again as wide as "23:43") and of the mark after it.
+     */
+    stampover(out) {
+      for (const stamp of document.querySelectorAll(".ac-msg__text > .ac-msg__stamp")) {
+        if (!seen(stamp) || style(stamp).position !== "absolute") continue;
+        const s = stamp.getBoundingClientRect();
+        let px = 0;
+        const walker = document.createTreeWalker(stamp.parentElement, NodeFilter.SHOW_TEXT);
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          if (!n.textContent.trim() || stamp.contains(n) || !seen(n.parentElement)) continue;
+          for (const t of textRects(n))
+            if (Math.min(t.bottom, s.bottom) - Math.max(t.top, s.top) > 1)
+              px = Math.max(px, Math.min(t.right, s.right) - Math.max(t.left, s.left));
+        }
+        if (px > 0.5)
+          out.push({
+            rule: "stampover",
+            node: stamp,
+            el: sig(stamp),
+            box: sig(stamp.parentElement),
+            px: +px.toFixed(1),
+            text: words(stamp),
+          });
+      }
+    },
+    /**
      * A box that scrolls for a few px: margins, a border or rounding past its edge show a scrollbar (and let the wheel
      * nudge it) over content that, to the eye, fits. The check keeps one only if it stays in a taller window
      * (`lasting` in check.ts). A box with no class of its own is named by the nearest one with a class around it, so
@@ -1050,7 +1079,8 @@
     /**
      * A face or a mark in an option keeps the row's room around it while the option is highlighted: 6 above and below
      * (10 on touch) and 6 from its start, so it never touches the highlight's edge (OptionRow). A list row with a plate
-     * at rest (a fill: selected, current) keeps 8 around its lead; one between hairlines, 8 above and below.
+     * at rest (a fill: selected, current) keeps 8 around its lead; one between hairlines, 8 above and below. A face that
+     * is the item itself (`FACE_ITEM`) has no row around it.
      */
     rim(out) {
       const touch = matchMedia("(pointer: coarse)").matches;
@@ -1075,7 +1105,7 @@
         [...document.querySelectorAll("[role=option],[role^=menuitem],.ac-menu__item")].filter(seen),
       );
       for (const opt of options) {
-        const lead = leadOf(opt);
+        const lead = opt.matches(FACE_ITEM) ? null : leadOf(opt);
         if (!lead) continue;
         const had = opt.hasAttribute("data-highlighted");
         if (!had) opt.setAttribute("data-highlighted", "");
@@ -1545,13 +1575,14 @@
     /**
      * Menu rows are their kind's height, within 0.5px: a line 32, a name over its description 50, a list with faces 36
      * (40, 58 and 44 on touch), a wrapped name or description by its extra lines. They stand 2 apart, the first
-     * `--menu-pad` under the menu's top. Headings, separators and the reactions' row keep their own.
+     * `--menu-pad` under the menu's top. Headings, separators, the reactions' row and a face that changes the photo on
+     * top (`MenuFace`, no row) keep their own.
      */
     menuitem(out) {
       const touch = matchMedia("(pointer: coarse)").matches;
       const MENU = ".ac-menu,[role=menu],[role=listbox]";
       const ITEM = "[role^=menuitem],[role=option],.ac-menu__item";
-      const OWN = ".ac-menu__reactions,.ac-menu__heading,.ac-menu__separator,[role=separator]";
+      const OWN = `.ac-menu__reactions,.ac-menu__heading,.ac-menu__separator,[role=separator],${FACE_ITEM}`;
       const follows = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
       for (const menu of document.querySelectorAll(MENU)) {
         if (!seen(menu) || menu.parentElement?.closest(MENU)) continue;
@@ -2020,7 +2051,7 @@
         return { left: r.left + air, right: r.right - air, top: r.top + air, bottom: r.bottom - air };
       };
       const ONE =
-        ".ac-split,.ac-seg,.ac-token,.ac-eventpill,.ac-msg__actions,.ac-composer__tools--format,.wiki-bar,[role=menu],[role=menubar],svg";
+        ".ac-split,.ac-seg,.ac-token,.ac-eventpill,.ac-msg__actions,.ac-formatbar,.wiki-bar,[role=menu],[role=menubar],svg";
       for (const row of document.body.querySelectorAll("*")) {
         if (!seen(row) || row.closest(ONE) || !isRow(style(row))) continue;
         const kids = flow(row);

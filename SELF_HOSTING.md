@@ -12,14 +12,15 @@ anything, and every link the app sends come from it. Opened at any other address
 "Invalid origin" and saving fails with `bad_origin`.
 
 The server needs no model key of its own. Each organization adds its own keys (Claude, OpenAI,
-Gemini, DeepSeek, Kimi, Z.ai, MiniMax or OpenRouter) in **Settings → AI accounts**. Keys are stored encrypted with a key derived from `AGENTES_SECRET` and are
+Gemini, DeepSeek, Kimi, Z.ai, MiniMax or OpenRouter) in **Settings → AI and usage**. Keys are stored encrypted with a key derived from `AGENTES_SECRET` and are
 never sent to browsers.
 
 **Requirements**
 
 - A 64-bit Linux server (amd64 or arm64), or a Mac with Docker Desktop, OrbStack or Colima for
   trying it. It runs on Docker Engine with the Compose v2 plugin (`docker compose`), 2.23.1 or
-  newer, and on Linux the installer below installs both when they're missing (Docker after asking).
+  newer. The installer below starts Docker when it's stopped and installs it when it's missing (each
+  after asking): on Linux with Docker's own script, on a Mac Colima with Homebrew.
   Without Docker, it also runs as one program with its database built in (On this computer, without
   Docker).
 - Nothing else: the installer fetches the Bun it runs the setup on. With Node.js 18 or newer,
@@ -90,8 +91,10 @@ tailnet can open it: no domain, no open port, nothing on the public internet.
 
 **The installer** is [`install.sh`](install.sh), and every instance serves it at `/install`. It only
 gets the computer ready, then hands over to the setup: on Linux, Docker (with Docker's own script,
-once you say yes) and the Compose plugin; on a Mac, Docker when Docker Desktop, OrbStack or Colima
-is running; and a pinned Bun (in `.runtime`) to run the setup with. Downloads are HTTPS, and the
+once you say yes, or started with `systemctl` when it's stopped) and the Compose plugin; on a Mac,
+the Docker Desktop, OrbStack or Colima it finds, started when it isn't running, or Colima with its
+`docker` command and Compose installed with Homebrew (Homebrew first when it's missing), each once
+you say yes (`--yes` doesn't ask); and a pinned Bun (in `.runtime`) to run the setup with. Downloads are HTTPS, and the
 pinned ones are checked against the SHA-256 in the script before anything runs them. Without root
 and without access to Docker, it runs itself again with `sudo`, and a download cut short runs
 nothing. To read it before it runs:
@@ -174,7 +177,11 @@ Agents run commands and code, drive a browser, and can think with Claude Code or
 you connect (Agent computers, below). A computer must reach the instance, so on Tailscale, install
 Tailscale on it and sign in to the same tailnet first.
 
-The agentes.chat desktop app (macOS, Windows and Linux) opens your instance in a window of its own:
+The agentes.chat desktop app (macOS, Windows and Linux) opens your instance in a window of its own.
+Download it from `/download` on your instance (or the latest `desktop-v*` release). It's in beta: the Mac
+build isn't notarized by Apple yet and the Windows installer isn't signed, so the first open asks once (macOS:
+**System Settings › Privacy & Security › Open Anyway**, right after you try to open it; Windows: **More info ›
+Run anyway**). `/download` shows each step with pictures. Then:
 
 1. On its first screen, under **Sign in to agentes.chat**, click **Use your own server**, then
    **Connect to my server**.
@@ -188,22 +195,54 @@ The agentes.chat desktop app (macOS, Windows and Linux) opens your instance in a
 **Servers** in the app's Preferences (and its menus) switches between instances; each keeps its own
 sign-in.
 
-- **Agents on that Mac or Linux computer:** in the instance's onboarding or **Settings → Computers**,
-  click **Use this Mac** (**Use this computer** on Linux). The app asks first, in its own dialog naming
-  the instance and the organization. Its agents start with no folders of yours and commands off, even
-  when other organizations' agents there have commands on; you choose more in the app's Preferences. On
-  Windows, and with agentes.chat Cloud, the app is only a window onto the workspace and nothing of the
-  computer is used. Nor on the computer that runs the instance: its agents work there through the
-  instance itself (This server as the agents' computer, below), so the app doesn't offer it.
-- **Linux, a server or a VM:** **Settings → Computers → Connect a computer** shows the command, and
+- **Agents on that computer:** in the instance's onboarding or **Settings › Devices**, click **Use
+  this Mac** (**Use this PC** on Windows, **Use this computer** on Linux). The app asks first, in its
+  own dialog naming the instance and the organization. Its agents start with commands, the browser and
+  Claude Code or Codex when the computer has them, and no folders of yours. Commands are on by
+  default. Turn them off in the app's **Preferences › Tools**, where one switch counts for every
+  workspace on the computer. Folders are added in **Preferences › Folders**. The app pairs a computer
+  with agentes.chat Cloud the same way. Until you pair it,
+  nothing of the computer is used. The app never offers the computer that runs the instance: its agents
+  work there through the instance itself (This server as the agents' computer, below).
+- **Linux, a server or a VM:** **Settings › Devices › Connect a device** shows the command, and
   Agent computers below explains it.
 
-Unless it has builds of its own (`DESKTOP_RELEASES_TOKEN`), the page that offers the app (Settings →
-Computers, and onboarding's computer step) asks agentes.chat for its newest version as it opens, from
+Unless it has builds of its own (`DESKTOP_RELEASES_TOKEN`), the page that offers the app (Settings ›
+Devices, and onboarding's computer step) asks agentes.chat for its newest version as it opens, from
 your browser or the app's window: the request names the system and, like any request a page makes to
 another site, carries this instance's address (its `Origin` header) and the browser's IP. The app asks
 agentes.chat for its own updates when it starts and every 6 hours, naming its system and processor (its
 version too, when it installs one). On Linux the AppImage updates itself; a deb downloads the new deb.
+
+</details>
+
+<details>
+<summary><b>Phones for agents</b></summary>
+
+Agents use a phone through a computer you connected (Connect a computer, above): **Settings › Devices
+› Connect a device**, then **Android phone** or **iPhone**. The steps follow what that computer sees.
+
+- **Android by cable** (recommended): the computer needs Android platform-tools (`adb` on the PATH or
+  in `ANDROID_HOME`, which Android Studio installs). On the phone, turn on Developer options and USB
+  debugging, plug it in, check **Always allow from this computer** and tap **Allow**.
+- **Android over Wi-Fi:** Android 14 or newer with the May 2026 security update, on the same network
+  as the computer, which must find phones over mDNS (`adb mdns check` names its daemon). Only a
+  computer you manage that doesn't run each agent as its own user pairs this way. On the phone, turn
+  on **Developer options › Wireless debugging**, then scan the QR the computer shows from **Pair device
+  with QR code** there, or type what **Pair device with pairing code** shows. Not with the camera: it
+  reads the QR as a Wi-Fi network named `agentes-…`, which doesn't exist, and takes the phone off the
+  computer's Wi-Fi, where it must stay. On a Mac, the agentes.chat app needs **System
+  Settings › Privacy & Security › Local Network**, or the computer never hears the phone. Wireless
+  debugging turns off when the phone restarts.
+- **iPhone through a Mac:** an iPhone on iOS 17 or newer, and Xcode from the App Store with an Apple
+  Account added in its **Settings › Apple Accounts** (a free one is enough: the Mac renews the test
+  helper every 7 days). The Mac downloads the iOS tools, about 8 GB. Then plug the iPhone in, trust the
+  Mac, and turn on Developer Mode and UI Automation. A newer iOS needs an Xcode that knows it: update
+  Xcode when the iPhone updates.
+
+Android's pairing QR aside, the steps show no QR code: one that opens them in the agentes.chat phone
+app waits until the app is in the App Store and Google Play, since until then it would only open the
+web page in the phone's browser.
 
 </details>
 
@@ -477,8 +516,8 @@ port past the host's firewall.
 
 agentes.chat also runs as one program with its database built in, with nothing else to install: no
 Docker, no Postgres to set up. The desktop app's **Run agentes.chat on this computer** does it with no
-terminal (below), and on a computer without a screen the installer will do it with
-`install.sh --native`. By hand, from a release package, further below.
+terminal (below). `install.sh` can't do it without Docker yet. On a Mac or a PC, use the app. By hand,
+from a release package, further below.
 
 - **The database is PGlite:** real Postgres compiled to WebAssembly, running inside that program,
   with pgvector. It's the same engine the tests run on, so the migrations and the queries are the
@@ -502,7 +541,7 @@ the `https://…ts.net` address it prints, then start it again. The desktop app 
 switch.
 
 **From the desktop app** (macOS, Windows and Linux). On its first screen, click **Use your own server**,
-then **Run agentes.chat on this Mac** (this computer, on Windows and Linux). On Windows the folder is
+then **Run agentes.chat on this Mac** (this PC on Windows, this computer on Linux). On Windows the folder is
 `%USERPROFILE%\.agentes`. Your name comes from this computer; type
 your email (your team sees it). **Reach it from your phone and teammates** puts it on your tailnet
 (off; you can turn it on later), and **Send anonymous usage statistics** is on (it writes `TELEMETRY`
@@ -521,6 +560,8 @@ computer and opens agentes.chat, signed in.
   your sign-in, not this computer's token, not your agents' connections (they pause while it is down).
   If something else holds the port when it starts, it moves to a free one. With reach on, Tailscale
   shares it only while it runs.
+- **Agents with Commands on can reach everything on this Mac**, the server's data in `~/.agentes`
+  included. Commands are on by default. Turn them off in the app's **Preferences › Tools**.
 - **No password:** the app signs you in, and on its sign-in screen **Continue on this Mac** does it again
   whenever your session ends. For a browser on another device, add one in **Settings › Your account**, **Add
   a password**.
@@ -547,7 +588,7 @@ statistics** switch does that), or use the switch in **Settings → General → 
 Installed by hand, `agentes-server telemetry` prints the next report and sends nothing (with the server
 stopped); while it runs, and from the desktop app, **See what is sent** there shows the same.
 
-**By hand.** Each version's release has a package per computer, `agentes-native-<version>-<os>-<arch>.tar.gz`
+**By hand.** From the first `v<version>` release, each release has a package per computer, `agentes-native-<version>-<os>-<arch>.tar.gz`
 (`darwin-arm64`, `darwin-x64`, `linux-x64`, `linux-arm64`), its Bun included, and `native.json`, which
 names each package's SHA-256. Check it, then:
 
@@ -737,12 +778,12 @@ ones a self-hosted instance usually touches:
 | `RUN_MIGRATIONS_ON_BOOT` | `true` | `false` only if you run `docker compose run --rm agentes migrate` yourself before each start. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error`. |
 | `TELEMETRY` | `on` | `off` stops the anonymous usage report (Optional services and what they receive). |
-| `TYPESAFE_API_KEY` | | Your TypeSafe key for Jev (AI: plans and keys). Wins over the key added in Settings → AI accounts. |
+| `TYPESAFE_API_KEY` | | Your TypeSafe key for Jev (AI: plans and keys). Wins over the key added in Settings → AI and usage. |
 | `COMPOSIO_API_KEY`, `COMPOSIO_WEBHOOK_SECRET` | | Your Composio project: Gmail and Outlook mailboxes and the services connected through Composio (below). |
 | `COMPOSIO_AUTH_CONFIGS`, `COMPOSIO_CALLS_PER_MONTH` | `0` for the cap (none) | Auth configs of your own per toolkit (`googledrive=ac_…`), and the Composio calls a workspace may make per month. |
 
 **Model keys.** Each organization adds its own keys (Claude, OpenAI, Gemini, DeepSeek, Kimi, Z.ai,
-MiniMax or OpenRouter) in **Settings → AI accounts**, and each agent uses one of them. Usage and cost are recorded per agent.
+MiniMax or OpenRouter) in **Settings → AI and usage**, and each agent uses one of them. Usage and cost are recorded per agent.
 
 **Your own models.** **Other provider** there takes any server that speaks OpenAI's Chat Completions or
 Anthropic's Messages: an Ollama, vLLM, LM Studio or LiteLLM next to this server, or a gateway. Give its base
@@ -947,10 +988,10 @@ party only when you turn that service on:
 | Service | Turned on by | What it receives |
 | --- | --- | --- |
 | Claude (Anthropic), OpenAI, Gemini (Google), DeepSeek, Kimi, Z.ai, MiniMax | An organization's key | What an agent reads to answer: its instructions, the organization's context, recent messages, and the files and tool results it opens. Summaries and memory upkeep use the same key. |
-| Another provider (OpenAI- or Anthropic-compatible) | An organization's endpoint (Settings → AI accounts → Other provider) | What the other model providers receive, sent to the address the organization typed. When it is saved, the server also reads that address's model list and makes one small test call per model. |
+| Another provider (OpenAI- or Anthropic-compatible) | An organization's endpoint (Settings → AI and usage → Other provider) | What the other model providers receive, sent to the address the organization typed. When it is saved, the server also reads that address's model list and makes one small test call per model. |
 | OpenRouter | An organization's key | What the other model providers receive, passed on by OpenRouter to the model's own provider (the organization's OpenRouter privacy settings decide which may keep it). While a workspace has an OpenRouter key, the server also reads OpenRouter's public model list, with no key: about once an hour, and up to once a minute while agents' runs ask for a model the list lacks. |
 | OpenCode | Always on | Nothing of yours: the server reads OpenCode Go's public model list, with no key, at boot and about once an hour, so that plan's model picker stays current. If the list is out of reach, the picker uses the list built into this version. |
-| TypeSafe Jev | `TYPESAFE_API_KEY`, or the key the owner adds in **Settings → AI accounts** (the variable wins). Either way it is your own TypeSafe key, so TypeSafe bills your account. | To pick which agent answers a message nobody @mentioned: the channel's name and topic, the message (up to 4,000 characters), recent messages (up to 800 each), and the name, role, description and tools of the channel's agents. To pick an agent's model or the tools it loads: its name, role and instructions (up to 1,500 characters), the message (up to 2,000) and recent messages (up to 400 each). Also the messages and memory items it is asked to judge (a request to stop, a hand-off, a permission change, whether to archive a memory), a long run's task and latest words with the tool calls and the start of the results it may set aside, a mission's commands it is asked to rate with the mission's goal and current step, the names and descriptions of a connector's tools, and, when a message meets no AI connected, that message (up to 4,000 characters), to tell whether it asks to connect one. On agents' computers, what is on the screen it is asked to look at: the page's address, its text and a screenshot. Without it, a small model on one of the organization's API keys picks and judges instead, each person's own plan picks for their own messages, and simple rules do the rest. Some memory and tool decisions go back to what they did before Jev, nothing guesses what to connect, and nothing is read from images. |
+| TypeSafe Jev | `TYPESAFE_API_KEY`, or the key the owner adds in **Settings → AI and usage** (the variable wins). Either way it is your own TypeSafe key, so TypeSafe bills your account. | To pick which agent answers a message nobody @mentioned: the channel's name and topic, the message (up to 4,000 characters), recent messages (up to 800 each), and the name, role, description and tools of the channel's agents. To pick an agent's model or the tools it loads: its name, role and instructions (up to 1,500 characters), the message (up to 2,000) and recent messages (up to 400 each). Also the messages and memory items it is asked to judge (a request to stop, a hand-off, a permission change, whether to archive a memory), a long run's task and latest words with the tool calls and the start of the results it may set aside, a mission's commands it is asked to rate with the mission's goal and current step, the names and descriptions of a connector's tools, and, when a message meets no AI connected, that message (up to 4,000 characters), to tell whether it asks to connect one. On agents' computers, what is on the screen it is asked to look at: the page's address, its text and a screenshot. Without it, a small model on one of the organization's API keys picks and judges instead, each person's own plan picks for their own messages, and simple rules do the rest. Some memory and tool decisions go back to what they did before Jev, nothing guesses what to connect, and nothing is read from images. |
 | Voyage AI, DeepInfra, OpenAI or another embeddings server | `EMBEDDINGS_PROVIDER=voyage` with `VOYAGE_API_KEY`, or `EMBEDDINGS_PROVIDER=openai` with `EMBEDDINGS_URL` | The text of what `EMBEDDINGS_KINDS` lists (memory items by default) as it is indexed, up to 8,000 characters each, and search queries. The `embeddings` profile keeps them on this machine. Without one, search is full-text only. |
 | Web search for agents | Always on: DuckDuckGo's HTML page with no key, unless `BRAVE_SEARCH_API_KEY` (Brave Search) or `SEARXNG_URL` (your own SearXNG) is set; an agent with a browser on its computer searches there instead (Google, then Bing or DuckDuckGo) | The words an agent searches for (`web_search`). `web_fetch` opens the public pages an agent asks for, from this server: never an internal or private address. |
 | Composio | `COMPOSIO_API_KEY` | Gmail and Outlook mailboxes for agents, and the services connected through it (Google Drive, Calendar, Sheets and Docs, Slack, Microsoft Teams, OneDrive, HubSpot, Salesforce, Zendesk, Asana, Figma, Intercom, Dropbox, Square, Instagram, Facebook, LinkedIn, YouTube, Pinterest, Reddit and WhatsApp Business): Composio holds those connections, and what agents read or write there passes through it, files included. IMAP mailboxes and the other connectors connect directly. |
@@ -1043,7 +1084,7 @@ Agents run commands and code, drive a browser, and can think with Claude Code or
 computer that runs the runner: this server itself (This server as the agents' computer, below) or
 one you connect, a server, a VM or a laptop.
 
-**Settings → Computers → Connect a computer** shows the command for this instance:
+**Settings › Devices › Connect a device** shows the command for this instance:
 
 ```sh
 curl -fsSL https://chat.example.com/api/machines/install.sh | sh
@@ -1081,7 +1122,9 @@ Install the ones you want on that computer, as the user that runs the runner: Cu
 `curl https://cursor.com/install -fsS | bash` (it lands in `~/.local/bin`, which the runner's PATH must
 include), OpenCode's with `npm install -g opencode-ai@1.19.5`, Grok Build with
 `curl -fsSL https://x.ai/cli/install.sh | bash` (it puts `grok` in `~/.local/bin` too; agents think with it only
-through a Grok account added in Settings, AI accounts, never the computer's own sign-in), Google's Antigravity CLI with
+through a Grok account added in Settings, AI and usage, never the computer's own sign-in. On Linux its sandbox needs
+bubblewrap, `sudo apt install -y bubblewrap`, or Grok Build refuses to start and every turn fails), Google's
+Antigravity CLI with
 `curl -fsSL https://antigravity.google/cli/install.sh | bash` (`agy` in `~/.local/bin`; Gemini accounts sign in on Linux
 computers only, each in a folder of its own, and a personal Google plan used this way is against Google's terms for
 consumer plans: Gemini Enterprise or an API key avoids that). A runner in system mode (each agent
@@ -1182,7 +1225,9 @@ terminal are for the person who connected the computer, since they act as its us
 agent runs as that one user, its desktop and terminal included, so whoever uses either can read the
 other agents' folders, the sign-ins on that computer and the runner's token, as the agents' commands
 can. Give the runner a user of its own, or a VM. On a Linux server, the installer's `--system` option
-(as root) makes each agent its own user instead. On x64 it also installs `agent-browser` once for all
+(as root) makes each agent its own user instead. Ubuntu's systemd can't do it (`--system` refuses
+there): the setup's simple mode runs every agent as one shared user, `agentes`, which sees the other
+agents' folders but not yours or the server's. On x64 it also installs `agent-browser` once for all
 of them, in `/opt/agentes-runner/browser` (root's, checked against the SHA-256 in the installer;
 running the installer again updates it), and Google Chrome from Google's apt repository when the
 computer has none, kept current by the computer's package updates. If the installer can't download
@@ -1247,7 +1292,10 @@ is, its `docker` talks to the agent's Podman, never to Docker's daemon), then re
 would make any agent root on the computer: each agent's containers are rootless Podman under its own user, run by a
 containers service of its own (`agentes-containers-<uid>.service`, a systemd user manager in the agent's slice), its
 images and volumes in its home, its limits the agent's share (one container's `--memory` and `--cpus` work inside
-it). Each agent gets the 65536 subordinate ids from `uid << 16` in `/etc/subuid` and `/etc/subgid`, the runner
+it). One that fails at every start stops after 5 tries in a minute, and the runner's log says `containers
+unavailable:` and why (`journalctl -u agentes-containers-<uid>.service` has the rest); after a fix,
+`systemctl reset-failed agentes-containers-<uid>.service` lets the agent's next request start it again. Each agent
+gets the 65536 subordinate ids from `uid << 16` in `/etc/subuid` and `/etc/subgid`, the runner
 replacing the range useradd gave it, and none if another range is in the way (the log says which). Their traffic
 leaves as the agent's own uid, but a container on the host network (`--network host`) whose user inside isn't root
 leaves as one of those ids: a firewall of yours that keys on the agents' uid range should treat every uid from 65536
@@ -1268,7 +1316,7 @@ stays writable by the others whatever its umask; without it, it stays readable o
 organization gets a folder and a group of its own (`/srv/agentes/shared-<id>`), so nothing crosses between
 organizations. Without `--system` it is `shared` in the runner's workspace. Agents are told to look there
 before downloading anything big, to keep credentials, `.env` files and sign-in folders out of it, and to
-check the free space first. **Settings → Computers** shows its path, its size (measured hourly) and the
+check the free space first. **Settings › Devices** shows its path, its size (measured hourly) and the
 free space on the disk, and the workspace's admins get a notification when that disk passes 85%.
 
 Mac and Windows computers get no agents' desktops: the agent's browser runs headless, and its card
@@ -1304,7 +1352,7 @@ agents can use their desktops there and, if not, what is missing and the command
 `agentes-runner desktop-check --agent <handle>` (with the runner stopped) times a look, an action, a
 screenshot and a close-up on that agent's desktop.
 
-With Jev (**Settings → AI accounts**, or `TYPESAFE_API_KEY`), agents name targets in words, small ones
+With Jev (**Settings → AI and usage**, or `TYPESAFE_API_KEY`), agents name targets in words, small ones
 are looked at again up close on the screenshot, and checks can look at the screen's image. Without it
 they act by the numbers on the screen and exact names, checks use the organization's small model on the
 screen's text when it has an API key, and nothing is found on images. Each step an agent takes shows on
@@ -1322,7 +1370,7 @@ mode** instead: every agent works as one user, `agentes`, made without sudo, so 
 folders but not yours or the server's; its service is a user unit kept running with
 `loginctl enable-linger`, with its own copy of the token in `/home/agentes/host-computer-token`),
 and on a Mac agents work as you, in folders of their own, with a browser, Claude Code and Codex, and
-commands off unless you say yes. It writes `HOST_COMPUTER_TOKEN` to `.env` and to
+commands on unless you say no. It writes `HOST_COMPUTER_TOKEN` to `.env` and to
 `host-computer-token` beside it (readable by you only), installs what runs the agents there from the
 address the app is published on (`BIND_ADDRESS` and `HOST_PORT`), and waits for it to answer, up to
 90 seconds. Running the setup again leaves it running while it answers and is up to date, and sets it
@@ -1377,7 +1425,7 @@ A computer on your server never measures or reports its public address: only a w
 <details>
 <summary><b>AI: plans and keys</b></summary>
 
-**API keys.** Each organization adds its own provider keys in **Settings → AI accounts**. They are
+**API keys.** Each organization adds its own provider keys in **Settings → AI and usage**. They are
 stored encrypted with a key derived from `AGENTES_SECRET`, never sent back to a browser, and every
 model call goes through the server, which records its usage and cost per agent.
 
@@ -1385,7 +1433,7 @@ model call goes through the server, which records its usage and cost per agent.
 answer a message nobody @mentioned, how a new memory relates to the old ones, where a button is on an
 agent's screen. With it, unmentioned messages are routed even when agents think only with plans,
 memory spots repeats said in other words, and agents find buttons from a description and on
-screenshots. The person who set up the server adds the key in **Settings → AI accounts** (the setup
+screenshots. The person who set up the server adds the key in **Settings → AI and usage** (the setup
 asks once), or puts it in `.env` as `TYPESAFE_API_KEY`, which wins. It is stored encrypted like
 provider keys and never sent back to a browser. TypeSafe bills your account: US$ 0.042 per million
 tokens read, about US$ 0.0001 per routed message. Without it, see https://agentes.chat/docs/jev#without.
@@ -1408,10 +1456,10 @@ computer doesn't pick yet.
 on that computer, in its own account folder: the key is encrypted in the browser to the computer and
 kept only in the folder (`provider.json`, mode 600); the server keeps its last 4 characters. Where a
 turn's requests go comes from the runner's own list of plans, not from anything a project can set.
-Each person adds them in **Settings → AI accounts**.
+Each person adds them in **Settings → AI and usage**.
 
 **One sign-in for all of your agents.** An account signed in once on a computer thinks for every agent
-you give it there, with no other sign-in (**Use for…** in **Settings → AI accounts**, or the account
+you give it there, with no other sign-in (**Use for…** in **Settings → AI and usage**, or the account
 in an agent's **Who thinks**). With every agent running as the runner's own user, that is any account.
 With `install.sh --system`, a Claude sign-in made for all agents is `claude setup-token`'s token,
 kept in the account's folder (`token.json`, mode 600), which only root opens, and a coding plan's key

@@ -6,6 +6,7 @@ import {
   adbStateOf,
   androidKind,
   androidTransport,
+  driverlessPhones,
   keyguardShowing,
   parseAdbDevices,
   parseAndroidFacts,
@@ -13,20 +14,25 @@ import {
   pngSize,
   serverStatusPath,
 } from "../../runner/adb";
-import { appleNeedsYou, parseDevicectl, parseSimctl } from "../../runner/apple-devices";
+import { appleNeedsYou, parseDevicectl, parseLockState, parseSimctl, sdkTooOld } from "../../runner/apple-devices";
 import type { RunnerError } from "../../runner/errors";
 import { type HandlerContext, handleRequest, OP_ROUTES, type RequestScope } from "../../runner/handlers";
 import { acquireLock } from "../../runner/lock";
 import {
+  APPLE_EVERY,
+  APPLE_MISSES_KEPT,
   androidText,
   applyInput,
   type IosScreenDriverFactory,
+  LOOK_MS,
   NO_IOS_CONTROL,
+  noDriverWords,
   OPENING_LATE,
   type PhoneIo,
   PhoneManager,
   type PhoneRequest,
   type PhoneScreenDriver,
+  phoneNotReady,
   SimulatorScreen,
   screenDriverFor,
 } from "../../runner/phones";
@@ -278,6 +284,7 @@ function rig(
     ios?: (env: NodeJS.ProcessEnv, root: string, now: () => number) => IosHelper;
     iosScreen?: IosScreenDriverFactory;
     openMs?: number;
+    pnp?: () => Promise<string | null>;
   } = {},
 ) {
   const root = tempDir("phones-");
@@ -315,6 +322,7 @@ function rig(
     ...(opts.readOnly ? { readOnly: true } : {}),
     ...(opts.iosScreen ? { iosScreen: opts.iosScreen } : {}),
     ...(opts.openMs ? { openMs: opts.openMs } : {}),
+    ...(opts.pnp ? { pnp: opts.pnp } : {}),
     pairPollMs: 5,
   });
   const calls = () =>
@@ -347,6 +355,105 @@ function rig(
     },
   };
 }
+
+/** `PNP_SHELL` on a Windows PC with a Pixel and a Galaxy plugged in and no driver for either, beside other devices. */
+const PNP_OUT = JSON.stringify([
+  {
+    InstanceId: "USB\\VID_18D1&PID_4EE7\\38021FDH2000AB",
+    FriendlyName: "Pixel 8",
+    Class: null,
+    Status: "Error",
+    ConfigManagerErrorCode: 28,
+  },
+  {
+    InstanceId: "USB\\VID_18D1&PID_4EE7&MI_01\\6&2A3B4C5D&0&0001",
+    FriendlyName: "ADB Interface",
+    Class: null,
+    Status: "Error",
+    ConfigManagerErrorCode: 28,
+  },
+  {
+    InstanceId: "USB\\VID_046D&PID_C52B\\5&1A2B3C&0&3",
+    FriendlyName: "USB Receiver",
+    Class: "HIDClass",
+    Status: "Error",
+    ConfigManagerErrorCode: 10,
+  },
+  {
+    InstanceId: "USB\\VID_04E8&PID_6860\\R5CW12345XY",
+    FriendlyName: "SAMSUNG_Android",
+    Class: null,
+    Status: "Error",
+    ConfigManagerErrorCode: 28,
+  },
+  {
+    InstanceId: "USB\\VID_0BDA&PID_8153\\000001",
+    FriendlyName: "USB 10/100/1000 LAN",
+    Class: "Net",
+    Status: "Error",
+    ConfigManagerErrorCode: 28,
+  },
+  {
+    InstanceId: "USB\\VID_04E8&PID_61F5\\S4EVNF0M123456",
+    FriendlyName: "Portable SSD T7",
+    Class: "DiskDrive",
+    Status: "Degraded",
+    ConfigManagerErrorCode: 0,
+  },
+  {
+    InstanceId: "USB\\VID_2717&PID_FF48&MI_00\\7&1F2E3D&0&0000",
+    FriendlyName: "MTP",
+    Class: "WPD",
+    Status: "Error",
+    ConfigManagerErrorCode: 28,
+  },
+]);
+
+test("Windows: a plugged phone with no USB driver, from PowerShell's PnP list, one per phone", () => {
+  expect(driverlessPhones(PNP_OUT)).toEqual([
+    { serial: "38021FDH2000AB", model: "Pixel 8" },
+    { serial: "R5CW12345XY", model: "Android phone" },
+    // Only an interface listed: no serial of its own, the phone by vendor and product.
+    { serial: "usb-2717-ff48", model: "Android phone" },
+  ]);
+  // PowerShell prints one device as an object, none as nothing.
+  expect(driverlessPhones(JSON.stringify(JSON.parse(PNP_OUT)[0]))).toEqual([
+    { serial: "38021FDH2000AB", model: "Pixel 8" },
+  ]);
+  expect(driverlessPhones("")).toEqual([]);
+  expect(driverlessPhones("Get-PnpDevice : not recognized")).toEqual([]);
+  expect(noDriverWords("win32")).toContain("Install its maker's");
+  expect(noDriverWords("linux")).toContain("udev rules");
+});
+
+test("Windows: a phone with no driver shows as no_driver only while a guide asks", async () => {
+  let asked = 0;
+  const pnp = async () => {
+    asked++;
+    return PNP_OUT;
+  };
+  const r = rig({}, { platform: "win32", tools: [], pnp });
+  await r.manager.poll();
+  expect(r.manager.list()).toEqual([]);
+  expect(asked).toBe(0);
+  expect(r.manager.look()).toBe(true);
+  await r.manager.poll();
+  expect(r.manager.list().map((p) => [p.serial, p.state, p.reason])).toEqual([
+    ["38021FDH2000AB", "needs_you", "no_driver"],
+    ["R5CW12345XY", "needs_you", "no_driver"],
+    ["usb-2717-ff48", "needs_you", "no_driver"],
+  ]);
+  // Polls in between reuse the last look.
+  await r.manager.poll();
+  expect(asked).toBe(1);
+  // The guide closed: a minute later it stops looking.
+  r.tick(LOOK_MS);
+  await r.manager.poll();
+  expect(r.manager.list()).toEqual([]);
+  expect(asked).toBe(1);
+  // Other systems don't look.
+  expect(rig({}, { tools: [] }).manager.look()).toBe(false);
+});
 
 const ANDROID_STATE = {
   adbDevices: `List of devices attached\n${PIXEL} device usb:1-1 model:Pixel_8\nR5CT1234567 unauthorized usb:1-2\n${EMU} device model:sdk_gphone64_arm64\n`,
@@ -615,6 +722,96 @@ test("a Maestro flow, recorded around: its YAML, log and video in the agent's fo
   ).toBe("tool_missing");
 });
 
+test("an iPhone on iOS 16 is reported as too old, never left out; one newer than the Mac's SDK needs a newer Xcode", async () => {
+  const old = (over: Record<string, unknown>) => {
+    const d = iphone({ udid: "OLD16" });
+    return {
+      ...d,
+      connectionProperties: { ...d.connectionProperties, ...over },
+      deviceProperties: { ...d.deviceProperties, name: "Old iPhone", osVersionNumber: "16.7.10" },
+      hardwareProperties: { ...d.hardwareProperties, marketingName: "iPhone X" },
+    };
+  };
+  const wired = parseDevicectl({ result: { devices: [old({ transportType: "wired" })] } });
+  expect(wired).toEqual([expect.objectContaining({ serial: "OLD16", state: "unsupported", reason: "os_too_old" })]);
+  expect(phoneNotReady(wired[0] as Parameters<typeof phoneNotReady>[0])).toEqual({
+    title: "Old iPhone can't be used",
+    fix: "It runs iOS 16.7.10, and agents need iOS 17 or newer.",
+  });
+  // devicectl doesn't say it's wired: usbmuxd's list of phones plugged in does.
+  const unwired = { result: { devices: [old({ isMobileDeviceOnly: true })] } };
+  expect(parseDevicectl(unwired)).toEqual([]);
+  expect(parseDevicectl(unwired, new Set(["OLD16"]))).toEqual([
+    expect.objectContaining({ serial: "OLD16", state: "unsupported", reason: "os_too_old", osVersion: "16.7.10" }),
+  ]);
+  // The version decides: a flag alone never turns a working iPhone away, and usbmuxd's list only brings in old ones.
+  const flagged = iphone({ transport: "wired", udid: "NEW27" });
+  const listed = { ...flagged, connectionProperties: { ...flagged.connectionProperties, isMobileDeviceOnly: true } };
+  expect(parseDevicectl({ result: { devices: [listed] } })).toEqual([
+    expect.objectContaining({ serial: "NEW27", state: "ready" }),
+  ]);
+  expect(
+    parseDevicectl(
+      { result: { devices: [iphone({ transport: "localNetwork", udid: "NEAR27" })] } },
+      new Set(["NEAR27"]),
+    ),
+  ).toEqual([]);
+  expect([
+    sdkTooOld("27.0", "26.2"),
+    sdkTooOld("26.4", "26.2"),
+    sdkTooOld("27.0", "27.0"),
+    sdkTooOld("27.0", null),
+  ]).toEqual([true, false, false, false]);
+  expect([parseLockState({ result: { passcodeRequired: true } }), parseLockState({})]).toEqual([true, null]);
+  const r = rig({ devicectl: { result: { devices: [iphone({ transport: "wired" })] } }, sdk: "26.2" });
+  await r.manager.poll();
+  // A newer iOS than the SDK turns nothing away by itself: it often still works.
+  expect(r.manager.list().find((p) => p.serial === IPHONE)?.state).toBe("ready");
+  const t = { platform: "ios", serial: IPHONE, holder: r.holder("run-1") };
+  const launched = await r.op({ op: "phone.launch", ...t, app: "com.acme.app" }).catch((e: RunnerError) => e);
+  expect((launched as Partial<RunnerError>).code).not.toBe("phone_not_ready");
+  const plain = rig({ devicectl: { result: { devices: [iphone({ transport: "wired" })] } }, sdk: "27.0" });
+  await plain.manager.poll();
+  expect(plain.manager.list().find((p) => p.serial === IPHONE)?.state).toBe("ready");
+  // Once its helper is stuck the way an old Xcode explains, the newer iOS is named as the cause.
+  const stuck = (need: { state: string; reason: string }, sdk: string) =>
+    rig(
+      { devicectl: { result: { devices: [iphone({ transport: "wired" })] } }, sdk },
+      { ios: () => ({ need: () => need, reap: () => {}, stopAll: () => {} }) as unknown as IosHelper },
+    );
+  const states = [];
+  for (const [need, sdk] of [
+    [{ state: "preparing", reason: "device_support" }, "26.2"],
+    [{ state: "needs_you", reason: "ui_not_authorized" }, "26.2"],
+    [{ state: "preparing", reason: "device_support" }, "27.0"],
+    [{ state: "preparing", reason: "helper_missing" }, "26.2"],
+  ] as const) {
+    const s = stuck(need, sdk);
+    await s.manager.poll();
+    const phone = s.manager.list().find((p) => p.serial === IPHONE);
+    states.push([phone?.state, phone?.reason]);
+  }
+  expect(states).toEqual([
+    ["needs_you", "xcode_too_old"],
+    ["needs_you", "xcode_too_old"],
+    ["preparing", "device_support"],
+    ["preparing", "helper_missing"],
+  ]);
+});
+
+test("devicectl failing once leaves the iPhones it saw, and an op under way keeps its phone", async () => {
+  const r = rig({ devicectl: { result: { devices: [iphone({ transport: "wired" })] } } });
+  await r.manager.poll();
+  expect(r.manager.list().some((p) => p.serial === IPHONE)).toBe(true);
+  r.setState({ devicectlFail: "The operation timed out." });
+  await r.manager.poll();
+  await r.manager.poll();
+  expect(r.manager.list().some((p) => p.serial === IPHONE)).toBe(true);
+  // Failing look after look, it's taken as unplugged.
+  for (let i = 0; i < APPLE_EVERY * APPLE_MISSES_KEPT; i++) await r.manager.poll();
+  expect(r.manager.list().some((p) => p.serial === IPHONE)).toBe(false);
+});
+
 test("iOS simulator: install with its bundle id, launch, screenshot, record, flow, the app's log", async () => {
   const r = rig({ ...ANDROID_STATE, wait: true });
   const t = { platform: "ios", serial: SIM, holder: r.holder("run-1") };
@@ -675,6 +872,7 @@ test("a real iPhone: install and launch through devicectl, the rest through its 
           now,
           usbmuxSocket: mux.file,
           teams: async () => [{ id: "A1B2C3D4E5", name: "Sam Rivera", free: true }],
+          screenLocked: async () => false,
         });
         return helper;
       },
@@ -745,6 +943,41 @@ test("a real iPhone: install and launch through devicectl, the rest through its 
       ),
     ).toBe("bad_request");
     expect(r.calls().filter((c) => c[0] === "ffmpeg")).toHaveLength(recordings);
+    // Locked: the flow is refused before it runs, and the phone says so until devicectl sees it unlocked.
+    const tree = {
+      type: "Application",
+      children: [{ type: "Button", label: "Sign in", rect: { x: 0, y: 100, width: 390, height: 44 } }],
+    };
+    r.setState({ ...ANDROID_STATE, wdaTree: tree, wdaLocked: true, lockState: true });
+    const short = { op: "phone.flow", ...t, flow: "appId: com.acme.app\n---\n- tapOn: Sign in\n", timeoutSeconds: 60 };
+    expect(await r.op(short).catch((e: RunnerError) => [e.code, e.message])).toEqual([
+      "phone_not_ready",
+      "Ana's iPhone is locked. Unlock it and try again.",
+    ]);
+    expect(r.manager.list().find((p) => p.serial === IPHONE)).toMatchObject({ state: "needs_you", reason: "locked" });
+    await r.manager.poll();
+    await r.manager.poll();
+    expect(r.manager.list().find((p) => p.serial === IPHONE)?.reason).toBe("locked");
+    r.setState({ ...ANDROID_STATE, wdaTree: tree });
+    await r.manager.poll();
+    await r.manager.poll();
+    expect(r.manager.list().find((p) => p.serial === IPHONE)?.state).toBe("ready");
+    // Code=41: the phone refused the helper's taps. Said in words, and the helper is let go for a fresh session.
+    r.setState({
+      ...ANDROID_STATE,
+      wdaTree: tree,
+      wdaRefuse:
+        'Error Domain=com.apple.dt.XCTDaemonErrorDomain Code=41 "Not authorized for performing UI testing actions."',
+    });
+    const refused = (await r.op(short)) as { passed: boolean; output: string };
+    expect(refused.passed).toBe(false);
+    expect(refused.output).toContain("The iPhone refused the test helper's taps.");
+    await r.manager.poll();
+    await r.manager.poll();
+    expect(r.manager.list().find((p) => p.serial === IPHONE)).toMatchObject({
+      state: "needs_you",
+      reason: "ui_not_authorized",
+    });
     // What needs the person, in words: the developer not trusted.
     r.setState({
       ...ANDROID_STATE,
