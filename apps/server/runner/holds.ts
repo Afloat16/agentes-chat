@@ -10,7 +10,7 @@ import {
   type MachineRequest,
   type RunnerHolds,
 } from "@agenteschat/adapters/machine-protocol";
-import type { AgentUser, Launcher } from "./agent-users";
+import type { AgentUser } from "./agent-users";
 import { RunnerError } from "./errors";
 import { readJson, writeJson } from "./json-file";
 import { bootId } from "./lock";
@@ -18,21 +18,24 @@ import { agentCategorySlice, agentSlice } from "./service";
 
 /**
  * `keep_running`'s holds (ADR 0176). Each is the computer's standard "don't go idle" lock, `systemd-inhibit
- * --what=idle --mode=block`, taken as the agent's own user in its slice through its launcher, in a scope named after
- * the hold (`agentes-keep-<id>.scope`), with no words of the agent's in it: every user can list the locks, so what a
- * hold is for stays on the server. The lock's command waits on what it holds: the agent's program (`pid`, one of its
- * own), its browser (its slice has processes) or a time. An operator's guard reads every lock the same way, whoever
- * took it, and ties ours to their records by the scope. The scopes outlive this process: `<home>/holds.json` keeps
- * what each holds, so a runner that restarts goes on with the ones still living.
+ * --what=idle --mode=block`, taken by root in a scope in the agent's slice named after the hold
+ * (`agentes-keep-<id>.scope`), with no words of the agent's in it: every user can list the locks, so what a hold is for
+ * stays on the server. Never through the agent's launcher: its view may hide the system bus the lock needs, and a
+ * process of the agent's uid outside that view would show the agent the computer's own files (`/proc/<pid>/root`).
+ * The lock's command waits on what it holds: the agent's program (`pid`, one of its own, by its start time), its
+ * browser (its slice has processes) or a time. An operator's guard reads every lock the same way, whoever took it, and
+ * ties ours to their records by the scope. The scopes outlive this process: `<home>/holds.json` keeps what each holds,
+ * so a runner that restarts goes on with the ones still living.
  */
 
 export const HOLDS_FILE = "holds.json";
 const INHIBIT = "/usr/bin/systemd-inhibit";
+const SYSTEMD_RUN = "/usr/bin/systemd-run";
 /** How often the holds are looked at: a lock gone, a time past. */
 const SWEEP_MS = 5_000;
 /** A program a person stopped that is still there this long after SIGTERM gets SIGKILL, as a canceled task does. */
 const KILL_AFTER_MS = 10_000;
-/** A lock that hasn't taken by then (logind or polkit refused it) is a failure, not a hold. */
+/** A lock that hasn't taken by then (its scope couldn't start, or logind refused it) is a failure, not a hold. */
 const TAKE_MS = 500;
 /** Ended holds `hello` keeps listing, newest last: the server may have missed their `keep.ended` while away. */
 const ENDED_KEPT = 50;
@@ -42,6 +45,13 @@ const MAX_HOLDS = 200;
 const BROWSER_GONE_LOOKS = 3;
 
 export const keepScope = (id: string) => `agentes-keep-${id}.scope`;
+/**
+ * Waits while the held program lives: its `/proc/<pid>/stat` ($0) is there, not a zombie, and has the start time it
+ * had when held ($1, the 22nd field; the name before it may hold spaces and parentheses). Root may signal any process,
+ * so `kill -0` would go on holding a pid used again by another one.
+ */
+const PROGRAM_WAIT =
+  't=$1; while s=$(sed "s/.*) //" "$0" 2>/dev/null); do set -- $s; [ "$1" != Z ] || exit 0; shift 19; [ "$1" = "$t" ] || exit 0; sleep 1; done';
 const browserCgroup = (uid: number) => `/agents.slice/${agentSlice(uid)}/${agentCategorySlice(uid, "browser")}`;
 
 interface Running {
@@ -57,7 +67,7 @@ interface Hold {
   user: string;
   /** The agent's handle, as requests name it (a person's Stop closes its browser by it). */
   handle?: string;
-  /** The lock's own process (the launcher's first, which lives as long as the lock). */
+  /** The lock's own process (systemd-run's, which becomes systemd-inhibit and lives as long as the lock). */
   lock: Running;
   pid?: Running;
   browser?: true;
@@ -73,8 +83,8 @@ interface Stored {
 
 /** What the holds need from the computer: `defaultSystem` on Linux, fakes in tests. */
 export interface HoldsSystem {
-  /** Starts a lock's command, detached; its pid, or null. */
-  spawn(argv: string[], env: Record<string, string>, cwd: string): number | null;
+  /** Starts a lock's command as root, detached; its pid, or null. */
+  spawn(argv: string[]): number | null;
   /** The process's start time (`/proc/<pid>/stat`), or null when there is none. */
   started(pid: number): string | null;
   /** Its real uid and cgroup (v2), or null when there is no such process. */
@@ -116,10 +126,10 @@ export function defaultSystem(proc = "/proc", cgroupRoot = "/sys/fs/cgroup"): Ho
     }
   };
   return {
-    spawn(argv, env, cwd) {
+    spawn(argv) {
       const [file = "", ...args] = argv;
       try {
-        const child = spawn(file, args, { env, cwd, detached: true, stdio: "ignore" });
+        const child = spawn(file, args, { cwd: "/", detached: true, stdio: "ignore" });
         (child as unknown as EventEmitter).on("error", () => {});
         child.unref();
         return child.pid ?? null;
@@ -156,7 +166,7 @@ export function lockCommand(
   inhibit = INHIBIT,
 ): string[] {
   const wait = hold.pid
-    ? ["/bin/sh", "-c", 'while kill -0 "$0" 2>/dev/null; do sleep 1; done', String(hold.pid.pid)]
+    ? ["/bin/sh", "-c", PROGRAM_WAIT, `/proc/${hold.pid.pid}/stat`, hold.pid.started]
     : hold.browser
       ? [
           "/bin/sh",
@@ -168,16 +178,21 @@ export function lockCommand(
   return [inhibit, "--what=idle", "--mode=block", "--who=agentes.chat", "--why=keep_running", ...wait];
 }
 
-/** The agent's launcher, its systemd scope named after the hold. */
-function scoped(launcher: Launcher, id: string): string[] {
-  const [run = "", ...rest] = launcher.prefix;
-  return run.endsWith("/systemd-run")
-    ? [run, `--unit=${keepScope(id).replace(/\.scope$/, "")}`, ...rest]
-    : launcher.prefix;
-}
+/** Root's scope for a lock: in the agent's slice, named after the hold, which is how a guard ties the two. */
+const lockScope = (id: string, uid: number) => [
+  SYSTEMD_RUN,
+  "--quiet",
+  "--scope",
+  "--collect",
+  `--unit=${keepScope(id).replace(/\.scope$/, "")}`,
+  `--slice=${agentSlice(uid)}`,
+  "--",
+];
 
 export class Holds {
   private readonly holds = new Map<string, Hold>();
+  /** Holds whose lock `start` is taking again. */
+  private readonly changing = new Set<string>();
   private ended: Stored["ended"] = [];
   private readonly system: HoldsSystem;
   private readonly file: string;
@@ -222,7 +237,6 @@ export class Holds {
   async start(
     agent: AgentScope,
     user: AgentUser,
-    launcher: Launcher,
     req: Extract<MachineRequest, { op: "keep.start" }>,
   ): Promise<MachineReplies["keep.start"]> {
     const { system } = this;
@@ -235,8 +249,12 @@ export class Holds {
     const until = req.until === undefined ? undefined : new Date(Date.parse(req.until));
     if (until && Number.isNaN(until.getTime())) throw new RunnerError("bad_request", "`until` is a date and time");
     if (until && until.getTime() <= system.now()) throw new RunnerError("bad_request", "That time has passed");
-    if (!until && !browser && pid === undefined) {
-      throw new RunnerError("bad_request", "A hold needs a program, the browser or an end time");
+    // A browser held with no end would never restart on a newer Chrome.
+    if (!until && pid === undefined) {
+      throw new RunnerError(
+        "bad_request",
+        browser ? "A browser's hold needs an end time" : "A hold needs a program, the browser or an end time",
+      );
     }
     const before = this.holds.get(req.holdId);
     if (before && before.agentId !== agent.id) throw new RunnerError("not_allowed", "That hold is another agent's");
@@ -268,16 +286,24 @@ export class Holds {
       return { held: true };
     }
     const argv = [
-      ...scoped(launcher, req.holdId),
+      ...lockScope(req.holdId, user.uid),
       ...lockCommand({ uid: user.uid, ...bounds }, system.now(), this.opts.inhibit),
     ];
-    if (before) await this.release(before);
-    const lockPid = system.spawn(argv, launcher.env, launcher.home);
-    const lockStarted = lockPid ? system.started(lockPid) : null;
-    if (!lockPid || !lockStarted) throw new RunnerError("internal", "This computer couldn't take the lock");
-    await new Promise((resolve) => setTimeout(resolve, this.opts.takeMs ?? TAKE_MS));
-    if (system.started(lockPid) !== lockStarted) {
-      throw new RunnerError("internal", "This computer refused the lock (systemd-inhibit didn't hold)");
+    // Meanwhile the sweep leaves it be: its old lock going is the hold changing, not ending (and its browser stays kept).
+    this.changing.add(req.holdId);
+    let lock: Running;
+    try {
+      if (before) await this.release(before);
+      const lockPid = system.spawn(argv);
+      const lockStarted = lockPid ? system.started(lockPid) : null;
+      if (!lockPid || !lockStarted) throw new RunnerError("internal", "This computer couldn't take the lock");
+      await new Promise((resolve) => setTimeout(resolve, this.opts.takeMs ?? TAKE_MS));
+      if (system.started(lockPid) !== lockStarted) {
+        throw new RunnerError("internal", "This computer refused the lock (systemd-inhibit didn't hold)");
+      }
+      lock = { pid: lockPid, started: lockStarted };
+    } finally {
+      this.changing.delete(req.holdId);
     }
     const hold: Hold = {
       id: req.holdId,
@@ -285,7 +311,7 @@ export class Holds {
       uid: user.uid,
       user: user.user,
       handle: agent.handle,
-      lock: { pid: lockPid, started: lockStarted },
+      lock,
       ...(program ? { pid: program } : {}),
       ...(browser ? { browser: true } : {}),
       ...(bounds.until ? { until: bounds.until } : {}),
@@ -300,7 +326,7 @@ export class Holds {
   async end(req: Extract<MachineRequest, { op: "keep.end" }>): Promise<MachineReplies["keep.end"]> {
     const hold = this.holds.get(req.holdId);
     if (!hold) return { ended: false };
-    if (req.stop && hold.pid) await this.stopProgram(hold, hold.pid);
+    if (req.stop && hold.pid) await this.stopProgram(hold.pid);
     await this.release(hold);
     this.holds.delete(hold.id);
     this.save();
@@ -317,6 +343,7 @@ export class Holds {
     const now = this.system.now();
     const count = this.holds.size;
     for (const hold of [...this.holds.values()]) {
+      if (this.changing.has(hold.id)) continue;
       const past = hold.until !== undefined && Date.parse(hold.until) <= now;
       const gone = this.system.started(hold.lock.pid) !== hold.lock.started;
       if (!past && !gone) continue;
@@ -343,13 +370,13 @@ export class Holds {
   }
 
   /**
-   * A person's Stop: the program itself, signaled as the agent (it can only reach the agent's own processes), and
-   * only while the pid is still the process that was held.
+   * A person's Stop: the program itself, by root, only while its pid is still the process that was held (its start
+   * time). Never as the agent: that `kill` would run outside the agent's view.
    */
-  private async stopProgram(hold: Hold, program: Running) {
+  private async stopProgram(program: Running) {
     const signal = async (name: string) => {
       if (this.system.started(program.pid) !== program.started) return false;
-      await this.system.run(["/usr/sbin/runuser", "-u", hold.user, "--", "/bin/kill", `-${name}`, String(program.pid)]);
+      await this.system.run(["/bin/kill", `-${name}`, String(program.pid)]);
       return true;
     };
     if (!(await signal("TERM"))) return;

@@ -210,7 +210,7 @@ export const OP_ROUTES: Readonly<Record<MachineOp, "machine" | "agent">> = {
   "phone.look": "machine",
   // The Mac's own pick of iPhones on its Wi-Fi, kept beside its phones' locks.
   "phone.wifi": "machine",
-  // Root takes each hold as the agent's own user, in its slice (`holds.ts`), and checks its program is the agent's.
+  // Root takes each hold in the agent's slice (`holds.ts`), and checks its program is the agent's.
   "keep.start": "machine",
   "keep.end": "machine",
 };

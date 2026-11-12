@@ -1605,13 +1605,10 @@ export class RunnerDaemon implements RequestObserver {
     void connection.run().then((outcome) => this.sessionEnded(session, outcome));
   }
 
-  /** `keep.*` (ADR 0176): each hold as the agent's own user, through its launcher. */
+  /** `keep.*` (ADR 0176): each hold in the agent's slice, its program checked against the agent's user. */
   private keepOps(holds: Holds, user: (agent: AgentScope) => AgentUser): NonNullable<HandlerContext["keep"]> {
     return {
-      start: (agent, req) => {
-        const u = user(agent);
-        return holds.start(agent, u, systemLauncher(u), req);
-      },
+      start: (agent, req) => holds.start(agent, user(agent), req),
       end: (req) => holds.end(req),
     };
   }
