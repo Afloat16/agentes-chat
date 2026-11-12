@@ -735,6 +735,7 @@
         "askPersonal": "¿Ya usas agentes en otro lugar? Los traigo todos aquí.",
         "bring": "Copia el pedido, pégalo en {{app}} y trae la respuesta. Del resto me encargo yo.",
         "bringFiles": "Suelta aquí lo que exportó la app. Del resto me encargo yo.",
+        "bringMcp": "Sigue los pasos en la app y ella misma crea los agentes aquí. Yo me quedo pendiente.",
         "found": "Encontré tu equipo. Revisa que estén todos.",
         "foundPersonal": "Encontré tus agentes. Revisa que estén todos.",
         "ai": "Último paso. Elige la IA que ya usas y el equipo despierta.",
@@ -960,18 +961,30 @@
       "title": "¿Ya usas agentes en otra app?",
       "lead": "Llegan con sus instrucciones, habilidades, rutinas y memoria.",
       "sourcesLabel": "De dónde vienen los agentes",
+      "method": {
+        "label": "Cómo traerlos",
+        "mcp": "Conectar con MCP",
+        "prompt": "Solo el pedido",
+        "file": "Desde un archivo"
+      },
       "aiApp": {
-        "title": "Desde tu app de IA (lo más confiable)",
-        "lead": "Tu app de IA crea aquí cada agente, instrucción, habilidad y rutina que tengas en ella.",
-        "connect": "Conecta la app a esta dirección:",
+        "lead": "MCP permite que {{app}} acceda a este espacio de trabajo, así que crea los agentes aquí por sí solo.",
+        "leadAny": "MCP permite que tu app de IA acceda a este espacio de trabajo, así que crea los agentes aquí por sí sola.",
+        "leadDots": "MCP permite que tu dot acceda a este espacio de trabajo con un plugin que añades en ChatGPT, así que crea los agentes aquí por sí solo.",
         "howTo": "Cómo conectar, app por app",
-        "allow": "En la página de permisos, elige Crear y editar agentes, rutinas y habilidades.",
-        "paste": "Luego pega este pedido en la app:",
-        "prompt": "Conecta {{url}} y, por cada agente, instrucción, habilidad y rutina que tengas, crea su equivalente en agentes.chat. Primero lista lo que ya existe ahí para no duplicar nada.",
+        "paste": "Pega este pedido en la app:",
+        "prompt": "Usa el servidor MCP de agentes.chat que acabas de conectar ({{url}}) para traer lo que tienes a agentes.chat. Primero llama a import_summary para ver lo que ya existe allí y no duplicar nada. Después, por cada agente, instrucción, habilidad y rutina que tengas, crea el equivalente con create_agent, create_skill y create_routine, y guarda lo que cada agente debe recordar con add_memory.",
         "promptLabel": "Pedido para tu app de IA",
         "copy": "Copiar el pedido",
         "copied": "Ahora pégalo en tu app de IA.",
-        "private": "Desde tu app de IA: no disponible en este servidor, porque apps como Claude y ChatGPT solo se conectan a una dirección https pública."
+        "waiting": "Esperando a que lleguen los agentes…",
+        "arrived_one": "Llegó {{count}} agente",
+        "arrived_many": "Llegaron {{count}} agentes",
+        "arrived_other": "Llegaron {{count}} agentes",
+        "stuck": "¿Nada después de unos minutos? Conecta la app de nuevo, elige {{access}} y vuelve a enviar el pedido.",
+        "private": "Conectar con MCP no está disponible en este servidor, porque las apps en internet solo llegan a una dirección https pública.",
+        "held": "Conectar con MCP funciona cuando el plan del espacio de trabajo esté activo. Por ahora, trae los agentes por aquí.",
+        "paused": "Conectar con MCP está desactivado mientras este espacio de trabajo esté en pausa. Por ahora, trae los agentes por aquí."
       },
       "otherName": "Otra app",
       "agenteschatName": "agentes.chat",
@@ -13987,6 +14000,10 @@
       "no_driverLinux": "Linux no puede abrir este teléfono",
       "os_too_old": "Este sistema es demasiado antiguo para las herramientas",
       "adb_offline": "El teléfono no responde",
+      "wifi_away": "El iPhone no está en el Wi-Fi de la Mac",
+      "wifi_asleep": "El iPhone no respondió por Wi-Fi",
+      "tunnel_down": "Se cortó la conexión Wi-Fi con el iPhone",
+      "wifi_untrusted": "El iPhone no confía en esta Mac",
       "other": "Necesita algo en el dispositivo",
       "iosTooOld": "Usa iOS {{version}}, los agentes necesitan iOS 17 o posterior"
     },
@@ -14011,6 +14028,10 @@
       "no_driverLinux": "Agrega reglas udev para este teléfono",
       "os_too_old": "Actualiza el teléfono",
       "adb_offline": "Vuelve a conectarlo",
+      "wifi_away": "Únete al Wi-Fi de la Mac o conecta el cable",
+      "wifi_asleep": "Activa y desbloquea el iPhone",
+      "tunnel_down": "Déjalo cerca de la Mac o conecta el cable",
+      "wifi_untrusted": "Conéctalo una vez y toca Confiar",
       "other": "Mira qué necesita"
     },
     "facts": {
@@ -14288,6 +14309,22 @@
         "helper": "{{mac}} crea la app de pruebas y la abre en el iPhone, lo que tarda unos minutos la primera vez. Mantén el iPhone desbloqueado y conectado."
       },
       "ready": "{{name}} está listo para los agentes.",
+      "wifi": {
+        "list": "iPhones en el Wi-Fi de {{mac}}",
+        "also": "También en el Wi-Fi de esta Mac: {{name}}",
+        "use": "Usar por Wi-Fi",
+        "hint": "Aquí solo aparece un iPhone que ya confió en esta Mac por cable. La Mac llega a él por la conexión cifrada de la propia Apple, la misma que usa Xcode.",
+        "stop": "Dejar de usar por Wi-Fi",
+        "stopTitle": "¿Dejar de usar {{name}} por Wi-Fi?",
+        "stopText": "Los agentes ya no llegan a él. Elígelo de nuevo en su Mac para usarlo.",
+        "stopped": "{{name}} ya no se usa por Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} no está en el Wi-Fi de la Mac ahora. Conecta el iPhone a la misma red o usa el cable.",
+        "wifi_asleep": "{{name}} no respondió por Wi-Fi. Actívalo, desbloquéalo y déjalo cerca de la Mac.",
+        "tunnel_down": "Se cortó la conexión Wi-Fi con {{name}}. Déjalo desbloqueado y cerca de la Mac o conecta el cable.",
+        "wifi_untrusted": "{{name}} no confía en esta Mac. Conéctalo una vez por cable, toca Confiar y escribe su código."
+      },
       "path": {
         "settings": "Configuración",
         "privacy": "Privacidad y seguridad",
@@ -14637,9 +14674,13 @@
         "orFile": "O pega en <code>{{file}}</code>:",
         "pasteConfig": "Pega:",
         "mode": "En el chat, cambia al modo {{mode}}.",
+        "sendInChat": "En el chat con tu bot, envía:",
+        "reload": "Luego escribe <code>{{command}}</code> en el chat.",
         "loginRun": "Para iniciar sesión, ejecuta <code>{{command}}</code>.",
         "loginType": "Para iniciar sesión, escribe <code>{{command}}</code> en la app.",
         "signIn": "Inicia sesión con tu cuenta de agentes.chat en la página que se abre.",
+        "signInManage": "Inicia sesión con tu cuenta de agentes.chat en la página que se abre y elige {{access}}.",
+        "mention": "En el chat, escribe <code>@</code> y elige <code>{{name}}</code>.",
         "signInFirst": "La app te pide iniciar sesión la primera vez que la usas.",
         "token": "Crea un token personal y ponlo en lugar de {{placeholder}}.",
         "install": "Agregar a {{app}}"
