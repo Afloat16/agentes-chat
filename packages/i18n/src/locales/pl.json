@@ -2580,7 +2580,9 @@
       "groupWorkspace": "Dla całej przestrzeni roboczej",
       "groupAdmins": "tylko admini"
     },
-    "computerYours": "Twoje własne miejsce na komputerze przestrzeni roboczej. Pliki, przeglądarka i logowania są tam tylko Twoje i tylko Ty możesz je oglądać lub nimi sterować.",
+    "computerYours": "Twoje własne miejsce na komputerze przestrzeni roboczej. Tylko Ty możesz je oglądać lub nim sterować.",
+    "computerNoHome": "Jeszcze bez komputera. Pojawi się, gdy ta przestrzeń robocza będzie miała własny komputer, dodany w Ustawieniach, w sekcji Komputery.",
+    "computerOneUser": "Tutaj nie ma komputera. Komputer przestrzeni roboczej uruchamia wszystkich agentów jako jednego użytkownika, więc nie może rozdzielić miejsc poszczególnych osób. Serwer Linux zainstalowany z opcją --system instalatora to potrafi.",
     "powers": {
       "title": "Uprawnienia w przestrzeni roboczej",
       "help": "To robi tylko Twoja prawa ręka.",

@@ -2409,7 +2409,9 @@
       "groupWorkspace": "Voor de hele workspace",
       "groupAdmins": "alleen admins"
     },
-    "computerYours": "Je eigen plek op de computer van de workspace. De bestanden, browser en aanmeldingen daar zijn alleen van jou, en alleen jij kunt meekijken of de besturing overnemen.",
+    "computerYours": "Je eigen plek op de computer van de workspace. Alleen jij kunt meekijken of de besturing overnemen.",
+    "computerNoHome": "Nog geen computer. Die komt er zodra deze workspace een eigen computer heeft, toegevoegd in Instellingen, Computers.",
+    "computerOneUser": "Hier geen computer. De computer van de workspace draait alle agents als één gebruiker en kan de plek van elke persoon dus niet gescheiden houden. Een Linux-server die met de optie --system van het installatieprogramma is ingericht, kan dat wel.",
     "powers": {
       "title": "Bevoegdheden in de workspace",
       "help": "Alleen je rechterhand doet dit.",

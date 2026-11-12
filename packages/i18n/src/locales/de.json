@@ -2410,7 +2410,9 @@
       "groupWorkspace": "Für den ganzen Workspace",
       "groupAdmins": "nur Admins"
     },
-    "computerYours": "Dein eigener Platz auf dem Computer des Workspace. Dateien, Browser und Anmeldungen dort gehören nur dir, und nur du kannst zusehen oder steuern.",
+    "computerYours": "Dein eigener Platz auf dem Computer des Workspace. Nur du kannst zusehen oder steuern.",
+    "computerNoHome": "Noch kein Computer. Es gibt einen, sobald dieser Workspace einen eigenen Computer hat, hinzugefügt unter Einstellungen, Computer.",
+    "computerOneUser": "Hier kein Computer. Der Computer des Workspace führt alle Agenten als einen einzigen Benutzer aus und kann den Platz jeder Person nicht getrennt halten. Ein Linux-Server, der mit der Option --system des Installers eingerichtet wurde, kann das.",
     "powers": {
       "title": "Workspace-Befugnisse",
       "help": "Das kann nur deine rechte Hand.",

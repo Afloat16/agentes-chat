@@ -2492,7 +2492,9 @@
       "groupWorkspace": "Per tutto il workspace",
       "groupAdmins": "solo admin"
     },
-    "computerYours": "Il tuo spazio sul computer del workspace. File, browser e accessi lì sono solo tuoi, e solo tu puoi guardarlo o controllarlo.",
+    "computerYours": "Il tuo spazio sul computer del workspace. Solo tu puoi guardarlo o controllarlo.",
+    "computerNoHome": "Ancora nessun computer. Ne avrà uno quando questo workspace avrà un computer proprio, aggiunto in Impostazioni, Computer.",
+    "computerOneUser": "Qui nessun computer. Il computer del workspace esegue tutti gli agenti come un solo utente, quindi non può tenere separato lo spazio di ogni persona. Un server Linux installato con l'opzione --system dell'installer può farlo.",
     "powers": {
       "title": "Poteri nel workspace",
       "help": "Solo il tuo braccio destro fa queste cose.",

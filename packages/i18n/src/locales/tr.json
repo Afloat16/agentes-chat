@@ -2406,7 +2406,9 @@
       "groupWorkspace": "Tüm çalışma alanı için",
       "groupAdmins": "yalnızca yöneticiler"
     },
-    "computerYours": "Çalışma alanının bilgisayarındaki sana ait yer. Oradaki dosyalar, tarayıcı ve oturumlar yalnızca senin ve yalnızca sen izleyebilir veya kontrol edebilirsin.",
+    "computerYours": "Çalışma alanının bilgisayarındaki sana ait yer. Yalnızca sen izleyebilir veya kontrol edebilirsin.",
+    "computerNoHome": "Henüz bilgisayar yok. Bu çalışma alanının Ayarlar, Bilgisayarlar bölümünden eklenen kendi bilgisayarı olduğunda bir tane olacak.",
+    "computerOneUser": "Burada bilgisayar yok. Çalışma alanının bilgisayarı tüm ajanları tek bir kullanıcı olarak çalıştırıyor, bu yüzden her kişinin yerini ayrı tutamıyor. Yükleyicinin --system seçeneğiyle kurulan bir Linux sunucusu bunu yapabilir.",
     "powers": {
       "title": "Çalışma alanı yetkileri",
       "help": "Bunları yalnızca sağ kolun yapar.",

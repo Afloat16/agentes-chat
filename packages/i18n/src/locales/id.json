@@ -2327,7 +2327,9 @@
       "groupWorkspace": "Untuk seluruh workspace",
       "groupAdmins": "khusus admin"
     },
-    "computerYours": "Tempat Anda sendiri di komputer workspace. File, browser, dan login di sana hanya milik Anda, dan hanya Anda yang bisa melihat atau mengendalikannya.",
+    "computerYours": "Tempat Anda sendiri di komputer workspace. Hanya Anda yang bisa melihat atau mengendalikannya.",
+    "computerNoHome": "Belum ada komputer. Komputer tersedia setelah workspace ini punya komputer sendiri, yang ditambahkan di Pengaturan, Komputer.",
+    "computerOneUser": "Tidak ada komputer di sini. Komputer workspace menjalankan semua agen sebagai satu pengguna, jadi tidak bisa memisahkan tempat tiap orang. Server Linux yang dipasang dengan opsi --system dari penginstal bisa.",
     "powers": {
       "title": "Kemampuan di workspace",
       "help": "Hanya tangan kanan Anda yang melakukan ini.",

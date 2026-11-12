@@ -2558,9 +2558,14 @@ export const en = {
       groupWorkspace: "For the whole workspace",
       groupAdmins: "admins only",
     },
-    /** Under its "Computador" row: the computer is the viewer's own seat (ADR 0174). */
-    computerYours:
-      "Your own place on the workspace's computer. Its files, browser and sign-ins are yours alone, and only you can watch or control it.",
+    /** Its "Computador" row: the computer is the viewer's own seat (ADR 0174). */
+    computerYours: "Your own place on the workspace's computer. Only you can watch or control it.",
+    /** The row where it has none for anyone: the workspace has no computer of its own. */
+    computerNoHome:
+      "No computer yet. It gets one when this workspace has a computer of its own, added in Settings, Computers.",
+    /** The row where the workspace's computer runs every agent as one OS user. */
+    computerOneUser:
+      "No computer here. The workspace's computer runs every agent as one user, so it can't keep each person's place apart. A Linux server set up with the installer's --system option can.",
     /** "Workspace powers" on its page: what only the right hand does, one line each (`RIGHT_HAND_POWERS`). */
     powers: {
       title: "Workspace powers",

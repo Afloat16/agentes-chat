@@ -19,7 +19,7 @@ import { handleAfterRename } from "@agenteschat/client/lib/new-agent";
 import { can } from "@agenteschat/client/lib/permissions";
 import { accountPlan, brainPlan, planReplies } from "@agenteschat/client/lib/plans";
 import { AUTO, modelChoices } from "@agenteschat/client/lib/providers";
-import { mineStatus, RIGHT_HAND_POWERS } from "@agenteschat/client/lib/right-hand";
+import { mineStatus, RIGHT_HAND_POWERS, rightHandNoComputer } from "@agenteschat/client/lib/right-hand";
 import {
   AffixInput,
   BrainLogo,
@@ -47,7 +47,6 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { LookRows, ModelSelect, modelOptions } from "@/components/AgentFields";
 import { RightHandApprovalsCard } from "@/components/ApprovalCover";
 import { PlanHold, usePlanHold } from "@/components/ai/ConnectAiSteps";
-import { useAgentMachineId } from "@/components/ComputerQueue";
 import { useConnectAi } from "@/components/ConnectAi";
 import { useAgentComputer } from "@/components/computer/facts";
 import { useOpenComputer } from "@/components/computer/open";
@@ -69,12 +68,11 @@ import { useToast } from "@/lib/toast";
 export function RightHandSettingsSection({ agent }: { agent: Agent }) {
   const { t } = useTranslation();
   const { org } = useOrg();
-  const machineId = useAgentMachineId(agent.id);
   return (
     <div className="ac-groups">
       <Card>
         <div className="settings-rows">
-          {machineId && <RightHandComputerRow agent={agent} />}
+          <RightHandComputerRow agent={agent} />
           <RightHandPowersRow />
         </div>
       </Card>
@@ -295,21 +293,23 @@ export function RightHandMineRow({ agent }: { agent: Agent }) {
 }
 
 /**
- * "Computador", where the right hand has one: the row opens the computer every agent's page opens, which for it is
- * the viewer's own seat on the workspace's computer and nobody else's.
+ * "Computador": the row opens the computer every agent's page opens, which for the right hand is the viewer's own
+ * seat on the workspace's computer and nobody else's. Where it has none for anyone (the workspace has no computer of
+ * its own, or one that can't keep people apart) the row stays and says why, with nothing to open.
  */
 function RightHandComputerRow({ agent }: { agent: Agent }) {
   const { t } = useTranslation();
   const view = useAgentComputer(agent);
   const openComputer = useOpenComputer();
   if (!view.ready || view.forbidden || !view.facts) return null;
+  const none = rightHandNoComputer(view.desktop?.reason);
+  if (none) return <PrefRow id="rh-computer" icon="computer" label={t("agentComputer.button")} status={t(none)} />;
   return (
     <PrefRow
       id="rh-computer"
       icon="computer"
       label={t("agentComputer.button")}
-      hint={t("rightHand.computerYours")}
-      status={view.machine?.name}
+      status={t("rightHand.computerYours")}
       onOpen={() => openComputer(agent.id)}
     />
   );
