@@ -93,7 +93,7 @@ import {
 } from "./rrule";
 import { providerFailure } from "./runs";
 import { describeWhen, parseSchedule, readSchedule, type ScheduleParse } from "./schedule";
-import { assertCanWork, deletionPending, standingRefusal } from "./standing";
+import { assertCanWork, closedRefusal, deletionPending, orgStanding, standingRefusal } from "./standing";
 import { alwaysAsks } from "./tools/gateway";
 import {
   assertMayContinuePause,
@@ -804,7 +804,8 @@ function billedTo(
 
 /**
  * Routines as `viewerId` sees them (see `viewerRights`), with their state, last week's health and usage; a webhook
- * routine's address only for who manages it, and only with `hooks`.
+ * routine's address only for who manages it, and only with `hooks`. In a workspace closed to work (suspended, or
+ * being deleted) none has a next run: its slots pass.
  */
 async function views(
   db: Database,
@@ -816,6 +817,7 @@ async function views(
   const first = rows[0];
   if (!first) return [];
   const orgId = first.orgId;
+  const closed = closedRefusal(await orgStanding(db, orgId)) !== null;
   const ids = rows.map((r) => r.id);
   const since = new Date(now.getTime() - ROUTINE_WEEK_MS);
   // The last RECENT_RUNS of each routine (one query, ranked per routine).
@@ -1027,7 +1029,7 @@ async function views(
         },
       ),
       active: r.active,
-      nextRunAt: r.active && r.nextRunAt ? r.nextRunAt.toISOString() : null,
+      nextRunAt: r.active && r.nextRunAt && !closed ? r.nextRunAt.toISOString() : null,
       createdAt: r.createdAt.toISOString(),
       access: routineAccessOf(r.access),
       report: routineReportOf(r.report),

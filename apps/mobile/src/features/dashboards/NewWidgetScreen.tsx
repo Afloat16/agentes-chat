@@ -503,10 +503,17 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
       </Locked>
     );
   } else if (phase === "testing") {
+    // The test's run waits (its plan, its budget, its computer): what for, in place of the step it is in.
+    const waits = draft ? widgetWords.wait(draft) : "";
     body = (
       <View style={styles.gap10}>
-        <BuildingSweep color={look.color} text={widgetStepWords(t, draftQ.data?.step)} height={44} />
-        <BuildClock since={since} onStop={stop} />
+        <BuildingSweep
+          color={look.color}
+          text={waits || widgetStepWords(t, draftQ.data?.step)}
+          height={44}
+          still={Boolean(waits)}
+        />
+        <BuildClock since={since} onStop={stop} waiting={Boolean(waits)} />
       </View>
     );
   } else if (phase === "failed" && draft && needsAi) {
@@ -691,14 +698,14 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
 
 /**
  * Under a build: how long it has taken, Stop at the row's end, and past a while one quiet line that it is still at
- * it. Its own component, so only it redraws each second.
+ * it (not while its run waits: the sweep says what for). Its own component, so only it redraws each second.
  */
-function BuildClock({ since, onStop }: { since: number; onStop: () => void }) {
+function BuildClock({ since, onStop, waiting }: { since: number; onStop: () => void; waiting: boolean }) {
   const { t } = useTranslation();
   const elapsed = Math.max(0, useNow(1000) - since);
   return (
     <View style={styles.gap8}>
-      {elapsed >= WIDGET_STILL_MS ? (
+      {!waiting && elapsed >= WIDGET_STILL_MS ? (
         <Animated.View entering={FadeIn.duration(200)}>
           <Text variant="caption" tone="faint">
             {t("dashboards.newWidget.stillWorking")}

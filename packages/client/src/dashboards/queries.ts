@@ -4,7 +4,7 @@ import { useApi } from "../api/context";
 import { ApiError } from "../api/http";
 import { keys } from "../api/keys";
 import { useAiStatusSince } from "../api/queries";
-import { widgetAiReady, widgetNeedsAi } from "./lib";
+import { busyWidgets, widgetAiReady, widgetNeedsAi } from "./lib";
 import type {
   ConfirmWidgetInput,
   CreateDashboardInput,
@@ -123,7 +123,8 @@ export const WIDGET_DRAFT_POLL_MS = 2000;
 /**
  * The live view of a widget being tested ("Test" in New widget): the draft, kept fresh by its `dashboard.widget`
  * events (to its creator only) and, while it is `building` or `updating`, asked again every `WIDGET_DRAFT_POLL_MS`.
- * Null id: nothing tested.
+ * Not while its run waits (`widgetWaiting`): a budget can wait for weeks, and its end is an event. Null id: nothing
+ * tested.
  */
 export function useWidgetDraft(orgId: string, widgetId: string | null) {
   const api = useApi();
@@ -133,8 +134,7 @@ export function useWidgetDraft(orgId: string, widgetId: string | null) {
     enabled: Boolean(widgetId),
     staleTime: 0,
     retry: false,
-    refetchInterval: (q) =>
-      q.state.data?.status === "building" || q.state.data?.status === "updating" ? WIDGET_DRAFT_POLL_MS : false,
+    refetchInterval: (q) => (q.state.data && busyWidgets([q.state.data]).length > 0 ? WIDGET_DRAFT_POLL_MS : false),
   });
 }
 

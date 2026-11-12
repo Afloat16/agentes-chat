@@ -11,13 +11,20 @@ import { nextCronTime } from "../cron";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../errors";
 import { publishRoutineRuns } from "../events";
 import { notifyWidgetAlert, resolveRoutinePaused, resolveWidgetFailed } from "../notification-producers";
-import { can, getMembership } from "../organizations";
+import { can, getMembership, type Membership } from "../organizations";
 import { type EventMerge, queueEventRun, routineInFlight } from "../routine-events";
 import { haltRoutineRuns } from "../routine-firing";
 import { queueRoutineRun } from "../routines";
+import { assertMayContinuePause, overrideUsagePause } from "../usage-pause";
 import { dashboardRights, requireWidget, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
-import { WIDGET_CHANGE_EVENT, widgetAgentWithoutAi } from "./refresh-fire";
+import {
+  mayContinueWidgetWait,
+  WIDGET_CHANGE_EVENT,
+  type WidgetRunWait,
+  widgetAgentWithoutAi,
+  widgetRunWaits,
+} from "./refresh-fire";
 import {
   failWidget,
   holdWidgetForAi,
@@ -373,9 +380,10 @@ async function autoBuildBlocker(
  * left or can no longer talk to the agent is taken over by `actorId`, a routine that paused itself is resumed, and one
  * a person paused on purpose runs once and stays paused).
  * The widget turns `updating` (`building` while it has no data) and its event goes out. A run already queued or
- * working answers with the widget as it is. `actorId` null: a first build queued by the server (no checks). An agent
- * with no AI gets no run: the widget waits for one (`holdUnlessAi`). `auto`: the build the apps start by themselves
- * once the agent of a widget waiting for an AI has one (`useBuildOnceAi`), which only queues (`autoBuildBlocker`).
+ * working answers with the widget as it is; one that waits goes on now or says why it can't (`goOnNow`). `actorId`
+ * null: a first build queued by the server (no checks). An agent with no AI gets no run, before any wait: the widget
+ * waits for one (`holdUnlessAi`). `auto`: the build the apps start by themselves once the agent of a widget waiting
+ * for an AI has one (`useBuildOnceAi`), which only queues (`autoBuildBlocker`), never letting a waiting run go on.
  */
 export async function refreshWidgetNow(
   deps: DashboardDeps,
@@ -384,10 +392,10 @@ export async function refreshWidgetNow(
   widgetId: string,
   options: { auto?: boolean } = {},
 ): Promise<WidgetView> {
-  const { widget, board } = actorId
-    ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit")
-    : await loadWidget(deps.db, orgId, widgetId);
-  const asIs = async () => widgetView(deps.db, await widgetRow(deps.db, widget.id));
+  const access = actorId ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit") : null;
+  const { widget, board } = access ?? (await loadWidget(deps.db, orgId, widgetId));
+  const viewer = access?.viewer ?? null;
+  const asIs = async () => widgetView(deps.db, await widgetRow(deps.db, widget.id), viewer);
   if (options.auto && !widgetNeedsAi(widget)) return asIs();
   if (await holdUnlessAi(deps, actorId, widget, board)) return asIs();
   const routine = await readyRoutine(deps, orgId, widget, board, options.auto ? null : actorId);
@@ -396,11 +404,67 @@ export async function refreshWidgetNow(
     await failWidget(deps, widget, board, { code: blocker });
     return asIs();
   }
-  if (await routineInFlight(deps.db, routine.id)) return asIs();
+  if (await routineInFlight(deps.db, routine.id)) {
+    const wait = access && !options.auto ? (await widgetRunWaits(deps.db, [routine.id])).get(routine.id) : undefined;
+    if (actorId && access && wait) await goOnNow(deps, actorId, access.membership, routine.id, widget.agentId, wait);
+    const view = await asIs();
+    return wait ? { ...view, wait: null } : view;
+  }
   await queueRoutineRun({ db: deps.db }, routine, nowOf(deps), "manual");
   const row = await markBusy(deps, await widgetRow(deps.db, widget.id), board);
   await publishRoutineRuns(deps.pubsub, orgId, routine.id).catch(() => {});
-  return widgetView(deps.db, row);
+  return widgetView(deps.db, row, viewer);
+}
+
+/**
+ * "Update now" and "Resolve" while the widget's run waits (ADR 0118, ADR 0135 §6): one paused near its plan's or
+ * budget's limit goes on now, for Continuar agora's people (`mayContinueWidgetWait`) and by its rule
+ * (`assertMayContinuePause`: never past the plan with extra usage off); one at the limit, or waiting for its computer
+ * or its AI provider, can't, and the person hears why and when it picks up (`widget.waiting`). One whose reset (an
+ * outage's next try) passed is about to go on by itself.
+ */
+async function goOnNow(
+  deps: DashboardDeps,
+  actorId: string,
+  membership: Membership,
+  routineId: string,
+  agentId: string,
+  wait: WidgetRunWait,
+) {
+  if (wait.resetsAt && Date.parse(wait.resetsAt) <= nowOf(deps).getTime()) return;
+  const { orgId, runId, waitId } = wait;
+  if (wait.code === "usage_pause" && waitId) {
+    if (!(await mayContinueWidgetWait(deps.db, actorId, membership, wait)))
+      throw new ForbiddenError(
+        "Only who asked, the agent's owner or an admin can continue it",
+        "run.continue_forbidden",
+      );
+    await assertMayContinuePause(deps.db, orgId, runId, "routine");
+    await deps.db.transaction((tx) =>
+      overrideUsagePause(tx, {
+        orgId,
+        runId,
+        waitId,
+        until: wait.resetsAt,
+        userId: actorId,
+        details: { routineId, source: wait.source ?? "plan" },
+      }),
+    );
+    return;
+  }
+  const agent = await getAgent(deps.db, orgId, agentId);
+  throw new ConflictError(
+    "Its run waits for its plan, budget, computer or AI provider: it can't update sooner",
+    DASHBOARD_ERRORS.waiting,
+    {
+      code: wait.code,
+      source: wait.source,
+      resetsAt: wait.resetsAt,
+      scope: wait.scope,
+      model: wait.model,
+      agentName: agent?.name ?? "",
+    },
+  );
 }
 
 /** Change requests asked while one waits join it, in the order they came (the newest asker keeps it). */
@@ -425,7 +489,7 @@ export async function askWidgetChange(
   widgetId: string,
   text: string,
 ): Promise<WidgetView> {
-  const { widget, board } = await requireWidget(deps.db, actorId, orgId, widgetId, "edit");
+  const { widget, board, viewer } = await requireWidget(deps.db, actorId, orgId, widgetId, "edit");
   const words = text.trim().slice(0, WIDGET_CHANGE_MAX);
   if (!words) throw new ValidationError("Say what to change", DASHBOARD_ERRORS.promptRequired);
   await requireTalksTo(deps.db, orgId, actorId, widget.agentId);
@@ -435,7 +499,7 @@ export async function askWidgetChange(
   await queueEventRun({ db: deps.db }, routine, { event, merge: mergeChanges });
   const row = await markBusy(deps, await widgetRow(deps.db, widget.id), board);
   await publishRoutineRuns(deps.pubsub, orgId, routine.id).catch(() => {});
-  return widgetView(deps.db, row);
+  return widgetView(deps.db, row, viewer);
 }
 
 /** Who hears a widget's alert (ADR 0135 §6): whoever set it (else its creator), while they still see its board. */

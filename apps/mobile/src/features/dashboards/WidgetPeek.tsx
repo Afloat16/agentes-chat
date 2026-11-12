@@ -55,6 +55,7 @@ export function WidgetPeek({
     w: compact ? 1 : w.layout.w,
     h: compact ? 1 : w.layout.h,
     needsAi: widgetNeedsAi(w),
+    wait: w.wait,
   };
   if (Platform.OS !== "ios") {
     return <WidgetCard widget={data} compact={compact} onPress={() => router.push(href)} />;

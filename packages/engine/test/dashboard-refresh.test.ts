@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import type { PubSub } from "@agenteschat/adapters";
-import { type Database, eq, schema } from "@agenteschat/db";
-import { type ModelRequest, systemText } from "@agenteschat/providers";
+import { type PubSub, userTopic } from "@agenteschat/adapters";
+import { and, type Database, eq, schema } from "@agenteschat/db";
+import { type ModelRequest, ProviderError, systemText } from "@agenteschat/providers";
 import type { FakeReply } from "@agenteschat/providers/testing";
 import { WIDGET_SCHEDULE_CRON, type WidgetSpec } from "@agenteschat/ui/widgets/spec";
 import {
@@ -34,6 +34,7 @@ import {
   widgetUpFront,
 } from "../src";
 import { holdWidgetForAi, widgetFailureCode } from "../src/dashboards/refresh-ledger";
+import { monthStartUtc } from "../src/usage";
 import { addMember, type Fixture, setup } from "./fixtures";
 import {
   agentRunRow,
@@ -59,10 +60,14 @@ function lazyDashboardTools() {
 }
 
 /** A fixture whose agent answers widget runs with `widgetReply` (and any other run with "Ok."). */
-async function setupWidgets(widgetReply: (req: ModelRequest, call: number) => FakeReply) {
+async function setupWidgets(
+  widgetReply: (req: ModelRequest, call: number) => FakeReply | Error,
+  options: { budgetNanoUsd?: number; contextTools?: boolean } = {},
+) {
   const tools = lazyDashboardTools();
   let calls = 0;
   f = await setup({
+    ...options,
     toolSources: [tools.source],
     reply: (req) => {
       if (!(req.tools ?? []).some((t) => t.name === "update_widget")) return { chunks: ["Ok."] };
@@ -640,6 +645,193 @@ describe("an agent with no AI", () => {
     expect((await waitingAuto()).status).toBe("updating");
     expect(await routineRow(f, routineId)).toMatchObject({ active: true, createdByUserId: f.owner.id });
     expect((await f.db.select().from(schema.routineRuns)).map((r) => r.trigger)).toEqual(["manual"]);
+  });
+});
+
+describe("a refresh that waits (ADR 0135 §6)", () => {
+  const BUDGET = 100_000_000_000;
+  /** The agent has spent `percent` of its monthly budget. */
+  const spend = (percent: number) => {
+    const spentNanoUsd = (BUDGET * percent) / 100;
+    return f.db
+      .insert(schema.agentBudgetPeriods)
+      .values({
+        orgId: f.org.id,
+        agentId: f.agent.id,
+        periodStart: monthStartUtc(new Date()).toISOString().slice(0, 10),
+        spentNanoUsd,
+      })
+      .onConflictDoUpdate({
+        target: [schema.agentBudgetPeriods.agentId, schema.agentBudgetPeriods.periodStart],
+        set: { spentNanoUsd },
+      });
+  };
+  const build = { name: "update_widget", input: { data: KPI, summary: "R$ 18.420 hoje", title: "Vendas de hoje" } };
+  const ask = () => ({
+    agentId: f.agent.id,
+    prompt: "Vendas de hoje",
+    format: "kpi" as const,
+    schedule: "manual" as const,
+  });
+
+  test("at its budget's limit it says what it waits for and when, and Update now says why it can't go sooner", async () => {
+    await setupWidgets(() => ({ chunks: [], toolUses: [build] }), { budgetNanoUsd: BUDGET });
+    await spend(100);
+    const b = await board();
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, ask());
+    await drainOutbox(f.db, f.handlers);
+    const waiting = await getWidget(dash(), f.owner.id, f.org.id, w.id);
+    expect(waiting.status).toBe("building");
+    expect(waiting.wait).toEqual({
+      code: "budget",
+      source: "budget",
+      resetsAt: expect.any(String),
+      scope: null,
+      model: null,
+      since: null,
+      canContinue: false,
+    });
+    expect(Date.parse(waiting.wait?.resetsAt ?? "")).toBeGreaterThan(Date.now());
+    await expect(refreshWidgetNow(dash(), f.owner.id, f.org.id, w.id)).rejects.toMatchObject({
+      code: "widget.waiting",
+      params: { code: "budget", source: "budget", resetsAt: waiting.wait?.resetsAt, agentName: f.agent.name },
+    });
+  });
+
+  /** A refresh that grows long (eight reads before its data), so it pauses near the budget's limit. */
+  const growsLong = () =>
+    setupWidgets(
+      (req, call) => {
+        if (seen(req).includes("Updated:")) return { chunks: ["Pronto."] };
+        if (call < 8) return { chunks: [], toolUses: [{ name: "search_context", input: { query: `vendas ${call}` } }] };
+        return { chunks: [], toolUses: [build] };
+      },
+      { budgetNanoUsd: BUDGET, contextTools: true },
+    );
+
+  test("paused near its budget's limit, Update now lets it go on now, and it updates", async () => {
+    await growsLong();
+    await spend(96);
+    const b = await board();
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, ask());
+    await drainOutbox(f.db, f.handlers);
+    const paused = await getWidget(dash(), f.owner.id, f.org.id, w.id);
+    expect(paused.wait).toMatchObject({ code: "usage_pause", source: "budget", canContinue: true });
+
+    const asked = await refreshWidgetNow(dash(), f.owner.id, f.org.id, w.id);
+    expect(asked.wait).toBeNull();
+    await drainOutbox(f.db, f.handlers);
+    expect(await widgetOf(w.id)).toMatchObject({ status: "ok", title: "Vendas de hoje" });
+    const continued = await f.db.select().from(schema.auditLog).where(eq(schema.auditLog.action, "usage.continued"));
+    expect(continued).toHaveLength(1);
+  });
+
+  test("Continue now is Continuar agora's: another editor of the board reads it greyed, and is refused", async () => {
+    await growsLong();
+    await spend(96);
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    const b = await createDashboard(dash(), f.owner.id, f.org.id, {
+      title: "Vendas",
+      audience: "workspace",
+      editPolicy: "viewers",
+    });
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, ask());
+    await drainOutbox(f.db, f.handlers);
+    expect((await getWidget(dash(), f.owner.id, f.org.id, w.id)).wait).toMatchObject({
+      code: "usage_pause",
+      canContinue: true,
+    });
+    const hers = await getWidget(dash(), bia.id, f.org.id, w.id);
+    expect(hers.canEdit).toBe(true);
+    expect(hers.wait).toMatchObject({ code: "usage_pause", canContinue: false });
+    await expect(refreshWidgetNow(dash(), bia.id, f.org.id, w.id)).rejects.toMatchObject({
+      code: "run.continue_forbidden",
+    });
+    // It still waits: nothing let it go on.
+    expect((await getWidget(dash(), f.owner.id, f.org.id, w.id)).wait?.code).toBe("usage_pause");
+    const continued = await f.db.select().from(schema.auditLog).where(eq(schema.auditLog.action, "usage.continued"));
+    expect(continued).toEqual([]);
+  });
+
+  test("its AI provider down: the park stores its next try, and tells the widget", async () => {
+    await setupWidgets(() => new ProviderError("overloaded", true, 529));
+    const b = await board();
+    const statuses: string[] = [];
+    f.pubsub.subscribe(userTopic(f.org.id, f.owner.id), (e) => {
+      const event = e as { type: string; status?: string };
+      if (event.type === "dashboard.widget" && event.status) statuses.push(event.status);
+    });
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, ask());
+    const queued = statuses.length;
+    const outage = async () =>
+      ((await f.db.select().from(schema.agentRuns))[0]?.transcript as { outage?: unknown } | null)?.outage;
+    await drainOutbox(f.db, f.handlers);
+    // Each try fails until the run parks on the outage ladder.
+    for (let i = 0; i < 8 && !(await outage()); i++) {
+      await f.db
+        .update(schema.outbox)
+        .set({ nextAttemptAt: new Date(Date.now() - 1000) })
+        .where(and(eq(schema.outbox.kind, "agent_run.execute"), eq(schema.outbox.status, "pending")));
+      await drainOutbox(f.db, f.handlers);
+    }
+    const wait = (await getWidget(dash(), f.owner.id, f.org.id, w.id)).wait;
+    expect(wait).toMatchObject({ code: "outage", source: null });
+    expect(Date.parse(wait?.resetsAt ?? "")).toBeGreaterThan(Date.now());
+    // Its run starting, then its park: the failed tries before it said nothing.
+    expect(statuses.slice(queued)).toEqual(["building", "building"]);
+  });
+
+  test("what else holds it: its model's own limit, room on its computer, its AI provider, each said as itself", async () => {
+    await setupWidgets(() => ({ chunks: ["Ok."] }));
+    const b = await board();
+    const w = await shownWidget(b.id, { schedule: "hour" });
+    const rr = await fireWidget(w.routineId ?? "");
+    const park = (set: Partial<typeof schema.agentRuns.$inferInsert>) =>
+      f.db
+        .update(schema.agentRuns)
+        .set({ status: "waiting_input", ...set })
+        .where(eq(schema.agentRuns.id, rr.agentRunId ?? ""));
+    const waitNow = async () => (await getWidget(dash(), f.owner.id, f.org.id, w.id)).wait;
+    const refused = () => refreshWidgetNow(dash(), f.owner.id, f.org.id, w.id);
+
+    // Its model alone: the scope and the model's name, never the plan's reset.
+    await park({
+      transcript: {
+        waitingForBrain: {
+          kind: "claude_code",
+          machineId: "",
+          code: "plan_limit",
+          waitId: "w-1",
+          plan: "OpenCode Go",
+          model: "deepseek-v4-pro",
+          scope: "region",
+        },
+      },
+    });
+    const model = "DeepSeek V4 Pro";
+    expect(await waitNow()).toMatchObject({ code: "plan_limit", source: "plan", scope: "region", model });
+    await expect(refused()).rejects.toMatchObject({
+      code: "widget.waiting",
+      params: { code: "plan_limit", scope: "region", model, agentName: f.agent.name },
+    });
+
+    // In line for its computer: since when it waits for room, also while it asks the computer again.
+    const roomWaitSince = Date.now() - 11 * 60_000;
+    const machineId = crypto.randomUUID();
+    await park({ waitingMachineId: machineId, transcript: { roomWaitSince, waitingForBrain: { code: "busy" } } });
+    const since = new Date(roomWaitSince).toISOString();
+    expect(await waitNow()).toMatchObject({ code: "busy", source: null, resetsAt: null, since });
+    await park({ status: "running", waitingMachineId: machineId, transcript: { roomWaitSince } });
+    expect(await waitNow()).toMatchObject({ code: "busy", since });
+    await expect(refused()).rejects.toMatchObject({ code: "widget.waiting", params: { code: "busy" } });
+
+    // Its AI provider down: its next try. Once that passed, Update now finds it about to go on.
+    const at = Date.now() + 15 * 60_000;
+    await park({ waitingMachineId: null, transcript: { outage: { since: Date.now(), n: 1, waitId: "w-2", at } } });
+    expect(await waitNow()).toMatchObject({ code: "outage", resetsAt: new Date(at).toISOString() });
+    await expect(refused()).rejects.toMatchObject({ code: "widget.waiting", params: { code: "outage" } });
+    await park({ transcript: { outage: { since: Date.now(), n: 1, waitId: "w-2", at: Date.now() - 1_000 } } });
+    expect((await refused()).wait).toBeNull();
   });
 });
 
