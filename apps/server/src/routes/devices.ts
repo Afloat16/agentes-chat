@@ -20,6 +20,7 @@ import {
   ValidationError,
   wifiIphones,
   wifiPairingState,
+  xcodeFix,
 } from "@agenteschat/engine";
 import { createRoute, type OpenAPIHono, z } from "@hono/zod-openapi";
 import type { Context } from "hono";
@@ -190,6 +191,23 @@ const WifiIphones = z
   })
   .openapi("WifiIphones");
 
+const XcodeFixView = z
+  .object({
+    fix: z
+      .object({
+        kind: z.enum(["select", "update"]),
+        state: z.enum(["asking", "running", "done", "canceled", "no_answer", "failed", "unsupported"]),
+        step: z.number().int().min(0).max(3),
+        message: z.string().optional(),
+      })
+      .nullable(),
+    update: z.literal(true).optional(),
+  })
+  .openapi("XcodeFix", {
+    description:
+      "A fix of the Mac's Xcode: `asking` (macOS's password window is open on the Mac), `running` (`step` of 3 done), `done`, `canceled`, `no_answer` (nobody typed the password in 3 minutes), `failed` (`message`), `unsupported` (this Mac can't: a system-mode runner, no Xcode in /Applications). `update`: the Mac's agentes.chat is too old for it.",
+  });
+
 const MachineParams = OrgParams.extend({ machineId: z.uuid() });
 const WifiIphoneParams = MachineParams.extend({ serial: z.string().min(1).max(200) });
 const PairingParams = MachineParams.extend({ pairingId: z.uuid() });
@@ -201,6 +219,8 @@ const RequestParams = OrgParams.extend({ requestId: z.uuid() });
 const LINK_LIMIT = { limit: 20, windowMs: 10 * 60_000 };
 /** Wi-Fi pairings per person: each runs adb on the computer for up to 2 minutes. */
 const PAIR_LIMIT = { limit: 30, windowMs: 10 * 60_000 };
+/** Xcode fixes per person: each may open a password window on someone's Mac. */
+const XCODE_FIX_LIMIT = { limit: 10, windowMs: 10 * 60_000 };
 /** Installer fetches per address (`/i/{code}`): a person retrying, not someone guessing codes. */
 const SCRIPT_LIMIT = { limit: 30, windowMs: 60_000 };
 
@@ -418,6 +438,60 @@ export function deviceAppRoutes(deps: AppDeps) {
       const { orgId, machineId } = c.req.valid("param");
       await lookForPhones({ db, hub: hub() }, c.get("user").id, orgId, machineId);
       return c.body(null, 204);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/organizations/{orgId}/devices/computers/{machineId}/xcode-fix",
+      tags,
+      security,
+      summary: "Fix this Mac's Xcode for an iPhone (its owner or an admin)",
+      description:
+        "`select`: the Mac puts Xcode in use, accepts its license and installs its first-launch packages; macOS asks for the Mac's password in its own window, on that Mac. `update`: the Mac gets the support files for an iPhone's newer iOS, no password. One at a time; ask `GET` for where it stands. Once done, the Mac looks at Xcode again at once.",
+      request: { params: MachineParams, body: body(z.object({ kind: z.enum(["select", "update"]) }).strict()) },
+      responses: { 200: json(XcodeFixView), 429: errorResponse("Too many fixes"), ...errors },
+    }),
+    async (c) => {
+      const { orgId, machineId } = c.req.valid("param");
+      const userId = c.get("user").id;
+      const limit = await deps.adapters.rateLimiter.consume(`xcode-fix:user:${userId}`, XCODE_FIX_LIMIT);
+      if (!limit.allowed) return apiError(c, 429, "rate_limited", "Too many tries. Try again in a few minutes.");
+      const { kind } = c.req.valid("json");
+      return c.json(await xcodeFix({ db, hub: hub() }, userId, orgId, machineId, "start", kind), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/organizations/{orgId}/devices/computers/{machineId}/xcode-fix",
+      tags,
+      security,
+      summary: "Where this Mac's Xcode fix stands (its owner or an admin)",
+      request: { params: MachineParams },
+      responses: { 200: json(XcodeFixView), ...errors },
+    }),
+    async (c) => {
+      const { orgId, machineId } = c.req.valid("param");
+      return c.json(await xcodeFix({ db, hub: hub() }, c.get("user").id, orgId, machineId, "status"), 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/organizations/{orgId}/devices/computers/{machineId}/xcode-fix",
+      tags,
+      security,
+      summary: "Stop this Mac's Xcode fix (its password window closes)",
+      request: { params: MachineParams },
+      responses: { 200: json(XcodeFixView), ...errors },
+    }),
+    async (c) => {
+      const { orgId, machineId } = c.req.valid("param");
+      return c.json(await xcodeFix({ db, hub: hub() }, c.get("user").id, orgId, machineId, "cancel"), 200);
     },
   );
 

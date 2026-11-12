@@ -168,3 +168,22 @@ test("Xcode's part, looked at every minute: a team found, or Xcode updated, goes
   expect(sent).toEqual([whole]);
   late.stop();
 });
+
+test("the full look finds a tool the hello didn't carry: the whole list goes out then, off a Mac too", async () => {
+  const c = computer([]);
+  const file = path.join(c.root, "toolchains.json");
+  writeFileSync(file, JSON.stringify({ git: "2.40.0" }));
+  const sent: RunnerToolchains[] = [];
+  let found: RunnerToolchains = { git: "2.40.0" };
+  const cache = cachedToolchains(file, async () => found, { onChange: (t) => sent.push(t) });
+  expect(cache.get()).toEqual({ git: "2.40.0" });
+  await cache.look();
+  expect(sent).toEqual([]);
+  found = { git: "2.40.0", adb: "36.0.2" };
+  await cache.look();
+  expect(sent).toEqual([found]);
+  // No Xcode look without `look`: nothing runs each minute.
+  await cache.lookApple();
+  expect(sent).toHaveLength(1);
+  cache.stop();
+});

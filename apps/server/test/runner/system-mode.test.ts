@@ -480,6 +480,8 @@ test("a system-mode runner (root) without workers does no agent work; machine-le
     "phone.look",
     // The Mac's pick of iPhones on its Wi-Fi, kept beside the phones' locks.
     "phone.wifi",
+    // Fixing the Mac's own Xcode is the computer's; root answers it can't (no person's screen to ask on).
+    "xcode.fix",
   ]);
 
   if (posix) {

@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 60;
+export const MACHINE_PROTOCOL_VERSION = 62;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -621,6 +621,13 @@ export const SHARED_GEMINI_PROTOCOL = 58;
  * A Windows runner before it refuses every Codex turn, so the server reads it as too old for Codex there.
  */
 export const CODEX_WINDOWS_PROTOCOL = 60;
+/**
+ * `xcode.fix`: a Mac fixes its own Xcode for an iPhone's setup, started from the apps. `select` points the developer
+ * folder at Xcode, accepts its license and installs its first-launch packages behind macOS's own password window;
+ * `update` gets the device support files for a newer iOS (no password). The server sends no command: the runner holds
+ * the script. Older runners answer `bad_request`, and the apps show the Terminal command instead.
+ */
+export const XCODE_FIX_PROTOCOL = 62;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -760,6 +767,30 @@ export function pairAddress(input: unknown): string | null {
 
 export const XCODE_BLOCKED = ["command_line_tools", "license"] as const;
 export type XcodeBlocked = (typeof XCODE_BLOCKED)[number];
+
+/** `select`: Xcode in use, its license and first-launch packages (asks the Mac's password); `update`: `ddis update`. */
+export type XcodeFixKind = "select" | "update";
+export const XCODE_FIX_STATES = [
+  "asking",
+  "running",
+  "done",
+  "canceled",
+  "no_answer",
+  "failed",
+  "unsupported",
+] as const;
+/**
+ * Where a fix stands: `asking` (macOS's password window is open on the Mac), `running` (`step` of 3 commands done),
+ * `done`, `canceled` (Cancel in that window, or from the apps), `no_answer` (nobody typed the password in 3 minutes),
+ * `failed` (`message`: the command's own last line), `unsupported` (this runner can't: not a Mac, a system-mode runner,
+ * no Xcode in /Applications).
+ */
+export interface XcodeFix {
+  kind: XcodeFixKind;
+  state: (typeof XCODE_FIX_STATES)[number];
+  step: number;
+  message?: string;
+}
 
 /** What this computer can build and drive with (versions found, best effort; absent: not found). */
 export interface RunnerToolchains {
@@ -2441,6 +2472,8 @@ export type MachineRequest = (
    * over Wi-Fi from now on (`allow`) or no longer (`forget`). Each answers the list as it is then.
    */
   | { op: "phone.wifi"; action: "list" | "allow" | "forget"; serial?: string }
+  /** `XCODE_FIX_PROTOCOL`: start a fix (`kind`), or say where the last one stands, or stop it. One at a time. */
+  | { op: "xcode.fix"; action: "start" | "status" | "cancel"; kind?: XcodeFixKind }
 ) & {
   agent?: AgentScope;
   /** Protocol 34: a `browser.*` op in this browser profile's session instead of the agent's (ADR 0110). */
@@ -2514,6 +2547,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "pause.set",
   "phone.look",
   "phone.wifi",
+  "xcode.fix",
 ];
 
 /** What each op answers with `ok: true`. */
@@ -2675,6 +2709,7 @@ export interface MachineReplies {
   "pause.set": { paused: RunnerPause };
   "phone.look": { looking: boolean };
   "phone.wifi": { available: WifiIphone[] };
+  "xcode.fix": { fix: XcodeFix | null };
 }
 
 /** An element numbered on a `browser.capture` image: its ref and box (CSS pixels). */

@@ -7,6 +7,7 @@ import {
   PHONES_PROTOCOL,
   type RunnerPhone,
   STREAM_CLOSE,
+  XCODE_FIX_PROTOCOL,
 } from "@agenteschat/adapters";
 import { eq, schema } from "@agenteschat/db";
 import {
@@ -36,6 +37,7 @@ import {
   ValidationError,
   wifiIphones,
   wifiPairingState,
+  xcodeFix,
 } from "../src";
 import { addMember, type Fixture, setup } from "./fixtures";
 import { fakeRunner, pairMachine, RUNNER } from "./machine-fixtures";
@@ -605,4 +607,54 @@ test("iPhones over Wi-Fi: only who may manage the Mac sees the offer or picks on
   expect(await wifiIphones(d, f.owner.id, f.org.id, mac)).toEqual({ available: [] });
   expect(isNewWork({ op: "phone.wifi", action: "allow", serial: near.serial })).toBe(false);
   expect(IPHONE_WIFI_PROTOCOL).toBeGreaterThan(PHONE_PAIRING_PROTOCOL);
+});
+
+test("fixing a Mac's Xcode: its owner or an admin asks; an old app, an odd answer and an offline Mac", async () => {
+  f = await setup();
+  const rui = await addMember(f.db, f.org.id, "member", "rui");
+  const mac = await pair(f.owner.id, "MacBook");
+  await online(mac);
+  const calls: unknown[] = [];
+  let reply: unknown = { fix: { kind: "select", state: "asking", step: 0 } };
+  let fail: Error | null = null;
+  const hub = {
+    call: async (machineId: string, request: unknown) => {
+      calls.push({ machineId, request });
+      if (fail) throw fail;
+      return reply;
+    },
+  } as unknown as Parameters<typeof xcodeFix>[0]["hub"];
+  const d = { db: f.db, hub };
+
+  // A member who doesn't manage the Mac never opens a password window on it.
+  await expect(xcodeFix(d, rui.id, f.org.id, mac, "start")).rejects.toThrow(ForbiddenError);
+  // A Mac whose app predates the fix: the apps show the Terminal command.
+  await f.db
+    .update(schema.machines)
+    .set({ protocol: XCODE_FIX_PROTOCOL - 1 })
+    .where(eq(schema.machines.id, mac));
+  expect(await xcodeFix(d, f.owner.id, f.org.id, mac, "start")).toEqual({ fix: null, update: true });
+  expect(calls).toEqual([]);
+
+  await f.db.update(schema.machines).set({ protocol: XCODE_FIX_PROTOCOL }).where(eq(schema.machines.id, mac));
+  expect(await xcodeFix(d, f.owner.id, f.org.id, mac, "start")).toEqual({
+    fix: { kind: "select", state: "asking", step: 0 },
+  });
+  expect(calls.at(-1)).toEqual({ machineId: mac, request: { op: "xcode.fix", action: "start", kind: "select" } });
+  const audit = await f.db.select().from(schema.auditLog).where(eq(schema.auditLog.action, "device.xcode_fix"));
+  expect(audit.map((a) => a.details)).toEqual([{ kind: "select" }]);
+  // The answer comes from the person's computer: an unknown state is a failure, the step stays in 0-3, text is cut.
+  reply = { fix: { kind: "rm", state: "pwned", step: 99, message: "x".repeat(400) } };
+  const odd = await xcodeFix(d, f.owner.id, f.org.id, mac, "status", "update");
+  expect(odd.fix).toMatchObject({ kind: "update", state: "failed", step: 3 });
+  expect(odd.fix?.message).toHaveLength(300);
+  reply = { fix: null };
+  expect(await xcodeFix(d, f.owner.id, f.org.id, mac, "cancel")).toEqual({ fix: null });
+  // A runner that doesn't know the op; an offline Mac: nothing to ask about, and starting says it's offline.
+  fail = new MachineRequestError("bad_request", "Unknown op");
+  expect(await xcodeFix(d, f.owner.id, f.org.id, mac, "start")).toEqual({ fix: null, update: true });
+  fail = new MachineOfflineError("MacBook", "personal");
+  expect(await xcodeFix(d, f.owner.id, f.org.id, mac, "status")).toEqual({ fix: null });
+  await expect(xcodeFix(d, f.owner.id, f.org.id, mac, "start")).rejects.toThrow(MachineOfflineError);
+  expect(isNewWork({ op: "xcode.fix", action: "start", kind: "select" })).toBe(false);
 });

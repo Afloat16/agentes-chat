@@ -80,9 +80,11 @@ async function appleKeys(opts: ToolchainsProbe, devTools?: boolean): Promise<App
  * the developer folder still on the Command Line Tools (installed before Xcode, `xcode-select` never moved), or
  * Xcode's license not agreed to. Neither is "install Xcode", which the setup would otherwise say.
  */
-async function xcodeBlocked(opts: ToolchainsProbe): Promise<RunnerToolchains["xcodeBlocked"]> {
+export async function xcodeBlocked(opts: ToolchainsProbe): Promise<RunnerToolchains["xcodeBlocked"]> {
   const { env, find, say } = finder(opts);
   const selected = await say(find("xcode-select"), ["-p"]);
+  // No developer tools at all: macOS's /usr/bin/xcodebuild stub would open an install dialog.
+  if (!selected) return undefined;
   if (/CommandLineTools/.test(selected) && existsSync(opts.xcodeApp ?? XCODE_APP)) return "command_line_tools";
   const xcodebuild = find("xcodebuild");
   if (!xcodebuild) return undefined;
@@ -128,26 +130,30 @@ export async function probeToolchains(opts: ToolchainsProbe = {}): Promise<Runne
 }
 
 /**
- * The last look, and a fresh one in the background now and every `TOOLCHAINS_TTL_MS` (written to `file`). `apple`
- * (a Mac): Xcode's part every `APPLE_LOOK_MS`; when it differs from what the server heard, `onChange` gets the whole
- * list (false: not sent, tried again the next minute).
+ * The last look, and a fresh one in the background now and every `TOOLCHAINS_TTL_MS` (written to `file`). `apple.look`
+ * (a Mac): Xcode's part every `APPLE_LOOK_MS`. Whenever a look differs from what the server heard, `onChange` gets the
+ * whole list (false: not sent, tried again the next minute).
  */
 export function cachedToolchains(
   file: string,
   probe: () => Promise<RunnerToolchains> = () => probeToolchains(),
-  apple: { look: () => Promise<AppleKeys>; onChange: (toolchains: RunnerToolchains) => unknown } | null = null,
+  apple: { look?: () => Promise<AppleKeys>; onChange: (toolchains: RunnerToolchains) => unknown } | null = null,
 ) {
   let current = readJson<RunnerToolchains>(file);
-  const appleOf = (t: RunnerToolchains | null) =>
-    JSON.stringify([t?.xcode, t?.xcodeSdk, t?.appleTeam, t?.appleAccount, t?.xcodeBlocked]);
-  /** Xcode's part as the server last heard it (`hello` reads `get`, or a frame that went out). */
-  let told = appleOf(current);
+  const said = (t: RunnerToolchains | null) => JSON.stringify(t ?? {});
+  /** The list as the server last heard it (`hello` reads `get`, or a frame that went out). */
+  let told = said(current);
+  const tell = (t: RunnerToolchains) => {
+    if (apple && said(t) !== told && apple.onChange(t) !== false) told = said(t);
+  };
   let looking: Promise<void> | null = null;
   const look = () =>
     (looking ??= probe()
       .then((found) => {
         current = found;
         writeJson(file, found);
+        // `hello` went out with the last look's list: a git, adb or Node found since reaches the server now.
+        tell(found);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -159,7 +165,7 @@ export function cachedToolchains(
   let appleLooking = false;
   /** One look at Xcode's part; resolves once it is stored (and told, when it changed). */
   const lookApple = async () => {
-    if (!apple || appleLooking || looking) return;
+    if (!apple?.look || appleLooking || looking) return;
     appleLooking = true;
     try {
       const keys = defined(await apple.look());
@@ -178,18 +184,18 @@ export function cachedToolchains(
         writeJson(file, next);
       }
       // Against what the server heard, not the last look: a hello sent before the start's full look finished.
-      if (appleOf(next) !== told && apple.onChange(next) !== false) told = appleOf(next);
+      tell(next);
     } catch {
       // the next minute's look
     } finally {
       appleLooking = false;
     }
   };
-  const appleTimer = apple ? setInterval(() => void lookApple(), APPLE_LOOK_MS) : null;
+  const appleTimer = apple?.look ? setInterval(() => void lookApple(), APPLE_LOOK_MS) : null;
   appleTimer?.unref?.();
   return {
     get: () => {
-      told = appleOf(current);
+      told = said(current);
       return current ?? undefined;
     },
     look,

@@ -372,6 +372,8 @@ export function isNewWork(request: MachineRequest) {
     // A person's guide asking the computer to look for a phone, or its owner picking an iPhone on its Wi-Fi.
     case "phone.look":
     case "phone.wifi":
+    // Its owner fixing the Mac's Xcode for an iPhone's setup.
+    case "xcode.fix":
       return false;
     case "secret":
       return request.action !== "discard" && request.action !== "remove" && request.action !== "activate";
