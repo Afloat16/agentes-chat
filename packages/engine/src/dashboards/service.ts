@@ -20,6 +20,7 @@ import { canTalkTo, speakerOf } from "../audience";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../errors";
 import { resolveDashboardProposal, resolveWidgetNotices } from "../notification-producers";
 import { getMembership, type Membership, requireActiveMembership } from "../organizations";
+import { closedRefusal, orgStanding } from "../standing";
 import {
   type AudienceMember,
   audienceMembers,
@@ -317,14 +318,19 @@ function toWidgetView(
 /**
  * Widget rows as the apps see them, their routines' next runs, their latest updates' cost (`lastCostUsd`, "This
  * test cost …") and what the runs of those being redone wait on (`wait`), read in one query each. `viewer`: who reads
- * them, so a pause says whether they may continue it (none: nobody may).
+ * them, so a pause says whether they may continue it (none: nobody may). In a workspace closed to work (being
+ * deleted) none has a next run: its routines' slots pass.
  */
 export async function widgetViews(
   db: Executor,
   rows: readonly WidgetRow[],
   viewer?: DashboardViewer | null,
 ): Promise<WidgetView[]> {
-  const routineIds = [...new Set(rows.flatMap((r) => (r.routineId && r.schedule !== "manual" ? [r.routineId] : [])))];
+  const first = rows[0];
+  const closed = first ? closedRefusal(await orgStanding(db, first.orgId)) !== null : false;
+  const routineIds = closed
+    ? []
+    : [...new Set(rows.flatMap((r) => (r.routineId && r.schedule !== "manual" ? [r.routineId] : [])))];
   const next = new Map<string, Date | null>();
   if (routineIds.length > 0) {
     for (const r of await db
