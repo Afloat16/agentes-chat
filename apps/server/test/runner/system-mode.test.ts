@@ -476,6 +476,8 @@ test("a system-mode runner (root) without workers does no agent work; machine-le
     "phone.pair.status",
     "phone.pair.cancel",
     "phone.look",
+    // The Mac's pick of iPhones on its Wi-Fi, kept beside the phones' locks.
+    "phone.wifi",
   ]);
 
   if (posix) {

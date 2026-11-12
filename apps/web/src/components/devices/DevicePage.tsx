@@ -4,6 +4,7 @@ import {
   deviceName,
   findPhone,
   iosOf,
+  iphoneOverWifi,
   osName,
   personInControl,
   phoneLink,
@@ -42,6 +43,7 @@ import { useOrg } from "@/components/org-context";
 import { OrgMark } from "@/components/ProfilePhoto";
 import { useToast } from "@/lib/toast";
 import { ConnectDialog, type ConnectStart } from "./ConnectDialog";
+import { WifiIphoneOffer } from "./ConnectPhone";
 import { DeviceRemoveDialog, DeviceRenameDialog, DeviceRowView, type DeviceTarget } from "./DevicesSection";
 import { PhoneLive } from "./PhoneLive";
 import { DevicePortrait, Facts, StatusPill, useOwner } from "./parts";
@@ -360,7 +362,7 @@ function ComputerPage({ machineId }: { machineId: string }) {
           )}
         </div>
       </Card>
-      {d.phones.length > 0 && (
+      {d.phones.length > 0 ? (
         <Card aria-labelledby="dv-pc-phones">
           <CardHeader id="dv-pc-phones" icon="phone" title={t("devices.phonesHere")} />
           <List className="dv-list" role="list" aria-label={t("devices.phonesHere")}>
@@ -375,7 +377,10 @@ function ComputerPage({ machineId }: { machineId: string }) {
               />
             ))}
           </List>
+          <WifiIphoneOffer host={d} />
         </Card>
+      ) : (
+        <WifiIphoneOffer host={d} card />
       )}
       {machine && <MachineAccessCards machine={machine} />}
       {d.mayManage && (
@@ -465,6 +470,8 @@ function PhonePage({ phoneId }: { phoneId: string }) {
       </Button>
     ) : undefined;
   const link = phoneLink(t, p);
+  // An iPhone over Wi-Fi is let go, not forgotten: it comes back only if picked again.
+  const forgetWords = iphoneOverWifi(p) ? t("devices.iphone.wifi.stop") : t("devices.forget");
   const facts = [
     { label: t("devices.facts.system"), value: phoneSystem(t, p) },
     { label: t("devices.facts.model"), value: p.model },
@@ -510,7 +517,7 @@ function PhonePage({ phoneId }: { phoneId: string }) {
                 </MenuItem>
                 <MenuSeparator />
                 <MenuItem icon="trash" danger onSelect={() => setRemoving(target)}>
-                  {t("devices.forget")}
+                  {forgetWords}
                 </MenuItem>
               </Menu>
             )
@@ -557,7 +564,7 @@ function PhonePage({ phoneId }: { phoneId: string }) {
       {p.mayManage && (
         <div>
           <Button size="sm" variant="danger" icon="trash" onClick={() => setRemoving(target)}>
-            {t("devices.forget")}
+            {forgetWords}
           </Button>
         </div>
       )}

@@ -132,7 +132,7 @@ import {
 import { type CachedLogo, logoDataUrl, readCachedLogo, removeCachedLogo, syncOrgLogo } from "./org-logo";
 import { type DeviceGrant, devicePair, type FetchFn, LINK_CODE, PairingError, uniqueWorkspace } from "./pairing";
 import { agentId8, agentWorkspace } from "./paths";
-import { PhoneManager, type PhoneManagerOptions } from "./phones";
+import { iphonesWifiFileOf, PhoneManager, type PhoneManagerOptions } from "./phones";
 import { agentSecrets, dropStoredSiteSecrets, secretValue } from "./secrets";
 import { AGENTS_CGROUP } from "./service";
 import {
@@ -1401,6 +1401,7 @@ export class RunnerDaemon implements RequestObserver {
           this.send({ type: "phones.changed", phones });
           this.queueStatus();
         },
+        iphonesWifiFile: () => iphonesWifiFileOf(home, this.stored?.machineId),
         ...(this.opts.caffeinate !== undefined ? { caffeinate: this.opts.caffeinate } : {}),
         ...this.opts.phones,
       });
