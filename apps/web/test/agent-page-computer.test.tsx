@@ -195,6 +195,30 @@ describe("what the agent keeps running (keep_running), under its computer", () =
     expect(screen().queryByRole("region", { name: "Mantido rodando" })).toBeNull();
   });
 
+  test("the worst case: ten holds, an unbroken name as long as it may be, each line whole with its ⋯", async () => {
+    setSystemTime(MIDDAY);
+    const state = seedState();
+    const api = createFakeApi(state);
+    const fake = fakeBrowserOf.get(api);
+    const machines = fakeMachinesOf.get(api);
+    if (!fake || !machines) throw new Error("no fakes");
+    const m = machines.pair({ name: "Mac mini", os: "linux" });
+    await api.sandbox.setTarget(ORG_ID, ADA_ID, m.id);
+    fake.desktops.set(ADA_ID, { available: true, reason: null, running: true });
+    const holds = Array.from({ length: 10 }, (_, i) => ({
+      ...HOLD,
+      id: `0193f6b4-1111-7000-8000-00000000001${i}`,
+      what: i === 0 ? "W".repeat(80) : `Servidor de webhooks número ${i} que responde aos pedidos dos clientes`,
+      until: i % 2 ? "2026-10-27T18:00:00.000Z" : null,
+    }));
+    fake.holds.set(ADA_ID, { holds, canStop: true });
+    await renderApp(`/org/${ORG_ID}/agents/${ADA_ID}`, { api });
+    await settle(10);
+    const row = screen().getByRole("region", { name: "Mantido rodando" });
+    expect(row.querySelectorAll(".cmp-kept__item")).toHaveLength(10);
+    expect(within(row).getAllByRole("button")).toHaveLength(10);
+  });
+
   test("who may only watch sees the lines, with no Stop", async () => {
     const { row } = await pageWith({ canStop: false });
     expect(row).toBeTruthy();
