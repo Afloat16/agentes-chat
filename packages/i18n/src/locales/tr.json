@@ -2422,6 +2422,7 @@
         "delete": "Bir ajanı yalnızca yöneticiler siler",
         "audience": "Onunla kimin konuşacağını yalnızca yöneticiler ve sorumlusu değiştirir",
         "channels": "Kanallarını yalnızca yöneticiler ve sorumlusu değiştirir",
+        "skill": "Bir ajanın becerilerini yalnızca yöneticiler değiştirir",
         "ai_account": "Yalnızca hesabın sahibi verebilir",
         "name": "Bir ajanın adını yalnızca yöneticiler değiştirir",
         "look": "Görünümünü yalnızca yöneticiler ve sorumlusu değiştirir",
@@ -2439,7 +2440,8 @@
       "channel": "Kanal",
       "name": "Ad",
       "look": "Görünüm",
-      "reports_to": "Rapor verdiği"
+      "reports_to": "Rapor verdiği",
+      "skill": "{{name}} becerisi"
     },
     "value": {
       "lookDefault": "Varsayılan görünüm",
@@ -2455,7 +2457,9 @@
       "deleted": "Silindi",
       "notIn": "Kanalda değil",
       "withoutMention": "Kendiliğinden",
-      "mentionOnly": "Yalnızca bahsedilince"
+      "mentionOnly": "Yalnızca bahsedilince",
+      "skillOn": "Açık",
+      "skillOff": "Kapalı"
     },
     "remove": {
       "archiveTitle_one": "{{count}} ajan arşivlensin mi?",
@@ -2698,6 +2702,17 @@
       "gemini": "Gemini planınızı bağlayın",
       "zen": "OpenCode'u bağlayın",
       "api_key": "API anahtarı ekleyin"
+    },
+    "toolOff": {
+      "text": "{{computer}} bağlı, ancak {{program}} orada kapalı. Güvenlik nedeniyle yalnızca bilgisayarın kendisinden açılabilir.",
+      "where": "{{computer}} üzerinde",
+      "one": "Saatin yanındaki agentes.chat simgesine <mark/> tıklayın",
+      "oneWindows": "Windows'ta görev çubuğundaki ^ okunun arkasında olabilir.",
+      "two": "<b>Tercihler</b>'i açın",
+      "three": "<b>Araçlar</b> altında <b>{{program}}</b> seçeneğini açın",
+      "terminal": "Bilgisayarın terminalinde çalıştırın:",
+      "here": "<b>Araçlar</b> altında <b>{{program}}</b> seçeneğini açın.",
+      "waiting": "Açmanız bekleniyor. Bu ekran kendiliğinden değişir."
     },
     "titleFor": "{{name}} için bir yapay zeka bağlayın",
     "have": {
@@ -9154,6 +9169,10 @@
     "pickAll": "Tümü",
     "pickMissing": "En az bir beceri seçin.",
     "pickSkipped": "Yüklenemiyor. {{reason}}",
+    "pickReplaces": "Yüklü {{name}} becerisinin yerini alır",
+    "pickReplacesRemoved": "Kaldırılan {{name}} becerisinin yerini alır",
+    "forAgent_one": "{{agent}} için aç",
+    "forAgent_other": "{{agent}} için aç",
     "installedMany": "{{count}} beceri yüklendi.",
     "zipHelp": "Kökünde SKILL.md bulunan bir .zip.",
     "zipPick": ".zip seç",
@@ -13111,7 +13130,8 @@
       "ownerOrAdmin": "Bunu yalnızca ajanın sahibi veya bir yönetici yapabilir.",
       "detailsHidden": "Nasıl çalıştığını yalnızca {{agentName}} ile konuşanlar görür.",
       "extraOwnerOnly": "Planın ücretli ek kullanımını yalnızca ajanın sahibi açıp kapatabilir.",
-      "undoForbidden": "Bunu yalnızca ajanın çalıştığı kişi, sahibi veya bir yönetici geri alabilir."
+      "undoForbidden": "Bunu yalnızca ajanın çalıştığı kişi, sahibi veya bir yönetici geri alabilir.",
+      "undoSkillsAdmins": "Bir ajanın becerilerindeki değişikliği yalnızca bir yönetici geri alabilir veya yineleyebilir."
     },
     "account": {
       "notRestorable": "Bu hesap artık geri yüklenemez.",
@@ -15656,6 +15676,7 @@
       "agent_proposal": "Yeni bir ajan önerdi: {{name}}",
       "team_proposal": "Bir ekip önerdi: {{names}}",
       "settings_proposal": "{{names}} için bir değişiklik önerdi",
+      "settings_request": "Kendi ayarlarında bir değişiklik istiyor",
       "approval_request": "Onay isteği: {{title}}",
       "secret_request": "{{agent}} bir anahtar istedi: {{name}}",
       "secret_requestAnon": "Bir anahtar istendi: {{name}}",

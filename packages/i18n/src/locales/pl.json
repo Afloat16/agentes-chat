@@ -2596,6 +2596,7 @@
         "delete": "Tylko admini usuwają agenta",
         "audience": "Tylko admini i opiekun zmieniają, kto z nim rozmawia",
         "channels": "Tylko admini i opiekun zmieniają jego kanały",
+        "skill": "Tylko admini zmieniają umiejętności agenta",
         "ai_account": "Przydziela je tylko właściciel konta",
         "name": "Tylko admini zmieniają nazwę agenta",
         "look": "Tylko admini i opiekun zmieniają jego wygląd",
@@ -2613,7 +2614,8 @@
       "channel": "Kanał",
       "name": "Nazwa",
       "look": "Wygląd",
-      "reports_to": "Podlega"
+      "reports_to": "Podlega",
+      "skill": "Umiejętność {{name}}"
     },
     "value": {
       "lookDefault": "Domyślny wygląd",
@@ -2629,7 +2631,9 @@
       "deleted": "Usunięty",
       "notIn": "Poza kanałem",
       "withoutMention": "Samodzielnie",
-      "mentionOnly": "Tylko po wzmiance"
+      "mentionOnly": "Tylko po wzmiance",
+      "skillOn": "Włączona",
+      "skillOff": "Wyłączona"
     },
     "remove": {
       "archiveTitle_one": "Zarchiwizować {{count}} agenta?",
@@ -2898,6 +2902,17 @@
       "gemini": "Połącz swój plan Gemini",
       "zen": "Połącz OpenCode",
       "api_key": "Dodaj klucz API"
+    },
+    "toolOff": {
+      "text": "{{computer}} jest połączony, ale {{program}} jest na nim wyłączony. Ze względów bezpieczeństwa można go włączyć tylko na samym komputerze.",
+      "where": "Na {{computer}}",
+      "one": "Kliknij ikonę agentes.chat <mark/> obok zegara",
+      "oneWindows": "W systemie Windows może być ukryta pod strzałką ^ na pasku zadań.",
+      "two": "Otwórz <b>Preferencje</b>",
+      "three": "W <b>Narzędziach</b> włącz <b>{{program}}</b>",
+      "terminal": "W terminalu komputera uruchom:",
+      "here": "Włącz <b>{{program}}</b> w <b>Narzędziach</b>.",
+      "waiting": "Czekam, aż to włączysz. Ten ekran zmieni się sam."
     },
     "titleFor": "Połącz AI dla: {{name}}",
     "have": {
@@ -9852,6 +9867,12 @@
     "pickAll": "Wszystkie",
     "pickMissing": "Wybierz co najmniej jedną umiejętność.",
     "pickSkipped": "Nie można zainstalować. {{reason}}",
+    "pickReplaces": "Zastępuje zainstalowaną umiejętność {{name}}",
+    "pickReplacesRemoved": "Zastępuje usuniętą umiejętność {{name}}",
+    "forAgent_one": "Włącz ją dla {{agent}}",
+    "forAgent_few": "Włącz je dla {{agent}}",
+    "forAgent_many": "Włącz je dla {{agent}}",
+    "forAgent_other": "Włącz je dla {{agent}}",
     "installedMany": "Zainstalowane umiejętności: {{count}}.",
     "zipHelp": "Plik .zip z SKILL.md w katalogu głównym.",
     "zipPick": "Wybierz .zip",
@@ -14087,7 +14108,8 @@
       "ownerOrAdmin": "Może to zrobić tylko właściciel agenta albo administrator.",
       "detailsHidden": "Tylko osoby rozmawiające z {{agentName}} widzą, jak to działa.",
       "extraOwnerOnly": "Tylko właściciel agenta włącza lub wyłącza płatne dodatkowe użycie planu.",
-      "undoForbidden": "Cofnąć to może tylko osoba, dla której agent pracował, jego właściciel albo administrator."
+      "undoForbidden": "Cofnąć to może tylko osoba, dla której agent pracował, jego właściciel albo administrator.",
+      "undoSkillsAdmins": "Cofnąć lub ponowić zmianę umiejętności agenta może tylko administrator."
     },
     "account": {
       "notRestorable": "Tego konta nie da się już przywrócić.",
@@ -16719,6 +16741,7 @@
       "agent_proposal": "Propozycja nowego agenta: {{name}}",
       "team_proposal": "Zaproponował zespół: {{names}}",
       "settings_proposal": "Zaproponował zmianę dla: {{names}}",
+      "settings_request": "Prosi o zmianę własnych ustawień",
       "approval_request": "Prośba o zatwierdzenie: {{title}}",
       "secret_request": "{{agent}} prosi o klucz: {{name}}",
       "secret_requestAnon": "Prośba o klucz: {{name}}",

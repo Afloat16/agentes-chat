@@ -2425,6 +2425,7 @@
         "delete": "Alleen admins verwijderen een agent",
         "audience": "Alleen admins en de verantwoordelijke wijzigen wie met hem praat",
         "channels": "Alleen admins en de verantwoordelijke wijzigen zijn kanalen",
+        "skill": "Alleen admins wijzigen de skills van een agent",
         "ai_account": "Alleen de eigenaar van het account geeft het",
         "name": "Alleen admins hernoemen een agent",
         "look": "Alleen admins en de verantwoordelijke wijzigen het uiterlijk",
@@ -2442,7 +2443,8 @@
       "channel": "Kanaal",
       "name": "Naam",
       "look": "Uiterlijk",
-      "reports_to": "Rapporteert aan"
+      "reports_to": "Rapporteert aan",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Het standaarduiterlijk",
@@ -2458,7 +2460,9 @@
       "deleted": "Verwijderd",
       "notIn": "Niet in het kanaal",
       "withoutMention": "Uit zichzelf",
-      "mentionOnly": "Alleen bij vermelding"
+      "mentionOnly": "Alleen bij vermelding",
+      "skillOn": "Aan",
+      "skillOff": "Uit"
     },
     "remove": {
       "archiveTitle_one": "{{count}} agent archiveren?",
@@ -2707,6 +2711,17 @@
       "gemini": "Koppel je Gemini-abonnement",
       "zen": "Koppel OpenCode",
       "api_key": "Een API-sleutel toevoegen"
+    },
+    "toolOff": {
+      "text": "{{computer}} is verbonden, maar {{program}} staat daar uit. Voor de veiligheid kan het alleen op de computer zelf worden aangezet.",
+      "where": "Op {{computer}}",
+      "one": "Klik op het agentes.chat-icoon <mark/> bij de klok",
+      "oneWindows": "In Windows kan het achter de pijl ^ van de taakbalk zitten.",
+      "two": "Open <b>Voorkeuren</b>",
+      "three": "Zet onder <b>Tools</b> <b>{{program}}</b> aan",
+      "terminal": "Voer in de terminal van de computer uit:",
+      "here": "Zet <b>{{program}}</b> aan onder <b>Tools</b>.",
+      "waiting": "Wachten tot je het aanzet. Dit scherm verandert vanzelf."
     },
     "titleFor": "Een AI koppelen voor {{name}}",
     "titleFor_female": "Een AI koppelen voor {{name}}",
@@ -9255,6 +9270,10 @@
     "pickAll": "Alle",
     "pickMissing": "Kies minstens één skill.",
     "pickSkipped": "Kan niet worden geïnstalleerd. {{reason}}",
+    "pickReplaces": "Vervangt de geïnstalleerde skill {{name}}",
+    "pickReplacesRemoved": "Vervangt de verwijderde skill {{name}}",
+    "forAgent_one": "Aanzetten voor {{agent}}",
+    "forAgent_other": "Aanzetten voor {{agent}}",
     "installedMany": "{{count}} skills geïnstalleerd.",
     "zipHelp": "Een .zip met SKILL.md in de hoofdmap.",
     "zipPick": ".zip kiezen",
@@ -13238,7 +13257,8 @@
       "ownerOrAdmin": "Alleen de eigenaar van de agent of een beheerder kan dit doen.",
       "detailsHidden": "Alleen wie met {{agentName}} praat, ziet hoe het werkt.",
       "extraOwnerOnly": "Alleen de eigenaar van de agent zet het betaalde extra gebruik van het abonnement aan of uit.",
-      "undoForbidden": "Alleen de persoon voor wie de agent werkte, zijn eigenaar of een beheerder kan dit ongedaan maken."
+      "undoForbidden": "Alleen de persoon voor wie de agent werkte, zijn eigenaar of een beheerder kan dit ongedaan maken.",
+      "undoSkillsAdmins": "Alleen een beheerder kan een wijziging in de skills van een agent ongedaan maken of opnieuw doen."
     },
     "account": {
       "notRestorable": "Dit account kan niet meer hersteld worden.",
@@ -15795,6 +15815,7 @@
       "agent_proposal": "Nieuwe agent voorgesteld: {{name}}",
       "team_proposal": "Stelde een team voor: {{names}}",
       "settings_proposal": "Stelde een wijziging voor {{names}} voor",
+      "settings_request": "Vraagt een wijziging in de eigen instellingen",
       "approval_request": "Goedkeuringsverzoek: {{title}}",
       "secret_request": "{{agent}} vroeg om een sleutel: {{name}}",
       "secret_requestAnon": "Vroeg om een sleutel: {{name}}",
