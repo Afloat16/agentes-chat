@@ -17548,6 +17548,14 @@
       "timeout": "De update duurde te lang.",
       "invalid_data": "{{name}} kon de gegevens niet in deze vorm zetten."
     },
+    "needsAi": {
+      "body": "{{name}} bouwt hem zodra er een AI gekoppeld is.",
+      "short": "Heeft een AI nodig",
+      "not_signed_in": "Het abonnement van {{name}} is uitgelogd.",
+      "no_computer": "De AI van {{name}} heeft een computer nodig en die is er niet.",
+      "cli_missing": "Het AI-programma van {{name}} is niet op de computer geïnstalleerd.",
+      "plan_not_shared": "Het abonnement van {{name}} antwoordt alleen de eigenaar, dus het kan geen widgets bijwerken."
+    },
     "wait": {
       "plan": "Wacht tot het abonnement van {{name}} {{when}} wordt vernieuwd",
       "planUnknown": "Wacht tot het abonnement van {{name}} wordt vernieuwd",
@@ -17919,7 +17927,8 @@
       "blockNotFound": "Die grafiek staat niet meer in het bericht.",
       "notAgentMessage": "Alleen de grafiek van een agent kan worden vastgezet.",
       "promptRequired": "Zeg wat de widget moet tonen.",
-      "notTested": "Test hem eerst: de widget wordt gemaakt zodra de test lukt."
+      "notTested": "Test hem eerst: de widget wordt gemaakt zodra de test lukt.",
+      "needsAi": "{{agentName}} kan deze widget nog niet bijwerken. De widget zegt waarom."
     }
   },
   "teamPlan": {

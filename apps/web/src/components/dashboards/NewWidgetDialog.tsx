@@ -1,6 +1,7 @@
 import type { Agent, PinnableBlock, Widget, WidgetFormat, WidgetSchedule, WidgetSize } from "@agenteschat/client";
 import {
   useAgents,
+  useAiStatusSince,
   useConfirmWidget,
   useDashboards,
   useHomeDashboard,
@@ -11,6 +12,8 @@ import {
   useWidgetDraft,
   useWidgetSuggestions,
   WIDGET_STILL_MS,
+  widgetAiReady,
+  widgetNeedsAi,
   widgetStepWords,
   widgetWaiting,
   widgetWaitText,
@@ -54,7 +57,7 @@ import { AgentPickerDialog } from "@/components/agents/AgentPickerDialog";
 import { COMPACT_QUERY } from "@/components/NavDrawer";
 import { useOrg } from "@/components/org-context";
 import { colorOf } from "@/components/Sky";
-import { failureText } from "@/components/widgets/parts";
+import { failureText, useWidgetAiWay } from "@/components/widgets/parts";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useMatchMedia } from "@/hooks/useMatchMedia";
 import { useToast } from "@/lib/toast";
@@ -187,6 +190,12 @@ function NewWidgetBody({
   const detail = useWidgetDraft(orgId, draftId).data;
   const live = detail ?? (test.data?.id === draftId ? test.data : undefined);
   const draft = draftId && live?.id === draftId ? live : undefined;
+  // Its agent has no AI: the test waits for one (no build started), and runs again once one is connected.
+  const needsAi = Boolean(draft && widgetNeedsAi(draft));
+  const aiStatus = useAiStatusSince(orgId, needsAi);
+  const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
+  const retested = useRef(false);
+  const aiWay = useWidgetAiWay(draft?.agentId, draft?.failure?.detail);
 
   // A draft nobody created is deleted when the dialog closes or another test replaces it (the server sweeps any
   // left behind after a day). `pending` is the draft still to delete; one being created is kept.
@@ -310,6 +319,13 @@ function NewWidgetBody({
     // Its promise, not the mutation's callbacks: those don't run once the dialog is gone, and the draft must go then.
     void test.mutateAsync(input).then(made, refused);
   };
+  // Once per dialog: a status the server still disagrees with can't test again and again.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runTest` changes each render; once its agent has an AI
+  useEffect(() => {
+    if (!aiBack || retested.current) return;
+    retested.current = true;
+    runTest();
+  }, [aiBack]);
 
   /** Stop: the build ends (its draft goes, and its run with it) and the ask is back as it was written. */
   const stop = () => {
@@ -662,6 +678,25 @@ function NewWidgetBody({
           >
             <p>{t("dashboards.newWidget.stillWorking")}</p>
           </div>
+        </div>
+      </div>
+    ) : phase === "failed" && needsAi ? (
+      <div className="nw-fail ac-iconline" role="status">
+        <Icon name="plug" size={18} />
+        <div>
+          <b>{failureText(t, draft?.failure ?? null, name)}</b>
+          <p>{t("widgets.needsAi.body", { name })}</p>
+          {aiWay && "locked" in aiWay && <p>{aiWay.locked}</p>}
+          <span className="nw-fail__acts">
+            {aiWay && "connect" in aiWay && (
+              <Button size="sm" onClick={aiWay.connect}>
+                {t("noAi.action")}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+              {t("dashboards.newWidget.editAsk")}
+            </Button>
+          </span>
         </div>
       </div>
     ) : phase === "failed" ? (

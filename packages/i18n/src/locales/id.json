@@ -16923,6 +16923,14 @@
       "timeout": "Pembaruan terlalu lama.",
       "invalid_data": "{{name}} tidak bisa menyusun data dalam format ini."
     },
+    "needsAi": {
+      "body": "{{name}} membuatnya begitu AI terhubung.",
+      "short": "Butuh AI",
+      "not_signed_in": "Paket {{name}} sudah keluar dari akun.",
+      "no_computer": "AI {{name}} butuh komputer dan tidak ada satu pun.",
+      "cli_missing": "Program AI {{name}} tidak terpasang di komputer.",
+      "plan_not_shared": "Paket {{name}} hanya melayani pemiliknya, jadi tidak bisa memperbarui widget."
+    },
     "wait": {
       "plan": "Menunggu paket {{name}} direset {{when}}",
       "planUnknown": "Menunggu paket {{name}} direset",
@@ -17289,7 +17297,8 @@
       "blockNotFound": "Grafik itu sudah tidak ada di pesan.",
       "notAgentMessage": "Hanya grafik dari agen yang bisa disematkan.",
       "promptRequired": "Sebutkan apa yang harus ditampilkan widget.",
-      "notTested": "Uji dulu: widget dibuat setelah ujinya berhasil."
+      "notTested": "Uji dulu: widget dibuat setelah ujinya berhasil.",
+      "needsAi": "{{agentName}} belum bisa memperbarui widget ini. Widget-nya menjelaskan alasannya."
     }
   },
   "teamPlan": {

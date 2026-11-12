@@ -18483,6 +18483,14 @@
       "timeout": "Aktualizacja trwała za długo.",
       "invalid_data": "Agentowi {{name}} nie udało się ułożyć danych w tym formacie."
     },
+    "needsAi": {
+      "body": "{{name}} utworzy go, gdy tylko zostanie podłączona AI.",
+      "short": "Potrzebuje AI",
+      "not_signed_in": "Plan agenta {{name}} jest wylogowany.",
+      "no_computer": "AI agenta {{name}} potrzebuje komputera, a nie ma żadnego.",
+      "cli_missing": "Program AI agenta {{name}} nie jest zainstalowany na komputerze.",
+      "plan_not_shared": "Plan agenta {{name}} odpowiada tylko swojemu właścicielowi, więc nie może aktualizować widżetów."
+    },
     "wait": {
       "plan": "Czeka na odnowienie planu agenta {{name}} {{when}}",
       "planUnknown": "Czeka na odnowienie planu agenta {{name}}",
@@ -18864,7 +18872,8 @@
       "blockNotFound": "Tego wykresu nie ma już w wiadomości.",
       "notAgentMessage": "Przypiąć można tylko wykres agenta.",
       "promptRequired": "Napisz, co ma pokazywać widżet.",
-      "notTested": "Najpierw przetestuj: widżet powstaje, gdy test się uda."
+      "notTested": "Najpierw przetestuj: widżet powstaje, gdy test się uda.",
+      "needsAi": "{{agentName}} nie może jeszcze zaktualizować tego widżetu. Widżet podaje powód."
     }
   },
   "teamPlan": {

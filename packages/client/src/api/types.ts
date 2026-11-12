@@ -1407,6 +1407,11 @@ export interface AiStatus {
       | "plan_tools";
     /** Ready on an API key with Automático: the maker of the key it thinks with (`autoMakerOf`). */
     provider?: string;
+    /**
+     * Its state for background work (a routine, a widget's build) where that differs from `state`: background work
+     * never falls back on the model brain, and the right hand's thinks with the workspace's own AI, nobody's.
+     */
+    background?: "ready" | "no_ai" | "waiting";
   }[];
 }
 
@@ -6468,6 +6473,8 @@ export interface NotificationLatest {
    * Both said in the person's language.
    */
   reason?: string;
+  /** `widget_failed` with `missing_credential`: why its agent has no AI, coded (`widgetFailureKey`'s `detail`). */
+  detail?: string;
   /** `approval`: asked while nobody watched, by a routine or an unattended run (ADR 0053 §8). */
   origin?: ApprovalOrigin;
   /** `org_standing` to `agent_hold` (agentes.chat Cloud): `network` or `operator`, never the hold's reason. */

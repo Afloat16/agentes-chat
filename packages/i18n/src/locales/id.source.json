@@ -41998,6 +41998,24 @@
   "widgets.failure.invalid_data": {
     "value": "{{name}} couldn't put the data in this format."
   },
+  "widgets.needsAi.body": {
+    "value": "{{name}} builds it as soon as an AI is connected."
+  },
+  "widgets.needsAi.short": {
+    "value": "Needs an AI"
+  },
+  "widgets.needsAi.not_signed_in": {
+    "value": "{{name}}'s plan is signed out."
+  },
+  "widgets.needsAi.no_computer": {
+    "value": "{{name}}'s AI needs a computer and there is none."
+  },
+  "widgets.needsAi.cli_missing": {
+    "value": "{{name}}'s AI program isn't installed on the computer."
+  },
+  "widgets.needsAi.plan_not_shared": {
+    "value": "{{name}}'s plan serves only its owner, so it can't update widgets."
+  },
   "widgets.wait.plan": {
     "value": "Waiting for {{name}}'s plan to reset {{when}}"
   },
@@ -42927,6 +42945,9 @@
   },
   "dashboards.errors.notTested": {
     "value": "Test it first: the widget is created once its test works."
+  },
+  "dashboards.errors.needsAi": {
+    "value": "{{agentName}} can't update this widget yet. The widget says why."
   },
   "teamPlan.start.templates": {
     "value": "See team templates"

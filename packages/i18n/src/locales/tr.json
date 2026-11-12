@@ -17301,6 +17301,14 @@
       "timeout": "Güncelleme çok uzun sürdü.",
       "invalid_data": "{{name}} verileri bu biçime getiremedi."
     },
+    "needsAi": {
+      "body": "Bir yapay zeka bağlanır bağlanmaz {{name}} onu oluşturur.",
+      "short": "Yapay zeka gerekiyor",
+      "not_signed_in": "{{name}} adlı ajanın planının oturumu kapandı.",
+      "no_computer": "{{name}} adlı ajanın yapay zekasının bir bilgisayara ihtiyacı var ama hiç yok.",
+      "cli_missing": "{{name}} adlı ajanın yapay zeka programı bilgisayarda kurulu değil.",
+      "plan_not_shared": "{{name}} adlı ajanın planı yalnızca sahibine yanıt verir, bu yüzden widget'ları güncelleyemez."
+    },
     "wait": {
       "plan": "{{name}} adlı ajanın planının {{when}} sıfırlanması bekleniyor",
       "planUnknown": "{{name}} adlı ajanın planının sıfırlanması bekleniyor",
@@ -17672,7 +17680,8 @@
       "blockNotFound": "O grafik artık mesajda yok.",
       "notAgentMessage": "Yalnızca bir ajanın grafiği sabitlenebilir.",
       "promptRequired": "Widget'ın ne göstermesi gerektiğini yazın.",
-      "notTested": "Önce test edin: widget, testi başarılı olunca oluşturulur."
+      "notTested": "Önce test edin: widget, testi başarılı olunca oluşturulur.",
+      "needsAi": "{{agentName}} bu widget'ı henüz güncelleyemiyor. Nedeni widget'ta yazıyor."
     }
   },
   "teamPlan": {

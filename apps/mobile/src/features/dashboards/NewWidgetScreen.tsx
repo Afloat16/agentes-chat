@@ -1,4 +1,5 @@
 import {
+  useAiStatusSince,
   useConfirmWidget,
   useDashboards,
   useHomeDashboard,
@@ -11,6 +12,8 @@ import {
   type WidgetFormat,
   type WidgetSchedule,
   type WidgetSuggestion,
+  widgetAiReady,
+  widgetNeedsAi,
   widgetStepWords,
 } from "@agenteschat/client";
 import { canTalk } from "@agenteschat/client/lib/audience";
@@ -52,7 +55,7 @@ import { useDirectory, useNow, useOrgId } from "../shared/hooks";
 import { goBack, PushedHeader, successHaptic, tapHaptic } from "../shared/parts";
 import { SheetHostProvider } from "../shared/SheetHost";
 import { closeAgentPick, openAgentPick } from "./agent-pick";
-import { useAgentLook, useWidgetWords } from "./hooks";
+import { useAgentLook, useWidgetAiWay, useWidgetWords } from "./hooks";
 import {
   asksInCard,
   confirmTitle,
@@ -164,6 +167,12 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
   const draftQ = useWidgetDraft(orgId, tested?.widget.id ?? null);
   // A draft that is gone (swept, or removed elsewhere) is no test any more.
   const draft: Widget | null = tested && !draftQ.isError ? (draftQ.data ?? tested.widget) : null;
+  // Its agent has no AI: the test waits for one (no build started), and runs again once one is connected.
+  const needsAi = Boolean(draft && widgetNeedsAi(draft));
+  const aiWay = useWidgetAiWay(needsAi ? draft?.agentId : null, draft?.failure?.detail);
+  const aiStatus = useAiStatusSince(orgId, needsAi);
+  const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
+  const retested = useRef(false);
   const currentKey = testKeyOf(text, agentId, format);
   const phase = testPhase({ pending: sending, draft, testedKey: tested?.key ?? null, currentKey });
   const barLabel = newWidgetBarLabel(phase);
@@ -240,6 +249,14 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
         failed(error);
       });
   };
+
+  // Once per screen: a status the server still disagrees with can't test again and again.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runTest` changes each render; once its agent has an AI
+  useEffect(() => {
+    if (!aiBack || retested.current) return;
+    retested.current = true;
+    runTest();
+  }, [aiBack]);
 
   /** Stop: the build ends (its draft goes, and its run with it) and the ask is back as it was typed. */
   const stop = () => {
@@ -493,6 +510,28 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
           still={Boolean(waits)}
         />
         <BuildClock since={since} onStop={stop} waiting={Boolean(waits)} />
+      </View>
+    );
+  } else if (phase === "failed" && draft && needsAi) {
+    body = (
+      <View style={styles.failed}>
+        <View style={styles.failedLine}>
+          <LineIcon variant="footnote" name="bolt" size={16} color={c.warn} />
+          <Text variant="footnote" style={[styles.grow, { color: c.warn }]}>
+            {widgetWords.failure(draft)}
+          </Text>
+        </View>
+        <Text variant="footnote" tone="muted">
+          {t("widgets.needsAi.body", { name: look.name })}
+        </Text>
+        {aiWay && "locked" in aiWay ? (
+          <Text variant="footnote" tone="muted">
+            {aiWay.locked}
+          </Text>
+        ) : null}
+        {aiWay && "connect" in aiWay ? (
+          <Button size="sm" variant="secondary" label={t("noAi.action")} onPress={aiWay.connect} />
+        ) : null}
       </View>
     );
   } else if (phase === "failed" && draft) {
