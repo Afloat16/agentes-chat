@@ -180,6 +180,7 @@ import { sha256 } from "./crypto";
 import { widgetRunWaitChanged } from "./dashboards/refresh-fire";
 import { WIDGET_FAILURES } from "./dashboards/types";
 import { publishDelivery } from "./delivery";
+import { kickParkedWakes } from "./dispatch";
 import { isAgentOnlyDm } from "./dms";
 import {
   BudgetExceededError,
@@ -1040,6 +1041,7 @@ export async function executeRun(deps: EngineDeps, runId: string, options: RunJo
         }).catch(() => {});
       }
     }
+    if (prof.run) await kickParkedWakes(deps.db, prof.run.orgId, prof.run.agentId).catch(() => {});
   }
 }
 
@@ -1239,7 +1241,7 @@ async function executeRunInner(
   }
   // status is `running` here.
   prof.mark("claim");
-  prof.run = { id: run.id, orgId: run.orgId };
+  prof.run = { id: run.id, orgId: run.orgId, agentId: run.agentId };
   steerGate.close = answerNoTurn(deps.pubsub, run.id);
   const claimedAt = Date.now();
   /** Active time across claims (waits excluded): what the long-work safety net counts (ADR 0121 §1). */
@@ -1460,6 +1462,7 @@ async function executeRunInner(
     await publishChannelEvent(deps.pubsub, event("running"));
     await announceAgentStatus(deps.pubsub, run.orgId, run.agentId).catch(() => {});
     await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+    await kickParkedWakes(db, run.orgId, run.agentId).catch(() => {});
     // A widget says it waits for room once that wait is `COMPUTER_QUEUE_NOTE_MS` old: it hears the turn started.
     const since = transcript?.roomWaitSince;
     if (since !== undefined && Date.now() - since >= COMPUTER_QUEUE_NOTE_MS)

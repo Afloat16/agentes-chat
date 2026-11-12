@@ -26,7 +26,7 @@ export function createProfiler() {
     stages,
     brain,
     /** The run it profiles, once claimed: its profile is kept with it. */
-    run: undefined as { id: string; orgId: string } | undefined,
+    run: undefined as { id: string; orgId: string; agentId: string } | undefined,
     total: () => ({
       ms: Math.round(stages.reduce((n, s) => n + s.ms, 0) * 10) / 10,
       queries: stages.reduce((n, s) => n + s.queries, 0),
