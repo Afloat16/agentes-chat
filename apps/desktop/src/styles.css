@@ -740,7 +740,7 @@ body[data-window="popover"] {
   justify-content: center;
   padding: 32px;
 }
-/* Sized for one line at the window's fixed 720 wide; a longer language wraps rather than clips. */
+/* One line at the window's fixed 720 wide (376 px of text): every language's hosting.title stays under ~355 px. */
 .dk-fr__body .dk-choose__main h1 {
   font-size: 24px;
   max-width: none;

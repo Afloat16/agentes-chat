@@ -382,7 +382,7 @@
     }
   },
   "hosting": {
-    "title": "Où se trouve votre espace de travail ?",
+    "title": "Où vit votre espace de travail ?",
     "lead": "L'application est la même. Ce qui change, c'est qui s'occupe du serveur.",
     "recommended": "Recommandé",
     "free": "Gratuit · open source",

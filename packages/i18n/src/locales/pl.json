@@ -387,7 +387,7 @@
     }
   },
   "hosting": {
-    "title": "Gdzie ma być twoja przestrzeń robocza?",
+    "title": "Gdzie będzie twoja przestrzeń?",
     "lead": "Aplikacja jest ta sama. Zmienia się tylko to, kto dba o serwer.",
     "recommended": "Polecane",
     "free": "Za darmo · open source",

@@ -382,7 +382,7 @@
     }
   },
   "hosting": {
-    "title": "¿Dónde vive tu espacio de trabajo?",
+    "title": "¿Dónde vive tu espacio?",
     "lead": "La app es la misma. Cambia quién cuida el servidor.",
     "recommended": "Recomendado",
     "free": "Gratis · código abierto",
