@@ -241,6 +241,10 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "mobile.devices.reason.device_support",
     "mobile.devices.reason.apple_account_missing",
     "mobile.devices.reason.apple_team_missing",
+    "mobile.devices.reason.wifi_away",
+    "mobile.devices.reason.wifi_asleep",
+    "mobile.devices.reason.tunnel_down",
+    "mobile.devices.iphone.wifi.",
     // The iPhone setup window opens only on a Mac.
     "desktop.iphone.checkingStall",
   ],

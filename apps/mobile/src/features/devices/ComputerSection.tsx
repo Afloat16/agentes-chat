@@ -82,7 +82,10 @@ export function ComputerSection({ device: d, name }: { device: ComputerDevice; n
                 icon="wifi"
                 label={t("mobile.devices.iphone.wifi.also", { host: name, name: p.name ?? p.model })}
                 labelLines={3}
-                hint={{ name: t("mobile.devices.iphone.wifi.use"), text: t("mobile.devices.iphone.wifi.hint") }}
+                hint={{
+                  name: t("common.about", { label: t("mobile.devices.iphone.wifi.use") }),
+                  text: t("mobile.devices.iphone.wifi.hint"),
+                }}
                 below={
                   <Button
                     size="sm"

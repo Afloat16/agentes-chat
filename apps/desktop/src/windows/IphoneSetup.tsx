@@ -132,7 +132,7 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
   const pickOverWifi = (serial: string) => near.pick(serial).catch((err: unknown) => toast(errorText(t, err), "alert"));
   // iPhones on this Mac's Wi-Fi that trust it, under the step that waits for a cable.
   const wifiOffer = near.available.map((p) => (
-    <span key={p.serial} className="dk-ip__act ac-iconline">
+    <span key={p.serial} className="dk-ip__act dk-ip__wifi">
       <span className="ac-hintline">
         <span>{t("devices.iphone.wifi.also", { name: p.name ?? p.model })}</span>
         <InfoHint name={hintFor(t, t("devices.iphone.wifi.use"), t("devices.iphone.wifi.hint")).name}>
