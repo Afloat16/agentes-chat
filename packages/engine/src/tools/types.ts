@@ -120,8 +120,13 @@ export interface ToolDefinition {
   serviceIcon?: string;
   /** What a connection's tool names start with (`stripe_2`): a big connector's directory is named with it. */
   toolPrefix?: string;
-  /** Needs a person's approval for every call. Merge, deploy and rollback always do. */
+  /** Needs a person's approval for every call. Merge, deploy and rollback do by their name too. */
   sensitive?: boolean;
+  /**
+   * Set by the gateway's listing, never by a source: this agent never asks (ADR 0173), so a call of this tool opens
+   * no card whatever its name or marks say.
+   */
+  unasked?: boolean;
   /**
    * A call that carries `why` (in the tool's own schema) asks a person's approval first: how an agent asks for
    * a command the computer held for a person (ADR 0053 §3, amended 2026-10-30).

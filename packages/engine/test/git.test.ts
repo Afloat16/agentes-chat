@@ -768,7 +768,7 @@ describe("branches that aren't the agent's own", () => {
         })
       ).text();
     expect(await push("refs/heads/main")).toContain(
-      "agentes: main is the default branch: push to agentes/dev/<topic> and open a pull request; merging asks a person",
+      "agentes: main is the default branch: push to agentes/dev/<topic> and open a pull request; merging is a separate step",
     );
     github.options.branches = { main: {}, "ana/fix": { protected: true } };
     expect(await push("refs/heads/ana/fix")).toContain("ng refs/heads/ana/fix protected");
@@ -903,7 +903,7 @@ describe("branches that aren't the agent's own", () => {
       "nope isn't on GitHub, and an approval only covers updating an existing branch, never creating one. Push to agentes/dev/<topic> and open a pull request.",
     );
     expect(await refusal("main")).toBe(
-      "main is the default branch: push to agentes/dev/<topic> and open a pull request; merging asks a person.",
+      "main is the default branch: push to agentes/dev/<topic> and open a pull request; merging is a separate step.",
     );
     expect(await refusal("rel")).toContain("rel is protected");
     expect(await f.db.select().from(schema.approvals)).toEqual([]);

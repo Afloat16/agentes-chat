@@ -68,6 +68,7 @@ import { taskConversationOf } from "./task-conversation";
 import { loadTeam, rosterScopeNames, TEAM_IN_PROMPT, teammatesFor, teammatesNowPrompt, teamPrompt } from "./team";
 import { rangeStillVisible, threadRunInfo } from "./threads";
 import { HAND_OVER_STEP } from "./tools/directory";
+import type { ApprovalsLevel } from "./tools/run-policy";
 import { neutralizeUntrusted, untrustedBlock } from "./untrusted";
 import { waitingOnPerson, waitingOnPersonBlock } from "./waiting";
 import { workBrief } from "./works";
@@ -202,6 +203,22 @@ export const REQUEST_APPROVAL_LINE_PERSONAL = inPersonalWords(REQUEST_APPROVAL_L
  * Several actions that each need a person's approval are asked in one go: they show as one card the person
  * approves at once, instead of one card and one wait per action. Every brain reads it ("# How to reply").
  */
+/**
+ * What waits for a person's approval, by the agent's approvals level (ADR 0173), in "# How to reply": an agent that
+ * never asks is told nothing waits, and one that always asks that every change does.
+ */
+export function approvalsLine(level: ApprovalsLevel, personal: boolean): string {
+  const request = personal ? REQUEST_APPROVAL_LINE_PERSONAL : REQUEST_APPROVAL_LINE;
+  if (level === "never") {
+    return `- You are set to never ask: none of your tools waits for a person's approval, whatever its description says. A merge, a deploy, a rollback, a send, a delete, a payment and a command on your computer run the moment you call them, in a routine too, so call one only when it is what was asked or what your instructions say. Never tell anyone an action waits for their approval. Only the tools whose job is asking still open a card (request_approval, request_permission, ask_user). ${request}`;
+  }
+  const waits =
+    level === "always"
+      ? "You are set to always ask: every call that changes something (a task, a file, a memory, a message in another conversation, a routine, a command on your computer, a click or typing in your browser, anything in a connected app) waits for a person's approval, whatever its description says. Reading, and replying here, never do"
+      : "Actions marked sensitive (merge, deploy, rollback and similar) wait for a person's approval";
+  return `- ${waits}; you will be told the outcome. Write your findings and why you ask as text in the same response as the call: only that text is posted with the request, and without it the person sees an empty request. ${ASK_APPROVALS_TOGETHER} ${request}`;
+}
+
 export const ASK_APPROVALS_TOGETHER =
   "When a task needs several such actions (four monthly goals to record, three issues to close), plan them first and call them all in the same response, one tool call each: the person approves them together on one card. Don't ask for one, wait for the decision, then ask for the next.";
 
@@ -1006,7 +1023,7 @@ export async function buildRunContext(
           "- Keep it as short as the news: a report with nothing for the person to decide fits in one or two short paragraphs; leave out what didn't change and numbers that don't move the story.",
           "- When something is fine, say it in a few words ('the rest was quiet'). No ritual openings or closings ('I remain available', 'let me know if you need anything'); a greeting only when it is natural, like the first message here of the morning, yours or the person's ('Now' below gives the local time and when the previous message here was). Caveats about your own tools or data only when they change the answer. When something is the person's to decide, end with that one question, asked directly.",
           options.toolsAvailable
-            ? `- Actions marked sensitive (merge, deploy, rollback and similar) wait for a person's approval; you will be told the outcome. Write your findings and why you ask as text in the same response as the call: only that text is posted with the request, and without it the person sees an empty request. ${ASK_APPROVALS_TOGETHER} ${personal ? REQUEST_APPROVAL_LINE_PERSONAL : REQUEST_APPROVAL_LINE}`
+            ? approvalsLine(agent.approvalsLevel, personal)
             : "- You can only write chat messages for now; you cannot run tools or take actions outside this conversation. Say so if asked.",
           options.askUser
             ? "- When a request is still ambiguous after you have looked with your tools, or when the decision is really the person's (a product choice, a priority), ask one short clarifying question with `ask_user` (offer 2 to 4 choices when the answer is one of a few options) and wait: what you need answered before going on goes on that card, not in your text. Never for an approval an action's card asks, and never the question in your text too. Like an approval, it posts only the text of that same turn."
@@ -1189,8 +1206,8 @@ export async function buildRunContext(
                 ? `- Before saying something is missing (a destination, an approval), check your rules and your conversations with ${behindName} (\`search_context\`). Still missing: ${asksBehind ? `ask ${behindName} with \`ask_user\`, saying` : "say in your answer"} exactly what; never ask the other agent back or blame it.`
                 : "- Don't ask the other agent questions back: if something is missing, say what in your answer.",
               behindName
-                ? "You act for the person behind the request: tools that need a person's request (routines, reminders) accept it, within your own permissions. Anything sensitive still needs a person's approval, unless a rule they gave you allows it."
-                : "Nobody is behind it: do it as yourself, within your own permissions; what needs a person's request (routines, reminders) is refused, and anything sensitive needs a person's approval, unless a rule under # Rules people gave you allows it.",
+                ? "You act for the person behind the request: tools that need a person's request (routines, reminders) accept it, within your own permissions. What asks a person's approval still does, unless a rule they gave you allows it."
+                : "Nobody is behind it: do it as yourself, within your own permissions; what needs a person's request (routines, reminders) is refused, and what asks a person's approval still does, unless a rule under # Rules people gave you allows it.",
             ].join("\n")
           : channel.kind === "dm"
             ? `# Where you are\nA direct conversation. Participants: ${memberList}. Answer every message here; you don't need to be mentioned.`
@@ -1354,6 +1371,18 @@ interface RoutineContext {
  * event that fired it inside the outside-content envelope, its time line, and a read-only view of the
  * conversation it reports to. Null when the trigger is no routine's (no brief and no `meta.routine`).
  */
+/** What a routine's run asks a person before doing, by its agent's approvals level (ADR 0173). */
+function routineAsks(level: ApprovalsLevel, place: string): string {
+  if (level === "never") {
+    return "You are set to never ask: nothing here waits for a person, a change in a connected app, a merge, a deploy and a rollback included. Do only what its instructions ask for.";
+  }
+  const what =
+    level === "always"
+      ? "You are set to always ask: every change asks a person first, inside agentes.chat too (an issue, a file, a post, a command)"
+      : "Any change in a connected app asks a person first";
+  return `${what}: an approval card in ${place}, with your reason.${level === "always" ? "" : " Merge, deploy and rollback always do."} When its instructions ask you to fix or resolve things and the fix is such a change, hand off your report first (saying what you're asking for), then call that tool with your reason: your run waits for the person's decision, so anything after it waits too.`;
+}
+
 async function routineContext(
   db: Database,
   run: AgentRun,
@@ -1469,12 +1498,12 @@ async function routineContext(
   const block = [
     `# This is a routine run\nYour routine «${name}» started this run: background work that nobody watches. Nobody waits for a reply here and nothing you write here is posted; your message reaches people only through hand_off, which posts it in ${place}.`,
     `Its instructions, set up by ${creator ?? "its creator"}:\n${(row?.prompt ?? trigger.body).trim()}`,
-    `What it may do: what you can do in any other run. Besides reading, you may change things inside agentes.chat that people can undo (issues, memory, wiki, Drive files) and work on your own branches (agentes/${agent.handle}/…) and their pull requests. Any change in a connected app asks a person first: an approval card in ${place}, with your reason. Merge, deploy and rollback always do. When its instructions ask you to fix or resolve things and the fix is such a change, hand off your report first (saying what you're asking for), then call that tool with your reason: your run waits for the person's decision, so anything after it waits too. You may also reach other agents and post where ${who} can: tell_agent leaves an agent a note (it wakes and works on it), ask_agent asks one something (the answer reaches you, or ${place} once this run ended), post_message posts in a channel ${who} can post in (an @mention there wakes that agent), and send_dm writes only to ${who}; only agents ${who} can talk to are reached. An @mention in your hand_off message also wakes an agent of ${place} to work on it, as asked by ${who} (one outside it hears nothing: use tell_agent): mention an agent there only when it should act, and not one you already handed it to with tell_agent. The web is yours to read (search, open pages, your browser) like anywhere else.`,
+    `What it may do: what you can do in any other run. Besides reading, you may change things inside agentes.chat that people can undo (issues, memory, wiki, Drive files) and work on your own branches (agentes/${agent.handle}/…) and their pull requests. ${routineAsks(agent.approvalsLevel, place)} You may also reach other agents and post where ${who} can: tell_agent leaves an agent a note (it wakes and works on it), ask_agent asks one something (the answer reaches you, or ${place} once this run ended), post_message posts in a channel ${who} can post in (an @mention there wakes that agent), and send_dm writes only to ${who}; only agents ${who} can talk to are reached. An @mention in your hand_off message also wakes an agent of ${place} to work on it, as asked by ${who} (one outside it hears nothing: use tell_agent): mention an agent there only when it should act, and not one you already handed it to with tell_agent. The web is yours to read (search, open pages, your browser) like anywhere else.`,
     listed("approved")
       ? `Approved ahead for this run: a person already approved these exact actions for this time. Do each now with run_approved_action and its id: it goes out without asking. Don't do them any other way, then report how it went.\n${listed("approved")}`
       : "",
     listed("other")
-      ? `Prepared for this run but not approved in time: do each with run_approved_action and its id. It asks a person first, as any change in a connected app does.\n${listed("other")}`
+      ? `Prepared for this run but not approved in time: do each with run_approved_action and its id. ${agent.approvalsLevel === "never" ? "It runs when you call it." : "It asks a person first, as any change in a connected app does."}\n${listed("other")}`
       : "",
     `When it speaks: ${
       brief.report === "always"

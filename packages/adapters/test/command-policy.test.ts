@@ -1028,7 +1028,7 @@ describe("whether a push waits for a person", () => {
     const proxied = facts({ proxied: ["origin"] });
     const never = async (command: string, f = proxied) => approvalNeeded(command, ASK_IN_CHAT, { own, facts: () => f });
     const toPr =
-      "our git proxy never lets it through. Push to a branch of your own (agentes/ada/…) and open a pull request; merging asks a person. Never give the person a terminal command to run.";
+      "our git proxy never lets it through. Push to a branch of your own (agentes/ada/…) and open a pull request; merging is a separate step. Never give the person a terminal command to run.";
     expect(await never("git push origin --delete cursor/pap-582-fix")).toEqual({
       message: `This deletes the remote branch cursor/pap-582-fix: ${DELETE_BRANCHES_POINTER}`,
       never: true,

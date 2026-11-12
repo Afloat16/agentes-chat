@@ -269,7 +269,7 @@ describe("a routine's own job (routines.own_actions)", () => {
       }),
     );
     expect(refused.isError).toBe(true);
-    expect(refused.content).toContain("always asks a person");
+    expect(refused.content).toContain("can't be one of a routine's own actions");
     expect(await f.db.select().from(schema.routines)).toEqual([]);
 
     const { id } = await created(gateway, ["SLACK_SEND_MESSAGE"]);

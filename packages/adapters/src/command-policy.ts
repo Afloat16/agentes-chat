@@ -1611,7 +1611,7 @@ export async function heldPush(push: GitPush, facts: RepoFacts, own: readonly st
     (await facts.viaProxy(await pushRemote({ remote }, facts)))
       ? { what: `${what}: ${never}`, never: true }
       : { what, ...(otherwise ? { instead: otherwise } : {}) };
-  const toPullRequest = `our git proxy never lets it through. Push to a branch of your own${own[0] ? ` (${own[0]}…)` : ""} and open a pull request; merging asks a person. ${NO_TERMINAL_COMMANDS}`;
+  const toPullRequest = `our git proxy never lets it through. Push to a branch of your own${own[0] ? ` (${own[0]}…)` : ""} and open a pull request; merging is a separate step. ${NO_TERMINAL_COMMANDS}`;
   if (push.mirror)
     return hold("This is a mirror push: it can overwrite and delete any branch", undefined, toPullRequest);
   if (push.every) return hold("This push updates every branch, the default one too", instead, toPullRequest);

@@ -77,11 +77,12 @@ import type { AheadOutcome, AheadRequest, ToolContext, ToolDefinition, ToolOutpu
 const { approvals, agents, agentRunSteps, routines } = schema;
 type AuditOutcome = schema.AuditOutcome;
 
-/** Merge, deploy and rollback always need a person, whatever a connector says. */
+/** Merge, deploy and rollback need a person whatever a connector says, unless the agent never asks (ADR 0173). */
 export const ALWAYS_SENSITIVE = /(^|[^a-z])(merge|deploy|rollback|revert_deploy|promote)([^a-z]|$)/i;
 
-export const isSensitive = (tool: Pick<ToolDefinition, "name" | "scope" | "sensitive">) =>
-  tool.sensitive === true || ALWAYS_SENSITIVE.test(tool.name) || ALWAYS_SENSITIVE.test(tool.scope);
+/** `unasked`: the listing's mark on a tool whose card an agent that never asks doesn't get (`asListed`). */
+export const isSensitive = (tool: Pick<ToolDefinition, "name" | "scope" | "sensitive" | "unasked">) =>
+  !tool.unasked && (tool.sensitive === true || ALWAYS_SENSITIVE.test(tool.name) || ALWAYS_SENSITIVE.test(tool.scope));
 
 /**
  * Also as a noun or under another name: a deployment, a build, a dispatch or a release (they start workflows), a
@@ -172,29 +173,22 @@ export function rememberable(
   return { tool: tool.rememberAs, actions };
 }
 
+/** Our own tools whose job is asking a person: the agent chose to ask, so one that never asks still does. */
+const ASKING_TOOLS = new Set(["request_approval", REQUEST_PERMISSION_TOOL, "send_feedback"]);
+const asksByChoice = (tool: ToolDefinition) =>
+  tool.connectionId ? tool.name === "request_branch_push" && serverGitTool(tool) : ASKING_TOOLS.has(tool.name);
+
 /**
- * "Nunca perguntar" (`agents.approvals_level` = `never`, ADR 0173): whether this call runs without the card its tool
- * would open. Only a connected app's tool that asks because it is marked sensitive (its level, a delete, a send), on
- * a run whose policy lets it through: a routine's run and one its reading feeds keep asking (ADR 0053 §4). Still
- * asked: merge, deploy, rollback and what starts them under another name or runs whatever its arguments say
- * (`customAlwaysAsks`), a call whose actions aren't known, and a tool with its own approvers (someone's mailbox is
- * theirs to answer for). `input` null: judged without a call, so a tool that runs other actions isn't covered.
- * Scopes are checked before it: the level never gives the agent a tool.
+ * "Nunca perguntar" (`agents.approvals_level` = `never`, ADR 0173 as amended 2026-11-12): whether a call of this tool
+ * runs without any card, on every run that has one (a person's, the agent's own, a routine's, one a routine's reading
+ * feeds). Everything the agent may already use: merge, deploy, rollback, a tool that runs whatever its arguments say,
+ * someone's mailbox, a command the computer holds, a workspace where every command asks. Only our tools whose job is
+ * asking keep their card. It is the one place that says so: the call, the listing, a held command and the autonomy
+ * brakes all read it. It lifts asking and nothing else: the policy's refusals, scopes, a tool turned off, the budget
+ * and the tools' own checks all come before or apart from it. A call outside a run (a mission task's) has no level.
  */
-export function unaskedAtNever(
-  level: ApprovalsLevel,
-  tool: ToolDefinition,
-  input: Record<string, unknown> | null,
-  authority: RunAuthority | null,
-  decision: PolicyDecision,
-): boolean {
-  if (level !== "never" || !authority || decision.action !== "allow") return false;
-  // Said here too, not only by the policy's answer: no reading of a tool's kind may let outside text act alone.
-  if (fedByRoutine(authority)) return false;
-  if (!tool.connectionId || tool.sensitive !== true || tool.approvers) return false;
-  const actions = tool.actions ? (input ? tool.actions(input) : null) : [];
-  if (!actions || alwaysAsks(tool.scope)) return false;
-  return ![tool.name, tool.rememberAs ?? "", ...actions].some((name) => name && customAlwaysAsks(name));
+export function unaskedAtNever(level: ApprovalsLevel, tool: ToolDefinition, authority: RunAuthority | null): boolean {
+  return level === "never" && authority !== null && !asksByChoice(tool);
 }
 
 /**
@@ -249,7 +243,7 @@ export function aheadRefusal(tool: ToolDefinition, input: Record<string, unknown
   const actions = tool.actions ? tool.actions(input) : [];
   if (!actions) return "This call doesn't say which actions it runs, so it can't be approved ahead.";
   if ([tool.name, tool.rememberAs ?? "", tool.scope, ...actions].some((name) => name && alwaysAsks(name))) {
-    return "Merge, deploy, rollback and the like always ask a person at the time: they can't be approved ahead.";
+    return "Merge, deploy, rollback and the like can't be approved ahead.";
   }
   return null;
 }
@@ -329,9 +323,13 @@ const INPUT_ALIASES = new Map<string, (input: Record<string, unknown>) => Record
   ],
 ]);
 
+/** Whether a call of this tool opens an approval card, by the policy's answer or the tool's own marks. */
+const needsApproval = (tool: ToolDefinition, decision: PolicyDecision) =>
+  decision.action === "approve" || isSensitive(tool);
+
 /** Whether a call of this tool waits for a person: an approval, or a built-in question. */
 const asksPerson = (tool: ToolDefinition, decision: PolicyDecision) =>
-  decision.action === "approve" || isSensitive(tool) || (tool.name === ASK_USER && isBuiltIn(tool));
+  needsApproval(tool, decision) || (tool.name === ASK_USER && isBuiltIn(tool));
 
 /** A call that asks a person's approval because it says why (`whyAsks`: a command the computer held). */
 const asksWithWhy = (tool: ToolDefinition, input: Record<string, unknown>) =>
@@ -349,6 +347,13 @@ function heldCommandReason(output: ToolOutput): string | null {
   if (!held?.[1] || held[2]?.trim() !== ASK_AGAIN) return null;
   return `${held[1].trim()}, so the computer waits for a person's approval before running it.`;
 }
+
+/**
+ * Whether the computer held a command for a person's approval, whatever else it offered: what an agent that never
+ * asks runs again as approved. Not a secret read, which carries the same code but is refused, never asked.
+ */
+const heldForPerson = (output: ToolOutput) =>
+  output.data?.code === "command.approval_needed" && output.content.includes(": a person approves it first. ");
 
 /** A check that failed for any reason never stops the action (ADR 0064): it only misses a notice. */
 const UNCHECKED: TeamCheck = { proceed: true, reason: null };
@@ -436,9 +441,9 @@ const policyFor = (authority: RunAuthority | null, tool: ToolDefinition, level =
  * "asks a person's approval" in a directory), and every tool that asks a person takes the required
  * `why` the card shows. The same list goes to the model loop and to the bridge.
  */
-function asListed(tool: ToolDefinition, decision: PolicyDecision, unasked = false): ToolDefinition {
+function asListed(tool: ToolDefinition, decision: PolicyDecision, never = false): ToolDefinition {
   // An agent that never asks sees the tool as it runs for it: no card, no `why`.
-  if (unasked) return { ...tool, sensitive: false };
+  if (never && needsApproval(tool, decision)) return { ...tool, sensitive: false, unasked: true };
   if (!asksPerson(tool, decision)) return tool;
   return {
     ...tool,
@@ -542,8 +547,7 @@ export function createToolGateway(deps: {
       .filter((t) => isAllowed(accessWithNeeds(keys, t).state))
       .flatMap((t) => {
         const decision = policyFor(authority, t, level);
-        if (decision.action !== "refuse")
-          return [asListed(t, decision, unaskedAtNever(level, t, null, authority, decision))];
+        if (decision.action !== "refuse") return [asListed(t, decision, unaskedAtNever(level, t, authority))];
         heldBack?.push(t.name);
         return [];
       })
@@ -827,17 +831,24 @@ export function createToolGateway(deps: {
     return { tool: tool.name, actions: names, routineId: brief.routineId };
   }
 
+  /** The one merge a call of the GitHub connector makes, or null. */
+  function mergeOfCall(tool: ToolDefinition, input: Record<string, unknown>): MergeDone | null {
+    if (tool.scope !== GITHUB_MERGE_SCOPE) return null;
+    const [repo, ...others] = reposOfGithubCall(input) ?? [];
+    const pr = Number(input.pullNumber);
+    if (!repo || others.length > 0 || !Number.isInteger(pr) || pr <= 0) return null;
+    return { repo, pr, ref: null };
+  }
+
   /**
    * "Pode fazer merge sem perguntar": the merge a call of the GitHub connector makes, when it is in a repository this
    * agent merges in without asking. A command on the computer is told the same list and decides there (`mergeRepos`).
    */
   async function connectorMerge(ctx: ToolContext, tool: ToolDefinition, input: Record<string, unknown>) {
-    if (tool.scope !== GITHUB_MERGE_SCOPE) return null;
-    const [repo, ...others] = reposOfGithubCall(input) ?? [];
-    const pr = Number(input.pullNumber);
-    if (!repo || others.length > 0 || !Number.isInteger(pr) || pr <= 0) return null;
+    const merge = mergeOfCall(tool, input);
+    if (!merge) return null;
     const allowed = await mergeReposOfCall(ctx);
-    return allowed.some((r) => r.toLowerCase() === repo.toLowerCase()) ? { repo, pr, ref: null } : null;
+    return allowed.some((r) => r.toLowerCase() === merge.repo.toLowerCase()) ? merge : null;
   }
 
   /** The call an action approved ahead stores, by its id (`run_approved_action`), when it is this agent's. */
@@ -1040,7 +1051,7 @@ export function createToolGateway(deps: {
       let approvedBy: string[] | null = null;
       /** What the call's line in the chat says of it: approved by a rule, whose person, a read-only SQL one or not. */
       let autoApproved: { by: string | null; reads: boolean } | null = null;
-      /** It ran without the card its tool would open, because its agent never asks (`unaskedAtNever`). */
+      /** It ran without the card it would have opened, because its agent never asks (`unaskedAtNever`). */
       let unasked = false;
       // The audit (agent-audit.ts): every call that matters, with how it ended. A routine's belongs where it
       // delivers, never to its room.
@@ -1143,8 +1154,10 @@ export function createToolGateway(deps: {
       // A call that asks a person says why (shown on its card); the tool itself never sees it. It is
       // asked for last: a call refused for any other reason (its input, a repository outside the agent's
       // list) gets that reason first.
-      unasked = unaskedAtNever(level, tool, takeWhy(tool.inputSchema, call.input).input, authority, decision);
-      let approves = decision.action === "approve" || (isSensitive(tool) && !unasked) || asksWithWhy(tool, call.input);
+      const never = unaskedAtNever(level, tool, authority);
+      const wouldAsk = needsApproval(tool, decision) || asksWithWhy(tool, call.input);
+      unasked = never && wouldAsk;
+      let approves = wouldAsk && !never;
       // Only its `why` makes it ask: a command the computer holds, or (a merge this agent does alone) doesn't.
       const askedByWhy = approves && decision.action !== "approve" && !isSensitive(tool);
       let why = "";
@@ -1225,13 +1238,18 @@ export function createToolGateway(deps: {
           ? await ownJobCovers(ctx, authority.brief, tool, call.input)
           : false;
       if (ownJob) approves = false;
-      // "Pode fazer merge sem perguntar": a merge in a repository its owner or an admin chose, with no card.
-      const mergeAlone: MergeDone | null = approves ? await connectorMerge(ctx, tool, call.input) : null;
+      // "Pode fazer merge sem perguntar": a merge in a repository its owner or an admin chose, with no card. An agent
+      // that never asks merges anywhere it may, and leaves the same receipt.
+      const mergeAlone: MergeDone | null = approves
+        ? await connectorMerge(ctx, tool, call.input)
+        : unasked
+          ? mergeOfCall(tool, call.input)
+          : null;
       if (mergeAlone) approves = false;
       // Approved ahead: the exact call a person approved for this routine run's slot runs like an allowed one, why
-      // or not; the one they refused never runs.
+      // or not; the one they refused never runs, whatever the agent's level.
       const ahead =
-        approves && authority?.kind === "routine" && authority.brief
+        (approves || unasked) && authority?.kind === "routine" && authority.brief
           ? await aheadFor(
               ctx,
               authority.brief,
@@ -1264,6 +1282,7 @@ export function createToolGateway(deps: {
           authority,
           cost,
           toolCommand(call.name, call.input) ?? callTitle(tool, call.input) ?? tool.name,
+          never,
         );
         if (refusal) {
           const content = isPrompt
@@ -1398,12 +1417,19 @@ export function createToolGateway(deps: {
       const runCtx: ToolContext = { ...ctx, toolUseId: call.toolUseId };
       // Our own tools only (`schedule_action`), never a connected server's.
       if (!tool.connectionId) runCtx.prepareAhead = (request) => prepareAhead(runCtx, authority, request);
-      const output = withRepo(await run(tool, call.input, runCtx));
+      let output = withRepo(await run(tool, call.input, runCtx));
       // The computer held a command for a person (a merge, a deploy): the card goes out now, as a call with `why`
       // would have asked, so it never rests on the agent calling again. Approved, it runs the approved way.
       const held = tool.whyAsks && ctx.runId && !ctx.approved ? heldCommandReason(output) : null;
       const stillAsks = computerDecides && output.data?.code === "command.approval_needed";
-      if (held || stillAsks) return askPerson(why || (held ?? ""), rememberable(tool, call.input, authority, decision));
+      if (never && tool.whyAsks && !ctx.approved && heldForPerson(output)) {
+        // The computer ran nothing when it held the command, so running it again the approved way does it once. What
+        // it never runs (a push our git proxy refuses) comes back refused again.
+        output = withRepo(await run(tool, call.input, { ...runCtx, approved: true }));
+        unasked = true;
+      } else if (held || stillAsks) {
+        return askPerson(why || (held ?? ""), rememberable(tool, call.input, authority, decision));
+      }
       const merged = mergeAlone ?? (tool.whyAsks ? (output.data?.merge as MergeDone | undefined) : null);
       if (merged && !output.isError) await recordMergeDone(ctx, merged, tool.name).catch(() => {});
       if (outside && !output.isError) {

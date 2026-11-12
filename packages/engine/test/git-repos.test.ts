@@ -240,6 +240,21 @@ describe('"Pode fazer merge sem perguntar": the GitHub connector', () => {
     expect(receipt?.undoableUntil).toEqual(receipt?.createdAt);
   });
 
+  test("an agent that never asks merges in any repository it may use, with the same audit line and receipt", async () => {
+    const { github, ctx, merge } = await world();
+    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { approvalsLevel: "never" });
+    expect((await merge("acme/api", 9)).type).toBe("result");
+    expect(github.calls.map((c) => [c.tool, c.args.pullNumber])).toEqual([["merge_pull_request", 9]]);
+    expect(await f.db.select().from(schema.approvals)).toEqual([]);
+    const [audit] = await f.db
+      .select()
+      .from(schema.auditLog)
+      .where(eq(schema.auditLog.action, "agent.merged_without_asking"));
+    expect(audit).toMatchObject({ targetId: "acme/api", details: { pr: 9, tool: "github_merge_pull_request" } });
+    const [receipt] = await f.db.select().from(schema.agentActions).where(eq(schema.agentActions.runId, ctx.runId));
+    expect(receipt).toMatchObject({ kind: "pr.merged", params: { repo: "acme/api", number: 9 } });
+  });
+
   test("an agent that always asks merges nowhere alone; its repositories stay chosen for another level", async () => {
     const { ctx } = await world();
     await setAgentMergeRepositories(f.db, f.owner.id, f.org.id, f.agent.id, ["acme/app"]);

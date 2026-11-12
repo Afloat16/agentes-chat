@@ -236,7 +236,7 @@ const LIST_TTL_MS = 60_000;
 
 /** Read before Composio's own words in its executor's description: what asks a person and what doesn't. */
 const EXECUTOR_NOTE =
-  "Reads such as list, get and search run without asking a person. GraphQL and SQL actions ask every time. Keep sync_response_to_workbench false unless you must script over the output: the workbench and bash ask a person every time.";
+  "Reads such as list, get and search run without asking a person. GraphQL and SQL actions, the workbench and bash ask a person every time, unless you are set to never ask: keep sync_response_to_workbench false unless you must script over the output.";
 
 /**
  * Tools of the organization's connected MCP servers (layer 2 of ADR 0016). Lists
