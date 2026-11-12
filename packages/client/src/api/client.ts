@@ -1579,8 +1579,10 @@ export interface ApiClient {
     context(orgId: string, slug: string, on: boolean): Promise<WikiPage>;
     /** What the agents read most in the last 7 days. */
     reads(orgId: string): Promise<WikiTopRead[]>;
-    /** Notes of an Obsidian vault (≤ 500 per call; the app batches). */
+    /** Notes read by the app from a vault, a GitHub link or files (≤ 500 per call; the app batches). */
     import(orgId: string, input: WikiImportInput): Promise<WikiImportResult>;
+    /** The Markdown notes behind a GitHub link and the files they may embed, as a zip (nothing is saved). */
+    githubNotes(orgId: string, url: string): Promise<Blob>;
     /** Appends a block (e.g. a chat message) with a link back to where it came from. */
     append(
       orgId: string,

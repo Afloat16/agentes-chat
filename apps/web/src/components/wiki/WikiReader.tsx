@@ -5,7 +5,7 @@ import { fileIcon } from "@agenteschat/client/lib/files";
 import { relativeTime, whenAt } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
 import { type AudienceChoice, EVERYONE } from "@agenteschat/client/lib/who-sees";
-import { leafTitle, wikiImportOf } from "@agenteschat/client/lib/wiki";
+import { isImportedPage, leafTitle, wikiImportOf } from "@agenteschat/client/lib/wiki";
 import {
   Avatar,
   Button,
@@ -47,6 +47,7 @@ import { type EmbedRenderer, Markdown } from "@/lib/markdown";
 import { isAttachmentName } from "@/lib/obsidian";
 import { useToast } from "@/lib/toast";
 import { retitled } from "@/lib/wiki-rich";
+import { GitHubMark } from "@/components/GitHubMark";
 import { ObsidianMark } from "./ObsidianMark";
 import { WikiAskDialog } from "./WikiAsk";
 import { WikiAudienceDialog, WikiWhoSeesDialog } from "./WikiAudience";
@@ -387,10 +388,16 @@ function PageMeta({
           {t("wiki.locked")}
         </Chip>
       )}
-      {page.source?.type === "obsidian" && (
+      {isImportedPage(page.source?.type) && (
         <span className="wiki-chip">
-          <ObsidianMark size={14} />
-          {t("wiki.fromObsidian")}
+          {page.source?.type === "obsidian" ? (
+            <ObsidianMark size={14} />
+          ) : page.source?.type === "github" ? (
+            <GitHubMark size={14} />
+          ) : (
+            <Icon name="upload" size={14} />
+          )}
+          {t(`wiki.from.${page.source?.type ?? "files"}`)}
         </span>
       )}
       {page.tags.length > 0 && (
