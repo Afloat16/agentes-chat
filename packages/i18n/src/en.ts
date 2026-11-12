@@ -3221,6 +3221,8 @@ export const en = {
   },
   /** Long work paused near a plan's or a budget's limit (ADR 0118), and its Continuar agora. */
   usageCard: {
+    /** Under a plan limit's wait note: when the plan was last read or asked about, quietly (it is asked every few minutes). */
+    checked: "Checked {{when}}",
     window: {
       five_hour: "of its 5 hours",
       seven_day: "of its week",
@@ -9891,7 +9893,8 @@ export const en = {
       useAllUntested_one: "{{count}} model not tried yet",
       useAllUntested_other: "{{count}} models not tried yet",
       textOnly: "Reads text only",
-      useAllTextOnly: "{{model}} can't see images or PDFs. An agent that needs to see screenshots does better with another model.",
+      useAllTextOnly:
+        "{{model}} can't see images or PDFs. An agent that needs to see screenshots does better with another model.",
       useAllAgents: "Every agent",
       useAllAgentsLine_one: "{{count}} agent moves to this model",
       useAllAgentsLine_other: "{{count}} agents move to this model",
@@ -16086,7 +16089,8 @@ export const en = {
       plan_limit_cut: "I stopped at the {{plan}} plan's limit. I'll pick up where I left off {{when}}, when it resets.",
       plan_limit_cut_unknown:
         "I stopped at the {{plan}} plan's limit. I'll pick up where I left off as soon as it resets.",
-      plan_limit_wait: "The {{plan}} plan hit its limit. I'll answer {{when}}, when it resets.",
+      plan_limit_wait:
+        "The {{plan}} plan hit its limit. I'll answer {{when}}, when it resets. If it's freed sooner on {{plan}}, I'll notice and answer right away.",
       plan_limit_wait_unknown: "The {{plan}} plan hit its limit. I'll answer as soon as it resets.",
       /** A model's own limit on a plan whose models each have one (OpenCode Go): the others still answer. */
       plan_model_limit_wait:

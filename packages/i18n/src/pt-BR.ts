@@ -3150,6 +3150,8 @@ export const ptBR = {
   },
   /** Trabalho longo pausado perto do limite do plano ou do orçamento (ADR 0118), e o seu Continuar agora. */
   usageCard: {
+    /** Under a plan limit's wait note: when the plan was last read or asked about, quietly (it is asked every few minutes). */
+    checked: "Conferido {{when}}",
     window: {
       five_hour: "das 5 horas",
       seven_day: "da semana",
@@ -9925,7 +9927,8 @@ export const ptBR = {
       useAllUntested_one: "{{count}} modelo ainda não testado",
       useAllUntested_other: "{{count}} modelos ainda não testados",
       textOnly: "Só lê texto",
-      useAllTextOnly: "O {{model}} não vê imagens nem PDFs. Um agente que precisa ver prints fica melhor com outro modelo.",
+      useAllTextOnly:
+        "O {{model}} não vê imagens nem PDFs. Um agente que precisa ver prints fica melhor com outro modelo.",
       useAllAgents: "Todos os agentes",
       useAllAgentsLine_one: "{{count}} agente passa a usar este modelo",
       useAllAgentsLine_other: "{{count}} agentes passam a usar este modelo",
@@ -16077,7 +16080,8 @@ export const ptBR = {
       brain_interrupted: "O {{brain}} parou antes de terminar. Já feito, sem repetir: {{tools}}.",
       plan_limit_cut: "Parei no limite do plano do {{plan}}. Continuo de onde parei {{when}}, quando ele renovar.",
       plan_limit_cut_unknown: "Parei no limite do plano do {{plan}}. Continuo de onde parei assim que ele renovar.",
-      plan_limit_wait: "O plano do {{plan}} chegou ao limite. Respondo {{when}}, quando ele renovar.",
+      plan_limit_wait:
+        "O plano do {{plan}} chegou ao limite. Respondo {{when}}, quando ele renovar. Se ele for liberado antes no {{plan}}, eu percebo e respondo na hora.",
       plan_limit_wait_unknown: "O plano do {{plan}} chegou ao limite. Respondo assim que ele renovar.",
       plan_model_limit_wait:
         "O {{model}} chegou ao limite dele no {{plan}}. Os outros modelos do plano seguem funcionando: troque o modelo de {{agent}} ou espere ele renovar {{when}}.",

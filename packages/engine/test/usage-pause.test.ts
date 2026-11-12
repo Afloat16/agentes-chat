@@ -1119,7 +1119,7 @@ test("long work waiting in the agent's line of work reads as in line, not as wai
 
 test("the usage queue: rows in line order with what happened since, hidden rows counted, Don't run any for the owner", async () => {
   f = await setup({ reply: () => ({ chunks: ["pela API"] }) });
-  await computerAgent(f, { brainFallback: false });
+  const machineId = await computerAgent(f, { brainFallback: false });
   const { brain } = scripted(() => [
     { type: "limit", resetsAt: later(3600_000).toISOString() },
     { type: "error", code: "plan_limit", message: "You've hit your session limit", worked: false },
@@ -1137,8 +1137,18 @@ test("the usage queue: rows in line order with what happened since, hidden rows 
     threadId: root.id,
   });
   const [a, b] = await runs(f);
+  // When its plan was last read or asked about again (the computer's own sign-in here): the note says it.
+  const checkedAt = new Date(Date.now() - 4 * 60_000).toISOString();
+  const [m] = await f.db.select().from(schema.machines).where(eq(schema.machines.id, machineId));
+  const ownUsage = {
+    claude_code: { windows: [], source: "turn", at: new Date(Date.now() - 3600_000).toISOString(), checkedAt },
+  };
+  await f.db
+    .update(schema.machines)
+    .set({ executors: { ...m?.executors, ownUsage } as typeof schema.machines.$inferInsert.executors })
+    .where(eq(schema.machines.id, machineId));
   const q = await usageQueue(f.db, f.owner.id, f.org.id, f.agent.id);
-  expect(q).toMatchObject({ reason: "plan", plan: "Claude", hidden: 0, mayStopAll: true });
+  expect(q).toMatchObject({ reason: "plan", plan: "Claude", hidden: 0, mayStopAll: true, checkedAt });
   expect(q.rows.map((r) => r.runId)).toEqual([a?.id ?? "", b?.id ?? ""]);
   expect(q.rows[0]).toMatchObject({
     kind: "conversation",

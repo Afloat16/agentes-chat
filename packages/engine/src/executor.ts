@@ -3708,7 +3708,9 @@ async function executeRunInner(
                         ]
                       : [
                           known ? "plan_limit_wait" : "plan_limit_wait_unknown",
-                          `The ${name} plan hit its limit. I'll answer ${known ? "when" : "as soon as"} it resets.`,
+                          known
+                            ? `The ${name} plan hit its limit. I'll answer when it resets. If it's freed sooner on ${name}, I'll notice and answer right away.`
+                            : `The ${name} plan hit its limit. I'll answer as soon as it resets.`,
                         ];
           const m = await post(
             tx,

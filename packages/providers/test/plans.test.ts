@@ -364,7 +364,7 @@ describe("a model OpenCode refused for the key, and what Automático runs instea
     expect(autoPlanModel("opencode", "sonnet", { models: more }, now)).toBe("glm-5.3-flash");
     expect(autoPlanModel("opencode", "sonnet", { models: off, answered: "gone-model" }, now)).toBe("glm-5.3");
     // Every tagged model refused: the alias stays, for its refusal to say so.
-    const tagged = CODING_PLANS.opencode.claudeCode.models.filter((m) => m.tag);
+    const tagged = models("opencode").filter((m) => m.tag);
     const all = { ...off, ...Object.fromEntries(tagged.map((m) => [m.id, { at, off: true as const }])) };
     expect(autoPlanModel("opencode", "sonnet", { models: all }, now)).toBe("sonnet");
     // Plans whose models share the account's limits stay as they are.
@@ -372,7 +372,7 @@ describe("a model OpenCode refused for the key, and what Automático runs instea
   });
 
   test("DeepSeek reads text only, from the table and from the live list", () => {
-    const go = CODING_PLANS.opencode.claudeCode.models;
+    const go = models("opencode");
     expect(go.find((m) => m.id === "deepseek-v4.1-flash")?.images).toBe(false);
     expect(go.find((m) => m.id === "glm-5.3")?.images).toBeUndefined();
     const read = readPlanModels(CODING_PLANS.opencode, {

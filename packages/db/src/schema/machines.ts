@@ -35,6 +35,8 @@ export interface MachinePlanUsage {
   models?: Record<string, { at: string; until?: string; region?: true; off?: true; inactive?: true }>;
   /** The model that last answered with the account's key (`PlanUsage.answered`). */
   answered?: string;
+  /** Stuck at its limit: when the server last asked its computer to read it again (`recheckStuckPlans`). */
+  checkedAt?: string;
 }
 
 /**

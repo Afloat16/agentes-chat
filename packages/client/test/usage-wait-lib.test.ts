@@ -3,7 +3,7 @@ import type { TFunction } from "i18next";
 import { waitsForComputer } from "../src/lib/machine-outages";
 import { serverBody } from "../src/lib/message-body";
 import { modelLimitText, modelStandInText, usageWhen } from "../src/lib/plan-usage";
-import { usageWaitFix } from "../src/lib/usage-pause";
+import { planLimitNote, usageCheckedText, usageWaitFix } from "../src/lib/usage-pause";
 
 /** Says the key and its values, so a test reads which words were picked. */
 const t = ((key: string, values: Record<string, unknown> = {}) => {
@@ -142,4 +142,16 @@ test("a wait's way out: another model for its owner or an admin, a higher budget
   expect(usageWaitFix({ bodyCode: "budget_wait" }, admin)).toBe("raiseBudget");
   expect(usageWaitFix({ bodyCode: "budget_wait" }, owner)).toBeNull();
   expect(usageWaitFix({ bodyCode: "plan_limit_wait" }, admin)).toBeNull();
+});
+
+test("a plan limit's note says when the plan was last checked; no other note does", () => {
+  const now = Date.parse("2030-01-01T12:00:00.000Z");
+  const four = new Date(now - 4 * 60_000).toISOString();
+  expect(usageCheckedText(t, { bodyCode: "plan_limit_wait" }, four, now)).toBe(
+    'usageCard.checked {"when":"format.minutesAgo {\\"count\\":4}"}',
+  );
+  expect(usageCheckedText(t, { bodyCode: "plan_model_off_wait" }, four, now)).toBeNull();
+  expect(usageCheckedText(t, { bodyCode: "plan_limit_wait" }, null, now)).toBeNull();
+  expect(planLimitNote({ bodyCode: "plan_limit_cut_unknown" })).toBe(true);
+  expect(planLimitNote({ bodyCode: "budget_wait" })).toBe(false);
 });

@@ -26,6 +26,8 @@ import {
   OWN_USAGE_ID,
   type OwnPlanUsage,
   PLAN_KEYS_PROTOCOL,
+  PLAN_RECHECK_MS,
+  PLAN_RECHECK_PROTOCOL,
   PLAN_USAGE_PROTOCOL,
   type PlanUsage,
   type ProviderFailureCause,
@@ -36,6 +38,7 @@ import {
   SHARED_ACCOUNTS_PROTOCOL,
   SHARED_CODEX_PROTOCOL,
   SHARED_GEMINI_PROTOCOL,
+  TOKEN_RECHECK_MS,
 } from "@agenteschat/adapters";
 import {
   and,
@@ -60,7 +63,7 @@ import {
   SHARED_SIGN_INS,
   sharedSignIn,
 } from "@agenteschat/providers/plans";
-import { planWindows } from "@agenteschat/ui/plan-state";
+import { PLAN_PAUSE, planCheckedAt, planState, planWindows } from "@agenteschat/ui/plan-state";
 import { recordAudit } from "./audit";
 import { liveModelLimits } from "./brains/select";
 import { BRAIN_PLAN_NAMES } from "./brains/types";
@@ -79,7 +82,7 @@ import { recordAccountFailure } from "./operator-events";
 import { can, requirePermission } from "./organizations";
 import { runnerUpdateWay } from "./runner-update";
 import { scrubSignIns } from "./tool-detail";
-import { wakeOnRoom } from "./usage-pause";
+import { usageWaitKey, wakeOnRoom } from "./usage-pause";
 
 const { machineAccounts, agents, machines, rightHandBrains, users } = schema;
 
@@ -859,6 +862,90 @@ export async function refreshAiAccounts(deps: MachineAccountHubDeps, userId: str
       await deps.hub.call(machineId, { op: "account", action: "list", fresh: ids }).catch(() => undefined);
     }),
   );
+}
+
+/**
+ * The sweep (every minute) that notices a plan freed before its stored reset (Claude's "reset for free", extra usage
+ * bought, a new week): every account whose last reading is at its limit, or at the long-work pause line (`PLAN_PAUSE`)
+ * with work waiting on it, is read again on its computer. A CLI login or a key gets the free probe every
+ * `PLAN_RECHECK_MS`; a Claude setup token, which can't read its usage without a model call, a one-shot check on the
+ * cheapest model every `TOKEN_RECHECK_MS` (`list.recheck`, protocol 62), refused while still full. A reading with room
+ * goes on from there (`wakeOnRoom`). The ids asked about are returned.
+ */
+export async function recheckStuckPlans(deps: Pick<MachineAccountHubDeps, "db" | "hub">, now = Date.now()) {
+  const { db, hub } = deps;
+  const rows = await db
+    .select({
+      id: machineAccounts.id,
+      orgId: machineAccounts.orgId,
+      machineId: machineAccounts.machineId,
+      kind: machineAccounts.kind,
+      authMethod: machineAccounts.authMethod,
+      usage: machineAccounts.usage,
+    })
+    .from(machineAccounts)
+    .where(
+      and(
+        eq(machineAccounts.status, "active"),
+        isNotNull(machineAccounts.usage),
+        sql`(${machineAccounts.usage}->>'limited' = 'true' or exists (
+          select 1 from jsonb_array_elements(coalesce(${machineAccounts.usage}->'windows', '[]'::jsonb)) w
+          where (w->>'usedPercent')::numeric >= ${PLAN_PAUSE}))`,
+      ),
+    );
+  if (rows.length === 0) return [];
+  const { agentRuns } = schema;
+  const waitKey = sql<string>`${agentRuns.transcript}->'waitingForBrain'->>'waitKey'`;
+  const waiting = new Set(
+    (
+      await db
+        .selectDistinct({ key: waitKey })
+        .from(agentRuns)
+        .where(
+          and(
+            eq(agentRuns.status, "waiting_input"),
+            inArray(agentRuns.orgId, [...new Set(rows.map((r) => r.orgId))]),
+            sql`${agentRuns.transcript}->'waitingForBrain'->>'code' in ('plan_limit', 'usage_pause')`,
+          ),
+        )
+    ).map((r) => r.key),
+  );
+  const byMachine = new Map<string, { fresh: string[]; tokens: string[] }>();
+  for (const r of rows) {
+    if (!r.usage) continue;
+    const { state, used } = planState(r.usage, now);
+    const key = usageWaitKey({ code: "plan_limit", machineId: r.machineId, kind: kindOf(r), accountId: r.id });
+    if (state !== "limited" && !(used >= PLAN_PAUSE && waiting.has(key))) continue;
+    const token = r.authMethod === "setup_token";
+    const last = Date.parse(planCheckedAt(r.usage) ?? "") || 0;
+    if (now - last < (token ? TOKEN_RECHECK_MS : PLAN_RECHECK_MS)) continue;
+    const m = byMachine.get(r.machineId) ?? { fresh: [], tokens: [] };
+    m.fresh.push(r.id);
+    if (token) m.tokens.push(r.id);
+    byMachine.set(r.machineId, m);
+  }
+  const asked: string[] = [];
+  await Promise.all(
+    [...byMachine].map(async ([machineId, { fresh, tokens }]) => {
+      const status = await hub.status(machineId).catch(() => null);
+      if (!status?.online || status.protocol < PLAN_USAGE_PROTOCOL) return;
+      // An older runner can't check a token: only what it can read is asked, and only that counts as checked.
+      const recheck = status.protocol >= PLAN_RECHECK_PROTOCOL ? tokens : [];
+      const ids = fresh.filter((id) => !tokens.includes(id) || recheck.includes(id));
+      if (ids.length === 0) return;
+      await hub
+        .call(machineId, { op: "account", action: "list", fresh: ids, ...(recheck.length ? { recheck } : {}) })
+        .catch(() => undefined);
+      await db
+        .update(machineAccounts)
+        .set({
+          usage: sql`jsonb_set(${machineAccounts.usage}, '{checkedAt}', to_jsonb(${new Date(now).toISOString()}::text))`,
+        })
+        .where(and(eq(machineAccounts.machineId, machineId), inArray(machineAccounts.id, ids)));
+      asked.push(...ids);
+    }),
+  );
+  return asked;
 }
 
 /** The runner protocol from which a sign-in of that kind can be made for all agents where each is its own OS user. */
