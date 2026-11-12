@@ -177,6 +177,35 @@ test("a person's own DM sends their own seat's id, never another's and never the
   expect(await seatState(f.db, { ...mine, id: mine.runId })).toBe("seat");
 });
 
+test("a background task runs in the asker's seat, and what follows it names that seat too", async () => {
+  const { lodi, runner, requests } = await home();
+  const mine = await lodiRun(lodi.id, f.owner.id);
+  const seat = await seatId(f.owner.id);
+  const before = requests().length;
+  const started = call(mine, "start_task", { title: "Build", executor: "shell", command: "make" });
+  for (let i = 0; i < 200 && !requests().some((r) => r.op === "task.start"); i++) await Bun.sleep(5);
+  const start = requests().find((r) => r.op === "task.start");
+  expect(start?.agent?.id).toBe(seat);
+  const taskId = (start as { taskId?: string } | undefined)?.taskId as string;
+  await runner.frame({
+    type: "result",
+    id: start?.id,
+    ok: true,
+    data: { taskId, pid: 101, startedAt: new Date().toISOString(), cwd: "", logPath: "tasks/build.log" },
+  });
+  expect((await started).isError).toBeFalsy();
+  const [row] = await f.db.select().from(schema.machineTasks).where(eq(schema.machineTasks.id, taskId));
+  expect(row).toMatchObject({ agentId: lodi.id, scopeId: seat });
+
+  const stopped = call(mine, "cancel_task", { task_id: taskId });
+  for (let i = 0; i < 200 && !requests().some((r) => r.op === "task.cancel"); i++) await Bun.sleep(5);
+  const cancel = requests().find((r) => r.op === "task.cancel");
+  expect(cancel?.agent?.id).toBe(seat);
+  await runner.frame({ type: "result", id: cancel?.id, ok: true, data: { canceled: true } });
+  await stopped;
+  for (const r of requests().slice(before)) expect(r.agent?.id).not.toBe(lodi.id);
+});
+
 test("a channel mention and a routine woken from outside get no seat: refused, nothing sent", async () => {
   const { lodi, ran, requests } = await home();
   const before = requests().length;

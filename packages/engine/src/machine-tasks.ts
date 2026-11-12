@@ -473,7 +473,7 @@ export async function launchTask(
         })
       : null;
     const started = await deps.call<"task.start">(input.machineId, {
-      agent: taskScope({ agentId: input.agent.id, scopeId: input.scopeId }, input.agent.handle),
+      agent: input.scopeId ? { ...input.agent, id: input.scopeId } : input.agent,
       op: "task.start",
       taskId: row.id,
       executor: input.executor,
