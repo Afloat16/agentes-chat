@@ -252,11 +252,12 @@ export const useAgentHolds = (orgId: string, agentId: string, options: { enabled
   });
 };
 
-/** A person's Stop on one of them: the list is read again however it went. */
+/** A person's Stop on one of them: the list is read again however it went. Its caller says a failure. */
 export function useStopHold(orgId: string, agentId: string) {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
+    meta: { silent: true },
     mutationFn: (holdId: string) => api.desktop.stopHold(orgId, agentId, holdId),
     onSettled: () => qc.invalidateQueries({ queryKey: keys.agentHolds(orgId, agentId) }),
   });
