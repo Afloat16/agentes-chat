@@ -45,7 +45,7 @@ import {
 import { activityVerb, listNames } from "@agenteschat/client/lib/activity";
 import { canTalk } from "@agenteschat/client/lib/audience";
 import { runPosition, screenAboveEnd } from "@agenteschat/client/lib/chat";
-import { CHAT_RHYTHM, firstUnreadId, opensAtLastRead } from "@agenteschat/client/lib/chat-look";
+import { CHAT_RHYTHM, firstUnreadId, opensAtLastRead, unreadThreadRootId } from "@agenteschat/client/lib/chat-look";
 import { type ConversationWait, conversationWaits } from "@agenteschat/client/lib/computer-queue";
 import {
   asExchanges,
@@ -2006,6 +2006,45 @@ function Chat({
     setReached(false);
     holdAt(id ?? undefined, 0, false);
   }, [showList, top.data, top.isFetching, rows, list, meId, holdAt]);
+
+  // Opened with something unread that isn't at its end: a reply in a thread, one link under its root, maybe far
+  // above. That root comes into view, flashed, instead of an end with nothing new (as on the web). Once, with what
+  // was unread on opening; never over a message the screen was asked to open at.
+  const openedUnread = useRef<{ count: number; at: string | null | undefined } | undefined>(undefined);
+  if (openedUnread.current === undefined && (channel || dm))
+    openedUnread.current = {
+      count: isThread || focusId ? 0 : (channel?.unreadCount ?? dm?.unread ?? 0),
+      at: channel?.lastReadAt ?? dm?.lastReadAt,
+    };
+  const threadLanded = useRef(false);
+  useEffect(() => {
+    const opened = openedUnread.current;
+    // The messages and the threads as the server has them now: lists kept from an earlier visit know nothing new.
+    if (threadLanded.current || !opened || !showList || !top.isSuccess || top.isFetching) return;
+    if (opened.count > 0 && (!channelThreads.isSuccess || channelThreads.isFetching)) return;
+    threadLanded.current = true;
+    if (opened.count === 0) return;
+    const root = unreadThreadRootId(
+      list.filter((m) => !m.threadId),
+      // A thread made from a range has no root in the conversation (its marker stands there).
+      (channelThreads.data?.threads ?? []).filter((x) => !x.context),
+      opened.at,
+      meId,
+    );
+    if (!root) return;
+    seekPages.current = 0;
+    seekPressed.current = true;
+    setSeek(root);
+  }, [
+    showList,
+    top.isSuccess,
+    top.isFetching,
+    channelThreads.isSuccess,
+    channelThreads.isFetching,
+    channelThreads.data,
+    list,
+    meId,
+  ]);
 
   // ── Reading from the top ──
   // A message someone else wrote (an agent's reply, also while it streams, or a teammate's) taller than the room
