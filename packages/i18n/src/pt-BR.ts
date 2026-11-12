@@ -737,6 +737,7 @@ export const ptBR = {
         askPersonal: "Já usa agentes em outro lugar? Eu trago todos para cá.",
         bring: "Copie o pedido, cole no {{app}} e traga a resposta. O resto é comigo.",
         bringFiles: "Solte aqui o que o app exportou. O resto é comigo.",
+        bringMcp: "Siga os passos no app e ele mesmo cria os agentes aqui. Eu fico de olho.",
         found: "Achei o seu time. Confere se está todo mundo aqui.",
         foundPersonal: "Achei os seus agentes. Confere se estão todos aqui.",
         ai: "Última etapa. Escolha a IA que você já usa e o time acorda.",

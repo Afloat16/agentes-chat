@@ -725,6 +725,7 @@
         "askPersonal": "Başka bir yerde zaten ajan mı kullanıyorsun? Hepsini buraya getiririm.",
         "bring": "İsteği kopyala, {{app}} içine yapıştır ve cevabı getir. Gerisini ben hallederim.",
         "bringFiles": "Uygulamanın dışa aktardığını buraya bırak. Gerisini ben hallederim.",
+        "bringMcp": "Uygulamadaki adımları izle, ajanları buraya kendisi oluşturur. Gelişlerini takip ediyorum.",
         "found": "Ekibini buldum. Herkes burada mı, bir bak.",
         "foundPersonal": "Ajanlarını buldum. Hepsi burada mı, bir bak.",
         "ai": "Son adım. Zaten kullandığın yapay zekayı seç, ekip uyansın.",

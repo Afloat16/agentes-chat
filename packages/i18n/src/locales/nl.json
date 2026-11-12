@@ -725,6 +725,7 @@
         "askPersonal": "Gebruik je al agents ergens anders? Ik haal ze allemaal hierheen.",
         "bring": "Kopieer het verzoek, plak het in {{app}} en breng het antwoord terug. De rest doe ik.",
         "bringFiles": "Zet hier neer wat de app heeft geëxporteerd. De rest doe ik.",
+        "bringMcp": "Volg de stappen in de app, dan maakt die de agents hier zelf aan. Ik houd het in de gaten.",
         "found": "Ik heb je team gevonden. Kijk of iedereen er is.",
         "foundPersonal": "Ik heb je agents gevonden. Kijk of ze er allemaal zijn.",
         "ai": "Laatste stap. Kies de AI die je al gebruikt en het team wordt wakker.",

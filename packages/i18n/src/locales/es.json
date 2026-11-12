@@ -735,6 +735,7 @@
         "askPersonal": "¿Ya usas agentes en otro lugar? Los traigo todos aquí.",
         "bring": "Copia el pedido, pégalo en {{app}} y trae la respuesta. Del resto me encargo yo.",
         "bringFiles": "Suelta aquí lo que exportó la app. Del resto me encargo yo.",
+        "bringMcp": "Sigue los pasos en la app y ella misma crea los agentes aquí. Yo me quedo pendiente.",
         "found": "Encontré tu equipo. Revisa que estén todos.",
         "foundPersonal": "Encontré tus agentes. Revisa que estén todos.",
         "ai": "Último paso. Elige la IA que ya usas y el equipo despierta.",

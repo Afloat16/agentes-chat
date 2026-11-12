@@ -5,6 +5,7 @@ setupDom();
 
 import type { ApiClient, ImportInput, ImportItemResult, TeamTemplate } from "@agenteschat/client";
 import { act, cleanup, fireEvent } from "@testing-library/react";
+import { WATCH_POLL_MS } from "@/components/ImportFlow";
 import { createFakeApi, type FakeState, GENERAL_ID, ORG_ID, seedState, withRightHand } from "./fake-api";
 import { renderApp, screen, settle } from "./render";
 // The step's views load on their own (`TeamSource`'s lazy import): loaded here first, so each test sees them at once.
@@ -235,6 +236,53 @@ describe("bringing the team from an app that answers in its chat", () => {
     expect(document.querySelector(".onb__say")?.textContent).toBe(
       "Copie o pedido, cole no ChatGPT dots e traga a resposta. O resto é comigo.",
     );
+  });
+
+  test("an app that takes MCP: its steps, Lodi saying so, and the agents it creates move the rail on with no socket", async () => {
+    const polls: (() => void)[] = [];
+    const realSetInterval = globalThis.setInterval;
+    globalThis.setInterval = ((fn: () => void, ms?: number) => {
+      if (ms === WATCH_POLL_MS) polls.push(fn);
+      return realSetInterval(fn, ms);
+    }) as typeof setInterval;
+    try {
+      const state = settingUp();
+      await open(state, withoutAi(createFakeApi(state), state));
+      await click(answer("Hermes Agent"), 4);
+      await click(button("Trazer do Hermes Agent"), 10);
+      expect(heading()).toBe("Traga o seu time do Hermes Agent");
+      expect(screen().getByRole("radio", { name: "Conectar com MCP" }).getAttribute("aria-checked")).toBe("true");
+      expect(document.querySelector(".onb__say")?.textContent).toBe(
+        "Siga os passos no app e ele mesmo cria os agentes aqui. Eu fico de olho.",
+      );
+      expect(text()).toContain("Esperando os agentes chegarem…");
+      // The onboarding has no workspace socket: only the step's own reads find what the app made.
+      const base = state.agents[0] as FakeState["agents"][number];
+      state.agents.push({
+        ...base,
+        id: "a-nina",
+        name: "Nina",
+        handle: "nina",
+        builtin: null,
+        ownerUserId: state.me?.user.id ?? null,
+      });
+      expect(polls.length).toBeGreaterThan(0);
+      await act(async () => {
+        for (const poll of polls) poll();
+      });
+      await settle(24);
+      expect(heading()).toBe(CONNECT);
+    } finally {
+      globalThis.setInterval = realSetInterval;
+    }
+  });
+
+  test("with MCP switched to the file, Lodi says to drop it again", async () => {
+    await open(settingUp());
+    await click(answer("Hermes Agent"), 4);
+    await click(button("Trazer do Hermes Agent"), 10);
+    await click(screen().getByRole("radio", { name: "Por arquivo" }), 4);
+    expect(document.querySelector(".onb__say")?.textContent).toBe("Solte aqui o que o app exportou. O resto é comigo.");
   });
 
   test("on agentes.chat Cloud the team brought goes on to the plan", async () => {

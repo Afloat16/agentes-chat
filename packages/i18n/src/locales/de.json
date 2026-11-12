@@ -725,6 +725,7 @@
         "askPersonal": "Du nutzt schon Agenten woanders? Ich hole sie alle hierher.",
         "bring": "Kopiere die Anfrage, füge sie in {{app}} ein und bring die Antwort mit. Den Rest mache ich.",
         "bringFiles": "Leg hier ab, was die App exportiert hat. Den Rest mache ich.",
+        "bringMcp": "Folge den Schritten in der App, dann legt sie die Agenten selbst hier an. Ich halte Ausschau nach ihnen.",
         "found": "Ich habe dein Team gefunden. Schau, ob alle da sind.",
         "foundPersonal": "Ich habe deine Agenten gefunden. Schau, ob alle da sind.",
         "ai": "Letzter Schritt. Wähle die KI, die du schon nutzt, und das Team wacht auf.",

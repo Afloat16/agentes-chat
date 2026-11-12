@@ -760,6 +760,8 @@ export const en = {
         bring: "Copy the request, paste it in {{app}} and bring back the answer. I'll do the rest.",
         /** The same, for an app that hands back a file or a folder, dropped on the step. */
         bringFiles: "Drop here what the app exported. I'll do the rest.",
+        /** The same, while the import's "Connect with MCP" steps are on screen: the app creates the agents itself. */
+        bringMcp: "Follow the steps in the app and it creates the agents here itself. I'll watch for them.",
         found: "Found your team. Check that everyone is here.",
         foundPersonal: "Found your agents. Check that they're all here.",
         /** The AI step: picking an AI wakes the team (or, alone, Lodi). */

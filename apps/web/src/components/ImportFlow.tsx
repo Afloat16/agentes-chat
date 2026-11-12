@@ -137,6 +137,8 @@ const NAMES_SHOWN = 4;
 const FIELDS = ["name", "role", "instructions", "handle", "topic", "prompt", "title", "content", "appearance"] as const;
 /** Rows a group shows before "Mostrar mais". */
 const SHOWN = 6;
+/** How often the MCP step reads the agents again while it waits. */
+export const WATCH_POLL_MS = 5_000;
 
 type ReadInput = { files: PickedFile[] | Promise<PickedFile[]> } | { url: string } | { text: string };
 type Focus = "preview" | "report" | "drop" | null;
@@ -209,12 +211,23 @@ export function useImportFlow(orgId: string | null) {
   const list = agents.data;
   const arrived = useMemo(() => (seen && list && me ? agentsSince(list, seen, me) : []), [seen, list, me]);
   const { refetch } = agents;
+  // The first read failed: the step says so, and its Tentar de novo reads again, not the poll under it.
+  const stalled = useRef(false);
+  stalled.current = !seen && agents.isError;
   /** Watches for the agents an AI app creates through MCP (`arrived`) until the returned stop. */
   const watch = useCallback(() => {
     since.current = Date.now();
     setWatching(true);
     void refetch();
-    return () => setWatching(false);
+    // The onboarding has no workspace socket, so no `agents.changed`, and an AI app beside the window never hides the
+    // tab: the list is read again meanwhile.
+    const poll = setInterval(() => {
+      if (!stalled.current) void refetch();
+    }, WATCH_POLL_MS);
+    return () => {
+      clearInterval(poll);
+      setWatching(false);
+    };
   }, [refetch]);
   const setCard = (next: ImportCard | null) => {
     if (next !== card) setSeen(null);
@@ -501,15 +514,14 @@ export function SourceMark({ card }: { card: ImportCard }) {
 }
 
 /**
- * Pick the app, then connect it with MCP (where it takes it, and apps reach this server), or drop, choose, link or
- * paste: the source is recognized either way, and a dropped file is read on either path.
+ * This server's MCP way in and the way on screen for the flow's source, which an embedder reads to say what the step
+ * asks. Prompt only for an app that takes no MCP, or when this server's address couldn't be read. Null while it loads,
+ * so the default never changes under the person.
  */
-function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string; linked: boolean }) {
+export function useImportMethod(flow: ImportFlowState, orgId: string) {
   const { t } = useTranslation();
   const apps = useApps(orgId);
   const mcp = aiAppImport(t, apps.data);
-  // Prompt only for an app that takes no MCP, or when this server's address couldn't be read. Nothing to choose from
-  // while it loads, so the default never changes under the person.
   const method: ImportMethod | null =
     !flow.card || !mcpClient(flow.card)
       ? "prompt"
@@ -518,6 +530,16 @@ function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string;
         : apps.isError
           ? "prompt"
           : null;
+  return { mcp, method };
+}
+
+/**
+ * Pick the app, then connect it with MCP (where it takes it, and apps reach this server), or drop, choose, link or
+ * paste: the source is recognized either way, and a dropped file is read on either path.
+ */
+function Picker({ flow, orgId, linked }: { flow: ImportFlowState; orgId: string; linked: boolean }) {
+  const { t } = useTranslation();
+  const { mcp, method } = useImportMethod(flow, orgId);
   const filesInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
   const steps = useRef<HTMLElement>(null);

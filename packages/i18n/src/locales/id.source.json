@@ -1802,6 +1802,9 @@
   "onboarding.flow.lodi.bringFiles": {
     "value": "Drop here what the app exported. I'll do the rest."
   },
+  "onboarding.flow.lodi.bringMcp": {
+    "value": "Follow the steps in the app and it creates the agents here itself. I'll watch for them."
+  },
   "onboarding.flow.lodi.found": {
     "value": "Found your team. Check that everyone is here."
   },
