@@ -11,8 +11,7 @@ import { Button } from "../Button";
 import { useTheme } from "../theme";
 import { OrDivider } from "./AuthLink";
 import { SocialMark } from "./SocialMarks";
-
-const ORDER: SignInProvider[] = ["apple", "google", "github"];
+import { socialProvidersOn } from "./social-providers";
 
 /**
  * How this phone signed in last. Kept out of `STORED` on purpose: signing out clears those, and this one is for the
@@ -21,12 +20,11 @@ const ORDER: SignInProvider[] = ["apple", "google", "github"];
 const LAST_SIGN_IN = "last-sign-in";
 export const rememberSignIn = (method: SignInProvider | "email") => void writeValue(LAST_SIGN_IN, method);
 
-/** The providers the server has configured, or only `only` (the ones an account is linked to). */
+/** The providers this phone signs in with (`socialProvidersOn`), or only `only` (the ones an account is linked to). */
 export function useSocialProviders(only?: SignInProvider[]): SignInProvider[] {
   const config = useAuthConfig();
   const on = config.data?.socialProviders as Partial<Record<SignInProvider, boolean>> | undefined;
-  if (!on) return [];
-  return ORDER.filter((p) => on[p] === true && (!only || only.includes(p)));
+  return socialProvidersOn(on, Platform.OS, only);
 }
 
 /**

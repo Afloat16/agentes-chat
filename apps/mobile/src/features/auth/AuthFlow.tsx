@@ -13,7 +13,7 @@ import { useIsFocused } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
 import { type ComponentRef, type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, Pressable, type TextInput, View } from "react-native";
+import { Linking, Platform, Pressable, type TextInput, View } from "react-native";
 import { PixelOrbit } from "@/agent/PixelOrbit";
 import { useLaunched } from "@/features/launch/launched";
 import { authClient } from "@/lib/auth";
@@ -26,6 +26,7 @@ import { PasswordField } from "@/ui/auth/PasswordField";
 import { AuthFootLine } from "@/ui/auth/ServerLine";
 import { Shake } from "@/ui/auth/Shake";
 import { rememberSignIn, SocialButtons, useSocialProviders } from "@/ui/auth/SocialButtons";
+import { socialProvidersOn } from "@/ui/auth/social-providers";
 import { Button } from "@/ui/Button";
 import { haptics } from "@/ui/haptics";
 import { Locked } from "@/ui/Locked";
@@ -165,8 +166,8 @@ export function AuthFlow({
       setPassword("");
       // No password and no provider this server signs in with (the owner's account made by the desktop
       // app): the web's "noPassword" step says where to add one, instead of an empty provider list.
-      const on = config.data?.socialProviders as Partial<Record<string, boolean>> | undefined;
-      const usable = found.providers.some((p) => on?.[p] === true);
+      const on = config.data?.socialProviders as Partial<Record<SignInProvider, boolean>> | undefined;
+      const usable = socialProvidersOn(on, Platform.OS, found.providers).length > 0;
       go(lookUpStep(found, usable));
     } catch (e) {
       // No connection: the e-mail stays, a quiet line says so, and the lookup tries again by itself (below).
