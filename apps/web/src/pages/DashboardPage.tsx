@@ -127,6 +127,8 @@ function Board({
   const toast = useToast();
   const count = board.widgets.length;
   const empty = count === 0;
+  // Being deleted, the workspace changes nothing (ADR 0088 §7): no Organize, no "+".
+  const adds = board.canEdit && !org.deletion;
   // The empty state's agent: who made the board when an agent did, else the first one.
   const artAgent = dir.anyAgent(board.owner?.kind === "agent" ? board.owner.id : (dir.agents[0]?.id ?? ""));
   const setPinned = (pinned: boolean) =>
@@ -163,7 +165,7 @@ function Board({
                   {t("dashboards.share.action")}
                 </Button>
               )}
-              {board.canEdit && (
+              {adds && (
                 <BoardActionsPill
                   label={title}
                   arranging={arranging}
@@ -224,14 +226,14 @@ function Board({
           agent={lookOf(artAgent) ?? true}
           title={t("dashboards.empty.title")}
           actions={
-            board.canEdit && (
+            adds && (
               <Button variant="primary" icon="plus" onClick={() => setAdding(true)}>
                 {t("widgets.add.label")}
               </Button>
             )
           }
         >
-          {t(board.canEdit ? "dashboards.empty.text" : "dashboards.empty.viewer")}
+          {t(adds ? "dashboards.empty.text" : "dashboards.empty.viewer")}
         </EmptyState>
       ) : (
         <WidgetBoard

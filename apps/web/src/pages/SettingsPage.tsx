@@ -105,6 +105,7 @@ import { useToast } from "@/lib/toast";
 import { MembersPage } from "./MembersPage";
 import {
   isSettingsSection,
+  OPEN_WHILE_DELETING,
   SETTINGS_SECTIONS,
   type SettingsSection,
   settingsNavEntry,
@@ -218,7 +219,7 @@ function Settings({
     </li>
   );
 
-  const body = (
+  const sections = (
     <>
       {current !== "members" && current !== "general" && current !== "roles" && current !== "vault" && (
         <PageHeader
@@ -269,6 +270,15 @@ function Settings({
       {current === "about" && <AboutSection />}
     </>
   );
+  // Being deleted, what would change the workspace is greyed out in one place (`OPEN_WHILE_DELETING`).
+  const body =
+    org.deletion && !OPEN_WHILE_DELETING.has(current) ? (
+      <fieldset className="settings__frozen" disabled>
+        {sections}
+      </fieldset>
+    ) : (
+      sections
+    );
 
   return (
     <div className="settings page-split">

@@ -2294,8 +2294,8 @@ function Chat({
                     stop={lineStop}
                   />
                 ) : null}
-                {member && org?.deletion ? (
-                  // Being deleted, it reads as ever and takes no message (ADR 0088 §7).
+                {org?.deletion ? (
+                  // Being deleted, it reads as ever and takes no message, nor anyone joining (ADR 0088 §7).
                   <Text variant="footnote" tone="muted" style={styles.readOnly}>
                     {t("deleting.composer")}
                   </Text>

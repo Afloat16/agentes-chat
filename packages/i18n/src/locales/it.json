@@ -16986,6 +16986,7 @@
     "row": "Non disponibile",
     "screen": {
       "title": "Questo spazio di lavoro non è disponibile",
+      "titleNamed": "{{name}} non è disponibile",
       "text": "Le sue conversazioni e i suoi agenti per ora sono chiusi.",
       "others": "I tuoi altri spazi di lavoro"
     },

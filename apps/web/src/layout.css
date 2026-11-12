@@ -4209,6 +4209,16 @@ html:not([data-pointer]) .settings__link:focus-visible {
   flex-direction: column;
   gap: var(--space-4);
 }
+/* A workspace being deleted: the section's controls greyed out at once (ADR 0088 §7), laid out as without it. */
+.settings__frozen {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
 /* "Salvo": shows for a moment after each automatic save. */
 .settings__saved {
   display: inline-flex;

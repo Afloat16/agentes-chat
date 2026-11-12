@@ -232,6 +232,31 @@ describe("a workspace being deleted opens as ever, read-only, under a line on to
     ).toBeTruthy();
     expect(screen().queryByRole("combobox", { name: "Mensagem para #eng" })).toBeNull();
   });
+
+  test("what would change it is greyed out or gone, and the line stays on top in Criar agente; the person's own stays", async () => {
+    const frozen = () => document.querySelector("fieldset.settings__frozen");
+    const pill = () => screen().queryByRole("group", { name: "Meu Início" });
+    // As ever first: Novo agente under the agents, Organizar and Widget on Início, Geral's fields.
+    await open(`/org/${ORG_ID}`);
+    expect(document.querySelector(".sidebar__new-agent")).toBeTruthy();
+    expect(pill()).toBeTruthy();
+    cleanup();
+    await open(`/org/${ORG_ID}`, { deletion: deletion(soon(6)) });
+    expect(document.querySelector(".sidebar__new-agent")).toBeNull();
+    expect(pill()).toBeNull();
+
+    cleanup();
+    await open(`/org/${ORG_ID}/settings/general`, { deletion: deletion(soon(6)) });
+    expect(frozen()?.hasAttribute("disabled")).toBe(true);
+    expect(frozen()?.querySelector("input, button")).toBeTruthy();
+    cleanup();
+    await open(`/org/${ORG_ID}/settings/account`, { deletion: deletion(soon(6)) });
+    expect(frozen()).toBeNull();
+
+    cleanup();
+    await open(`/org/${ORG_ID}/agents/new`, { deletion: deletion(soon(6)) });
+    expect(line().textContent).toMatch(/Acme vai ser apagado em/);
+  });
 });
 
 describe("a workspace being deleted, at its end and in the desktop app", () => {
@@ -460,7 +485,7 @@ describe("deleting your account (Configurações › Sua conta)", () => {
     const betaClosed: OrgSummary = { id: BETA_ID, name: "Beta", role: "member", standing: suspended };
     const heading = () => screen().getByRole("region", { name: "Sua conta inteira" });
     const { router } = await open(`/org/${ORG_ID}`, { standing: suspended, beta: betaClosed });
-    expect(screen().getByRole("heading", { name: "Este workspace está indisponível" })).toBeTruthy();
+    expect(screen().getByRole("heading", { name: "Acme está indisponível" })).toBeTruthy();
     expect(within(heading()).queryByRole("button", { name: "Sair" })).toBeNull();
     expect(screen().getByRole("button", { name: "Sair" })).toBeTruthy();
     await click(within(heading()).getByRole("button", { name: "Apagar conta…" }));

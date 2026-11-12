@@ -79,8 +79,9 @@ export function TeamPage() {
   const noAgents = view !== "usage" && !!data && agents.length === 0;
   const look = useRightHandLook();
   const maker = can(org, "create_agents");
-  // The empty state takes over the head's buttons: one way in, in the middle of the page.
-  const makes = maker && (
+  // The empty state takes over the head's buttons: one way in, in the middle of the page. None while the workspace is
+  // being deleted (ADR 0088 §7).
+  const makes = maker && !org.deletion && (
     <>
       <Button asChild icon="archiveBox">
         <Link to="/org/$orgId/settings/$section" params={{ orgId: org.id, section: "import" }}>

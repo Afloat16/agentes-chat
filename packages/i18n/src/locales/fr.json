@@ -16982,6 +16982,7 @@
     "row": "Indisponible",
     "screen": {
       "title": "Cet espace de travail est indisponible",
+      "titleNamed": "{{name}} est indisponible",
       "text": "Ses conversations et ses agents sont fermés pour le moment.",
       "others": "Vos autres espaces de travail"
     },

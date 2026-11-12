@@ -16522,6 +16522,8 @@ export const en = {
     row: "Unavailable",
     screen: {
       title: "This workspace is unavailable",
+      /** `title` with the workspace's name. */
+      titleNamed: "{{name}} is unavailable",
       text: "Its conversations and agents are closed for now.",
       others: "Your other workspaces",
     },
@@ -16590,7 +16592,7 @@ export const en = {
     writeAfter: ".",
     ask: "Need help? Ask the people who run this server.",
   },
-  /** Deleting a workspace (owners): it closes for everyone now and is deleted for good 7 days later. */
+  /** Deleting a workspace (owners): it turns read-only for everyone now and is deleted for good 7 days later. */
   deleteOrg: {
     card: {
       title: "Delete workspace",

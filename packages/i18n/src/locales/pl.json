@@ -17479,6 +17479,7 @@
     "row": "Niedostępna",
     "screen": {
       "title": "Ta przestrzeń robocza jest niedostępna",
+      "titleNamed": "{{name}} jest niedostępna",
       "text": "Jej rozmowy i agenci są na razie zamknięci.",
       "others": "Twoje pozostałe przestrzenie robocze"
     },

@@ -16541,6 +16541,7 @@
     "row": "Niet beschikbaar",
     "screen": {
       "title": "Deze werkruimte is niet beschikbaar",
+      "titleNamed": "{{name}} is niet beschikbaar",
       "text": "De gesprekken en agents zijn voorlopig gesloten.",
       "others": "Je andere werkruimtes"
     },

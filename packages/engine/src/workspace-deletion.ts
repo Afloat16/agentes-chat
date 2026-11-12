@@ -472,7 +472,10 @@ export async function closeForDeletion(
   return { dueAt, closed: { orgId, dueAt, by } };
 }
 
-/** What follows a deletion's commit: the cached standing goes, its people's apps hear it and close, and its work stops. */
+/**
+ * What follows a deletion's commit: the cached standing goes, its people's apps hear it and turn read-only, and its
+ * work stops.
+ */
 export async function afterClosing(deps: DeletionDeps, closed: Closed) {
   caches.standing.delete(`${closed.orgId}:`);
   const event: OrgDeletingEvent = {

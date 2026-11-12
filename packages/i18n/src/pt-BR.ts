@@ -16582,6 +16582,7 @@ export const ptBR = {
     row: "Indisponível",
     screen: {
       title: "Este workspace está indisponível",
+      titleNamed: "{{name}} está indisponível",
       text: "As conversas e os agentes dele estão fechados por enquanto.",
       others: "Seus outros workspaces",
     },

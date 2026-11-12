@@ -276,12 +276,12 @@ function ClosedScreen({
   );
 }
 
-/** Closed for now: why when told, where to ask, the person's other workspaces and Sair. */
+/** Closed for now: which workspace, why when told, where to ask, the person's other workspaces and Sair. */
 export function SuspendedScreen({ org, me }: { org: OrgSummary; me: Me }) {
   const { t } = useTranslation();
   return (
     <ClosedScreen
-      title={t("standing.screen.title")}
+      title={t("standing.screen.titleNamed", { name: org.name })}
       lead={suspendedText(t, org.standing)}
       foot={<WholeAccount me={me} />}
     >

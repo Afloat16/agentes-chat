@@ -16853,6 +16853,7 @@
     "row": "No disponible",
     "screen": {
       "title": "Este espacio de trabajo no está disponible",
+      "titleNamed": "{{name}} no está disponible",
       "text": "Sus conversaciones y agentes están cerrados por ahora.",
       "others": "Tus otros espacios de trabajo"
     },

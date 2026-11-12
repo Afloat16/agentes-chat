@@ -83,7 +83,8 @@ export function HomePage() {
   const working = workByAgent(
     workingNow(runs.data, active.data?.missions).filter((w) => !w.waiting && listed(w.agentId)),
   );
-  const upcoming = upcomingRoutines(routines.data ?? [], now);
+  // Being deleted, its routines' slots pass: none is ahead (the server says so too, once the list is read again).
+  const upcoming = org.deletion ? [] : upcomingRoutines(routines.data ?? [], now);
   const waitingCount = waiting.length + failures.length + missions.length + mentions.length;
 
   // Who I may ask, the one I talked to last first.

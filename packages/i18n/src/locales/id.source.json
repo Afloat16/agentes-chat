@@ -39954,6 +39954,9 @@
   "standing.screen.title": {
     "value": "This workspace is unavailable"
   },
+  "standing.screen.titleNamed": {
+    "value": "{{name}} is unavailable"
+  },
   "standing.screen.text": {
     "value": "Its conversations and agents are closed for now."
   },

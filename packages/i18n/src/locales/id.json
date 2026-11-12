@@ -15949,6 +15949,7 @@
     "row": "Tidak tersedia",
     "screen": {
       "title": "Ruang kerja ini tidak tersedia",
+      "titleNamed": "{{name}} tidak tersedia",
       "text": "Percakapan dan agennya ditutup untuk sementara.",
       "others": "Ruang kerjamu yang lain"
     },

@@ -159,9 +159,9 @@ function OrgLayout() {
                         )}
                         {/* The work area: notices on top (agents paused, the workspace's computer on its way, a computer
                     the agents run on went offline), then the page. Being deleted, it reads as ever under one line that
-                    says so (ADR 0088 §7): its work stopped, nothing else is news. */}
+                    says so (ADR 0088 §7), in the Criar agente flow too: its work stopped, nothing else is news. */}
                         <div className={focused ? "shell__work shell__work--bare" : "shell__work"}>
-                          {!focused && membership.deletion && <DeletingBanner />}
+                          {membership.deletion && <DeletingBanner />}
                           {!focused && !membership.deletion && (
                             <>
                               <HoldBanner />

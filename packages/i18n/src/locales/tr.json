@@ -16356,6 +16356,7 @@
     "row": "Kullanılamıyor",
     "screen": {
       "title": "Bu çalışma alanı kullanılamıyor",
+      "titleNamed": "{{name}} kullanılamıyor",
       "text": "Konuşmaları ve ajanları şimdilik kapalı.",
       "others": "Diğer çalışma alanlarınız"
     },

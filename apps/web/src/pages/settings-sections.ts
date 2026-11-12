@@ -83,6 +83,22 @@ export const SETTINGS_SECTIONS: {
 export const isSettingsSection = (v: unknown): v is SettingsSection => SETTINGS_SECTIONS.some((s) => s.id === v);
 
 /**
+ * The sections that stay as ever while the workspace is being deleted (ADR 0088 §7): the person's own, what they only
+ * read, taking its data out (Importar e exportar) and its billing. Every other one is greyed out: it would change the
+ * workspace, which refuses changes then.
+ */
+export const OPEN_WHILE_DELETING: ReadonlySet<SettingsSection> = new Set<SettingsSection>([
+  "account",
+  "notifications",
+  "approvals",
+  "usage",
+  "audit",
+  "import",
+  "billing",
+  "about",
+]);
+
+/**
  * Sections that became another one's: Computers is Devices, AI accounts is part of AI and usage. Their addresses
  * still open, on the section that holds them now.
  */
