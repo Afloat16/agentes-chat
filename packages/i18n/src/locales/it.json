@@ -1688,6 +1688,7 @@
     "unshown": "Impossibile mostrarlo",
     "more": "Altro",
     "moreWhat": {
+      "waiting": "Tutto ciò che aspetta una tua risposta",
       "approvals": "Cosa ti chiedono di consentire gli agenti",
       "proposals": "Cosa propongono di cambiare gli agenti",
       "threads": "Conversazioni che si diramano, e missioni",
@@ -1787,6 +1788,7 @@
     "summary_one": "{{people}} membro · {{agents}} agenti",
     "summary_many": "{{people}} membri · {{agents}} agenti",
     "summary_other": "{{people}} membri · {{agents}} agenti",
+    "waiting": "Ti aspetta",
     "approvals": "Approvazioni",
     "proposals": "Proposte di miglioramento",
     "issues": "Attività",
@@ -4218,6 +4220,9 @@
       "team": "<b>{{name}}</b> propone un team · {{what}}",
       "firstTask": "<b>{{name}}</b> suggerisce un primo compito · {{what}}",
       "more": "+{{count}}",
+      "here_one": "{{count}} ti aspetta qui",
+      "here_many": "{{count}} ti aspettano qui",
+      "here_other": "{{count}} ti aspettano qui",
       "see": "Vedi"
     }
   },

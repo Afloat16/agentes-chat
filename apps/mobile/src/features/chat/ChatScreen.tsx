@@ -42,6 +42,7 @@ import {
   useThreadInfo,
   useThreadMessages,
   useThreadMission,
+  useWaitingOnMe,
 } from "@agenteschat/client";
 import { activityVerb, listNames } from "@agenteschat/client/lib/activity";
 import { canTalk } from "@agenteschat/client/lib/audience";
@@ -76,6 +77,7 @@ import { isRightHand, rightHandSeenKey } from "@agenteschat/client/lib/right-han
 import { seenMessageId } from "@agenteschat/client/lib/seen";
 import { lastPostedId } from "@agenteschat/client/lib/timeline";
 import { voiceOf } from "@agenteschat/client/lib/voice";
+import { waitingAway, waitingNotification } from "@agenteschat/client/lib/waiting";
 import { isIdHandle } from "@agenteschat/ui/names";
 import { KeyboardAwareLegendList, useKeyboardChatComposerInset } from "@legendapp/list/keyboard";
 import type { LegendListRef, OnViewableItemsChanged } from "@legendapp/list/react-native";
@@ -130,7 +132,7 @@ import { usePlanHold } from "../ai/parts";
 import { BrowserCard, BrowserRunCard } from "../browser/BrowserCard";
 import { OpenHandoffProvider } from "../browser/open";
 import { threadTitle } from "../chats/logic";
-import { chatHref } from "../links/logic";
+import { chatHref, notificationHref } from "../links/logic";
 import { MissionCardView } from "../missions/cards";
 import { isOpenMission } from "../missions/logic";
 import { PushOfferLine } from "../push/PushOfferLine";
@@ -157,7 +159,7 @@ import { AgentReceiptLine } from "./AgentReceipts";
 import { AttachmentStrip, MAX_PENDING, type PendingFile } from "./AttachmentStrip";
 import { receiptMessageId, turnHeadId } from "./agent-receipts";
 import { AskStore } from "./ask-store";
-import { AskBar, AskProbes, AskStoreProvider, useAskWatch, useAwayAsk } from "./asks";
+import { AskBar, AskProbes, AskStoreProvider, useAskWatch, useAwayAsk, WaitingHereBar } from "./asks";
 import { ChannelHello } from "./ChannelHello";
 import { ChannelMembersSheet } from "./ChannelMembers";
 import { ChannelPicker } from "./ChannelPicker";
@@ -784,6 +786,23 @@ function Chat({
     [rows, letGo],
   );
   const seeAsk = useCallback(() => void holdAt(awayAsk?.ask.messageId), [awayAsk, holdAt]);
+  // What waits on me here with its card not loaded (older, or in a thread): the line counts it and opens the oldest.
+  const waitingOnMe = useWaitingOnMe(orgId).data?.items;
+  const waitingHere = useMemo(
+    () =>
+      waitingAway(
+        waitingOnMe,
+        channelId,
+        threadId ?? null,
+        new Set(rows.flatMap((r) => (r.kind === "message" ? [r.message.id] : []))),
+      ),
+    [waitingOnMe, channelId, threadId, rows],
+  );
+  const waitingFirst = awayAsk ? undefined : waitingHere[0];
+  const seeWaiting = useCallback(() => {
+    const href = waitingFirst && notificationHref(waitingNotification(waitingFirst));
+    if (href) router.push(href);
+  }, [waitingFirst]);
 
   // Rows that arrive at the bottom while the screen is open rise in; older pages and the first load don't.
   const prevKeysRef = useRef<string[]>([]);
@@ -2293,7 +2312,14 @@ function Chat({
                     onStop={stopRun}
                   />
                 ) : null}
-                {member && !awayAsk ? (
+                {member && waitingFirst ? (
+                  <WaitingHereBar
+                    count={waitingHere.length}
+                    agentId={waitingFirst.asker?.type === "agent" ? waitingFirst.asker.id : null}
+                    onSee={seeWaiting}
+                  />
+                ) : null}
+                {member && !awayAsk && !waitingFirst ? (
                   <WorkingLine
                     runs={runs}
                     consults={lineConsults}

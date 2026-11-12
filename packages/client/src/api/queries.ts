@@ -5464,6 +5464,20 @@ export const useNotificationCount = (orgId: string) => {
   });
 };
 
+/**
+ * "Esperando você" (ADR 0172): what waits on me in this workspace, oldest first. Live through the inbox's own events
+ * (`applyNotificationEvent`).
+ */
+export const useWaitingOnMe = (orgId: string) => {
+  const api = useApi();
+  return useQuery({
+    queryKey: keys.waiting(orgId),
+    queryFn: () => api.notifications.waiting(orgId),
+    staleTime: 60_000,
+    meta: { quiet: true },
+  });
+};
+
 /** What reaches my devices as a notification in this workspace (ADR 0071 §8). */
 export const useNoticePrefs = (orgId: string) => {
   const api = useApi();
@@ -5750,6 +5764,9 @@ export function dropNotification(qc: QC, orgId: string, id: string, keepDone = f
 export function applyNotificationEvent(qc: QC, orgId: string, event: NotificationEvent) {
   if (event.type === "notification.upserted" && event.notification.kind === "join_request")
     void qc.invalidateQueries({ queryKey: keys.joinRequests(orgId) });
+  // What waits on me changes with a waiting row coming or any row leaving (a count alone says nothing new).
+  if (event.type === "notification.removed" || (event.type === "notification.upserted" && event.notification.waiting))
+    void qc.invalidateQueries({ queryKey: keys.waiting(orgId) });
   if (event.type === "notification.upserted") cacheNotification(qc, orgId, event.notification);
   else if (event.type === "notification.removed") {
     dropNotification(qc, orgId, event.id, true);

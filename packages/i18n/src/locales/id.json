@@ -1608,6 +1608,7 @@
     "unshown": "Tidak bisa ditampilkan",
     "more": "Lainnya",
     "moreWhat": {
+      "waiting": "Semua yang menunggu jawabanmu",
       "approvals": "Yang diminta agen untuk kamu izinkan",
       "proposals": "Yang diusulkan agen untuk diubah",
       "threads": "Percakapan yang bercabang, dan misi",
@@ -1705,6 +1706,7 @@
     "expandNav": "Bentangkan sidebar",
     "searchWorkspace": "Cari di ruang kerja",
     "summary_other": "{{people}} anggota · {{agents}} agen",
+    "waiting": "Menunggumu",
     "approvals": "Persetujuan",
     "proposals": "Usulan perbaikan",
     "issues": "Tugas",
@@ -3979,6 +3981,7 @@
       "team": "<b>{{name}}</b> mengusulkan tim · {{what}}",
       "firstTask": "<b>{{name}}</b> menyarankan tugas pertama · {{what}}",
       "more": "+{{count}}",
+      "here_other": "{{count}} menunggumu di sini",
       "see": "Lihat"
     }
   },

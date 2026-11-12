@@ -1731,6 +1731,7 @@ export const en = {
     unshown: "Couldn't be shown",
     more: "More",
     moreWhat: {
+      waiting: "Everything waiting for your answer",
       approvals: "What agents ask you to allow",
       proposals: "What agents propose to change",
       threads: "Conversations that branch off, and missions",
@@ -1837,6 +1838,7 @@ export const en = {
     searchWorkspace: "Search the workspace",
     summary_one: "{{people}} member · {{agents}} agents",
     summary_other: "{{people}} members · {{agents}} agents",
+    waiting: "Waiting on you",
     approvals: "Approvals",
     proposals: "Improvement proposals",
     issues: "Tasks",
@@ -4342,6 +4344,9 @@ export const en = {
       team: "<b>{{name}}</b> proposes a team · {{what}}",
       firstTask: "<b>{{name}}</b> suggests a first task · {{what}}",
       more: "+{{count}}",
+      /** What waits on me here with its card not loaded (older, or in a thread): "Ver" goes to the oldest. */
+      here_one: "{{count}} waiting on you here",
+      here_other: "{{count}} waiting on you here",
       see: "See",
     },
   },

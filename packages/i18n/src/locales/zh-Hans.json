@@ -1608,6 +1608,7 @@
     "unshown": "无法显示",
     "more": "更多",
     "moreWhat": {
+      "waiting": "所有等你答复的事",
       "approvals": "智能体请求你允许的事",
       "proposals": "智能体提议更改的内容",
       "threads": "分支出去的对话和专项任务",
@@ -1705,6 +1706,7 @@
     "expandNav": "展开侧边栏",
     "searchWorkspace": "搜索工作区",
     "summary_other": "{{people}} 位成员 · {{agents}} 个智能体",
+    "waiting": "等你处理",
     "approvals": "审批",
     "proposals": "改进建议",
     "issues": "任务",
@@ -3968,6 +3970,7 @@
       "team": "<b>{{name}}</b> 提议了一个团队 · {{what}}",
       "firstTask": "<b>{{name}}</b> 建议了第一个任务 · {{what}}",
       "more": "+{{count}}",
+      "here_other": "这里有 {{count}} 件事等你处理",
       "see": "查看"
     }
   },
