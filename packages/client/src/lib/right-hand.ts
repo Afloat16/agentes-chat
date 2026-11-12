@@ -115,6 +115,13 @@ export function firstVisitOf(dms: readonly DirectMessage[] | undefined, agentId:
 /** The workspace's right hand among its agents, when this person may see it. */
 export const rightHandOf = <A extends Pick<Agent, "builtin">>(agents: readonly A[]) => agents.find(isRightHand);
 
+/** The agents a scene of the team shows: the right hand in front (second in the row), then the others, four at most. */
+export function sceneTeam<A extends { id: string }>(agents: readonly A[], lead: A | undefined): A[] {
+  const rest = agents.filter((a) => a.id !== lead?.id).slice(0, lead ? 3 : 4);
+  if (!lead) return rest;
+  return rest.length > 1 ? [rest[0] as A, lead, ...rest.slice(1)] : [lead, ...rest];
+}
+
 /**
  * Its name and look before the workspace exists (the onboarding's first question): the server's
  * `RIGHT_HAND_DEFAULTS` (packages/engine/src/right-hand.ts).
@@ -150,8 +157,19 @@ export async function finishOnboarding(api: ApiClient, orgId: string): Promise<O
 }
 
 /**
+ * Whether its first-run card leads with the plan for this person (the card's plan row, `firstRunSteps`, ADR 0162):
+ * the card still up, the workspace waiting for its first agentes.chat plan, and an owner who may pay. Here, apart from
+ * the card's rows, for the hold's banner, which every page loads.
+ */
+export const leadsWithPlan = (
+  agent: Pick<Agent, "setup" | "builtin">,
+  may: { owner: boolean; pay: boolean; waitsForPlan?: boolean },
+) => agent.builtin === "right_hand" && Boolean(agent.setup) && may.owner && Boolean(may.waitsForPlan) && may.pay;
+
+/**
  * The line under its greeting: on a billing hold with no team yet, how the team comes and that it works with the
- * plan; otherwise what it does (the hold's banner and the checklist's AI row already say the plan once a team is here).
+ * plan; otherwise what it does (once a team is here, the checklist's plan row, which leads it while the workspace
+ * waits for its first plan, and the hold's banner already say the plan; ADR 0162).
  */
 export const introLeadKey = (held: boolean, hasTeam: boolean) =>
   held && !hasTeam ? ("rightHand.intro.heldLead" as const) : ("rightHand.intro.lead" as const);
@@ -211,3 +229,15 @@ export const teamAnswered = (
   team: readonly Pick<Agent, "id">[],
   statuses: readonly Pick<AgentStatus, "agentId" | "activeAt">[] | undefined,
 ) => team.length === 0 || (statuses?.some((s) => s.activeAt !== null && team.some((a) => a.id === s.agentId)) ?? false);
+
+/**
+ * What only the right hand does, in the order its page lists them (`rightHand.powers.<id>`), each with the server's
+ * grants behind it (`RIGHT_HAND_GRANTS` in the engine's `right-hand.ts`). `mentions` is no grant: the server's
+ * `rightHandReaches`.
+ */
+export const RIGHT_HAND_POWERS = [
+  { id: "team", grants: ["setup:write"] },
+  { id: "routines", grants: ["schedule:write"] },
+  { id: "asYou", grants: ["drive:read", "wiki:read", "issues:read"] },
+  { id: "mentions", grants: [] },
+] as const;

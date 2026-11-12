@@ -30,6 +30,7 @@ import {
   accessSubject,
   consolidateItem,
   type Evidence,
+  howToChannels,
   howToSql,
   howToSubject,
   looksLikeSecret,
@@ -450,7 +451,7 @@ export async function learnRun(deps: ContextDeps, input: { orgId: string; runId:
   if (busy) return { ...out, skipped: "busy" };
   const [agent] = await db.select().from(agents).where(eq(agents.id, run.agentId));
   if (!agent || agent.archivedAt) return { ...out, skipped: "missing" };
-  // Its runs keep no memory (ADR 0137).
+  // Nothing is learned from its runs for the team (ADR 0137): it keeps only what it saves for the person it answers.
   if (isRightHand(agent)) return { ...out, skipped: "right_hand" };
   if (agent.monthlyBudgetNanoUsd !== null) {
     const spent = await agentBudgetState(db, run.orgId, agent.id);
@@ -556,9 +557,9 @@ export async function learnRun(deps: ContextDeps, input: { orgId: string; runId:
   const parsed = parseLearnOutput(result.text);
   const now = new Date().toISOString();
   // Who holds what reaches every channel from a public one; from a DM, a private channel or a task it stays there.
-  const [where] = parsed.items.some((i) => i.kind === "access")
+  const [where] = parsed.items.some((i) => i.kind === "access" || i.kind === "how_to")
     ? await db
-        .select({ kind: channels.kind, visibility: channels.visibility })
+        .select({ id: channels.id, kind: channels.kind, visibility: channels.visibility, dmKey: channels.dmKey })
         .from(channels)
         .where(and(eq(channels.orgId, run.orgId), eq(channels.id, run.channelId)))
     : [];
@@ -648,7 +649,12 @@ export async function learnRun(deps: ContextDeps, input: { orgId: string; runId:
       // A pointer, not a page's say: short.
       content: item.kind === "access" ? cutText(item.content.trim(), 300) : item.content.trim(),
       sourceIds: [...new Set(cited.messages.map((m) => m.id))],
-      channelIds: scope === "workspace" && item.kind === "access" && everywhere ? [] : [run.channelId],
+      channelIds:
+        scope === "workspace" && item.kind === "access" && everywhere
+          ? []
+          : item.kind === "how_to" && where
+            ? await howToChannels(db, run.orgId, where, `${title}\n${item.content}`)
+            : [run.channelId],
       trust,
       evidence,
       confidence,

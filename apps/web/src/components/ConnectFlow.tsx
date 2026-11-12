@@ -36,6 +36,7 @@ import {
 } from "@agenteschat/client/lib/connected";
 import { humanize, isHttpsUrl, sameServer } from "@agenteschat/client/lib/custom-tools";
 import { errorText } from "@agenteschat/client/lib/errors";
+import { useHeldWhile } from "@agenteschat/client/lib/hold";
 import { connectorBrand, connectorDescription, connectorName } from "@agenteschat/client/lib/scopes";
 import {
   partsOf,
@@ -52,6 +53,7 @@ import {
   DialogBody,
   DialogFooter,
   Field,
+  HintLine,
   Icon,
   Input,
   Locked,
@@ -61,7 +63,7 @@ import {
 } from "@agenteschat/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -279,11 +281,16 @@ function ConnectStep({
     def?.id === "github" && !viaComposio && !mode && !accountOnly && githubApp.data?.installable === true;
   const viaApp = appOffered && how === "app";
   const busy = connect.isPending || withKey.isPending || oauth.isPending || installApp.isPending;
+  const sent = busy || withKey.isSuccess || connect.data?.status === "connected";
   // As the server does: a server by address takes another account, a catalog connector a new sign-in.
-  const accounts = (servers.data ?? []).filter((s) => sameServer(s.serverUrl, serverUrl));
-  const again = byAddress
-    ? accounts.length > 0
-    : (connections.data ?? []).some((c) => c.connector === def?.id && !c.revokedAt);
+  const accounts = useHeldWhile(
+    (servers.data ?? []).filter((s) => sameServer(s.serverUrl, serverUrl)),
+    sent,
+  );
+  const again = useHeldWhile(
+    byAddress ? accounts.length > 0 : (connections.data ?? []).some((c) => c.connector === def?.id && !c.revokedAt),
+    sent,
+  );
   const replacing = mode === "reconnect" || (!byAddress && again);
   const connectionId = mode === "reconnect" && item?.custom ? item.id : undefined;
   const unchecked = byAddress && accountUnchecked(accounts);
@@ -553,7 +560,14 @@ function GithubOrgs() {
       )}
       {manageUrl && (
         <>
-          <p className="small muted">{t("connectFlow.githubOrgs.lead")}</p>
+          <p className="small muted">
+            <HintLine
+              name={t("common.about", { label: t("connectFlow.githubOrgs.title") })}
+              hint={t("connectFlow.githubOrgs.lead")}
+            >
+              {t("connectFlow.githubOrgs.short")}
+            </HintLine>
+          </p>
           <Button
             asChild
             size="sm"
@@ -582,16 +596,13 @@ function DoneStep({ item, onAdjust, onClose }: { item: ConnectedItem; onAdjust: 
   const { save } = useCustomServerAction(org.id);
   const waiting = item.pending > 0 ? item.server : null;
   return (
-    <>
-      <DialogBody className="cflow__body">
-        <p className="cflow__text">{connectedSummary(t, item)}</p>
-        {item.toolsError && <Alert>{t("toolReview.unreadable", { reason: item.toolsError })}</Alert>}
-      </DialogBody>
-      <DialogFooter bar>
-        <Button disabled={save.isPending} onClick={onAdjust}>
-          {t("connectFlow.done.adjust")}
-        </Button>
-        {waiting ? (
+    <ConnectedDone
+      text={connectedSummary(t, item)}
+      busy={save.isPending}
+      onAdjust={onAdjust}
+      onClose={onClose}
+      primary={
+        waiting && (
           <Button
             variant="primary"
             disabled={save.isPending}
@@ -609,7 +620,45 @@ function DoneStep({ item, onAdjust, onClose }: { item: ConnectedItem; onAdjust: 
           >
             {t("connectFlow.next")}
           </Button>
-        ) : (
+        )
+      }
+    >
+      {item.toolsError && <Alert>{t("toolReview.unreadable", { reason: item.toolsError })}</Alert>}
+    </ConnectedDone>
+  );
+}
+
+/**
+ * How connecting anything ends, inside its dialog: one sentence on who can use it, then "Ajustar" (the detail) and
+ * "Pronto", or `primary` in its place.
+ */
+export function ConnectedDone({
+  text,
+  children,
+  busy,
+  primary,
+  onAdjust,
+  onClose,
+}: {
+  text: string;
+  children?: ReactNode;
+  busy?: boolean;
+  primary?: ReactNode;
+  onAdjust: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <DialogBody className="cflow__body">
+        <p className="cflow__text">{text}</p>
+        {children}
+      </DialogBody>
+      <DialogFooter bar>
+        <Button disabled={busy} onClick={onAdjust}>
+          {t("connectFlow.done.adjust")}
+        </Button>
+        {primary || (
           <Button variant="primary" onClick={onClose}>
             {t("connectFlow.done.ok")}
           </Button>
@@ -874,7 +923,7 @@ function WhoStep({ item, onBack, onClose }: { item: ConnectedItem; onBack: () =>
               </ul>
             </>
           )}
-          <p className="small muted cflow__asks">
+          <p className="small muted cflow__asks ac-iconline">
             <Icon name="lock" />
             {asks > 0 ? t("connectFlow.asksCount", { count: asks }) : t("connectFlow.asksDefault")}
           </p>

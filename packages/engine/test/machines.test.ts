@@ -621,6 +621,32 @@ describe("a runner that dies mid-request (brain turns never stay working)", () =
     expect(await row()).toMatchObject({ claude: { version: "2.1.300" }, browser: { available: false }, detectedAt });
   });
 
+  test("toolchains found mid-session replace the hello's (the rest stays) and tell the org", async () => {
+    f = await setup({ machines: true });
+    const hub = f.machineHub as MachineHub;
+    const paired = await pair();
+    const runner = fakeRunner(hub);
+    const row = async () =>
+      (await f.db.select().from(schema.machines).where(eq(schema.machines.id, paired.machineId)))[0]?.executors;
+    await runner.hello(paired.token, {
+      browser: { available: true, chrome: "Google Chrome 156.0.8078.79" },
+      toolchains: { xcode: "27.0", appleAccount: "no_team" },
+    });
+    await Bun.sleep(5);
+    const events: Record<string, unknown>[] = [];
+    f.pubsub.subscribe(orgTopic(f.org.id), (e) => events.push((e as { event?: Record<string, unknown> }).event ?? {}));
+    const toolchains = {
+      xcode: "27.0",
+      xcodeSdk: "27.0",
+      appleTeam: "Sam Rivera (Personal Team)",
+      appleAccount: "team",
+    };
+    await runner.frame({ type: "toolchains.changed", toolchains });
+    await Bun.sleep(5);
+    expect(await row()).toMatchObject({ browser: { available: true }, toolchains });
+    expect(events).toContainEqual({ type: "machine.updated", machineId: paired.machineId, toolchains: true });
+  });
+
   test("a brain turn that goes quiet fails; its own events and bridge calls keep a long one alive", async () => {
     f = await setup({ machines: true });
     const hub = createMachineHub({ db: f.db, pubsub: f.pubsub, replicaId: "replica-i", brainIdleMs: 200 });
@@ -1130,10 +1156,33 @@ describe("tools on a connected machine", () => {
     const out = await call(ctx, "run_code", { language: "bash", code: "ls" });
     expect(out).toMatchObject({ isError: true });
     expect(out.content).toContain("Commands are turned off on the computer Files only");
+    // A runner that reports no access has only its start flag.
+    expect(out.content).toContain("--no-exec");
     const listed = await f.tools?.list(ctx);
     expect(listed?.find((t) => t.name === "run_code")?.description).not.toContain("claude -p");
     // Files still work.
     expect((await call(ctx, "write_file", { path: "a.txt", content: "x" })).isError).toBeFalsy();
+  });
+
+  test("commands switched off in the app on a Mac point to the app, on Linux to the runner's command", async () => {
+    f = await setup({ machines: true, reply: () => ({ chunks: ["ok"] }) });
+    await grantScopes(f.db, f.org.id, f.agent.id, SANDBOX);
+    const paired = await pair(f.owner.id, "Ana's Mac", false);
+    const runner = fakeRunner(f.machineHub as MachineHub, { execAllowed: false });
+    const access = { folders: [], tools: { claude: false, codex: false, commands: false } };
+    await runner.hello(paired.token, { os: "darwin", access });
+    await setAgentComputerTarget(deps(), f.owner.id, f.org.id, f.agent.id, paired.machineId);
+    const ctx = await runCtx();
+    const out = await call(ctx, "run_code", { language: "bash", code: "ls" });
+    expect(out).toMatchObject({ isError: true });
+    expect(out.content).toContain(
+      "Commands are turned off on the computer Ana's Mac: you can only read, write, list and upload files there. Tell the people: only the person at Ana's Mac can turn commands on, in the agentes.chat app there (Preferences › Tools, Commands).",
+    );
+    expect(out.content).not.toContain("--no-exec");
+    await f.db.update(schema.machines).set({ os: "linux" }).where(eq(schema.machines.id, paired.machineId));
+    const linux = await call(ctx, "run_code", { language: "bash", code: "ls" });
+    expect(linux.content).toContain("can turn commands on, with `agentes-runner tools enable commands` there.");
+    expect(linux.content).not.toContain("--no-exec");
   });
 
   test("a runner too old for agent folders is refused instead of sharing one folder", async () => {
@@ -2213,6 +2262,25 @@ test("the start-page language follows the responsible person and changes reach t
   expect(signals).toContainEqual({ type: "machine.agents", orgId: f.org.id });
   await setMyLocale(f.db, f.owner.id, "en", false, f.pubsub);
   expect((await machineAgents(f.db, f.org.id, paired.machineId)).find((a) => a.id === agent.id)?.locale).toBe("en");
+});
+
+test("an agent whose brain's shell runs in its CLI's own sandbox has no containers service (ADR 0169)", async () => {
+  f = await setup({ machines: true });
+  const paired = await pair();
+  const agent = await createAgent(
+    f.db,
+    f.owner.id,
+    f.org.id,
+    { name: "Ada", handle: "ada-ctr" },
+    { model: "claude-sonnet-5-5" },
+  );
+  await setAgentComputerTarget(deps(), f.owner.id, f.org.id, agent.id, paired.machineId);
+  const containers = async (brain: string) => {
+    await f.db.update(schema.agents).set({ brain }).where(eq(schema.agents.id, agent.id));
+    return (await machineAgents(f.db, f.org.id, paired.machineId)).find((a) => a.id === agent.id)?.containers;
+  };
+  for (const brain of ["model", "claude_code", "opencode"]) expect(await containers(brain)).toBe(true);
+  for (const brain of ["codex", "cursor", "grok", "antigravity"]) expect(await containers(brain)).toBeUndefined();
 });
 
 test("personal computer IPs are neither stored nor broadcast to workspace readers", async () => {

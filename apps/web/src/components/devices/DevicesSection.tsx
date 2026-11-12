@@ -8,6 +8,8 @@ import {
   deviceCounts,
   deviceName,
   deviceRows,
+  iosOf,
+  iphoneOverWifi,
   joinFacts,
   phoneLine,
   statusDetail,
@@ -27,7 +29,7 @@ import {
   Segmented,
   Toolbar,
 } from "@agenteschat/ui";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentComputersCard } from "@/components/AgentComputer";
@@ -238,9 +240,10 @@ export function DeviceRowView({
   const { org, me } = useOrg();
   const stop = useStopPhone(org.id);
   const toast = useToast();
+  const navigate = useNavigate();
   const d = row.device;
   const host = row.kind === "phone" ? row.host : null;
-  const detail = statusDetail(t, i18n.language, d.status, { host: host?.name });
+  const detail = statusDetail(t, i18n.language, d.status, { host: host?.name, hostOs: host?.os, ios: iosOf(d) });
   const target: Target =
     row.kind === "computer" ? { kind: "computer", device: row.device } : { kind: "phone", device: row.device };
   const label = t("devices.menu", { name: d.name });
@@ -299,6 +302,22 @@ export function DeviceRowView({
             label={label}
             trigger={<Button size="sm" variant="ghost" iconOnly icon="more" aria-label={label} />}
           >
+            <MenuItem
+              icon="settings"
+              onSelect={() =>
+                void (row.kind === "phone"
+                  ? navigate({
+                      to: "/org/$orgId/settings/devices/phones/$phoneId",
+                      params: { orgId: org.id, phoneId: d.id },
+                    })
+                  : navigate({
+                      to: "/org/$orgId/settings/devices/$deviceId",
+                      params: { orgId: org.id, deviceId: d.id },
+                    }))
+              }
+            >
+              {t("devices.settings")}
+            </MenuItem>
             {d.mayManage && (
               <MenuItem icon="edit" onSelect={() => onRename(target)}>
                 {t("devices.rename")}
@@ -327,7 +346,9 @@ export function DeviceRowView({
                 >
                   {row.kind === "computer" && row.device.machineKind === "host"
                     ? t("machines.host.stop")
-                    : t(row.kind === "phone" ? "devices.forget" : "devices.remove")}
+                    : row.kind === "phone" && iphoneOverWifi(row.device)
+                      ? t("devices.iphone.wifi.stop")
+                      : t(row.kind === "phone" ? "devices.forget" : "devices.remove")}
                 </MenuItem>
               </>
             )}
@@ -378,12 +399,14 @@ export function DeviceRemoveDialog({
   const remove = useRemoveComputer(org.id);
   const forget = useForgetPhone(org.id);
   const phone = target?.kind === "phone";
+  const wifi = target?.kind === "phone" && iphoneOverWifi(target.device);
   const pending = phone ? forget.isPending : remove.isPending;
   return (
     <RemoveDeviceDialog
       open={target !== null}
       name={target?.device.name ?? ""}
       phone={phone}
+      wifi={wifi}
       host={target?.kind === "computer" && target.device.machineKind === "host"}
       onClose={onClose}
       removing={pending}
@@ -395,7 +418,7 @@ export function DeviceRemoveDialog({
             toast.show(
               target.kind === "computer" && target.device.machineKind === "host"
                 ? t("machines.host.stopped")
-                : t(phone ? "devices.forgotten" : "devices.removed", { name }),
+                : t(wifi ? "devices.iphone.wifi.stopped" : phone ? "devices.forgotten" : "devices.removed", { name }),
             );
             onClose();
             onRemoved?.();

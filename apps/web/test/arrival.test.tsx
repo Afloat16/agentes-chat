@@ -61,6 +61,16 @@ describe("the arrival, right after the onboarding", () => {
     expect(screen().queryByRole("dialog", { name: CONNECT })).toBeNull();
   });
 
+  test("after the onboarding's own AI step (beta): the notice alone, even with agents that don't think", async () => {
+    const { router } = await open(withoutAi(), "?arrival=beta");
+    const beta = screen().getByRole("dialog", { name: BETA });
+    expect(router.state.location.search).not.toHaveProperty("arrival");
+    await click(within(beta).getByRole("button", { name: /Continuar/ }));
+    await settle(6);
+    expect(screen().queryByRole("dialog", { name: BETA })).toBeNull();
+    expect(screen().queryByRole("dialog", { name: CONNECT })).toBeNull();
+  });
+
   test("no mark in the address, no notice", async () => {
     await open(withoutAi());
     expect(screen().queryByRole("dialog", { name: BETA })).toBeNull();
@@ -163,5 +173,20 @@ describe("feedback about what was clicked", () => {
     await settle(4);
     const sent = state.calls.findLast((c) => c.method === "system.sendFeedback")?.args[0] as FeedbackInput;
     expect(sent.files).toHaveLength(1);
+  });
+
+  test("where it goes to the agentes.chat team, the form says so and takes photos only", async () => {
+    const { state } = await open(seedState({ authConfig: { feedback: true, feedbackRelay: true } }));
+    await click(screen().getByRole("button", { name: "Enviar feedback" }));
+    const form = screen().getByRole("dialog", { name: "O que faltou, quebrou ou incomodou?" });
+    expect(within(form).getByText("O que você escrever vai por e-mail para o time do agentes.chat.")).toBeTruthy();
+    expect(within(form).getByRole("button", { name: "Anexar foto" })).toBeTruthy();
+    expect(within(form).getByText("Até 3 fotos de 5 MB.")).toBeTruthy();
+    const picker = form.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(picker.accept).not.toContain("video");
+    await act(async () =>
+      fireEvent.change(picker, { target: { files: [new File(["x"], "tela.mp4", { type: "video/mp4" })] } }),
+    );
+    expect(state.calls.some((c) => c.method === "system.uploadFeedbackFile")).toBe(false);
   });
 });

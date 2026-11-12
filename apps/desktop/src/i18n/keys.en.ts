@@ -82,6 +82,8 @@ export const desktopEn = {
     pause1h: "For 1 hour",
     pauseTomorrow: "Until tomorrow at 9 AM",
     pauseManual: "Until I resume",
+    /** The pause menu with several workspaces: every one of them, then each on its own. */
+    pauseAll: "All workspaces",
     pauseHint: "What is already running finishes normally.",
     /** With the agentes.chat this computer runs: pausing the agents leaves it up (ADR 0158). */
     pauseHintServer: "What is already running finishes normally. The server stays up.",
@@ -102,6 +104,12 @@ export const desktopEn = {
     pausedUntil: "Paused until {{time}}",
     pausedUntilResume: "Paused until you resume",
     pausedBody: "No agent, from any workspace, starts anything new on this {{device}}.",
+    /** Only some workspaces paused: `orgs` is their names ("Acme and Northwind"). */
+    pausedSomeBody: "On hold: {{orgs}}. The other workspaces' agents keep working.",
+    /** Under the card of the server this computer runs: other servers' workspaces whose agents use it too. */
+    alsoWorksFor: "Also works for {{orgs}}",
+    otherWorkspaces_one: "{{count}} other workspace",
+    otherWorkspaces_other: "{{count}} other workspaces",
     resumeNow: "Resume now",
     plusHour: "+1 hour",
     updateTitle: "Version {{version}} is available",
@@ -350,7 +358,7 @@ export const desktopEn = {
     jev: "Jev",
     jevText:
       "A fast model by TypeSafe that picks who answers, keeps memory tidy and lets agents see the screen. Optional, with your own key.",
-    jevWhere: "In agentes.chat\u00a0›\u00a0Settings\u00a0›\u00a0AI accounts.",
+    jevWhere: "In agentes.chat\u00a0›\u00a0Settings\u00a0›\u00a0AI and usage.",
     reachFailed: "Access from your devices didn't turn on: {{reason}}.",
     backup: "Back up now",
     backedUp: "Backed up: {{file}}",
@@ -395,23 +403,72 @@ export const desktopEn = {
     updatesWithApp: "Updating the app updates agentes.chat on this {{device}} too.",
     updateBack: "The update didn't start. agentes.chat is back on {{version}}.",
     updateBackBody: "The new version is tried again with the app's next update.",
+    backups: "Backups",
+    nightly: "Back up every night",
+    nightlyLast: "At {{at}} · last one {{time}}",
+    nightlyNone: "At {{at}} · no backup yet",
+    lastBackup: "Last one {{time}}",
+    noBackup: "No backup yet",
+    backupFailed: "The last backup didn't finish. Back up now to try again.",
+    copyTo: "Copy to",
+    copyToText:
+      "Each new backup is copied to this folder too, like a USB drive or iCloud Drive. The two newest stay there.",
+    copyToNone: "Only on this {{device}}",
+    copyToStop: "Stop copying",
+    choose: "Choose…",
+    change: "Change…",
+    copyFailed: "The last backup didn't reach this folder. Check that it's still there, or choose another.",
+    restore: "Restore…",
+    restoreTitle: "Restore a backup?",
+    restoreBody:
+      "agentes.chat on this {{device}} goes back to that backup: messages, files and settings. It stops for a minute. What's there now is kept in the backups folder.",
+    restoreWhich: "Backup to restore",
+    backupOf: "Backup from {{time}}",
+    restoreConfirm: "Restore",
+    restored: "Restored the backup from {{time}}",
+    restoreFailed: "That backup didn't start, so agentes.chat is back as it was. Try the other backup.",
+    restoreUnreadable: "That backup can't be opened. Try the other one.",
+    noPassword: "Add a password to sign in from your phone and other computers.",
+    addPassword: "Add a password",
+    keep: "Keep it running",
+    keepLogin: "Opens at login",
+    keepLoginOn: "Turn on",
+    keepAutoLogin: "Signs in by itself after a restart",
+    keepAutoLoginText:
+      "After a restart, this {{device}} waits at its sign-in screen and agentes.chat doesn't open. Turn on automatic login in Users & Groups.",
+    keepAutoLoginOpen: "Open Users & Groups",
+    keepPower: "Starts after a power failure",
+    keepPowerText:
+      "After a power cut, this {{device}} stays off until someone presses its button. Energy settings can start it by itself.",
+    keepPowerOpen: "Open Energy settings",
+    keepAwake: "Doesn't sleep while serving",
+    keepAwakeText: "This {{device}} stays awake while agentes.chat runs here. Start agentes.chat to keep it awake.",
+    keepOn: "Done",
+    keepOff: "Not yet",
   },
   pair: {
     title: "Let agents of {{org}} work on this {{device}}?",
-    body: "{{host}} asked. They start with no folders of yours and commands off.",
+    /**
+     * The system's dialog before the site pairs this computer: no switches there, so it says what they get. At most 120
+     * characters in every language: Rust refuses the app's labels past that.
+     */
+    body: "{{host}} asked. Agents get commands, the browser and coding tools here. Folders come later, in Preferences.",
     allow: "Allow",
     notNow: "Not now",
     /** Shown once after sign-in, for a workspace this computer doesn't work for yet. */
     offerTitle: "Let {{org}}'s agents use this {{device}}?",
-    offerBody:
-      "They start with no folders of yours and commands off. You pick what they get in Preferences, and you can stop them any time.",
     keepReady: "Keep it ready: open agentes.chat at login",
+    /** The offer for a server elsewhere that this computer only opens: pairing lends it, it isn't needed to get in. */
+    offerOnlyIf:
+      "Only if you want this {{device}} to do agents' work too. With Not now you still use {{org}} here as usual.",
+    /** Over the pairing's switches (Commands, Claude Code, Codex, Browser), on as they start. */
+    canDo: "What agents can do here",
+    foldersLater: "No folders of yours yet. Add them later in Preferences\u00a0›\u00a0Folders.",
     /** A link from the web asks to connect this computer: who asked, from which server. */
     linkTitle: "Connect this {{device}} to {{org}}?",
     askedBy: "Asked by",
     from: "From",
-    linkBody:
-      "{{org}}'s agents start with no folders of yours and commands off. If you didn't ask for this, choose Not now.",
+    linkBody: "If you didn't ask for this, choose Not now.",
     waiting: "Waiting for {{by}} to let it in…",
     done: "Connected to {{org}}",
     expired: "This link expired. Make a new one under Settings\u00a0›\u00a0Devices.",
@@ -421,11 +478,52 @@ export const desktopEn = {
     canUse: "Agents can use it",
     notUsing: "Its agents don't use this {{device}}",
   },
+  /** A Mac's permissions, asked right after pairing ("Prepare this Mac") and listed in Preferences › General. */
+  prepare: {
+    title: "Get this {{device}} ready",
+    lead: "Connected to {{org}}. Allow these now so its agents never stop to ask.",
+    screen: "Screen Recording",
+    screenDesc: "Lets agents take screenshots of this {{device}}.",
+    /** Under Screen Recording: macOS asks about it again every month or so, with Allow as one choice. */
+    screenAgain: "macOS asks again about once a month. Choose Allow.",
+    /** macOS's own name for the permission (System Settings › Privacy & Security). */
+    disk: "Full Disk Access",
+    diskDesc: "Lets agents open your files without macOS asking for each folder.",
+    /** No prompt can ask for Full Disk Access: the person turns the app on in its list, or adds it with the + button. */
+    diskHow: "In Settings, turn on agentes.chat in the list, or add it with +.",
+    /** macOS's Local Network permission, which Android phones paired over Wi-Fi need. */
+    network: "Local network (phones over Wi-Fi)",
+    networkDesc: "Lets agents find and use Android phones on your Wi-Fi.",
+    /** Behind the ⓘ: why this row never shows On. */
+    networkHint: "macOS never tells apps the answer. Open Settings to see it.",
+    /** Local Network's state: whether the app asked, since macOS doesn't say whether it was allowed. */
+    asked: "Asked",
+    notAsked: "Not asked yet",
+    on: "On",
+    /** System Settings › Privacy & Security, where a refused permission is turned on. */
+    openSettings: "Open Settings",
+    /** Once Screen Recording or Full Disk Access was asked: macOS applies it only after the app opens again. */
+    reopen: "When macOS asks to Quit & Reopen, choose it. agentes.chat opens again right here.",
+    tookEffect: "agentes.chat opened again with your changes.",
+    skip: "Skip for now",
+    prefsTitle: "Permissions",
+    prefsHint: "macOS may turn these off when the app updates. Turn them on again here.",
+  },
   tools: {
     claudeName: "Claude Code",
-    claudeDesc: "Writes and changes code in the allowed folders, with your Claude account.",
+    claudeDesc:
+      "Writes and changes code in the allowed folders, with your Claude account. Runs its own commands in the agent's folder, even with Commands off.",
     codexName: "Codex",
-    codexDesc: "Writes and changes code in the allowed folders, with your ChatGPT account.",
+    codexDesc:
+      "Writes and changes code in the allowed folders, with your ChatGPT account. Runs its own commands in the agent's folder, even with Commands off.",
+    cursorName: "Cursor",
+    cursorDesc: "Writes and changes code in the allowed folders, with your Cursor account.",
+    opencodeName: "OpenCode",
+    opencodeDesc: "Writes and changes code in the allowed folders, with OpenCode's free models or your key.",
+    grokName: "Grok Build",
+    grokDesc: "Writes and changes code in the allowed folders, with your Grok account.",
+    antigravityName: "Antigravity CLI",
+    antigravityDesc: "Writes and changes code in the allowed folders, with your Gemini account.",
     found: "Found",
     notFound: "Not found",
     loggedOut: "Not signed in",
@@ -436,6 +534,16 @@ export const desktopEn = {
     commandsWarnHere:
       "Commands run as you and can reach the rest of this {{device}}, agentes.chat's own data included.",
     commandsSome: "On only for {{orgs}}. Turn it on for every workspace here.",
+    commandsAbout:
+      "Tests, builds and other Terminal commands. Each one shows in Activity. Commands run as you. They can read anything you can on this {{device}}, agentes.chat's database and keys included. Turn them on only for workspaces you trust with all of it.",
+    commandsReach:
+      "Commands run as you. They can read anything you can on this {{device}}, agentes.chat's database and keys included. Turn them on only for workspaces you trust with all of it.",
+    commandsAsk: "Turn on Commands for {{org}}?",
+    commandsTurnOn: "Turn on",
+    checkAgain: "Check again",
+    lookPath: "agentes.chat looks in your login shell's PATH.",
+    lookPathWindows: "agentes.chat looks in PATH.",
+    stillMissing: "{{tool}} still isn't found. Run the command above, then check again.",
     browserName: "Browser",
     browserDesc: "Opens websites for the agents in a browser of their own, without your logins.",
     browserLogins:
@@ -486,6 +594,7 @@ export const desktopEn = {
       launchTitle: "Open at login",
       launchDesc: "Agents only use this {{device}} while the app is open.",
       launchHere: "agentes.chat on this {{device}} runs only while the app is open.",
+      launchWork: "Agents work only while the app is open.",
       notifySiteTitle: "Let me know about messages and requests",
       notifySiteDesc: "Mentions, direct messages and what waits for you, while the app is in the background.",
       notifyTitle: "Let me know when an agent asks for a folder",
@@ -520,10 +629,18 @@ export const desktopEn = {
       plug: "Plug a phone into this {{device}} to add it.",
       androidSteps: "Android steps",
       iphoneSteps: "iPhone steps",
-      wider: "Other people's agents run as {{user}} here and can read your files.",
+      wider:
+        "Only me means you, and agents working for you. Other people's agents run as {{user}} here and can read your files.",
       phoneWho: "{{who}} can use it",
       signedOut: "Sign in to {{server}} in the app to see who can use this {{device}}.",
       unreachable: "Couldn't reach {{server}}. Check the connection and try again.",
+      placeHere: "On this {{device}}",
+      placeCloud: "agentes.chat Cloud",
+      more: "More for {{org}}",
+      otherWorkspace: "Another workspace",
+      otherWorkspaceDesc:
+        "Let a workspace on agentes.chat Cloud or on another server use this {{device}} too. Each one keeps its own sign-in.",
+      addWorkspace: "Add a workspace…",
     },
     folders: {
       title: "Folders",
@@ -550,8 +667,7 @@ export const desktopEn = {
       connected: "Connected",
       protection: "Protection",
       protectedTitle: "Protected mode",
-      protectedDesc:
-        "Commands only write in the allowed folders and don't read the rest of the {{device}}. Some tools may get slower.",
+      protectedDesc: "Coming: commands that write only in allowed folders and can't read the rest of this {{device}}.",
       commandsOn: "Commands are on",
     },
     accounts: {
@@ -606,6 +722,9 @@ export const desktopEn = {
       downloading: "Downloading…",
       installing: "Installing…",
       installFailed: "Couldn't update on its own. Download and install it by hand.",
+      autoInstall: "Install updates by itself, at night",
+      autoInstallDesc:
+        "The server and agents restart for a minute. If the new version doesn't start, it goes back by itself.",
       download: "Download version {{version}}",
       howTitle: "Update by hand",
       step1: "Quit agentes.chat (⌘Q).",
@@ -692,18 +811,19 @@ export const desktopEn = {
     lead: "This {{device}} does the setup. You only tap on the iPhone when a step asks.",
     account: "Apple Account in Xcode",
     checking: "Looking at this {{device}}…",
+    /** The app's own helper on this computer didn't answer for a while. */
+    checkingStall: "This {{device}} isn't answering yet. Quit agentes.chat from its menu bar icon and open it again.",
     xcodeText: "Install Xcode from the App Store. This step goes on by itself when it's there.",
-    xcodeOld: "This iPhone needs a newer Xcode. Update it in the App Store.",
     updateXcode: "Update Xcode",
     toolsStarting: "Starting the download…",
     toolsProgress: "{{done}} of {{total}}",
     toolsPercent: "{{percent}}% downloaded",
     toolsFailed: "The download stopped: {{message}}",
-    accountText: "Add it in Xcode\u00a0›\u00a0Settings\u00a0›\u00a0Accounts. A free Apple Account is enough.",
+    /** Xcode's pane names stay in English in every language. */
+    accountText: "Add it in Xcode\u00a0›\u00a0Settings\u00a0›\u00a0Apple Accounts. A free Apple Account is enough.",
     openXcode: "Open Xcode",
     personalTeam: "{{name}} · Personal Team",
     unlockText: "Unlock the iPhone and keep it unlocked for a moment.",
-    oldText: "This iPhone's iOS is too old for Xcode's tools.",
     devModeHint: "It shows in Settings only after a Mac pairs with the iPhone. This {{device}} did that.",
     helperText: "This {{device}} builds it and renews it every 7 days. The first time, trust it on the iPhone.",
     helperHint:

@@ -1,8 +1,11 @@
+import { joinDrafts, tooLongText, tooLongToSend } from "@agenteschat/client/lib/message-length";
+import { applyFormat, FORMAT_KINDS, type FormatKind } from "@agenteschat/ui/format";
 import { Canvas, Group, Path, Skia, vec } from "@shopify/react-native-skia";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Platform,
+  Pressable,
   Text as RNText,
   ScrollView,
   StyleSheet,
@@ -99,15 +102,21 @@ export interface ComposerProps {
   insertMention?: (text: string, token: ComposerToken, handle: string) => { text: string; caret: number };
   /**
    * Text handed in from another screen ("Falar com o Theo" leaves "@theo " here): put in the field when it is
-   * empty, and the field focused. Once per request (`at`).
+   * empty, and the field focused. Once per request (`at`). With `join` (a refused message coming back to be
+   * changed) it goes in before whatever is being typed, so neither text is lost.
    */
-  prefill?: { text: string; at: number } | null;
+  prefill?: { text: string; at: number; join?: boolean } | null;
   /** A change here brings the keyboard up ("Responder" on a message). */
   focusAt?: number;
   /** Right above the field ("Respondendo a Ana"). */
   banner?: ReactNode;
   /** Something waits above the field to go with the message (photos, files): send shows and sends with no words. */
   sendEmpty?: boolean;
+  /**
+   * The words are past the length limit (said above the field, the send held): this takes them as a text file
+   * instead ("Enviar como arquivo"), and the field empties. Absent where no more files fit: the words say it.
+   */
+  onLongAsFile?: (text: string) => void;
   /** Each change that leaves text in the field ("está digitando…" for the others; the screen throttles it). */
   onType?: (text: string) => void;
   /**
@@ -160,6 +169,8 @@ const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
  * placeholder; with text, the round ink send button pops in. One line keeps "+", text and send on the
  * same center line; longer text grows the pill upward and everything stays at the bottom. GIFs and stickers (`media`)
  * have their button at the empty field's end: they go as a message of their own, never with words.
+ * Formatting has no button in the row: while words are selected in the field, a bar of them (bold, italic, lists…)
+ * shows right over it and writes Markdown around the selection, which stays selected.
  *
  * While an agent works: the empty field's button is "Parar" (a rounded square), one
  * tap and it stops, no question asked (what it did stays and can continue); with text, a tap on send joins
@@ -181,6 +192,7 @@ export function Composer({
   focusAt,
   banner,
   sendEmpty = false,
+  onLongAsFile,
   onType,
   draftKey,
   media,
@@ -188,8 +200,9 @@ export function Composer({
 }: ComposerProps) {
   const theme = useTheme();
   const { colors, shadows, reducedMotion } = theme;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [text, setText] = useState(() => (draftKey ? (DRAFTS.get(draftKey) ?? "") : ""));
+  const tooLong = tooLongToSend(text);
   // Every change of the words is the draft too; an empty field leaves none behind.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the key is the conversation the field belongs to
   useEffect(() => {
@@ -199,6 +212,8 @@ export function Composer({
   }, [text]);
   const [caret, setCaret] = useState(0);
   const [selection, setSelection] = useState<{ start: number; end: number } | undefined>(undefined);
+  // The words selected in the field: with some, the formatting bar shows over the field.
+  const [range, setRange] = useState({ start: 0, end: 0 });
   const [focused, setFocused] = useState(false);
   const [taught, setTaught] = useState(() => readValueSync(STORED.stopSendTaught) === "1");
   const input = useRef<TextInputInstance | null>(null);
@@ -207,7 +222,7 @@ export function Composer({
   useEffect(() => {
     if (!prefill) return;
     const handed = prefill.text;
-    setText((current) => (current.trim() ? current : handed));
+    setText((current) => (prefill.join ? joinDrafts(handed, current) : current.trim() ? current : handed));
     input.current?.focus();
   }, [prefillAt]);
   useEffect(() => {
@@ -228,12 +243,13 @@ export function Composer({
 
   const send = (how: SendHow) => {
     const value = text.trim();
-    if (!value && !sendEmpty) return;
+    if ((!value && !sendEmpty) || tooLong) return;
     onSend(value, working ? how : "join");
     put("", 0);
   };
 
   const press = () => {
+    if (tooLong) return;
     if (has) {
       haptics.light();
       send("join");
@@ -250,7 +266,17 @@ export function Composer({
     setTaught(true);
     writeValueSync(STORED.stopSendTaught, "1");
   };
-  const hold = working && has ? { hint: t("mobile.composer.holdToStop"), onHold: holdSend } : null;
+  const hold = working && has && !tooLong ? { hint: t("mobile.composer.holdToStop"), onHold: holdSend } : null;
+
+  const formatting = focused && range.end > range.start && !voice?.active;
+  const format = (kind: FormatKind) => {
+    haptics.selection();
+    const next = applyFormat(text, range.start, range.end, kind, { link: t("composer.format.linkText") });
+    setText(next.value);
+    setCaret(next.end);
+    setRange({ start: next.start, end: next.end });
+    setSelection({ start: next.start, end: next.end });
+  };
 
   const pick = (handle: string) => {
     if (!token || !insertMention) return;
@@ -293,7 +319,74 @@ export function Composer({
         </ScrollView>
       ) : null}
       {banner}
+      {tooLong ? (
+        <View accessibilityRole="alert" style={styles.tooLong}>
+          <RNText
+            maxFontSizeMultiplier={CHROME_MAX_SCALE}
+            style={[systemText("footnote", weights.regular), { color: colors.danger }]}
+          >
+            {tooLongText(t, i18n.language, text.trim().length)}
+            {onLongAsFile ? "" : ` ${t("channel.tooLong.fix")}`}
+          </RNText>
+          {onLongAsFile ? (
+            // An 18-point line: 13 of slop around it gives the 44-point target.
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={13}
+              onPress={() => {
+                onLongAsFile(text.trim());
+                put("", 0);
+              }}
+            >
+              <RNText
+                maxFontSizeMultiplier={CHROME_MAX_SCALE}
+                style={[systemText("footnote", weights.semibold), styles.tooLongAct, { color: colors.ink }]}
+              >
+                {t("channel.tooLong.asFile")}
+              </RNText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
       {voice?.above ?? null}
+      {formatting ? (
+        <Animated.View
+          entering={reducedMotion ? undefined : FadeIn.duration(140)}
+          exiting={reducedMotion ? undefined : FadeOut.duration(100)}
+          style={styles.formatBleed}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            contentContainerStyle={styles.formatRow}
+          >
+            <View
+              accessibilityRole="toolbar"
+              accessibilityLabel={t("composer.format.toolbar")}
+              style={[styles.format, { backgroundColor: colors.raised, boxShadow: `${shadows.e1}, ${shadows.top}` }]}
+            >
+              {FORMAT_KINDS.map((kind) => (
+                <PressScale
+                  key={kind}
+                  to={0.9}
+                  haptic={false}
+                  onPress={() => format(kind)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(`composer.format.${kind}`)}
+                  // 36 wide and tall: the slop reaches 44 up and down without pushing the field.
+                  hitSlop={{ top: 4, bottom: 4 }}
+                  style={styles.formatButton}
+                >
+                  <View style={styles.center}>
+                    <Icon name={kind} size={20} color={colors.ink2} />
+                  </View>
+                </PressScale>
+              ))}
+            </View>
+          </ScrollView>
+        </Animated.View>
+      ) : null}
       <View style={styles.row}>
         {/* The "+" plate; while a take is held hands free or paused, the same plate holds its trash. */}
         {voice?.leading ? (
@@ -372,6 +465,7 @@ export function Composer({
               {...(selection ? { selection } : {})}
               onSelectionChange={(e) => {
                 setCaret(e.nativeEvent.selection.end);
+                setRange(e.nativeEvent.selection);
                 if (selection) setSelection(undefined);
               }}
               multiline
@@ -610,6 +704,16 @@ const placeholderText: TextStyle = {
 };
 
 const styles = StyleSheet.create({
+  // Why the words can't go, then the way out after them, or under them when it doesn't fit.
+  tooLong: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: 12,
+    rowGap: 4,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  tooLongAct: { textDecorationLine: "underline" },
   inputBox: { flex: 1, minWidth: 0 },
   inputFill: { flex: 0, width: "100%" },
   // Over the empty field's one line, centered on it.
@@ -619,6 +723,11 @@ const styles = StyleSheet.create({
   pillsBleed: { marginHorizontal: -10 },
   pills: { gap: 6, paddingHorizontal: 14, paddingBottom: 8 },
   pill: { height: 32, borderRadius: 999 },
+  // As the pills: to the screen edges, so on a narrow phone the last buttons scroll in instead of being cut.
+  formatBleed: { marginHorizontal: -10 },
+  formatRow: { paddingHorizontal: 10, paddingBottom: 8 },
+  format: { flexDirection: "row", height: 44, padding: 4, gap: 2, borderRadius: 22 },
+  formatButton: { width: SEND, height: SEND, borderRadius: SEND / 2 },
   pillIn: { flexGrow: 1, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12 },
   row: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   plus: { width: FIELD, height: FIELD, borderRadius: FIELD / 2 },

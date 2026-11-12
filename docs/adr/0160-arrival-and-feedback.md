@@ -5,7 +5,7 @@
 - Code: web `components/arrival/*` (`Arrival`, `BetaDialog`, `TeamScene`, `ConnectChoices`, `FeedbackDialog`,
   `FeedbackMark`), `components/ConnectAi.tsx` (`ConnectAiRequest.arrival`), `pages/OnboardingPage.tsx`
   (`?arrival=1`); server `routes/app/feedback.ts` (`POST /api/app/feedback`, `…/feedback/files`, `GET /api/feedback-files/{token}`), `auth.ts` (`auth-config.feedback`);
-  engine `feedback.ts` (jobs `feedback.send`, `feedback.file.purge`), `feedback-tools.ts` (`send_feedback`, `offer_feedback`), `feedback-offers.ts` (`decideFeedbackOffer`, `APP_FAULT_HINT`); server `POST …/feedback/offers/{messageId}`; web `components/FeedbackOffer.tsx`, phone `features/chat/FeedbackOffer.tsx`; config `FEEDBACK_EMAIL`; web
+  engine `feedback.ts` (jobs `feedback.send`, `feedback.file.purge`), `feedback-tools.ts` (`send_feedback`, `offer_feedback`), `feedback-offers.ts` (`decideFeedbackOffer`, `APP_FAULT_HINT`); server `POST …/feedback/offers/{messageId}`; web `components/FeedbackOffer.tsx`, phone `features/chat/FeedbackOffer.tsx`; config `FEEDBACK_EMAIL`, `FEEDBACK_RELAY`, `FEEDBACK_URL`, `FEEDBACK_INBOX`; the inbox `POST /api/feedback/inbox` (`registerFeedbackInbox`, `relayQueuedFeedback`, `sendRelayedFeedback`); web
   `lib/feedback.ts`, `lib/context-menu.ts` (`setMenuReporter`); table `feedback_files` (migration 0246)
 
 ## Context
@@ -26,7 +26,8 @@ with Postgres alone, and must not need a third-party widget in the apps.
 
 2. **First the beta notice, then Connect an AI.** The notice says the product is in beta and what that means, and,
    only where the server takes feedback, where to send it. Every way out of it goes on. Connect an AI follows for a
-   person who has one to connect (`useMayConnectAi`) while some agent has none.
+   person who has one to connect (`useMayConnectAi`) while some agent has none. After the onboarding's AI step, or a
+   plan left for later, the onboarding asks for the notice alone (`?arrival=beta`, ADR 0162 amended 2026-11-10).
 
 3. **Connect an AI gets a stage, not a second flow.** Opened with `arrival`, the same dialog (ADR 0061) shows the
    workspace's agents asleep under a night sky beside the choices, and the sky turns to day as they wake once an AI
@@ -41,7 +42,8 @@ with Postgres alone, and must not need a third-party widget in the apps.
 
 5. **Feedback is an email to whoever runs the server.** `FEEDBACK_EMAIL` names the address. Unset, which is the
    default, the apps show no form and the route answers 404: a self-hosted server sends nothing anywhere unless its
-   operator asks for it. agentes.chat sets it to its own address.
+   operator asks for it. agentes.chat sets it to its own address. (Superseded for the unset case by §13: it then
+   goes to the agentes.chat team, when a person sends one.)
 
 6. **What a feedback carries.** The text the person typed; their name and address (the email's reply-to, so the
    answer goes to them); the workspace's name and their role when they are a member of the one the app named; what
@@ -127,12 +129,77 @@ with Postgres alone, and must not need a third-party widget in the apps.
     - **Not here yet.** A run that dies before any reply (the server's own error) has no message for the row to ride
       on, so it offers nothing.
 
+13. **With no address, it goes to the agentes.chat team** (added 2026-11-12). Almost no self-hosted server set
+    `FEEDBACK_EMAIL`, and one that did also needed outgoing email, so the people most likely to hit a rough edge
+    had no way to say so. A feedback is not like a report the server sends by itself: a person writes it, reads who
+    will get it, and presses Send. So §5's default changes.
+    - **Where it goes.** To the agentes.chat team's inbox (`FEEDBACK_URL`), unless `FEEDBACK_RELAY=false`, which
+      is §5's old default (no form, no route, no tools). The feedback is about the app, so its makers read it:
+      `FEEDBACK_EMAIL` is no longer something a self-hosted server sets. It is the team's own address, on
+      agentes.chat's servers; a server that does set it still mails its feedback there and sends nothing out. `auth-config.feedbackRelay` tells the apps, which then say "to the
+      agentes.chat team" wherever they said "to whoever runs this server", in the form and on an agent's offer.
+    - **Same job, another way out.** The route still only queues `feedback.send`; where the destination is the
+      inbox the job posts the feedback as JSON instead of mailing it, so the server needs no email of its own. A
+      refusal fails the job; an inbox that can't be reached is tried again with the outbox's backoff, then dropped.
+    - **Pictures only, inside the message.** A link to a file on a server in someone's private network opens for
+      nobody outside it, so the pictures travel with the feedback, as many as fit an email together, and the form
+      there offers no video. The sending server keeps them only while the job may run again (six hours).
+    - **The inbox** is a route of the same image, on only on agentes.chat's own servers (the ones `isAgentesCloud`
+      names, which already read feedback at `FEEDBACK_EMAIL`). It needs no setting; `FEEDBACK_INBOX=false` turns it off. It needs no session, since its sender is a server it knows nothing of, so it
+      counts requests by where they come from (thirty an hour) and in all (sixty), reads at most what the
+      pictures of one email weigh, takes a picture by its own bytes as an upload is, and mails the feedback at
+      once to its own address, never one it was sent. It stores nothing: no row, no file. The email says it came
+      from another server and that who wrote it is not verified.
+    - **What is not sent.** Nothing that names the server: no address of its own, no installation id. The usage
+      report's random id (ADR 0060 §5) stays out on purpose, so a report that holds no names is never tied to a
+      person's.
+
 ## Consequences
 
-- A server with no `FEEDBACK_EMAIL` has no feedback channel in the apps; its people use whatever its operator gives
-  them.
+- A server with neither `FEEDBACK_EMAIL` nor the relay has no feedback channel in the apps; its people use whatever
+  its operator gives them.
+- A self-hosted server's feedback reaches agentes.chat by default, with the name and address of the person who sent
+  it. The form says so before they send, and `SELF_HOSTING.md` lists what it holds and how to turn it off.
+- Whoever can reach the inbox can write to the team's address, within its hourly limits; the email marks it as
+  unverified.
+- A feedback sent while the server has no way out for about forty minutes is lost, though the form said it went.
 - Whoever has a feedback's email can open its files for thirty days without signing in: the email is the key.
 - On a server with neither S3 nor a files folder, a 50 MB video sits in Postgres until it expires.
 - The phone app has neither the arrival nor the form yet.
 - The arrival's choice cards and the picker (ADR 0061) are two views of the same choices: a plan added to
   `PLAN_CHOICES` shows in both.
+
+## Addendum (2026-11-10): Connect from an agent's conversation, for every agent with no AI
+
+Someone who brought eight agents from another app had to open Connect in each one's conversation: there it was the plain dialog, for that agent alone (ADR 0059 §2), listing what they already had above a second picker that offered the same account again.
+
+- Connect opened from an agent's own conversation (the notice over the composer and the setup card: `ConnectAiRequest.chat`) is a narrow dialog under the arrival's sky, with the agent asleep on it, when the agent is the person's own, whatever it was set to think with and whatever its AI status says (the notice and the card only ask while it can't answer). Anything else (someone else's agent, the right hand, a key asked for by a message) keeps the plain dialog, as do the other ways in.
+- What the person already has comes first, to pick and then confirm at the foot ("Usar Claude · Max"): their own accounts, the workspace's keys, then other people's plans under each owner's name (`ConnectHave`, over the same rows and actions as the picker's: `useExistingAi`). A row says how near its limit the plan is, in words and as a bar; the one with most room is picked, one at its limit goes last. Someone else's plan shows that its owner hears of it only when it is the one picked. Past four rows each group shows its best one.
+- A new AI is a row under them ("Ou conecte outra") that opens the arrival's choices; with nothing connected yet the dialog opens on them.
+- When more agents of the person's have no AI, it opens for all of them ("Para: Todos os agentes"), and the same select narrows it to the agent of the conversation. This supersedes "opened for one agent, it is for that agent alone" for this way in. For all, the list keeps only the accounts that think for all of their owner's agents there, and picking one moves each agent onto it (`PlanPanel`'s `use`). What is decided when the dialog opens is kept while it is open, since connecting changes who has an AI.
+- A new sign-in follows the plan's own rule (ADR 0059 §2): one for all where the computer shares it, else one per agent in turn.
+- No new strings: the select, the rows, the button and the titles reuse the picker's and the arrival's.
+- Not here yet: the phone app.
+
+### For the whole team
+
+Connect opened for several agents or for none (the channel's notice, Settings › AI accounts, the first-run list, a team just made, a receipt or a card that names several agents, the computer-ready link, the onboarding's AI step of ADR 0162) showed the plain dialog: two tabs, a select of plans, "For: All agents" and the agents' names squeezed into chips. It is now the same narrow dialog under the sky, every screen built the same way (`BandDialog`: the sky with who wakes, the title with the way back on its line, one thing in the middle, the footer with a one-line note, the secondary action and the main one).
+
+- It is for every agent of the person's that can't think, on the computer of the first of them, since a plan signs in on one computer; decided once the agents and their AI are known, and kept while the dialog is open. The sky draws four of them and says how many more.
+- The team's right hand has no computer, so it never picks the one a plan signs in on and is never the agent a plan's panel reads or signs in for: the computer is the first other agent's, and the right hand wakes with the team by its own AI status. With nobody else to wake it is one agent alone, its own plain dialog.
+- A caller that already knows the card (the onboarding's AI step) opens it on that choice's steps (`start`), the API key's included.
+- The first screen says for whom on one line (their faces, "N agents without AI") with "Choose", which lists them one per row with a checkbox, all ticked, long names whole on their line; the footer counts them ("N of M checked") and "Use these N" narrows whom the plan's steps are for. Under that line, the accounts the person already has that think for all of them at once (their own, signed in, shared there) come first, with "Connect another AI" under them; otherwise the choices, where a plan that will ask for one login per agent on that computer says so at its card's end. The API key stays a choice for admins.
+- One login per agent is one instruction at a time: how far along ("3 of 8"), whose turn ("Sign in to Gemini for Lia"), why it asks again, and every agent's face in order: done with a check, the one now with a ring, those to come dimmed, one whose login didn't end with a mark. The sign-in and its link are the footer's actions, and the first agent's account is the next ones' hint as before. A login that didn't end says so in that place with the reason, and the footer offers skipping that agent beside trying again, the last one too. One sign-in for all, or one key sent to every login, has no faces.
+- The end says who woke ("The team is awake", how many, or that nobody did when every agent was skipped), what they think with (the account signed in), who stayed without an AI and why (each one's own reason), with "Connect Lia" to go again for those and counting the whole team across those rounds, and whom they answer: only the person on their subscription, with "Open to the team" turning on "Answers other people" for them under the same rules and the same terms note (ADR 0059 §5), in a seat's own words on a team or enterprise plan. A right hand still without an AI is named apart, and its "Connect" opens its own dialog. The dawn plays as they wake.
+- A screen that changes slides in from the side it comes from (deeper screens from the end), its title with it; whose turn moves along the faces and a check pops onto each as it lands; nothing moves for whoever asked for less motion.
+- The plain dialog stays for every way in that names one thing or has its own: someone else's agent (locked), one agent alone (the right hand's own AI among them), a plan to sign in to again (`plan`), a key asked for (`intent`) or pasted, an agent still being made, a billing hold, and nobody to wake (no agent of the person's yet, or every one already thinks).
+- On a page with no socket (the onboarding) the dialog reads the AI status, the computers and the plans' state again every few seconds while it is open.
+- New strings under `connectAi.team`.
+
+### Amended 2026-11-12: the right hand alone, and a program switched off on the computer
+
+Someone on a self-hosted server opened Connect for the team's right hand, the only agent there, and got the plain dialog, whose Claude panel said only that Claude Code was "off" on their computer and to turn it on "there, in the app: Preferences → Tools". They looked for the way for twenty minutes.
+
+- The right hand alone is the narrow dialog too, named for it: opened for it (`agentId`), from its conversation, or as the only one left without an AI. It is everyone's to connect (ADR 0137 §11) and has no computer, so it is never "all agents". This supersedes "one agent alone (the right hand's own AI among them)" in the plain dialog's list above; the rest of that list stays.
+- A card already picked (`start`) opens on its steps for one agent as for the team, so the onboarding's AI step sends `start` for the right hand alone as well.
+- A plan whose program is switched off on a computer the person connected (`tool_off`, self-host) says what that means (the computer is connected, the program is switched off on it, and it can only be turned on there), then shows the way under the computer's name (`ToolOffSteps`): three plain lines for the app's three clicks (the icon by the clock, Preferences, the switch under Tools), what to look for in bold, the switch drawn at the end of the last one, and on a PC that the icon may be behind the taskbar's arrow. Lines between hairlines, nothing sunken: three small drawings side by side did not fit the narrow dialog. On a computer that may have no app, the command; when the page runs in the app on that very computer, one button to its Tools. The dialog says it waits and changes by itself, which it does, since a computer's switches come back as its own event. The key stays offered under it. The browser's steps on the agent's Work tab are unchanged.

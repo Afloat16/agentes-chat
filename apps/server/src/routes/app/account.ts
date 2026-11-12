@@ -1,4 +1,5 @@
 import { isLoopback } from "@agenteschat/client/lib/server";
+import { isWorkAreaAnswer, WORK_AREA_ANSWERS } from "@agenteschat/client/lib/work-area";
 import {
   acceptInvitation,
   accountDeletionPlan,
@@ -54,6 +55,7 @@ import {
   sendDeletionCode,
   setAvatar,
   setMyLocale,
+  setMyWorkArea,
   setOrgLogo,
   settleJoinRequests,
   signInOptions,
@@ -150,6 +152,10 @@ const Me = z
       localeAuto: z.boolean().openapi({
         description: "The language follows each device's own until the person picks one (ADR 0122).",
       }),
+      workArea: z.enum(WORK_AREA_ANSWERS).nullable().openapi({
+        description:
+          "The person's own area (`PUT /me/work-area`), asked once during the onboarding, or `skipped`; null until asked.",
+      }),
       canCreateWorkspace: z.boolean().openapi({
         description:
           "`POST /organizations` would make a workspace for them. False on agentes.chat Cloud while sign-up is by invitation, unless early access allowed their account and its address is confirmed (ADR 0078). `org.create_refused` and `org.create_unpaid` (ADR 0079) can still refuse it.",
@@ -209,6 +215,7 @@ export function accountRoutes(deps: AppDeps) {
         emailVerified: verified,
         locale: account.locale,
         localeAuto: account.localeAuto,
+        workArea: isWorkAreaAnswer(account.workArea) ? account.workArea : null,
         canCreateWorkspace: creates && !account.deletionDueAt,
         ...(account.deletionDueAt
           ? {
@@ -286,6 +293,7 @@ export function accountRoutes(deps: AppDeps) {
     "/me",
     "/me/unread",
     "/me/password",
+    "/me/work-area",
     "/phone-sign-in",
     "/account",
     "/account/*",
@@ -328,7 +336,12 @@ export function accountRoutes(deps: AppDeps) {
               description: "Where people write to whoever runs this server (SUPPORT_EMAIL): hold, suspension.",
             }),
             feedback: z.boolean().openapi({
-              description: "The apps offer the feedback form (FEEDBACK_EMAIL is set): `POST /api/app/feedback`.",
+              description:
+                "The apps offer the feedback form (FEEDBACK_EMAIL is set, or FEEDBACK_RELAY is on): `POST /api/app/feedback`.",
+            }),
+            feedbackRelay: z.boolean().openapi({
+              description:
+                "Feedback goes to the agentes.chat team rather than to whoever runs this server (no FEEDBACK_EMAIL): the form says so and takes pictures only.",
             }),
             workspaceComputer: z.boolean().openapi({
               description:
@@ -665,6 +678,24 @@ export function accountRoutes(deps: AppDeps) {
     async (c) => {
       const { locale, auto } = c.req.valid("json");
       await setMyLocale(db, c.get("user").id, locale, auto, deps.adapters.pubsub);
+      return c.body(null, 204);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/me/work-area",
+      tags,
+      security,
+      summary: "Say your own area",
+      description:
+        "The person's own area, asked once during the onboarding (about the person, never a workspace): one of the ids, or `skipped` when they skipped the question. The operator API's account reads it.",
+      request: { body: body(z.object({ area: z.enum(WORK_AREA_ANSWERS) })) },
+      responses: { 204: noContent[204], ...errors },
+    }),
+    async (c) => {
+      await setMyWorkArea(db, c.get("user").id, c.req.valid("json").area);
       return c.body(null, 204);
     },
   );
@@ -1227,7 +1258,7 @@ export function accountRoutes(deps: AppDeps) {
       tags,
       security,
       summary: "Delete a workspace (owners)",
-      description: `It closes to everyone now, like a suspended workspace: requests answer 403 \`org.deleting\`, and its people's apps hear an \`org.deleting\` org event. Its work stops, and it is deleted for good 7 days later. Until then any owner can restore it (\`DELETE …/deletion\`). ${PROOF_TEXT} A workspace takes 3 deletions a day (429). Already being deleted, it answers 202 with its date before any proof, and nobody is told again. 403 \`forbidden\` for anyone but an owner, \`org.suspended\` while suspended.`,
+      description: `It turns read-only for everyone now: its members still read it, every other change answers 403 \`org.deleting\` (restoring it, leaving it, read marks, the inbox and their own settings there stay open), and its people's apps hear an \`org.deleting\` org event. Its work stops, and it is deleted for good 7 days later. Until then any owner can restore it (\`DELETE …/deletion\`). ${PROOF_TEXT} A workspace takes 3 deletions a day (429). Already being deleted, it answers 202 with its date before any proof, and nobody is told again. 403 \`forbidden\` for anyone but an owner, \`org.suspended\` while suspended.`,
       request: { params: OrgParams, body: body(Proof) },
       responses: {
         202: json(

@@ -21,7 +21,7 @@ const READY: ControlIphoneSetup = {
 };
 const iphone = (over: Partial<RunnerPhone> = {}): RunnerPhone => ({
   platform: "ios",
-  serial: "00008110-001475263AC0A01E",
+  serial: "00008110-000A1B2C3D4E5F60",
   kind: "device",
   model: "iPhone 16",
   name: "Sam's iPhone 16",
@@ -83,6 +83,31 @@ describe("the iPhone setup's checklist", () => {
       current: "helper",
       state: "needs",
     });
+  });
+
+  test("an account with no team, refused taps and an iOS too old each stop at their own step", () => {
+    // An app that can't read `noTeam` still sees the account missing, never done.
+    expect(at({ ...READY, account: null, noTeam: true }, null)).toMatchObject({ current: "account", state: "needs" });
+    expect(at(READY, iphone({ state: "needs_you", reason: "apple_team_missing" }))).toMatchObject({
+      current: "account",
+      state: "needs",
+    });
+    expect(at(READY, iphone({ state: "needs_you", reason: "ui_not_authorized" }))).toMatchObject({
+      current: "uiAutomation",
+      state: "needs",
+    });
+    const old = at(READY, iphone({ state: "unsupported", reason: "os_too_old", osVersion: "16.7.10" }));
+    expect(old).toMatchObject({ current: "connected", state: "needs" });
+    expect(old.states.helper).toBe("todo");
+  });
+
+  test("an iPhone over Wi-Fi that isn't reached, or doesn't trust the Mac, waits on being connected", () => {
+    for (const reason of ["wifi_away", "wifi_asleep", "tunnel_down", "wifi_untrusted"] as const) {
+      expect(at(READY, iphone({ state: "needs_you", reason, transport: "wifi" }))).toMatchObject({
+        current: "connected",
+        state: "needs",
+      });
+    }
   });
 
   test("the download starts by itself only when Xcode is here and nothing downloads or failed", () => {

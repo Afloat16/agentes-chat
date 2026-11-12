@@ -13,6 +13,8 @@ import {
   APP_FAULT_HINT,
   type ArtifactDeps,
   agentScopeFromDb,
+  approvalsLevelOf,
+  asksOf,
   authorizeStream,
   type BrainTurn,
   blockSpecAt,
@@ -86,6 +88,8 @@ import {
   type EmailArt,
   emailArtAt,
   envSpeechEngines,
+  feedbackDestination,
+  type GatewayEmbeddings,
   type GitProxyDeps,
   GrokBrain,
   getAgentCached,
@@ -126,7 +130,7 @@ import {
   withComposio,
   withJudgeFallback,
 } from "@agenteschat/engine";
-import { createVoyageEmbeddings, type EmbeddingProvider, type ModelProvider } from "@agenteschat/providers";
+import { createOpenAIEmbeddings, createVoyageEmbeddings, type ModelProvider } from "@agenteschat/providers";
 import { type AppleTokenRevoker, appleTokenRevoker } from "./auth";
 import { hookConfig } from "./routes/app/context";
 import { version } from "./version";
@@ -145,8 +149,7 @@ export interface EngineOptions {
   /** Revokes Apple tokens at an account's deletion (ADR 0035); absent: from `config`. */
   appleRevoke?: AppleTokenRevoker;
   http?: typeof fetch;
-  embeddings?: { provider: EmbeddingProvider; apiKey: string };
-  deltaFlushMs?: number;
+  embeddings?: GatewayEmbeddings;
   /** Latency measurements from runs (logged by the server). */
   onTiming?(name: string, ms: number, attrs: Record<string, unknown>): void;
   /** Tests: fake TypeSafe transport. */
@@ -191,11 +194,22 @@ export interface EngineOptions {
 export function buildEngine(o: EngineOptions) {
   const { db, config, adapters } = o;
   const keyWrappers = [adapters.keyWrapper, ...adapters.legacyKeyWrappers];
-  const embeddings =
+  const tuning = { kinds: config.EMBEDDINGS_KINDS, queryTimeoutMs: config.EMBEDDINGS_QUERY_TIMEOUT_MS };
+  const embeddings: GatewayEmbeddings | undefined =
     o.embeddings ??
     (config.EMBEDDINGS_PROVIDER === "voyage" && config.VOYAGE_API_KEY
-      ? { provider: createVoyageEmbeddings({ model: config.EMBEDDING_MODEL }), apiKey: config.VOYAGE_API_KEY }
-      : undefined);
+      ? {
+          provider: createVoyageEmbeddings({ model: config.EMBEDDING_MODEL }),
+          apiKey: config.VOYAGE_API_KEY,
+          ...tuning,
+        }
+      : config.EMBEDDINGS_PROVIDER === "openai" && config.EMBEDDINGS_URL
+        ? {
+            provider: createOpenAIEmbeddings({ url: config.EMBEDDINGS_URL, model: config.EMBEDDING_MODEL }),
+            apiKey: config.EMBEDDINGS_API_KEY ?? "",
+            ...tuning,
+          }
+        : undefined);
   const gateway = createModelGateway({
     db,
     keyWrappers,
@@ -206,6 +220,7 @@ export function buildEngine(o: EngineOptions) {
       await queueBudgetEmail(db, config.PUBLIC_URL, e);
     },
     embeddings,
+    errors: o.errors,
   });
   const context: ContextDeps = {
     db,
@@ -406,7 +421,7 @@ export function buildEngine(o: EngineOptions) {
       // A person's feedback, sent by the agent they asked or offered by it when the app fails, where the server takes
       // feedback (ADR 0160 §11, §12).
       createFeedbackToolSource({
-        to: config.FEEDBACK_EMAIL,
+        to: feedbackDestination(config),
         version,
         rateLimiter: adapters.rateLimiter,
       }),
@@ -443,7 +458,7 @@ export function buildEngine(o: EngineOptions) {
       }),
       createIssueToolSource(artifacts),
       // Dashboards and widgets (ADR 0135 §10): boards for the person, and a widget run's only voice (`update_widget`).
-      createDashboardToolSource({ db, pubsub: adapters.pubsub, context }),
+      createDashboardToolSource({ db, pubsub: adapters.pubsub, context, ai: { gateway, machines: machineHub } }),
       createSkillToolSource({
         ...skillDeps,
         judge: context.judge,
@@ -533,7 +548,7 @@ export function buildEngine(o: EngineOptions) {
     catalog: { oauthApps: connectorDeps.oauthApps, mail: adapters.mail, composio },
     pubsub: adapters.pubsub,
     // One of our own tools broke: where the server takes feedback, the agent may offer a report (ADR 0160 §12).
-    ...(config.FEEDBACK_EMAIL ? { faultHint: APP_FAULT_HINT } : {}),
+    ...(feedbackDestination(config) ? { faultHint: APP_FAULT_HINT } : {}),
   });
   // Mission tasks' tools and computer-brain runs' tools come through the hub's MCP bridge (ADR 0032).
   // Runs waiting for a device (bring your own devices) go on when its computer is back or its phones report it free.
@@ -599,7 +614,8 @@ export function buildEngine(o: EngineOptions) {
    * A computer turn's permission profile (ADR 0053 §3), the same for Claude Code and Codex: a mission run
    * keeps its own (plan before Start and while a write item is live, work otherwise; ADR 0044); every other
    * run works, whoever woke it (ADR 0109: one permission model, the agent's own). Its own branches are
-   * agentes/<handle>/… (what the git proxy accepts).
+   * agentes/<handle>/… (what the git proxy accepts). It carries how much the agent asks when that isn't the default
+   * (ADR 0173); a mission's turn follows the mission's own setting.
    */
   const turnPermissions = async (turn: BrainTurn): Promise<BrainTurnRequest["permissions"]> =>
     // The team's right hand on a plan: our tools and nothing else (ADR 0137 §4).
@@ -608,6 +624,7 @@ export function buildEngine(o: EngineOptions) {
       : ((await missionTurnPermissions(db, turn)) ?? {
           mode: "work",
           branchPrefix: `agentes/${(await agentScope(turn)).handle}/`,
+          ...asksOf(await approvalsLevelOf(db, turn.orgId, turn.agentId)),
         });
   // Before a chat turn on a connected machine: the agent's checkouts updated through the git proxy, the turn
   // started in the repository it is about, and the "# Your code" block (ADR 0024 addendum).
@@ -728,6 +745,7 @@ export function buildEngine(o: EngineOptions) {
   };
   const jobDeps: JobDeps = {
     feedbackBlobs: adapters.platformBlobs,
+    feedbackFetch: o.http,
     accountEmails: adapters.email.delivers ? { publicUrl: config.PUBLIC_URL, support: config.SUPPORT_EMAIL } : null,
     appleRevoke: o.appleRevoke ?? appleTokenRevoker(config),
     voice,
@@ -777,7 +795,6 @@ export function buildEngine(o: EngineOptions) {
     contextMessages: config.AGENT_CONTEXT_MESSAGES,
     blockSpec: (orgId, artifactId, version) => blockSpecAt(artifacts, orgId, artifactId, version),
     maxHops: config.AGENT_MAX_HOPS,
-    deltaFlushMs: o.deltaFlushMs,
     onTiming: o.onTiming,
     onRunProfile: o.onRunProfile,
     router: {
@@ -807,6 +824,8 @@ export function buildEngine(o: EngineOptions) {
   };
   return {
     gateway,
+    /** The search index's vectors (undefined: words alone), for the boot backfill (`queueEmbeddingBackfill`). */
+    embeddings,
     tools,
     context,
     handlers,

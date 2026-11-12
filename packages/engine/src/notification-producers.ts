@@ -1,11 +1,12 @@
 import { and, asc, eq, inArray, isNotNull, isNull, rowsOf, schema, sql } from "@agenteschat/db";
+import { appLocale } from "@agenteschat/i18n/locale";
 import type { PlanModel } from "@agenteschat/providers/plans";
 import { approvalCardThreads, approvalOriginOf, notifiedIds } from "./approvals";
 import { accountablePerson, runAuthorityById } from "./authority";
 import { autonomyNoteFor, proposalCardOf } from "./brakes";
 import { readableChannelIds } from "./channels";
 import { threadFollowChoices } from "./follows";
-import { type TaskEnd, taskEndText } from "./machine-task-text";
+import { type TaskEnd, taskEndLine } from "./machine-task-text";
 import { isMediaAfterReply } from "./media";
 import { type PreviewMeta, previewMediaKind, previewMeta, readableBody } from "./message-preview";
 import { isQuietNotice } from "./notices";
@@ -306,17 +307,22 @@ export async function notifyMessage(deps: NotificationDeps, orgId: string, messa
 
 /**
  * What a notification quotes of a message: its body, but a task's end (`meta.machineTask`) names its computer only
- * where the workspace has more than one, the apps' rule (`namesComputers`). The agent still reads where it ran.
+ * where the workspace has more than one, the apps' rule (`namesComputers`), in the body's language. The agent still
+ * reads where it ran.
  */
 async function quotedBody(deps: NotificationDeps, orgId: string, message: typeof messages.$inferSelect) {
-  const task = message.meta.machineTask as (TaskEnd & { computer?: string }) | undefined;
+  const task = message.meta.machineTask as (TaskEnd & { computer?: string; locale?: string }) | undefined;
   if (typeof task?.title !== "string") return message.body;
   const computers = await deps.db
     .select({ id: machines.id })
     .from(machines)
     .where(and(eq(machines.orgId, orgId), isNull(machines.deletedAt)))
     .limit(2);
-  return taskEndText(task, computers.length > 1 ? (task.computer ?? null) : null);
+  return taskEndLine(
+    appLocale([task.locale], true) ?? "en",
+    task,
+    computers.length > 1 ? (task.computer ?? null) : null,
+  );
 }
 
 async function threadTitle(deps: NotificationDeps, orgId: string, rootId: string) {
@@ -780,10 +786,19 @@ export async function notifyMissionEnded(
 
 // ── Routines (ADR 0053) ─────────────────────────────────────────────────────────
 
-/** A routine's name, creator and agent, and the agent's owner: who hears about it. */
+/**
+ * A routine's name, creator and agent, and the agent's owner: who hears about it. `draft`: it is a widget's test before
+ * the widget is made (ADR 0135 §16), which raises no notice and is deleted with its routine, so nothing would resolve one.
+ */
 async function routineAudience(deps: Pick<NotificationDeps, "db">, orgId: string, routineId: string) {
   const [r] = await deps.db
-    .select({ name: routines.name, creator: routines.createdByUserId, agentId: routines.agentId })
+    .select({
+      name: routines.name,
+      creator: routines.createdByUserId,
+      agentId: routines.agentId,
+      // Written out: Drizzle drops a column's table in a one-table select, and `id` would read the widget's.
+      draft: sql<boolean>`exists (select 1 from ${schema.dashboardWidgets} w where w.routine_id = routines.id and w.draft)`,
+    })
     .from(routines)
     .where(and(eq(routines.id, routineId), eq(routines.orgId, orgId)));
   if (!r) return null;
@@ -895,7 +910,7 @@ export async function notifyRoutineStalled(
   input: { orgId: string; routineId: string; machineId: string; machineName: string; outageKey: string },
 ) {
   const r = await routineAudience(deps, input.orgId, input.routineId);
-  if (!r) return;
+  if (!r || r.draft) return;
   await notify(deps, {
     orgId: input.orgId,
     userIds: [r.creator, r.owner],
@@ -916,7 +931,7 @@ export async function notifyRoutineWaitingPlan(
   input: { orgId: string; routineId: string; outageKey: string },
 ) {
   const r = await routineAudience(deps, input.orgId, input.routineId);
-  if (!r) return;
+  if (!r || r.draft) return;
   await notify(deps, {
     orgId: input.orgId,
     userIds: [r.creator, r.owner],
@@ -1204,8 +1219,8 @@ export async function notifyWidgetAlert(
 
 /**
  * A widget stopped updating (ADR 0135 §6): `userId` (its creator, else who looks after its routine) hears it once per
- * failure streak (`streakKey`), with the coded reason (`agent_reported`: the agent's words in `latest.text`). Inbox
- * only; resolved by its next good update.
+ * failure streak (`streakKey`), with the coded reason (`agent_reported`: the agent's words in `latest.text`;
+ * `missing_credential`: why its agent has no AI in `latest.detail`). Inbox only; resolved by its next good update.
  */
 export async function notifyWidgetFailed(
   deps: NotificationDeps,
@@ -1219,6 +1234,7 @@ export async function notifyWidgetFailed(
     streakKey: string;
     reason: string;
     text?: string | null;
+    detail?: string | null;
   },
 ) {
   await notify(deps, {
@@ -1232,6 +1248,7 @@ export async function notifyWidgetFailed(
       title: input.title,
       reason: input.reason,
       ...(input.text ? { text: notificationSnippet(input.text) } : {}),
+      ...(input.detail ? { detail: input.detail } : {}),
     },
   });
 }

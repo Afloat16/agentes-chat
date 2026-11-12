@@ -187,7 +187,10 @@ describe("Entrar (e-mail primeiro)", () => {
     await press(/^Entrar/, 10);
     expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/home`);
     expect(router.state.location.search).toEqual({});
-    const dialog = screen().getByRole("dialog", { name: "Conectar uma IA" });
+    // Asked for no agent in particular: Connect for the team (ADR 0160, addendum), whose Claude says it's ready.
+    const dialog = screen().getByRole("dialog", { name: "Conectar uma IA para o time" });
+    await act(async () => fireEvent.click(within(dialog).getByRole("button", { name: /^Claude/ })));
+    await settle(4);
     const panel = within(dialog).getByRole("region", { name: "Seu plano do Claude" });
     expect(panel.textContent).toContain("O computador está pronto.");
   });
@@ -1263,7 +1266,7 @@ describe("Onboarding: the workspace's name", () => {
     const api = createFakeApi(state);
     const r = await renderApp("/onboarding", { api });
     // First what it is for (ADR 0159): a company or team names it next. Where no workspace may be made, no question.
-    const team = screen().queryByRole("radio", { name: /Para minha empresa ou time/ });
+    const team = screen().queryByRole("radio", { name: /Para meu time/ });
     if (team) {
       await click(team, 8);
       await click(button("Continuar"), 8);
@@ -1273,7 +1276,7 @@ describe("Onboarding: the workspace's name", () => {
   const button = (name: string | RegExp) => screen().getByRole("button", { name });
   /** What it is for: a company or team, then its name (ADR 0159). */
   const toName = async () => {
-    await click(screen().getByRole("radio", { name: /Para minha empresa ou time/ }), 8);
+    await click(screen().getByRole("radio", { name: /Para meu time/ }), 8);
     await click(button("Continuar"), 8);
   };
   async function click(el: HTMLElement, rounds = 4) {
@@ -1358,7 +1361,7 @@ describe("Onboarding: the workspace's name", () => {
     // It stops at what the workspace is for (ADR 0159): the answer is picked, and Continuar stays off.
     expect(
       screen()
-        .getByRole("radio", { name: /Para minha empresa ou time/ })
+        .getByRole("radio", { name: /Para meu time/ })
         .getAttribute("aria-checked"),
     ).toBe("true");
     expect(button("Continuar").hasAttribute("disabled")).toBe(true);

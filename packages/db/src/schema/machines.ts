@@ -201,6 +201,8 @@ export const machines = pgTable(
      */
     paused: boolean().notNull().default(false),
     pausedUntil: timestamp({ withTimezone: true }),
+    /** Who paused it from the apps (`REMOTE_PAUSE_PROTOCOL`); null when paused on the computer itself. */
+    pausedByUserId: text().references(() => users.id, { onDelete: "set null" }),
     /** Folders and tools the machine allows (protocol 10); null: its runner doesn't report them. */
     access: jsonb().$type<MachineAccess>(),
     /** Its size (protocol 22, kept from the last runner that said); null: unknown. */
@@ -240,6 +242,12 @@ export const machines = pgTable(
      * when something wants it. Its runner's next hello clears it.
      */
     standbyAt: timestamp({ withTimezone: true }),
+    /**
+     * The operator says the workspace's own computer's agents wait for their way out (`PUT …/egress-waiting`): where
+     * its network sends them only through a proxy, none works now, so their connections are refused for a while. The
+     * apps show a line; null: they don't wait.
+     */
+    egressWaitingAt: timestamp({ withTimezone: true }),
     /** Last time a run or a person wanted this computer (written at most every 30 s per server process). */
     wantedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -513,7 +521,10 @@ export const machineFilePulls = pgTable(
 
 /** What a phone's host last said about it (`RunnerPhone` in the machine protocol, minus who holds it). */
 export interface MachinePhoneFacts {
-  /** `usb`, `wifi` (adb over the network) or `local` (an emulator or simulator on the host itself). */
+  /**
+   * `usb`, `wifi` (adb over the network, or an iPhone through its Mac's CoreDevice tunnel) or `local` (an emulator or
+   * simulator on the host itself).
+   */
   transport?: "usb" | "wifi" | "local";
   screen?: { width: number; height: number };
   abi?: string;

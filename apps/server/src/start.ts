@@ -53,7 +53,9 @@ import {
 import {
   APP_JOB_KINDS,
   adoptRestoredOperatorEvents,
+  allowPrivateOutbound,
   allowsPrivateEndpoints,
+  backfillMemoryTrust,
   composioUsageHook,
   createGifKey,
   createLocalKeyWrapper,
@@ -73,6 +75,7 @@ import {
   meterComposio,
   moveIssueComments,
   publicHttpsFetch,
+  queueEmbeddingBackfill,
   relayCredentials,
   resolveHostDns,
   retireHostTokens,
@@ -84,6 +87,7 @@ import {
   surfaceRoomFiles,
   vapidKeys,
   vapidSubject,
+  widenDmHowTos,
 } from "@agenteschat/engine";
 
 import { type AgentesModule, type Edition, type ModuleContext, resolveAdapters } from "@agenteschat/modules";
@@ -91,6 +95,7 @@ import { createModelProviders, enableOpenRouterModels } from "@agenteschat/provi
 import { createApp } from "./app";
 import { createAuth } from "./auth";
 import { buildEngine } from "./engine";
+import { startFreezeWatch } from "./freeze-watch";
 import { checkHumanCheckAtBoot } from "./http/human-check";
 import { createLogger, type Logger } from "./logger";
 import { OPERATOR_API_PREFIX, serveOperatorApi } from "./operator/app";
@@ -166,7 +171,18 @@ export async function startServer(options: StartOptions) {
   });
   const log = createLogger(config.LOG_LEVEL, errors);
   try {
-    return await boot(options, config, log, release, errors);
+    const started = await boot(options, config, log, release, errors);
+    // Once it serves: a boot's own long steps (migrations, the built-in database's start) aren't what it is for.
+    startFreezeWatch(
+      {
+        logLevel: config.LOG_LEVEL,
+        ...(config.SENTRY_DSN
+          ? { reports: { dsn: config.SENTRY_DSN, environment: config.SENTRY_ENVIRONMENT, release } }
+          : {}),
+      },
+      log,
+    );
+    return started;
   } catch (error) {
     log.error("startup failed", { error, unhandled: true });
     await log.flush(EXIT_FLUSH_MS);
@@ -325,6 +341,9 @@ async function boot(
   }
   const ctx: ModuleContext = { ...base, adapters };
 
+  // Addresses a workspace names (custom MCP servers, its own bucket, pages agents read) are pinned to public ones at
+  // every request, except where the operator lets workspaces reach this server's network.
+  allowPrivateOutbound(allowsPrivateEndpoints(config));
   // Per-process caches for agent/org/channel config, scopes, connections, credential rows (30 s TTL).
   enableCaches();
   // A write in any process (the app, a worker) clears what every process cached of it.
@@ -386,6 +405,30 @@ async function boot(
       if (made > 0) log.info("right hands created", { made });
     })
     .catch((error: unknown) => log.warn("right hands backfill failed", { error: String(error) }));
+  // Off the boot path, once (ADR 0167): untrusted memories saved from a person's own words are trusted again, and
+  // how-tos agents worked out between themselves that name nobody reach their other work.
+  void backfillMemoryTrust(database.db)
+    .then(async (r) => {
+      if (Object.keys(r.changed).length > 0) log.info("memory trust re-derived", { ...r });
+      const widened = await widenDmHowTos(database.db);
+      if (widened > 0) log.info("how-tos out of agents' DMs", { widened });
+    })
+    .catch((error: unknown) => log.warn("memory backfill failed", { error: String(error) }));
+  // Off the boot path (ADR 0167): what this model hasn't embedded yet gets its vectors, a reindex per workspace.
+  const vectors = engine.embeddings;
+  if (config.EMBEDDINGS_PROVIDER !== "none" && !vectors) {
+    const missing = config.EMBEDDINGS_PROVIDER === "voyage" ? "VOYAGE_API_KEY" : "EMBEDDINGS_URL";
+    log.warn("search goes on words alone", {
+      because: `EMBEDDINGS_PROVIDER=${config.EMBEDDINGS_PROVIDER} needs ${missing}`,
+    });
+  }
+  if (vectors?.kinds) {
+    void queueEmbeddingBackfill(database.db, { model: vectors.provider.model, kinds: vectors.kinds })
+      .then((queued) => {
+        if (queued > 0) log.info("embeddings backfill queued", { workspaces: queued, model: vectors.provider.model });
+      })
+      .catch((error: unknown) => log.warn("embeddings backfill failed", { error: String(error) }));
+  }
   // Off the boot path: tasks' comments from before their conversations move into them once (ADR 0145).
   void moveIssueComments(database.db)
     .then((moved) => {
@@ -572,6 +615,8 @@ async function boot(
     log.info("shutting down", { signal });
     // No new jobs, from now on: one started during the delay below would be cut by the drain.
     workers.stop();
+    // The switch is the process's: a server started after this one sets its own.
+    allowPrivateOutbound(false);
     // `/api/health` answers 503 from now on: the proxy's health check takes this instance out before it stops
     // listening, and holds new requests for the next one instead of failing them.
     if (config.SHUTDOWN_DELAY_MS > 0) await Bun.sleep(config.SHUTDOWN_DELAY_MS);

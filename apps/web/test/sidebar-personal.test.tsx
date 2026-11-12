@@ -8,7 +8,7 @@ import { ADA_ID, createFakeApi, ENG_ID, ORG_ID, seedState, withRightHand } from 
 import { renderApp, screen, settle } from "./render";
 
 /* A personal workspace's sidebar (ADR 0159): the person on top, the agents with no header and New agent under them,
-   group conversations and people only when there are some, one More at the end with Início, Go to… and every tool. */
+   group conversations (a row to create the first while there is none), people only when there are some, one More at the end with Início, Go to… and every tool. */
 
 /** A narrow screen (the new agent's two steps, NEW_AGENT_STEPS_QUERY): only that query matches. */
 let media: { mockRestore: () => void } | null = null;
@@ -63,6 +63,8 @@ describe("a personal workspace's sidebar", () => {
     await go(personal());
     const me = within(top()).getByRole("button", { name: /^Conta: / });
     expect(me.textContent).toContain("Walter");
+    // My row, not the workspace's: my name wraps whole there, never cut.
+    expect(me.classList.contains("sidebar__org-button--me")).toBe(true);
     expect(within(top()).getByRole("link", { name: "Notificações" }).getAttribute("href")).toBe(
       `/org/${ORG_ID}/notifications`,
     );
@@ -84,8 +86,10 @@ describe("a personal workspace's sidebar", () => {
     expect(
       within(menu)
         .getAllByRole("menuitem")
-        .map((el) => el.textContent),
+        .map((el) => el.getAttribute("aria-label") ?? el.textContent),
     ).toEqual([
+      // My face on top changes my photo.
+      "Trocar foto",
       "Definir status",
       "Editar perfil",
       "Sua conta",
@@ -111,6 +115,7 @@ describe("a personal workspace's sidebar", () => {
       .map((l) => l.querySelector(".ac-menu__label")?.firstChild?.textContent);
     expect(names).toEqual([
       "Início",
+      "Esperando você",
       "Aprovações",
       "Propostas de melhoria",
       "Rotinas",
@@ -185,6 +190,39 @@ describe("a personal workspace's sidebar", () => {
     expect(input.setup.apps).toMatchObject({ "google-calendar": "write", todoist: "write", github: "write" });
   });
 
+  test("the agent being made never reads as taken: its @ stays the one shown, though the list has it before Criar is answered", async () => {
+    const state = withRightHand(personal());
+    const api = createFakeApi(state);
+    const make = api.agents.create;
+    let answer = () => {};
+    const answered = new Promise<void>((resolve) => {
+      answer = resolve;
+    });
+    api.agents.create = async (...args) => {
+      const made = await make(...args);
+      await answered;
+      return made;
+    };
+    const { sockets } = await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api });
+    await settle(8);
+    await act(async () => sockets.last().open());
+    await settle(2);
+    const agents = nav().querySelector('.sidebar__block[data-section="agents"]') as HTMLElement;
+    await click([...agents.querySelectorAll(".sidebar__item")].at(-1) as HTMLElement);
+    const dialog = screen().getByRole("dialog", { name: "Novo agente" });
+    const handle = () => dialog.querySelector(".nac__handle")?.textContent;
+    const shown = handle();
+    expect(shown).toContain("No chat: @clara");
+    await click(within(dialog).getByRole("button", { name: /Criar Clara/ }));
+    // Made on the server, which says so on the socket before it answers.
+    await act(async () => sockets.last().push({ type: "event", scope: "org", event: { type: "agents.changed" } }));
+    await settle(6);
+    expect(agents.textContent).toContain("Clara");
+    expect(handle()).toBe(shown);
+    await act(async () => answer());
+    await settle(6);
+  });
+
   test("how it works is edited on the card; its helpers add a line and the cursor goes after it (ADR 0164)", async () => {
     const state = withRightHand(personal());
     await go(state);
@@ -247,6 +285,14 @@ describe("a personal workspace's sidebar", () => {
     expect(within(dialog).queryByRole("textbox", { name: "Nome" })).toBeNull();
     expect(within(dialog).queryByRole("button", { name: /Criar/ })).toBeNull();
     expect(within(dialog).getByRole("button", { name: /Trazer agentes de outro app/ })).toBeTruthy();
+    // It opens the import over the dialog, which stays as it was: nothing goes to Settings.
+    const here = window.location.pathname;
+    await click(within(dialog).getByRole("button", { name: /Trazer agentes de outro app/ }));
+    const bring = await screen().findByRole("dialog", { name: "Trazer agentes de outro app" });
+    expect(within(bring).getByRole("group", { name: "De onde vêm os agentes" })).toBeTruthy();
+    expect(window.location.pathname).toBe(here);
+    await click(within(bring).getByRole("button", { name: "Fechar" }));
+    dialog = screen().getByRole("dialog", { name: "Novo agente" });
     // A row leads to its card, titled with its name, a back arrow before it.
     await click(within(dialog).getByRole("option", { name: /Gabi/ }));
     dialog = screen().getByRole("dialog", { name: "Gabi" });
@@ -356,11 +402,20 @@ describe("a personal workspace's sidebar", () => {
     expect(channelRows()).toEqual(["eng"]);
   });
 
-  test("alone with only #general: no group conversations at all", async () => {
+  test("alone with only #general: Conversas em grupo holds one row, which creates the first", async () => {
     const state = personal({ alone: true });
     state.channels = state.channels.filter((c) => c.name === "general");
     await go(state, `dm/agent/${ADA_ID}`);
-    expect(blocks()).toEqual(["agents"]);
+    expect(blocks()).toEqual(["agents", "channels"]);
+    expect(channelRows()).toEqual([]);
+    await click(within(nav()).getByRole("button", { name: "Nova conversa em grupo" }));
+    expect(screen().getByRole("dialog", { name: "Nova conversa em grupo" })).toBeTruthy();
+  });
+
+  test("with a group conversation in the list the row is gone: the header's + creates the next", async () => {
+    await go(personal({ alone: true }));
+    expect(channelRows()).toEqual(["eng"]);
+    expect(nav().querySelector(".sidebar__new-channel")).toBeNull();
   });
 
   test("a team's sidebar is as before: the workspace on top, ⌘K under it, me and the bell at the foot", async () => {

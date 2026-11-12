@@ -30,6 +30,7 @@ export function OnboardingPreview({
   orgId,
   agents,
   person,
+  personal,
 }: {
   org: string;
   logo: string | null;
@@ -38,6 +39,8 @@ export function OnboardingPreview({
   orgId: string | null;
   agents: PreviewAgent[];
   person: Pick<User, "name" | "image">;
+  /** A personal workspace has no team (ADR 0159): its empty place speaks of its agents. */
+  personal: boolean;
 }) {
   const { t } = useTranslation();
   const made = useQuery({ ...channelsQuery(useApi(), orgId ?? ""), enabled: orgId !== null }).data;
@@ -45,11 +48,9 @@ export function OnboardingPreview({
   // The right hand stands first, the team after it.
   const team = agents.length - 1;
   return (
+    // No caption over it: the frame starts on the step's top line, and its name ("Your workspace, as you answer") is
+    // for screen readers.
     <aside className="onb-preview" aria-label={t("onboarding.flow.preview.label")}>
-      <p className="onb-preview__label">
-        <span className="onb-preview__dot" aria-hidden="true" />
-        {t("onboarding.flow.preview.label")}
-      </p>
       <div className="onb-preview__frame" aria-hidden="true" inert>
         <div className="sidebar onb-preview__side">
           <div className="sidebar__top">
@@ -111,7 +112,11 @@ export function OnboardingPreview({
                     </span>
                   </span>
                 ))}
-                {team === 0 && <span className="onb-preview__ghost">{t("onboarding.flow.preview.ghost")}</span>}
+                {team === 0 && (
+                  <span className="onb-preview__ghost">
+                    {t(personal ? "onboarding.flow.preview.ghostPersonal" : "onboarding.flow.preview.ghost")}
+                  </span>
+                )}
               </div>
             </div>
           </div>

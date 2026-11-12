@@ -3,7 +3,7 @@ import { setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
 
-import type { AccessInput, ConnectorDef } from "@agenteschat/client";
+import { type AccessInput, type ConnectorDef, keys } from "@agenteschat/client";
 import { connectedSummary } from "@agenteschat/client/lib/connected";
 import { icons } from "@agenteschat/ui";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
@@ -11,7 +11,7 @@ import type { TFunction } from "i18next";
 import { authKind, searchCatalog } from "@/components/ConnectorCatalog";
 import { createI18n } from "@/i18n";
 import { setNavigateAway } from "@/lib/navigate";
-import { pick, rowMenu, service } from "./catalog";
+import { openConnected, pick, rowMenu, service } from "./catalog";
 import { ADA_ID, ATLAS_ID, CATALOG, createFakeApi, type FakeState, ORG_ID, seedState } from "./fake-api";
 import { renderApp, screen, settle } from "./render";
 
@@ -128,6 +128,31 @@ describe("Adicionar conector: one catalog", () => {
     expect(names(dialog)).toEqual(["Notion", "Não achou?"]);
   });
 
+  test("social networks: a category of their own, each tile in its brand's mark and color", async () => {
+    const state = seedState({ connections: [] });
+    const api = createFakeApi(state);
+    const whatsapp: ConnectorDef = {
+      ...(CATALOG.connectors.find((d) => d.id === "drive") as ConnectorDef),
+      id: "whatsapp",
+      label: "WhatsApp",
+      category: "social",
+      description: "WhatsApp Business messages and templates.",
+      serverUrl: "https://backend.composio.dev/api/v3.1/toolkits/whatsapp",
+      iconUrl: "/connectors/whatsapp.svg",
+      brandColor: "#25D366",
+    };
+    api.connectors.catalog = async () => ({ ...CATALOG, connectors: [...CATALOG.connectors, whatsapp] });
+    const { dialog } = await open(state, api);
+    const cats = within(dialog).getByRole("radiogroup", { name: "Categorias" });
+    expect(filterNames(cats).slice(-2)).toEqual(["Redes sociais", "Suporte"]);
+    await click(within(cats).getByRole("radio", { name: /^Redes sociais/ }));
+    expect(names(dialog)).toEqual(["WhatsApp", "Não achou?"]);
+    const tile = within(dialog).getByRole("button", { name: "WhatsApp" });
+    expect(tile.textContent).toContain("Mensagens e modelos do WhatsApp Business.");
+    const mark = tile.querySelector(".connector-icon__mark")?.getAttribute("style")?.toLowerCase();
+    expect([mark?.includes("/connectors/whatsapp.svg"), mark?.includes("#25d366")]).toEqual([true, true]);
+  });
+
   test("nothing found: one of our agents searching, with the way in by address", async () => {
     const { dialog } = await open();
     const search = within(dialog).getByRole("searchbox", { name: "Buscar conector" });
@@ -226,7 +251,7 @@ describe("Adicionar conector: one catalog", () => {
     const github = service("GitHub");
     // What always asks for approval is marked.
     const asks = github.querySelector("[data-asks]");
-    expect(asks?.textContent).toBe("Merge e deploy sempre pedem sua aprovação");
+    expect(asks?.textContent).toBe("Por padrão, merge e deploy pedem sua aprovação");
     expect(github.textContent).toContain("Você autoriza na página do serviço, ou usa uma chave de API");
     // Esc: the service closes, the catalog stays; again: the catalog closes.
     await pressEsc(github);
@@ -549,6 +574,7 @@ describe("the connect flow: conectar → conectado; Ajustar → o que faz → qu
     const state = seedState();
     await renderApp(`/org/${ORG_ID}/settings/connectors`, { api: createFakeApi(state) });
     await settle(8);
+    await openConnected();
     await click(screen().getByRole("button", { name: "Quem usa GitHub" }));
     await settle(4);
     const flow = screen().getByRole("dialog", { name: "Quem pode usar GitHub" });
@@ -657,6 +683,40 @@ describe("the connect flow: conectar → conectado; Ajustar → o que faz → qu
         { connectionId: id, scope: "github:repo.read" },
       ]);
     }
+  });
+
+  test("the connection being made never reads as replacing one, though the list has it before the key is answered", async () => {
+    const state = seedState({ connections: [] });
+    const api = createFakeApi(state);
+    const send = api.connectors.connectWithKey;
+    let answer = () => {};
+    const answered = new Promise<void>((resolve) => {
+      answer = resolve;
+    });
+    api.connectors.connectWithKey = async (...args) => {
+      const made = await send(...args);
+      await answered;
+      return made;
+    };
+    const { services } = await renderApp(`/org/${ORG_ID}/settings/connectors`, { api });
+    await settle(8);
+    await click(screen().getByRole("button", { name: "Adicionar conector" }));
+    await pick(screen().getByRole("dialog", { name: "Adicionar conector" }), "GitHub");
+    const flow = () => screen().getAllByRole("dialog").at(-1) as HTMLElement;
+    const note = () => flow().querySelector(".ac-dialog__foot-note")?.textContent;
+    await click(within(flow()).getByText("Conectar com uma chave de API"));
+    await type(within(flow()).getByLabelText("Chave de API"), "ghp_abcdef123456");
+    const shown = note();
+    expect(shown).toContain("Ao conectar, todos os agentes podem usar.");
+    await click(within(flow()).getByRole("button", { name: "Conectar com a chave" }));
+    // The list is read again while the key is still being answered.
+    await act(async () => services.queryClient.invalidateQueries({ queryKey: keys.connections(ORG_ID) }));
+    await settle(4);
+    expect(services.queryClient.getQueryData<unknown[]>(keys.connections(ORG_ID))).toHaveLength(1);
+    expect(note()).toBe(shown);
+    await act(async () => answer());
+    await settle(4);
+    expect(screen().getByRole("dialog", { name: "GitHub conectado" })).toBe(flow());
   });
 
   test("back from OAuth (`?connected=github`): what it does (read-only, by scope), then 'Ler' = its read scopes", async () => {
@@ -808,6 +868,7 @@ describe("the connect flow: conectar → conectado; Ajustar → o que faz → qu
     // A server the catalog doesn't list is an MCP: its own section, under the connectors.
     const section = () => screen().getByRole("region", { name: "MCPs" });
     expect(section().textContent).toContain("1 ferramenta nova para revisar");
+    await openConnected();
     await click(within(section()).getByRole("button", { name: "Revisar Suporte" }));
     const review = screen().getByRole("dialog", { name: REVIEW });
     // The new tool comes classified (the server says it only reads), in its subject.
@@ -832,7 +893,7 @@ describe("the connect flow: conectar → conectado; Ajustar → o que faz → qu
     const api = createFakeApi(state);
     await renderApp(`/org/${ORG_ID}/settings/connectors`, { api });
     await settle(8);
-    expect(document.querySelector(".settings__body > .ac-pagehead h2")?.textContent).toBe("Conectores e MCPs");
+    expect(document.querySelector(".settings__body .ac-pagehead h2")?.textContent).toBe("Conectores e MCPs");
     const mcps = () => screen().getByRole("region", { name: "MCPs" });
     expect(mcps().textContent).toContain("Os servidores MCP que você conectar pelo endereço aparecem aqui.");
     await click(within(mcps()).getByRole("button", { name: "Adicionar MCP" }));
@@ -974,6 +1035,7 @@ describe("several accounts of one service", () => {
   test("Quem usa is per account, and every account starts as every agent's", async () => {
     await twoAccounts();
     const who = async (name: string) => {
+      await openConnected();
       await click(within(section()).getByRole("button", { name: `Quem usa ${name}` }));
       await settle(4);
       const shown = levels(flow(), ["Nível de Ada", "Nível de Atlas"]);
@@ -1004,6 +1066,7 @@ describe("several accounts of one service", () => {
       "Zapier Loja",
     ]);
     expect(document.body.textContent).toContain("Agora se chama Zapier Loja.");
+    await openConnected();
     expect(within(section()).getByRole("button", { name: "Quem usa Zapier Loja" })).toBeTruthy();
   });
 
@@ -1060,6 +1123,7 @@ describe("the confirmation that ends connecting", () => {
     );
     // Its detail stays one click away on its row.
     const section = screen().getByRole("region", { name: "Conectores" });
+    await openConnected();
     expect(within(section).getByRole("button", { name: "Quem usa GitHub" })).toBeTruthy();
   });
 
@@ -1186,6 +1250,7 @@ describe("a server whose tools can't be read", () => {
         r.querySelector(".list-title")?.textContent?.startsWith(name),
       ) as HTMLElement;
     expect(row("GitHub").querySelector(".list-title")?.textContent).toBe("GitHubPrecisa reconectar");
+    await openConnected();
     expect(within(row("GitHub")).getByRole("button", { name: "Reconectar GitHub" })).toBeTruthy();
     expect(row(label).querySelector(".list-title")?.textContent).toBe(`${label}Sem ferramentas agora`);
   });

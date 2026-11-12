@@ -55,7 +55,6 @@
     "failed": "Pilihanmu tidak terkirim. Coba lagi."
   },
   "chart": {
-    "pending": "Membuat grafik…",
     "table": "Tabel",
     "item": "Item",
     "share": "Bagikan",
@@ -357,18 +356,10 @@
     "switchWorking": "sedang bekerja",
     "join": "Gabung ke kanal",
     "sending": "Mengirim…",
-    "failed": "Tidak terkirim · Coba lagi",
-    "notSent": "Pesan tidak terkirim.",
     "toLatest": "Ke pesan terbaru",
     "toLatestNew": "Ke pesan terbaru: {{text}}",
     "stopAgent": "Hentikan {{name}}",
     "offlineWait": "Terkirim saat koneksi kembali",
-    "turn": {
-      "thinking": "berpikir",
-      "working": "bekerja",
-      "writing": "menulis",
-      "stopped": "berhenti"
-    },
     "steer": {
       "waiting": "{{name}} membacanya di jeda berikutnya",
       "computer": "{{name}} membacanya saat mendapat komputer",
@@ -1024,7 +1015,6 @@
     "proposalsWaiting_other": "{{count}} menunggu",
     "drive": "Drive",
     "connectors": "Konektor dan MCP",
-    "usage": "Pemakaian",
     "preferences": "Preferensi",
     "editProfile": "Ubah profil",
     "switchWorkspace": "Ganti ruang kerja",
@@ -1292,7 +1282,8 @@
     "agentLine_other": "{{count}} memori",
     "uses_other": "Dipakai {{count}} kali",
     "confirmed": "Dikonfirmasi oleh seseorang",
-    "unconfirmed": "Belum dikonfirmasi",
+    "confirm": "Konfirmasi",
+    "confirmedToast": "Dikonfirmasi",
     "details": "Detail teknis",
     "before": "Sebelumnya tertulis: {{text}}",
     "fix": "Perbaiki",
@@ -1496,9 +1487,9 @@
         "setup": "Pengaturan ruang kerja",
         "desktop": "Layar komputer"
       },
-      "asksYou": "Merge dan publikasi selalu meminta persetujuanmu, di level apa pun.",
-      "asksOwner": "Merge dan publikasi selalu meminta persetujuan {{name}}, di level apa pun.",
-      "asksAdmins": "Merge dan publikasi selalu meminta persetujuan admin, di level apa pun.",
+      "asksYou": "Merge dan publikasi meminta persetujuanmu, kecuali agen diatur untuk tidak pernah bertanya.",
+      "asksOwner": "Merge dan publikasi meminta persetujuan {{name}}, kecuali agen diatur untuk tidak pernah bertanya.",
+      "asksAdmins": "Merge dan publikasi meminta persetujuan admin, kecuali agen diatur untuk tidak pernah bertanya.",
       "empty": "Untuk sekarang, hanya percakapan."
     }
   },
@@ -1588,13 +1579,7 @@
       "open": "Buka",
       "expandHint": "Ketuk untuk memperbesar",
       "stop": "Hentikan",
-      "giveUp": "Menyerah",
-      "done": "Selesai: {{title}}",
-      "failed": "Tidak berhasil: {{title}}",
-      "failedNote": "Tidak berhasil: {{note}}",
-      "expired": "Tidak ada yang membukanya tepat waktu: {{title}}",
-      "cancelled": "Dibatalkan: {{title}}",
-      "withdrawn": "{{name}} tidak lagi membutuhkan ini: {{title}}"
+      "giveUp": "Menyerah"
     },
     "live": {
       "inControl": "Kamu yang mengendalikan",
@@ -1711,12 +1696,19 @@
       "helper_missing": "Helper pengujian belum disiapkan",
       "helper_expired": "Helper pengujian perlu diperbarui",
       "apple_account_missing": "Xcode di Mac perlu Apple Account",
+      "apple_team_missing": "Xcode di Mac belum menampilkan tim",
+      "ui_not_authorized": "iPhone ini menolak ketukan helper pengujian",
       "team_limit": "Hapus satu aplikasi buatan sendiri dari iPhone ini",
       "helper_untrusted": "Percayai helper pengujian di iPhone ini",
       "booting": "Sedang memulai",
-      "no_driver": "Windows butuh driver USB ponsel ini",
+      "no_driver": "Windows butuh driver USB dari pembuat ponsel",
+      "no_driverLinux": "Linux butuh aturan udev untuk ponsel ini",
       "os_too_old": "Sistem ponsel ini terlalu lama",
       "adb_offline": "Cabut kabelnya lalu colokkan lagi",
+      "wifi_away": "Sambungkan iPhone ini ke Wi-Fi Mac atau colokkan kabel",
+      "wifi_asleep": "Bangunkan dan buka kunci iPhone ini, lalu dekatkan ke Mac",
+      "tunnel_down": "Sambungan Wi-Fi terputus. Dekatkan iPhone ini ke Mac atau colokkan kabel",
+      "wifi_untrusted": "Colokkan sekali dan ketuk Percayai",
       "other": "Belum siap"
     },
     "os": {
@@ -1814,12 +1806,11 @@
       "noHost": "Ponsel ini bekerja lewat salah satu komputermu. Hubungkan komputer dulu.",
       "hostOffline": "{{host}} sedang offline. Nyalakan dan buka agentes.chat di sana.",
       "step1": "Nyalakan Opsi developer",
-      "step1Text": "Ketuk Nomor build 7 kali, lalu masukkan PIN-mu.",
+      "step1Text": "Ketuk Nomor build 7 kali, lalu masukkan PIN-mu. Di Samsung: Informasi perangkat lunak › Nomor versi.",
       "openAbout": "Buka Tentang ponsel",
       "step2": "Nyalakan Proses debug USB",
       "openDev": "Buka Opsi developer",
       "step3": "Colokkan ke {{host}}",
-      "step3Hint": "Pakai kabel yang bisa mengirim data, bukan yang hanya untuk mengisi daya. Jika ponsel menanyakan fungsi USB-nya, pilih Transfer file.",
       "looking": "Mencari ponsel ini",
       "step4": "Ketuk Izinkan di ponsel ini",
       "step4Text": "Centang dulu Selalu izinkan dari komputer ini.",
@@ -1837,7 +1828,7 @@
       "wifi1": "Nyalakan Proses debug nirkabel",
       "wifi1Text": "Centang Selalu izinkan di jaringan ini, lalu ketuk Izinkan.",
       "wifi2": "Pindai kode di komputer",
-      "wifi2Text": "Dari Proses debug nirkabel › Sambungkan perangkat dengan kode QR.",
+      "wifi2Text": "Dari Proses debug nirkabel › Sambungkan perangkat dengan kode QR. Jangan pakai kamera: kamera membaca kode sebagai jaringan Wi-Fi dan mengeluarkan ponsel dari Wi-Fi kamu.",
       "wifi2Hint": "Di agentes.chat pada komputer, buka Hubungkan perangkat › Ponsel Android › Lewat Wi-Fi dan pilih {{host}}.",
       "codeHead": "Sambungkan dengan kode penyambungan",
       "codeNote": "Dari Proses debug nirkabel › Sambungkan perangkat dengan kode penyambungan. Buka Setelan dan agentes.chat berdampingan agar kodenya tetap terlihat.",
@@ -1868,7 +1859,25 @@
       "step5Hint": "Aplikasi yang dipasang {{host}} agar agen bisa mengetuk dan mengetik di iPhone ini. Aplikasi ini muncul di daftar ini setelah terpasang.",
       "step5Text": "Pengaturan › Umum › VPN & Manajemen Perangkat. Ketuk nama developernya, lalu Percayai.",
       "waiting": "Menunggu {{host}} melihatnya",
-      "footer": "Mac-mu mengurus sisanya, dan memperbarui helper pengujian setiap 7 hari selama menyala."
+      "footer": "Mac-mu mengurus sisanya, dan memperbarui helper pengujian setiap 7 hari selama menyala.",
+      "tooOld": "iPhone ini memakai iOS {{version}}, dan agen butuh iOS 17 atau lebih baru. Perbarui jika bisa, atau pakai iPhone yang lebih baru.",
+      "xcodeOld": "iPhone ini memakai iOS {{version}}, lebih baru dari yang dikenal Xcode di {{host}}. Instal Xcode {{major}} di sana, lalu jalankan xcrun devicectl manage ddis update di Terminal.",
+      "teamMissing": "Xcode sudah masuk tapi belum menampilkan tim. Di Xcode, buat app iOS apa saja, pilih timmu di Signing & Capabilities, lalu jalankan di iPhone ini sekali.",
+      "uiRefused": "iPhone ini menolak ketukan helper pengujian. Buka kuncinya dan masukkan kode sandimu jika diminta. Jika terus terjadi, matikan lalu nyalakan lagi Pengaturan › Pengembang › Aktifkan Otomatisasi UI.",
+      "pluggedIn": "Sudah tercolok",
+      "wifi": {
+        "also": "Juga di Wi-Fi {{host}}: {{name}}",
+        "use": "Pakai lewat Wi-Fi",
+        "hint": "Hanya iPhone yang pernah memercayai Mac lewat kabel yang muncul di sini. Mac menjangkaunya lewat sambungan terenkripsi milik Apple sendiri, yang juga dipakai Xcode.",
+        "stop": "Berhenti memakai lewat Wi-Fi",
+        "stopTitle": "Berhenti memakai {{name}} lewat Wi-Fi?",
+        "stopText": "Agen tidak bisa menjangkaunya lagi. Pilih lagi dengan {{host}} untuk memakainya.",
+        "stopped": "{{name}} tidak lagi dipakai lewat Wi-Fi"
+      },
+      "stall": {
+        "plug": "{{host}} belum melihat iPhone ini. Pakai kabel yang membawa data, bukan hanya daya, biarkan iPhone ini tidak terkunci, lalu ketuk Percayai jika diminta.",
+        "devmode": "Mode Pengembang baru menyala setelah iPhone ini dimulai ulang. Ketuk Mulai Ulang, lalu Nyalakan setelah iPhone menyala lagi. Tidak ada tombolnya? Cabut iPhone ini dan colokkan lagi."
+      }
     },
     "notice": {
       "kind": "Perangkat",
@@ -2061,9 +2070,9 @@
     "anotherLead": "Di agentes.chat. Kamu tetap di {{org}} dan bisa berpindah kapan saja.",
     "suggested": "Dari emailmu di {{domain}}, aku menyarankan {{org}}.",
     "create": "Buat",
+    "enter": "Masuk ke ruang kerja",
     "shareMessage": "Gabung ke {{org}} di agentes.chat: {{url}}",
-    "failed": "Tidak bisa menyimpan. Coba lagi.",
-    "enter": "Masuk ke ruang kerja"
+    "failed": "Tidak bisa menyimpan. Coba lagi."
   },
   "ai": {
     "yourPlan": "Paket AI-mu",
@@ -2111,23 +2120,20 @@
     "editSub": "Nama, logo, zona waktu, dan yang diketahui agen",
     "group": {
       "org": "Ruang kerja",
-      "people": "Orang",
-      "agents": "Agen",
-      "costs": "Biaya dan data"
+      "people": "Orang"
     },
     "section": {
       "members": "Anggota",
       "roles": "Peran",
       "access": "Akses agen",
-      "connectors": "Konektor",
-      "usage": "Pemakaian dan anggaran"
+      "connectors": "Konektor"
     },
     "ofOnline": "{{online}} dari {{count}}",
     "deleteName": "Hapus {{name}}",
     "deleteFoot": "Kamu punya 7 hari untuk berubah pikiran.",
-    "deleteAlert": "Semua orang langsung keluar. Masih bisa dipulihkan selama 7 hari.",
+    "deleteAlert": "Mulai sekarang semua orang hanya bisa membacanya. Masih bisa dipulihkan selama 7 hari.",
     "deleteAction": "Hapus",
-    "deleteIntro": "{{name}} langsung ditutup untuk semua orang dan dihapus selamanya dalam 7 hari.",
+    "deleteIntro": "{{name}} langsung jadi hanya-baca untuk semua orang dan dihapus selamanya dalam 7 hari.",
     "holdDelete": "Tahan untuk menghapus",
     "deleteFailed": "Tidak bisa menghapus ruang kerja. Coba lagi.",
     "access": {
@@ -2204,7 +2210,7 @@
       "guide": "Buka panduan {{name}}",
       "fields": "Data",
       "private": "Data ini disimpan terenkripsi dan tidak pernah ditampilkan lagi.",
-      "teamHelp": "Item-itemnya awalnya terlihat oleh semua orang di ruang kerja dan tidak dipakai agen mana pun. Kamu memilih agennya nanti.",
+      "teamHelp": "Semua orang di ruang kerja melihat item-itemnya dan semua agen bisa memakainya. Kamu bisa menyesuaikannya setelah itu.",
       "personalHelp": "Hanya kamu yang melihat item-itemnya, dan agenmu menggunakannya saat kamu minta.",
       "checking": "Memeriksa dengan {{name}}…",
       "connected": "{{name}} terhubung",
@@ -2418,7 +2424,6 @@
     },
     "formatAuto": "{{name}} memilih yang terbaik",
     "newWidget": {
-      "titleHint": "Judul · {{name}} menyarankan satu saat diuji",
       "alerts": "Peringatan aktif",
       "realData": "Data sungguhan",
       "editAsk": "Ubah permintaan",

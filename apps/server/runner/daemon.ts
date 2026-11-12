@@ -73,7 +73,10 @@ import {
   ensureGitCacheUser,
   GIT_CACHE_DIR,
   grantGitCache,
+  keepContainers,
   readAgentUsers,
+  rootlessContainers,
+  stopContainers,
   systemLauncher,
   trustedNetworkLauncher,
 } from "./agent-users";
@@ -129,7 +132,7 @@ import {
 import { type CachedLogo, logoDataUrl, readCachedLogo, removeCachedLogo, syncOrgLogo } from "./org-logo";
 import { type DeviceGrant, devicePair, type FetchFn, LINK_CODE, PairingError, uniqueWorkspace } from "./pairing";
 import { agentId8, agentWorkspace } from "./paths";
-import { PhoneManager, type PhoneManagerOptions } from "./phones";
+import { iphonesWifiFileOf, PhoneManager, type PhoneManagerOptions } from "./phones";
 import { agentSecrets, dropStoredSiteSecrets, secretValue } from "./secrets";
 import { AGENTS_CGROUP } from "./service";
 import {
@@ -153,7 +156,7 @@ import {
 } from "./supervisor";
 import { type SettledTask, TaskManager } from "./tasks";
 import { runnerTerminalUser, systemTerminalUser, Terminals, type TerminalUser } from "./terminal";
-import { cachedToolchains, TOOLCHAINS_FILE } from "./toolchains";
+import { appleToolchains, cachedToolchains, TOOLCHAINS_FILE } from "./toolchains";
 
 /**
  * The runner's long-lived core, shared by `agentes-runner start` (terminal,
@@ -347,6 +350,8 @@ export interface DaemonOptions {
   /** Tests: an address observation without network or a real agent process. */
   probeEgress?: typeof probeEgress;
   executors?: () => RunnerInfo["executors"];
+  /** App mode: takes the login shell's PATH again before "Check again" looks for the coding CLIs. */
+  refreshPath?: () => void;
   /** Tests: how the coding CLIs' looks run (the background cache stays real). */
   executorRun?: ExecutorRun;
   /** How the accounts' CLIs start (default `claude` / `codex`). */
@@ -448,6 +453,7 @@ export class RunnerDaemon implements RequestObserver {
   private readonly executors: () => NonNullable<RunnerInfo["executors"]>;
   /** False until the first look on a new install: `hello` then leaves the CLIs out, so the server keeps "unknown". */
   private readonly executorsKnown: () => boolean;
+  private readonly executorsFresh: () => Promise<unknown>;
   private readonly now: () => number;
   /** The computer brains' accounts (ADR 0041): machine-wide, kept across pairings and sessions. */
   readonly accounts: AccountManager;
@@ -490,6 +496,7 @@ export class RunnerDaemon implements RequestObserver {
       });
     this.executors = () => exec() ?? {};
     this.executorsKnown = () => !("known" in exec) || exec.known === true;
+    this.executorsFresh = (exec as { fresh?: () => Promise<unknown> }).fresh ?? (async () => this.executors());
     // System mode is set at install and kept through pairings: account folders are lent to agents' users.
     let system = false;
     try {
@@ -556,7 +563,20 @@ export class RunnerDaemon implements RequestObserver {
     const agentUser = this.session?.agentUser;
     if (!agentUser) return runnerUser(this.opts.home, await this.agentFolder(agent), agent);
     const u = agentUser(agent);
+    this.startContainers(u);
     return systemDesktopUser(systemLauncher(u), { uid: u.uid, gid: agentGid(u.user) });
+  }
+
+  /** Its containers service (ADR 0169), as before its worker: a desktop's or a terminal's docker finds it. */
+  private startContainers(u: AgentUser) {
+    if (this.opts.workers || !rootlessContainers()) return;
+    const problem = keepContainers(u, this.containersAllowed(u.id));
+    if (problem) this.opts.log(`[${u.user}] containers unavailable: ${problem}`);
+  }
+
+  /** The agents frame lets it have a containers service (`MachineAgent.containers`). */
+  private containersAllowed(agentId: string) {
+    return this.agents.find((a) => a.id === agentId)?.containers === true;
   }
 
   /** Its switch is on, and the last check made under that switch passed. */
@@ -655,7 +675,9 @@ export class RunnerDaemon implements RequestObserver {
   private async terminalUser(agent: AgentScope): Promise<TerminalUser> {
     const agentUser = this.session?.agentUser;
     if (!agentUser) return runnerTerminalUser(await this.agentFolder(agent));
-    return systemTerminalUser(systemLauncher(agentUser(agent)), agent);
+    const u = agentUser(agent);
+    this.startContainers(u);
+    return systemTerminalUser(systemLauncher(u), agent);
   }
 
   /** The agent's folder in the connected workspace. */
@@ -1203,7 +1225,7 @@ export class RunnerDaemon implements RequestObserver {
     let accountBrains: AccountBrains | null = null;
     if (config.mode === "system") {
       const range = config.agentUidRange ?? DEFAULT_AGENT_UID_RANGE;
-      const users = new AgentUsers({ home, range, ...(sharedSpec && this.shared ? { shared: sharedSpec, log } : {}) });
+      const users = new AgentUsers({ home, range, log, ...(sharedSpec && this.shared ? { shared: sharedSpec } : {}) });
       for (const user of readAgentUsers(home)) {
         this.networkUsers.set(user.uid, user);
         // Keep already-running users out of cron/at even when their network must drain before preparation.
@@ -1306,13 +1328,16 @@ export class RunnerDaemon implements RequestObserver {
           return this.networkScopesBusy(agentId) || (!!user && this.networkProcessesBusy(user));
         },
         user: agentUser,
-        start: launchWorker(this.self.command, policy),
+        start: launchWorker(this.self.command, policy, undefined, log, (id) => this.containersAllowed(id)),
         ...(this.opts.workers || config.managedBy === "host"
           ? {}
           : {
               prepareExisting: (existing: AgentUser[]) => prepareAgents(existing, prepare, policy, log),
             }),
         stopAccountScopes: (uid) => this.accountUsers?.stopScopes(uid),
+        ...(this.opts.workers || !rootlessContainers()
+          ? {}
+          : { stopContainers: (uid: number) => void stopContainers(uid) }),
         toolNotice: (agentId, notice) => accountBrains?.toolNotice(agentId, notice),
         taskStop: (agentId, taskId) => accountBrains?.stopTask(agentId, taskId),
         lend: (kind, accountId, uid) => this.accounts.lendTo(kind, accountId, uid),
@@ -1361,7 +1386,17 @@ export class RunnerDaemon implements RequestObserver {
     if (!supervisor && this.access().tools.browser === true) void browser.prepareInBackground();
     this.toolchains ??= this.opts.toolchains
       ? { get: this.opts.toolchains, stop: () => {} }
-      : cachedToolchains(path.join(home, TOOLCHAINS_FILE));
+      : cachedToolchains(
+          path.join(home, TOOLCHAINS_FILE),
+          undefined,
+          process.platform === "darwin"
+            ? {
+                look: () => appleToolchains(),
+                // An older server drops the frame: its next hello carries the same.
+                onChange: (toolchains) => this.send({ type: "toolchains.changed", toolchains }),
+              }
+            : null,
+        );
     // Phones are reached as the person (adb's key, the Mac's pairing with the iPhone): a system-mode runner has none.
     if (!this.phones && config.mode !== "system" && this.opts.phones !== false) {
       this.phones = new PhoneManager({
@@ -1370,6 +1405,7 @@ export class RunnerDaemon implements RequestObserver {
           this.send({ type: "phones.changed", phones });
           this.queueStatus();
         },
+        iphonesWifiFile: () => iphonesWifiFileOf(home, this.stored?.machineId),
         ...(this.opts.caffeinate !== undefined ? { caffeinate: this.opts.caffeinate } : {}),
         ...this.opts.phones,
       });
@@ -1398,6 +1434,7 @@ export class RunnerDaemon implements RequestObserver {
         : async (spare) => brains.warm(spare),
       codex: { runnerHome: home, mcp: mcpCommand, runs: codexRuns, app: codexApp },
       paused: () => this.stopping || this.pauseState().paused,
+      setPause: (paused, until, by) => (paused ? this.pause(until, by) : this.resume()),
       // A config written later without the mode never turns a system session back into one that does agents' work.
       systemMode: () => config.mode === "system" || this.stored?.mode === "system",
       ...(supervisor ? { workers: supervisor } : {}),
@@ -1921,6 +1958,8 @@ export class RunnerDaemon implements RequestObserver {
         const clear = deleted.has(u.id) && !here.has(u.id) && !this.swept.has(u.id);
         if (!clear && !gone.includes(u.id)) continue;
         hosted?.dropTurns(new RunnerError("dropped", "The agent left this computer."), u.id);
+        // Its containers stop with it; back, its `restart: always` ones start again with its containers service.
+        if (!this.opts.workers && rootlessContainers()) stopContainers(u.uid);
         // Archived or moved, it may come back: what the sign-ins hold for it stays until it is deleted.
         if (!clear) {
           this.accountUsers?.stopScopes(u.uid);
@@ -1931,6 +1970,27 @@ export class RunnerDaemon implements RequestObserver {
           this.accountUsers?.sweepAgent(u);
         } catch (err) {
           this.opts.log(`${u.user}: couldn't clear it from its sign-ins (${err instanceof Error ? err.message : err})`);
+        }
+      }
+      // Its brain changed (ADR 0169): a sandboxed one's containers service stops before its next turn; one let have it
+      // again gets it now while its worker runs, else with its worker's next start.
+      if (!this.opts.workers && rootlessContainers()) {
+        const had = new Set(this.agents.filter((a) => a.containers).map((a) => a.id));
+        for (const a of list) {
+          const uid = uids.get(a.id);
+          if (uid === undefined || Boolean(a.containers) === had.has(a.id)) continue;
+          const agentUser = this.session?.agentUser;
+          if (!a.containers) stopContainers(uid);
+          else if (agentUser && this.session?.supervisor?.runningPid(a.id) !== undefined) {
+            try {
+              const u = agentUser(a);
+              const problem = keepContainers(u, true);
+              if (problem) this.opts.log(`[${u.user}] containers unavailable: ${problem}`);
+            } catch (err) {
+              // Its network is switching, say: its worker's next start brings the service.
+              this.opts.log(`${a.handle}: its containers service waits (${err instanceof Error ? err.message : err})`);
+            }
+          }
         }
       }
     }
@@ -1976,6 +2036,13 @@ export class RunnerDaemon implements RequestObserver {
 
   pauseState(): RunnerPause {
     return pauseOf(this.stored, this.now());
+  }
+
+  /** The app's "Check again": the PATH and the coding CLIs looked up now, then the status with what was found. */
+  async executorsCheck(): Promise<ControlStatus> {
+    this.opts.refreshPath?.();
+    await this.executorsFresh();
+    return this.status();
   }
 
   status(): ControlStatus {
@@ -2101,7 +2168,8 @@ export class RunnerDaemon implements RequestObserver {
 
   // ── Pause ──────────────────────────────────────────────────────────────────
 
-  pause(until: string | null): RunnerPause {
+  /** `by`: the person who paused it from the apps (`pause.set`); a pause on the computer itself has none. */
+  pause(until: string | null, by?: string): RunnerPause {
     this.requirePaired();
     let value: string | null = null;
     if (until !== null && until !== undefined) {
@@ -2110,7 +2178,7 @@ export class RunnerDaemon implements RequestObserver {
       if (t <= this.now()) throw new ControlError("bad_request", "until is in the past");
       value = new Date(t).toISOString();
     }
-    this.write({ ...(this.stored ?? {}), paused: { until: value } });
+    this.write({ ...(this.stored ?? {}), paused: { until: value, ...(by ? { by } : {}) } });
     return this.pauseState();
   }
 

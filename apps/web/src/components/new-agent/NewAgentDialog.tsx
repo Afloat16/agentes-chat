@@ -1,5 +1,6 @@
 import type { ConnectorDef } from "@agenteschat/client";
 import {
+  keys,
   useAgents,
   useCatalog,
   useChannels,
@@ -12,6 +13,7 @@ import {
 import { type Level, saveLevels } from "@agenteschat/client/lib/access-levels";
 import { errorText as failureText } from "@agenteschat/client/lib/errors";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
+import { useHeldWhile } from "@agenteschat/client/lib/hold";
 import { addsAgentsTo, can } from "@agenteschat/client/lib/permissions";
 import { connectorName, scopeText } from "@agenteschat/client/lib/scopes";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
@@ -33,12 +35,15 @@ import {
   setGaze,
   spriteTone,
 } from "@agenteschat/ui";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import {
   createContext,
   type KeyboardEvent,
+  lazy,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -81,6 +86,9 @@ import { AppsPickerDialog } from "./AppsPicker";
 import { useNewAgentBrain } from "./useNewAgentBrain";
 import "../team-plan.css";
 import "./new-agent-card.css";
+
+/** "Trazer agentes de outro app", loaded when it opens: every app's reader stays out of the app's first load. */
+const ImportAgentsDialog = lazy(() => import("./ImportAgentsDialog").then((m) => ({ default: m.ImportAgentsDialog })));
 
 /*
  * A new agent (ADR 0164): one dialog for every way in. On the left, from scratch first, then the ready-made starting
@@ -357,6 +365,7 @@ function NewAgentDialog({
   const create = useCreateAgent(org.id);
   const brain = useNewAgentBrain();
   const connectAi = useConnectAi();
+  const qc = useQueryClient();
 
   const picks: Pick[] = useMemo(
     () => ["zero", ...(personal ? PERSONAL_STARTERS.map((s) => s.id) : ROLE_GROUPS.flatMap((g) => [...g.roles]))],
@@ -497,7 +506,8 @@ function NewAgentDialog({
   }, [sel, draft.name, draft.what, nameRoll, takenNames, tt]);
 
   // Its @: from the name; a taken one gets the next free one, and the card says so.
-  const taken = useMemo(() => takenHandles(agents.data ?? [], members.data ?? []), [agents.data, members.data]);
+  const handles = useMemo(() => takenHandles(agents.data ?? [], members.data ?? []), [agents.data, members.data]);
+  const taken = useHeldWhile(handles, busy);
   const base = handleForName(name);
   const isTaken = base !== "" && taken.has(base);
   const handle = isTaken ? freeHandle(base, taken) : base;
@@ -714,6 +724,8 @@ function NewAgentDialog({
             skills.map((s) => ({ skillId: s.id, enabled: chosenSkills.includes(s.id) })),
           ),
         );
+      // Its AI was set after it was made: what the workspace knew of who can think is from before it existed.
+      void qc.invalidateQueries({ queryKey: keys.aiStatus(org.id) });
       if (failures.length > 0)
         toast.show(t("newAgent.partly", { ...agentGrammar(name), reason: failureText(t, failures[0]) }), "error");
       const from = hero.current?.getBoundingClientRect();
@@ -777,10 +789,7 @@ function NewAgentDialog({
   const appIcon = (id: string) => <ConnectorIcon def={defs.get(id) ?? null} label={appName(id)} />;
 
   const howLabel = name ? t("newAgentCard.how", g) : t("newAgentCard.howBlank");
-  const toImport = () => {
-    onClose();
-    void navigate({ to: "/org/$orgId/settings/$section", params: { orgId: org.id, section: "import" } });
-  };
+  const [importing, setImporting] = useState(false);
 
   return (
     <Dialog
@@ -1178,7 +1187,7 @@ function NewAgentDialog({
             className="nac__foot"
             note={
               <span className="nac__foot-left">
-                <button type="button" className="ac-link nac__import" onClick={toImport}>
+                <button type="button" className="ac-link nac__import" onClick={() => setImporting(true)}>
                   <Icon name="download" size={16} />
                   {t("newAgentCard.import")}
                 </button>
@@ -1244,6 +1253,11 @@ function NewAgentDialog({
           onConnect={connectApp}
           onClose={() => setPicking(false)}
         />
+      )}
+      {importing && (
+        <Suspense fallback={null}>
+          <ImportAgentsDialog orgId={org.id} standalone onClose={() => setImporting(false)} />
+        </Suspense>
       )}
       {/* Signing in on the provider's page comes back here, to this card (`takeResume`). */}
       <ConnectFlow

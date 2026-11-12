@@ -3,6 +3,7 @@ import { useMemory, useMemoryAction, useProposals } from "@agenteschat/client";
 import { daysBetween, relativeTime } from "@agenteschat/client/lib/format";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
 import { memoryLine } from "@agenteschat/client/lib/proposals";
+import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import {
   Button,
@@ -146,7 +147,8 @@ export function NoMemories({
       title={t("memory.emptyTitle", { name: agent.name })}
       actions={<AskAgentButton agent={agent} variant="primary" />}
     >
-      {t(modeKey(org, "memory.emptyText"))}
+      {/* What the right hand keeps is one person's alone, in any workspace. */}
+      {t(isRightHand(agent) ? "memory.emptyTextPersonal" : modeKey(org, "memory.emptyText"))}
     </EmptyState>
   );
 }
@@ -260,19 +262,24 @@ function MemoryView({ agent, item }: { agent: Agent; item?: string }) {
               </span>
               {/* A row of ghosts: their words 16px apart, the last one on the item's padding line. */}
               <div className="ac-acts">
-                <Button variant="ghost" size="sm" onClick={() => setEditing(m)}>
+                {(m.lowTrust || !m.verified) && (
+                  <Button
+                    variant="link"
+                    title={t("memory.confirmTitle")}
+                    disabled={action.isPending}
+                    onClick={() => action.mutate({ type: "confirm", id: m.id })}
+                  >
+                    {t("memory.confirm")}
+                  </Button>
+                )}
+                <Button variant="link" onClick={() => setEditing(m)}>
                   {t("memory.edit")}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => action.mutate({ type: "pin", id: m.id, pinned: !m.pinned })}
-                >
+                <Button variant="link" onClick={() => action.mutate({ type: "pin", id: m.id, pinned: !m.pinned })}>
                   {m.pinned ? t("memory.unpin") : t("memory.pin")}
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="link"
                   onClick={() => action.mutate({ type: "archive", id: m.id, archived: !m.archived })}
                 >
                   {m.archived ? t("memory.restore") : t("memory.archive")}

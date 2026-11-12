@@ -61,7 +61,6 @@
     "failed": "Twój wybór nie został wysłany. Spróbuj ponownie."
   },
   "chart": {
-    "pending": "Tworzenie wykresu…",
     "table": "Tabela",
     "item": "Element",
     "share": "Udostępnij",
@@ -399,18 +398,10 @@
     "switchWorking": "pracuje",
     "join": "Dołącz do kanału",
     "sending": "Wysyłanie…",
-    "failed": "Nie wysłano · Spróbuj ponownie",
-    "notSent": "Wiadomość nie została wysłana.",
     "toLatest": "Przejdź do najnowszych wiadomości",
     "toLatestNew": "Przejdź do najnowszych wiadomości: {{text}}",
     "stopAgent": "Zatrzymaj: {{name}}",
     "offlineWait": "Wyśle się po powrocie połączenia",
-    "turn": {
-      "thinking": "myśli",
-      "working": "pracuje",
-      "writing": "pisze",
-      "stopped": "zatrzymano"
-    },
     "steer": {
       "waiting": "{{name}} przeczyta to przy następnej przerwie",
       "computer": "{{name}} przeczyta to, gdy dostanie komputer",
@@ -1243,7 +1234,6 @@
     "proposalsWaiting_other": "{{count}} czeka",
     "drive": "Drive",
     "connectors": "Konektory i MCP",
-    "usage": "Użycie",
     "preferences": "Preferencje",
     "editProfile": "Edytuj profil",
     "switchWorkspace": "Przełącz przestrzeń roboczą",
@@ -1532,7 +1522,8 @@
     "uses_many": "Użyte {{count}} razy",
     "uses_other": "Użyte {{count}} razy",
     "confirmed": "Potwierdzone przez osobę",
-    "unconfirmed": "Jeszcze niepotwierdzone",
+    "confirm": "Potwierdź",
+    "confirmedToast": "Potwierdzono",
     "details": "Szczegóły techniczne",
     "before": "Wcześniej było: {{text}}",
     "fix": "Popraw",
@@ -1757,9 +1748,9 @@
         "setup": "Konfiguracja przestrzeni roboczej",
         "desktop": "Ekran komputera"
       },
-      "asksYou": "Merge i publikacja zawsze wymagają twojego zatwierdzenia, na każdym poziomie.",
-      "asksOwner": "Na każdym poziomie merge i publikacja wymagają zatwierdzenia, które daje {{name}}.",
-      "asksAdmins": "Merge i publikacja zawsze wymagają zatwierdzenia przez administratora, na każdym poziomie.",
+      "asksYou": "Merge i publikacja wymagają twojego zatwierdzenia, chyba że agent nigdy nie pyta.",
+      "asksOwner": "Merge i publikacja wymagają zatwierdzenia, które daje {{name}}, chyba że agent nigdy nie pyta.",
+      "asksAdmins": "Merge i publikacja wymagają zatwierdzenia przez administratora, chyba że agent nigdy nie pyta.",
       "empty": "Na razie tylko rozmowa."
     }
   },
@@ -1876,13 +1867,7 @@
       "open": "Otwórz",
       "expandHint": "Stuknij, aby rozwinąć",
       "stop": "Zatrzymaj",
-      "giveUp": "Zrezygnuj",
-      "done": "Gotowe: {{title}}",
-      "failed": "Nie udało się: {{title}}",
-      "failedNote": "Nie udało się: {{note}}",
-      "expired": "Nikt nie otworzył tego na czas: {{title}}",
-      "cancelled": "Anulowano: {{title}}",
-      "withdrawn": "{{name}} już tego nie potrzebuje: {{title}}"
+      "giveUp": "Zrezygnuj"
     },
     "live": {
       "inControl": "Masz kontrolę",
@@ -1999,12 +1984,19 @@
       "helper_missing": "Pomocnik testowy nie jest jeszcze skonfigurowany",
       "helper_expired": "Pomocnik testowy wymaga odnowienia",
       "apple_account_missing": "Xcode na Macu potrzebuje konta Apple Account",
+      "apple_team_missing": "Xcode na Macu nie pokazuje jeszcze zespołu",
+      "ui_not_authorized": "Ten iPhone odrzucił stuknięcia pomocnika testowego",
       "team_limit": "Usuń z tego iPhone'a własną aplikację",
       "helper_untrusted": "Zaufaj pomocnikowi testowemu na tym iPhonie",
       "booting": "Uruchamia się",
-      "no_driver": "Windows potrzebuje sterownika USB tego telefonu",
+      "no_driver": "Windows potrzebuje sterownika USB producenta telefonu",
+      "no_driverLinux": "Linux potrzebuje reguł udev dla tego telefonu",
       "os_too_old": "System tego telefonu jest za stary",
       "adb_offline": "Odłącz kabel i podłącz go ponownie",
+      "wifi_away": "Połącz tego iPhone'a z Wi-Fi Maca albo podłącz kabel",
+      "wifi_asleep": "Wybudź i odblokuj tego iPhone'a i trzymaj go blisko Maca",
+      "tunnel_down": "Połączenie Wi-Fi zostało przerwane. Trzymaj tego iPhone'a blisko Maca albo podłącz kabel",
+      "wifi_untrusted": "Podłącz go raz i stuknij Zaufaj",
       "other": "Jeszcze nie jest gotowe"
     },
     "os": {
@@ -2105,12 +2097,11 @@
       "noHost": "Ten telefon działa przez twój komputer. Najpierw podłącz komputer.",
       "hostOffline": "{{host}} jest offline. Włącz go i otwórz tam agentes.chat.",
       "step1": "Włącz Opcje programisty",
-      "step1Text": "Stuknij 7 razy Numer kompilacji, a potem wpisz PIN.",
+      "step1Text": "Stuknij 7 razy Numer kompilacji, a potem wpisz PIN. Na Samsungu: Informacje o oprogramowaniu › Numer wersji.",
       "openAbout": "Otwórz Informacje o telefonie",
       "step2": "Włącz debugowanie USB",
       "openDev": "Otwórz Opcje programisty",
       "step3": "Podłącz go do {{host}}",
-      "step3Hint": "Użyj kabla do przesyłania danych, nie takiego, który tylko ładuje. Jeśli telefon zapyta, do czego służy USB, wybierz Przesyłanie plików.",
       "looking": "Szukam tego telefonu",
       "step4": "Stuknij Zezwól na tym telefonie",
       "step4Text": "Najpierw zaznacz Zawsze zezwalaj z tego komputera.",
@@ -2128,7 +2119,7 @@
       "wifi1": "Włącz debugowanie bezprzewodowe",
       "wifi1Text": "Zaznacz Zawsze zezwalaj w tej sieci i stuknij Zezwól.",
       "wifi2": "Zeskanuj kod na komputerze",
-      "wifi2Text": "W Debugowanie bezprzewodowe › Sparuj urządzenie za pomocą kodu QR.",
+      "wifi2Text": "W Debugowanie bezprzewodowe › Sparuj urządzenie za pomocą kodu QR. Nie używaj aparatu: odczyta kod jako sieć Wi-Fi i odłączy telefon od twojej sieci.",
       "wifi2Hint": "W agentes.chat na komputerze otwórz Podłącz urządzenie › Telefon z Androidem › Przez Wi-Fi i wybierz {{host}}.",
       "codeHead": "Sparuj za pomocą kodu parowania",
       "codeNote": "W Debugowanie bezprzewodowe › Sparuj urządzenie za pomocą kodu parowania. Otwórz Ustawienia i agentes.chat obok siebie, żeby kod został na ekranie.",
@@ -2159,7 +2150,25 @@
       "step5Hint": "Aplikacja, którą {{host}} instaluje, żeby agenci mogli stukać i pisać na tym iPhonie. Pojawi się na tej liście po instalacji.",
       "step5Text": "Ustawienia › Ogólne › VPN i zarządzanie urządzeniem. Stuknij nazwę dewelopera, a potem Zaufaj.",
       "waiting": "Czekam, aż {{host}} go wykryje",
-      "footer": "Resztę zrobi twój Mac, a gdy jest włączony, odnawia pomocnika testowego co 7 dni."
+      "footer": "Resztę zrobi twój Mac, a gdy jest włączony, odnawia pomocnika testowego co 7 dni.",
+      "tooOld": "Ten iPhone ma iOS {{version}}, a agenci potrzebują iOS 17 lub nowszego. Zaktualizuj go, jeśli się da, albo użyj nowszego iPhone'a.",
+      "xcodeOld": "Ten iPhone ma iOS {{version}}, nowszy niż zna Xcode na {{host}}. Zainstaluj tam Xcode {{major}}, a potem uruchom xcrun devicectl manage ddis update w Terminalu.",
+      "teamMissing": "Xcode jest zalogowany, ale nie pokazuje jeszcze zespołu. W Xcode utwórz dowolną aplikację iOS, wybierz swój zespół w Signing & Capabilities i uruchom ją raz na tym iPhonie.",
+      "uiRefused": "Ten iPhone odrzucił stuknięcia pomocnika testowego. Odblokuj go i wpisz kod, jeśli poprosi. Jeśli to się powtarza, wyłącz i włącz Ustawienia › Deweloper › Włącz automatyzację UI.",
+      "pluggedIn": "Jest podłączony",
+      "wifi": {
+        "also": "Też w sieci Wi-Fi komputera {{host}}: {{name}}",
+        "use": "Używaj przez Wi-Fi",
+        "hint": "Pojawia się tu tylko iPhone, który już zaufał Macowi przez kabel. Mac łączy się z nim własnym szyfrowanym połączeniem Apple, tym samym, którego używa Xcode.",
+        "stop": "Przestań używać przez Wi-Fi",
+        "stopTitle": "Przestać używać {{name}} przez Wi-Fi?",
+        "stopText": "Agenci nie będą już mogli się z nim połączyć. Aby go używać, wybierz go znowu na komputerze {{host}}.",
+        "stopped": "{{name}} nie jest już używany przez Wi-Fi"
+      },
+      "stall": {
+        "plug": "{{host}} nie widzi jeszcze tego iPhone'a. Użyj kabla, który przesyła dane, a nie tylko ładuje, trzymaj ten iPhone odblokowany i stuknij Zaufaj, jeśli poprosi.",
+        "devmode": "Tryb dewelopera włącza się dopiero po ponownym uruchomieniu tego iPhone'a. Stuknij Uruchom ponownie, a po starcie Włącz. Nie ma przełącznika? Odłącz ten iPhone i podłącz go ponownie."
+      }
     },
     "notice": {
       "kind": "Urządzenia",
@@ -2364,9 +2373,9 @@
     "anotherLead": "W agentes.chat. Zostajesz w {{org}} i możesz przełączyć się w każdej chwili.",
     "suggested": "Na podstawie twojego adresu w domenie {{domain}} proponuję {{org}}.",
     "create": "Utwórz",
+    "enter": "Wejdź do przestrzeni roboczej",
     "shareMessage": "Dołącz do {{org}} w agentes.chat: {{url}}",
-    "failed": "Nie udało się zapisać. Spróbuj ponownie.",
-    "enter": "Wejdź do przestrzeni roboczej"
+    "failed": "Nie udało się zapisać. Spróbuj ponownie."
   },
   "ai": {
     "yourPlan": "Twój plan AI",
@@ -2420,23 +2429,20 @@
     "editSub": "Nazwa, logo, strefa czasowa i to, co wiedzą agenci",
     "group": {
       "org": "Przestrzeń robocza",
-      "people": "Osoby",
-      "agents": "Agenci",
-      "costs": "Koszty i dane"
+      "people": "Osoby"
     },
     "section": {
       "members": "Członkowie",
       "roles": "Role",
       "access": "Dostęp agentów",
-      "connectors": "Konektory",
-      "usage": "Użycie i budżet"
+      "connectors": "Konektory"
     },
     "ofOnline": "{{online}} z {{count}}",
     "deleteName": "Usuń {{name}}",
     "deleteFoot": "Masz 7 dni, żeby zmienić zdanie.",
-    "deleteAlert": "Wszyscy od razu tracą dostęp. Przywrócenie jest możliwe przez 7 dni.",
+    "deleteAlert": "Wszyscy od razu mogą już tylko czytać. Przywrócenie jest możliwe przez 7 dni.",
     "deleteAction": "Usuń",
-    "deleteIntro": "Zamykamy {{name}} od razu dla wszystkich i usuwamy na zawsze po 7 dniach.",
+    "deleteIntro": "{{name}} od razu staje się dla wszystkich tylko do odczytu, a po 7 dniach zostaje trwale usunięta.",
     "holdDelete": "Przytrzymaj, aby usunąć",
     "deleteFailed": "Nie udało się usunąć przestrzeni roboczej. Spróbuj ponownie.",
     "access": {
@@ -2513,7 +2519,7 @@
       "guide": "Otwórz przewodnik {{name}}",
       "fields": "Dane",
       "private": "Te dane są przechowywane w postaci zaszyfrowanej i nigdy nie są ponownie pokazywane.",
-      "teamHelp": "Na początku jego elementy widzą wszyscy w przestrzeni roboczej i nie używa ich żaden agent. Agentów wybierasz później.",
+      "teamHelp": "Jego elementy widzą wszyscy w przestrzeni roboczej i każdy agent może ich używać. Możesz to potem zmienić.",
       "personalHelp": "Tylko ty widzisz jego elementy, a twoi agenci używają ich, gdy o to poprosisz.",
       "checking": "Sprawdzanie w {{name}}…",
       "connected": "Połączono z {{name}}",
@@ -2745,7 +2751,6 @@
     },
     "formatAuto": "{{name}} wybiera najlepszą",
     "newWidget": {
-      "titleHint": "Tytuł · {{name}} zaproponuje go przy teście",
       "alerts": "Alert włączony",
       "realData": "Prawdziwe dane",
       "editAsk": "Zmień prośbę",

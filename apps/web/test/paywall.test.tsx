@@ -27,7 +27,7 @@ afterEach(() => {
 
 type State = ReturnType<typeof seedState>;
 
-const KEPT = "Guardei a sua mensagem.";
+const KEPT = "Guardei a sua mensagem";
 const PLANS = "Ver planos do agentes.chat";
 const HOLD: OrgStanding = { state: "hold", reason: "payment" };
 const BILLING = "https://billing.example.com";
@@ -75,7 +75,7 @@ const click = async (el: Element, rounds = 6) => {
   await act(async () => fireEvent.click(el));
   await settle(rounds);
 };
-const card = () => document.querySelector(":is(.rq-open, .rq-done)") as HTMLElement;
+const card = () => document.querySelector(":is(.rq--note, .rq-done)") as HTMLElement;
 const calls = (state: State, method: string) => state.calls.filter((c) => c.method === method);
 
 describe("the wall", () => {
@@ -83,12 +83,23 @@ describe("the wall", () => {
     const state = held(seedState({ aiStatus: noAi(ADA_ID), authConfig: { billingUrl: BILLING } }));
     state.messages.push(wall());
     await open(state);
-    expect(card().textContent).toContain(KEPT);
-    expect(card().textContent).toContain("Eu respondo aqui quando o workspace tiver um plano do agentes.chat");
-    expect(card().textContent).toContain("A IA é a que você já paga");
-    expect(within(card()).getByRole("button", { name: PLANS })).toBeTruthy();
+    // A title, one sentence and the button: what the plan brings waits behind the ⓘ beside the title.
+    expect(card().querySelector(".rq__title b")?.textContent).toBe(KEPT);
+    expect([...card().querySelectorAll("p:not(.rq__title)")].map((p) => p.textContent)).toEqual([
+      "Respondo aqui quando o workspace tiver um plano do agentes.chat.",
+    ]);
+    const about = within(card()).getByRole("button", { name: `Sobre ${KEPT}` });
+    expect(about.closest(".rq__title")).toBeTruthy();
+    expect(document.getElementById(about.getAttribute("aria-describedby") ?? "")?.textContent).toContain(
+      "A IA é a que você já paga",
+    );
+    const pay = within(card()).getByRole("button", { name: PLANS });
+    expect(pay.className).toContain("ac-btn--primary");
+    expect(pay.parentElement?.className).toBe("rq__foot");
     expect(within(card()).queryByRole("button", { name: "Conectar" })).toBeNull();
     expect(document.querySelector(".noai-banner")).toBeNull();
+    await click(about, 2);
+    expect(screen().getByRole("tooltip").textContent).toContain("O plano traz o computador dos agentes");
   });
 
   test("a key saved before reads as ready and changes nothing: no answer starts, the wall stays", async () => {
@@ -103,8 +114,8 @@ describe("the wall", () => {
     const state = held(seedState({ aiStatus: noAi(ADA_ID) }), HOLD, "member");
     state.messages.push(wall());
     await open(state);
-    expect(card().textContent).toContain("Quem administra o workspace pode resolver isso.");
-    expect(within(card()).queryByRole("button")).toBeNull();
+    expect(card().textContent).toContain("Respondo aqui quando um admin resolver o plano do agentes.chat.");
+    expect(card().querySelector(".ac-btn")).toBeNull();
   });
 
   test("an older no-AI card on a hold is the wall too: its Connect would lead nowhere", async () => {
@@ -117,11 +128,28 @@ describe("the wall", () => {
   });
 
   test("the right hand with no team also offers the templates", async () => {
-    const state = withRightHand(held(seedState({ aiStatus: noAi(LODI_ID) })));
+    const state = withRightHand(held(seedState({ aiStatus: noAi(LODI_ID), authConfig: { billingUrl: BILLING } })));
     state.agents = state.agents.filter((a) => a.id === LODI_ID);
     state.messages.push(wall(LODI_ID));
     await open(state);
-    expect(within(card()).getByRole("button", { name: "Ver modelos de time" })).toBeTruthy();
+    // One primary, the other a bare text button after it.
+    expect([...card().querySelectorAll(".rq__foot > .ac-btn")].map((b) => [b.textContent, b.className])).toEqual([
+      [PLANS, expect.stringContaining("ac-btn--primary")],
+      ["Ver modelos de time", expect.stringContaining("ac-btn--ghost")],
+    ]);
+  });
+
+  test("a lapsed plan says what brings the answer, and its fix", async () => {
+    const state = held(seedState({ aiStatus: noAi(ADA_ID), authConfig: { billingUrl: BILLING } }), {
+      state: "hold",
+      reason: "unpaid",
+    });
+    state.messages.push(wall());
+    await open(state);
+    expect(card().querySelector(".rq__note")?.textContent).toBe(
+      "Respondo aqui quando o pagamento do plano do agentes.chat passar.",
+    );
+    expect(within(card()).getByRole("button", { name: "Atualizar o pagamento" })).toBeTruthy();
   });
 });
 
@@ -130,7 +158,10 @@ describe("after the plan", () => {
     const state = seedState({ aiStatus: noAi(ADA_ID) });
     state.messages.push(wall());
     await open(state);
-    expect(card().textContent).toContain("Plano ativo. Conecte uma IA e Ada responde aqui.");
+    expect([...card().querySelectorAll("p")].map((p) => p.textContent)).toEqual([
+      "Plano ativo",
+      "Conecte uma IA e Ada responde aqui.",
+    ]);
     await click(within(card()).getByRole("button", { name: "Conectar" }));
     expect(screen().getByRole("dialog", { name: /Conectar uma IA/ })).toBeTruthy();
   });
@@ -259,7 +290,8 @@ test("a first task opens with the caret at its blank, in the box", async () => {
 describe("Lodi's DM on a hold", () => {
   const dm = `dm/agent/${LODI_ID}`;
   const lodi = (aiStatus: AiStatus = noAi(LODI_ID)) => {
-    const state = withRightHand(held(seedState({ aiStatus })), { setup: { role: null, done: [] } });
+    const state = held(seedState({ aiStatus, authConfig: { billingUrl: BILLING } }));
+    withRightHand(state, { setup: { role: null, done: [] } });
     state.agents = state.agents.filter((a) => a.id === LODI_ID);
     state.members = state.members.slice(0, 1);
     state.connections = [];
@@ -267,6 +299,9 @@ describe("Lodi's DM on a hold", () => {
   };
   const row = (text: string) =>
     [...document.querySelectorAll(".setup-row")].find((r) => r.textContent?.includes(text)) as HTMLElement;
+  const heads = () =>
+    [...document.querySelectorAll(".setup-row")].map((r) => r.querySelector(".ac-mediarow__head")?.textContent);
+  const count = () => document.querySelector(".setup-cl__head small")?.textContent;
 
   test("its lead says the plan up front, the checklist shows, and neither Connect nor the style card", async () => {
     await open(lodi(), dm);
@@ -284,20 +319,60 @@ describe("Lodi's DM on a hold", () => {
     expect(text).toContain("Crio os agentes, conecto os apps e convido as pessoas.");
   });
 
-  test("every row waits for the plan, whose one button is the banner's; no asks (ADR 0162)", async () => {
+  test("the plan leads with the card's one button, the AI row is next, the rest wait; no asks (ADR 0162)", async () => {
     await open(lodi(), dm);
-    for (const waits of ["Conecte uma IA.", "Conecte os apps do trabalho.", "Chame quem trabalha com você."]) {
+    expect(heads()).toEqual([
+      "Ligue o time.",
+      "Conecte uma IA.",
+      "Conecte os apps do trabalho.",
+      "Chame quem trabalha com você.",
+    ]);
+    expect(count()).toBe("0 de 4");
+    const plan = row("Ligue o time.");
+    expect(plan.textContent).toContain("Com um plano do agentes.chat, os agentes começam a trabalhar.");
+    expect(row("Conecte uma IA.").textContent).toContain("É o passo seguinte ao plano.");
+    for (const waits of ["Conecte os apps do trabalho.", "Chame quem trabalha com você."])
       expect(row(waits).textContent).toContain("Abre com o plano.");
-      expect(within(row(waits)).queryByRole("button")).toBeNull();
-    }
-    expect(document.querySelector(".setup-cl")?.querySelectorAll("button")).toHaveLength(0);
+    const buttons = [...(document.querySelector(".setup-cl")?.querySelectorAll("button") ?? [])];
+    expect(buttons.map((b) => b.textContent)).toEqual(["Ver planos"]);
+    expect(within(plan).getByRole("button", { name: "Ver planos" })).toBeTruthy();
     expect(document.body.textContent).not.toContain("Agora me peça algo:");
   });
 
   test("a saved key on a hold reads as ready, and still the AI row waits for the plan", async () => {
     await open(lodi({ any: true, agents: [{ agentId: LODI_ID, state: "ready" }] }), dm);
-    expect(row("Conecte uma IA.").textContent).toContain("Abre com o plano.");
-    expect(document.querySelector(".setup-cl__head small")?.textContent).toBe("0 de 3");
+    expect(row("Conecte uma IA.").textContent).toContain("É o passo seguinte ao plano.");
+    expect(count()).toBe("0 de 4");
+  });
+
+  test("with a team, the banner leaves Lodi's DM to the card's plan row and stays everywhere else", async () => {
+    const team = () =>
+      withRightHand(held(seedState({ authConfig: { billingUrl: BILLING } })), { setup: { role: null, done: [] } });
+    await open(team(), dm);
+    expect(within(row("Ligue o time.")).getByRole("button", { name: "Ver planos" })).toBeTruthy();
+    expect(document.querySelector(".hold-banner")).toBeNull();
+    cleanup();
+    sessionStorage.clear();
+    await open(team());
+    const banner = document.querySelector(".hold-banner") as HTMLElement;
+    expect(within(banner).getByRole("button", { name: PLANS })).toBeTruthy();
+  });
+
+  test("a personal workspace on a hold: the plan first in its own words, one of five", async () => {
+    const state = lodi();
+    const org = state.me?.organizations[0];
+    if (org) org.mode = "personal";
+    await open(state, dm);
+    expect(heads()).toEqual([
+      "Ligue os seus agentes.",
+      "Me conte um pouco sobre você.",
+      "Escolha os seus agentes.",
+      "Conecte uma IA.",
+      "Conecte os seus apps.",
+    ]);
+    expect(count()).toBe("0 de 5");
+    expect(within(row("Ligue os seus agentes.")).getByRole("button", { name: "Ver planos" })).toBeTruthy();
+    expect(row("Conecte uma IA.").textContent).toContain("É o passo seguinte ao plano.");
   });
 });
 

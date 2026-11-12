@@ -50,6 +50,10 @@ const COMMANDS: &[&str] = &[
     "local_server_reach_stop",
     "local_server_usage",
     "local_server_backup",
+    "local_server_backups_set",
+    "local_server_restore",
+    "keep_running",
+    "open_system_settings",
     "local_server_diagnostics",
     "local_server_sync",
     "tailscale_status",
@@ -57,8 +61,16 @@ const COMMANDS: &[&str] = &[
     "workspaces_get",
     "site_fetch",
     "welcome_mode_take",
+    "welcome_add",
     "pair_link_info",
     "pair_ask",
+    "screen_access",
+    "screen_request",
+    "disk_access",
+    "network_ask",
+    "privacy_open",
+    "setup_state_get",
+    "setup_state_set",
 ];
 
 fn main() {

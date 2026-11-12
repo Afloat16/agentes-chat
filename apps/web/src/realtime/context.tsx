@@ -539,6 +539,8 @@ export function RealtimeProvider({
         qc.setQueryData(keys.issueColumns(orgId), event.columns as IssueColumn[]);
         void qc.invalidateQueries({ queryKey: keys.issues(orgId), predicate: (q) => q.queryKey[3] === "list" });
       }
+      // A project was made, renamed, recoloured, archived or deleted: the menu and every card that names it.
+      if (event.type === "issue.projects") void qc.invalidateQueries({ queryKey: keys.issues(orgId) });
       applyIssueEvent(qc, orgId, event);
       // An agent switched computers, or its computer was removed: the cached view takes the new target.
       applyComputerEvent(qc, orgId, event);
@@ -630,7 +632,7 @@ export async function reconcileChannelRuns(
   runIds?: string[],
 ): Promise<boolean> {
   const live = runsInChannel(store.get().streams, channelId).filter(
-    (r) => !r.provisional && r.status !== "failed" && r.status !== "canceled" && (!runIds || runIds.includes(r.runId)),
+    (r) => !r.provisional && r.status !== "failed" && (!runIds || runIds.includes(r.runId)),
   );
   const askedAt = Date.now();
   const active = await api.agents.activeRuns(orgId, channelId).catch(() => undefined);

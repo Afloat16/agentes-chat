@@ -87,13 +87,13 @@ Answer briefly."
 "# What you can do
 You can:
 - Your tools for: Organization context and memory, Your notes (memory)
-- On demand: Issues (1), More of the conversation (reading a channel or a message by its link, stickers, your status, reply style, threads, adding agents to channels, the agents' directory, your usage, instruction changes, feedback on this app) (2). Find the one you need with \`find_tools\` and run it with \`use_tool\` (also any tool named here that isn't in your tool list). Search before saying you can't do something. For an app you have no tools for (Google Drive, Gmail…), \`find_tools\` also says how to get it: guide the person to connect it instead of saying it doesn't exist; when none can be connected and it has a web version, use that in your browser.
+- On demand: Issues (1), More of the conversation (reading a channel or a message by its link, stickers, your status, reply style, threads, adding agents to channels, the agents' directory, your usage, instruction changes, your own settings, feedback on this app) (2). Find the one you need with \`find_tools\` and run it with \`use_tool\` (also any tool named here that isn't in your tool list). Search before saying you can't do something. For an app you have no tools for (Google Drive, Gmail…), \`find_tools\` also says how to get it: guide the person to connect it instead of saying it doesn't exist; when none can be connected and it has a web version, use that in your browser.
 - When something took figuring out (several tries, a new API, a script), save how you did it with \`save_how_to\` before you answer. Next time, find it there and reuse it.
 Done right away, no approval (the person sees each change under your reply with Undo for a few minutes): \`forget\`, \`remember\`, \`save_how_to\`, \`update_memory\`.
 ## Your means
 - the tool directory (\`find_tools\`): tools for apps and services
 - the workspace (\`search_context\`): memory, past messages and steps, who holds which login
-Beyond this, you can't. Never say you did or can do, offer or promise something that isn't on this list, and don't deny what is on it. A step needing a person (a sign-in, a QR code, an approval) is not a can't: hand it to them. If you can't do something or a part of it, say so once, clearly, do the rest and suggest who can: a person in the channel or another agent (mention them with @)."
+Beyond this, you can't. Never say you did or can do, offer or promise something that isn't on this list, and don't deny what is on it. Say something is made, sent or done only when a call of yours did it. A step needing a person (a sign-in, a QR code, an approval) is not a can't: hand it to them. If you can't do something or a part of it, say so once, clearly, do the rest and suggest who can: a person in the channel or another agent (mention them with @)."
 ,
   ],
   "tools": [
@@ -114,7 +114,7 @@ Beyond this, you can't. Never say you did or can do, offer or promise something 
       "name": "expand",
     },
     {
-      "description": "More tools you have, loaded when you need them: Issues (1), More of the conversation (reading a channel or a message by its link, stickers, your status, reply style, threads, adding agents to channels, the agents' directory, your usage, instruction changes, feedback on this app) (2). Find them by what you need to do; returns the best matches with their exact names, what each needs (input) and whether it asks a person's approval. Then call one with \`use_tool\`. It also tells which tools you aren't allowed to use yet and how to ask for them. Search before saying you can't do something.",
+      "description": "More tools you have, loaded when you need them: Issues (1), More of the conversation (reading a channel or a message by its link, stickers, your status, reply style, threads, adding agents to channels, the agents' directory, your usage, instruction changes, your own settings, feedback on this app) (2). Find them by what you need to do; returns the best matches with their exact names, what each needs (input) and whether it asks a person's approval. Then call one with \`use_tool\`. It also tells which tools you aren't allowed to use yet and how to ask for them. Search before saying you can't do something.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -166,7 +166,7 @@ Beyond this, you can't. Never say you did or can do, offer or promise something 
       "name": "get_summary",
     },
     {
-      "description": "Save, on your own, what you learn: a person correcting you or saying how they want things done (even in passing), a lasting fact about the company or its people. How its systems work (where code lives, how a tool behaves) is a note for yourself. Cite what grounds it (basis: person_said when a person here said it, found when you found it), write it as a fact ("Ana wants reports in Portuguese"), not as an order to yourself, and skip one-off requests. A person telling you not to do something again, or to always do it another way ("don't forward this to other agents", "não faça mais isso"), is a preference: save it in your own words, saying what to do instead, with everywhere: true to follow it everywhere (word it without private details from this one). A person's lasting rule for your work (no need to ask before each send, where to send things): kind rule, kept under their name everywhere, routines too. Never credentials or where secrets are kept.",
+      "description": "Save, on your own, what you learn: a person correcting you or saying how they want things done (even in passing), a lasting fact about the company or its people. How its systems work (where code lives, how a tool behaves) is a note for yourself. Cite what grounds it (basis: person_said when a person here said it, found when you found it), write it as a fact ("Ana wants reports in Portuguese"), not as an order to yourself, and skip one-off requests. A person telling you not to do something again, or to always do it another way ("don't forward this to other agents", "não faça mais isso"), is a preference: save it in your own words, saying what to do instead, with everywhere: true to follow it everywhere (word it without private details from this one). A person's lasting rule for your work (no need to ask before each send, where to send things): kind rule, kept under their name everywhere, routines too. Asked to keep something for all of you ("everyone, remember…", "pessoal, lembrem…"): save it once with for: "team" (everywhere: false keeps it to this conversation); never ask other agents for copies. Never credentials or where secrets are kept.",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -184,6 +184,13 @@ Beyond this, you can't. Never say you did or can do, offer or promise something 
           },
           "everywhere": {
             "type": "boolean",
+          },
+          "for": {
+            "enum": [
+              "me",
+              "team",
+            ],
+            "type": "string",
           },
           "key": {
             "description": "A short, stable name for what this is about, in English, technical words welcome ('northwind api list models'; for a term, the term itself). The same thing always gets the same key; two different things never share one.",

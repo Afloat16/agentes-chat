@@ -68,6 +68,7 @@ import {
   setAgentBrain,
   setReportsTo,
   speakerOf,
+  summaryModelReady,
   TEAM_TEMPLATES,
   unarchiveAgent,
   undoTeam,
@@ -103,6 +104,7 @@ import {
   AgentBrakes,
   AgentSetup,
   AgentSetupResult,
+  ApprovalsLevel,
   BrainEffortSetting,
   BrainKind,
   BrainMachine,
@@ -196,6 +198,10 @@ const AgentFields = z.object({
   }),
   brakes: AgentBrakes.partial().optional().openapi({
     description: "Its autonomy brakes (ADR 0131); the fields given change, the rest stay. Needs `manage_agents`.",
+  }),
+  approvalsLevel: ApprovalsLevel.optional().openapi({
+    description:
+      "How much it asks before acting (ADR 0173). Needs `manage_agents`. A new agent starts at `risky`. It never widens what the agent may use.",
   }),
 });
 
@@ -699,6 +705,10 @@ export function agentRoutes(deps: AppDeps) {
                 provider: z.string().optional().openapi({
                   description: "Ready on an API key with Automático: the maker of the key it thinks with.",
                 }),
+                background: z.enum(["ready", "no_ai", "waiting"]).optional().openapi({
+                  description:
+                    "Its state for background work (a routine, a widget's build) where that differs from `state`: background work never falls back on the model brain, and the right hand's thinks with the workspace's own AI, nobody's.",
+                }),
               }),
             ),
             routing: z.object({
@@ -708,6 +718,8 @@ export function agentRoutes(deps: AppDeps) {
               noSmallModel: z.string().nullable(),
             }),
             apiKey: z.boolean(),
+            /** Memory reflects on finished conversations: a summary model it can call (ADR 0167). */
+            reflection: z.boolean(),
           }),
         ),
         ...errors,
@@ -718,11 +730,13 @@ export function agentRoutes(deps: AppDeps) {
       const userId = c.get("user").id;
       await requirePermission(db, userId, orgId, "read");
       const status = aiStatusDeps(deps);
-      const [ai, routing] = await Promise.all([
+      const context = deps.extras?.context;
+      const [ai, routing, reflection] = await Promise.all([
         orgAiStatus(status, orgId, userId),
         orgRouting(status, deps.extras?.router?.routing ?? null, orgId, userId),
+        context ? summaryModelReady(context, orgId) : false,
       ]);
-      return c.json({ ...ai, ...routing }, 200);
+      return c.json({ ...ai, ...routing, reflection }, 200);
     },
   );
 

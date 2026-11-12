@@ -59,7 +59,6 @@
     "failed": "Votre choix n'a pas été envoyé. Réessayez."
   },
   "chart": {
-    "pending": "Création du graphique…",
     "table": "Tableau",
     "item": "Élément",
     "share": "Partager",
@@ -385,18 +384,10 @@
     "switchWorking": "au travail",
     "join": "Rejoindre le canal",
     "sending": "Envoi…",
-    "failed": "Non envoyé · Réessayer",
-    "notSent": "Le message n'a pas été envoyé.",
     "toLatest": "Aller aux derniers messages",
     "toLatestNew": "Aller aux derniers messages : {{text}}",
     "stopAgent": "Arrêter {{name}}",
     "offlineWait": "Partira au retour de la connexion",
-    "turn": {
-      "thinking": "réfléchit",
-      "working": "travaille",
-      "writing": "écrit",
-      "stopped": "arrêté"
-    },
     "steer": {
       "waiting": "{{name}} le lira à la prochaine pause",
       "computer": "{{name}} le lira dès qu'il aura l'ordinateur",
@@ -1170,7 +1161,6 @@
     "proposalsWaiting_other": "{{count}} en attente",
     "drive": "Drive",
     "connectors": "Connecteurs et MCP",
-    "usage": "Consommation",
     "preferences": "Préférences",
     "editProfile": "Modifier le profil",
     "switchWorkspace": "Changer d'espace de travail",
@@ -1449,7 +1439,8 @@
     "uses_many": "Utilisé {{count}} fois",
     "uses_other": "Utilisé {{count}} fois",
     "confirmed": "Confirmé par une personne",
-    "unconfirmed": "Pas encore confirmé",
+    "confirm": "Confirmer",
+    "confirmedToast": "Confirmée",
     "details": "Détails techniques",
     "before": "Avant, c'était : {{text}}",
     "fix": "Corriger",
@@ -1665,9 +1656,9 @@
         "setup": "Configuration de l'espace de travail",
         "desktop": "Écran de l'ordinateur"
       },
-      "asksYou": "Fusionner et publier demandent toujours votre approbation, quel que soit le niveau.",
-      "asksOwner": "Fusionner et publier demandent toujours l'approbation de {{name}}, quel que soit le niveau.",
-      "asksAdmins": "Fusionner et publier demandent toujours l'approbation d'un admin, quel que soit le niveau.",
+      "asksYou": "Fusionner et publier demandent votre approbation, sauf si l'agent ne demande jamais.",
+      "asksOwner": "Fusionner et publier demandent l'approbation de {{name}}, sauf si l'agent ne demande jamais.",
+      "asksAdmins": "Fusionner et publier demandent l'approbation d'un admin, sauf si l'agent ne demande jamais.",
       "empty": "Pour l'instant, seulement la conversation."
     }
   },
@@ -1775,13 +1766,7 @@
       "open": "Ouvrir",
       "expandHint": "Touchez pour agrandir",
       "stop": "Arrêter",
-      "giveUp": "Abandonner",
-      "done": "Fait : {{title}}",
-      "failed": "Pas réussi : {{title}}",
-      "failedNote": "Pas réussi : {{note}}",
-      "expired": "Personne ne l'a ouvert à temps : {{title}}",
-      "cancelled": "Annulé : {{title}}",
-      "withdrawn": "{{name}} n'en a plus besoin : {{title}}"
+      "giveUp": "Abandonner"
     },
     "live": {
       "inControl": "Vous avez la main",
@@ -1898,12 +1883,19 @@
       "helper_missing": "L'app de test n'est pas encore configurée",
       "helper_expired": "L'app de test doit être renouvelée",
       "apple_account_missing": "Xcode sur le Mac a besoin d'un Apple Account",
+      "apple_team_missing": "Xcode sur le Mac n'affiche pas encore d'équipe",
+      "ui_not_authorized": "Cet iPhone a refusé les touchers de l'app de test",
       "team_limit": "Supprimez de cet iPhone une app que vous avez créée",
       "helper_untrusted": "Faites confiance à l'app de test sur cet iPhone",
       "booting": "Démarrage en cours",
-      "no_driver": "Windows a besoin du pilote USB de ce téléphone",
+      "no_driver": "Windows a besoin du pilote USB du fabricant du téléphone",
+      "no_driverLinux": "Linux a besoin de règles udev pour ce téléphone",
       "os_too_old": "Le système de ce téléphone est trop ancien",
       "adb_offline": "Débranchez le câble et rebranchez-le",
+      "wifi_away": "Rejoignez le Wi-Fi du Mac sur cet iPhone ou branchez-le",
+      "wifi_asleep": "Réveillez et déverrouillez cet iPhone, et gardez-le près du Mac",
+      "tunnel_down": "La liaison Wi-Fi a été coupée. Gardez cet iPhone près du Mac ou branchez-le",
+      "wifi_untrusted": "Branchez-le une fois et touchez Se fier",
       "other": "Pas encore prêt"
     },
     "os": {
@@ -2003,12 +1995,11 @@
       "noHost": "Ce téléphone fonctionne via l'un de vos ordinateurs. Connectez-en un d'abord.",
       "hostOffline": "{{host}} est hors ligne. Allumez-le et ouvrez agentes.chat dessus.",
       "step1": "Activez les Options pour les développeurs",
-      "step1Text": "Touchez 7 fois Numéro de build, puis saisissez votre code PIN.",
+      "step1Text": "Touchez 7 fois Numéro de build, puis saisissez votre code PIN. Sur Samsung : Informations sur le logiciel › Numéro de version.",
       "openAbout": "Ouvrir À propos du téléphone",
       "step2": "Activez le Débogage USB",
       "openDev": "Ouvrir Options pour les développeurs",
       "step3": "Branchez-le sur {{host}}",
-      "step3Hint": "Utilisez un câble qui transmet les données, pas un câble de charge seule. Si le téléphone demande à quoi sert l'USB, choisissez Transfert de fichiers.",
       "looking": "Recherche de ce téléphone",
       "step4": "Touchez Autoriser sur ce téléphone",
       "step4Text": "Cochez d'abord Toujours autoriser cet ordinateur.",
@@ -2026,7 +2017,7 @@
       "wifi1": "Activez le Débogage sans fil",
       "wifi1Text": "Cochez Toujours autoriser sur ce réseau, puis touchez Autoriser.",
       "wifi2": "Scannez le code sur un ordinateur",
-      "wifi2Text": "Depuis Débogage sans fil › Associer l'appareil avec un code QR.",
+      "wifi2Text": "Depuis Débogage sans fil › Associer l'appareil avec un code QR. N'utilisez pas l'appareil photo : il lit le code comme un réseau Wi-Fi et sort le téléphone de votre Wi-Fi.",
       "wifi2Hint": "Dans agentes.chat sur un ordinateur, ouvrez Connecter un appareil › Téléphone Android › Par Wi-Fi et choisissez {{host}}.",
       "codeHead": "Associer avec un code d'association",
       "codeNote": "Depuis Débogage sans fil › Associer l'appareil avec un code d'association. Ouvrez Paramètres et agentes.chat côte à côte pour garder le code à l'écran.",
@@ -2057,7 +2048,25 @@
       "step5Hint": "L'app que {{host}} installe pour que les agents puissent toucher et écrire sur cet iPhone. Elle apparaît dans cette liste une fois installée.",
       "step5Text": "Réglages › Général › VPN et gestion de l'appareil. Touchez le nom du développeur, puis Se fier.",
       "waiting": "En attente que {{host}} le détecte",
-      "footer": "Votre Mac fait le reste, et renouvelle l'app de test tous les 7 jours tant qu'il est allumé."
+      "footer": "Votre Mac fait le reste, et renouvelle l'app de test tous les 7 jours tant qu'il est allumé.",
+      "tooOld": "Cet iPhone est sous iOS {{version}}, et les agents ont besoin d'iOS 17 ou plus récent. Mettez-le à jour s'il le peut, ou utilisez un iPhone plus récent.",
+      "xcodeOld": "Cet iPhone est sous iOS {{version}}, plus récent que ce que connaît Xcode sur {{host}}. Installez-y Xcode {{major}}, puis lancez xcrun devicectl manage ddis update dans Terminal.",
+      "teamMissing": "Xcode est connecté mais n'affiche pas encore d'équipe. Dans Xcode, créez n'importe quelle app iOS, choisissez votre équipe dans Signing & Capabilities et lancez-la une fois sur cet iPhone.",
+      "uiRefused": "Cet iPhone a refusé les touchers de l'app de test. Déverrouillez-le et saisissez votre code s'il le demande. Si cela continue, désactivez puis réactivez Réglages › Développeur › Activer l'automatisation de l'IU.",
+      "pluggedIn": "Il est branché",
+      "wifi": {
+        "also": "Aussi sur le Wi-Fi de {{host}} : {{name}}",
+        "use": "Utiliser en Wi-Fi",
+        "hint": "Seul un iPhone qui a déjà fait confiance au Mac par câble apparaît ici. Le Mac le joint par la liaison chiffrée d'Apple, celle qu'utilise Xcode.",
+        "stop": "Ne plus utiliser en Wi-Fi",
+        "stopTitle": "Ne plus utiliser {{name}} en Wi-Fi ?",
+        "stopText": "Les agents ne peuvent plus l'atteindre. Choisissez-le à nouveau avec {{host}} pour l'utiliser.",
+        "stopped": "{{name}} n'est plus utilisé en Wi-Fi"
+      },
+      "stall": {
+        "plug": "{{host}} ne voit pas encore cet iPhone. Utilisez un câble qui transmet les données, pas seulement la charge, gardez cet iPhone déverrouillé et touchez Se fier s'il le demande.",
+        "devmode": "Le Mode développeur ne s'active qu'après le redémarrage de cet iPhone. Touchez Redémarrer, puis Activer une fois qu'il a redémarré. Pas d'interrupteur ? Débranchez cet iPhone et rebranchez-le."
+      }
     },
     "notice": {
       "kind": "Appareils",
@@ -2256,9 +2265,9 @@
     "anotherLead": "Sur agentes.chat. Vous restez dans {{org}} et pouvez changer à tout moment.",
     "suggested": "D'après votre e-mail {{domain}}, j'ai suggéré {{org}}.",
     "create": "Créer",
+    "enter": "Entrer dans l'espace de travail",
     "shareMessage": "Rejoignez {{org}} sur agentes.chat : {{url}}",
-    "failed": "Impossible d'enregistrer. Réessayez.",
-    "enter": "Entrer dans l'espace de travail"
+    "failed": "Impossible d'enregistrer. Réessayez."
   },
   "ai": {
     "yourPlan": "Votre abonnement IA",
@@ -2310,23 +2319,20 @@
     "editSub": "Nom, logo, fuseau horaire et ce que savent les agents",
     "group": {
       "org": "Espace de travail",
-      "people": "Personnes",
-      "agents": "Agents",
-      "costs": "Coûts et données"
+      "people": "Personnes"
     },
     "section": {
       "members": "Membres",
       "roles": "Rôles",
       "access": "Accès des agents",
-      "connectors": "Connecteurs",
-      "usage": "Utilisation et budget"
+      "connectors": "Connecteurs"
     },
     "ofOnline": "{{online}} sur {{count}}",
     "deleteName": "Supprimer {{name}}",
     "deleteFoot": "Vous avez 7 jours pour changer d'avis.",
-    "deleteAlert": "Tout le monde perd l'accès tout de suite. Vous pouvez le restaurer pendant 7 jours.",
+    "deleteAlert": "Dès maintenant, tout le monde peut seulement le lire. Vous pouvez le restaurer pendant 7 jours.",
     "deleteAction": "Supprimer",
-    "deleteIntro": "{{name}} ferme tout de suite pour tout le monde et sera supprimé définitivement dans 7 jours.",
+    "deleteIntro": "{{name}} passe tout de suite en lecture seule pour tout le monde et sera supprimé définitivement dans 7 jours.",
     "holdDelete": "Maintenir pour supprimer",
     "deleteFailed": "Impossible de supprimer l'espace de travail. Réessayez.",
     "access": {
@@ -2403,7 +2409,7 @@
       "guide": "Ouvrir le guide de {{name}}",
       "fields": "Informations",
       "private": "Ces informations sont gardées chiffrées et ne sont plus jamais affichées.",
-      "teamHelp": "Ses éléments sont d'abord visibles par tout l'espace de travail et utilisés par aucun agent. Vous choisissez les agents ensuite.",
+      "teamHelp": "Tout l'espace de travail voit ses éléments et tous les agents peuvent les utiliser. Vous pouvez ajuster cela ensuite.",
       "personalHelp": "Vous seul voyez ses éléments, et vos agents les utilisent quand vous le demandez.",
       "checking": "Vérification avec {{name}}…",
       "connected": "{{name}} connecté",
@@ -2623,7 +2629,6 @@
     },
     "formatAuto": "{{name}} choisit le meilleur",
     "newWidget": {
-      "titleHint": "Titre · {{name}} en propose un au test",
       "alerts": "Alerte activée",
       "realData": "Vraies données",
       "editAsk": "Modifier la demande",

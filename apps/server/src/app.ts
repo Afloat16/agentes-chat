@@ -11,6 +11,7 @@ import composeFile from "../../../docker-compose.yml" with { type: "text" };
 import installScript from "../../../install.sh" with { type: "text" };
 import { registerAppLinks } from "./app-links";
 import { authHandler, signInPageUrl } from "./auth";
+import { apiBodyLimit } from "./http/body-limit";
 import { errorPages } from "./http/error-page";
 import { apiError, domainErrorResponse, routeOf, validationHook } from "./http/errors";
 import { createLogger, type Logger, loggedPath } from "./logger";
@@ -31,13 +32,13 @@ import { channelRoutes } from "./routes/app/channels";
 import { chatRoutes } from "./routes/app/chat";
 import { connectorRoutes } from "./routes/app/connectors";
 import { customConnectorRoutes } from "./routes/app/connectors-custom";
-import { type AppDeps, agentDetailsGate } from "./routes/app/context";
+import { type AppDeps, agentDetailsGate, readOnlyWhileDeleting } from "./routes/app/context";
 import { dashboardRoutes } from "./routes/app/dashboards";
 import { databaseRoutes } from "./routes/app/databases";
 import { desktopRoutes } from "./routes/app/desktop";
 import { deviceWaitRoutes } from "./routes/app/device-waits";
 import { dmRoutes } from "./routes/app/dms";
-import { feedbackRoutes, registerFeedbackFiles } from "./routes/app/feedback";
+import { feedbackRoutes, registerFeedbackFiles, registerFeedbackInbox } from "./routes/app/feedback";
 import { gifKeyRoutes } from "./routes/app/gif-key";
 import { gifRoutes } from "./routes/app/gifs";
 import { inviteRoutes } from "./routes/app/invites";
@@ -65,6 +66,7 @@ import { telemetryRoutes } from "./routes/app/telemetry";
 import { threadRoutes } from "./routes/app/threads";
 import { vaultRoutes } from "./routes/app/vault";
 import { speechKeyRoutes, voiceRoutes } from "./routes/app/voice";
+import { waitingRoutes } from "./routes/app/waiting";
 import { wikiRoutes } from "./routes/app/wiki";
 import {
   createDesktopReleases,
@@ -169,7 +171,9 @@ export function createApp(options: AppOptions) {
     const deps: AppDeps = { log, ...options.services };
     registerInstance(api, deps, version);
     registerFeedbackFiles(api, deps);
+    registerFeedbackInbox(api, deps);
     api.use("/app/organizations/:orgId/agents/:agentId/:part", agentDetailsGate(deps));
+    api.use("/app/organizations/:orgId/*", readOnlyWhileDeleting(deps));
     api.route("/app", accountRoutes(deps));
     api.route("/app", accessRoutes(deps));
     api.route("/app", agentRoutes(deps));
@@ -193,6 +197,7 @@ export function createApp(options: AppOptions) {
     api.route("/app", browserProfileRoutes(deps));
     api.route("/app", desktopRoutes(deps));
     api.route("/app", notificationRoutes(deps));
+    api.route("/app", waitingRoutes(deps));
     api.route("/app", pushRoutes(deps));
     api.route("/app", secretRoutes(deps));
     api.route("/app", vaultRoutes(deps));
@@ -314,6 +319,7 @@ export function createApp(options: AppOptions) {
   });
   // Ties a request's failure in the log to its report, and to what the client saw (`X-Request-Id`).
   app.use("/api/*", requestId());
+  app.use("/api/*", apiBodyLimit);
   // Security headers on every response: the app may not be framed (clickjacking of approval, merge and deploy
   // cards), <base> is pinned to our own origin, and HSTS is sent where the instance is served over TLS. `frame-src`
   // keeps a frame on our pages from navigating itself to another site with what it holds: an agent's page has no

@@ -288,7 +288,7 @@ export function AgentSetupCard({ agent, place }: { agent: Agent; place: "dm" | "
     });
 
   const act = (step: AgentSetupStep) => {
-    if (step === "ai") connect?.open({ agentId: agent.id });
+    if (step === "ai") connect?.open({ agentId: agent.id, chat: true });
     else setOpen(step);
   };
   const confirmed = () => setOpen(null);
@@ -1091,7 +1091,7 @@ function WhoDialog({ agent, onClose, onSaved }: { agent: Agent; onClose: () => v
           label={t("newAgent.owner")}
           hint={{ name: t("common.about", { label: t("newAgent.owner") }), text: t("agentSetup.who.ownerHelp", g) }}
         >
-          <OwnerSelect card={false} value={ownerId} onChange={setOwnerId} members={dir.members} meId={me.user.id} />
+          <OwnerSelect value={ownerId} onChange={setOwnerId} members={dir.members} meId={me.user.id} />
         </Field>
       )}
     </StepDialog>

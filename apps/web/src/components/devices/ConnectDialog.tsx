@@ -2,7 +2,7 @@ import { type DeviceJoinRequest, useMe } from "@agenteschat/client";
 import { joinFacts, linkPhase, newComputerOf } from "@agenteschat/client/lib/devices";
 import { computerKind, isHandheld, platformOf } from "@agenteschat/client/lib/machines";
 import { can } from "@agenteschat/client/lib/permissions";
-import { appPairsWith, pairLink } from "@agenteschat/client/lib/server";
+import { appPairsWith, pairLink, plainHttpServer } from "@agenteschat/client/lib/server";
 import {
   Button,
   ComputerPortrait,
@@ -21,6 +21,7 @@ import { Link } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HelpLink } from "@/components/HelpLink";
+import { DownloadWithGuide } from "@/components/install/guide";
 import { CommandBlock } from "@/components/machine-bits";
 import { useOrg } from "@/components/org-context";
 import { ThisMacButton, useAgentsHere } from "@/components/ThisMac";
@@ -28,7 +29,7 @@ import { inDesktopApp } from "@/lib/desktop";
 import { AndroidFlow, IphoneFlow } from "./ConnectPhone";
 import { JoinRequestForm } from "./dialogs";
 import { FlowFooter, type FlowProps } from "./flow";
-import { DownloadButtons, StatusPill } from "./parts";
+import { StatusPill } from "./parts";
 import { useConnectLink, useDevices, useLinkState } from "./queries";
 
 export type ConnectStep = "choose" | "this" | "server" | "computer" | "link" | "android" | "iphone";
@@ -131,16 +132,38 @@ function Chooser({ onPick, onClose }: { onPick: (step: ConnectStep) => void; onC
   const { org } = useOrg();
   const platform = platformOf(navigator.userAgent);
   const agentsHere = useAgentsHere();
-  const option = (step: ConnectStep, mark: ReactNode, title: string, line: ReactNode) => (
-    <button type="button" className="dv-option" onClick={() => onPick(step)}>
-      {mark}
-      <span className="dv-option__text">
-        <span className="dv-option__title ac-captop">{title}</span>
-        <span className="dv-option__line">{line}</span>
-      </span>
-      <Icon name="chevronRight" size={16} className="dv-option__arrow" />
-    </button>
-  );
+  const option = (step: ConnectStep, mark: ReactNode, title: string, line: ReactNode, how?: ReactNode) =>
+    how ? (
+      // A link can't sit inside a button: the title is the button, stretched over the row, and the link sits above it.
+      <div className="dv-option dv-option--stretch">
+        {mark}
+        <span className="dv-option__text">
+          <button
+            type="button"
+            className="dv-option__title dv-option__hit ac-captop"
+            aria-describedby={`dv-line-${step}`}
+            onClick={() => onPick(step)}
+          >
+            {title}
+          </button>
+          <span className="dv-option__line" id={`dv-line-${step}`}>
+            <span>
+              {line} {how}
+            </span>
+          </span>
+        </span>
+        <Icon name="chevronRight" size={16} className="dv-option__arrow" />
+      </div>
+    ) : (
+      <button type="button" className="dv-option" onClick={() => onPick(step)}>
+        {mark}
+        <span className="dv-option__text">
+          <span className="dv-option__title ac-captop">{title}</span>
+          <span className="dv-option__line">{line}</span>
+        </span>
+        <Icon name="chevronRight" size={16} className="dv-option__arrow" />
+      </button>
+    );
   const thisMark = <ProviderLogo id={systemMark(platform)} size="sm" className="dv-tile" />;
   // Inside the desktop app that may host agents, one click (below). In a browser, the app on this computer through
   // a link, where the app takes one; a phone's browser has no computer to connect. Elsewhere (an app that runs this
@@ -169,6 +192,16 @@ function Chooser({ onPick, onClose }: { onPick: (step: ConnectStep) => void; onC
                   <ThisMacButton orgId={org.id} canPair={can(org, "pair_computers")} />
                 </span>
               </div>
+            ) : thisStep === "link" && plainHttpServer(window.location.origin) ? (
+              option(
+                thisStep,
+                thisMark,
+                t(thisLabel(platform)),
+                t("devices.choose.httpLine"),
+                <HelpLink slug="install-on-a-server" section="reach">
+                  {t("devices.choose.httpHow")}
+                </HelpLink>,
+              )
             ) : (
               thisStep &&
               option(
@@ -253,9 +286,7 @@ function ComputerFlow({
           <li>
             <span className="apps-step">
               <span>{t("devices.computer.step1")}</span>
-              <span className="dv-step__acts">
-                <DownloadButtons primary onLine={onLine} />
-              </span>
+              <DownloadWithGuide primary onLine={onLine} />
             </span>
           </li>
           <li>
@@ -512,9 +543,7 @@ function OpenInApp({
       </div>
       <section className="dv-app dv-app--get" aria-labelledby="dv-app-get">
         <GroupHeading level={3} id="dv-app-get" title={t("devices.thisApp.noApp")} />
-        <span className="dv-step__acts">
-          <DownloadButtons onLine={onLine} />
-        </span>
+        <DownloadWithGuide onLine={onLine} />
         <p className="small muted">{t("devices.thisApp.afterInstall")}</p>
         <p className="small muted">
           <button type="button" className="ac-link" onClick={() => onLine?.()}>

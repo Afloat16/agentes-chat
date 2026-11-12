@@ -113,14 +113,12 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "browser.inCard.noComputer",
     "browser.live.noComputer",
     "computers.hostMissing",
-    "computers.lead",
     "connectAi.wait.connecting",
     "errors.mission.unavailable",
     // The feedback form's line on who reads it, where the server isn't one of agentes.chat's own (`auth-config.cloud`).
     "feedback.goesServer",
     "feedback.offer.goesServer",
     "feedback.offer.sentServer",
-    "machines.download.step2",
     "machines.download.title",
     "machines.host.",
     "members.requests.copyText",
@@ -141,7 +139,6 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "outage.dialog.none",
     "settings.platformAvailable",
     "settings.telemetry.",
-    "settings.tileState.platformKey",
     "skills.unavailable",
     "storage.server",
     "storage.serverText.",
@@ -203,22 +200,26 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
   apiKey: ["agentPage.work.brain.fallbackTitle"],
   // A message nobody mentions still gets an agent: routing.mine (the chip and its help line), routing.by (Settings),
   // or the receipt of a message a rule sent to its one candidate.
-  routing: [
-    "profile.answersHere",
-    "channelMembers.replyAloneHelp",
-    "routing.by.jev",
-    "routing.by.model",
-    "receipts.by.only_agent",
-  ],
+  routing: ["channelMembers.replyAloneHelp", "routing.by.jev", "routing.by.model", "receipts.by.only_agent"],
   system: [
     "wiki.import.howTo",
     "machines.download.step1",
-    "help.selfhost.computers.sections.0.blocks.0",
+    // The ask and the website's choice name the Mac with the PC and Linux words beside it.
+    "help.any.computers.sections.0.blocks.0",
+    "help.any.computers.sections.1.blocks.1.list.0",
+    // The moving steps' command is the Mac's, said so in the step above it.
+    "help.selfhost.run-on-your-computer.sections.10.blocks.1.code",
     "desktop.prefs.general.dockDesc",
     "desktop.prefs.general.menuBarTitle",
     "desktop.prefs.updates.",
     "desktop.server.reveal",
     "desktop.cover.tailnetUp",
+    // The install guide: the Mac's steps and its Finder scenes show only in the Mac guide, and the download page's
+    // "why it asks" names the Mac with Windows beside it.
+    "install.mac.",
+    "install.scene.finder",
+    "install.scene.applications",
+    "install.page.whyText",
     // An iPhone works only through a Mac, so its states and steps name the Mac; "This Mac" shows only on a Mac.
     "devices.iphone.",
     "devices.reason.untrusted",
@@ -227,6 +228,11 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "devices.fix.device_support",
     "devices.fix.helper_missing",
     "devices.fix.helper_expired",
+    // An iPhone over Wi-Fi is reached through its Mac, on the Mac's network.
+    "devices.reason.wifi_away",
+    "devices.reason.wifi_untrusted",
+    "devices.fix.wifi_away",
+    "devices.fix.tunnel_down",
     "devices.who.followsHint",
     "devices.choose.thisMac",
     "devices.screen.needsHelper",
@@ -234,6 +240,13 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "mobile.devices.reason.xcode_missing",
     "mobile.devices.reason.device_support",
     "mobile.devices.reason.apple_account_missing",
+    "mobile.devices.reason.apple_team_missing",
+    "mobile.devices.reason.wifi_away",
+    "mobile.devices.reason.wifi_asleep",
+    "mobile.devices.reason.tunnel_down",
+    "mobile.devices.iphone.wifi.",
+    // The iPhone setup window opens only on a Mac.
+    "desktop.iphone.checkingStall",
   ],
 };
 
@@ -245,8 +258,6 @@ export const ANYWHERE: readonly string[] = [
   "database.scopeAll",
   "database.widenText_one",
   "database.widenText_other",
-  // "a server that's always on": what to install instead of this computer.
-  "help.selfhost.run-on-your-computer.sections.1.blocks.0",
   "mobile.connectors.needsKey",
   "mobile.connectors.review.waiting",
   "mobile.auth.server.",

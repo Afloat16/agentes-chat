@@ -18,6 +18,7 @@ import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import { formatDuration } from "./machine-task-text";
 import { taskRequester } from "./machine-tasks";
 import { notify, resolveNotifications } from "./notifications";
+import { personAtComputerWay } from "./runner-update";
 import { replyThreadOf } from "./runs";
 import type { ToolContext, ToolOutput } from "./tools/types";
 
@@ -352,7 +353,7 @@ export function phoneReasonText(
       return { text: `${host} has no Xcode. Ask the person to install it from the App Store.`, byItself: false };
     case "xcode_too_old":
       return {
-        text: `${phone} runs an iOS that needs a newer Xcode on ${host}. Ask the person to update Xcode.`,
+        text: `${phone} runs an iOS newer than Xcode on ${host} can drive. Ask the person to install the Xcode matching the iPhone's iOS (27 for iOS 27), then run \`xcrun devicectl manage ddis update\`.`,
         byItself: false,
       };
     case "helper_missing":
@@ -364,7 +365,17 @@ export function phoneReasonText(
       return { text: `${host} is renewing the test helper on ${phone} (its free signature ran out).`, byItself: true };
     case "apple_account_missing":
       return {
-        text: `I couldn't set up the test helper on ${phone}: Xcode on ${host} isn't signed in to an Apple Account. Ask the person to sign in under Xcode → Settings → Accounts (a free one is enough).`,
+        text: `I couldn't set up the test helper on ${phone}: Xcode on ${host} isn't signed in to an Apple Account. Ask the person to sign in under Xcode → Settings → Apple Accounts (a free one is enough).`,
+        byItself: false,
+      };
+    case "apple_team_missing":
+      return {
+        text: `I couldn't set up the test helper on ${phone}: Xcode on ${host} is signed in but shows no team yet. Ask the person to make any iOS app in Xcode, pick their team under Signing & Capabilities and run it on the iPhone once.`,
+        byItself: false,
+      };
+    case "ui_not_authorized":
+      return {
+        text: `${phone} refused the test helper's taps. Ask the person to unlock it and enter its passcode if it asks, and if it keeps happening to turn Settings → Developer → Enable UI Automation off and on.`,
         byItself: false,
       };
     case "team_limit":
@@ -392,7 +403,10 @@ export function phoneReasonText(
     case "device_support":
       return { text: `${host} is preparing ${phone} (it downloads what Xcode needs for it).`, byItself: true };
     case "os_too_old":
-      return { text: `${phone} runs a system too old for the testing tools. Use another phone.`, byItself: false };
+      return {
+        text: `${phone} runs a system too old for the testing tools (an iPhone needs iOS 17 or newer). Use another phone.`,
+        byItself: false,
+      };
     default:
       return { text: `${phone} isn't ready${reason ? ` (${reason})` : ""}.`, byItself: false };
   }
@@ -529,7 +543,55 @@ function phoneLine(p: PhoneDevice, people: Map<string, string>) {
   return `"${p.name}" (${model}${system}${kind}): ${statusWords(p.status, people)}`;
 }
 
-function computerLine(d: ComputerDevice, people: Map<string, string>, requester: string | null) {
+/** The switches agents' tools need on a computer, as people call them. */
+const SWITCHES = { commands: "shell commands", claude: "Claude Code", codex: "Codex" } as const;
+
+/** Which of those switches are off. */
+export const switchesOff = (on: Record<keyof typeof SWITCHES, boolean>) =>
+  (Object.keys(SWITCHES) as (keyof typeof SWITCHES)[])
+    .filter((key) => !on[key])
+    .map((key) => ({ key, name: SWITCHES[key] }));
+
+/**
+ * "Off there: …" for a computer, from its runner's last report, and who turns them on: what an agent would otherwise
+ * learn only by failing. A coding CLI never found there has nothing to turn on.
+ */
+export function offThereText(m: {
+  os: string;
+  execAllowed: boolean;
+  access: { tools: { claude: boolean; codex: boolean } } | null;
+  executors: { claude?: unknown; codex?: unknown; mode?: string };
+}) {
+  const tools = m.access?.tools;
+  const off = switchesOff({
+    commands: m.execAllowed,
+    claude: !tools || !m.executors.claude || tools.claude,
+    codex: !tools || !m.executors.codex || tools.codex,
+  });
+  if (off.length === 0) return "";
+  return `Off there: ${off.map((s) => s.name).join(", ")}. Only the person at it can turn ${off.length > 1 ? "them" : "it"} on, ${personAtComputerWay(
+    m,
+    "Tools",
+    off.map((s) => `tools enable ${s.key}`),
+  )}.`;
+}
+
+/** `offThereText` of each of the workspace's computers. Not in `listDevices`: its access is for admins and the pairer. */
+async function offThere(db: Database, orgId: string) {
+  const rows = await db
+    .select({
+      id: machines.id,
+      os: machines.os,
+      execAllowed: machines.execAllowed,
+      access: machines.access,
+      executors: machines.executors,
+    })
+    .from(machines)
+    .where(and(eq(machines.orgId, orgId), isNull(machines.deletedAt)));
+  return new Map(rows.map((m) => [m.id, offThereText(m)]));
+}
+
+function computerLine(d: ComputerDevice, people: Map<string, string>, requester: string | null, off = "") {
   const size = [d.cpus ? `${d.cpus} CPUs` : "", d.memoryGb ? `${d.memoryGb} GB` : ""].filter(Boolean).join(", ");
   const facts = [osName(d.os), d.arch, size].filter(Boolean).join(" ");
   const owner =
@@ -547,6 +609,7 @@ function computerLine(d: ComputerDevice, people: Map<string, string>, requester:
   return [
     `- "${d.name}" (${facts}; ${owner}${d.systemMode ? "; each agent its own user" : ""}): ${statusWords(d.status, people)}.`,
     tools ? `  Tools: ${tools}.` : "",
+    off ? `  ${off}` : "",
     ...phones.map((line) => `  Phone ${line}.`),
   ]
     .filter(Boolean)
@@ -573,6 +636,7 @@ export async function devicesForRequester(
     ...devices.flatMap((d) => d.phones.map((p) => (p.status.kind === "in_use" ? p.status.userId : null))),
   ]);
   const forWhom = people.get(requester) ?? "the person you work for";
+  const off = await offThere(ctx.db, ctx.orgId).catch(() => new Map<string, string>());
   if (asked.trim()) {
     const phones = devices.flatMap((d) => d.phones.map((p) => ({ ...p, host: d })));
     const found = pickDevice<{ id: string; name: string }>([...devices, ...phones], asked, "device", (i) =>
@@ -582,7 +646,7 @@ export async function devicesForRequester(
     const computer = devices.find((d) => d.id === found.item.id);
     const phone = phones.find((p) => p.id === found.item.id);
     const line = computer
-      ? computerLine(computer, people, requester)
+      ? computerLine(computer, people, requester, computer.mayUse ? off.get(computer.id) : "")
       : phone
         ? `- Phone ${phoneLine(phone, people)}, on "${phone.host.name}".`
         : "";
@@ -604,7 +668,12 @@ export async function devicesForRequester(
     text: [
       `# Devices you may use for ${forWhom}`,
       ...usable.map((d) => {
-        const line = computerLine({ ...d, phones: d.phones.filter((p) => p.mayUse) }, people, requester);
+        const line = computerLine(
+          { ...d, phones: d.phones.filter((p) => p.mayUse) },
+          people,
+          requester,
+          d.mayUse || d.id === home ? off.get(d.id) : "",
+        );
         // A phone shared on its own grants none of its computer's commands.
         return d.mayUse || d.id === home
           ? line

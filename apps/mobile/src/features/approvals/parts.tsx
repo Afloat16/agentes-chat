@@ -15,11 +15,12 @@ import { nextLabel } from "@agenteschat/client/lib/format";
 import { connectorName } from "@agenteschat/client/lib/scopes";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import type { TFunction } from "i18next";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
-import { Button, Chip, Fuse, haptics, LineIcon, Text, useToast } from "@/ui";
+import { Button, Chip, Fuse, haptics, Text, useToast } from "@/ui";
+import { useInfoHint } from "@/ui/InfoHint";
 import { router } from "@/ui/navigation";
 import { parseInline } from "../chat/logic";
 import { Spans } from "../chat/MessageSpans";
@@ -369,7 +370,6 @@ export function ApprovalEmailLetter({
             !flat && { backgroundColor: c.sunken },
           ]}
         >
-          <LineIcon name="reply" size={13} color={c.muted} variant="footnote" />
           <Text variant="footnote" tone="muted" style={styles.grow}>
             {answers}
           </Text>
@@ -491,20 +491,17 @@ export function ApprovalWhy({
   name: string;
 }) {
   const { t } = useTranslation();
-  const c = useColors();
   const said = approvalSaid(a);
   const origin = approvalOriginWords(a);
   if (!said && !origin) return null;
   const tt = t as unknown as (key: string, options?: Record<string, unknown>) => string;
   return (
     <View style={styles.why}>
+      {/* No icon before it: these words wrap, and an icon would set them in from the title and the quote. */}
       {origin ? (
-        <View style={styles.origin}>
-          <LineIcon name="clock" size={13} color={c.muted} variant="footnote" />
-          <Text variant="footnote" tone="muted" style={styles.grow}>
-            {tt(origin.key, origin.values)}
-          </Text>
-        </View>
+        <Text variant="footnote" tone="muted">
+          {tt(origin.key, origin.values)}
+        </Text>
       ) : null}
       {said ? (
         <Text variant="small" tone="ink2" style={styles.said}>
@@ -522,15 +519,12 @@ export function ApprovalAheadLine({
   approval: Pick<Approval, "runAt" | "status" | "executedAt" | "decidedAt">;
 }) {
   const { t, i18n } = useTranslation();
-  const c = useColors();
   if (aheadPhase(a) !== "asking" || !a.runAt) return null;
+  // No icon before it: the sentence wraps, and an icon would set it in from the words around it.
   return (
-    <View style={styles.origin}>
-      <LineIcon name="clock" size={15} color={c.ink2} variant="small" />
-      <Text variant="small" tone="ink" style={[styles.grow, styles.medium]}>
-        {t("approval.ahead.line", { when: nextLabel(i18n.language, a.runAt) })}
-      </Text>
-    </View>
+    <Text variant="small" tone="ink" style={styles.medium}>
+      {t("approval.ahead.line", { when: nextLabel(i18n.language, a.runAt) })}
+    </Text>
   );
 }
 
@@ -552,34 +546,7 @@ export function useCancelAhead() {
   };
 }
 
-/**
- * "Aprovar sempre" ("Aprovar sempre leituras" for a SQL tool's reads) where the request offers it, and under it
- * exactly what one tap approves for good and where to undo it, as on the web.
- */
-export function ApproveAlways({
-  approval: a,
-  name,
-  disabled,
-  onPress,
-}: {
-  approval: Approval;
-  name: string;
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  const { t } = useTranslation();
-  if (!approveAlwaysOffered(a)) return null;
-  return (
-    <View style={styles.always}>
-      <Button variant="ghost" wide label={approveAlwaysLabel(t, a)} disabled={disabled} onPress={onPress} />
-      <Text variant="caption" tone="faint" style={styles.alwaysHint}>
-        {approveAlwaysHint(t, a, name || t("channel.unknownAgent"))}
-      </Text>
-    </View>
-  );
-}
-
-/** "Aprovar sempre" in a request card's row of buttons, the same size as the others (its hint: `ApproveAlwaysHint`). */
+/** "Aprovar sempre" in a request card's row of buttons, the same size as the others (its ⓘ: `ApproveAlwaysInfo`). */
 export function ApproveAlwaysButton({
   approval: a,
   disabled,
@@ -596,14 +563,30 @@ export function ApproveAlwaysButton({
   );
 }
 
-/** What "Aprovar sempre" covers and where to undo it, on a line of its own under the row of buttons. */
-export function ApproveAlwaysHint({ approval: a, name }: { approval: Approval; name: string }) {
+/**
+ * What "Aprovar sempre" covers and where to undo it, behind an ⓘ (a touch screen has no tooltip): `children` puts the
+ * ⓘ after the button, in the row that holds only buttons, and its words under the row (null while closed, so the row
+ * keeps no room for them). Both null where the request doesn't offer it.
+ */
+export function ApproveAlwaysInfo({
+  approval: a,
+  name,
+  children,
+}: {
+  approval: Approval | undefined;
+  name: string;
+  children: (info: { button: ReactNode; text: ReactNode }) => ReactNode;
+}) {
   const { t } = useTranslation();
-  if (!approveAlwaysOffered(a)) return null;
+  const offered = a ? approveAlwaysOffered(a) : false;
+  const info = useInfoHint({
+    name: t("common.about", { label: a ? approveAlwaysLabel(t, a) : "" }),
+    text: a && offered ? approveAlwaysHint(t, a, name || t("channel.unknownAgent")) : "",
+  });
   return (
-    <Text variant="caption" tone="faint">
-      {approveAlwaysHint(t, a, name || t("channel.unknownAgent"))}
-    </Text>
+    <>
+      {children(offered ? { button: info.button, text: info.open ? info.text : null } : { button: null, text: null })}
+    </>
   );
 }
 
@@ -635,7 +618,6 @@ const styles = StyleSheet.create({
   grow: { flex: 1, minWidth: 0 },
   said: { lineHeight: 20 },
   why: { gap: 4 },
-  origin: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   fuse: { flexDirection: "row", alignItems: "center", gap: 10 },
   letter: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, borderBottomLeftRadius: 6, overflow: "hidden" },
   letterHead: { gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
@@ -668,6 +650,4 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   saidRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   expiry: { fontWeight: "500", fontVariant: ["tabular-nums"] },
-  always: { gap: 4 },
-  alwaysHint: { textAlign: "center" },
 });

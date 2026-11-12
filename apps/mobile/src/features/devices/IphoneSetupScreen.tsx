@@ -1,16 +1,18 @@
-import type { ComputerDevice, PhoneDevice } from "@agenteschat/client";
+import { type ComputerDevice, type PhoneDevice, useWifiIphones } from "@agenteschat/client";
 import { computerName } from "@agenteschat/client/lib/computer";
+import { iosMajor, iphoneOverWifi, tooOldVersion, useStalled } from "@agenteschat/client/lib/devices";
+import { errorText } from "@agenteschat/client/lib/errors";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import * as Device from "expo-device";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
-import { Button, GroupedFooter, GroupedList, GroupedRow, Icon, InkOrbit, Text, useTheme } from "@/ui";
+import { Button, GroupedFooter, GroupedList, GroupedRow, Icon, InkOrbit, Text, useTheme, useToast } from "@/ui";
 import { router } from "@/ui/navigation";
 import { Note, Step, StepsCard, StepText } from "../ai/parts";
 import { Gap, SettingsPage } from "../settings/parts";
-import { useMeId } from "../shared/hooks";
+import { useMeId, useOrgId } from "../shared/hooks";
 import { pickOne } from "../shared/PickerSheet";
 import { goBack } from "../shared/parts";
 import {
@@ -45,9 +47,27 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
     : "";
   const phone = host ? thisPhoneOn(host.phones, "ios", Device.modelName) : null;
   const step = iphoneStep(phone);
+  const reason = phone && phone.status.kind !== "offline" && "reason" in phone.status ? phone.status.reason : null;
+  const tooOld = phone?.status.kind === "unsupported";
+  // A step that sits unchanged gets what most likely holds it, except over Wi-Fi: those lines are about the cable.
+  const overWifi = phone ? iphoneOverWifi(phone) : false;
+  const stalled = useStalled(host && !tooOld && !overWifi ? [host.id, step, phone?.id, reason].join(":") : null);
+  const [plugged, setPlugged] = useState(false);
   if (host && phone && step === IPHONE_STEPS.length)
     return <IphoneDone phone={phone} host={host} hostName={hostName} />;
-  const reason = phone && phone.status.kind !== "offline" && "reason" in phone.status ? phone.status.reason : null;
+  /** The reason's own words where a step's text doesn't say it, with its way out. */
+  const note = (r: string) =>
+    r === "apple_team_missing"
+      ? t("mobile.devices.iphone.teamMissing")
+      : r === "ui_not_authorized"
+        ? t("mobile.devices.iphone.uiRefused")
+        : r === "xcode_too_old" && phone?.osVersion
+          ? t("mobile.devices.iphone.xcodeOld", {
+              version: phone.osVersion,
+              major: iosMajor(phone.osVersion),
+              host: hostName,
+            })
+          : reasonText(t, r);
   const state = (i: number) => (i < step ? "done" : i === step ? "now" : "later");
   const choose = async () => {
     const key = await pickOne({
@@ -62,6 +82,10 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
       {t("mobile.devices.iphone.waiting", { host: hostName })}
     </Note>
   );
+  const stall = (key: "plug" | "devmode") =>
+    stalled || (key === "plug" && plugged) ? (
+      <Note icon="info">{t(`mobile.devices.iphone.stall.${key}`, { host: hostName })}</Note>
+    ) : null;
   return (
     <SettingsPage
       title={t("mobile.devices.iphone.title")}
@@ -91,15 +115,41 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
           />
         </View>
       ) : null}
-      {host ? (
+      {host && tooOld && phone ? (
+        <View style={styles.block}>
+          <Note icon="x">{t("mobile.devices.iphone.tooOld", { version: tooOldVersion(t, phone.osVersion) })}</Note>
+        </View>
+      ) : null}
+      {host && !tooOld ? (
         <>
           <View style={styles.steps}>
             <StepsCard>
               <Step n={1} title={t("mobile.devices.iphone.step1", { host: hostName })} state={state(0)}>
-                {step === 0 ? waiting : null}
+                {step === 0 && phone && reason ? (
+                  <Note icon="info">{reasonText(t, reason)}</Note>
+                ) : step === 0 ? (
+                  <>
+                    {waiting}
+                    {stall("plug")}
+                    {!stalled && !plugged ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        label={t("mobile.devices.iphone.pluggedIn")}
+                        onPress={() => setPlugged(true)}
+                      />
+                    ) : null}
+                    <WifiOffer host={host} hostName={hostName} />
+                  </>
+                ) : null}
               </Step>
               <Step n={2} divider title={t("mobile.devices.iphone.step2")} state={state(1)}>
-                {step === 1 ? <StepText>{t("mobile.devices.iphone.step2Text")}</StepText> : null}
+                {step === 1 ? (
+                  <>
+                    {reason === "wifi_untrusted" ? <Note icon="info">{reasonText(t, reason)}</Note> : null}
+                    <StepText>{t("mobile.devices.iphone.step2Text")}</StepText>
+                  </>
+                ) : null}
               </Step>
               <Step
                 n={3}
@@ -114,15 +164,19 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
                     <DevModeSwitch />
                     <StepText>{t("mobile.devices.iphone.step3Text")}</StepText>
                     {reason && !IPHONE_STEP_REASONS.has(reason) ? (
-                      <Note icon="info">{reasonText(t, reason)}</Note>
+                      <Note icon="info">{note(reason)}</Note>
                     ) : (
-                      waiting
+                      <>
+                        {waiting}
+                        {stall("devmode")}
+                      </>
                     )}
                   </>
                 ) : null}
               </Step>
               <Step n={4} divider title={t("mobile.devices.iphone.step4")} state={state(3)}>
                 {step <= 3 ? <StepText>{t("mobile.devices.iphone.step4Text")}</StepText> : null}
+                {step === 3 && reason === "ui_not_authorized" ? <Note icon="info">{note(reason)}</Note> : null}
               </Step>
               <Step
                 n={5}
@@ -133,7 +187,7 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
               >
                 <StepText>{t("mobile.devices.iphone.step5Text")}</StepText>
                 {step === 4 && reason && !IPHONE_STEP_REASONS.has(reason) ? (
-                  <Note icon="info">{reasonText(t, reason)}</Note>
+                  <Note icon="info">{note(reason)}</Note>
                 ) : null}
               </Step>
             </StepsCard>
@@ -142,6 +196,36 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
         </>
       ) : null}
     </SettingsPage>
+  );
+}
+
+/**
+ * The iPhones on the Mac's Wi-Fi that already trust it (this one, if it did over a cable once), offered to who may
+ * manage the Mac: Use over Wi-Fi.
+ */
+function WifiOffer({ host, hostName }: { host: ComputerDevice; hostName: string }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const orgId = useOrgId();
+  const { available, pick } = useWifiIphones(orgId, host.id, host.mayManage && host.status.kind !== "offline");
+  if (available.length === 0) return null;
+  return (
+    <>
+      {available.map((p) => (
+        <View key={p.serial} style={styles.wifi}>
+          <StepText>{t("mobile.devices.iphone.wifi.also", { host: hostName, name: p.name ?? p.model })}</StepText>
+          <Button
+            size="sm"
+            variant="secondary"
+            label={t("mobile.devices.iphone.wifi.use")}
+            loading={pick.isPending && pick.variables === p.serial}
+            disabled={pick.isPending}
+            onPress={() => pick.mutate(p.serial, { onError: (err) => toast({ title: errorText(t, err), icon: "x" }) })}
+          />
+        </View>
+      ))}
+      <Note icon="info">{t("mobile.devices.iphone.wifi.hint")}</Note>
+    </>
   );
 }
 
@@ -238,6 +322,7 @@ function IphoneDone({ phone, host, hostName }: { phone: PhoneDevice; host: Compu
 
 const styles = StyleSheet.create({
   block: { paddingHorizontal: 4, paddingTop: 16, gap: 12, alignItems: "flex-start" },
+  wifi: { gap: 8, alignItems: "flex-start" },
   steps: { paddingTop: 12 },
   path: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: 4, rowGap: 4, marginTop: 4 },
   crumbStep: { flexDirection: "row", alignItems: "center", gap: 4 },

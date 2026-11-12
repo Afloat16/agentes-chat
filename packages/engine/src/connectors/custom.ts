@@ -9,12 +9,13 @@ import { ConflictError, isUniqueViolation, NotFoundError, ValidationError } from
 import type { Judge } from "../judge";
 import { oneLine } from "../mail/text";
 import { assertPublicHttpsUrl } from "../net-guard";
-import { requirePermission } from "../organizations";
+import { can, requirePermission } from "../organizations";
 import { isAgentesCloud } from "../telemetry";
 import {
   classifyByRules,
   classifyTools,
   describeToolName,
+  POSTING_ACTIONS,
   type ReasonCode,
   type SuggestionSource,
   sharedPrefix,
@@ -52,7 +53,7 @@ import {
 } from "./oauth-mcp";
 import { oauthReturnTo } from "./oauth-return";
 import { seedToolPins } from "./pins";
-import { composioToolkitOf, type McpPreset, presetForServer } from "./presets";
+import { composioToolkitOf, composioToolName, type McpPreset, presetForServer, serverUrlShown } from "./presets";
 import { type McpServerInfo, refreshServerIcon } from "./server-icon";
 
 const { connectorConnections, customTools, oauthStates, agentScopes, agents } = schema;
@@ -246,12 +247,13 @@ function toolView(t: ToolRow, prefix: string | null): CustomToolView {
   };
 }
 
-function view(c: ConnectorConnection, tools: ToolRow[]): CustomServerView {
+/** `whole`: the reader manages connectors, so sees the address as it was typed. */
+function view(c: ConnectorConnection, tools: ToolRow[], whole = true): CustomServerView {
   const mine = tools.filter((t) => t.connectionId === c.id);
   const prefix = sharedPrefix(mine.map((t) => t.name));
   return {
     id: c.id,
-    serverUrl: c.serverUrl,
+    serverUrl: whole ? c.serverUrl : serverUrlShown(c.serverUrl),
     label: c.label,
     accountLabel: c.accountLabel,
     authType: c.authType === "oauth" ? "oauth" : "api_key",
@@ -283,7 +285,7 @@ async function loadCustom(db: Database, orgId: string, id: string) {
 }
 
 export async function listCustomServers(db: Database, actorId: string, orgId: string): Promise<CustomServerView[]> {
-  await requirePermission(db, actorId, orgId, "read");
+  const whole = can(await requirePermission(db, actorId, orgId, "read"), "manage_connectors");
   const rows = await db
     .select()
     .from(connectorConnections)
@@ -299,7 +301,7 @@ export async function listCustomServers(db: Database, actorId: string, orgId: st
     db,
     rows.map((r) => r.id),
   );
-  return rows.map((r) => view(r, tools));
+  return rows.map((r) => view(r, tools, whole));
 }
 
 type AccountSpec = NonNullable<McpPreset["account"]>;
@@ -478,7 +480,7 @@ export async function storeCustomConnection(
       action: "connector.custom_reconnected",
       target: { type: "connector_connection", id: row.id },
       details: {
-        serverUrl: input.serverUrl,
+        serverUrl: serverUrlShown(input.serverUrl),
         authType: input.authType,
         label: row.label,
         account: row.accountLabel,
@@ -526,7 +528,7 @@ export async function storeCustomConnection(
           action: "connector.custom_connected",
           target: { type: "connector_connection", id: row.id },
           details: {
-            serverUrl: input.serverUrl,
+            serverUrl: serverUrlShown(input.serverUrl),
             authType: input.authType,
             label,
             account: named,
@@ -640,7 +642,11 @@ export async function syncCustomTools(deps: CustomDeps, c: ConnectorConnection) 
     throw new ToolsUnreadable(reason, { cause: error });
   }
   if (account) await keepAccount(deps.db, c, account);
-  if (!composioServiceOf(c.serverUrl)) await seedToolPins(deps.db, c, listed);
+  const composio = composioServiceOf(c.serverUrl);
+  if (!composio) await seedToolPins(deps.db, c, listed);
+  const writeTools = composio
+    ? composio.way.actions.filter((a) => POSTING_ACTIONS.has(a)).map((a) => composioToolName(composio.way, a))
+    : [];
   const existing = await deps.db.select().from(customTools).where(eq(customTools.connectionId, c.id));
   const byName = new Map(existing.map((t) => [t.name, t]));
   const cached = new Map<string, ToolClass>();
@@ -662,6 +668,7 @@ export async function syncCustomTools(deps: CustomDeps, c: ConnectorConnection) 
     server: c.label,
     judge: deps.judge,
     readTools: preset?.readTools,
+    writeTools,
     cached,
   });
   const seen = new Set<string>();
@@ -669,7 +676,7 @@ export async function syncCustomTools(deps: CustomDeps, c: ConnectorConnection) 
     seen.add(tool.name);
     const old = byName.get(tool.name);
     const description = (tool.description ?? "").slice(0, 2000);
-    const cls = classes.get(tool.name) ?? classifyByRules(tool, preset?.readTools) ?? UNKNOWN_CLASS;
+    const cls = classes.get(tool.name) ?? classifyByRules(tool, preset?.readTools, writeTools) ?? UNKNOWN_CLASS;
     const suggestion = {
       suggestedAccess: cls.level,
       suggestionSource: cls.source,

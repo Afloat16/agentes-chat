@@ -55,7 +55,6 @@
     "failed": "選択を送信できませんでした。もう一度お試しください。"
   },
   "chart": {
-    "pending": "グラフを作成中…",
     "table": "表",
     "item": "項目",
     "share": "共有",
@@ -357,18 +356,10 @@
     "switchWorking": "作業中",
     "join": "チャンネルに参加",
     "sending": "送信中…",
-    "failed": "未送信 · もう一度試す",
-    "notSent": "メッセージは送信されませんでした。",
     "toLatest": "最新のメッセージへ",
     "toLatestNew": "最新のメッセージへ: {{text}}",
     "stopAgent": "{{name}}を止める",
     "offlineWait": "接続が戻ると送信されます",
-    "turn": {
-      "thinking": "考え中",
-      "working": "作業中",
-      "writing": "入力中",
-      "stopped": "停止"
-    },
     "steer": {
       "waiting": "{{name}}は次の区切りで読みます",
       "computer": "{{name}}はコンピューターが使えるようになったら読みます",
@@ -1024,7 +1015,6 @@
     "proposalsWaiting_other": "{{count}} 件待ち",
     "drive": "Drive",
     "connectors": "コネクタとMCP",
-    "usage": "使用量",
     "preferences": "環境設定",
     "editProfile": "プロフィールを編集",
     "switchWorkspace": "ワークスペースを切り替え",
@@ -1292,7 +1282,8 @@
     "agentLine_other": "{{count}}件のメモリ",
     "uses_other": "{{count}}回使用",
     "confirmed": "人が確認済み",
-    "unconfirmed": "未確認",
+    "confirm": "確認する",
+    "confirmedToast": "確認しました",
     "details": "技術的な詳細",
     "before": "以前の内容: {{text}}",
     "fix": "修正",
@@ -1496,9 +1487,9 @@
         "setup": "ワークスペースの設定",
         "desktop": "コンピューターの画面"
       },
-      "asksYou": "マージと公開は、どのレベルでも必ずあなたの承認を求めます。",
-      "asksOwner": "マージと公開は、どのレベルでも必ず{{name}}の承認を求めます。",
-      "asksAdmins": "マージと公開は、どのレベルでも必ず管理者の承認を求めます。",
+      "asksYou": "マージと公開は、エージェントが「確認しない」に設定されている場合を除き、あなたの承認を求めます。",
+      "asksOwner": "マージと公開は、エージェントが「確認しない」に設定されている場合を除き、{{name}}の承認を求めます。",
+      "asksAdmins": "マージと公開は、エージェントが「確認しない」に設定されている場合を除き、管理者の承認を求めます。",
       "empty": "今は会話だけです。"
     }
   },
@@ -1588,13 +1579,7 @@
       "open": "開く",
       "expandHint": "タップして展開",
       "stop": "停止",
-      "giveUp": "あきらめる",
-      "done": "完了: {{title}}",
-      "failed": "できませんでした: {{title}}",
-      "failedNote": "できませんでした: {{note}}",
-      "expired": "時間内に誰も開きませんでした: {{title}}",
-      "cancelled": "キャンセル済み: {{title}}",
-      "withdrawn": "{{name}}にはもう不要です: {{title}}"
+      "giveUp": "あきらめる"
     },
     "live": {
       "inControl": "あなたが操作中",
@@ -1711,12 +1696,19 @@
       "helper_missing": "テストヘルパーがまだ設定されていません",
       "helper_expired": "テストヘルパーの更新が必要です",
       "apple_account_missing": "MacのXcodeにApple Accountが必要です",
+      "apple_team_missing": "MacのXcodeにまだチームが表示されていません",
+      "ui_not_authorized": "このiPhoneがテストヘルパーのタップを拒否しました",
       "team_limit": "自分で作ったアプリをこのiPhoneから削除してください",
       "helper_untrusted": "このiPhoneでテストヘルパーを信頼してください",
       "booting": "起動中",
-      "no_driver": "WindowsにこのスマートフォンのUSBドライバが必要です",
+      "no_driver": "Windowsにスマートフォンのメーカーのドライバが必要です",
+      "no_driverLinux": "Linuxにこのスマートフォン用のudevルールが必要です",
       "os_too_old": "このスマートフォンのシステムが古すぎます",
       "adb_offline": "ケーブルを抜いて、もう一度差し込んでください",
+      "wifi_away": "このiPhoneをMacのWi-Fiにつなぐか、ケーブルで接続",
+      "wifi_asleep": "このiPhoneのスリープとロックを解除して、Macの近くに置く",
+      "tunnel_down": "Wi-Fi接続が切れました。このiPhoneをMacの近くに置くか、ケーブルで接続",
+      "wifi_untrusted": "一度ケーブルでつないで「信頼」をタップ",
       "other": "まだ準備ができていません"
     },
     "os": {
@@ -1814,12 +1806,11 @@
       "noHost": "このスマートフォンは、あなたのコンピューター経由で使います。先にコンピューターを接続してください。",
       "hostOffline": "{{host}}はオフラインです。電源を入れて、そこでagentes.chatを開いてください。",
       "step1": "開発者向けオプションをオンにする",
-      "step1Text": "「ビルド番号」を7回タップしてから、PINを入力します。",
+      "step1Text": "「ビルド番号」を7回タップしてから、PINを入力します。Samsungでは「ソフトウェア情報 › ビルド番号」です。",
       "openAbout": "「デバイス情報」を開く",
       "step2": "USB デバッグをオンにする",
       "openDev": "「開発者向けオプション」を開く",
       "step3": "{{host}}につなぐ",
-      "step3Hint": "充電専用ではなく、データ転送に対応したケーブルを使ってください。USBの用途を聞かれたら「ファイル転送」を選びます。",
       "looking": "このスマートフォンを探しています",
       "step4": "このスマートフォンで「許可」をタップ",
       "step4Text": "先に「このパソコンからのUSBデバッグを常に許可する」にチェックを入れます。",
@@ -1837,7 +1828,7 @@
       "wifi1": "ワイヤレス デバッグをオンにする",
       "wifi1Text": "「このネットワークで常に許可する」にチェックを入れて「許可」をタップします。",
       "wifi2": "コンピューターでコードをスキャン",
-      "wifi2Text": "ワイヤレス デバッグ › QR コードによるデバイスのペア設定 から。",
+      "wifi2Text": "ワイヤレス デバッグ › QR コードによるデバイスのペア設定 から。カメラは使わないでください。コードを Wi-Fi ネットワークとして読み取り、スマートフォンがいまの Wi-Fi から外れます。",
       "wifi2Hint": "コンピューターの agentes.chat で デバイスを接続 › Androidスマートフォン › Wi-Fiで を開き、{{host}}を選びます。",
       "codeHead": "ペア設定コードでペア設定",
       "codeNote": "ワイヤレス デバッグ › ペア設定コードによるデバイスのペア設定 から。コードが画面に残るよう、設定と agentes.chat を分割画面で並べて開いてください。",
@@ -1868,7 +1859,25 @@
       "step5Hint": "エージェントがこのiPhoneでタップや入力をできるように、{{host}}がインストールするアプリです。インストールされるとこのリストに表示されます。",
       "step5Text": "設定 › 一般 › VPNとデバイス管理。デベロッパ名をタップしてから「信頼」をタップします。",
       "waiting": "{{host}}が検出するのを待っています",
-      "footer": "残りはMacが行います。Macの電源が入っている間は、7日ごとにテストヘルパーを更新します。"
+      "footer": "残りはMacが行います。Macの電源が入っている間は、7日ごとにテストヘルパーを更新します。",
+      "tooOld": "このiPhoneはiOS {{version}}です。エージェントにはiOS 17以降が必要です。可能ならアップデートするか、新しいiPhoneを使ってください。",
+      "xcodeOld": "このiPhoneはiOS {{version}}で、{{host}}のXcodeより新しいバージョンです。そちらにXcode {{major}}をインストールしてから、ターミナルでxcrun devicectl manage ddis updateを実行してください。",
+      "teamMissing": "Xcodeはサインイン済みですが、まだチームが表示されていません。Xcodeで任意のiOSアプリを作成し、Signing & Capabilitiesでチームを選んで、このiPhoneで一度実行してください。",
+      "uiRefused": "このiPhoneがテストヘルパーのタップを拒否しました。ロックを解除し、求められたらパスコードを入力してください。続く場合は、設定 › デベロッパ › UIオートメーションを有効にするをオフにしてからオンにしてください。",
+      "pluggedIn": "つなぎました",
+      "wifi": {
+        "also": "{{host}}のWi-Fiにもあります：{{name}}",
+        "use": "Wi-Fiで使う",
+        "hint": "以前にケーブルでMacを信頼したiPhoneだけがここに表示されます。MacはXcodeと同じ、Apple独自の暗号化された接続でiPhoneにつなぎます。",
+        "stop": "Wi-Fiでの利用をやめる",
+        "stopTitle": "{{name}}のWi-Fiでの利用をやめますか？",
+        "stopText": "エージェントはこのiPhoneにつなげなくなります。使うには、{{host}}でもう一度選んでください。",
+        "stopped": "{{name}}はWi-Fiで使われなくなりました"
+      },
+      "stall": {
+        "plug": "{{host}}はまだこのiPhoneを認識していません。充電専用ではなくデータ通信できるケーブルを使い、このiPhoneのロックを解除したまま、求められたら「信頼」をタップしてください。",
+        "devmode": "デベロッパモードはこのiPhoneの再起動後にオンになります。「再起動」をタップし、起動したら「オンにする」をタップしてください。スイッチがない場合は、このiPhoneを外してもう一度つないでください。"
+      }
     },
     "notice": {
       "kind": "デバイス",
@@ -2061,9 +2070,9 @@
     "anotherLead": "agentes.chatに作成します。{{org}}からは抜けず、いつでも切り替えられます。",
     "suggested": "{{domain}}のメールアドレスから、{{org}}を提案しました。",
     "create": "作成",
+    "enter": "ワークスペースへ",
     "shareMessage": "agentes.chatで{{org}}に参加しましょう: {{url}}",
-    "failed": "保存できませんでした。もう一度お試しください。",
-    "enter": "ワークスペースへ"
+    "failed": "保存できませんでした。もう一度お試しください。"
   },
   "ai": {
     "yourPlan": "あなたのAIプラン",
@@ -2111,23 +2120,20 @@
     "editSub": "名前、ロゴ、タイムゾーン、エージェントが知っていること",
     "group": {
       "org": "ワークスペース",
-      "people": "人",
-      "agents": "エージェント",
-      "costs": "費用とデータ"
+      "people": "人"
     },
     "section": {
       "members": "メンバー",
       "roles": "ロール",
       "access": "エージェントのアクセス",
-      "connectors": "コネクタ",
-      "usage": "使用量と予算"
+      "connectors": "コネクタ"
     },
     "ofOnline": "{{count}}台中{{online}}台",
     "deleteName": "{{name}}を削除",
     "deleteFoot": "考え直せる期間は7日間です。",
-    "deleteAlert": "すぐに全員が使えなくなります。7日間は復元できます。",
+    "deleteAlert": "すぐに全員が閲覧だけできる状態になります。7日間は復元できます。",
     "deleteAction": "削除",
-    "deleteIntro": "{{name}}はすぐに全員が使えなくなり、7日後に完全に削除されます。",
+    "deleteIntro": "{{name}}はすぐに全員に対して閲覧のみになり、7日後に完全に削除されます。",
     "holdDelete": "長押しして削除",
     "deleteFailed": "ワークスペースを削除できませんでした。もう一度お試しください。",
     "access": {
@@ -2204,7 +2210,7 @@
       "guide": "{{name}}のガイドを開く",
       "fields": "入力情報",
       "private": "この情報は暗号化して保管され、二度と表示されません。",
-      "teamHelp": "項目は最初、ワークスペースの全員に表示され、どのエージェントも使いません。エージェントはあとで選びます。",
+      "teamHelp": "ワークスペースの全員が項目を見られ、すべてのエージェントが使えます。あとで調整できます。",
       "personalHelp": "項目はあなただけに表示され、あなたが頼んだときにエージェントが使います。",
       "checking": "{{name}}で確認しています…",
       "connected": "{{name}}を接続しました",
@@ -2418,7 +2424,6 @@
     },
     "formatAuto": "{{name}}が最適なものを選びます",
     "newWidget": {
-      "titleHint": "タイトル · テスト時に{{name}}が提案します",
       "alerts": "アラートあり",
       "realData": "実データ",
       "editAsk": "依頼を変更",

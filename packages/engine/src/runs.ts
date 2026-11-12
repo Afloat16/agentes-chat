@@ -11,8 +11,19 @@ const { agentRuns, agentRunSteps } = schema;
 export type AgentRun = typeof agentRuns.$inferSelect;
 export type RunStatus = AgentRun["status"];
 
-/** For a select over `agent_runs`: parked on a provider outage (`transcript.outage`), it resumes by itself. */
-export const outageParkedSql = sql<boolean>`(${agentRuns.status} = 'waiting_input' and ${agentRuns.transcript} -> 'outage' is not null)`;
+/**
+ * For a select over `agent_runs`: parked on a provider outage (`transcript.outage`), it resumes by itself. The marker
+ * stays until a turn answers, so a run that waits on its computer or its plan since (`waitingMachineId`,
+ * `waitingForBrain`) reads as that wait, never as the provider being down.
+ */
+export const outageParkedSql = sql<boolean>`(${agentRuns.status} = 'waiting_input' and ${agentRuns.transcript} -> 'outage' is not null
+  and ${agentRuns.waitingMachineId} is null and ${agentRuns.transcript} -> 'waitingForBrain' is null)`;
+
+/** `outageParkedSql` for a loaded run. */
+export function outageParkedOf(run: Pick<AgentRun, "status" | "waitingMachineId" | "transcript">): boolean {
+  const t = run.transcript as { outage?: unknown; waitingForBrain?: unknown } | null;
+  return run.status === "waiting_input" && !run.waitingMachineId && Boolean(t?.outage) && !t?.waitingForBrain;
+}
 
 /**
  * For a select over `agent_runs`: it ended without answering, so its receipt reads "didn't reply": it passed and posted
@@ -167,6 +178,19 @@ export interface CliFailure {
 }
 
 /**
+ * Grok Build's words when it fails closed at its start: on Linux without bubblewrap (1.0.70: "Install bubblewrap with
+ * `apt install -y bubblewrap`. Refusing to start with denied paths unprotected."), outside its pinned version range.
+ */
+const REFUSED_START = /\brefus(?:e|es|ing) to start\b/i;
+
+/**
+ * A CLI that refused to start on its computer: every retry fails the same way until someone installs or updates
+ * something there, whatever the runner called it.
+ */
+export const cliRefusedStart = (failure: CliFailure) =>
+  isCliFailure(failure.code) && REFUSED_START.test(failure.message);
+
+/**
  * Who failed a CLI's turn: the provider, when it refused or failed the CLI's call (a status, or the runner's cause), as
  * a key's failure would read on that plan; else the CLI itself, with what it said (`cliErrorWords`, safe for anyone in
  * the conversation; empty when it said nothing), and how it ended when it ended without its answer. Never the computer:
@@ -195,6 +219,13 @@ export function cliFailureOf(
   const ended = runner ? ENDED.exec(said) : null;
   if (!ended) return { brain, words: cliErrorWords(said) };
   return { brain, words: cliErrorWords(ended[3] ?? ""), ended: ended[1] ?? `exit ${ended[2]}` };
+}
+
+/** What a CLI's failure said (`cliFailureOf`'s words), or how it ended when it said nothing; empty for neither. */
+export function cliWords(failure: CliFailure): string {
+  const of = cliFailureOf(failure);
+  if (!of) return "";
+  return "brain" in of ? of.words || (of.ended ?? "") : (of.provider.said ?? "");
 }
 
 /**
@@ -271,6 +302,8 @@ export function runErrorDetail(error: string | null | undefined): {
     PERSON_LIMIT,
     COMPUTER_BUSY,
     STUCK_ERROR,
+    // A Codex turn on a Windows computer where MXC can't hold its commands (the runner's own words say what to do).
+    "windows_sandbox",
   ];
   if (simple.includes(error)) return { errorCode: `run.${error}` };
   if (error === "timeout") return { errorCode: "run.computer_timeout", errorParams: { code: error } };
@@ -354,6 +387,25 @@ export function providerFailure(error: string | null | undefined) {
     detail?.errorCode.startsWith("run.provider_") ||
     (detail?.errorCode === "run.our_error" && detail.errorParams?.provider);
   return provider ? detail : null;
+}
+
+/** Who canceled (stored on the run as `canceled_by:{userId}`). */
+export const canceledBy = (error: string | null | undefined) =>
+  error?.startsWith("canceled_by:") ? error.slice("canceled_by:".length) : null;
+
+/**
+ * Whether Continuar can go on from how a run ended (`continueRun`): a person stopped it, its reply says it reached its
+ * step limit or was stuck (`meta.stepLimit`), or its AI provider cut its background work off. A work that ended any
+ * other way is followed up instead (`endWork`).
+ */
+export function continuableEnd(
+  run: Pick<AgentRun, "status" | "error" | "workId" | "transcript">,
+  reply: { meta: Record<string, unknown> } | null | undefined,
+) {
+  if (!run.transcript) return false;
+  if (run.status === "canceled") return canceledBy(run.error) !== null;
+  if (run.status === "failed") return Boolean(run.workId) && providerFailure(run.error) !== null;
+  return run.status === "done" && Boolean(reply?.meta.stepLimit);
 }
 
 export const isTerminal = (status: RunStatus) => RUN_TRANSITIONS[status].length === 0;

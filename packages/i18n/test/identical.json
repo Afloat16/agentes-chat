@@ -180,12 +180,10 @@
       "settings.media.gifs",
       "settings.orgTitle",
       "settings.section.skills",
-      "settings.tileState.skills",
       "shell.soundPixel",
       "shell.threads",
       "skills.agentTitle",
       "skills.source.url",
-      "skills.step",
       "skills.title",
       "skills.version",
       "storage.accessKey",
@@ -205,6 +203,7 @@
       "wiki.form.tags",
       "wiki.import.stat.links",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "wiki.tags",
@@ -278,7 +277,13 @@
       "portrait.options.clothes.blazer",
       "portrait.options.clothes.polo",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "es": [
       "devices.iphone.path.general",
@@ -452,7 +457,6 @@
       "run.ctx.minutes",
       "settings.media.gifs",
       "settings.section.general",
-      "settings.tileState.plans",
       "skills.version",
       "storage.bucket",
       "storage.endpoint",
@@ -463,6 +467,7 @@
       "usageViews.tokens",
       "wiki.audienceRoles",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "work.duration.hours",
       "work.duration.hoursMinutes",
@@ -511,9 +516,16 @@
       "portrait.options.clothes.blazer",
       "portrait.options.clothes.polo",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.general",
+      "devices.armBuild"
     ],
     "fr": [
+      "channel.tooLong.fileName",
       "calendar.moreRuns",
       "devices.cpus",
       "devices.system.android",
@@ -790,11 +802,9 @@
       "searchPage.pickDate",
       "searchPage.words.author.agent",
       "searchPage.words.has.image",
-      "settings.group.agents",
       "settings.kinds.agent",
       "settings.media.agentsTitle",
       "settings.section.notifications",
-      "settings.tileState.agents",
       "shell.agents",
       "shell.notifications",
       "shell.routines",
@@ -810,9 +820,6 @@
       "taskManager.program.terminal",
       "threads.filterAgent",
       "threads.messages",
-      "threads.panel.agent",
-      "threads.panel.people",
-      "threads.panel.peopleTitle",
       "threads.tabs.missions",
       "timezone.group.Europe",
       "toolReview.ok",
@@ -827,6 +834,7 @@
       "wiki.import.stat.notes",
       "wiki.legend.agents",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.pageCount",
       "wiki.props.addTag",
@@ -911,7 +919,15 @@
       "portrait.options.clothes.blazer",
       "portrait.options.clothes.polo",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.dreads"
+      "portrait.options.hair.dreads",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.scene.finder",
+      "install.scene.applications",
+      "install.page.version",
+      "install.page.versionSize",
+      "devices.armBuild",
+      "routines.horizon.agentRoutines"
     ],
     "de": [
       "devices.iphone.steps.account",
@@ -1225,7 +1241,6 @@
       "skills.agentTitle",
       "skills.name",
       "skills.source.url",
-      "skills.step",
       "skills.title",
       "skills.version",
       "storage.bucket",
@@ -1256,6 +1271,7 @@
       "wiki.form.tags",
       "wiki.graph",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "wiki.rich.blocks.code",
@@ -1327,7 +1343,20 @@
       "portrait.options.clothes.blazer",
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.dreads"
+      "portrait.options.hair.dreads",
+      "agentPage.work.brain.v2.computer",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.page.version",
+      "install.page.versionSize",
+      "install.page.system",
+      "install.scene.finder",
+      "install.scene.displays",
+      "install.scene.account",
+      "install.scene.appLabel",
+      "install.scene.downloads",
+      "devices.armBuild"
     ],
     "it": [
       "calendar.moreRuns",
@@ -1582,7 +1611,6 @@
       "searchPage.words.has.link",
       "searchPage.words.ops.in",
       "settings.provider",
-      "settings.tileState.skills",
       "shell.account",
       "shell.home",
       "shell.soundPixel",
@@ -1608,6 +1636,7 @@
       "wiki.home",
       "wiki.import.stat.links",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "work.duration.hours",
@@ -1666,7 +1695,15 @@
       "portrait.options.clothes.polo",
       "portrait.options.hair.flat",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "agentPage.work.brain.v2.computer",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.password",
+      "devices.armBuild",
+      "routines.horizon.agentRoutines"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -1714,7 +1751,6 @@
       "agentComputer.button",
       "agentComputer.phone.trackpad",
       "agentComputer.state.offline",
-      "agentPage.access.allConnectors",
       "agentPage.access.filter",
       "agentPage.activity.filters.routines",
       "agentPage.activity.inMonth",
@@ -2043,15 +2079,12 @@
       "searchPage.words.author.agent",
       "searchPage.words.has.link",
       "searchPage.words.ops.in",
-      "settings.group.agents",
       "settings.kinds.agent",
       "settings.kinds.router",
       "settings.media.agentsTitle",
       "settings.section.computers",
       "settings.section.connectors",
       "settings.section.skills",
-      "settings.tileState.agents",
-      "settings.tileState.skills",
       "shell.account",
       "shell.agents",
       "shell.routines",
@@ -2061,7 +2094,6 @@
       "shell.threads",
       "skills.agentTitle",
       "skills.source.url",
-      "skills.step",
       "skills.title",
       "skills.version",
       "storage.accessKey",
@@ -2079,7 +2111,6 @@
       "threads.filterAgent",
       "threads.filters",
       "threads.listLabel",
-      "threads.panel.agent",
       "threads.popover.in",
       "threads.popover.label",
       "threads.popover.title",
@@ -2127,6 +2158,7 @@
       "wiki.import.stat.links",
       "wiki.legend.agents",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "wiki.rich.blocks.code",
@@ -2216,6 +2248,7 @@
       "openOnPhone.googlePlay",
       "arrival.beta.word",
       "feedback.mark",
+      "usageViews.accounts.title",
       "portrait.sections.blush",
       "portrait.options.hair.afro",
       "portrait.options.hair.bob",
@@ -2230,9 +2263,22 @@
       "portrait.options.clothes.polo",
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.dreads"
+      "portrait.options.hair.dreads",
+      "agentPage.work.brain.v2.computer",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.account",
+      "install.scene.appLabel",
+      "install.scene.downloads",
+      "devices.armBuild",
+      "issues.projects.label",
+      "issues.display.field.project",
+      "routines.horizon.agentRoutines"
     ],
     "ja": [
+      "channel.tooLong.fileName",
       "devices.system.android",
       "devices.system.ios",
       "devices.transport.usb",
@@ -2362,6 +2408,7 @@
       "vault.field.keyNamePlaceholder",
       "vault.field.websitePlaceholder",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "endpoint.styles.openai",
       "endpoint.styles.anthropic",
@@ -2382,9 +2429,14 @@
       "openOnPhone.appStore",
       "openOnPhone.googlePlay",
       "arrival.beta.word",
-      "feedback.mark"
+      "feedback.mark",
+      "devices.android.drivers.samsung",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "ko": [
+      "channel.tooLong.fileName",
       "devices.system.android",
       "devices.system.ios",
       "devices.transport.usb",
@@ -2511,6 +2563,7 @@
       "vault.field.keyNamePlaceholder",
       "vault.field.websitePlaceholder",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "endpoint.styles.openai",
       "endpoint.styles.anthropic",
@@ -2530,9 +2583,13 @@
       "openOnPhone.appStore",
       "openOnPhone.googlePlay",
       "arrival.beta.word",
-      "feedback.mark"
+      "feedback.mark",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "zh-Hans": [
+      "channel.tooLong.fileName",
       "devices.system.android",
       "devices.system.ios",
       "devices.transport.usb",
@@ -2651,6 +2708,7 @@
       "vault.field.keyNamePlaceholder",
       "vault.field.websitePlaceholder",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "endpoint.styles.openai",
       "endpoint.styles.anthropic",
@@ -2670,7 +2728,9 @@
       "openOnPhone.appStore",
       "openOnPhone.googlePlay",
       "arrival.beta.word",
-      "feedback.mark"
+      "feedback.mark",
+      "install.page.beta",
+      "devices.armBuild"
     ],
     "id": [
       "devices.cpus",
@@ -2889,6 +2949,7 @@
       "toolNames.verb.transfer",
       "toolReview.ok",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "rightHand.field.archive",
@@ -2949,7 +3010,14 @@
       "portrait.options.hair.fade",
       "portrait.options.hair.flat",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.scene.finder",
+      "install.scene.edit",
+      "install.scene.desktopDock",
+      "devices.armBuild"
     ],
     "tr": [
       "devices.cpus",
@@ -3078,13 +3146,13 @@
       "routines.form.kind.webhook",
       "routines.target.dmShort",
       "routines.webhook.callTest",
-      "settings.tileState.plans",
       "skills.version",
       "storage.bucket",
       "taskManager.program.agentes",
       "taskManager.program.terminal",
       "toolNames.order",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "rightHand.field.model",
       "rightHand.profile.model",
@@ -3123,7 +3191,11 @@
       "portrait.options.clothes.blazer",
       "portrait.options.hair.fade",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "devices.android.drivers.samsung",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "pl": [
       "devices.cpus",
@@ -3323,8 +3395,6 @@
       "searchPage.words.has.link",
       "settings.import.title",
       "settings.kinds.router",
-      "settings.tileState.agents",
-      "settings.tileState.plans",
       "skills.source.url",
       "skills.version",
       "storage.bucket",
@@ -3333,7 +3403,6 @@
       "taskManager.program.agentes",
       "taskManager.program.terminal",
       "threads.filterAgent",
-      "threads.panel.agent",
       "timezone.group.Oceania",
       "toolReview.ok",
       "wiki.ask.agent",
@@ -3342,6 +3411,7 @@
       "wiki.import.stat.folders",
       "wiki.import.stat.links",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "work.duration.minutes",
@@ -3396,9 +3466,16 @@
       "portrait.options.hair.fade",
       "portrait.options.hair.flat",
       "portrait.options.hair.undercut",
-      "portrait.options.hair.mullet"
+      "portrait.options.hair.mullet",
+      "devices.android.drivers.samsung",
+      "onboarding.flow.area.options.marketing",
+      "install.page.beta",
+      "install.page.system",
+      "install.scene.finder",
+      "devices.armBuild"
     ],
     "ru": [
+      "channel.tooLong.fileName",
       "devices.system.android",
       "devices.system.ios",
       "devices.transport.usb",
@@ -3505,6 +3582,7 @@
       "onboarding.team.placeholder",
       "taskManager.program.agentes",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "widgets.sizes.l",
       "widgets.sizes.m",
@@ -3534,7 +3612,11 @@
       "openOnPhone.appStore",
       "openOnPhone.googlePlay",
       "arrival.beta.word",
-      "feedback.mark"
+      "feedback.mark",
+      "devices.android.drivers.samsung",
+      "install.page.beta",
+      "install.scene.finder",
+      "devices.armBuild"
     ]
   },
   "mobile-base": {
@@ -3697,8 +3779,7 @@
       "approval.sheet.service",
       "plus.media",
       "find.filterWord.date",
-      "invite.ask.step.code",
-      "settings.group.agents"
+      "invite.ask.step.code"
     ],
     "de": [
       "devices.status.offline",
@@ -3906,7 +3987,6 @@
       "me.dashboards",
       "wiki.links",
       "invite.ask.step.code",
-      "settings.group.agents",
       "settings.section.connectors",
       "threads.title",
       "connectors.accountTitle"
@@ -4063,8 +4143,12 @@
       "prefs.general.orgs",
       "server.jev",
       "servers.workspaces",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "es": [
       "common.hours",
@@ -4078,8 +4162,12 @@
       "prefs.general.title",
       "prefs.nav.general",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "fr": [
       "common.hours",
@@ -4096,8 +4184,12 @@
       "prefs.thisMac.agents",
       "prefs.tools.protection",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "de": [
       "device.mac",
@@ -4118,8 +4210,12 @@
       "server.jev",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "it": [
       "common.hours",
@@ -4136,8 +4232,12 @@
       "server.jev",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "nl": [
       "common.minutes",
@@ -4162,8 +4262,12 @@
       "servers.title",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "ja": [
       "connect.placeholder",
@@ -4173,8 +4277,12 @@
       "prefs.accounts.ok",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "ko": [
       "connect.placeholder",
@@ -4183,8 +4291,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "zh-Hans": [
       "connect.placeholder",
@@ -4193,8 +4305,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "id": [
       "device.mac",
@@ -4208,8 +4324,12 @@
       "server.jev",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "tr": [
       "device.mac",
@@ -4217,8 +4337,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "pl": [
       "common.minutes",
@@ -4229,8 +4353,12 @@
       "prefs.advanced.claude",
       "server.jev",
       "status.offline",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "ru": [
       "connect.placeholder",
@@ -4238,8 +4366,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ]
   }
 }

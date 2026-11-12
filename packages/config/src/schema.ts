@@ -415,7 +415,7 @@ export const envVars = {
   MODEL_ENDPOINTS_PRIVATE: {
     schema: z.stringbool().optional(),
     description:
-      "Whether a workspace's own model endpoint (Settings › AI keys › Other provider) may be on this server's network or over http: an Ollama, vLLM, LM Studio or LiteLLM next to it. Unset: allowed, except on agentes.chat Cloud (https://app.agentes.chat) and with `ALLOW_SIGNUP=true`, where only public https addresses are, checked again at every connection.",
+      "Whether a workspace's own model endpoint (Settings › AI keys › Other provider) may be on this server's network or over http: an Ollama, vLLM, LM Studio or LiteLLM next to it. The same switch covers the other addresses a workspace names: custom MCP servers and their sign-in, its own bucket, server icons and the pages agents read. Unset: allowed, except on agentes.chat Cloud (https://app.agentes.chat) and with `ALLOW_SIGNUP=true`, where only public https addresses are, checked again at every connection.",
     section: "Agents",
   },
   SUMMARY_MODEL: {
@@ -457,9 +457,9 @@ export const envVars = {
     section: "Agents",
   },
   EMBEDDINGS_PROVIDER: {
-    schema: z.enum(["none", "voyage"]).default("none"),
+    schema: z.enum(["none", "voyage", "openai"]).default("none"),
     description:
-      "Vector embeddings for search. `none`: full-text search only. `voyage`: Voyage AI (needs `VOYAGE_API_KEY`); usage is recorded per organization (kind `embedding`).",
+      "Vector embeddings for search, so a request finds what was written in other words or another language (ADR 0167). `none`: full-text search only. `voyage`: Voyage AI (needs `VOYAGE_API_KEY`). `openai`: any server with OpenAI's embeddings API at `EMBEDDINGS_URL`: DeepInfra, OpenAI, or one of your own such as the compose file's `embeddings` profile. Usage is recorded per organization (kind `embedding`). When the server can't answer, search goes on with words alone.",
     section: "Search",
   },
   VOYAGE_API_KEY: {
@@ -468,9 +468,46 @@ export const envVars = {
     section: "Search",
     secret: true,
   },
+  EMBEDDINGS_URL: {
+    schema: z.url().optional(),
+    description:
+      "With `EMBEDDINGS_PROVIDER=openai`: the base of the embeddings API, requests go to `/embeddings` under it. DeepInfra: `https://api.deepinfra.com/v1/openai`. The compose file's `embeddings` profile: `http://embeddings:8080/v1`. It may be on your own network: only this server calls it.",
+    section: "Search",
+    example: "https://api.deepinfra.com/v1/openai",
+  },
+  EMBEDDINGS_API_KEY: {
+    schema: z.string().optional(),
+    description:
+      "The key that embeddings server asks for, sent as `Authorization: Bearer` (with `EMBEDDINGS_PROVIDER=openai`). A server of your own may need none.",
+    section: "Search",
+    secret: true,
+  },
   EMBEDDING_MODEL: {
-    schema: z.string().default("voyage-3.5"),
-    description: "Embedding model (1024 dimensions). After changing it, reindex (`search.reindex`).",
+    schema: z.string().optional(),
+    description:
+      "Embedding model, with at most 1024 numbers per vector (fewer are padded with zeros). Default: `voyage-3.5` for `voyage`, `Qwen/Qwen3-Embedding-0.6B` for `openai`. Also `Qwen/Qwen3-Embedding-8B`, `BAAI/bge-m3` and `ibm-granite/granite-embedding-311m-multilingual-r2`, or any other the server knows. After a change, each workspace's documents of `EMBEDDINGS_KINDS` get vectors again in the background from the next start; until then search finds them by their words.",
+    section: "Search",
+  },
+  EMBEDDINGS_KINDS: {
+    schema: z
+      .string()
+      .default("context_item")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((entry) => entry.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.enum(["message", "context_item", "issue", "file", "wiki", "action"]))),
+    description:
+      "What gets vectors, comma-separated, from context_item (memories), wiki, file, issue, action and message. The rest is found by its words alone. Messages are most of what is indexed, and their vectors would take most of the disk.",
+    section: "Search",
+    example: "context_item,wiki,file,issue,action",
+  },
+  EMBEDDINGS_QUERY_TIMEOUT_MS: {
+    schema: z.coerce.number().int().min(100).max(60_000).default(1500),
+    description:
+      "How long a search waits for its query's vector before it goes on with words alone, in milliseconds. An agent's run searches its memory before it starts, so a run may start this much later. A model on a small CPU may need more.",
     section: "Search",
   },
   BRAVE_SEARCH_API_KEY: {
@@ -947,9 +984,26 @@ export const envVars = {
   FEEDBACK_EMAIL: {
     schema: z.email().optional(),
     description:
-      "Where the apps' feedback form sends what people write (the Beta mark beside their name): one email per message, with the person's name and address to answer them, the workspace's name and the app's version, never a conversation. Unset (default): the apps show no form.",
+      "For agentes.chat Cloud. Unset by default. The address the agentes.chat team reads feedback at: what people write in the apps' feedback form there, and what other servers send to its inbox (`POST /api/feedback/inbox`, there only), one email per message, nothing kept. A self-hosted server leaves it unset: its feedback goes to that team (`FEEDBACK_RELAY`).",
     section: "Operator",
     example: "feedback@example.com",
+  },
+  FEEDBACK_RELAY: {
+    schema: z.stringbool().default(true),
+    description:
+      "What a person writes in the feedback form goes to the agentes.chat team, who make the app (`FEEDBACK_URL`), and the form says so. Only when someone presses Send, and only that message: their text, their name and address to answer them, the workspace's name, the app's version and the pictures they added, never a conversation (https://agentes.chat/docs/install-on-a-server#data). `false`: the apps show no form.",
+    section: "Operator",
+  },
+  FEEDBACK_INBOX: {
+    schema: z.stringbool().default(true),
+    description:
+      "For agentes.chat Cloud. On agentes.chat's own servers, takes the feedback other servers send (`POST /api/feedback/inbox`) and mails each one to `FEEDBACK_EMAIL`, keeping nothing. `false` stops taking it. No other server has the route.",
+    section: "Operator",
+  },
+  FEEDBACK_URL: {
+    schema: z.url().default("https://app.agentes.chat/api/feedback/inbox"),
+    description: "Where `FEEDBACK_RELAY` sends a feedback (as JSON in a POST).",
+    section: "Operator",
   },
   OPS_REPORT_EMAIL: {
     schema: z

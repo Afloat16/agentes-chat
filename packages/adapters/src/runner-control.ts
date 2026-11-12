@@ -93,7 +93,8 @@ export interface ControlStatus {
   version: string;
   protocol: number;
   paused: RunnerPause;
-  executors: { claude?: RunnerExecutorInfo; codex?: RunnerExecutorInfo };
+  /** The coding CLIs found here, as `hello.executors` lists them. */
+  executors: Partial<Record<"claude" | "codex" | "cursor" | "opencode" | "grok" | "antigravity", RunnerExecutorInfo>>;
   /** Absolute path of the workspace (the agents' folders live inside it). */
   workspace?: string;
   /** Agents of the organization that use this computer. */
@@ -192,8 +193,12 @@ export interface ControlIphoneSetup {
     | { state: "missing" }
     | { state: "downloading"; percent: number | null; done?: string; total?: string }
     | { state: "failed"; message: string };
-  /** The Apple Account in Xcode › Settings › Accounts, by its team (a free one is a Personal Team); null: none. */
+  /** The Apple Account in Xcode › Settings › Apple Accounts, by its team (a free one is a Personal Team); null: none. */
   account: { name: string; personal: boolean } | null;
+  /** With `account: null`: Xcode lists an Apple Account that shows no team yet (an older app shows it missing). */
+  noTeam?: true;
+  /** The iPhone SDK's version ("26.2"): an iPhone on a newer iOS needs a newer Xcode. */
+  sdk?: string;
 }
 
 /** App → runner requests. Every request is answered by exactly one `reply` with the same `id`. */
@@ -238,6 +243,8 @@ export type ControlRequest =
   | { type: "folders.remove"; path: string; agentId?: string }
   | { type: "folders.setAgents"; path: string; agents: string[] }
   | { type: "tools.set"; tool: keyof RunnerTools; on: boolean }
+  /** Looks for Claude Code and Codex now, not at the next scheduled look. An older runner answers `bad_request`. */
+  | { type: "executors.check" }
   | { type: "access.pending" }
   | { type: "access.answer"; requestId: string; decision: "granted" | "denied"; scope: "agent" | "all" }
   /**
@@ -291,6 +298,7 @@ export interface ControlReplies {
   "folders.remove": RunnerAccess;
   "folders.setAgents": RunnerAccess;
   "tools.set": RunnerAccess;
+  "executors.check": ControlStatus;
   "access.pending": { requests: ControlAccessRequest[] };
   "access.answer": { access: RunnerAccess };
   reconnect: { reconnecting: boolean };

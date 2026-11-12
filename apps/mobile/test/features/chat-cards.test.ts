@@ -13,14 +13,14 @@ const at = (text: string, pieces: string[]) =>
   });
 const ascending = (xs: number[]) => xs.every((x, i) => i === 0 || (xs[i - 1] ?? 0) < x);
 
-describe("a reply's tools sit last, live and saved", () => {
+describe("a reply's tools sit last", () => {
   test("saved: its words, what it changed and its cards, then its tools", () => {
     const row = source("MessageRow.tsx");
     expect(
       ascending(
         at(row, [
           "{openerPart}\n                    {words}\n                  </>\n                )}",
-          "<Receipts message={m} />",
+          "<Receipts message={m} onTap={onTap} onLongPress={press} />",
           "{cards}\n            {/* Its tools after",
           "<TurnTools",
           "<SavedTools",
@@ -61,16 +61,10 @@ describe("a reply's tools sit last, live and saved", () => {
       expect([card, last.includes(card)]).toEqual([card, true]);
   });
 
-  test("live: the words stream above its tools, where the saved reply keeps them", () => {
+  test("live: none drawn, nor any of its words: the reply brings them whole", () => {
     const live = source("LiveRows.tsx");
-    expect(
-      ascending(
-        at(live, [
-          "{run.text && !wordsOnTop ? (\n                  <RevealText",
-          '<TurnTools items={lines} agentName={agent?.name ?? ""}',
-        ]),
-      ),
-    ).toBe(true);
+    for (const part of ["<TurnTools", "<RevealText", "run.text"])
+      expect([part, live.includes(part)]).toEqual([part, false]);
   });
 });
 
@@ -85,12 +79,18 @@ describe("agents it asked first: one pair row right before the reply, never insi
     expect(row.slice(bodyAt, endAt)).not.toContain("Consult");
   });
 
-  test("live: a turn that posted nothing yet carries the row above its working row", () => {
+  test("live: the working line carries the pair, the one asking and the one asked, while the turn works", () => {
     const live = source("LiveRows.tsx");
-    expect(live).toContain("const consults = useRunConsults(run.runId, run, null);");
-    // Before its words only the row stands (no thinking row); after them, right above the measured row.
-    expect(live).toContain("if (waiting) return pair;");
-    expect(live).toContain("{pair}\n      <View\n        ref={seen}\n        collapsable={false}");
+    expect(live).not.toContain("useRunConsults");
+    expect(
+      ascending(
+        at(live, [
+          "if (asking && e.consult === asking)",
+          '<AgentFace agentId={e.id} size={18} mode="idle" />',
+          '<AgentFace agentId={asking.to} size={18} mode="think" />',
+        ]),
+      ),
+    ).toBe(true);
   });
 
   test("the row says no answer: only faces, names, a short word and the time", () => {
@@ -183,9 +183,21 @@ describe("what agents did under each reply: the person's own setting, off by def
   });
 });
 
-describe("what an agent changed reads whole", () => {
-  test("receipts and team checks wrap: no line limit cuts their words", () => {
-    for (const file of ["Receipts.tsx", "TeamChecks.tsx"]) expect(source(file)).not.toContain("numberOfLines");
+describe("what an agent changed reads in one line a row, whole in its sheet", () => {
+  test("a receipt's sentence and each line under it are one line (the sheet says them whole); team checks wrap", () => {
+    // No renderer for the phone's components in these tests: the line limits are read from the source.
+    const receipts = source("Receipts.tsx");
+    // The sentence, and the one line every line under it is drawn with (its files, what it does alone, who undid it).
+    const sentence = receipts.slice(receipts.indexOf("function Sentence("), receipts.indexOf("function ChangesSheet("));
+    expect(sentence).toContain("numberOfLines={1}");
+    const under = receipts.slice(receipts.indexOf("const UnderLine = "), receipts.indexOf("function UndoneLine("));
+    expect(under).toContain("numberOfLines={1}");
+    for (const line of ["lines.files", "lines.own", "lines.undone"])
+      expect(receipts).toContain(`<${line === "lines.undone" ? "UndoneLine" : "UnderLine"} text={${line}} />`);
+    expect(receipts).toContain(
+      "<ChangesSheet row={r} channelId={m.channelId} title={title} under={under} close={sheet.close} />",
+    );
+    expect(source("TeamChecks.tsx")).not.toContain("numberOfLines");
   });
 
   test("a receipt is its sentence alone: no Desfazer, no Refazer, no time left, no clock", () => {
@@ -196,7 +208,9 @@ describe("what an agent changed reads whole", () => {
     expect(receipts).not.toContain("ACT_LINE");
     // One undone elsewhere stays as history.
     expect(receipts).toContain("struck={Boolean(a.undoneAt)}");
-    expect(receipts).toContain("{a.undoneAt ? <UndoneBy action={a} /> : <HandyLines action={a} />}");
+    expect(receipts).toContain(
+      "{lines.undone ? <UndoneLine text={lines.undone} /> : r.refs ? null : <CopyHook action={a} />}",
+    );
   });
 
   test("a team check's icon stays outside its action line: Abrir goes under the words, from their edge", () => {
@@ -250,24 +264,59 @@ describe("a stretch's pause on the phone (ADR 0089)", () => {
   });
 });
 
-describe("a plan account's agents on the phone (Contas dos planos)", () => {
-  test("bars split by agent, then one list, then when it renews and how old, then the month", () => {
-    const screen = source("../usage/UsageScreen.tsx");
-    const block = screen.slice(...at(screen, ["function AccountBlock(", "function AgentShares("]));
-    expect(ascending(at(block, ["<PlanMeter usage={splitUsage(", "{list}", "usageViews.monthTokens"]))).toBe(true);
-    expect(block).not.toContain("account.agents.map");
+describe("a plan account on the phone (IA e uso › Contas): a row that opens", () => {
+  const screen = source("../usage/UsageScreen.tsx");
+
+  test("closed: its mark, name, plan and owner, one meter for the fullest window, the alert; it says it opens", () => {
+    const row = screen.slice(...at(screen, ["function AccountRow(", "function AgentShares("]));
+    const head = row.slice(...at(row, ["<Pressable", "</Pressable>"]));
+    expect(head).toContain("accessibilityState={{ expanded: open }}");
+    expect(
+      ascending(
+        at(head, ["<ProviderLogo", "accountName(t, account)", "{owner}", "text.short(line.top)", "line.alert"]),
+      ),
+    ).toBe(true);
+    // Near its limit it starts open; every other one starts closed.
+    expect(row).toContain('useState(line != null && line.state !== "ok")');
+    // Nothing of the open row is drawn while it is closed.
+    expect(row.indexOf("{open ? (")).toBeGreaterThan(row.indexOf("</Pressable>"));
+  });
+
+  test("open: bars split by agent, then one list, then when it renews and how old, then the month, then the way to the AI accounts screen", () => {
+    const row = screen.slice(...at(screen, ["function AccountRow(", "function AgentShares("]));
+    const body = row.slice(row.indexOf("{open ? ("));
+    expect(
+      ascending(
+        at(body, ["brandOf(account)", "usage={splitUsage(", "{list}", "usageViews.monthTokens", "mobile.ai.row"]),
+      ),
+    ).toBe(true);
+    // The row already says where the plan stands: the meter doesn't say it again.
+    expect(body).toMatch(/<PlanMeter\s+plain/);
+    // Only its owner manages it, on the AI accounts screen.
+    expect(body).toContain("account.mine && account.accountId ?");
+    expect(row).not.toContain("account.agents.map");
     const list = screen.slice(...at(screen, ["function AgentShares(", "/** The API per agent:"]));
-    expect(ascending(at(list, ["usageViews.thisMonth", "openAgentUsage(a.agentId)", "usageViews.moreAgents"]))).toBe(
-      true,
-    );
+    // One line of words per agent, no column titles over them.
+    expect(list).not.toContain("usageViews.thisMonth");
+    expect(ascending(at(list, ["openAgentUsage(a.agentId)", "usageViews.moreAgents"]))).toBe(true);
     // "Usa agora" only for an agent using it now, never for the folded row.
-    expect(list).toContain("tokens(a.tokens, a.now)");
-    expect(list).toContain("tokens(shares.restTokens)");
+    expect(list).toContain("shareFacts(t, i18n.language, window, a)");
+    expect(list).toContain(
+      "shareFacts(t, i18n.language, window, { share: shares.restShare, tokens: shares.restTokens })",
+    );
     // The renewal moves under the list, once.
     const parts = source("../usage/parts.tsx");
     expect(
       ascending(at(parts, ["!children ? (", "{children}\n      {children && renews ?", "text.updated(usage.at)"])),
     ).toBe(true);
+  });
+
+  test("no budget on plans alone: the API per agent, its spend by kind and the default budget wait for the API", () => {
+    expect(screen).toContain("const usesApi = useWorkspaceUsesApi(orgId);");
+    expect(screen).toContain("{usesApi ? <ApiCard data={data} /> : null}");
+    expect(screen).toContain('{view === "summary" && allowed && usesApi && report.data ? (');
+    expect(screen).toContain('{view === "summary" && allowed && usesApi ? <DefaultBudgetCard /> : null}');
+    expect(screen).toContain("useUsageReport(orgId, allowed && usesApi)");
   });
 });
 
@@ -278,12 +327,19 @@ describe("an approval card's layout", () => {
     return cards.slice(start, cards.indexOf("\nfunction ", start + 1));
   };
 
-  test("the buttons sit in one row (a grouped request's at its row's end), Aprovar, Aprovar sempre on a grouped request, Recusar, what it covers under them", () => {
+  test("the buttons sit in one row (a grouped request's at its row's end), Aprovar, Aprovar sempre and its ⓘ on a grouped request, Recusar, and only buttons there: what it covers opens from the ⓘ, under them", () => {
     const rows: [string, string[]][] = [
       ["ApprovalAsk", ['variant="primary"', 't("mobile.approval.refuse")', "</View>"]],
       [
         "ApprovalGroupItem",
-        ['variant="primary"', "<ApproveAlwaysButton", 't("mobile.approval.refuse")', "</View>", "<ApproveAlwaysHint"],
+        [
+          'variant="primary"',
+          "<ApproveAlwaysButton",
+          "{info.button}",
+          't("mobile.approval.refuse")',
+          "</View>",
+          "{info.text}",
+        ],
       ],
     ];
     for (const [name, pieces] of rows) {
@@ -373,7 +429,7 @@ describe("the secret card on the phone", () => {
     expect(asks).toContain("lineMark: { flexShrink: 0, width: 20, height: 20,");
     // The fuse and the time left under the decision, never on the card's top line.
     expect(asks).toContain('{waitsFor === "you" && expiry ? <View style={styles.expiryRow}>{expiry}</View> : null}');
-    expect(asks).toContain('{waitsFor && waitsFor !== "you" ? (');
+    expect(asks).toContain('{waitsFor && waitsFor !== "you" && !ended ? (');
   });
 });
 
@@ -403,5 +459,34 @@ describe("an agent's offer card is done for everyone once it's done", () => {
     const install = offer.slice(offer.indexOf("function InstallSkill("), offer.indexOf("\nfunction UpdateSkills("));
     expect(install).toContain("useSkills(orgId)");
     expect(install).toContain('action={may ? t("actionCard.install_skill.open") : null}');
+    // Its screen's row turns what installs on for the agent that posted it, as on the web.
+    expect(install).toContain("openedFromCard({ url: card.url, agentId })");
+    expect(install).toContain("&agent=");
+  });
+
+  test("Instalar skill's route keeps the agent only when that agent's card opened it, for the card's own link", async () => {
+    const { openedFromCard, routeAgent } = await import("../../src/features/settings/install-from-card");
+    const link = "https://github.com/acme/skills/tree/main/excel";
+    // A link from outside the app that names an agent: the screen turns nothing on for it.
+    expect(routeAgent(link, "a-dev")).toBeUndefined();
+    openedFromCard({ url: link, agentId: "a-dev" });
+    expect(routeAgent(link, "a-dev")).toBe("a-dev");
+    expect(routeAgent("https://github.com/evil/skills", "a-dev")).toBeUndefined();
+    expect(routeAgent(link, "a-other")).toBeUndefined();
+    expect(routeAgent(link, undefined)).toBeUndefined();
+    // The route hands the screen only what `routeAgent` keeps.
+    const route = readFileSync(join(import.meta.dir, "../../app/(app)/settings/skills/new.tsx"), "utf8");
+    expect(route).toContain("<InstallSkillScreen initialUrl={url} forAgentId={routeAgent(url, agent)} />");
+    // The screen sends it only on an install from the card's link with its row checked, never on a read.
+    const screen = readFileSync(join(import.meta.dir, "../../src/features/settings/SkillsScreen.tsx"), "utf8");
+    expect(screen).toContain(
+      "input: list ? { url: link, list } : { url: link, ...(forAgent ? { forAgentId: forAgent } : {}) }",
+    );
+    expect(screen).toContain("forAgentId: sendFor(url)");
+    // Its row only for a live agent the server would turn it on for: not archived or gone.
+    expect(screen).toContain("const forName = forAgentId ? dir.agentById.get(forAgentId)?.name : undefined;");
+    // What a pick replaces, as the server marks it: an installed skill, or a removed one.
+    expect(screen).toContain('c.replaces === "removed" ? "skills.pickReplacesRemoved" : "skills.pickReplaces"');
+    expect(screen).toContain("turnOn && cardLink !== undefined && link.trim() === cardLink ? forAgentId : undefined");
   });
 });

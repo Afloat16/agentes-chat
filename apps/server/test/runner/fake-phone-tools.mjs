@@ -6,6 +6,8 @@
 //   facts: { serial: what the facts shell prints }   keyguard: { serial: what the lock screen check prints }
 //   install: adb install's answer (installFail: its error, exit 1)   monkey, logcat, pidof: { app: pid }
 //   simctl, devicectl: the JSON each lists   launchFail: devicectl's error   simlog: `log show`'s text
+//   devicectlFail: `devicectl list devices` fails with it   sdk: the iPhone SDK's version   lockState: devicectl says the iPhone asks for its passcode
+//   wdaLocked: WDA says the lock screen shows   wdaRefuse: WDA's error for a tap
 //   maestroExit, maestroOutput   javaMissing: maestro says JAVA_HOME isn't set
 //   videoFirst: maestro answers once a flow's recording (`*-flow.mp4`, not empty) sits beside its YAML, as on a phone
 //   where the recorder is up before the flow ends (on a loaded machine maestro's process could end before the
@@ -20,6 +22,9 @@
 //   mdnsOff: `adb mdns check` fails   mdns: what `adb mdns services` lists after its heading
 //   pair: what `adb pair` prints (pairFail: on stderr, exit 1)
 //   connectable: { "host:port": "the adb devices -l line `adb connect` adds" }
+//   details: what `devicectl device info details` writes (an iPhone's tunnel); without it, it fails
+//   observeEnds: `devicectl device notification observe` (the tunnel's keeper) ends at once instead of waiting
+//   for SIGTERM. The fake WebDriverAgent listens on TEST_RUNNER_USE_IP, and logs ["wda-listen", ip, port]
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import net from "node:net";
@@ -117,6 +122,23 @@ else if (tool === "xcrun" && args[0] === "xcodebuild") {
   const line = args.join(" ");
   const json = args[args.indexOf("--json-output") + 1];
   if (line.startsWith("simctl list devices")) out(JSON.stringify(state.simctl ?? { devices: {} }));
+  else if (line === "--sdk iphoneos --show-sdk-version") state.sdk ? out(`${state.sdk}\n`) : fail("no SDK\n");
+  else if (line.startsWith("devicectl device info lockState")) {
+    writeFileSync(json, JSON.stringify({ result: { passcodeRequired: state.lockState === true } }));
+    out("");
+  } else if (line.startsWith("devicectl device info details")) {
+    if (!state.details) fail("ERROR: The device is not reachable.\n");
+    else {
+      writeFileSync(json, JSON.stringify(state.details));
+      out("");
+    }
+  } else if (line.startsWith("devicectl device notification observe")) {
+    if (state.observeEnds) out("", 1);
+    else {
+      process.on("SIGTERM", () => process.exit(0));
+      setInterval(() => {}, 1000);
+    }
+  } else if (line.startsWith("devicectl list devices") && state.devicectlFail) fail(state.devicectlFail);
   else if (line.startsWith("devicectl list devices")) {
     writeFileSync(json, JSON.stringify(state.devicectl ?? { result: { devices: [] } }));
     out("");
@@ -183,6 +205,8 @@ function fakeWda() {
   const mjpeg = Number(
     env.TEST_RUNNER_MJPEG_SERVER_PORT === "9100" ? env.FAKE_MJPEG_PORT : env.TEST_RUNNER_MJPEG_SERVER_PORT,
   );
+  const ip = env.TEST_RUNNER_USE_IP || "127.0.0.1";
+  appendFileSync(process.env.FAKE_PHONE_LOG, `${JSON.stringify(["wda-listen", ip, String(port)])}\n`);
   let sources = 0;
   http
     .createServer((req, res) => {
@@ -201,6 +225,9 @@ function fakeWda() {
           res.end(JSON.stringify({ value, ...extra }));
         };
         if (req.url === "/status") send({ ready: true });
+        else if (req.url === "/wda/locked") send(now.wdaLocked === true);
+        else if (now.wdaRefuse && req.url.endsWith("/wda/tap"))
+          send({ error: "unknown error", message: now.wdaRefuse });
         else if (req.url === "/session") send({ sessionId: "s1" }, { sessionId: "s1" });
         else if (req.url === "/screenshot") send(png().toString("base64"));
         else if (req.url.endsWith("/window/size")) send({ width: 390, height: 844 });
@@ -214,7 +241,7 @@ function fakeWda() {
         } else send(null);
       });
     })
-    .listen(port, "127.0.0.1");
+    .listen(port, ip);
   const jpeg = Buffer.from("ffd8ffc0001108000a001403012200021101031101ffd9", "hex");
   net
     .createServer((sock) => {
@@ -228,7 +255,7 @@ function fakeWda() {
         sock.on("error", () => clearInterval(timer));
       });
     })
-    .listen(mjpeg, "127.0.0.1");
+    .listen(mjpeg, ip);
   process.stdout.write("ServerURLHere->http://127.0.0.1:8100<-ServerURLHere\n");
   process.on("SIGTERM", () => process.exit(0));
 }

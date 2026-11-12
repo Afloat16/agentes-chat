@@ -7,6 +7,7 @@ import {
   type MachineAgent,
   MIN_RUNNER_PROTOCOL,
   type PubSub,
+  REMOTE_PAUSE_PROTOCOL,
 } from "@agenteschat/adapters";
 import {
   and,
@@ -23,6 +24,7 @@ import {
 } from "@agenteschat/db";
 import { getAgent } from "./agents";
 import { type AuditEntry, recordAudit } from "./audit";
+import { isSandboxedBrain } from "./brains/types";
 import { caches } from "./cache";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import { publishOrgEvent } from "./events";
@@ -160,6 +162,42 @@ export function machinePause(
   if (!row.paused) return null;
   if (row.pausedUntil && row.pausedUntil.getTime() <= now.getTime()) return null;
   return { until: row.pausedUntil?.toISOString() ?? null };
+}
+
+/** Who paused a computer from the apps, by id, among the org's members (a runner's word alone names no outsider). */
+export async function pauserNames(db: Database, orgId: string, ids: readonly string[]): Promise<Map<string, string>> {
+  const wanted = [...new Set(ids)];
+  if (wanted.length === 0) return new Map();
+  const rows = await db
+    .select({ id: users.id, name: users.name })
+    .from(organizationMembers)
+    .innerJoin(users, eq(users.id, organizationMembers.userId))
+    .where(and(eq(organizationMembers.orgId, orgId), inArray(organizationMembers.userId, wanted)));
+  return new Map(rows.map((r) => [r.id, r.name]));
+}
+
+/** A pause as the apps read it: until when, and who paused it from the apps (null: on the computer itself). */
+export async function pauseForApps(
+  db: Database,
+  orgId: string,
+  pause: { until: string | null; by?: string | null } | null,
+): Promise<{ until: string | null; by: { id: string; name: string } | null } | null> {
+  if (!pause) return null;
+  const name = pause.by ? (await pauserNames(db, orgId, [pause.by])).get(pause.by) : undefined;
+  return { until: pause.until, by: pause.by && name !== undefined ? { id: pause.by, name } : null };
+}
+
+/**
+ * A runner's reported pause with `by` kept only for a member of the org: the runner's config can outlive the person
+ * (`machines.paused_by_user_id` references `users`), and its word alone names no outsider.
+ */
+export async function memberPause<P extends { until: string | null; by?: string | null }>(
+  db: Database,
+  orgId: string,
+  pause: P | null,
+): Promise<P | null> {
+  if (!pause?.by) return pause;
+  return (await pauserNames(db, orgId, [pause.by])).has(pause.by) ? pause : { ...pause, by: null };
 }
 
 /** The time zone the machine's owner reads times in (their own, else UTC). */
@@ -405,6 +443,11 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
     .where(and(eq(machines.orgId, orgId), isNull(machines.deletedAt), ...(only ? [eq(machines.id, only)] : [])))
     .orderBy(machines.createdAt);
   const ids = rows.map((r) => r.machine.id);
+  const pausers = await pauserNames(
+    db,
+    orgId,
+    rows.flatMap((r) => (r.machine.pausedByUserId ? [r.machine.pausedByUserId] : [])),
+  );
   const using = ids.length
     ? await db
         .select({ id: agents.id, name: agents.name, handle: agents.handle, machineId: agents.machineId })
@@ -427,6 +470,8 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
       /** The workspace's own computer is asleep in standby (ADR 0161): it wakes when wanted, nothing is wrong. */
       standby: inStandby(m),
       networkTransition: managed ? m.networkTransition : null,
+      /** The workspace's own computer's agents wait for their way out, as the operator says: a line, never an error. */
+      egressWaiting: managed && machineOnline(m, now) && m.egressWaitingAt !== null,
       egress: managed && machineOnline(m, now) && m.egress?.ip ? { ...m.egress, ip: m.egress.ip } : null,
       lastSeenAt: m.lastSeenAt?.toISOString() ?? null,
       hostname: managed ? "" : m.hostname,
@@ -440,8 +485,18 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
       /** Its runner can hold browser profiles (ADR 0110); a system-mode computer has none at all (`mode`). */
       browserProfiles: m.protocol >= BROWSER_PROFILE_PROTOCOL,
       execAllowed: m.execAllowed,
-      /** The owner paused it (ADR 0036 §6); `until` null: until they resume. */
-      paused: pause ? { until: pause.until } : null,
+      /** The owner paused it (ADR 0036 §6); `until` null: until they resume; `by`: who did it from the apps. */
+      paused: pause
+        ? {
+            until: pause.until,
+            by:
+              m.pausedByUserId && pausers.has(m.pausedByUserId)
+                ? { id: m.pausedByUserId, name: pausers.get(m.pausedByUserId) ?? "" }
+                : null,
+          }
+        : null,
+      /** Its app can be paused from here (`REMOTE_PAUSE_PROTOCOL`); the workspace's own computer never is. */
+      remotePause: !managed && m.protocol >= REMOTE_PAUSE_PROTOCOL,
       pairedBy: m.pairedByUserId ? { id: m.pairedByUserId, name: pairedByName ?? "" } : null,
       agents: using.filter((a) => a.machineId === m.id).map((a) => ({ id: a.id, name: a.name, handle: a.handle })),
       /** Shown to admins and the person who paired it only. */
@@ -511,6 +566,34 @@ export async function publishMachineUpdated(
     orgId,
     event: { type: "machine.updated", machineId, ...change },
   });
+}
+
+/**
+ * `PUT …/machines/{machineId}/egress-waiting`: the operator says the workspace's own computer's agents wait for their
+ * way out (`egress_waiting_at` keeps the first time), or no longer; its people's apps read it again. Null: the
+ * workspace has no such managed computer.
+ */
+export async function setMachineEgressWaiting(
+  deps: { db: Database; pubsub?: PubSub },
+  orgId: string,
+  machineId: string,
+  waiting: boolean,
+) {
+  const [row] = await deps.db
+    .update(machines)
+    .set({ egressWaitingAt: waiting ? sql`coalesce(${machines.egressWaitingAt}, now())` : null })
+    .where(
+      and(
+        eq(machines.orgId, orgId),
+        eq(machines.id, machineId),
+        eq(machines.kind, "managed"),
+        isNull(machines.deletedAt),
+      ),
+    )
+    .returning({ id: machines.id });
+  if (!row) return null;
+  await publishMachineUpdated(deps.pubsub, orgId, machineId, { egressWaiting: waiting });
+  return { waiting };
 }
 
 /** How many `deletedAgentIds` lists: a computer that misses one only keeps that agent's transcripts. */
@@ -593,6 +676,8 @@ export async function machineAgents(db: Database, orgId: string, machineId: stri
       // System mode keeps an account's folder with this agent's user only while it thinks with it.
       ...(account ? { account } : {}),
       ...(extra.length > 0 ? { accounts: extra } : {}),
+      // Where a sandbox of its CLI's own is what holds its turns, a containers service outside it would be a way out.
+      ...(a.builtin !== RIGHT_HAND && !isSandboxedBrain(a.brain) ? { containers: true } : {}),
     };
   });
 }
@@ -698,8 +783,9 @@ export async function detachMachine(tx: Executor, machine: Pick<MachineRow, "id"
       ...(machine.kind === "connected" ? {} : { tokenHash: null }),
       online: false,
       connectedReplica: null,
-      // A managed computer issued again comes back on this row, not asleep (ADR 0161).
+      // A managed computer issued again comes back on this row, not asleep (ADR 0161), its agents waiting for nothing.
       standbyAt: null,
+      egressWaitingAt: null,
       previousAgentIds: ids,
       updatedAt: now,
     })

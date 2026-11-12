@@ -10,6 +10,7 @@ import {
   useUpdateRole,
 } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
+import { useHeldWhile } from "@agenteschat/client/lib/hold";
 import { can, type RolePermission } from "@agenteschat/client/lib/permissions";
 import {
   type AreaLevel,
@@ -594,8 +595,7 @@ function RolePeople({ role, roles, people }: { role: OrgRole; roles: OrgRole[]; 
               {gives && below(p) && (
                 <span className="ac-mediarow__end">
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    variant="link"
                     aria-label={t("rolesPage.removeOf", { person: p.name, name })}
                     onClick={() =>
                       set.mutate(
@@ -835,8 +835,7 @@ function OwnerPage({ people, onBack }: { people: Person[]; onBack: () => void })
               {mine && owners.length > 1 && (
                 <span className="ac-mediarow__end">
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    variant="link"
                     aria-label={t("rolesPage.removeOf", { person: p.name, name: t("roles.owner") })}
                     onClick={() => change.mutate({ userId: p.userId, role: "member" }, { onError: fail })}
                   >
@@ -886,8 +885,10 @@ function AddPeopleDialog({
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
+  // Who could get it before Adicionar, also while it closes: the ones being added keep their rows.
+  const listed = useHeldWhile(candidates, busy || !open);
   const q = query.trim().toLowerCase();
-  const shown = candidates.filter((p) => !q || `${p.name} ${p.email}`.toLowerCase().includes(q));
+  const shown = listed.filter((p) => !q || `${p.name} ${p.email}`.toLowerCase().includes(q));
   const close = (next: boolean) => {
     if (!next) {
       setPicked(new Set());
@@ -906,7 +907,7 @@ function AddPeopleDialog({
     >
       <Locked when={busy}>
         <DialogBody>
-          {candidates.length > PEOPLE_SEARCH_FROM && (
+          {listed.length > PEOPLE_SEARCH_FROM && (
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -920,6 +921,7 @@ function AddPeopleDialog({
             <ul className="roles-pick">
               {shown.map((p) => {
                 const on = picked.has(p.userId);
+                const held = sortRoles(roles.filter((r) => !isEveryone(r) && (p.roleIds ?? []).includes(r.id)));
                 return (
                   <li key={p.userId}>
                     <button
@@ -938,15 +940,21 @@ function AddPeopleDialog({
                       <span className="ac-check" data-state={on ? "checked" : "unchecked"} aria-hidden="true">
                         {on && <Icon name="check" size={14} />}
                       </span>
-                      <Avatar size="sm" name={p.name} imageUrl={p.avatarUrl ?? p.image} />
-                      <span className="roles-person__text">
-                        <b>{p.name}</b>
-                        <span>{p.email}</span>
-                      </span>
-                      <span className="roles-chips">
-                        {sortRoles(roles.filter((r) => !isEveryone(r) && (p.roleIds ?? []).includes(r.id))).map((r) => (
-                          <RoleChip key={r.id} role={r} />
-                        ))}
+                      <span className="roles-pick__who ac-mediarow ac-mediarow--row">
+                        <span className="ac-mediarow__face">
+                          <Avatar size="sm" name={p.name} imageUrl={p.avatarUrl ?? p.image} />
+                        </span>
+                        <span className="ac-mediarow__head">
+                          <b>{p.name}</b>
+                          <span className="ac-mediarow__meta">{p.email}</span>
+                        </span>
+                        {held.length > 0 && (
+                          <span className="ac-mediarow__body roles-chips">
+                            {held.map((r) => (
+                              <RoleChip key={r.id} role={r} />
+                            ))}
+                          </span>
+                        )}
                       </span>
                     </button>
                   </li>

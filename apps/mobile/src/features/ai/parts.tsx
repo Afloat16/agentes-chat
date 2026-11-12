@@ -10,7 +10,8 @@ import { openBrowserAsync } from "expo-web-browser";
 import type { TFunction } from "i18next";
 import type { ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Linking, StyleSheet, TextInput, View } from "react-native";
+import { Alert, Linking, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { paysHere } from "@/lib/store";
 import {
   Button,
   fieldText,
@@ -42,7 +43,9 @@ export const usePlanHold = (orgId: string, org: OrgSummary | null | undefined) =
 export function PlanHoldNote({ org, keys }: { org: OrgSummary | null | undefined; keys?: boolean }) {
   const { t } = useTranslation();
   return (
-    <Note icon="pause">{planHoldPhoneLine(t, org ? can(org, "manage_billing") : false, keys ? "keys" : "plan")}</Note>
+    <Note icon="pause">
+      {planHoldPhoneLine(t, org ? paysHere(can(org, "manage_billing")) : false, keys ? "keys" : "plan")}
+    </Note>
   );
 }
 
@@ -182,7 +185,7 @@ export function StepsCard({ children }: { children: ReactNode }) {
 /**
  * A numbered step, one row of the steps' card: its number (a check once `done`, faint while it waits), the title
  * (with an ⓘ when it has a `hint`), the words under it and its buttons under them. `divider`: a hairline above it,
- * inset to the words.
+ * inset to the words. `onPress`: a folded step, its title alone, that opens when tapped.
  */
 export function Step({
   n,
@@ -192,6 +195,7 @@ export function Step({
   side,
   divider = false,
   state = "now",
+  onPress,
 }: {
   n: number;
   title: string;
@@ -200,6 +204,7 @@ export function Step({
   side?: ReactNode;
   divider?: boolean;
   state?: "now" | "done" | "later";
+  onPress?: (() => void) | undefined;
 }) {
   const { t } = useTranslation();
   const c = useColors();
@@ -208,8 +213,8 @@ export function Step({
       {title}
     </Text>
   );
-  return (
-    <View style={styles.step}>
+  const row = (
+    <>
       {divider ? <View style={[styles.divider, { backgroundColor: c.line2 }]} /> : null}
       <View style={[styles.n, { backgroundColor: state === "done" ? c.ok : state === "later" ? c.plate : c.ink }]}>
         {state === "done" ? (
@@ -231,7 +236,19 @@ export function Step({
         {children}
         {side ? <View style={styles.side}>{side}</View> : null}
       </View>
-    </View>
+    </>
+  );
+  return onPress ? (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ expanded: false, checked: state === "done" }}
+      style={({ pressed }) => [styles.step, pressed && styles.pressed]}
+    >
+      {row}
+    </Pressable>
+  ) : (
+    <View style={styles.step}>{row}</View>
   );
 }
 
@@ -404,6 +421,7 @@ const styles = StyleSheet.create({
   text: { flex: 1, minWidth: 0, gap: 4 },
   bold: { fontWeight: "600" },
   side: { marginTop: 6, flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  pressed: { opacity: 0.6 },
   wait: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
   inset: {
     flexDirection: "row",

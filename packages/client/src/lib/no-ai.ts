@@ -54,6 +54,8 @@ export interface NoAiCard {
   planLine?: RightHandPlanLine;
   /** With `model_limit`, `model_region` and `model_off`: the model's name. */
   model?: string;
+  /** With `planLine` `cli_failed`: what the plan's CLI said, the cause its line names. */
+  why?: string;
   /** Not "no AI": its computer has no such CLI installed, or it has no computer at all. */
   missing?: "cli_missing" | "no_computer";
   /** A billing hold stopped the run: the message is kept for after the plan (`keptCardState`). */
@@ -121,6 +123,7 @@ export function noAiCardOf(meta: Record<string, unknown> | null | undefined): No
       ? { planLine: o.reason as RightHandPlanLine }
       : {}),
     ...(typeof o.model === "string" && o.model ? { model: o.model } : {}),
+    ...(o.reason === "cli_failed" && typeof o.why === "string" && o.why ? { why: o.why } : {}),
     ...(o.reason === "cli_missing" || o.reason === "no_computer" ? { missing: o.reason } : {}),
     ...(o.reason === "plan_hold" ? { held: true } : {}),
   };
@@ -135,6 +138,10 @@ export function keptCardState(s: { hold: BillingHold | null; paid: boolean; read
   if (s.hold) return s.paid ? ("paid" as const) : ("held" as const);
   return s.ready ? ("answer" as const) : ("connect" as const);
 }
+
+/** The key of a plan line's sentence (`name`, `model` and `why` fill it): the CLI's failure with what it said. */
+export const planLineKey = (line: RightHandPlanLine, why?: string) =>
+  line === "cli_failed" && why ? ("noAi.rightHand.cli_failedWhy" as const) : (`noAi.rightHand.${line}` as const);
 
 /** A plan line that passes by itself: once the agent can think again, its card offers "Responder agora". */
 export const planLinePasses = (line: RightHandPlanLine | undefined) =>
@@ -157,12 +164,19 @@ export const noAiLineKey = (card: Pick<NoAiCard, "own" | "signedOut" | "missing"
 
 type ConnectingAgent = { ownerUserId?: string | null; builtin?: "right_hand" | null };
 
-/** Who can set an agent's own AI: its owner (a plan), who manages agents (a workspace key) or keys. */
-const maySetAgentAi = (
+/**
+ * Who can set an agent's own AI: its owner (a plan), who manages agents (a workspace key) or keys. On the right hand
+ * that is the workspace's AI, the one its background work (a widget's build) thinks with.
+ */
+export const maySetAgentAi = (
   agent: ConnectingAgent | null | undefined,
   meId: string | null | undefined,
   org: Parameters<typeof can>[0],
 ) => (!!meId && agent?.ownerUserId === meId) || can(org, "manage_agents") || can(org, "manage_credentials");
+
+/** Who connects an agent's AI, for a person who may not: its owner (`owner`, by first name) or an admin. */
+export const noAiLockedLine = (t: TFunction, name: string, owner: string | null | undefined) =>
+  owner ? t("noAi.locked", { name, owner: owner.split(" ")[0] }) : t("noAi.lockedAdmins");
 
 /**
  * Who can do something about an agent with no AI: who sets its AI, and on the right hand any member, for their own
@@ -190,6 +204,13 @@ export function planLineFix(
   if (!mayConnectAi(agent, meId, org)) return null;
   return line === "plan_not_shared" || !maySetAgentAi(agent, meId, org) ? "connectMine" : "useKey";
 }
+
+/**
+ * Where Connect opens for a widget waiting on the right hand's plan (`reason` one of its plan lines): the key step,
+ * since a build is nobody's ask and that plan never waits, so only a key builds it (`planLineFix`'s `useKey`).
+ */
+export const planKeyIntent = (agent: ConnectingAgent | null | undefined, reason: string | null | undefined) =>
+  isRightHand(agent) && reason && RIGHT_HAND_PLAN_LINES.has(reason) ? { intent: "api_key" as const } : {};
 
 /** The key of an agent's line from its AI status, for a banner with no card (`noAiLineKey`). */
 export function noAiStatusKey(status: AiStatus | undefined, agentId: string) {
@@ -258,6 +279,8 @@ export const PLAN_CHOICES: readonly PlanChoice[] = [
   "zen",
   ...PLAN_IDS,
 ];
+/** The plans whose marks stand on the scene over "Conectar uma IA": the three most used. */
+export const SCENE_PLANS = ["claude", "chatgpt", "gemini"] as const satisfies readonly PlanChoice[];
 /** The account a plan signs in as: ChatGPT's through Codex, Cursor's and OpenCode's through their CLIs; the rest through Claude Code. */
 export const kindOf = (choice: PlanChoice): MachineAccountKind =>
   choice === "chatgpt" || choice === "cursor" || choice === "zen" || choice === "grok" || choice === "gemini"
@@ -774,3 +797,16 @@ export function onlyOwnerReplies(agents: readonly Agent[], hasAi: (agentId: stri
     thinking.every((a) => a.ownerUserId === viewerId && !answersOthers(audienceOf(a), a.ownerUserId))
   );
 }
+
+/**
+ * Whether every one of these agents thinks (ready, or waiting for its computer: anything but "no AI"), read alike by
+ * the onboarding's AI step and the arrival (ADR 0162, ADR 0160). Undefined while the status loads, and while it
+ * doesn't list one of them yet: a status read before an agent was made says nothing about that agent, so the caller
+ * waits for a fresh read instead of taking it as unanswered.
+ */
+export const teamThinks = (agentIds: readonly string[], status: AiStatus | undefined): boolean | undefined => {
+  if (status === undefined) return undefined;
+  const states = agentIds.map((id) => aiStateOf(status, id));
+  if (states.some((s) => s === undefined)) return undefined;
+  return states.length > 0 && states.every((s) => s !== "no_ai");
+};

@@ -84,7 +84,7 @@ describe("geometry check", () => {
       expect(SELF_TESTED).toContain(rule);
     for (const rule of ["pagetop", "groupedge", "menuitem", "rowpad", "emptyselect", "toolorder", "toolrow", "captop"])
       expect(SELF_TESTED).toContain(rule);
-    for (const rule of ["timeedge", "panefill", "bleed", "stampout"]) expect(SELF_TESTED).toContain(rule);
+    for (const rule of ["timeedge", "panefill", "bleed", "stampout", "stampover"]) expect(SELF_TESTED).toContain(rule);
     // Words squeezed beside actions, a lone main button on a phone, buttons 8 apart and never split by words before
     // them, one height in a row, a fact on one line, Desfazer in its sentence, a count that calls on someone readable
     // on what's behind it.
@@ -101,6 +101,8 @@ describe("geometry check", () => {
       expect(SELF_TESTED).toContain(rule);
     // A calendar item never covers another: what meets sits beside it.
     expect(SELF_TESTED).toContain("calstack");
+    // The working line's stop is at its end before its time comes, not beside its words.
+    expect(SELF_TESTED).toContain("barend");
     // A task card's line of facts wraps between facts, never inside one.
     for (const twin of ["bad-factwrap--line", "good-factwrap--line"]) expect(fixture).toContain(twin);
     // A title in a row that wraps a word a line is squeezed; one long address wrapping its full lines is not.
@@ -108,6 +110,8 @@ describe("geometry check", () => {
     expect(rules).toContain('".ac-facts__value, .ac-factline__fact"');
     // A word broken at its syllables in a box that hyphenates (a narrow calendar item's title) is no midword.
     expect(fixture).toContain("good-midword--hyphens");
+    // The face on a menu's top that changes the photo (`MenuFace`) is no row: neither its height nor its room.
+    for (const twin of ["good-menuitem--face", "good-rim--face"]) expect(fixture).toContain(twin);
     for (const rule of SELF_TESTED) {
       expect(fixture).toContain(`bad-${rule}`);
       expect(fixture).toContain(`good-${rule}`);
@@ -154,7 +158,7 @@ describe("geometry check", () => {
     // Stacked, the top row keeps the search at its floor beside the actions, or the search takes it alone (`split`).
     for (const part of [
       'querySelector(":scope > .ac-toolbar__actions")',
-      "floor + gap + actions.getBoundingClientRect().width <= bar.clientWidth + 0.5",
+      "floor + gap + actions.getBoundingClientRect().width <= bar.clientWidth - 0.5",
       '"data-stack", topRowFits(',
     ]) {
       expect(rules).toContain(part);

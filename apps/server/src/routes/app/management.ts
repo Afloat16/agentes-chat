@@ -122,6 +122,8 @@ const SidebarItems = z
 
 /** What a card shows besides its number and title (`ISSUE_CARD_FIELDS`). */
 const IssueCardFields = z.object({
+  // An app from before projects saves its view without it.
+  project: z.boolean().default(true),
   assignee: z.boolean(),
   priority: z.boolean(),
   due: z.boolean(),
@@ -459,12 +461,13 @@ const ManagedTask = z
         percent: z.number().int().nullable(),
         window: z.string().nullable(),
         resetsAt: z.string().nullable(),
+        since: z.string().nullable(),
         canContinue: z.boolean(),
       })
       .nullable()
       .openapi({
         description:
-          "Why a `waiting_input` run waits: its code, the plan or budget (`key` groups the runs on the same one), how far a pause got, when the limit resets, and whether you may press Continuar agora.",
+          "Why a `waiting_input` run waits: its code, the plan or budget (`key` groups the runs on the same one), how far a pause got, since when it waits on its plan or budget (`since`, null when unknown), when the limit resets, and whether you may press Continuar agora.",
       }),
   })
   .openapi("ManagedTask");
