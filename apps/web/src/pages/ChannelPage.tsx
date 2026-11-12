@@ -123,7 +123,7 @@ import { supersededBrainNotices } from "@agenteschat/client/lib/machine-outages"
 import { hasWideBlock, plainLine } from "@agenteschat/client/lib/markdown";
 import { isMediaAfterReply, isMediaAlone, messageMediaOf, quoteText, textOrMedia } from "@agenteschat/client/lib/media";
 import { serverBody } from "@agenteschat/client/lib/message-body";
-import { tooLongToSend } from "@agenteschat/client/lib/message-length";
+import { joinDrafts, tooLongToSend } from "@agenteschat/client/lib/message-length";
 import {
   isOpenMission,
   missionCommandOf,
@@ -2236,7 +2236,7 @@ function ChannelView({
       qc.setQueryData<MessageType[]>(keys.messages(org.id, channel.id), (list) =>
         list?.filter((m) => m.id !== local.id),
       );
-      setDraft(local.body);
+      setDraft(joinDrafts(local.body, draft));
       composer.current?.focus();
     },
     resend: (body) => send(body),

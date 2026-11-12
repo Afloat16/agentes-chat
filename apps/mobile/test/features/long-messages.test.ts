@@ -24,6 +24,9 @@ describe("long messages on the phone", () => {
     const screen = src("features/chat/ChatScreen.tsx");
     expect(screen).toContain('if (!waits) toast({ title: errorText(t, error, i18n.language), icon: "x" });');
     expect(screen).toMatch(/else if \(sendNeedsEdit\(m\.sendFailure\)\) \{[\s\S]*?setCaptionBack\(\{ text: m\.body/);
+    // The row leaves the list, so its text must reach the field even when something is being typed there.
+    expect(screen).toContain("setCaptionBack({ text: m.body, at: Date.now(), join: true });");
+    expect(src("ui/Composer.tsx")).toContain("prefill.join ? joinDrafts(handed, current)");
   });
 
   test("the field holds a draft past the limit, says the sizes and offers it as a file", () => {

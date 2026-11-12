@@ -3,14 +3,15 @@ import { type RefObject, useLayoutEffect, useState } from "react";
 /**
  * A box with a `max-height` holds more than it shows, at this width: measured when it lays out and again whenever its
  * content changes size (fonts, pictures, the page's width). While `active` is off (the box shows whole) it keeps its
- * last answer.
+ * last answer. With `over`, the answer is whether its content is taller than that instead: for a box whose
+ * `max-height` depends on the answer, which would otherwise stay cut after its content shrank back under the limit.
  */
-export function useOverflows(box: RefObject<HTMLElement | null>, active = true): boolean {
+export function useOverflows(box: RefObject<HTMLElement | null>, active = true, over?: number): boolean {
   const [cut, setCut] = useState(false);
   useLayoutEffect(() => {
     const el = box.current;
     if (!el || !active) return;
-    const measure = () => setCut(el.scrollHeight > el.clientHeight + 1);
+    const measure = () => setCut(el.scrollHeight > (over ?? el.clientHeight) + 1);
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const resized = new ResizeObserver(measure);
@@ -18,6 +19,6 @@ export function useOverflows(box: RefObject<HTMLElement | null>, active = true):
     resized.observe(el);
     if (el.firstElementChild) resized.observe(el.firstElementChild);
     return () => resized.disconnect();
-  }, [box, active]);
+  }, [box, active, over]);
   return cut;
 }

@@ -12,7 +12,7 @@ import { renderApp, screen, settle } from "./render";
 const ROOT = new URL("../../../", import.meta.url).pathname;
 const TALL = "Relatório longo do trimestre";
 
-// No layout here: a clipped box whose words are the tall message's holds more than it shows, any other fits.
+// No layout here: the tall message's words measure past the rule's height, any other under it.
 const heights = {
   scrollHeight: Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight"),
   clientHeight: Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight"),
@@ -27,7 +27,7 @@ Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
 Object.defineProperty(HTMLElement.prototype, "clientHeight", {
   configurable: true,
   get(this: HTMLElement) {
-    return tall(this) ? LONG_MESSAGE.over : 0;
+    return 0;
   },
 });
 
@@ -79,6 +79,13 @@ describe("a tall message in the conversation", () => {
     expect(row("p1").textContent).toContain("Linha 80 com números.");
   });
 
+  test("my own tall message, with a word that never breaks, clips the same way inside its bubble", async () => {
+    const mine = `${TALL} ${"semespaco".repeat(300)}\n\n${body}`;
+    await open(seedState({ messages: [said("m1", "u-walter", mine, 2)] }));
+    expect(row("m1").querySelector(".ac-msg__text > .md.msg-clip--cut")).not.toBeNull();
+    expect(within(row("m1")).getByRole("button", { name: "Ver mais" })).toBeTruthy();
+  });
+
   test("Ver mais opens the whole message in a dialog, Markdown drawn, with Copiar", async () => {
     const copied: string[] = [];
     Object.defineProperty(navigator, "clipboard", {
@@ -99,8 +106,7 @@ describe("a tall message in the conversation", () => {
 
   test("the stylesheet's heights are the shared rule's", async () => {
     const css = (await Bun.file(`${ROOT}apps/web/src/layout.css`).text()).replace(/\s+/g, " ");
-    expect(css).toContain(`.msg-clip { max-height: ${LONG_MESSAGE.over}px; overflow-y: clip; }`);
-    expect(css).toContain(`.msg-clip--cut { max-height: ${LONG_MESSAGE.shows}px;`);
+    expect(css).toContain(`.msg-clip--cut { max-height: ${LONG_MESSAGE.shows}px; overflow-y: clip;`);
   });
 });
 
@@ -143,9 +149,11 @@ describe("a message past the length limit", () => {
     expect(within(failed).getByRole("alert").textContent).toBe(
       "Não enviada. A mensagem tem 120.000 caracteres e o limite é 100.000. Envie o texto como arquivo.Editar",
     );
+    // Something typed meanwhile stays: the refused text goes in before it.
+    await act(async () => fireEvent.change(composer(), { target: { value: "outro rascunho" } }));
     await act(async () => fireEvent.click(within(failed).getByRole("button", { name: "Editar" })));
     await settle(2);
-    expect(composer().value).toBe("texto recusado");
+    expect(composer().value).toBe("texto recusado\n\noutro rascunho");
     expect(
       screen()
         .queryAllByRole("article")

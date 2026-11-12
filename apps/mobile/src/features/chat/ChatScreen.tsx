@@ -898,7 +898,7 @@ function Chat({
       // Only a change to its text can make it go: it leaves the list and the text returns to the field.
       else if (sendNeedsEdit(m.sendFailure)) {
         qc.setQueryData<Message[]>(keys.messages(orgId, channelId), (list) => list?.filter((x) => x.id !== m.id));
-        setCaptionBack({ text: m.body, at: Date.now() });
+        setCaptionBack({ text: m.body, at: Date.now(), join: true });
       } else retryRef.current(m);
     },
     [qc, voiceRefused, orgId, channelId],
@@ -1047,7 +1047,7 @@ function Chat({
   // send uploads them and sends everything as one message. A thumbnail dims while its upload runs; one that fails
   // stays, marked, and the caption comes back to the field, so nothing typed is lost.
   const [pending, setPending] = useState<PendingFile[]>([]);
-  const [captionBack, setCaptionBack] = useState<{ text: string; at: number } | null>(null);
+  const [captionBack, setCaptionBack] = useState<{ text: string; at: number; join?: boolean } | null>(null);
   const addPending = (files: { uri: string; name: string; type: string }[]) => {
     if (files.length === 0) return;
     const at = Date.now();

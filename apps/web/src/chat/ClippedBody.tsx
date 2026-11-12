@@ -1,3 +1,4 @@
+import { LONG_MESSAGE } from "@agenteschat/client/lib/message-length";
 import { Button, Dialog, DialogBody } from "@agenteschat/ui";
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,7 @@ export function ClippedBody({
     const el = foot.current?.previousElementSibling;
     words.current = el instanceof HTMLElement ? el : null;
   }, []);
-  const cut = useOverflows(words);
+  const cut = useOverflows(words, true, LONG_MESSAGE.over);
   const [open, setOpen] = useState(false);
   return (
     <>

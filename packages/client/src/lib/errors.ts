@@ -275,10 +275,10 @@ const KNOWN = {
   slug_taken: "errors.wiki.titleTaken",
   "wiki.title_characters": "errors.wiki.titleCharacters",
   "wiki.title_empty_slug": "errors.wiki.titleNoLetters",
-  // GIFs and stickers (ADR 0091): off in the workspace (or no GIF search on this server), a GIF gone, or the GIF
-  // search not answering.
   // With its sizes, `limitRefusalText` says it first: this line is for a refusal that names none.
   "message.too_long": "channel.tooLong.fix",
+  // GIFs and stickers (ADR 0091): off in the workspace (or no GIF search on this server), a GIF gone, or the GIF
+  // search not answering.
   "message.reply_not_found": "errors.replyGone",
   "message.media_off": "errors.media.off",
   "message.media_not_found": "errors.media.notFound",

@@ -1,4 +1,4 @@
-import { tooLongText, tooLongToSend } from "@agenteschat/client/lib/message-length";
+import { joinDrafts, tooLongText, tooLongToSend } from "@agenteschat/client/lib/message-length";
 import { applyFormat, FORMAT_KINDS, type FormatKind } from "@agenteschat/ui/format";
 import { Canvas, Group, Path, Skia, vec } from "@shopify/react-native-skia";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -102,9 +102,10 @@ export interface ComposerProps {
   insertMention?: (text: string, token: ComposerToken, handle: string) => { text: string; caret: number };
   /**
    * Text handed in from another screen ("Falar com o Theo" leaves "@theo " here): put in the field when it is
-   * empty, and the field focused. Once per request (`at`).
+   * empty, and the field focused. Once per request (`at`). With `join` (a refused message coming back to be
+   * changed) it goes in before whatever is being typed, so neither text is lost.
    */
-  prefill?: { text: string; at: number } | null;
+  prefill?: { text: string; at: number; join?: boolean } | null;
   /** A change here brings the keyboard up ("Responder" on a message). */
   focusAt?: number;
   /** Right above the field ("Respondendo a Ana"). */
@@ -221,7 +222,7 @@ export function Composer({
   useEffect(() => {
     if (!prefill) return;
     const handed = prefill.text;
-    setText((current) => (current.trim() ? current : handed));
+    setText((current) => (prefill.join ? joinDrafts(handed, current) : current.trim() ? current : handed));
     input.current?.focus();
   }, [prefillAt]);
   useEffect(() => {

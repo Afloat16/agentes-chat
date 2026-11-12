@@ -7,6 +7,9 @@ export const MAX_MESSAGE_LENGTH = 100_000;
 /** A text counted as the server counts it (trimmed) is past the limit. */
 export const tooLongToSend = (text: string) => text.trim().length > MAX_MESSAGE_LENGTH;
 
+/** A text returning to a field that may hold another: both stay, the returning one first. */
+export const joinDrafts = (returning: string, typed: string) => (typed.trim() ? `${returning}\n\n${typed}` : returning);
+
 /** "A mensagem tem 120.000 caracteres e o limite é 100.000." */
 export const tooLongText = (t: TFunction, locale: string, length: number, max = MAX_MESSAGE_LENGTH) =>
   t("channel.tooLong.text", { length: formatInt(locale, length), max: formatInt(locale, max) });
