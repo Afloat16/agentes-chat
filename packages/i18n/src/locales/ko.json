@@ -2228,8 +2228,9 @@
       "connect": {
         "title": "팀을 위한 AI 연결",
         "titlePersonal": "에이전트를 위한 AI 연결",
-        "text": "에이전트는 워크스페이스의 AI로 생각해요. Claude 또는 ChatGPT 요금제로 로그인하세요. API 키는 필요 없어요.",
-        "textPersonal": "에이전트는 이 AI로 생각해요. Claude 또는 ChatGPT 요금제로 로그인하세요. API 키는 필요 없어요.",
+        "text": "API 키 없이 Claude 또는 ChatGPT 요금제로 로그인하세요.",
+        "hint": "에이전트는 워크스페이스의 AI로 생각해요.",
+        "hintPersonal": "에이전트는 이 AI로 생각해요.",
         "action": "연결"
       },
       "again": {
@@ -2573,10 +2574,16 @@
       "useKey": "API 키 쓰기"
     },
     "kept": {
-      "title": "메시지를 보관했어요.",
-      "line": "워크스페이스에 agentes.chat 요금제와 연결된 AI가 생기면 여기에서 답할게요.",
+      "title": "메시지를 보관했어요",
+      "wait": {
+        "payment": "워크스페이스에 agentes.chat 요금제가 생기면 여기에서 답할게요.",
+        "unpaid": "agentes.chat 요금제 결제가 완료되면 여기에서 답할게요.",
+        "ended": "워크스페이스가 agentes.chat을 다시 구독하면 여기에서 답할게요."
+      },
+      "askAdmin": "관리자가 agentes.chat 요금제를 해결하면 여기에서 답할게요.",
       "plan": "요금제에는 항상 켜져 있는 에이전트 컴퓨터가 포함돼요. AI는 이미 결제하고 있는 것을 써요. Claude, ChatGPT 등이나 API 키요.",
-      "active": "요금제가 활성화됐어요. AI를 연결하면 {{name}}이(가) 여기에서 답해요.",
+      "activeTitle": "요금제가 활성화됐어요",
+      "activeLine": "AI를 연결하면 {{name}}이(가) 여기에서 답해요.",
       "receipt": "보관됨",
       "channel": "보관됨. 워크스페이스에 agentes.chat 요금제가 생기면 에이전트가 답해요."
     },
@@ -3524,7 +3531,7 @@
       "clearFilters": "검색 지우기",
       "personalNote": "이 항목은 나만 볼 수 있어요. 내가 부탁할 때만 에이전트가 사용해요.",
       "personalEmpty": "로그인 정보와 키를 안전하게 보관해요",
-      "personalEmptyText": "이 항목은 나만 볼 수 있어요. 내가 부탁할 때만 에이전트가 사용해요.",
+      "personalEmptyText": "이 항목은 나만 볼 수 있고, 내가 부탁할 때만 에이전트가 사용해요.",
       "teamEmpty": "비밀번호를 돌리지 않고 로그인을 공유하세요",
       "teamEmptyPersonal": "공유 로그인을 한곳에 모아 두세요",
       "teamEmptyText": "로그인, 키, 연락처를 한 번 저장하고, 사용할 수 있는 에이전트를 고르세요.",

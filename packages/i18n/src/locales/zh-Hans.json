@@ -2227,8 +2227,9 @@
       "connect": {
         "title": "为团队连接 AI",
         "titlePersonal": "为你的智能体连接 AI",
-        "text": "智能体用工作区的 AI 思考。用你的 Claude 或 ChatGPT 套餐登录，不需要 API 密钥。",
-        "textPersonal": "你的智能体用这个 AI 思考。用你的 Claude 或 ChatGPT 套餐登录，不需要 API 密钥。",
+        "text": "用你的 Claude 或 ChatGPT 套餐登录，不需要 API 密钥。",
+        "hint": "智能体用工作区的 AI 思考。",
+        "hintPersonal": "你的智能体用这个 AI 思考。",
         "action": "连接"
       },
       "again": {
@@ -2574,10 +2575,16 @@
       "useKey": "使用 API 密钥"
     },
     "kept": {
-      "title": "我保留了你的消息。",
-      "line": "工作区有了 agentes.chat 套餐并连接 AI 后，我会在这里回复。",
+      "title": "我保留了你的消息",
+      "wait": {
+        "payment": "工作区有了 agentes.chat 套餐后，我会在这里回复。",
+        "unpaid": "agentes.chat 套餐付款成功后，我会在这里回复。",
+        "ended": "工作区重新订阅 agentes.chat 后，我会在这里回复。"
+      },
+      "askAdmin": "管理员处理好 agentes.chat 套餐后，我会在这里回复。",
       "plan": "套餐包含智能体的电脑，始终开机。AI 用的是你已经付费的：Claude、ChatGPT 等，或 API 密钥。",
-      "active": "套餐已生效。连接 AI 后，{{name}} 会在这里回复。",
+      "activeTitle": "套餐已生效",
+      "activeLine": "连接 AI 后，{{name}} 会在这里回复。",
       "receipt": "已保留",
       "channel": "已保留。工作区有 agentes.chat 套餐后，智能体就会回复。"
     },
@@ -3527,7 +3534,7 @@
       "clearFilters": "清除搜索",
       "personalNote": "只有你能看到这些项目。你的智能体只在你要求时使用它们。",
       "personalEmpty": "安全保存你的登录信息和密钥",
-      "personalEmptyText": "只有你能看到这些项目。你的智能体只在你要求时使用它们。",
+      "personalEmptyText": "只有你能看到这些项目，你的智能体只在你要求时使用它们。",
       "teamEmpty": "共享登录信息，不用到处传密码",
       "teamEmptyPersonal": "把共享的登录信息放在一处",
       "teamEmptyText": "只需保存一次登录信息、密钥或联系信息，然后选择哪些智能体可以使用。",

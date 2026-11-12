@@ -2349,9 +2349,9 @@ export const ptBR = {
       connect: {
         title: "Conectar uma IA para o time",
         titlePersonal: "Conectar uma IA para os seus agentes",
-        text: "Os agentes pensam com a IA do workspace. Entre com o seu plano do Claude ou do ChatGPT, sem chave de API.",
-        textPersonal:
-          "Os seus agentes pensam com essa IA. Entre com o seu plano do Claude ou do ChatGPT, sem chave de API.",
+        text: "Entre com o seu plano do Claude ou do ChatGPT, sem chave de API.",
+        hint: "Os agentes pensam com a IA do workspace.",
+        hintPersonal: "Os seus agentes pensam com essa IA.",
         action: "Conectar",
       },
       /** Under its greeting once the start card stopped asking; `message`: what the button sends, as the person. */
@@ -2768,10 +2768,16 @@ export const ptBR = {
       useKey: "Usar uma chave de API",
     },
     kept: {
-      title: "Guardei a sua mensagem.",
-      line: "Eu respondo aqui quando o workspace tiver um plano do agentes.chat e uma IA conectada.",
+      title: "Guardei a sua mensagem",
+      wait: {
+        payment: "Respondo aqui quando o workspace tiver um plano do agentes.chat.",
+        unpaid: "Respondo aqui quando o pagamento do plano do agentes.chat passar.",
+        ended: "Respondo aqui quando o workspace assinar o agentes.chat de novo.",
+      },
+      askAdmin: "Respondo aqui quando um admin resolver o plano do agentes.chat.",
       plan: "O plano traz o computador dos agentes, sempre ligado. A IA é a que você já paga: Claude, ChatGPT e outras, ou uma chave de API.",
-      active: "Plano ativo. Conecte uma IA e {{name}} responde aqui.",
+      activeTitle: "Plano ativo",
+      activeLine: "Conecte uma IA e {{name}} responde aqui.",
       receipt: "Guardada",
       channel: "Guardada. Os agentes respondem quando o workspace tiver um plano do agentes.chat.",
     },
@@ -3769,7 +3775,7 @@ export const ptBR = {
       clearFilters: "Limpar a busca",
       personalNote: "Só você vê estes itens. Seus agentes só usam quando você pede.",
       personalEmpty: "Guarde seus logins e chaves em segurança",
-      personalEmptyText: "Só você vê estes itens. Seus agentes só usam quando você pede.",
+      personalEmptyText: "Só você vê estes itens, e seus agentes só usam quando você pede.",
       teamEmpty: "Compartilhe logins sem passar senha",
       teamEmptyPersonal: "Guarde os logins compartilhados num lugar só",
       teamEmptyText: "Salve um login, uma chave ou dados de contato uma vez e escolha quais agentes podem usar.",

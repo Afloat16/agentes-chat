@@ -2310,8 +2310,9 @@
       "connect": {
         "title": "Eine KI für das Team verbinden",
         "titlePersonal": "Eine KI für deine Agenten verbinden",
-        "text": "Die Agenten denken mit der KI des Workspace. Melde dich mit deinem Claude- oder ChatGPT-Abo an, ohne API-Schlüssel.",
-        "textPersonal": "Deine Agenten denken mit dieser KI. Melde dich mit deinem Claude- oder ChatGPT-Abo an, ohne API-Schlüssel.",
+        "text": "Melde dich mit deinem Claude- oder ChatGPT-Abo an, ohne API-Schlüssel.",
+        "hint": "Die Agenten denken mit der KI des Workspace.",
+        "hintPersonal": "Deine Agenten denken mit dieser KI.",
         "action": "Verbinden"
       },
       "again": {
@@ -2676,10 +2677,16 @@
       "useKey": "API-Schlüssel verwenden"
     },
     "kept": {
-      "title": "Ich habe deine Nachricht aufgehoben.",
-      "line": "Ich antworte hier, sobald der Workspace einen agentes.chat-Tarif und eine verbundene KI hat.",
+      "title": "Ich habe deine Nachricht aufgehoben",
+      "wait": {
+        "payment": "Ich antworte hier, sobald der Workspace einen agentes.chat-Tarif hat.",
+        "unpaid": "Ich antworte hier, sobald die Zahlung für den agentes.chat-Tarif durchgeht.",
+        "ended": "Ich antworte hier, sobald der Workspace agentes.chat wieder abonniert."
+      },
+      "askAdmin": "Ich antworte hier, sobald ein Admin den agentes.chat-Tarif geklärt hat.",
       "plan": "Der Tarif bringt den Computer der Agenten, immer eingeschaltet. Die KI ist die, für die du schon zahlst: Claude, ChatGPT und andere oder ein API-Schlüssel.",
-      "active": "Tarif aktiv. Verbinde eine KI und {{name}} antwortet hier.",
+      "activeTitle": "Tarif aktiv",
+      "activeLine": "Verbinde eine KI und {{name}} antwortet hier.",
       "receipt": "Aufgehoben",
       "channel": "Aufgehoben. Die Agenten antworten, sobald der Workspace einen agentes.chat-Tarif hat."
     },
@@ -3646,7 +3653,7 @@
       "clearFilters": "Suche löschen",
       "personalNote": "Nur du siehst diese Einträge. Deine Agenten verwenden sie nur, wenn du sie darum bittest.",
       "personalEmpty": "Bewahre deine Logins und Schlüssel sicher auf",
-      "personalEmptyText": "Nur du siehst diese Einträge. Deine Agenten verwenden sie nur, wenn du sie darum bittest.",
+      "personalEmptyText": "Nur du siehst diese Einträge, und deine Agenten verwenden sie nur, wenn du sie darum bittest.",
       "teamEmpty": "Teile Logins, ohne Passwörter weiterzugeben",
       "teamEmptyPersonal": "Geteilte Logins an einem Ort",
       "teamEmptyText": "Speichere ein Login, einen Schlüssel oder Kontaktdaten einmal und wähle, welche Agenten es verwenden dürfen.",

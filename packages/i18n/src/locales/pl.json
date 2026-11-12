@@ -2478,8 +2478,9 @@
       "connect": {
         "title": "Podłącz AI dla zespołu",
         "titlePersonal": "Podłącz AI dla swoich agentów",
-        "text": "Agenci myślą z AI workspace’u. Zaloguj się swoim planem Claude lub ChatGPT, bez klucza API.",
-        "textPersonal": "Twoi agenci myślą z tym AI. Zaloguj się swoim planem Claude lub ChatGPT, bez klucza API.",
+        "text": "Zaloguj się swoim planem Claude lub ChatGPT, bez klucza API.",
+        "hint": "Agenci myślą z AI workspace’u.",
+        "hintPersonal": "Twoi agenci myślą z tym AI.",
         "action": "Podłącz"
       },
       "again": {
@@ -2864,10 +2865,16 @@
       "useKey": "Użyj klucza API"
     },
     "kept": {
-      "title": "Zachowałem twoją wiadomość.",
-      "line": "Odpowiem tutaj, gdy workspace będzie mieć plan agentes.chat i podłączone AI.",
+      "title": "Zachowałem twoją wiadomość",
+      "wait": {
+        "payment": "Odpowiem tutaj, gdy workspace będzie mieć plan agentes.chat.",
+        "unpaid": "Odpowiem tutaj, gdy płatność za plan agentes.chat przejdzie.",
+        "ended": "Odpowiem tutaj, gdy workspace znów zasubskrybuje agentes.chat."
+      },
+      "askAdmin": "Odpowiem tutaj, gdy administrator załatwi plan agentes.chat.",
       "plan": "Plan daje komputer agentów, zawsze włączony. AI to to, za które już płacisz: Claude, ChatGPT i inne albo klucz API.",
-      "active": "Plan aktywny. Podłącz AI, a {{name}} odpowie tutaj.",
+      "activeTitle": "Plan aktywny",
+      "activeLine": "Podłącz AI, a {{name}} odpowie tutaj.",
       "receipt": "Zachowano",
       "channel": "Zachowano. Agenci odpowiedzą, gdy workspace będzie mieć plan agentes.chat."
     },
@@ -3865,7 +3872,7 @@
       "clearFilters": "Wyczyść wyszukiwanie",
       "personalNote": "Te elementy widzisz tylko ty. Twoi agenci używają ich tylko wtedy, gdy o to poprosisz.",
       "personalEmpty": "Trzymaj loginy i klucze w bezpiecznym miejscu",
-      "personalEmptyText": "Te elementy widzisz tylko ty. Twoi agenci używają ich tylko wtedy, gdy o to poprosisz.",
+      "personalEmptyText": "Te elementy widzisz tylko ty, a twoi agenci używają ich tylko wtedy, gdy o to poprosisz.",
       "teamEmpty": "Udostępniaj loginy bez przekazywania haseł",
       "teamEmptyPersonal": "Trzymaj wspólne loginy w jednym miejscu",
       "teamEmptyText": "Zapisz raz login, klucz lub dane kontaktowe i wybierz, którzy agenci mogą tego używać.",

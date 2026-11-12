@@ -7,6 +7,7 @@ import {
   ExpiryFuse,
   Icon,
   type IconName,
+  InfoHint,
   Locked,
   prefersReducedMotion,
   Spinner,
@@ -512,6 +513,44 @@ export function RequestOpen({
     >
       {children}
     </EventPill>
+  );
+}
+
+/**
+ * A card that says one thing and offers its way out, with no request behind it (a plan to pick, an AI to connect): the
+ * request card's surface with a title, its detail behind the ⓘ beside it, one sentence, and the footer's buttons, the
+ * main one first.
+ */
+export function RequestNote({
+  agent,
+  title,
+  hint,
+  actions,
+  children,
+}: {
+  agent: Agent | undefined;
+  title: string;
+  /** Behind the ⓘ beside the title: plain sentences only. */
+  hint?: ReactNode;
+  /** The footer's kit buttons: one primary, the others ghosts. */
+  actions?: ReactNode;
+  /** The one sentence. */
+  children?: ReactNode;
+}) {
+  const { t } = useTranslation();
+  return (
+    // biome-ignore lint/a11y/useSemanticElements: a labelled group inside a message, not a fieldset
+    <div className="rq rq--note" role="group" aria-label={title}>
+      <CardSky color={colorOf(agent)} />
+      <p className="rq__title">
+        <span className="ac-hintline">
+          <b>{title}</b>
+          {hint && <InfoHint name={t("common.about", { label: title })}>{hint}</InfoHint>}
+        </span>
+      </p>
+      {children && <p className="rq__note">{children}</p>}
+      {actions && <div className="rq__foot">{actions}</div>}
+    </div>
   );
 }
 

@@ -2391,8 +2391,9 @@
       "connect": {
         "title": "Collega un’IA per il team",
         "titlePersonal": "Collega un'IA per i tuoi agenti",
-        "text": "Gli agenti pensano con l’IA del workspace. Accedi con il tuo piano di Claude o di ChatGPT, senza chiave API.",
-        "textPersonal": "I tuoi agenti pensano con questa IA. Accedi con il tuo piano di Claude o di ChatGPT, senza chiave API.",
+        "text": "Accedi con il tuo piano di Claude o di ChatGPT, senza chiave API.",
+        "hint": "Gli agenti pensano con l’IA del workspace.",
+        "hintPersonal": "I tuoi agenti pensano con questa IA.",
         "action": "Collega"
       },
       "again": {
@@ -2770,10 +2771,16 @@
       "useKey": "Usa una chiave API"
     },
     "kept": {
-      "title": "Ho conservato il tuo messaggio.",
-      "line": "Risponderò qui quando il workspace avrà un piano agentes.chat e un'IA collegata.",
+      "title": "Ho conservato il tuo messaggio",
+      "wait": {
+        "payment": "Risponderò qui quando il workspace avrà un piano agentes.chat.",
+        "unpaid": "Risponderò qui quando il pagamento del piano agentes.chat andrà a buon fine.",
+        "ended": "Risponderò qui quando il workspace si abbonerà di nuovo ad agentes.chat."
+      },
+      "askAdmin": "Risponderò qui quando un admin avrà sistemato il piano agentes.chat.",
       "plan": "Il piano porta il computer degli agenti, sempre acceso. L'IA è quella che paghi già: Claude, ChatGPT e altre, o una chiave API.",
-      "active": "Piano attivo. Collega un'IA e {{name}} risponde qui.",
+      "activeTitle": "Piano attivo",
+      "activeLine": "Collega un'IA e {{name}} risponde qui.",
       "receipt": "Conservato",
       "channel": "Conservato. Gli agenti rispondono quando il workspace ha un piano agentes.chat."
     },
@@ -3759,7 +3766,7 @@
       "clearFilters": "Cancella la ricerca",
       "personalNote": "Solo tu vedi questi elementi. I tuoi agenti li usano solo quando glielo chiedi.",
       "personalEmpty": "Tieni al sicuro i tuoi accessi e le tue chiavi",
-      "personalEmptyText": "Solo tu vedi questi elementi. I tuoi agenti li usano solo quando glielo chiedi.",
+      "personalEmptyText": "Solo tu vedi questi elementi, e i tuoi agenti li usano solo quando glielo chiedi.",
       "teamEmpty": "Condividi gli accessi senza passarti le password",
       "teamEmptyPersonal": "Tieni gli accessi condivisi in un solo posto",
       "teamEmptyText": "Salva una volta un login, una chiave o dei contatti, e scegli quali agenti possono usarli.",

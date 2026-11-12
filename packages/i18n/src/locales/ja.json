@@ -2228,8 +2228,9 @@
       "connect": {
         "title": "チームのAIを接続",
         "titlePersonal": "エージェントのAIを接続",
-        "text": "エージェントはワークスペースのAIで考えます。ClaudeまたはChatGPTのプランでログインできます。APIキーは不要です。",
-        "textPersonal": "エージェントはこのAIで考えます。ClaudeまたはChatGPTのプランでログインできます。APIキーは不要です。",
+        "text": "APIキーなしで、ClaudeまたはChatGPTのプランでログインできます。",
+        "hint": "エージェントはワークスペースのAIで考えます。",
+        "hintPersonal": "エージェントはこのAIで考えます。",
         "action": "接続"
       },
       "again": {
@@ -2575,10 +2576,16 @@
       "useKey": "APIキーを使う"
     },
     "kept": {
-      "title": "メッセージを保存しました。",
-      "line": "ワークスペースにagentes.chatのプランとAIの接続が揃ったら、ここで返信します。",
+      "title": "メッセージを保存しました",
+      "wait": {
+        "payment": "ワークスペースにagentes.chatのプランが入ったら、ここで返信します。",
+        "unpaid": "agentes.chatのプランの支払いが完了したら、ここで返信します。",
+        "ended": "ワークスペースがagentes.chatに再び登録したら、ここで返信します。"
+      },
+      "askAdmin": "管理者がagentes.chatのプランを整えたら、ここで返信します。",
       "plan": "プランにはエージェントのコンピューターが含まれ、常に稼働します。AIはすでに支払っているものを使えます。Claude、ChatGPTなど、またはAPIキーです。",
-      "active": "プランが有効です。AIを接続すると{{name}}がここで返信します。",
+      "activeTitle": "プランが有効です",
+      "activeLine": "AIを接続すると{{name}}がここで返信します。",
       "receipt": "保存済み",
       "channel": "保存済み。ワークスペースにagentes.chatのプランがあると、エージェントが返信します。"
     },
@@ -3526,7 +3533,7 @@
       "clearFilters": "検索をクリア",
       "personalNote": "これらの項目はあなただけに表示されます。エージェントは、あなたが頼んだときだけ使います。",
       "personalEmpty": "ログイン情報やキーを安全に保管",
-      "personalEmptyText": "これらの項目はあなただけに表示されます。エージェントは、あなたが頼んだときだけ使います。",
+      "personalEmptyText": "これらの項目はあなただけに表示され、エージェントはあなたが頼んだときだけ使います。",
       "teamEmpty": "パスワードを回さずにログインを共有",
       "teamEmptyPersonal": "共有ログインを一か所にまとめましょう",
       "teamEmptyText": "ログイン、キー、連絡先を一度保存し、使えるエージェントを選びましょう。",

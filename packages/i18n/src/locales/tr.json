@@ -2306,8 +2306,9 @@
       "connect": {
         "title": "Ekip için bir yapay zeka bağla",
         "titlePersonal": "Ajanların için bir yapay zeka bağla",
-        "text": "Ajanlar çalışma alanının yapay zekasıyla düşünür. Claude veya ChatGPT planınla giriş yap, API anahtarı gerekmez.",
-        "textPersonal": "Ajanların bu yapay zekayla düşünür. Claude veya ChatGPT planınla giriş yap, API anahtarı gerekmez.",
+        "text": "Claude veya ChatGPT planınla giriş yap, API anahtarı gerekmez.",
+        "hint": "Ajanlar çalışma alanının yapay zekasıyla düşünür.",
+        "hintPersonal": "Ajanların bu yapay zekayla düşünür.",
         "action": "Bağla"
       },
       "again": {
@@ -2666,10 +2667,16 @@
       "useKey": "API anahtarı kullan"
     },
     "kept": {
-      "title": "Mesajını sakladım.",
-      "line": "Çalışma alanının agentes.chat planı ve bağlı bir yapay zekası olunca burada yanıtlayacağım.",
+      "title": "Mesajını sakladım",
+      "wait": {
+        "payment": "Çalışma alanının agentes.chat planı olunca burada yanıtlayacağım.",
+        "unpaid": "agentes.chat planının ödemesi geçince burada yanıtlayacağım.",
+        "ended": "Çalışma alanı agentes.chat'e yeniden abone olunca burada yanıtlayacağım."
+      },
+      "askAdmin": "Bir yönetici agentes.chat planını çözünce burada yanıtlayacağım.",
       "plan": "Plan, ajanların her zaman açık bilgisayarını getirir. Yapay zeka zaten ödediğindir: Claude, ChatGPT ve diğerleri ya da bir API anahtarı.",
-      "active": "Plan etkin. Bir yapay zeka bağla, {{name}} burada yanıtlasın.",
+      "activeTitle": "Plan etkin",
+      "activeLine": "Bir yapay zeka bağla, {{name}} burada yanıtlasın.",
       "receipt": "Saklandı",
       "channel": "Saklandı. Çalışma alanının agentes.chat planı olunca ajanlar yanıtlar."
     },
@@ -3632,7 +3639,7 @@
       "clearFilters": "Aramayı temizle",
       "personalNote": "Bu öğeleri yalnızca siz görürsünüz. Ajanlarınız bunları yalnızca siz istediğinizde kullanır.",
       "personalEmpty": "Girişlerinizi ve anahtarlarınızı güvende tutun",
-      "personalEmptyText": "Bu öğeleri yalnızca siz görürsünüz. Ajanlarınız bunları yalnızca siz istediğinizde kullanır.",
+      "personalEmptyText": "Bu öğeleri yalnızca siz görürsünüz ve ajanlarınız bunları yalnızca siz istediğinizde kullanır.",
       "teamEmpty": "Parola dolaştırmadan girişleri paylaşın",
       "teamEmptyPersonal": "Paylaşılan girişleri tek yerde tutun",
       "teamEmptyText": "Bir giriş bilgisini, anahtarı ya da iletişim bilgilerini bir kez kaydedin ve hangi ajanların kullanabileceğini seçin.",
