@@ -741,7 +741,7 @@ describe("Rotinas", () => {
     expect(monthly.getAttribute("data-paused")).toBe("true");
     expect(within(monthly).getByText("Pausada")).toBeTruthy();
     expect(within(monthly).queryByRole("checkbox")).toBeNull();
-    // The horizon: one lane per scheduled, active routine.
+    // The horizon: one lane per agent with a scheduled, active routine.
     expect(screen().getByRole("region", { name: "Próximas horas" })).toBeTruthy();
   });
 
