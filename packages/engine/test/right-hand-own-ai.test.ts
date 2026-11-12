@@ -20,6 +20,7 @@ import {
   runAuthority,
   setAgentBrain,
   sha256,
+  TASK_OFFLINE_GRACE_MS,
   takeBackPlan,
 } from "../src";
 import { agentAiState, backgroundAiState, orgAiStatus, orgHasAi } from "../src/ai-status";
@@ -199,7 +200,7 @@ test("the workspace's plan serves only its owner until they open it; the AI stat
   expect(await of(fx.owner.id)).toEqual({ agentId: lodi.id, state: "ready" });
   expect(await backgroundAiState(status, agent)).toEqual({ state: "ready" });
   // Its computer away, a chat shows it waiting, but its run never waits for it: a build has no AI meanwhile, unless
-  // that computer is only asleep (its run wakes it).
+  // that computer is only asleep (its run wakes it) or just gone (its run waits out the blip).
   const away = (more: Partial<MachineStatus> = {}) => ({
     ...status,
     machines: { status: async (id: string) => ({ ...statusOf(id), online: false, ...more }) },
@@ -211,6 +212,12 @@ test("the workspace's plan serves only its owner until they open it; the AI stat
   });
   expect(await backgroundAiState(away(), agent)).toEqual({ state: "no_ai", reason: "computer_away" });
   expect(await backgroundAiState(away({ standby: true }), agent)).toEqual({ state: "waiting" });
+  const seen = (ago: number) => away({ lastSeenAt: new Date(Date.now() - ago).toISOString() });
+  expect(await backgroundAiState(seen(5_000), agent)).toEqual({ state: "waiting" });
+  expect(await backgroundAiState(seen(TASK_OFFLINE_GRACE_MS + 5_000), agent)).toEqual({
+    state: "no_ai",
+    reason: "computer_away",
+  });
 });
 
 test("a decision on its card wakes it for the person behind the card's run, on that person's own plan", async () => {

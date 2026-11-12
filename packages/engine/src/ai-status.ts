@@ -7,6 +7,7 @@ import { brainAccountFor, computerBrainUnavailable, mayFallBack, NO_AI_CODES } f
 import { type BrainKind, isComputerBrain } from "./brains/types";
 import type { ModelGateway } from "./gateway";
 import type { MachineStatus } from "./machine-hub";
+import { TASK_OFFLINE_GRACE_MS } from "./machine-tasks";
 import { missionTurnFor } from "./missions-engine";
 import { isRightHand, rightHandNoAiReason, rightHandPerson, thinkingAgent } from "./right-hand";
 import { orgKeyProviders, orgModelProvider, type RoutingSetup } from "./router";
@@ -143,9 +144,11 @@ export async function agentAiState(
       ...ownNotSignedIn(unavailable.code, kind, account),
     };
   // The right hand never waits for its plan (ADR 0137 §7): its background work has no AI while that plan can't think,
-  // unless its run wakes the computer from standby first (`computerBackSoon`). The codes left here are never
-  // `plan_hold` or `plan_unattended`.
-  if (background && isRightHand(agent) && !status?.standby)
+  // unless its run waits for the computer first (`computerBackSoon`): one in standby, which it wakes, or one gone less
+  // than the outage grace (its runner dialing again). The codes left here are never `plan_hold` or `plan_unattended`.
+  const gone = status?.lastSeenAt ? Date.now() - Date.parse(status.lastSeenAt) : Number.POSITIVE_INFINITY;
+  const backSoon = status?.standby || (unavailable.code === "machine_offline" && gone < TASK_OFFLINE_GRACE_MS);
+  if (background && isRightHand(agent) && !backSoon)
     return { state: "no_ai", reason: rightHandNoAiReason(unavailable.code) as NoAiReason };
   return { state: "waiting" };
 }
