@@ -75,6 +75,8 @@ describe("a tall message in the conversation", () => {
     }
     expect(row("p2").querySelector(".msg-clip--cut")).toBeNull();
     expect(within(row("p2")).queryByRole("button", { name: "Ver mais" })).toBeNull();
+    // Not there at all, rather than hidden: a short message's text reads as its words alone.
+    expect(row("p2").querySelector(".ac-msg__text")?.textContent).toBe("ok");
     // Never cut by an ellipsis: every word is in the row.
     expect(row("p1").textContent).toContain("Linha 80 com números.");
   });

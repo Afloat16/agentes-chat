@@ -34,10 +34,13 @@ export function ClippedBody({
   return (
     <>
       {children(cut ? "msg-clip msg-clip--cut" : "msg-clip")}
+      {/* Always there, to find the words by; empty under a message that shows whole, so its text reads as its words alone. */}
       <div ref={foot} className="msg-clip__foot" hidden={!cut}>
-        <button type="button" className="ac-link msg-clip__more" aria-haspopup="dialog" onClick={() => setOpen(true)}>
-          {t("channel.long.more")}
-        </button>
+        {cut && (
+          <button type="button" className="ac-link msg-clip__more" aria-haspopup="dialog" onClick={() => setOpen(true)}>
+            {t("channel.long.more")}
+          </button>
+        )}
       </div>
       {open && (
         <Dialog
