@@ -222,6 +222,26 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
             line: null,
           },
           {
+            title: "Cursor",
+            hint: "Writes and changes code in the allowed folders, with your Cursor account.",
+            line: null,
+          },
+          {
+            title: "OpenCode",
+            hint: "Writes and changes code in the allowed folders, with OpenCode's free models or your key.",
+            line: null,
+          },
+          {
+            title: "Grok Build",
+            hint: "Writes and changes code in the allowed folders, with your Grok account.",
+            line: null,
+          },
+          {
+            title: "Antigravity CLI",
+            hint: "Writes and changes code in the allowed folders, with your Gemini account.",
+            line: null,
+          },
+          {
             title: "Commands",
             hint: "Tests, builds and other Terminal commands. Each one shows in Activity.",
             line: null,
@@ -252,6 +272,23 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
         expect(el.querySelector(".dk-phead .dk-lead")?.textContent).toBe(
           "What agents of every workspace can run on this Mac.",
         );
+      },
+    ));
+
+  test("Tools: every coding program has a switch of its own, on or off whether or not it is installed", () =>
+    pane(
+      "selfhost",
+      <Tools />,
+      (el) => el.querySelector("#tool-opencode"),
+      async (el) => {
+        const state = (id: string) => el.querySelector(`#tool-${id}`)?.getAttribute("aria-checked");
+        const programs = ["claude", "codex", "cursor", "opencode", "grok", "antigravity"];
+        // One with no switch stored follows Codex's, off here; none found here but Claude Code and Codex.
+        expect(programs.map(state)).toEqual(["true", "false", "false", "false", "false", "false"]);
+        expect(programs.every((id) => !(el.querySelector(`#tool-${id}`) as HTMLButtonElement).disabled)).toBe(true);
+        await act(async () => (el.querySelector("#tool-opencode") as HTMLElement).click());
+        await until(() => state("opencode") === "true");
+        expect(programs.map(state)).toEqual(["true", "false", "false", "true", "false", "false"]);
       },
     ));
 
