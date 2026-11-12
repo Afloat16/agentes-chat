@@ -603,7 +603,8 @@ export function createMachineHub(deps: MachineHubDeps) {
       );
     }
     // Protocol 9: a runner that says nothing about the pause isn't paused.
-    const reported = frame.protocol >= PAUSE_PROTOCOL ? await memberPause(db, machine.orgId, pauseOf(frame.paused)) : null;
+    const reported =
+      frame.protocol >= PAUSE_PROTOCOL ? await memberPause(db, machine.orgId, pauseOf(frame.paused)) : null;
     if (conn.closed) return;
     if (conn.helloTimer) clearTimeout(conn.helloTimer);
     conn.helloTimer = null;
