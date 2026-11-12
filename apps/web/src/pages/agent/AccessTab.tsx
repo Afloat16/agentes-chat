@@ -19,6 +19,7 @@ import { useOrg } from "@/components/org-context";
 import { SkillPicker } from "@/components/Skills";
 import { lookOf } from "@/lib/look";
 import { ApprovalRulesCard } from "./ApprovalRulesCard";
+import { ApprovalsLevelCard } from "./ApprovalsLevelCard";
 import { CardHead, ChangedTag, useAgentEdit, WasLine } from "./context";
 import { DatabaseAccessCard } from "./DatabaseAccess";
 import { MailAccessCard } from "./MailAccess";
@@ -243,6 +244,7 @@ export function AccessTab({ part = "all" }: { part?: "all" | "basic" | "advanced
               {ownerFirst ? t("newAgent.approverOwner", { name: ownerFirst }) : t("newAgent.approverAdmins")}
             </span>
           </p>
+          {basic && <ApprovalsLevelCard />}
           {advanced && <ApprovalRulesCard />}
           {advanced && (
             <Card

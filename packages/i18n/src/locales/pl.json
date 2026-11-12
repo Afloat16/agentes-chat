@@ -3138,6 +3138,22 @@
       "never": "{{name}} powiedział(a) nigdy dla tego"
     }
   },
+  "approvalsLevel": {
+    "title": "Zatwierdzenia",
+    "lead": "Kiedy {{name}} pyta człowieka przed działaniem.",
+    "always": {
+      "title": "Zawsze pytaj",
+      "text": "Pyta przed każdą zmianą w aplikacji."
+    },
+    "risky": {
+      "title": "Tylko to, co ryzykowne",
+      "text": "Pyta przed usunięciem, wysłaniem lub płatnością."
+    },
+    "never": {
+      "title": "Nigdy nie pytaj",
+      "text": "Nadal pyta przy merge, deploy i rollback."
+    }
+  },
   "brakes": {
     "title": "Praca, o którą nikt nie prosił",
     "subtitle": "To, co zaczyna sam, po rutynie, alercie lub innym agencie. To, o co prosi osoba, nigdy nie jest wstrzymywane.",
@@ -15548,6 +15564,7 @@
       "where": "Gdzie",
       "via": "Przez co",
       "approval": "Zatwierdzenie",
+      "unasked": "Bez pytania ({{level}})",
       "approvalWaiting": "Nikt jeszcze nie odpowiedział",
       "approvalApproved": "Zatwierdził(a) {{name}}",
       "approvalRefused": "Odrzucił(a) {{name}}",

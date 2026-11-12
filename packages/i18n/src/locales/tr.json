@@ -2933,6 +2933,22 @@
       "never": "{{name}} bunun için asla dedi"
     }
   },
+  "approvalsLevel": {
+    "title": "Onaylar",
+    "lead": "{{name}} harekete geçmeden önce birine ne zaman sorar.",
+    "always": {
+      "title": "Her zaman sor",
+      "text": "Bir uygulamada bir şeyi değiştirmeden önce sorar."
+    },
+    "risky": {
+      "title": "Yalnızca riskli olanlar",
+      "text": "Silmeden, göndermeden veya ödemeden önce sorar."
+    },
+    "never": {
+      "title": "Hiç sorma",
+      "text": "Merge, deploy ve rollback için yine sorar."
+    }
+  },
   "brakes": {
     "title": "Kimsenin istemediği iş",
     "subtitle": "Bir rutin, bir uyarı veya başka bir ajan üzerine kendi başına başlattığı şeyler. Bir kişinin istediği hiçbir zaman bekletilmez.",
@@ -14531,6 +14547,7 @@
       "where": "Nerede",
       "via": "Üzerinden",
       "approval": "Onay",
+      "unasked": "Sorulmadı ({{level}})",
       "approvalWaiting": "Henüz kimse yanıt vermedi",
       "approvalApproved": "{{name}} onayladı",
       "approvalRefused": "{{name}} reddetti",

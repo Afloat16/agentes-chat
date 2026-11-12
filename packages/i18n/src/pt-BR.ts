@@ -3053,6 +3053,23 @@ export const ptBR = {
       never: "{{name}} disse nunca para isso",
     },
   },
+  /** How much an agent asks before acting (ADR 0173): the row on its page and the three choices behind it. */
+  approvalsLevel: {
+    title: "Aprovações",
+    lead: "Quando {{name}} pergunta a uma pessoa antes de agir.",
+    always: {
+      title: "Sempre perguntar",
+      text: "Pergunta antes de mudar algo em um app.",
+    },
+    risky: {
+      title: "Só o arriscado",
+      text: "Pergunta antes de apagar, enviar ou pagar.",
+    },
+    never: {
+      title: "Nunca perguntar",
+      text: "Ainda pergunta em merge, deploy e rollback.",
+    },
+  },
   /** Configurações do agente: o que ele pode começar sem ninguém pedir diretamente, e quais agentes pode chamar (ADR 0131). */
   brakes: {
     title: "Trabalho que ninguém pediu",
@@ -14634,6 +14651,8 @@ export const ptBR = {
       where: "Onde",
       via: "Por onde",
       approval: "Aprovação",
+      /** In place of an approval: it ran without one because its agent never asks. `level`: that choice's name. */
+      unasked: "Não perguntou ({{level}})",
       approvalWaiting: "Ainda ninguém respondeu",
       approvalApproved: "Aprovado por {{name}}",
       approvalRefused: "Recusado por {{name}}",

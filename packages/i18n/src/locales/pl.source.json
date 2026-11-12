@@ -7204,6 +7204,30 @@
   "costlyCard.decided.never": {
     "value": "{{name}} said never for this"
   },
+  "approvalsLevel.title": {
+    "value": "Approvals"
+  },
+  "approvalsLevel.lead": {
+    "value": "When {{name}} asks a person before acting."
+  },
+  "approvalsLevel.always.title": {
+    "value": "Always ask"
+  },
+  "approvalsLevel.always.text": {
+    "value": "Asks before changing anything in an app."
+  },
+  "approvalsLevel.risky.title": {
+    "value": "Only what is risky"
+  },
+  "approvalsLevel.risky.text": {
+    "value": "Asks before deleting, sending or paying."
+  },
+  "approvalsLevel.never.title": {
+    "value": "Never ask"
+  },
+  "approvalsLevel.never.text": {
+    "value": "Still asks for merge, deploy and rollback."
+  },
   "brakes.title": {
     "value": "Work nobody asked for"
   },
@@ -35426,6 +35450,9 @@
   },
   "audit.panel.approval": {
     "value": "Approval"
+  },
+  "audit.panel.unasked": {
+    "value": "Not asked ({{level}})"
   },
   "audit.panel.approvalWaiting": {
     "value": "Nobody has answered yet"

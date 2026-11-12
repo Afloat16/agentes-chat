@@ -715,6 +715,8 @@ export interface Agent {
   mediaReplies?: boolean;
   /** Its autonomy brakes (ADR 0131); absent from an older server (the defaults). */
   brakes?: AgentBrakes;
+  /** How much it asks before acting (ADR 0173); absent from an older server (`risky`). */
+  approvalsLevel?: ApprovalsLevel;
   /**
    * Its setup checklist at the top of its chat (ADR 0155 §2): the ready-made role it started from and the steps a
    * person confirmed. Null or absent: an agent made before it (none shows).
@@ -746,6 +748,12 @@ export interface AgentSetupChecklist {
 
 /** A costly step unrequested work needs a person's go for (ADR 0131 §3). */
 export type CostKind = "pr" | "install" | "long";
+
+/**
+ * How much an agent asks before acting (ADR 0173): `always` (every write to a connected app), `risky` (what is marked
+ * sensitive, the default) or `never` (only merge, deploy, rollback and the like).
+ */
+export type ApprovalsLevel = "always" | "risky" | "never";
 
 /** What an agent may start that nobody asked for directly, and which agents it may call (ADR 0131). */
 export interface AgentBrakes {
@@ -902,6 +910,8 @@ export interface AgentInput {
   autonomy?: CommandApproval;
   /** Editing only: its autonomy brakes (ADR 0131); the fields given change. */
   brakes?: Partial<AgentBrakes>;
+  /** How much it asks before acting (ADR 0173); same permission as editing the agent. */
+  approvalsLevel?: ApprovalsLevel;
   /**
    * Creating only: the ready-made role it starts from, for its setup checklist (ADR 0155 §2), and what its card said
    * (ADR 0164): how it introduced itself, the personal starter it began as, the apps it will use at their levels.

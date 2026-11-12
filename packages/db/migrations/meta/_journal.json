@@ -1758,6 +1758,13 @@
       "when": 1794655300000,
       "tag": "0252_task_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 253,
+      "version": "7",
+      "when": 1794731700000,
+      "tag": "0253_agent_approvals_level",
+      "breakpoints": true
     }
   ]
 }

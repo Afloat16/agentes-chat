@@ -3043,6 +3043,22 @@
       "never": "{{name}} a dit jamais pour ceci"
     }
   },
+  "approvalsLevel": {
+    "title": "Approbations",
+    "lead": "Quand {{name}} demande à une personne avant d’agir.",
+    "always": {
+      "title": "Toujours demander",
+      "text": "Demande avant de modifier quoi que ce soit dans une app."
+    },
+    "risky": {
+      "title": "Seulement ce qui est risqué",
+      "text": "Demande avant de supprimer, envoyer ou payer."
+    },
+    "never": {
+      "title": "Ne jamais demander",
+      "text": "Demande toujours pour un merge, un deploy ou un rollback."
+    }
+  },
   "brakes": {
     "title": "Travail que personne n'a demandé",
     "subtitle": "Ce qu'il commence seul, à partir d'une routine, d'une alerte ou d'un autre agent. Ce qu'une personne demande n'est jamais retenu.",
@@ -15069,6 +15085,7 @@
       "where": "Où",
       "via": "Via",
       "approval": "Approbation",
+      "unasked": "Pas demandé ({{level}})",
       "approvalWaiting": "Personne n'a encore répondu",
       "approvalApproved": "Approuvé par {{name}}",
       "approvalRefused": "Refusé par {{name}}",

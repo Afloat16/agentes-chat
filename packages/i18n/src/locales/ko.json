@@ -2837,6 +2837,22 @@
       "never": "{{name}} 님이 이 일은 하지 말라고 했습니다"
     }
   },
+  "approvalsLevel": {
+    "title": "승인",
+    "lead": "{{name}}이(가) 실행 전에 사람에게 묻는 경우.",
+    "always": {
+      "title": "항상 묻기",
+      "text": "앱에서 무언가를 바꾸기 전에 묻습니다."
+    },
+    "risky": {
+      "title": "위험한 것만",
+      "text": "삭제, 전송, 결제 전에 묻습니다."
+    },
+    "never": {
+      "title": "묻지 않기",
+      "text": "머지, 배포, 롤백은 계속 묻습니다."
+    }
+  },
   "brakes": {
     "title": "아무도 요청하지 않은 작업",
     "subtitle": "루틴, 알림, 다른 에이전트에서 시작해 스스로 하는 작업입니다. 사람이 요청한 일은 절대 멈추지 않습니다.",
@@ -14080,6 +14096,7 @@
       "where": "위치",
       "via": "경유",
       "approval": "승인",
+      "unasked": "묻지 않음 ({{level}})",
       "approvalWaiting": "아직 아무도 응답하지 않았어요",
       "approvalApproved": "{{name}}님이 승인함",
       "approvalRefused": "{{name}}님이 거절함",
