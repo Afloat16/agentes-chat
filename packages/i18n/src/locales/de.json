@@ -2426,6 +2426,7 @@
         "delete": "Nur Admins löschen einen Agenten",
         "audience": "Nur Admins und der Verantwortliche ändern, wer mit ihm spricht",
         "channels": "Nur Admins und der Verantwortliche ändern seine Kanäle",
+        "skill": "Nur Admins ändern die Skills eines Agenten",
         "ai_account": "Nur die Person, der das Konto gehört, vergibt es",
         "name": "Nur Admins benennen einen Agenten um",
         "look": "Nur Admins und sein Verantwortlicher ändern sein Aussehen",
@@ -2443,7 +2444,8 @@
       "channel": "Kanal",
       "name": "Name",
       "look": "Aussehen",
-      "reports_to": "Berichtet an"
+      "reports_to": "Berichtet an",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Das Standardaussehen",
@@ -2459,7 +2461,9 @@
       "deleted": "Gelöscht",
       "notIn": "Nicht im Kanal",
       "withoutMention": "Von selbst",
-      "mentionOnly": "Nur bei Erwähnung"
+      "mentionOnly": "Nur bei Erwähnung",
+      "skillOn": "An",
+      "skillOff": "Aus"
     },
     "remove": {
       "archiveTitle_one": "{{count}} Agent archivieren?",
@@ -2708,6 +2712,17 @@
       "gemini": "Dein Gemini-Abo verbinden",
       "zen": "OpenCode verbinden",
       "api_key": "API-Schlüssel hinzufügen"
+    },
+    "toolOff": {
+      "text": "{{computer}} ist verbunden, aber {{program}} ist dort ausgeschaltet. Aus Sicherheitsgründen lässt es sich nur am Computer selbst einschalten.",
+      "where": "Auf {{computer}}",
+      "one": "Klicke auf das agentes.chat-Symbol <mark/> neben der Uhr",
+      "oneWindows": "Unter Windows kann es hinter dem Pfeil ^ der Taskleiste liegen.",
+      "two": "Öffne <b>Einstellungen</b>",
+      "three": "Schalte unter <b>Tools</b> <b>{{program}}</b> ein",
+      "terminal": "Führe im Terminal des Computers aus:",
+      "here": "Schalte <b>{{program}}</b> unter <b>Tools</b> ein.",
+      "waiting": "Warte darauf, dass du es einschaltest. Diese Ansicht ändert sich von selbst."
     },
     "titleFor": "Eine KI für {{name}} verbinden",
     "have": {
@@ -9209,6 +9224,10 @@
     "pickAll": "Alle",
     "pickMissing": "Wähle mindestens einen Skill.",
     "pickSkipped": "Kann nicht installiert werden. {{reason}}",
+    "pickReplaces": "Ersetzt den installierten Skill {{name}}",
+    "pickReplacesRemoved": "Ersetzt den entfernten Skill {{name}}",
+    "forAgent_one": "Für {{agent}} einschalten",
+    "forAgent_other": "Für {{agent}} einschalten",
     "installedMany": "{{count}} Skills installiert.",
     "zipHelp": "Eine .zip mit SKILL.md im Hauptordner.",
     "zipPick": ".zip auswählen",
@@ -13134,6 +13153,7 @@
       "targetNotFound": "Diesen Computer gibt es nicht mehr. Wähl einen anderen.",
       "targetSame": "Die Agenten sind schon auf diesem Computer.",
       "targetPaused": "Dieser Computer ist pausiert. Wähl einen anderen.",
+      "pausePast": "Wähl eine Zeit in der Zukunft.",
       "accountMethodUnsupported": "Dieser Computer kann Claude noch nicht auf diese Weise verbinden. Aktualisiere das agentes.chat-Programm darauf oder verwende einen API-Schlüssel.",
       "offline": "{{name}} ist gerade offline. Versuch es noch einmal, sobald er wieder da ist.",
       "paused": "{{name}} ist pausiert: Darauf startet nichts Neues, bis er fortgesetzt wird.",
@@ -13176,7 +13196,8 @@
       "ownerOrAdmin": "Nur der Inhaber des Agenten oder ein Admin kann das tun.",
       "detailsHidden": "Nur wer mit {{agentName}} spricht, sieht, wie es funktioniert.",
       "extraOwnerOnly": "Nur der Inhaber des Agenten schaltet die bezahlte Zusatznutzung des Abos ein oder aus.",
-      "undoForbidden": "Nur die Person, für die der Agent gearbeitet hat, sein Inhaber oder ein Admin kann das rückgängig machen."
+      "undoForbidden": "Nur die Person, für die der Agent gearbeitet hat, sein Inhaber oder ein Admin kann das rückgängig machen.",
+      "undoSkillsAdmins": "Nur ein Admin kann eine Änderung an den Skills eines Agenten rückgängig machen oder wiederholen."
     },
     "account": {
       "notRestorable": "Dieses Konto kann nicht mehr wiederhergestellt werden.",
@@ -13266,6 +13287,21 @@
     "paused": "Pausiert",
     "pausedUntil": "Pausiert bis {{time}}",
     "pausedHint": "Auf dem Computer selbst pausiert, von der Person, die ihn verbunden hat.",
+    "remotePause": {
+      "button": "Pausieren",
+      "menu": "{{name}} pausieren",
+      "oneHour": "Für 1 Stunde",
+      "tomorrow": "Bis morgen um 9 Uhr",
+      "manual": "Bis ich fortsetze",
+      "resume": "Fortsetzen",
+      "byYou": "Von dir pausiert.",
+      "byYouUntil": "Von dir pausiert bis {{time}}.",
+      "byName": "Von {{name}} pausiert.",
+      "byNameUntil": "Von {{name}} pausiert bis {{time}}.",
+      "outdated": "Aktualisiere die agentes.chat-App auf diesem Computer, um ihn von hier zu pausieren.",
+      "paused": "{{name}} ist pausiert",
+      "resumed": "{{name}} arbeitet wieder"
+    },
     "seenNow": "gerade verbunden",
     "seen": "zuletzt gesehen {{when}}",
     "neverSeen": "hat sich noch nicht verbunden",
@@ -13681,6 +13717,8 @@
       "openApp": "App öffnen",
       "server": "Ein Server oder VPS",
       "serverLine": "Eine Zeile für sein Terminal",
+      "httpLine": "Eine Zeile für sein Terminal. Die App verbindet ihn mit einem Klick unter einer https-Adresse.",
+      "httpHow": "Wie",
       "other": "Ein anderer Computer",
       "otherLine": "Installiere dort die App",
       "android": "Android-Handy",
@@ -15727,6 +15765,7 @@
       "agent_proposal": "Hat einen neuen Agenten vorgeschlagen: {{name}}",
       "team_proposal": "Hat ein Team vorgeschlagen: {{names}}",
       "settings_proposal": "Hat eine Änderung für {{names}} vorgeschlagen",
+      "settings_request": "Bittet um eine Änderung seiner eigenen Einstellungen",
       "approval_request": "Freigabeanfrage: {{title}}",
       "secret_request": "{{agent}} hat um einen Schlüssel gebeten: {{name}}",
       "secret_requestAnon": "Hat um einen Schlüssel gebeten: {{name}}",
