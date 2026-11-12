@@ -10415,17 +10415,18 @@ html:not([data-pointer]) .ac-filter__option:focus-visible {
   white-space: normal;
   overflow-wrap: anywhere;
 }
-/* Its lead no taller than a line (an icon, a mark) keeps to the name's first line then, as an `.ac-iconline` lead. */
-:is(.ac-menu--dropdown, .ac-menu--select)
-  .ac-menu__item:not(:has(> .ac-menu__leading > .ac-avatar))
+/* Its lead no taller than a line (an icon, a mark) keeps to the name's first line then, as an `.ac-iconline` lead. A list
+   with faces centres every lead in its taller row instead. */
+:is(.ac-menu--dropdown, .ac-menu--select):not(:has(.ac-menu__leading > .ac-avatar))
+  .ac-menu__item
   > .ac-menu__leading:has(> .ac-icon, > .ac-brand--xs) {
   align-self: flex-start;
   /* Browsers without the lh unit: the row's 20px line. */
   translate: 0 calc(10px - var(--cap-mid) - 50%);
 }
 @supports (top: 1lh) {
-  :is(.ac-menu--dropdown, .ac-menu--select)
-    .ac-menu__item:not(:has(> .ac-menu__leading > .ac-avatar))
+  :is(.ac-menu--dropdown, .ac-menu--select):not(:has(.ac-menu__leading > .ac-avatar))
+    .ac-menu__item
     > .ac-menu__leading:has(> .ac-icon, > .ac-brand--xs) {
     translate: 0 calc(0.5lh - var(--cap-mid) - 50%);
   }
