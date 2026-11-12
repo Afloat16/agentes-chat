@@ -1752,6 +1752,17 @@
     },
     "inviteHint": "Per email o link",
     "profileHint": "Nome, foto e @",
+    "email": {
+      "label": "Email",
+      "title": "Cambia email",
+      "new": "Nuova email",
+      "help": "Mantieni lo stesso account, negli stessi workspace e con gli stessi piani.",
+      "change": "Cambia email",
+      "sent": "Abbiamo inviato un link a {{email}}. La tua email cambia quando lo apri.",
+      "changed": "Fatto: ora accedi con {{email}}.",
+      "same": "È già la tua email.",
+      "noMail": "Questo server non invia email, quindi il nuovo indirizzo non può essere confermato. Chiedi a chi gestisce il server di configurare l'invio delle email."
+    },
     "openOnPhone": "Apri sul telefono",
     "openOnPhoneHint": "Accedi all'app con un codice QR",
     "addPassword": "Aggiungi una password",
@@ -2487,7 +2498,6 @@
       "workspace": "IA di chi non ha un piano proprio",
       "workspaceHelp": "Chi non ha un piano proprio parla con {{name}} tramite questa IA.",
       "noPlans": "Collega un piano in IA e consumi per usarlo qui.",
-      "lend": "Presta questo piano a chi non ne ha uno",
       "groupMine": "Solo per te",
       "groupWorkspace": "Per tutto il workspace",
       "groupAdmins": "solo admin"
@@ -2799,6 +2809,7 @@
       "cli_failedWhy": "{{name}} non può rispondere ora: l'IA del piano si è fermata con un errore ({{why}}).",
       "plan_limit": "{{name}} non può rispondere ora: il piano ha raggiunto il limite.",
       "plan_not_shared": "Collega il tuo piano per parlare con {{name}}: il piano del workspace risponde solo al suo proprietario.",
+      "plans_not_yours": "Il {{plan}} qui è solo di {{owner}}. Collega il tuo e rispondo.",
       "plan_unattended": "{{name}} non ha risposto: la richiesta non veniva da una persona, e il piano del workspace risponde solo al suo proprietario.",
       "runner_outdated": "{{name}} non può rispondere ora: il programma sul computer del piano va aggiornato.",
       "plan_tools": "{{name}} si è fermato prima di rispondere: l'IA del piano su quel computer non è rimasta negli strumenti di agentes.chat.",
@@ -2824,6 +2835,9 @@
       "channel": "Conservato. Gli agenti rispondono quando il workspace ha un piano agentes.chat."
     },
     "receipt": "Nessuno risponderà: nessuna IA collegata",
+    "notYours": {
+      "receipt": "Nessuno risponderà: il {{plan}} è solo di {{owner}}"
+    },
     "chip": "Nessuna IA"
   },
   "connectAi": {
@@ -4556,6 +4570,10 @@
     "planModelDropped": {
       "choose": "Scegli un altro modello"
     },
+    "planServes": {
+      "onlyMe": "Passa a Solo io",
+      "done": "Ora solo tu usi questo piano."
+    },
     "docTitleUnread": "({{count}}) Notifiche",
     "summaryWaiting_one": "{{count}} cosa ti aspetta",
     "summaryWaiting_many": "{{count}} cose ti aspettano",
@@ -4665,6 +4683,7 @@
       "browserProfileRequest": "<b>{{name}}</b> chiede un profilo browser in più per <b>{{agent}}</b>",
       "desktopTaken": "<b>{{name}}</b> ha preso il controllo dello schermo del computer di <b>{{agent}}</b>",
       "planLent": "<b>{{name}}</b> ha collegato il tuo piano {{plan}} a <b>{{agent}}</b>",
+      "planServes": "Il tuo {{plan}} ora serve tutto il workspace",
       "planModelDropped": "{{model}} è uscito da {{plan}}. <b>{{name}}</b> usa {{runs}} finché non scegli un altro modello.",
       "routineWaitingPlan": "<b>{{name}}</b> aspetta che il suo piano si azzeri per eseguire una routine",
       "planResetUnknown": "{{plan}} non ha detto quando si azzera il limite. Il lavoro di <b>{{name}}</b> è ancora in attesa.",
@@ -5121,7 +5140,7 @@
         "accountMove": "In uso da {{agents}} · Spostalo qui",
         "accountAlso": "Usato anche da {{agents}}",
         "accountOf": "Di {{name}}",
-        "accountOthers": "I piani di altre persone mostrano di chi sono. Il proprietario riceve un’email e può riprenderlo.",
+        "accountOthers": "I piani che servono tutto il workspace mostrano di chi sono.",
         "addAccount": "Aggiungi account",
         "signInAgain": "Accedi di nuovo",
         "connectPlan": "Collega un altro piano",
@@ -8003,6 +8022,12 @@
       "hintShort": "Ogni esecuzione fa queste azioni senza chiedere.",
       "noneShort": "Chiede l’approvazione di una persona prima di ogni azione.",
       "remove": "Torna a chiedere prima di: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "Chiavi del Vault che usa",
+      "hint": "Solo in questa routine, solo nei suoi comandi.",
+      "named": "la chiave {{key}} del Vault",
+      "remove": "Torna a chiedere prima di usare {{key}}"
     },
     "ahead": {
       "approved": "Approvata · parte {{when}}",
@@ -15775,6 +15800,20 @@
   "usageViews": {
     "signedOut": "Disconnesso",
     "whose": "di {{name}}",
+    "serves": {
+      "everyone": "Lo usano tutti",
+      "onlyYou": "Lo usi solo tu",
+      "only": "Lo usa solo {{name}}",
+      "someone": "il proprietario",
+      "label": "Chi lo usa",
+      "all": "Tutto il workspace",
+      "me": "Solo io",
+      "savedEveryone": "Ora tutto il workspace usa questo piano.",
+      "savedOwner": "Ora solo tu usi questo piano."
+    },
+    "logins_one": "{{count}} accesso",
+    "logins_many": "{{count}} accessi",
+    "logins_other": "{{count}} accessi",
     "noWindows": "Il limite compare dopo che questo account viene usato di nuovo.",
     "unused": "Nessun agente usa questo account.",
     "usesNow": "lo usa ora",
@@ -16471,6 +16510,7 @@
       "no_ai_cli_failedWhy": "Ora non posso rispondere: l'IA del mio piano si è fermata con un errore ({{why}}).",
       "no_ai_plan_limit": "Ora non posso rispondere: il piano con cui penso ha raggiunto il limite.",
       "no_ai_plan_not_shared": "Non posso risponderti con il piano del workspace: risponde solo al suo proprietario. Collega il tuo piano e ti risponderò.",
+      "no_ai_plans_not_yours": "Il {{plan}} qui è solo di {{owner}}. Collega il tuo e rispondo.",
       "no_ai_plan_unattended": "Non ho risposto: la richiesta non veniva da una persona, e il piano del workspace risponde solo al suo proprietario.",
       "no_ai_runner_outdated": "Ora non posso rispondere: il programma sul computer del mio piano va aggiornato.",
       "no_ai_plan_tools": "Mi sono fermato prima di rispondere: l'IA del mio piano su quel computer non è rimasta negli strumenti di agentes.chat.",

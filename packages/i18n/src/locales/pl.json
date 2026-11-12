@@ -1793,6 +1793,17 @@
     },
     "inviteHint": "Przez e-mail lub link",
     "profileHint": "Imię, zdjęcie i @",
+    "email": {
+      "label": "E-mail",
+      "title": "Zmień e-mail",
+      "new": "Nowy e-mail",
+      "help": "Zostajesz przy tym samym koncie, w tych samych workspace'ach i z tymi samymi planami.",
+      "change": "Zmień e-mail",
+      "sent": "Wysłaliśmy link na {{email}}. Twój e-mail zmieni się, gdy go otworzysz.",
+      "changed": "Gotowe: teraz logujesz się przez {{email}}.",
+      "same": "To już jest Twój e-mail.",
+      "noMail": "Ten serwer nie wysyła e-maili, więc nowego adresu nie da się potwierdzić. Poproś osobę, która zarządza serwerem, o skonfigurowanie wysyłki e-maili."
+    },
     "openOnPhone": "Otwórz na telefonie",
     "openOnPhoneHint": "Zaloguj się w aplikacji kodem QR",
     "addPassword": "Dodaj hasło",
@@ -2575,7 +2586,6 @@
       "workspace": "AI dla osób bez własnego planu",
       "workspaceHelp": "Osoby bez własnego planu rozmawiają z {{name}} przez tę AI.",
       "noPlans": "Połącz plan w sekcji AI i zużycie, aby użyć go tutaj.",
-      "lend": "Użycz tego planu osobom, które go nie mają",
       "groupMine": "Tylko dla ciebie",
       "groupWorkspace": "Dla całej przestrzeni roboczej",
       "groupAdmins": "tylko admini"
@@ -2894,6 +2904,7 @@
       "cli_failedWhy": "{{name}} nie może teraz odpowiedzieć: AI planu zatrzymała się z błędem ({{why}}).",
       "plan_limit": "{{name}} nie może teraz odpowiedzieć: plan osiągnął limit.",
       "plan_not_shared": "Połącz własny plan, aby rozmawiać z {{name}}: plan workspace'u odpowiada tylko swojemu właścicielowi.",
+      "plans_not_yours": "{{plan}} tutaj jest tylko dla {{owner}}. Połącz własny, a odpowiem.",
       "plan_unattended": "{{name}} nie odpowie: prośba nie pochodzi od osoby, a plan workspace'u odpowiada tylko swojemu właścicielowi.",
       "runner_outdated": "{{name}} nie może teraz odpowiedzieć: program na komputerze planu wymaga aktualizacji.",
       "plan_tools": "{{name}} zatrzymał się przed odpowiedzią: AI planu na tym komputerze nie pozostała przy narzędziach agentes.chat.",
@@ -2919,6 +2930,9 @@
       "channel": "Zachowano. Agenci odpowiedzą, gdy workspace będzie mieć plan agentes.chat."
     },
     "receipt": "Nikt nie odpowie: brak podłączonego AI",
+    "notYours": {
+      "receipt": "Nikt nie odpowie: {{plan}} jest tylko dla {{owner}}"
+    },
     "chip": "Brak AI"
   },
   "connectAi": {
@@ -4704,6 +4718,10 @@
     "planModelDropped": {
       "choose": "Wybierz inny model"
     },
+    "planServes": {
+      "onlyMe": "Zmień na Tylko ja",
+      "done": "Teraz tylko Ty używasz tego planu."
+    },
     "docTitleUnread": "({{count}}) Powiadomienia",
     "summaryWaiting_one": "{{count}} rzecz czeka na ciebie",
     "summaryWaiting_few": "{{count}} rzeczy czekają na ciebie",
@@ -4821,6 +4839,7 @@
       "browserProfileRequest": "<b>{{name}}</b> prosi o kolejny profil przeglądarki dla <b>{{agent}}</b>",
       "desktopTaken": "Ekran komputera <b>{{agent}}</b> przejęty przez <b>{{name}}</b>",
       "planLent": "<b>{{name}}</b> połączył(a) twój plan {{plan}} z agentem <b>{{agent}}</b>",
+      "planServes": "Twój {{plan}} obsługuje teraz cały workspace",
       "planModelDropped": "{{model}} zniknął z {{plan}}. <b>{{name}}</b> używa {{runs}}, dopóki nie wybierzesz innego modelu.",
       "routineWaitingPlan": "<b>{{name}}</b> czeka na odnowienie limitu planu, by uruchomić rutynę",
       "planResetUnknown": "{{plan}} nie podaje, kiedy odnowi się limit. Praca <b>{{name}}</b> nadal czeka.",
@@ -5288,7 +5307,7 @@
         "accountMove": "Używane przez: {{agents}} · Przenieś tutaj",
         "accountAlso": "Używane też przez: {{agents}}",
         "accountOf": "Należy do: {{name}}",
-        "accountOthers": "Plany innych osób pokazują, czyje są. Właściciel dostaje e-mail i może go odebrać.",
+        "accountOthers": "Plany obsługujące cały workspace pokazują, czyje są.",
         "addAccount": "Dodaj konto",
         "signInAgain": "Zaloguj się ponownie",
         "connectPlan": "Połącz inny plan",
@@ -8222,6 +8241,12 @@
       "hintShort": "Każde uruchomienie robi to bez pytania.",
       "noneShort": "Przed każdą akcją prosi osobę o zgodę.",
       "remove": "Znowu pytaj przed: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "Klucze z Vault, których używa",
+      "hint": "Tylko w tej rutynie, tylko w jej poleceniach.",
+      "named": "klucz {{key}} z Vault",
+      "remove": "Znowu pytaj przed użyciem {{key}}"
     },
     "ahead": {
       "approved": "Zatwierdzone · uruchomi się {{when}}",
@@ -16255,6 +16280,21 @@
   "usageViews": {
     "signedOut": "Wylogowane",
     "whose": "Należy do: {{name}}",
+    "serves": {
+      "everyone": "Używają wszyscy",
+      "onlyYou": "Używasz tylko Ty",
+      "only": "Używa tylko {{name}}",
+      "someone": "właściciel",
+      "label": "Kto używa",
+      "all": "Cały workspace",
+      "me": "Tylko ja",
+      "savedEveryone": "Teraz cały workspace używa tego planu.",
+      "savedOwner": "Teraz tylko Ty używasz tego planu."
+    },
+    "logins_one": "{{count}} logowanie",
+    "logins_few": "{{count}} logowania",
+    "logins_many": "{{count}} logowań",
+    "logins_other": "{{count}} logowania",
     "noWindows": "Limit pojawi się, gdy to konto zostanie znowu użyte.",
     "unused": "Żaden agent nie używa tego konta.",
     "usesNow": "używa go teraz",
@@ -16962,6 +17002,7 @@
       "no_ai_cli_failedWhy": "Nie mogę teraz odpowiedzieć: AI mojego planu zatrzymała się z błędem ({{why}}).",
       "no_ai_plan_limit": "Nie mogę teraz odpowiedzieć: plan, z którym myślę, osiągnął limit.",
       "no_ai_plan_not_shared": "Nie mogę Ci odpowiedzieć przez plan workspace'u: odpowiada tylko swojemu właścicielowi. Połącz własny plan, a odpowiem.",
+      "no_ai_plans_not_yours": "{{plan}} tutaj jest tylko dla {{owner}}. Połącz własny, a odpowiem.",
       "no_ai_plan_unattended": "Nie odpowiem: prośba nie pochodzi od osoby, a plan workspace'u odpowiada tylko swojemu właścicielowi.",
       "no_ai_runner_outdated": "Nie mogę teraz odpowiedzieć: program na komputerze mojego planu wymaga aktualizacji.",
       "no_ai_plan_tools": "Zatrzymałem się przed odpowiedzią: AI mojego planu na tym komputerze nie pozostała przy narzędziach agentes.chat.",

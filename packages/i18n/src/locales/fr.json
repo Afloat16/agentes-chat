@@ -1752,6 +1752,17 @@
     },
     "inviteHint": "Par e-mail ou lien",
     "profileHint": "Nom, photo et @",
+    "email": {
+      "label": "E-mail",
+      "title": "Changer d'e-mail",
+      "new": "Nouvel e-mail",
+      "help": "Vous gardez le même compte, dans les mêmes workspaces et avec les mêmes forfaits.",
+      "change": "Changer d'e-mail",
+      "sent": "Nous avons envoyé un lien à {{email}}. Votre e-mail change quand vous l'ouvrez.",
+      "changed": "C'est fait : vous vous connectez désormais avec {{email}}.",
+      "same": "C'est déjà votre e-mail.",
+      "noMail": "Ce serveur n'envoie pas d'e-mails, donc la nouvelle adresse ne peut pas être confirmée. Demandez à la personne qui gère le serveur de configurer l'envoi d'e-mails."
+    },
     "openOnPhone": "Ouvrir sur votre téléphone",
     "openOnPhoneHint": "Se connecter à l'app avec un QR code",
     "addPassword": "Ajouter un mot de passe",
@@ -2492,7 +2503,6 @@
       "workspace": "IA des personnes sans forfait à elles",
       "workspaceHelp": "Les personnes sans forfait à elles parlent à {{name}} par cette IA.",
       "noPlans": "Connectez un forfait dans IA et utilisation pour l'utiliser ici.",
-      "lend": "Prêter ce forfait à ceux qui n’en ont pas",
       "groupMine": "Rien que pour vous",
       "groupWorkspace": "Pour tout le workspace",
       "groupAdmins": "admins uniquement"
@@ -2798,6 +2808,7 @@
       "cli_failedWhy": "{{name}} ne peut pas répondre maintenant : l'IA de l'abonnement s'est arrêtée sur une erreur ({{why}}).",
       "plan_limit": "{{name}} ne peut pas répondre maintenant : l'abonnement a atteint sa limite.",
       "plan_not_shared": "Connectez votre propre forfait pour parler à {{name}} : le forfait du workspace ne répond qu'à son propriétaire.",
+      "plans_not_yours": "Le {{plan}} d'ici est seulement à {{owner}}. Connectez le vôtre et je réponds.",
       "plan_unattended": "{{name}} n'a pas répondu : la demande ne venait pas d'une personne, et le forfait du workspace ne répond qu'à son propriétaire.",
       "runner_outdated": "{{name}} ne peut pas répondre pour l'instant : le programme sur l'ordinateur de l'abonnement doit être mis à jour.",
       "plan_tools": "{{name}} s'est arrêté avant de répondre : l'IA de l'abonnement sur cet ordinateur n'est pas restée dans les outils d'agentes.chat.",
@@ -2823,6 +2834,9 @@
       "channel": "Gardé. Les agents répondent dès que le workspace a un abonnement agentes.chat."
     },
     "receipt": "Personne ne répondra : aucune IA connectée",
+    "notYours": {
+      "receipt": "Personne ne répondra : le {{plan}} est seulement à {{owner}}"
+    },
     "chip": "Sans IA"
   },
   "connectAi": {
@@ -4556,6 +4570,10 @@
     "planModelDropped": {
       "choose": "Choisir un autre modèle"
     },
+    "planServes": {
+      "onlyMe": "Passer à Moi seul",
+      "done": "Vous êtes désormais seul à utiliser ce forfait."
+    },
     "docTitleUnread": "({{count}}) Notifications",
     "summaryWaiting_one": "{{count}} chose vous attend",
     "summaryWaiting_many": "{{count}} choses vous attendent",
@@ -4664,6 +4682,7 @@
       "browserProfileRequest": "<b>{{name}}</b> demande un profil de navigateur de plus pour <b>{{agent}}</b>",
       "desktopTaken": "<b>{{name}}</b> a pris le contrôle de l'écran de l'ordinateur de <b>{{agent}}</b>",
       "planLent": "<b>{{name}}</b> a connecté votre forfait {{plan}} à <b>{{agent}}</b>",
+      "planServes": "Votre {{plan}} sert désormais tout le workspace",
       "planModelDropped": "{{model}} a quitté {{plan}}. <b>{{name}}</b> utilise {{runs}} jusqu’à ce que tu choisisses un autre modèle.",
       "routineWaitingPlan": "<b>{{name}}</b> attend la réinitialisation de son abonnement pour exécuter une routine",
       "planResetUnknown": "{{plan}} n'a pas indiqué quand sa limite se réinitialise. Le travail de <b>{{name}}</b> attend toujours.",
@@ -5119,7 +5138,7 @@
         "accountMove": "Utilisé par {{agents}} · Le déplacer ici",
         "accountAlso": "Aussi utilisé par {{agents}}",
         "accountOf": "De {{name}}",
-        "accountOthers": "Les forfaits d’autres personnes indiquent à qui ils sont. Leur propriétaire reçoit un e-mail et peut les reprendre.",
+        "accountOthers": "Les forfaits qui servent tout le workspace indiquent à qui ils sont.",
         "addAccount": "Ajouter un compte",
         "signInAgain": "Se reconnecter",
         "connectPlan": "Connecter un autre abonnement",
@@ -7999,6 +8018,12 @@
       "hintShort": "Chaque exécution fait cela sans demander.",
       "noneShort": "Elle demande l’accord d’une personne avant chaque action.",
       "remove": "Redemander avant : {{action}}"
+    },
+    "vaultKeys": {
+      "title": "Clés du Vault utilisées",
+      "hint": "Seulement dans cette routine, seulement dans ses commandes.",
+      "named": "la clé {{key}} du Vault",
+      "remove": "Redemander avant d'utiliser {{key}}"
     },
     "ahead": {
       "approved": "Approuvée · s'exécute {{when}}",
@@ -15765,6 +15790,20 @@
   "usageViews": {
     "signedOut": "Déconnecté",
     "whose": "De {{name}}",
+    "serves": {
+      "everyone": "Tout le monde l'utilise",
+      "onlyYou": "Vous seul l'utilisez",
+      "only": "Seul {{name}} l'utilise",
+      "someone": "son propriétaire",
+      "label": "Qui l'utilise",
+      "all": "Tout le workspace",
+      "me": "Moi seul",
+      "savedEveryone": "Tout le workspace utilise désormais ce forfait.",
+      "savedOwner": "Vous êtes désormais seul à utiliser ce forfait."
+    },
+    "logins_one": "{{count}} connexion",
+    "logins_many": "{{count}} connexions",
+    "logins_other": "{{count}} connexions",
     "noWindows": "La limite s'affiche une fois que ce compte est de nouveau utilisé.",
     "unused": "Aucun agent n'utilise ce compte.",
     "usesNow": "l'utilise en ce moment",
@@ -16467,6 +16506,7 @@
       "no_ai_cli_failedWhy": "Je ne peux pas répondre maintenant : l'IA de mon abonnement s'est arrêtée sur une erreur ({{why}}).",
       "no_ai_plan_limit": "Je ne peux pas répondre maintenant : l'abonnement avec lequel je réfléchis a atteint sa limite.",
       "no_ai_plan_not_shared": "Je ne peux pas vous répondre par le forfait du workspace : il ne répond qu'à son propriétaire. Connectez votre propre forfait et je répondrai.",
+      "no_ai_plans_not_yours": "Le {{plan}} d'ici est seulement à {{owner}}. Connectez le vôtre et je réponds.",
       "no_ai_plan_unattended": "Je n'ai pas répondu : la demande ne venait pas d'une personne, et le forfait du workspace ne répond qu'à son propriétaire.",
       "no_ai_runner_outdated": "Je ne peux pas répondre pour l'instant : le programme sur l'ordinateur de mon abonnement doit être mis à jour.",
       "no_ai_plan_tools": "Je me suis arrêté avant de répondre : l'IA de mon abonnement sur cet ordinateur n'est pas restée dans les outils d'agentes.chat.",

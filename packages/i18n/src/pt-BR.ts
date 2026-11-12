@@ -1728,6 +1728,19 @@ export const ptBR = {
     },
     inviteHint: "Por email ou link",
     profileHint: "Nome, foto e @",
+    /** Sua conta › E-mail: the same account under a new address, confirmed by a link to it. */
+    email: {
+      label: "E-mail",
+      title: "Mudar e-mail",
+      new: "Novo e-mail",
+      help: "Você continua com a mesma conta, nos mesmos workspaces e com os mesmos planos.",
+      change: "Mudar e-mail",
+      sent: "Enviamos um link para {{email}}. O seu e-mail muda quando você abrir o link.",
+      changed: "Pronto: agora você entra com {{email}}.",
+      same: "Esse já é o seu e-mail.",
+      noMail:
+        "Este servidor não envia e-mails, então não dá para confirmar o novo endereço. Peça a quem cuida do servidor para configurar o envio de e-mails.",
+    },
     openOnPhone: "Abrir no celular",
     openOnPhoneHint: "Entre no app com um QR code",
     addPassword: "Adicionar uma senha",
@@ -2464,7 +2477,6 @@ export const ptBR = {
       workspaceHelp: "Quem não tem plano próprio conversa com o {{name}} por esta IA.",
       workspaceHelp_female: "Quem não tem plano próprio conversa com a {{name}} por esta IA.",
       noPlans: "Conecte um plano em IA e uso para usar aqui.",
-      lend: "Emprestar este plano a quem não tem um",
       groupMine: "Só para você",
       groupWorkspace: "Para todo o workspace",
       groupAdmins: "só admins",
@@ -2788,6 +2800,8 @@ export const ptBR = {
       plan_limit: "{{name}} não consegue responder agora: o plano chegou ao limite.",
       plan_not_shared:
         "Conecte o seu plano para conversar com {{name}}: o plano do workspace só atende o próprio dono.",
+      /** Every plan here serves only the person who connected it (ADR 0059 §3): `owner` (first name) and `plan` ("Claude"). */
+      plans_not_yours: "O {{plan}} daqui é só de {{owner}}. Conecte o seu e eu respondo.",
       /** Um pedido que não veio de uma pessoa (de outro agente, de uma rotina): o plano de ninguém responderia a ele. */
       plan_unattended:
         "{{name}} não respondeu: o pedido não veio de uma pessoa, e o plano do workspace só atende o próprio dono.",
@@ -2826,6 +2840,8 @@ export const ptBR = {
       channel: "Guardada. Os agentes respondem quando o workspace tiver um plano do agentes.chat.",
     },
     receipt: "Ninguém vai responder: falta uma IA",
+    /** Under a person's message when every plan here serves only someone else (`plans_not_yours`). */
+    notYours: { receipt: "Ninguém vai responder: o {{plan}} é só de {{owner}}" },
     chip: "Sem IA",
   },
   /** The Connect dialog: its first step and the plan sign-in around the existing flows. */
@@ -4603,6 +4619,8 @@ export const ptBR = {
     },
     /** Under `plan_model_dropped`: opens the agent's "Quem pensa". */
     planModelDropped: { choose: "Escolher outro modelo" },
+    /** Under `plan_serves`: the person's plan serves only them again. */
+    planServes: { onlyMe: "Mudar para Só eu", done: "Agora só você usa este plano." },
     docTitleUnread: "({{count}}) Notificações",
     summaryWaiting_one: "{{count}} coisa esperando você",
     summaryWaiting_other: "{{count}} coisas esperando você",
@@ -4703,6 +4721,8 @@ export const ptBR = {
       /** Someone gave an agent the person's plan (`plan_lent`): `plan` its maker ("Claude"). */
       planLent: "<b>{{name}}</b> conectou o seu plano do {{plan}} ao\u00a0<b>{{agent}}</b>",
       planLent_female: "<b>{{name}}</b> conectou o seu plano do {{plan}} à\u00a0<b>{{agent}}</b>",
+      /** The person's plan now serves everyone in the workspace (`plan_serves`): `plan` its maker ("Claude"). */
+      planServes: "Seu {{plan}} agora atende o workspace todo",
       /** The agent's model left its plan's list (`plan_model_dropped`): `runs` the model it uses now. */
       planModelDropped:
         "O {{model}} saiu do {{plan}}. <b>{{name}}</b> está usando o {{runs}} até você escolher outro modelo.",
@@ -5154,8 +5174,7 @@ export const ptBR = {
         accountAlso: "Também usada por {{agents}}",
         accountOf: "De {{name}}",
         /** Under the account for someone who may use other people's plans (`use_others_plans`). */
-        accountOthers:
-          "Os planos de outras pessoas mostram de quem são. O dono recebe um e-mail e pode tirar de volta.",
+        accountOthers: "Os planos que atendem o workspace todo mostram de quem são.",
         addAccount: "Adicionar conta",
         signInAgain: "Entrar de novo",
         connectPlan: "Conectar outro plano",
@@ -8011,6 +8030,14 @@ export const ptBR = {
       hintShort: "Cada execução faz isso sem pedir.",
       noneShort: "Ela pede aprovação antes de cada ação.",
       remove: "Voltar a pedir antes de: {{action}}",
+    },
+    /** Vault keys a routine's commands may use without asking (`vault:NAME` own actions, ADR 0144 §2). */
+    vaultKeys: {
+      title: "Chaves do Vault que usa",
+      hint: "Só nesta rotina, só em comandos dela.",
+      /** One key in a sentence of actions ("Faz sozinha: …"). */
+      named: "a chave {{key}} do Vault",
+      remove: "Voltar a pedir antes de usar {{key}}",
     },
     /** Actions prepared for its runs (`schedule_action`), on its page. */
     ahead: {
@@ -15322,6 +15349,21 @@ export const ptBR = {
   usageViews: {
     signedOut: "Saiu da conta",
     whose: "de {{name}}",
+    /** Who uses a plan (ADR 0059 §3): its row's status, and the choice in its details for whoever connected it. */
+    serves: {
+      everyone: "Todos usam",
+      onlyYou: "Só você usa",
+      only: "Só {{name}} usa",
+      someone: "o dono",
+      label: "Quem usa",
+      all: "Todos do workspace",
+      me: "Só eu",
+      savedEveryone: "Agora todos do workspace usam este plano.",
+      savedOwner: "Agora só você usa este plano.",
+    },
+    /** One row for several logins of one account. */
+    logins_one: "{{count}} login",
+    logins_other: "{{count}} logins",
     noWindows: "O limite aparece depois do próximo uso desta conta.",
     unused: "Nenhum agente usa esta conta.",
     usesNow: "usa agora",
@@ -16095,6 +16137,7 @@ export const ptBR = {
       no_ai_plan_limit: "Agora não consigo responder: o plano com que eu penso chegou ao limite.",
       no_ai_plan_not_shared:
         "Não consigo te responder pelo plano do workspace: ele só atende o próprio dono. Conecte o seu plano e eu respondo.",
+      no_ai_plans_not_yours: "O {{plan}} daqui é só de {{owner}}. Conecte o seu e eu respondo.",
       no_ai_plan_unattended:
         "Não respondi: o pedido não veio de uma pessoa, e o plano do workspace só atende o próprio dono.",
       no_ai_runner_outdated:

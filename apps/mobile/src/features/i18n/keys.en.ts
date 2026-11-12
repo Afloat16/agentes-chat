@@ -1036,6 +1036,8 @@ export const featureKeysEn = {
       plan_lent_other: "{{names}} connected your {{plan}} plan to {{agent}}",
       plan_lent_female_one: "{{names}} connected your {{plan}} plan to {{agent}}",
       plan_lent_female_other: "{{names}} connected your {{plan}} plan to {{agent}}",
+      plan_serves_one: "Your {{plan}} now serves the whole workspace",
+      plan_serves_other: "Your {{plan}} now serves the whole workspace",
       /** An agent's model left its plan's list (`plan_model_dropped`): `runs` the model it uses now. */
       plan_model_dropped_one: "{{model}} left {{plan}}. {{names}} is using {{runs}} for now",
       plan_model_dropped_other: "{{model}} left {{plan}}. {{names}} is using {{runs}} for now",

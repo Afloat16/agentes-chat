@@ -1670,6 +1670,17 @@
     },
     "inviteHint": "이메일 또는 링크로",
     "profileHint": "이름, 사진, @",
+    "email": {
+      "label": "이메일",
+      "title": "이메일 변경",
+      "new": "새 이메일",
+      "help": "같은 계정, 같은 workspace, 같은 플랜을 그대로 사용해요.",
+      "change": "이메일 변경",
+      "sent": "{{email}}(으)로 링크를 보냈어요. 링크를 열면 이메일이 바뀌어요.",
+      "changed": "완료: 이제 {{email}}(으)로 로그인해요.",
+      "same": "이미 사용 중인 이메일이에요.",
+      "noMail": "이 서버는 이메일을 보내지 않아 새 주소를 확인할 수 없어요. 서버 관리자에게 이메일 발송 설정을 요청하세요."
+    },
     "openOnPhone": "휴대폰에서 열기",
     "openOnPhoneHint": "QR 코드로 앱에 로그인",
     "addPassword": "비밀번호 추가",
@@ -2322,7 +2333,6 @@
       "workspace": "자기 플랜이 없는 사람의 AI",
       "workspaceHelp": "자기 플랜이 없는 사람은 이 AI로 {{name}}과(와) 대화해요.",
       "noPlans": "여기서 쓰려면 AI와 사용량에서 플랜을 연결하세요.",
-      "lend": "플랜이 없는 사람에게 이 플랜 빌려주기",
       "groupMine": "나만",
       "groupWorkspace": "워크스페이스 전체",
       "groupAdmins": "관리자만"
@@ -2600,6 +2610,7 @@
       "cli_failedWhy": "{{name}}은(는) 지금 답할 수 없어요: 요금제의 AI가 오류로 멈췄어요({{why}}).",
       "plan_limit": "{{name}}은(는) 지금 답할 수 없어요: 요금제가 한도에 도달했어요.",
       "plan_not_shared": "{{name}}과(와) 대화하려면 내 플랜을 연결하세요. 워크스페이스 플랜은 소유자에게만 답해요.",
+      "plans_not_yours": "여기 {{plan}}은(는) {{owner}}님 전용이에요. 내 것을 연결하면 답할게요.",
       "plan_unattended": "{{name}}은(는) 답하지 않았어요. 사람이 보낸 요청이 아니고, 워크스페이스 플랜은 소유자에게만 답해요.",
       "runner_outdated": "{{name}}은(는) 지금 답할 수 없어요: 요금제 컴퓨터의 프로그램을 업데이트해야 해요.",
       "plan_tools": "{{name}}은(는) 답하기 전에 멈췄어요: 그 컴퓨터에서 요금제의 AI가 agentes.chat 도구 안에 머물지 않았어요.",
@@ -2625,6 +2636,9 @@
       "channel": "보관됨. 워크스페이스에 agentes.chat 요금제가 생기면 에이전트가 답해요."
     },
     "receipt": "아무도 답하지 않아요: 연결된 AI 없음",
+    "notYours": {
+      "receipt": "아무도 답하지 않아요: {{plan}}은(는) {{owner}}님 전용이에요"
+    },
     "chip": "AI 없음"
   },
   "connectAi": {
@@ -4285,6 +4299,10 @@
     "planModelDropped": {
       "choose": "다른 모델 고르기"
     },
+    "planServes": {
+      "onlyMe": "나만 사용으로 변경",
+      "done": "이제 이 플랜은 나만 사용해요."
+    },
     "docTitleUnread": "({{count}}) 알림",
     "summaryWaiting_other": "내 확인을 기다리는 항목 {{count}}개",
     "summaryUnread_other": "{{count}}개 읽지 않음",
@@ -4375,6 +4393,7 @@
       "browserProfileRequest": "<b>{{name}}</b> 님이 <b>{{agent}}</b>의 브라우저 프로필을 하나 더 요청해요",
       "desktopTaken": "<b>{{name}}</b> 님이 <b>{{agent}}</b>의 컴퓨터 화면 제어를 넘겨받았어요",
       "planLent": "<b>{{name}}</b> 님이 내 {{plan}} 플랜을 <b>{{agent}}</b>에 연결했어요",
+      "planServes": "내 {{plan}}이(가) 이제 workspace 전체를 지원해요",
       "planModelDropped": "{{model}} 모델이 {{plan}}에서 빠졌어요. 다른 모델을 고를 때까지 <b>{{name}}</b>은(는) {{runs}}을(를) 써요.",
       "routineWaitingPlan": "<b>{{name}}</b>이(가) 루틴을 실행하려고 요금제 한도가 초기화되기를 기다리고 있어요",
       "planResetUnknown": "{{plan}}이(가) 한도 초기화 시점을 알려 주지 않았어요. <b>{{name}}</b>의 작업은 계속 대기 중이에요.",
@@ -4787,7 +4806,7 @@
         "accountMove": "{{agents}}이(가) 사용 중 · 여기로 옮기기",
         "accountAlso": "{{agents}}도 사용 중",
         "accountOf": "{{name}}님의 계정",
-        "accountOthers": "다른 사람의 플랜에는 주인이 표시돼요. 주인은 이메일을 받고 되돌려 받을 수 있어요.",
+        "accountOthers": "workspace 전체를 지원하는 플랜에는 소유자가 표시돼요.",
         "addAccount": "계정 추가",
         "signInAgain": "다시 로그인",
         "connectPlan": "다른 요금제 연결",
@@ -7479,6 +7498,12 @@
       "hintShort": "실행할 때마다 이 작업을 묻지 않고 수행해요.",
       "noneShort": "작업마다 먼저 사람의 승인을 받아요.",
       "remove": "다시 묻기: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "사용하는 Vault 키",
+      "hint": "이 루틴의 명령에서만 사용해요.",
+      "named": "Vault 키 {{key}}",
+      "remove": "{{key}} 사용 전에 다시 묻기"
     },
     "ahead": {
       "approved": "승인됨 · {{when}} 실행",
@@ -14754,6 +14779,18 @@
   "usageViews": {
     "signedOut": "로그아웃됨",
     "whose": "{{name}}의 계정",
+    "serves": {
+      "everyone": "모두 사용",
+      "onlyYou": "나만 사용",
+      "only": "{{name}}님만 사용",
+      "someone": "소유자",
+      "label": "사용하는 사람",
+      "all": "workspace 전체",
+      "me": "나만",
+      "savedEveryone": "이제 workspace 전체가 이 플랜을 사용해요.",
+      "savedOwner": "이제 이 플랜은 나만 사용해요."
+    },
+    "logins_other": "로그인 {{count}}개",
     "noWindows": "이 계정을 다시 사용하면 한도가 표시돼요.",
     "unused": "이 계정을 사용하는 에이전트가 없어요.",
     "usesNow": "지금 사용 중",
@@ -15422,6 +15459,7 @@
       "no_ai_cli_failedWhy": "지금은 답할 수 없어요: 내 요금제의 AI가 오류로 멈췄어요({{why}}).",
       "no_ai_plan_limit": "지금은 답할 수 없어요: 내가 쓰는 요금제가 한도에 도달했어요.",
       "no_ai_plan_not_shared": "워크스페이스 플랜으로는 답할 수 없어요. 소유자에게만 답하거든요. 내 플랜을 연결하면 답할게요.",
+      "no_ai_plans_not_yours": "여기 {{plan}}은(는) {{owner}}님 전용이에요. 내 것을 연결하면 답할게요.",
       "no_ai_plan_unattended": "답하지 않았어요. 사람이 보낸 요청이 아니고, 워크스페이스 플랜은 소유자에게만 답해요.",
       "no_ai_runner_outdated": "지금은 답할 수 없어요: 제 요금제 컴퓨터의 프로그램을 업데이트해야 해요.",
       "no_ai_plan_tools": "답하기 전에 멈췄어요: 그 컴퓨터에서 내 요금제의 AI가 agentes.chat 도구 안에 머물지 않았어요.",

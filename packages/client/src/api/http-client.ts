@@ -188,6 +188,7 @@ import type {
   PersonUsage,
   PhoneDevice,
   PhoneSignIn,
+  PlanServes,
   Poll,
   Proposal,
   ReactionCount,
@@ -1291,6 +1292,11 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
       takeBackPlan: (orgId, accountId, agentId) =>
         request<{ agentIds: string[] }>(`${org(orgId)}/ai-accounts/${enc(accountId)}/take-back`, {
           json: agentId ? { agentId } : {},
+        }),
+      setAccountServes: (orgId, accountId, serves) =>
+        request<{ serves: PlanServes; agentIds: string[] }>(`${org(orgId)}/ai-accounts/${enc(accountId)}/serves`, {
+          method: "PUT",
+          json: { serves },
         }),
       renameAccount: (orgId, machineId, accountId, label) =>
         request<MachineAccount>(`${org(orgId)}/machines/${enc(machineId)}/accounts/${enc(accountId)}`, {

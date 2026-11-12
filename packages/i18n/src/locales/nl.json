@@ -1710,6 +1710,17 @@
     },
     "inviteHint": "Via e-mail of link",
     "profileHint": "Naam, foto en @",
+    "email": {
+      "label": "E-mail",
+      "title": "E-mail wijzigen",
+      "new": "Nieuw e-mailadres",
+      "help": "Je houdt hetzelfde account, in dezelfde workspaces en met dezelfde abonnementen.",
+      "change": "E-mail wijzigen",
+      "sent": "We hebben een link naar {{email}} gestuurd. Je e-mailadres verandert zodra je hem opent.",
+      "changed": "Klaar: je logt nu in met {{email}}.",
+      "same": "Dat is al je e-mailadres.",
+      "noMail": "Deze server verstuurt geen e-mail, dus het nieuwe adres kan niet worden bevestigd. Vraag wie de server beheert om e-mail in te stellen."
+    },
     "openOnPhone": "Openen op je telefoon",
     "openOnPhoneHint": "Log in op de app met een QR-code",
     "addPassword": "Een wachtwoord toevoegen",
@@ -2404,7 +2415,6 @@
       "workspace": "AI voor wie geen eigen abonnement heeft",
       "workspaceHelp": "Wie geen eigen abonnement heeft, praat via deze AI met {{name}}.",
       "noPlans": "Koppel een abonnement onder AI en gebruik om het hier te gebruiken.",
-      "lend": "Dit abonnement uitlenen aan wie er geen heeft",
       "groupMine": "Alleen voor jou",
       "groupWorkspace": "Voor de hele workspace",
       "groupAdmins": "alleen admins"
@@ -2703,6 +2713,7 @@
       "cli_failedWhy": "{{name}} kan nu niet antwoorden: de AI van het abonnement is gestopt met een fout ({{why}}).",
       "plan_limit": "{{name}} kan nu niet antwoorden: het abonnement heeft zijn limiet bereikt.",
       "plan_not_shared": "Koppel je eigen abonnement om met {{name}} te praten: het abonnement van de workspace antwoordt alleen de eigenaar.",
+      "plans_not_yours": "De {{plan}} hier is alleen van {{owner}}. Koppel je eigen en ik antwoord.",
       "plan_unattended": "{{name}} heeft niet geantwoord: het verzoek kwam niet van een persoon, en het abonnement van de workspace antwoordt alleen de eigenaar.",
       "runner_outdated": "{{name}} kan nu niet antwoorden: het programma op de computer van het abonnement heeft een update nodig.",
       "plan_tools": "{{name}} stopte voordat het antwoordde: de AI van het abonnement op die computer bleef niet binnen de tools van agentes.chat.",
@@ -2728,6 +2739,9 @@
       "channel": "Bewaard. De agents antwoorden zodra de workspace een agentes.chat-abonnement heeft."
     },
     "receipt": "Niemand antwoordt: geen AI gekoppeld",
+    "notYours": {
+      "receipt": "Niemand antwoordt: de {{plan}} is alleen van {{owner}}"
+    },
     "chip": "Geen AI"
   },
   "connectAi": {
@@ -4436,6 +4450,10 @@
     "planModelDropped": {
       "choose": "Ander model kiezen"
     },
+    "planServes": {
+      "onlyMe": "Wijzig naar Alleen ik",
+      "done": "Nu gebruik alleen jij dit abonnement."
+    },
     "docTitleUnread": "({{count}}) Meldingen",
     "summaryWaiting_one": "{{count}} ding wacht op jou",
     "summaryWaiting_other": "{{count}} dingen wachten op jou",
@@ -4536,6 +4554,7 @@
       "browserProfileRequest": "<b>{{name}}</b> vraagt om nog een browserprofiel voor <b>{{agent}}</b>",
       "desktopTaken": "<b>{{name}}</b> heeft het scherm van de computer van <b>{{agent}}</b> overgenomen",
       "planLent": "<b>{{name}}</b> heeft je {{plan}}-abonnement aan <b>{{agent}}</b> gekoppeld",
+      "planServes": "Je {{plan}} bedient nu de hele workspace",
       "planModelDropped": "{{model}} is uit {{plan}} gehaald. <b>{{name}}</b> gebruikt {{runs}} tot je een ander model kiest.",
       "routineWaitingPlan": "<b>{{name}}</b> wacht tot zijn abonnement wordt gereset om een routine uit te voeren",
       "planResetUnknown": "{{plan}} heeft niet gezegd wanneer de limiet wordt gereset. Het werk van <b>{{name}}</b> wacht nog.",
@@ -4980,7 +4999,7 @@
         "accountMove": "In gebruik door {{agents}} · Hierheen verplaatsen",
         "accountAlso": "Ook gebruikt door {{agents}}",
         "accountOf": "Van {{name}}",
-        "accountOthers": "Abonnementen van anderen laten zien van wie ze zijn. De eigenaar krijgt een e-mail en kan het terugnemen.",
+        "accountOthers": "Abonnementen voor de hele workspace laten zien van wie ze zijn.",
         "addAccount": "Account toevoegen",
         "signInAgain": "Opnieuw inloggen",
         "connectPlan": "Ander abonnement koppelen",
@@ -7787,6 +7806,12 @@
       "hintShort": "Elke run doet dit zonder te vragen.",
       "noneShort": "Ze vraagt voor elke actie eerst een persoon om goedkeuring.",
       "remove": "Weer vragen vóór: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "Vault-sleutels die ze gebruikt",
+      "hint": "Alleen in deze routine, alleen in haar commando's.",
+      "named": "de Vault-sleutel {{key}}",
+      "remove": "Weer vragen voordat {{key}} wordt gebruikt"
     },
     "ahead": {
       "approved": "Goedgekeurd · draait {{when}}",
@@ -15343,6 +15368,19 @@
   "usageViews": {
     "signedOut": "Uitgelogd",
     "whose": "Van {{name}}",
+    "serves": {
+      "everyone": "Iedereen gebruikt het",
+      "onlyYou": "Alleen jij gebruikt het",
+      "only": "Alleen {{name}} gebruikt het",
+      "someone": "de eigenaar",
+      "label": "Wie het gebruikt",
+      "all": "Hele workspace",
+      "me": "Alleen ik",
+      "savedEveryone": "Nu gebruikt de hele workspace dit abonnement.",
+      "savedOwner": "Nu gebruik alleen jij dit abonnement."
+    },
+    "logins_one": "{{count}} aanmelding",
+    "logins_other": "{{count}} aanmeldingen",
     "noWindows": "De limiet verschijnt zodra dit account weer wordt gebruikt.",
     "unused": "Geen agent gebruikt dit account.",
     "usesNow": "gebruikt het nu",
@@ -16028,6 +16066,7 @@
       "no_ai_cli_failedWhy": "Ik kan nu niet antwoorden: de AI van mijn abonnement is gestopt met een fout ({{why}}).",
       "no_ai_plan_limit": "Ik kan nu niet antwoorden: het abonnement waarmee ik denk heeft zijn limiet bereikt.",
       "no_ai_plan_not_shared": "Ik kan je niet antwoorden via het abonnement van de workspace: het antwoordt alleen de eigenaar. Koppel je eigen abonnement, dan antwoord ik.",
+      "no_ai_plans_not_yours": "De {{plan}} hier is alleen van {{owner}}. Koppel je eigen en ik antwoord.",
       "no_ai_plan_unattended": "Ik heb niet geantwoord: het verzoek kwam niet van een persoon, en het abonnement van de workspace antwoordt alleen de eigenaar.",
       "no_ai_runner_outdated": "Ik kan nu niet antwoorden: het programma op de computer van mijn abonnement heeft een update nodig.",
       "no_ai_plan_tools": "Ik stopte voordat ik antwoordde: de AI van mijn abonnement op die computer bleef niet binnen de tools van agentes.chat.",

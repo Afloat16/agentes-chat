@@ -123,7 +123,15 @@ export function NoAiCard({ message }: { message: Message }) {
   if (card.held || hold) return <KeptCard message={message} card={card} hold={hold} />;
   if (card.planLine)
     return (
-      <PlanLineCard message={message} agentId={card.agentId} line={card.planLine} model={card.model} why={card.why} />
+      <PlanLineCard
+        message={message}
+        agentId={card.agentId}
+        line={card.planLine}
+        model={card.model}
+        why={card.why}
+        owner={card.owner}
+        plan={card.plan}
+      />
     );
   const agent = dir.agentById.get(card.agentId);
   const name = agent?.name ?? t("channel.unknownAgent");
@@ -320,12 +328,16 @@ function PlanLineCard({
   line,
   model,
   why,
+  owner,
+  plan,
 }: {
   message: Message;
   agentId: string;
   line: RightHandPlanLine;
   model?: string;
   why?: string;
+  owner?: string;
+  plan?: string;
 }) {
   const { t } = useTranslation();
   const { org, me } = useOrg();
@@ -351,7 +363,7 @@ function PlanLineCard({
         {t("noAi.card.connected", { name })}
       </RequestDone>
     );
-  const sentence = t(planLineKey(line, why), { name, model, why });
+  const sentence = t(planLineKey(line, why), { name, model, why, owner, plan });
   const mine = connect !== null && (fix === "connectMine" || fix === "useKey");
   return (
     <RequestOpen

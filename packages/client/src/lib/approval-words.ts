@@ -273,9 +273,28 @@ export function actionName(t: TFunction, slug: string) {
   return name ? `${toolName(t, partsOf(name, null, true), name)} (${known.app ?? humanize(first)})` : humanize(slug);
 }
 
-/** One of a routine's own actions (`Routine.ownActions`) in words: a Composio slug (upper case) by its app, else the tool's name. */
-export const ownActionName = (t: TFunction, name: string) =>
-  /^[A-Z0-9_]+$/.test(name) ? actionName(t, name) : toolName(t, partsOf(name), name);
+/** A routine's own action that lets its commands use a Vault key (`vault:NAME`); mirrors engine `routine-keys.ts`. */
+const VAULT_ACTION_PREFIX = "vault:";
+
+/** The Vault key of a routine's own action, or null for a connected app's action. */
+export const routineVaultKey = (action: string) =>
+  action.startsWith(VAULT_ACTION_PREFIX) ? action.slice(VAULT_ACTION_PREFIX.length) || null : null;
+
+/** A routine's own actions split: what it does in connected apps, and the Vault keys its commands may use. */
+export const splitOwnActions = (own: readonly string[]) => ({
+  apps: own.filter((a) => !routineVaultKey(a)),
+  keys: own.flatMap((a) => routineVaultKey(a) ?? []),
+});
+
+/**
+ * One of a routine's own actions (`Routine.ownActions`) in words: a Vault key by its name, a Composio slug (upper case)
+ * by its app, else the tool's name.
+ */
+export const ownActionName = (t: TFunction, name: string) => {
+  const key = routineVaultKey(name);
+  if (key) return t("routines.vaultKeys.named", { key });
+  return /^[A-Z0-9_]+$/.test(name) ? actionName(t, name) : toolName(t, partsOf(name), name);
+};
 
 /** A remembered push (`owner/repo:branch`) in words: "enviar para ana/fix em acme/app". */
 function pushWords(t: TFunction, target: string) {

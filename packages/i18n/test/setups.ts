@@ -99,6 +99,8 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "noAi.kept.plan",
   ],
   selfhost: [
+    // A server that sends no e-mail can't confirm a new address: only there (`emailChangeErrorText`).
+    "shell.email.noMail",
     "auth.owner.",
     "auth.flow.ownerWaits",
     "auth.flow.ownerWaitsLead",
@@ -182,6 +184,8 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "githubApp.ownerHint",
   ],
   email: [
+    // Said once the link to a new address went out, which only a server that sends e-mail does.
+    "shell.email.sent",
     "auth.newLinkSent",
     "invite.ask.approvedEmail",
     "invite.ask.sentEmail",

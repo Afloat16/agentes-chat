@@ -1710,6 +1710,17 @@
     },
     "inviteHint": "E-posta veya bağlantıyla",
     "profileHint": "Ad, fotoğraf ve @",
+    "email": {
+      "label": "E-posta",
+      "title": "E-postayı değiştir",
+      "new": "Yeni e-posta",
+      "help": "Aynı hesap, aynı workspace'ler ve aynı planlarla devam edersin.",
+      "change": "E-postayı değiştir",
+      "sent": "{{email}} adresine bir bağlantı gönderdik. Bağlantıyı açınca e-postan değişir.",
+      "changed": "Tamam: artık {{email}} ile giriş yapıyorsun.",
+      "same": "Bu zaten senin e-postan.",
+      "noMail": "Bu sunucu e-posta göndermiyor, bu yüzden yeni adres doğrulanamıyor. Sunucuyu yöneten kişiden e-posta gönderimini ayarlamasını iste."
+    },
     "openOnPhone": "Telefonunuzda açın",
     "openOnPhoneHint": "QR koduyla uygulamaya giriş yapın",
     "addPassword": "Şifre ekle",
@@ -2401,7 +2412,6 @@
       "workspace": "Kendi planı olmayanların yapay zekâsı",
       "workspaceHelp": "Kendi planı olmayanlar {{name}} ile bu yapay zekâ üzerinden konuşur.",
       "noPlans": "Burada kullanmak için Yapay zeka ve kullanım bölümünden bir plan bağla.",
-      "lend": "Bu planı, planı olmayanlara ödünç ver",
       "groupMine": "Yalnızca sizin için",
       "groupWorkspace": "Tüm çalışma alanı için",
       "groupAdmins": "yalnızca yöneticiler"
@@ -2694,6 +2704,7 @@
       "cli_failedWhy": "{{name}} şu an yanıt veremiyor: planın yapay zekası bir hatayla durdu ({{why}}).",
       "plan_limit": "{{name}} şu an yanıt veremiyor: plan sınırına ulaştı.",
       "plan_not_shared": "{{name}} ile konuşmak için kendi planını bağla: çalışma alanının planı yalnızca sahibine yanıt verir.",
+      "plans_not_yours": "Buradaki {{plan}} yalnızca {{owner}} için. Kendininkini bağla, yanıt vereyim.",
       "plan_unattended": "{{name}} yanıt vermedi: istek bir kişiden gelmedi ve çalışma alanının planı yalnızca sahibine yanıt verir.",
       "runner_outdated": "{{name}} şu an yanıt veremiyor: planın bilgisayarındaki programın güncellenmesi gerekiyor.",
       "plan_tools": "{{name}} yanıt vermeden durdu: o bilgisayardaki planın yapay zekâsı agentes.chat araçlarıyla sınırlı kalmadı.",
@@ -2719,6 +2730,9 @@
       "channel": "Saklandı. Çalışma alanının agentes.chat planı olunca ajanlar yanıtlar."
     },
     "receipt": "Kimse yanıt vermeyecek: bağlı yapay zeka yok",
+    "notYours": {
+      "receipt": "Kimse yanıt vermeyecek: {{plan}} yalnızca {{owner}} için"
+    },
     "chip": "Yapay zeka yok"
   },
   "connectAi": {
@@ -4418,6 +4432,10 @@
     "planModelDropped": {
       "choose": "Başka bir model seç"
     },
+    "planServes": {
+      "onlyMe": "Yalnızca ben olarak değiştir",
+      "done": "Artık bu planı yalnızca sen kullanıyorsun."
+    },
     "docTitleUnread": "({{count}}) Bildirimler",
     "summaryWaiting_one": "Sizi bekleyen {{count}} şey var",
     "summaryWaiting_other": "Sizi bekleyen {{count}} şey var",
@@ -4517,6 +4535,7 @@
       "browserProfileRequest": "<b>{{name}}</b>, <b>{{agent}}</b> için bir tarayıcı profili daha istiyor",
       "desktopTaken": "<b>{{name}}</b>, <b>{{agent}}</b> ajanının bilgisayar ekranını devraldı",
       "planLent": "<b>{{name}}</b>, {{plan}} planını <b>{{agent}}</b> ajanına bağladı",
+      "planServes": "{{plan}} artık tüm workspace'e hizmet ediyor",
       "planModelDropped": "{{model}}, {{plan}} listesinden çıktı. Başka bir model seçene kadar <b>{{name}}</b> {{runs}} kullanıyor.",
       "routineWaitingPlan": "<b>{{name}}</b> bir rutini çalıştırmak için planının sıfırlanmasını bekliyor",
       "planResetUnknown": "{{plan}} sınırının ne zaman sıfırlanacağını söylemedi. <b>{{name}}</b> ajanının işi hâlâ bekliyor.",
@@ -4941,7 +4960,7 @@
         "accountMove": "{{agents}} kullanıyor · Buraya taşı",
         "accountAlso": "{{agents}} da kullanıyor",
         "accountOf": "{{name}} hesabı",
-        "accountOthers": "Başkalarının planları kimin olduğunu gösterir. Sahibi bir e-posta alır ve geri alabilir.",
+        "accountOthers": "Tüm workspace'e hizmet eden planlar kime ait olduklarını gösterir.",
         "addAccount": "Hesap ekle",
         "signInAgain": "Yeniden giriş yap",
         "connectPlan": "Başka bir plan bağla",
@@ -7698,6 +7717,12 @@
       "hintShort": "Her çalıştırma bunları sormadan yapar.",
       "noneShort": "Her işlemden önce bir kişinin onayını ister.",
       "remove": "Şundan önce yine sor: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "Kullandığı Vault anahtarları",
+      "hint": "Yalnızca bu rutinde, yalnızca komutlarında.",
+      "named": "Vault anahtarı {{key}}",
+      "remove": "{{key}} kullanmadan önce yine sor"
     },
     "ahead": {
       "approved": "Onaylandı · {{when}} çalışır",
@@ -15216,6 +15241,19 @@
   "usageViews": {
     "signedOut": "Oturum kapatıldı",
     "whose": "{{name}} hesabı",
+    "serves": {
+      "everyone": "Herkes kullanıyor",
+      "onlyYou": "Yalnızca sen kullanıyorsun",
+      "only": "Yalnızca {{name}} kullanıyor",
+      "someone": "sahibi",
+      "label": "Kimler kullanır",
+      "all": "Tüm workspace",
+      "me": "Yalnızca ben",
+      "savedEveryone": "Artık tüm workspace bu planı kullanıyor.",
+      "savedOwner": "Artık bu planı yalnızca sen kullanıyorsun."
+    },
+    "logins_one": "{{count}} oturum",
+    "logins_other": "{{count}} oturum",
     "noWindows": "Sınır, bu hesap yeniden kullanıldıktan sonra görünür.",
     "unused": "Bu hesabı kullanan ajan yok.",
     "usesNow": "şu anda kullanıyor",
@@ -15889,6 +15927,7 @@
       "no_ai_cli_failedWhy": "Şu an yanıt veremiyorum: planımın yapay zekası bir hatayla durdu ({{why}}).",
       "no_ai_plan_limit": "Şu an yanıt veremiyorum: düşündüğüm plan sınırına ulaştı.",
       "no_ai_plan_not_shared": "Sana çalışma alanının planı üzerinden yanıt veremiyorum: yalnızca sahibine yanıt veriyor. Kendi planını bağlarsan yanıt veririm.",
+      "no_ai_plans_not_yours": "Buradaki {{plan}} yalnızca {{owner}} için. Kendininkini bağla, yanıt vereyim.",
       "no_ai_plan_unattended": "Yanıt vermedim: istek bir kişiden gelmedi ve çalışma alanının planı yalnızca sahibine yanıt verir.",
       "no_ai_runner_outdated": "Şu an yanıt veremiyorum: planımın bilgisayarındaki programın güncellenmesi gerekiyor.",
       "no_ai_plan_tools": "Yanıt vermeden durdum: o bilgisayardaki planımın yapay zekâsı agentes.chat araçlarıyla sınırlı kalmadı.",

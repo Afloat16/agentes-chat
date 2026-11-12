@@ -63,7 +63,9 @@ export function useNoticeTitle(n: AppNotification) {
                 count: n.kind === "catch_up_closed" ? n.count : who.total,
                 // `plan_reset_unknown`: the plan's name (`plan_lent`, `plan_model_dropped`: in `plan`).
                 plan:
-                  (n.kind === "plan_lent" || n.kind === "plan_model_dropped" ? n.latest.plan : n.latest.title) ?? "",
+                  (n.kind === "plan_lent" || n.kind === "plan_serves" || n.kind === "plan_model_dropped"
+                    ? n.latest.plan
+                    : n.latest.title) ?? "",
                 // `plan_model_dropped`: the model that left the plan's list and what runs now.
                 model: n.latest.title ?? "",
                 runs: n.latest.nowModel ?? "",

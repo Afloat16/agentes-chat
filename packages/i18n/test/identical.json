@@ -1,6 +1,7 @@
 {
   "app": {
     "pt-BR": [
+      "usageViews.logins",
       "chat.wait.said",
       "access.area.skills",
       "agent.builtinName",
@@ -1359,6 +1360,7 @@
       "devices.armBuild"
     ],
     "it": [
+      "shell.email.label",
       "calendar.moreRuns",
       "devices.iphone.steps.account",
       "devices.cpus",
@@ -2733,6 +2735,7 @@
       "devices.armBuild"
     ],
     "id": [
+      "shell.email.label",
       "devices.cpus",
       "devices.memory",
       "devices.system.android",

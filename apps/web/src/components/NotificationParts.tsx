@@ -181,6 +181,7 @@ type WhatKey =
   | "browserProfileRequest"
   | "desktopTaken"
   | "planLent"
+  | "planServes"
   | "planModelDropped"
   | "joinSuggestion"
   | "invitationAccepted"
@@ -299,6 +300,8 @@ export function Headline({
       const agent = n.source.label ?? "";
       return k("planLent", { name, agent, plan: n.latest.plan ?? "", context: agentGrammar(agent).context });
     }
+    case "plan_serves":
+      return k("planServes", { plan: n.latest.plan ?? "" });
     case "plan_model_dropped":
       return k("planModelDropped", {
         name,

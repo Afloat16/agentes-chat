@@ -10,7 +10,7 @@ import {
 } from "@agenteschat/client";
 import { listNames } from "@agenteschat/client/lib/activity";
 import { failedRunFix, runFailureLine } from "@agenteschat/client/lib/errors";
-import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
+import { mayConnectAi, plansNotYoursOf } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { deciderOf } from "@agenteschat/client/lib/routing";
 import { helpUrl } from "@agenteschat/client/lib/server";
@@ -83,6 +83,7 @@ export const AgentReceiptLine = memo(function AgentReceiptLine({
   const [retrying, setRetrying] = useState(false);
   const held = usePlanHold(orgId, org) !== null;
   const line = held ? keptLine(receiptLine(receipt)) : receiptLine(receipt);
+  const aiStatus = useAiStatus(orgId, line?.words?.key === "noAi.receipt").data;
   if (!receiptShows(line, Boolean(steer))) return null;
   const name = (id: string) => dir.agentById.get(id)?.name ?? t("channel.unknownAgent");
   const say = (w: ReceiptLine["label"]) =>
@@ -102,13 +103,15 @@ export const AgentReceiptLine = memo(function AgentReceiptLine({
         })
       : null;
   const only = line.faces.length === 1 && line.more === 0 ? line.faces[0] : undefined;
+  // Every plan here serves only someone else: the agent's card has the way out, so the line only says whose.
+  const notYours = line.words?.key === "noAi.receipt" ? plansNotYoursOf(aiStatus, only) : null;
   // Retry sends my words again: only under my own message. Connect: for who can connect one.
   const action =
     line.action === "retry"
       ? mine
         ? "retry"
         : null
-      : line.action === "connect" && !mayConnectAi(only ? dir.agentById.get(only) : null, meId, org)
+      : line.action === "connect" && (notYours || !mayConnectAi(only ? dir.agentById.get(only) : null, meId, org))
         ? null
         : line.action;
   const connect = () => {
@@ -173,7 +176,7 @@ export const AgentReceiptLine = memo(function AgentReceiptLine({
             numberOfLines={why ? undefined : 2}
             style={styles.words}
           >
-            {why ?? say(line.words)}
+            {why ?? (notYours ? t("noAi.notYours.receipt", notYours) : say(line.words))}
           </Text>
         ) : null}
       </Pressable>

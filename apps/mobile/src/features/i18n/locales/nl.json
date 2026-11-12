@@ -978,6 +978,8 @@
       "plan_lent_other": "{{names}} hebben je {{plan}}-abonnement aan {{agent}} gekoppeld",
       "plan_lent_female_one": "{{names}} heeft je {{plan}}-abonnement aan {{agent}} gekoppeld",
       "plan_lent_female_other": "{{names}} hebben je {{plan}}-abonnement aan {{agent}} gekoppeld",
+      "plan_serves_one": "Je {{plan}} bedient nu de hele workspace",
+      "plan_serves_other": "Je {{plan}} bedient nu de hele workspace",
       "plan_model_dropped_one": "{{model}} is uit {{plan}} gehaald. {{names}} gebruikt voorlopig {{runs}}",
       "plan_model_dropped_other": "{{model}} is uit {{plan}} gehaald. {{names}} gebruikt voorlopig {{runs}}",
       "computer_disk_full_one": "De schijf van een computer is bijna vol",

@@ -1670,6 +1670,17 @@
     },
     "inviteHint": "メールまたはリンクで",
     "profileHint": "名前、写真、@",
+    "email": {
+      "label": "メール",
+      "title": "メールを変更",
+      "new": "新しいメール",
+      "help": "同じアカウントのまま、同じ workspace と同じプランを使えます。",
+      "change": "メールを変更",
+      "sent": "{{email}} にリンクを送りました。リンクを開くとメールが変わります。",
+      "changed": "完了: これからは {{email}} でログインします。",
+      "same": "すでにあなたのメールです。",
+      "noMail": "このサーバーはメールを送らないため、新しいアドレスを確認できません。サーバーの管理者にメール送信の設定を頼んでください。"
+    },
     "openOnPhone": "スマートフォンで開く",
     "openOnPhoneHint": "QRコードでアプリにログイン",
     "addPassword": "パスワードを追加",
@@ -2322,7 +2333,6 @@
       "workspace": "自分のプランがない人のAI",
       "workspaceHelp": "自分のプランがない人は、このAIで{{name}}と話します。",
       "noPlans": "ここで使うには、「AIと使用量」でプランを接続してください。",
-      "lend": "プランがない人にこのプランを貸す",
       "groupMine": "あなただけ",
       "groupWorkspace": "ワークスペース全体",
       "groupAdmins": "管理者のみ"
@@ -2602,6 +2612,7 @@
       "cli_failedWhy": "{{name}}は今は返信できません。プランのAIがエラーで停止しました（{{why}}）。",
       "plan_limit": "{{name}}は今は返信できません。プランが上限に達しました。",
       "plan_not_shared": "{{name}}と話すには自分のプランを接続してください。ワークスペースのプランは持ち主にしか応えません。",
+      "plans_not_yours": "ここの{{plan}}は{{owner}}さん専用です。自分のものを接続すれば返信します。",
       "plan_unattended": "{{name}}は返信しませんでした。この依頼は人からのものではなく、ワークスペースのプランは持ち主にしか応えません。",
       "runner_outdated": "{{name}}は今は返信できません。プランのコンピューターのプログラムを更新する必要があります。",
       "plan_tools": "{{name}}は返信する前に止まりました。そのコンピューターのプランのAIがagentes.chatのツールだけにとどまりませんでした。",
@@ -2627,6 +2638,9 @@
       "channel": "保存済み。ワークスペースにagentes.chatのプランがあると、エージェントが返信します。"
     },
     "receipt": "誰も返信しません: AIが接続されていません",
+    "notYours": {
+      "receipt": "誰も返信しません: {{plan}}は{{owner}}さん専用です"
+    },
     "chip": "AIなし"
   },
   "connectAi": {
@@ -4287,6 +4301,10 @@
     "planModelDropped": {
       "choose": "別のモデルを選ぶ"
     },
+    "planServes": {
+      "onlyMe": "自分だけに変更",
+      "done": "このプランは今あなただけが使います。"
+    },
     "docTitleUnread": "（{{count}}）通知",
     "summaryWaiting_other": "あなたの対応待ち{{count}}件",
     "summaryUnread_other": "未読{{count}}件",
@@ -4377,6 +4395,7 @@
       "browserProfileRequest": "<b>{{name}}</b>が<b>{{agent}}</b>用のブラウザプロファイルの追加を求めています",
       "desktopTaken": "<b>{{name}}</b>が<b>{{agent}}</b>のコンピューターの画面の操作を引き継ぎました",
       "planLent": "<b>{{name}}</b>さんがあなたの {{plan}} プランを<b>{{agent}}</b>に接続しました",
+      "planServes": "あなたの{{plan}}は workspace 全体で使えるようになりました",
       "planModelDropped": "{{model}}が{{plan}}から外れました。別のモデルを選ぶまで、<b>{{name}}</b>は{{runs}}を使います。",
       "routineWaitingPlan": "<b>{{name}}</b>はルーティンを実行するため、プランのリセットを待っています",
       "planResetUnknown": "{{plan}}は上限がいつリセットされるかを伝えませんでした。<b>{{name}}</b>の作業はまだ待機中です。",
@@ -4789,7 +4808,7 @@
         "accountMove": "{{agents}}が使用中 · ここに移動",
         "accountAlso": "{{agents}}も使用中",
         "accountOf": "{{name}}のもの",
-        "accountOthers": "他の人のプランには持ち主の名前が表示されます。持ち主にはメールが届き、取り戻すこともできます。",
+        "accountOthers": "workspace 全体で使えるプランには持ち主が表示されます。",
         "addAccount": "アカウントを追加",
         "signInAgain": "もう一度ログイン",
         "connectPlan": "別のプランを接続",
@@ -7482,6 +7501,12 @@
       "hintShort": "毎回の実行で、これらを確認なしで行います。",
       "noneShort": "操作のたびに人の承認を求めます。",
       "remove": "次の前に再度確認する: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "使うVaultのキー",
+      "hint": "このルーティンのコマンドでのみ使います。",
+      "named": "Vaultのキー {{key}}",
+      "remove": "{{key}} を使う前に再度確認する"
     },
     "ahead": {
       "approved": "承認済み · {{when}}に実行",
@@ -14762,6 +14787,18 @@
   "usageViews": {
     "signedOut": "ログアウト済み",
     "whose": "{{name}}の",
+    "serves": {
+      "everyone": "全員が使う",
+      "onlyYou": "あなただけが使う",
+      "only": "{{name}}さんだけが使う",
+      "someone": "持ち主",
+      "label": "使う人",
+      "all": "workspace 全員",
+      "me": "自分だけ",
+      "savedEveryone": "このプランは今 workspace 全員が使えます。",
+      "savedOwner": "このプランは今あなただけが使います。"
+    },
+    "logins_other": "{{count}}件のログイン",
     "noWindows": "このアカウントが再び使われると、上限が表示されます。",
     "unused": "このアカウントを使っているエージェントはいません。",
     "usesNow": "使用中",
@@ -15430,6 +15467,7 @@
       "no_ai_cli_failedWhy": "今は返信できません。私のプランのAIがエラーで停止しました（{{why}}）。",
       "no_ai_plan_limit": "今は返信できません。私が使っているプランが上限に達しました。",
       "no_ai_plan_not_shared": "ワークスペースのプランではお返事できません。持ち主にしか応えないためです。ご自身のプランを接続していただければお答えします。",
+      "no_ai_plans_not_yours": "ここの{{plan}}は{{owner}}さん専用です。自分のものを接続すれば返信します。",
       "no_ai_plan_unattended": "返信しませんでした。この依頼は人からのものではなく、ワークスペースのプランは持ち主にしか応えません。",
       "no_ai_runner_outdated": "今は返信できません。私のプランのコンピューターのプログラムを更新する必要があります。",
       "no_ai_plan_tools": "返信する前に止まりました。そのコンピューターの私のプランのAIがagentes.chatのツールだけにとどまりませんでした。",
