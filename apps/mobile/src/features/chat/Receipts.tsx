@@ -1,10 +1,10 @@
 import { type AgentAction, type Message, useApi } from "@agenteschat/client";
 import { actionCardOf } from "@agenteschat/client/lib/action-cards";
 import {
-  actionTextKey,
-  actionTextValues,
   hookToCopy,
-  receiptFiles,
+  type ReceiptRow,
+  receiptPieces,
+  receiptRows,
   routineOwnActions,
 } from "@agenteschat/client/lib/actions";
 import { ownActionName } from "@agenteschat/client/lib/approval-words";
@@ -22,18 +22,20 @@ import { agoOf } from "../agents/logic";
 import { agoText } from "../agents/work";
 import { useColors, useDirectory, useMeId, useOrgId } from "../shared/hooks";
 import { copyText, tapHaptic } from "../shared/parts";
-import { boldRuns, groupStart, receiptIcon, receiptLayout, targetHref } from "./actions";
+import { groupStart, receiptIcon, receiptLayout, targetHref } from "./actions";
 import { useCardTop } from "./look";
 
 /**
  * What the agent changed with this reply (ADR 0037 round 2), on the card of the reply's tools (a hairline, the cut
- * corner): one change is a row (A); two or more are a group with "N mudanças · há X" (B). The bold part of a sentence
- * opens the thing itself, where it is fixed or removed. One undone elsewhere stays as history: struck through, with
- * "Desfeito por …".
+ * corner): one change is a row (A); two or more are a group with "N mudanças · há X" and a row each, those of one kind
+ * said once ("Criei as tarefas #58, #59 e #60") (B). Every row is one line, cut with "…". The bold part of a sentence
+ * opens the thing itself, where it is fixed or removed (and says it whole). One undone elsewhere stays as history:
+ * struck through, with "Desfeito por …".
  */
 export function Receipts({ message: m }: { message: Message }) {
   const { t } = useTranslation();
   const c = useColors();
+  const meId = useMeId();
   // A task the right hand handed on is its chip (`HandedTaskChips`): its agent is at work on it already.
   const handed = new Set(handedTasksOf(m.meta).map((h) => h.issueId));
   // A workspace change's card says what was applied and has its own Undo.
@@ -45,13 +47,17 @@ export function Receipts({ message: m }: { message: Message }) {
   // A card under the message's words: the body's card gap above it, as every card in a message.
   const cardTop = useCardTop();
   if (layout === "none") return null;
-  const row = (a: AgentAction, size: "one" | "item") => (
-    <View style={styles.grow}>
-      <Sentence action={a} channelId={m.channelId} struck={Boolean(a.undoneAt)} size={size} />
-      <OwnActions action={a} />
-      {a.undoneAt ? <UndoneBy action={a} /> : <HandyLines action={a} />}
-    </View>
-  );
+  const rows = receiptRows(list, t, meId ?? undefined);
+  const row = (r: ReceiptRow, size: "one" | "item") => {
+    const a = r.actions[0] as AgentAction;
+    return (
+      <View style={styles.grow}>
+        <Sentence row={r} channelId={m.channelId} struck={Boolean(a.undoneAt)} size={size} />
+        <OwnActions action={a} />
+        {a.undoneAt ? <UndoneBy action={a} /> : r.refs ? null : <CopyHook action={a} />}
+      </View>
+    );
+  };
   const start = groupStart(list);
   // What changes while it shows (undone from somewhere else) fades in; what is there when it mounts just shows.
   return (
@@ -60,7 +66,7 @@ export function Receipts({ message: m }: { message: Message }) {
         {layout === "one" ? (
           <View style={[styles.one, styles.card, { backgroundColor: c.raised, borderColor: c.line2 }]}>
             <LineIcon name={receiptIcon((list[0] as AgentAction).kind)} size={15} color={c.muted} variant="small" />
-            {row(list[0] as AgentAction, "one")}
+            {row(rows[0] as ReceiptRow, "one")}
           </View>
         ) : (
           <View style={[styles.group, styles.card, { backgroundColor: c.raised, borderColor: c.line2 }]}>
@@ -72,10 +78,15 @@ export function Receipts({ message: m }: { message: Message }) {
                 {start ? ` · ${agoText(t, agoOf(start))}` : ""}
               </Text>
             </View>
-            {list.map((a) => (
-              <View key={a.id} style={[styles.it, { borderTopColor: c.line2 }]}>
-                <LineIcon name={receiptIcon(a.kind)} size={13} color={c.muted} variant="footnote" />
-                {row(a, "item")}
+            {rows.map((r) => (
+              <View key={r.actions[0]?.id} style={[styles.it, { borderTopColor: c.line2 }]}>
+                <LineIcon
+                  name={receiptIcon((r.actions[0] as AgentAction).kind)}
+                  size={13}
+                  color={c.muted}
+                  variant="footnote"
+                />
+                {row(r, "item")}
               </View>
             ))}
           </View>
@@ -85,43 +96,56 @@ export function Receipts({ message: m }: { message: Message }) {
   );
 }
 
-/** The sentence ("Criei a issue **#23** · …"); the bold part opens the target when the phone has its screen. */
+/**
+ * The sentence, one line ("Criei a tarefa **#23** · …"): a change on its own opens its target from the whole line, when
+ * the phone has its screen; several open each from its own bold reference ("Criei as tarefas **#58**, **#59**").
+ */
 function Sentence({
-  action: a,
+  row,
   channelId,
   struck,
   size,
 }: {
-  action: AgentAction;
+  row: ReceiptRow;
   channelId: string;
   struck: boolean;
   size: "one" | "item";
 }) {
   const { t } = useTranslation();
-  const href = targetHref(a.target, channelId);
   const meId = useMeId();
-  const values = actionTextValues(a, t, meId ?? undefined);
-  const runs = boldRuns(t(actionTextKey(a), values) as string);
-  const open = href ? () => router.push(href) : undefined;
+  const opener = (a: AgentAction | undefined) => {
+    const href = a ? targetHref(a.target, channelId) : null;
+    return href ? () => router.push(href) : undefined;
+  };
+  const open = row.refs ? undefined : opener(row.actions[0]);
   const variant = size === "one" ? "small" : "footnote";
   return (
     <Text
       variant={variant}
       tone={struck ? "faint" : "ink2"}
       style={struck && styles.struck}
+      numberOfLines={1}
       onPress={open}
       accessibilityRole={open ? "link" : undefined}
       suppressHighlighting
     >
-      {runs.map((r, i) =>
-        r.bold ? (
-          <Text key={String(i)} variant={variant} tone={struck ? "faint" : "ink"} style={styles.bold}>
-            {r.text}
+      {receiptPieces(row, t, meId ?? undefined).map((p, i) => {
+        if (!p.bold) return p.text;
+        const each = row.refs ? opener(p.opens) : undefined;
+        return (
+          <Text
+            key={String(i)}
+            variant={variant}
+            tone={struck ? "faint" : "ink"}
+            style={styles.bold}
+            onPress={each}
+            accessibilityRole={each ? "link" : undefined}
+            suppressHighlighting
+          >
+            {p.text}
           </Text>
-        ) : (
-          r.text
-        ),
-      )}
+        );
+      })}
     </Text>
   );
 }
@@ -163,50 +187,6 @@ function CopyHook({ action: a }: { action: AgentAction }) {
     >
       <Text variant="footnote" tone="ink" style={styles.bold}>
         {t("agentActions.copyWebhook")}
-      </Text>
-    </Pressable>
-  );
-}
-
-/** What a receipt offers under its sentence. */
-const HandyLines = ({ action }: { action: AgentAction }) => (
-  <>
-    <FilesLine action={action} />
-    <WhoSeesLine action={action} />
-    <CopyHook action={action} />
-  </>
-);
-
-/** Under a task change that brought files: which ones went with it. */
-function FilesLine({ action: a }: { action: AgentAction }) {
-  const { t } = useTranslation();
-  const files = receiptFiles(a);
-  if (files.length === 0) return null;
-  return (
-    <Text variant="footnote" tone="muted" style={styles.undoneBy}>
-      {t("agentActions.issue.files", { names: joinNames(files, t) })}
-    </Text>
-  );
-}
-
-/** Under a task the agent made: who sees it, and the way to change it (ADR 0151). */
-function WhoSeesLine({ action: a }: { action: AgentAction }) {
-  const { t } = useTranslation();
-  const mode = a.params.audience;
-  if (a.kind !== "issue.created" || a.undoneAt || (mode !== "everyone" && mode !== "people")) return null;
-  const number = Number(a.params.number);
-  return (
-    <Pressable
-      onPress={() => {
-        tapHaptic();
-        router.push({ pathname: "/who-sees", params: { number } });
-      }}
-      accessibilityRole="button"
-      hitSlop={12}
-      style={({ pressed }) => [styles.copyHook, pressed && styles.pressed]}
-    >
-      <Text variant="footnote" tone="muted">
-        {t("whoSees.receipt", { who: t(mode === "everyone" ? "whoSees.everyone" : "whoSees.some") })}
       </Text>
     </Pressable>
   );

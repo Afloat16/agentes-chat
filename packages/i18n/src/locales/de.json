@@ -3253,6 +3253,40 @@
     "changes_other": "{{count}} Änderungen",
     "undoneBy": "Rückgängig gemacht von {{name}}",
     "group": "Änderungen von {{name}}",
+    "several": {
+      "issue": {
+        "created": "Aufgaben erstellt: {{refs}}",
+        "updated": "Aufgaben geändert: {{refs}}",
+        "assigned": "Aufgaben {{assignee}} zugewiesen: {{refs}}",
+        "assigned_self": "Aufgaben selbst übernommen: {{refs}}"
+      },
+      "routine": {
+        "created": "Routinen erstellt: {{refs}}",
+        "updated": "Routinen geändert: {{refs}}",
+        "deleted": "Routinen gelöscht: {{refs}}"
+      },
+      "channel": {
+        "agent_added": "{{agentName}} geholt in {{refs}}",
+        "created": "Kanäle erstellt: {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Wiki-Seiten erstellt: {{refs}}",
+        "page_edited": "Wiki-Seiten bearbeitet: {{refs}}"
+      },
+      "thread": {
+        "closed": "Unterhaltungen geschlossen: {{refs}}"
+      },
+      "skill": {
+        "created": "Das Gelernte in Skills verwandelt: {{refs}}",
+        "updated": "Skills korrigiert: {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Einstellungen geändert: {{refs}}"
+      },
+      "pr": {
+        "merged": "In <b>{{repo}}</b> gemergt: PRs {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "Jemand hat das inzwischen geändert. Wenn du es jetzt rückgängig machst, geht diese Änderung verloren.",
       "expired": "Die Zeit zum Rückgängigmachen ist abgelaufen.",
@@ -17643,7 +17677,6 @@
     "only": "Nur {{name}}",
     "more_one": "{{names}} und {{count}} weitere",
     "more_other": "{{names}} und {{count}} weitere",
-    "some": "einige Personen",
     "taskTitle": "Wer diese Aufgabe sieht",
     "pageTitle": "Wer diese Seite sieht",
     "admins": "Administratoren sehen es immer.",
@@ -17652,7 +17685,6 @@
     "search": "Person suchen",
     "noMatch": "Niemand mit diesem Namen",
     "moreOptions": "Weitere Optionen",
-    "receipt": "Wer es sieht: {{who}}",
     "limited": "eingeschränkter Zugriff",
     "rolesToo": "Die Rollen, die schon auf dieser Seite sind, sehen sie weiterhin."
   },

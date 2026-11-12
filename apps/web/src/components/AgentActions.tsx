@@ -1,12 +1,13 @@
 import type { AgentAction, Message } from "@agenteschat/client";
-import { ApiError, useApi, useIssue } from "@agenteschat/client";
+import { ApiError, useApi } from "@agenteschat/client";
 import { actionCardOf } from "@agenteschat/client/lib/action-cards";
 import {
   actionErrorKey,
-  actionTextKey,
-  actionTextValues,
   hookToCopy,
-  receiptFiles,
+  type ReceiptRow,
+  receiptPieces,
+  receiptRows,
+  receiptTip,
   routineOwnActions,
 } from "@agenteschat/client/lib/actions";
 import { ownActionName } from "@agenteschat/client/lib/approval-words";
@@ -18,7 +19,7 @@ import { cx, Icon, type IconName } from "@agenteschat/ui";
 import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
 import { type ReactNode, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { useOpenAgentPanel } from "@/components/agent-panel-context";
 import { useChannelActions } from "@/components/channel-actions";
 import { useInPlace } from "@/components/InPlace";
@@ -29,13 +30,13 @@ import { fromApiRule, ruleSentence } from "@/lib/recurrence";
 import { useToast } from "@/lib/toast";
 import { DetailsLink } from "./details-link";
 import { useOrg } from "./org-context";
-import { IssueWhoSeesDialog } from "./WhoSees";
 import "./agent-actions.css";
 
 /**
  * What an agent changed with this reply (ADR 0037 round 2), under the message. One change: a quiet row (A). Several:
- * "3 mudanças · há 1 min" and one row each (B). The bold target opens the thing itself, where it is fixed or removed.
- * One undone elsewhere stays as history: struck through, "Desfeito por …".
+ * "3 mudanças · há 1 min" and a row each, those of one kind said once ("Criei as tarefas #58, #59 e #60") (B). Every
+ * row is one line, cut with "…" (its whole words are its tip). The bold target opens the thing itself, where it is
+ * fixed or removed. One undone elsewhere stays as history: struck through, "Desfeito por …".
  */
 export function AgentActionReceipts({ message }: { message: Message }) {
   // The right hand's settings card says what was applied and has its own Desfazer (ADR 0137).
@@ -78,10 +79,10 @@ export const RECEIPT_ICONS: Record<AgentAction["kind"], IconName> = {
 };
 
 /** A kind a newer server sends that this build doesn't know yet gets the plain check. */
-const iconOf = (a: AgentAction): IconName =>
-  a.kind === "issue.updated" && Array.isArray(a.params.fields) && a.params.fields.join() === "priority"
+const iconOf = ({ actions: [a], refs }: ReceiptRow): IconName =>
+  !refs && a?.kind === "issue.updated" && Array.isArray(a.params.fields) && a.params.fields.join() === "priority"
     ? "flag"
-    : (RECEIPT_ICONS[a.kind] ?? "check");
+    : ((a && RECEIPT_ICONS[a.kind]) ?? "check");
 
 function errorMessage(t: TFunction, error: unknown) {
   const generic = t("agentActions.errors.generic");
@@ -97,17 +98,18 @@ function Receipts({ message, list }: { message: Message; list: AgentAction[] }) 
     a.undoneByUserId === me.user.id
       ? t("agentActions.you")
       : (dir.memberById.get(a.undoneByUserId ?? "")?.name ?? t("agentActions.someone"));
-  const row = (a: AgentAction, single: boolean) => (
-    <Receipt key={a.id} action={a} single={single} undoneBy={a.undoneAt ? byName(a) : null} />
-  );
+  const rows = receiptRows(list, t, me.user.id);
+  const row = (r: ReceiptRow, single: boolean) => {
+    const a = r.actions[0] as AgentAction;
+    return <Receipt key={a.id} row={r} single={single} undoneBy={a.undoneAt ? byName(a) : null} />;
+  };
 
   const agentName = dir.agentById.get(message.author.id ?? "")?.name ?? dir.authorName(message.author);
   if (list.length === 1) {
-    const only = list[0] as AgentAction;
     return (
       // biome-ignore lint/a11y/useSemanticElements: a labelled group inside a message, not a fieldset
       <div className="ag-rcs" role="group" aria-label={t("agentActions.group", { name: agentName })}>
-        {row(only, true)}
+        {rows.map((r) => row(r, true))}
       </div>
     );
   }
@@ -120,38 +122,45 @@ function Receipts({ message, list }: { message: Message; list: AgentAction[] }) 
           <b>{t("agentActions.changes", { count: list.length })}</b> · {relativeTime(t, i18n.language, first)}
         </span>
       </div>
-      {list.map((a) => row(a, false))}
+      {rows.map((r) => row(r, false))}
     </div>
   );
 }
 
-function Receipt({ action: a, single, undoneBy }: { action: AgentAction; single: boolean; undoneBy: string | null }) {
+function Receipt({ row, single, undoneBy }: { row: ReceiptRow; single: boolean; undoneBy: string | null }) {
   const { t, i18n } = useTranslation();
   const { me } = useOrg();
+  const a = row.actions[0] as AgentAction;
   // A routine's schedule from its rule, in the person's language (the server's words are English).
-  const { context, ...values } = actionTextValues(a, t, me.user.id, {
+  const words: Parameters<typeof receiptPieces>[3] = {
     schedule: (rule) => ruleSentence(t, i18n.language, fromApiRule(rule, toYmd(new Date())), new Date()),
-  });
+  };
   const struck = Boolean(a.undoneAt);
   const ownActions = routineOwnActions(a);
-  const files = struck ? [] : receiptFiles(a);
   return (
     <div className={cx(single ? "ag-rc" : "ag-rcg__it", struck && "is-undone")}>
       {single ? (
         <span className="ag-rc__ic" aria-hidden="true">
-          <Icon name={iconOf(a)} size={16} />
+          <Icon name={iconOf(row)} size={16} />
         </span>
       ) : (
-        <Icon name={iconOf(a)} size={14} className="ag-rcg__ic" />
+        <Icon name={iconOf(row)} size={14} className="ag-rcg__ic" />
       )}
       <span className="ag-rc__tx">
-        <span className="ag-rc__sentence">
-          <Trans
-            // i18next contexts: `issue.assigned_self`, `routine.updated_paused`…
-            i18nKey={`${actionTextKey(a)}${context ? `_${context}` : ""}` as "agentActions.issue.created"}
-            values={values}
-            components={{ b: <ReceiptTarget action={a} /> }}
-          />
+        <span className="ag-rc__sentence ag-rc__line" title={receiptTip(row, t, me.user.id, words)}>
+          {receiptPieces(row, t, me.user.id, words).map((p, i) =>
+            p.opens ? (
+              // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one sentence, in order
+              <ReceiptTarget key={i} action={p.opens}>
+                {p.text}
+              </ReceiptTarget>
+            ) : p.bold ? (
+              // biome-ignore lint/suspicious/noArrayIndexKey: same
+              <b key={i}>{p.text}</b>
+            ) : (
+              p.text
+            ),
+          )}
         </span>
         {ownActions.length > 0 && (
           <span className="ag-rc__by">
@@ -163,35 +172,10 @@ function Receipt({ action: a, single, undoneBy }: { action: AgentAction; single:
             })}
           </span>
         )}
-        {files.length > 0 && (
-          <span className="ag-rc__by ag-rc__files">
-            {t("agentActions.issue.files", { names: joinNames(files, t) })}
-          </span>
-        )}
         {undoneBy && <span className="ag-rc__by">{t("agentActions.undoneBy", { name: undoneBy })}</span>}
-        {a.kind === "issue.created" && !struck && <ReceiptWhoSees action={a} />}
-        <CopyHookButton action={a} />
+        {!row.refs && <CopyHookButton action={a} />}
       </span>
     </div>
-  );
-}
-
-/** Who sees the task the agent just made, and the way to change it in place (ADR 0151). */
-function ReceiptWhoSees({ action: a }: { action: AgentAction }) {
-  const { t } = useTranslation();
-  const { org } = useOrg();
-  const [open, setOpen] = useState(false);
-  const number = typeof a.params.number === "number" ? a.params.number : 0;
-  const issue = useIssue(org.id, number, open);
-  const mode = a.params.audience;
-  if (mode !== "everyone" && mode !== "people") return null;
-  return (
-    <span className="ag-rc__by">
-      <button type="button" className="ac-link" onClick={() => setOpen(true)}>
-        {t("whoSees.receipt", { who: t(mode === "everyone" ? "whoSees.everyone" : "whoSees.some") })}
-      </button>
-      {open && issue.data && <IssueWhoSeesDialog issue={issue.data} onClose={() => setOpen(false)} />}
-    </span>
   );
 }
 

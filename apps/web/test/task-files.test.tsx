@@ -103,7 +103,7 @@ describe("an internal id in a text is the pill of what it names", () => {
 });
 
 describe("the receipt of a task an agent made with a file", () => {
-  test("says the file went with it", async () => {
+  test("one line: the file that went with it is in its tip, and nothing says who sees the task", async () => {
     const at = new Date().toISOString();
     const state = said(withRefs(), "Pus no backlog como tarefa #131.", [
       {
@@ -124,8 +124,10 @@ describe("the receipt of a task an agent made with a file", () => {
     await renderApp(`/org/${ORG_ID}/c/${GENERAL_ID}`, { api: createFakeApi(state) });
     await settle(8);
     const receipt = row().querySelector(".ag-rcs") as HTMLElement;
-    expect(receipt.textContent).toContain("Anexei print.png");
-    expect(receipt.textContent).toContain("Quem vê: Todos no workspace");
+    expect(receipt.textContent).toBe("Criei a tarefa #131 · Widget flutuante");
+    expect(receipt.querySelector<HTMLElement>(".ag-rc__line")?.title).toBe(
+      "Criei a tarefa #131 · Widget flutuante\nAnexei print.png",
+    );
   });
 });
 

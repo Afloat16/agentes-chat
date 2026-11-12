@@ -3460,6 +3460,40 @@
     "changes_other": "{{count}} zmiany",
     "undoneBy": "Cofnięte przez: {{name}}",
     "group": "Zmiany: {{name}}",
+    "several": {
+      "issue": {
+        "created": "Utworzono zadania {{refs}}",
+        "updated": "Zmieniono zadania {{refs}}",
+        "assigned": "Przypisano zadania {{refs}} do: {{assignee}}",
+        "assigned_self": "Biorę zadania {{refs}} na siebie"
+      },
+      "routine": {
+        "created": "Utworzono rutyny {{refs}}",
+        "updated": "Zmieniono rutyny {{refs}}",
+        "deleted": "Usunięto rutyny {{refs}}"
+      },
+      "channel": {
+        "agent_added": "Dodano {{agentName}} do {{refs}}",
+        "created": "Utworzono kanały {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Utworzono strony wiki {{refs}}",
+        "page_edited": "Edytowano strony wiki {{refs}}"
+      },
+      "thread": {
+        "closed": "Zamknięto rozmowy {{refs}}"
+      },
+      "skill": {
+        "created": "Zamieniono zdobytą wiedzę w umiejętności {{refs}}",
+        "updated": "Poprawiono umiejętności {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Zmieniono ustawienia {{refs}}"
+      },
+      "pr": {
+        "merged": "Scalono PR {{refs}} w <b>{{repo}}</b>"
+      }
+    },
     "errors": {
       "changed_since": "Ktoś to w międzyczasie zmienił. Cofnięcie teraz usunęłoby tę zmianę.",
       "expired": "Czas na cofnięcie minął.",
@@ -18768,7 +18802,6 @@
     "more_few": "{{names}} i jeszcze {{count}}",
     "more_many": "{{names}} i jeszcze {{count}}",
     "more_other": "{{names}} i jeszcze {{count}}",
-    "some": "niektóre osoby",
     "taskTitle": "Kto widzi to zadanie",
     "pageTitle": "Kto widzi tę stronę",
     "admins": "Administratorzy zawsze to widzą.",
@@ -18777,7 +18810,6 @@
     "search": "Szukaj osoby",
     "noMatch": "Nikt o takim imieniu",
     "moreOptions": "Więcej opcji",
-    "receipt": "Kto to widzi: {{who}}",
     "limited": "ograniczony dostęp",
     "rolesToo": "Role, które są już na tej stronie, nadal ją widzą."
   },

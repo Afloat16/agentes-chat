@@ -1,10 +1,12 @@
 import { useArtifact, usePoll, useVote } from "@agenteschat/client";
 import { pollAnswered, pollIsOpen, pollTally, pollToggle } from "@agenteschat/client/lib/blocks";
+import { joinNames } from "@agenteschat/client/lib/format";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { Icon, Sky, Text, textLineOf, useToast } from "@/ui";
 import { useFontScale } from "@/ui/text-scale";
-import { initialText, leadBox } from "@/ui/type-scale";
+import { leadBox } from "@/ui/type-scale";
+import { Face } from "../shared/Face";
 import { useColors, useDirectory, useMeId, useOrgId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
 import { tapHaptic } from "../shared/parts";
@@ -74,7 +76,7 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
               key={o.option}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: mine, disabled: !open }}
-              accessibilityLabel={`${o.label}, ${o.voters.length}`}
+              accessibilityLabel={`${o.label}, ${o.voters.length}${o.voters.length ? `: ${joinNames(o.voters.map(nameOf), t)}` : ""}`}
               disabled={!open || vote.isPending || !meId}
               onPress={() => {
                 if (!meId) return;
@@ -102,11 +104,11 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
                 </View>
               ) : null}
               <View style={[styles.faces, { minHeight: line.height }]}>
-                {o.voters.slice(0, FACES).map((v) => (
-                  <View key={v} style={[styles.face, { backgroundColor: c.line2, borderColor: c.raised }]}>
-                    <Text variant="caption" style={[styles.bold, VOTER_INITIAL]}>
-                      {nameOf(v).slice(0, 1).toUpperCase()}
-                    </Text>
+                {/* Each voter's face as the conversation shows it (the photo, else the initials), ringed in the
+                    option's face. */}
+                {o.voters.slice(0, FACES).map((v, i) => (
+                  <View key={v} style={[styles.ring, { backgroundColor: c.raised }, i > 0 && styles.overlap]}>
+                    <Face who={{ type: "person", id: v }} size={20} />
                   </View>
                 ))}
                 {o.voters.length > FACES ? (
@@ -133,9 +135,6 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
     </View>
   );
 }
-
-/** A voter's 24 tile inside its 2-point ring: the initial centred in the 20 left. */
-const VOTER_INITIAL = initialText(20, 12);
 
 const styles = StyleSheet.create({
   // As wide as the message, under what comes before it (the files' cards keep the same gap).
@@ -177,16 +176,9 @@ const styles = StyleSheet.create({
   },
   label: { flex: 1, minWidth: 0 },
   faces: { flexDirection: "row", alignItems: "center" },
-  face: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 24,
-    height: 24,
-    marginLeft: -4,
-    borderWidth: 2,
-    borderRadius: 8,
-    borderBottomLeftRadius: 3,
-  },
+  // A 20 face in a 2-point ring: 24 in all, the ring's corner the face's 30% plus the 2 between them.
+  ring: { padding: 2, borderRadius: 8 },
+  overlap: { marginLeft: -6 },
   note: { marginTop: -8, marginBottom: 10, paddingHorizontal: 14 },
   foot: {
     flexDirection: "row",

@@ -3354,6 +3354,40 @@
     "changes_other": "{{count}} cambios",
     "undoneBy": "Deshecho por {{name}}",
     "group": "Cambios de {{name}}",
+    "several": {
+      "issue": {
+        "created": "Creé las tareas {{refs}}",
+        "updated": "Cambié las tareas {{refs}}",
+        "assigned": "Asigné a {{assignee}} las tareas {{refs}}",
+        "assigned_self": "Me asigné las tareas {{refs}}"
+      },
+      "routine": {
+        "created": "Creé las rutinas {{refs}}",
+        "updated": "Cambié las rutinas {{refs}}",
+        "deleted": "Eliminé las rutinas {{refs}}"
+      },
+      "channel": {
+        "agent_added": "Sumé a {{agentName}} a {{refs}}",
+        "created": "Creé los canales {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Creé las páginas de la wiki {{refs}}",
+        "page_edited": "Edité las páginas de la wiki {{refs}}"
+      },
+      "thread": {
+        "closed": "Cerré las conversaciones {{refs}}"
+      },
+      "skill": {
+        "created": "Convertí lo que aprendí en las habilidades {{refs}}",
+        "updated": "Corregí las habilidades {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Cambié la configuración de {{refs}}"
+      },
+      "pr": {
+        "merged": "Hice merge en <b>{{repo}}</b> de los PR {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "Alguien cambió esto después. Si lo deshaces ahora, se pierde ese cambio.",
       "expired": "Se acabó el tiempo para deshacer.",
@@ -18140,7 +18174,6 @@
     "more_one": "{{names}} y {{count}} más",
     "more_many": "{{names}} y {{count}} más",
     "more_other": "{{names}} y {{count}} más",
-    "some": "algunas personas",
     "taskTitle": "Quién ve esta tarea",
     "pageTitle": "Quién ve esta página",
     "admins": "Los administradores siempre lo ven.",
@@ -18149,7 +18182,6 @@
     "search": "Buscar persona",
     "noMatch": "Nadie con ese nombre",
     "moreOptions": "Más opciones",
-    "receipt": "Quién lo ve: {{who}}",
     "limited": "acceso limitado",
     "rolesToo": "Los roles que ya están en esta página la siguen viendo."
   },

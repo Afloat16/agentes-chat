@@ -1,7 +1,8 @@
 /*
  * Receipts under an agent's reply: one change is a quiet row; several are a group with "N changes · X ago". Cards like
- * the reply's tools (the card face, its hairline and cut corner, the same width), flat icons. The sentence wraps,
- * whole; the icon sits on its first line. Undone rows are struck through and dimmed.
+ * the reply's tools (the card face, its hairline and cut corner, the same width), flat icons. A change's sentence is
+ * one line (`.ag-rc__line`); the other rows' wrap, whole, the icon on their first line. Undone rows are struck through
+ * and dimmed.
  */
 /* Its own room outside a message: in one, the conversation's rhythm sets it (`.ac-msg .ac-msg__body > *`). */
 :where(:not(.ac-msg__body)) > .ag-rcs {
@@ -54,6 +55,15 @@
 .ag-rc__sentence {
   overflow-wrap: anywhere;
 }
+/* What an agent changed reads in one line, cut with "…": its whole words are its tip. The clip stands 4px out, so a
+   link's focus ring at the line's edge shows whole. */
+.ag-rc__line {
+  overflow: hidden;
+  margin: calc(-1 * var(--space-1));
+  padding: var(--space-1);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 .ag-rc__target {
   color: var(--ink);
   font-weight: 600;
@@ -70,10 +80,6 @@
 .ag-rc__by {
   font-size: 12.5px;
   color: var(--faint);
-}
-/* A file's name can be one long word: it breaks inside the receipt rather than running out of it. */
-.ag-rc__files {
-  overflow-wrap: anywhere;
 }
 /* A row's action: words only, as `.cq-link`; its height is the first line's, so the sentence and it share a middle. */
 .ag-rc__btn {

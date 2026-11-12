@@ -3150,6 +3150,40 @@
     "changes_other": "{{count}} perubahan",
     "undoneBy": "Diurungkan oleh {{name}}",
     "group": "Perubahan oleh {{name}}",
+    "several": {
+      "issue": {
+        "created": "Membuat tugas {{refs}}",
+        "updated": "Mengubah tugas {{refs}}",
+        "assigned": "Menugaskan ke {{assignee}}: tugas {{refs}}",
+        "assigned_self": "Mengambil sendiri tugas {{refs}}"
+      },
+      "routine": {
+        "created": "Membuat rutinitas {{refs}}",
+        "updated": "Mengubah rutinitas {{refs}}",
+        "deleted": "Menghapus rutinitas {{refs}}"
+      },
+      "channel": {
+        "agent_added": "Membawa {{agentName}} ke {{refs}}",
+        "created": "Membuat kanal {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Membuat halaman wiki {{refs}}",
+        "page_edited": "Mengedit halaman wiki {{refs}}"
+      },
+      "thread": {
+        "closed": "Menutup percakapan {{refs}}"
+      },
+      "skill": {
+        "created": "Mengubah yang aku pelajari menjadi skill {{refs}}",
+        "updated": "Memperbaiki skill {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Mengubah pengaturan {{refs}}"
+      },
+      "pr": {
+        "merged": "Merge di <b>{{repo}}</b>: PR {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "Seseorang mengubah ini sejak itu. Mengurungkan sekarang akan menghilangkan perubahan tersebut.",
       "expired": "Waktu untuk mengurungkan sudah habis.",
@@ -17187,7 +17221,6 @@
     "people": "Orang tertentu",
     "only": "Hanya {{name}}",
     "more_other": "{{names}} dan {{count}} lainnya",
-    "some": "beberapa orang",
     "taskTitle": "Siapa yang melihat tugas ini",
     "pageTitle": "Siapa yang melihat halaman ini",
     "admins": "Administrator selalu bisa melihat.",
@@ -17196,7 +17229,6 @@
     "search": "Cari orang",
     "noMatch": "Tidak ada orang dengan nama itu",
     "moreOptions": "Opsi lainnya",
-    "receipt": "Siapa yang melihat: {{who}}",
     "limited": "akses terbatas",
     "rolesToo": "Peran yang sudah ada di halaman ini tetap melihatnya."
   },

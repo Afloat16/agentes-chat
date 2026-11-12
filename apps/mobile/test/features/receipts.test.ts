@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { AGENT_ACTION_KINDS, type AgentAction, type AgentActionKind } from "@agenteschat/client";
+import { receiptPieces, receiptRows } from "@agenteschat/client/lib/actions";
 import {
   boldRuns,
   groupStart,
@@ -8,6 +11,7 @@ import {
   receiptLayout,
   targetHref,
 } from "../../src/features/chat/actions";
+import { translator } from "./fixtures";
 
 const action = (over: Partial<AgentAction> = {}): AgentAction => ({
   id: "a1",
@@ -70,5 +74,44 @@ describe("receipts under an agent's reply", () => {
     expect(Object.keys(RECEIPT_ICONS).sort()).toEqual([...AGENT_ACTION_KINDS].sort());
     expect(receiptIcon("channel.created")).toBe("hash");
     expect(receiptIcon("something.new" as AgentActionKind)).toBe("checkc");
+  });
+});
+
+describe("receipts on one line, as on the web", () => {
+  const task = (n: number) =>
+    action({
+      id: `a${n}`,
+      target: { type: "issue", id: `i${n}`, number: n, title: `Página de preços: o botão Assinar não responde no tablet ${n}` },
+      params: { number: n, title: `Página de preços: o botão Assinar não responde no tablet ${n}`, audience: "everyone" },
+    });
+
+  test("tasks made together are one row, each number opening its own task", async () => {
+    const t = await translator("pt-BR");
+    const [row, ...rest] = receiptRows([task(58), task(59), task(60)], t);
+    expect(rest).toEqual([]);
+    const pieces = receiptPieces(row as never, t);
+    expect(pieces.map((p) => p.text).join("")).toBe("Criei as tarefas #58, #59 e #60");
+    expect(pieces.flatMap((p) => (p.opens ? [[p.text, targetHref(p.opens.target, "c1")]] : []))).toEqual([
+      ["#58", "/issues/58"],
+      ["#59", "/issues/59"],
+      ["#60", "/issues/60"],
+    ]);
+    const en = await translator("en");
+    expect(
+      receiptPieces(receiptRows([task(58), task(59)], en)[0] as never, en)
+        .map((p) => p.text)
+        .join(""),
+    ).toBe("Created tasks #58 and #59");
+  });
+
+  test("a row is one line: its sentence never wraps, and no line under it says who sees the task", () => {
+    const src = readFileSync(join(import.meta.dir, "../../src/features/chat/Receipts.tsx"), "utf8");
+    const sentence = src.slice(src.indexOf("function Sentence("), src.indexOf("function CopyHook("));
+    expect(sentence).toContain("numberOfLines={1}");
+    // Several: each reference opens its own; one change: the whole line opens it.
+    expect(sentence).toContain("const each = row.refs ? opener(p.opens) : undefined;");
+    expect(sentence).toContain("const open = row.refs ? undefined : opener(row.actions[0]);");
+    expect(src).toContain("receiptRows(list, t, meId ?? undefined)");
+    expect(src).not.toContain("WhoSeesLine");
   });
 });

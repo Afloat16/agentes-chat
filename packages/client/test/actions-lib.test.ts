@@ -1,7 +1,18 @@
 import { describe, expect, test } from "bun:test";
-import type { TFunction } from "i18next";
+import { resources } from "@agenteschat/i18n";
+import i18next, { type TFunction } from "i18next";
 import { AGENT_ACTION_KINDS, type AgentAction } from "../src/api/types";
-import { actionErrorKey, actionTextKey, actionTextValues, formatTimeLeft, hookToCopy } from "../src/lib/actions";
+import {
+  actionErrorKey,
+  actionTextKey,
+  actionTextValues,
+  formatTimeLeft,
+  hookToCopy,
+  type ReceiptRow,
+  receiptPieces,
+  receiptRows,
+  receiptTip,
+} from "../src/lib/actions";
 
 const action = (over: Partial<AgentAction> = {}): AgentAction => ({
   id: "a1",
@@ -165,5 +176,147 @@ describe("receipt sentence values", () => {
   test("every kind the app knows has its own case (the default gives no values)", () => {
     const missing = AGENT_ACTION_KINDS.filter((kind) => !Object.keys(actionTextValues(action({ kind }), t)).length);
     expect(missing).toEqual([]);
+  });
+});
+
+describe("receipts in rows, one line each", () => {
+  const lang = (lng: string) => {
+    const instance = i18next.createInstance();
+    void instance.init({ lng, fallbackLng: "en", resources, initAsync: false, interpolation: { escapeValue: false } });
+    return instance.t;
+  };
+  const pt = lang("pt-BR");
+  const en = lang("en");
+  const task = (n: number, over: Partial<AgentAction> = {}) =>
+    action({
+      id: `a${n}`,
+      target: { type: "issue", id: `i${n}`, number: n, title: `Tarefa ${n}` },
+      params: { number: n, title: `Tarefa ${n}` },
+      ...over,
+    });
+  const memory = (id: string, text: string) =>
+    action({ id, kind: "memory.saved", target: { type: "memory", id: `m-${id}` }, params: { text } });
+  const words = (row: ReceiptRow | undefined, t = pt) =>
+    row
+      ? receiptPieces(row, t)
+          .map((p) => (p.bold ? `[${p.text}]` : p.text))
+          .join("")
+      : null;
+
+  test("tasks made together are one row, each number opening its own; another kind keeps its row, in order", () => {
+    const rows = receiptRows([task(58), memory("m1", "o deploy é às 18h"), task(59), task(60)], pt);
+    expect(rows.map((r) => words(r))).toEqual([
+      "Criei as tarefas [#58], [#59] e [#60]",
+      "Guardei na [memória]: o deploy é às 18h",
+    ]);
+    expect(receiptPieces(rows[0] as ReceiptRow, pt).flatMap((p) => (p.opens ? [p.opens.id] : []))).toEqual([
+      "a58",
+      "a59",
+      "a60",
+    ]);
+    expect(words(rows[0], en)).toBe("Created tasks [#58], [#59], and [#60]");
+  });
+
+  test("a change on its own keeps its sentence, its target in bold opening it", () => {
+    const [row] = receiptRows([task(23)], pt);
+    expect(words(row)).toBe("Criei a tarefa [#23] · Tarefa 23");
+    expect(receiptPieces(row as ReceiptRow, pt).find((p) => p.bold)?.opens?.id).toBe("a23");
+  });
+
+  test("what the changes of a row share comes first: one assignee, my own, the rule they keep", () => {
+    const assigned = (n: number, to: string) =>
+      task(n, { kind: "issue.assigned", params: { number: n, title: "T", assigneeName: to } });
+    const rows = receiptRows([assigned(1, "Ana"), assigned(2, "Ana"), assigned(3, "Bruno")], pt);
+    expect(rows.map((r) => words(r))).toEqual([
+      "Passei para Ana as tarefas [#1] e [#2]",
+      "Passei a [#3] para Bruno · T",
+    ]);
+    const mine = (n: number) =>
+      task(n, { kind: "issue.assigned", params: { number: n, title: "T", assigneeIsSelf: true } });
+    expect(words(receiptRows([mine(4), mine(5)], pt)[0])).toBe("Peguei para mim as tarefas [#4] e [#5]");
+    // What a memory keeps is words, not a name: its own sentence says them all, opening the first.
+    const rule = (id: string) => action({ ...memory(id, id), params: { text: `regra ${id}`, rule: true } });
+    const rules = receiptRows([rule("r1"), rule("r2")], pt)[0] as ReceiptRow;
+    expect(words(rules)).toBe("Guardei nas [minhas regras]: regra r1 e regra r2");
+    expect(receiptPieces(rules, pt).flatMap((p) => (p.opens ? [p.opens.id] : []))).toEqual(["r1"]);
+    // Changes of one kind whatever they changed: the row says the tasks, the tip each change.
+    const status = task(7, {
+      kind: "issue.updated",
+      params: { number: 7, title: "T", fields: ["status"], status: "done" },
+    });
+    const title = task(8, { kind: "issue.updated", params: { number: 8, title: "T", fields: ["title"] } });
+    expect(words(receiptRows([status, title], pt)[0])).toBe("Mudei as tarefas [#7] e [#8]");
+  });
+
+  test("one thing changed twice keeps a row per change; beside another, it is named once", () => {
+    const edit = (id: string, n: number) =>
+      task(n, { id, kind: "issue.updated", params: { number: n, title: "T", fields: ["title"] } });
+    expect(receiptRows([edit("x1", 9), edit("x2", 9)], pt)).toHaveLength(2);
+    const [row] = receiptRows([edit("x1", 9), edit("x2", 9), edit("x3", 10)], pt);
+    expect(words(row)).toBe("Mudei as tarefas [#9] e [#10]");
+    expect(row?.actions).toHaveLength(3);
+  });
+
+  test("undone ones blend only with others undone by the same person; a webhook routine keeps its own row", () => {
+    const undone = (n: number, by: string) => task(n, { undoneAt: "2026-10-18T12:00:00Z", undoneByUserId: by });
+    expect(
+      receiptRows([undone(1, "u1"), undone(2, "u1"), undone(3, "u2"), task(4)], pt).map((r) => r.actions.length),
+    ).toEqual([2, 1, 1]);
+    const hook = (id: string) =>
+      action({
+        id,
+        kind: "routine.created",
+        target: { type: "routine", id },
+        params: { name: id, trigger: "webhook" },
+      });
+    expect(receiptRows([hook("r1"), hook("r2")], pt).every((r) => r.refs === null)).toBe(true);
+  });
+
+  test("a workspace change stays a row of its own", () => {
+    const archived = (id: string) =>
+      action({
+        id,
+        kind: "workspace.changed",
+        target: { type: "channel", id },
+        params: { action: "archive_channel", channel: id },
+      });
+    expect(receiptRows([archived("c1"), archived("c2")], pt).map((r) => r.refs)).toEqual([null, null]);
+  });
+
+  test("the tip says each change whole, with the files that went with it", () => {
+    const [row] = receiptRows(
+      [task(58, { params: { number: 58, title: "Login lento", files: ["print.png"] } }), task(59)],
+      pt,
+    );
+    expect(receiptTip(row as ReceiptRow, pt)).toBe(
+      "Criei a tarefa #58 · Login lento\nAnexei print.png\nCriei a tarefa #59 · Tarefa 59",
+    );
+  });
+
+  test("two of a kind blend for every kind but a workspace change and a renamed conversation, with a sentence of their own", () => {
+    const two = (kind: AgentAction["kind"]) =>
+      [1, 2].map((n) =>
+        action({
+          id: `${kind}-${n}`,
+          kind,
+          target: { type: "workspace", id: `${kind}-t${n}`, number: n, title: `T${n}` },
+          params: {
+            number: n,
+            title: `T${n}`,
+            text: `t${n}`,
+            name: `N${n}`,
+            agentName: "Ada",
+            channel: `c${n}`,
+            repo: "acme/app",
+          },
+        }),
+      );
+    const blended = AGENT_ACTION_KINDS.filter((kind) => receiptRows(two(kind), pt)[0]?.refs);
+    expect(AGENT_ACTION_KINDS.filter((kind) => !blended.includes(kind))).toEqual([
+      "thread.renamed",
+      "workspace.changed",
+    ]);
+    for (const t of [pt, en])
+      for (const kind of blended) expect(words(receiptRows(two(kind), t)[0], t)).not.toContain("agentActions");
   });
 });

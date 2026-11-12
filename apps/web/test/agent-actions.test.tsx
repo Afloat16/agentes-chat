@@ -85,16 +85,51 @@ const click = async (el: HTMLElement) => {
 };
 
 describe("receipts under the agent's reply", () => {
-  test("one change: a quiet row with the sentence, the target links to the issue, nothing to press", async () => {
-    await open(withActions([action()]));
+  test("one change: a quiet row, one line whole in its tip, the target links to the issue, nothing else", async () => {
+    // Who sees the task is the task's own: the receipt says nothing of it.
+    await open(withActions([action({ params: { ...action().params, audience: "everyone" } })]));
     const group = receipts();
     const row = group.querySelector(".ag-rc") as HTMLElement;
     expect(row.textContent).toBe("Criei a tarefa #23 · Prompt de avaliação após a assinatura");
+    const line = row.querySelector(".ag-rc__sentence") as HTMLElement;
+    expect(line.className).toContain("ag-rc__line");
+    expect(line.title).toBe("Criei a tarefa #23 · Prompt de avaliação após a assinatura");
     const link = within(group).getByRole("link", { name: "#23" });
     expect(link.getAttribute("href")).toBe(`/org/${ORG_ID}/issues/23`);
     expect(within(group).queryAllByRole("button")).toHaveLength(0);
     // A single receipt has no group header.
     expect(group.querySelector(".ag-rcg__hd")).toBeNull();
+  });
+
+  test("tasks made together are one line: 'Criei as tarefas #58, #59 e #60', each number its own task, each whole in the tip", async () => {
+    const made = (n: number) => {
+      const title = `Página de preços: o botão Assinar não responde no tablet ${n}`;
+      return action({
+        id: `act-${n}`,
+        target: { type: "issue", id: `iss-${n}`, number: n, title },
+        params: { number: n, title, audience: "everyone" },
+      });
+    };
+    await open(withActions([made(58), memory(), made(59), made(60)]));
+    const group = receipts();
+    expect(group.querySelector(".ag-rcg__hd")?.textContent).toBe("4 mudanças · agora");
+    const rows = [...group.querySelectorAll<HTMLElement>(".ag-rcg__it")];
+    expect(rows.map((r) => r.textContent)).toEqual([
+      "Criei as tarefas #58, #59 e #60",
+      "Guardei na memória: o prompt é por evento",
+    ]);
+    const tasks = rows[0] as HTMLElement;
+    expect(
+      within(tasks)
+        .getAllByRole("link")
+        .map((l) => [l.textContent, l.getAttribute("href")]),
+    ).toEqual([58, 59, 60].map((n) => [`#${n}`, `/org/${ORG_ID}/issues/${n}`]));
+    expect(tasks.querySelector<HTMLElement>(".ag-rc__line")?.title).toBe(
+      [58, 59, 60]
+        .map((n) => `Criei a tarefa #${n} · Página de preços: o botão Assinar não responde no tablet ${n}`)
+        .join("\n"),
+    );
+    expect(group.textContent).not.toContain("Quem vê");
   });
 
   test("a created routine says what it does on its own, without asking", async () => {

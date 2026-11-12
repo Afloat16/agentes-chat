@@ -1,5 +1,11 @@
 import type { TFunction } from "i18next";
-import { AGENT_ACTION_KINDS, type AgentAction, type ApiRule, WORKSPACE_ACTION_IDS } from "../api/types";
+import {
+  AGENT_ACTION_KINDS,
+  type AgentAction,
+  type AgentActionKind,
+  type ApiRule,
+  WORKSPACE_ACTION_IDS,
+} from "../api/types";
 import { joinNames } from "./format";
 
 /** A receipt's `params.rule` when it is a rule (`freq`, `timezone`); anything else is none. */
@@ -183,4 +189,187 @@ export function workspaceActionWords(action: string, words: Record<string, strin
       category: t(`noticePrefs.category.${words.category}.title` as never, { defaultValue: words.category }) as string,
     };
   return words;
+}
+
+/** A translated sentence's `<b>…</b>` marks as runs, for a surface that draws them itself (React Native has no HTML). */
+export function boldRuns(text: string): { text: string; bold: boolean }[] {
+  const out: { text: string; bold: boolean }[] = [];
+  const re = /<b>([\s\S]*?)<\/b>/g;
+  let last = 0;
+  for (let m = re.exec(text); m; m = re.exec(text)) {
+    if (m.index > last) out.push({ text: text.slice(last, m.index), bold: false });
+    if (m[1]) out.push({ text: m[1], bold: true });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last), bold: false });
+  return out;
+}
+
+type Values = Record<string, string>;
+const hashed = (key: string) => (v: Values) => (v[key] ? `#${v[key]}` : "");
+const named = (key: string) => (v: Values) => v[key] ?? "";
+
+/**
+ * The kinds whose changes blend into one row (`receiptRows`): each one's reference there ("#58", a routine's name), the
+ * words of the sentence that its changes share (one assignee, one repository) and the contexts that keep a sentence of
+ * their own (`_self`, `_rule`). The row says `agentActions.several.<kind>`, or, for what is said in words rather than
+ * named (a memory), the kind's own sentence with all of them in its `slot`.
+ * ponytail: a workspace change, a renamed conversation, a branch merge and a restricted page stay one row each, their
+ * sentences saying more than a name. Give them `several` sentences once agents make many of them in one reply.
+ */
+const BLENDS: Partial<
+  Record<AgentActionKind, { ref: (v: Values) => string; keep?: string[]; contexts?: string[]; slot?: string }>
+> = {
+  "issue.created": { ref: hashed("number") },
+  "issue.updated": { ref: hashed("number") },
+  "issue.assigned": { ref: hashed("number"), keep: ["assignee"], contexts: ["self"] },
+  "memory.saved": { ref: named("text"), contexts: ["rule"], slot: "text" },
+  "memory.updated": { ref: named("text"), slot: "text" },
+  "memory.forgotten": { ref: named("text"), slot: "text" },
+  "routine.created": { ref: named("name") },
+  "routine.updated": { ref: named("name") },
+  "routine.deleted": { ref: named("name") },
+  "channel.agent_added": { ref: hashed("channel"), keep: ["agentName"] },
+  "channel.created": { ref: hashed("name") },
+  "wiki.page_created": { ref: named("title") },
+  "wiki.page_edited": { ref: named("title") },
+  "thread.closed": { ref: named("title") },
+  "skill.created": { ref: named("name") },
+  "skill.updated": { ref: named("name") },
+  "agent.settings_changed": { ref: named("agentName") },
+  "pr.merged": { ref: hashed("number"), keep: ["repo"] },
+};
+
+/** One key for the changes a row may say together; null for a change that keeps a row of its own. */
+function blendKey(a: AgentAction, v: Values): string | null {
+  const how = BLENDS[a.kind];
+  // A webhook routine's row copies its own address.
+  if (!how?.ref(v) || (a.kind.startsWith("routine.") && a.params.trigger === "webhook")) return null;
+  const context = v.context && how.contexts?.includes(v.context) ? v.context : "";
+  // Undone by one person, or doing the same on its own: the line under the row stays true for all of it.
+  const undone = a.undoneAt ? (a.undoneByUserId ?? "") : null;
+  return JSON.stringify([a.kind, context, how.keep?.map((k) => v[k] ?? ""), undone, routineOwnActions(a)]);
+}
+
+/** A row of an agent's receipts: one change, or several of one kind said once. */
+export interface ReceiptRow {
+  /** Its changes, in order. */
+  actions: AgentAction[];
+  /** Several: the different things they name, each with a change that opens it ("#58" opens that task). */
+  refs: { text: string; action: AgentAction }[] | null;
+}
+
+/**
+ * The receipts in rows: two or more changes of one kind about different things are one row, where the first of them
+ * was ("Criei as tarefas #58, #59 e #60"); any other change is a row of its own, and so is each change of a thing
+ * changed twice with nothing else beside it.
+ */
+export function receiptRows(list: readonly AgentAction[], t: TFunction, viewerUserId?: string): ReceiptRow[] {
+  const groups = new Map<string, { a: AgentAction; ref: string }[]>();
+  const order: (string | AgentAction)[] = [];
+  for (const a of list) {
+    const v = actionTextValues(a, t, viewerUserId);
+    const key = blendKey(a, v);
+    if (key === null) {
+      order.push(a);
+      continue;
+    }
+    const item = { a, ref: BLENDS[a.kind]?.ref(v) ?? "" };
+    const group = groups.get(key);
+    if (group) group.push(item);
+    else {
+      groups.set(key, [item]);
+      order.push(key);
+    }
+  }
+  return order.flatMap((entry): ReceiptRow[] => {
+    if (typeof entry !== "string") return [{ actions: [entry], refs: null }];
+    const group = groups.get(entry) ?? [];
+    const refs = [...new Map(group.map(({ a, ref }) => [a.target.id || ref, { text: ref, action: a }])).values()];
+    const actions = group.map(({ a }) => a);
+    return refs.length < 2 ? actions.map((a) => ({ actions: [a], refs: null })) : [{ actions, refs }];
+  });
+}
+
+/** A part of a row's sentence: bold where it names a thing, with the change whose target it opens. */
+export interface ReceiptPiece {
+  text: string;
+  bold: boolean;
+  opens?: AgentAction;
+}
+
+/**
+ * A reference's place in a sentence, so the list's own words go between them ("#58, #59 e #60"): private-use
+ * characters, which no translation and no name holds.
+ */
+const SLOT_OPEN = "\uE000";
+const SLOT_CLOSE = "\uE001";
+const slot = (i: number) => `${SLOT_OPEN}${i}${SLOT_CLOSE}`;
+const SLOTS = new RegExp(`${SLOT_OPEN}(\\d+)${SLOT_CLOSE}`);
+
+/** `t` with a key built at run time (a kind and its context), which the app's typed keys can't name. */
+const say = (t: TFunction, key: string, values: Record<string, string>) =>
+  (t as unknown as (key: string, values: Record<string, string>) => string)(key, values);
+
+/**
+ * A row's sentence in parts: a change on its own says its sentence with its target in bold ("Criei a tarefa **#58** ·
+ * …"), several say one with each reference in bold, opening that one ("Criei as tarefas **#58**, **#59** e **#60**"),
+ * or their kind's own sentence with all their words in it ("Guardei na **memória**: a regra e o prazo").
+ */
+export function receiptPieces(
+  row: ReceiptRow,
+  t: TFunction,
+  viewerUserId?: string,
+  options: { schedule?: (rule: ApiRule) => string } = {},
+): ReceiptPiece[] {
+  const [first] = row.actions;
+  if (!first) return [];
+  const { context, ...values } = actionTextValues(first, t, viewerUserId, options);
+  const refs = row.refs;
+  const how = BLENDS[first.kind];
+  if (!refs || how?.slot) {
+    // i18next contexts: `issue.assigned_self`, `routine.updated_paused`…
+    const key = `${actionTextKey(first)}${context ? `_${context}` : ""}`;
+    const all =
+      refs && how?.slot
+        ? {
+            [how.slot]: joinNames(
+              refs.map((r) => r.text),
+              t,
+            ),
+          }
+        : {};
+    return boldRuns(say(t, key, { ...values, ...all })).map((r) => (r.bold ? { ...r, opens: first } : r));
+  }
+  const own = context && how?.contexts?.includes(context) ? `_${context}` : "";
+  const text = say(t, `agentActions.several.${first.kind}${own}`, {
+    ...values,
+    refs: joinNames(
+      refs.map((_, i) => slot(i)),
+      t,
+    ),
+  });
+  return text.split(SLOTS).flatMap((part, i): ReceiptPiece[] => {
+    if (i % 2 === 0) return boldRuns(part);
+    const ref = refs[Number(part)];
+    return ref ? [{ text: ref.text, bold: true, opens: ref.action }] : [];
+  });
+}
+
+/** A row's whole words, for its tip: each change's sentence as a row of its own says it and its files, one a line. */
+export function receiptTip(
+  row: ReceiptRow,
+  t: TFunction,
+  viewerUserId?: string,
+  options: { schedule?: (rule: ApiRule) => string } = {},
+): string {
+  return row.actions
+    .flatMap((a) => {
+      const line = receiptPieces({ actions: [a], refs: null }, t, viewerUserId, options)
+        .map((p) => p.text)
+        .join("");
+      const files = a.undoneAt ? [] : receiptFiles(a);
+      return files.length ? [line, t("agentActions.issue.files", { names: joinNames(files, t) })] : [line];
+    })
+    .join("\n");
 }

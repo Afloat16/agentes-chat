@@ -3440,6 +3440,44 @@ export const en = {
     changes_other: "{{count}} changes",
     undoneBy: "Undone by {{name}}",
     group: "Changes by {{name}}",
+    /**
+     * Several changes of one kind on one line, cut with "…" when long: `{{refs}}` lists what they name (task numbers,
+     * routine names…), each in bold and opening its own. What they share goes before it, so a cut list never hides it.
+     */
+    several: {
+      issue: {
+        created: "Created tasks {{refs}}",
+        updated: "Changed tasks {{refs}}",
+        assigned: "Assigned {{assignee}} tasks {{refs}}",
+        assigned_self: "Took on tasks {{refs}}",
+      },
+      routine: {
+        created: "Created the routines {{refs}}",
+        updated: "Changed the routines {{refs}}",
+        deleted: "Deleted the routines {{refs}}",
+      },
+      channel: {
+        agent_added: "Brought {{agentName}} into {{refs}}",
+        created: "Created the channels {{refs}}",
+      },
+      wiki: {
+        page_created: "Created the wiki pages {{refs}}",
+        page_edited: "Edited the wiki pages {{refs}}",
+      },
+      thread: {
+        closed: "Closed the conversations {{refs}}",
+      },
+      skill: {
+        created: "Turned what I learned into the skills {{refs}}",
+        updated: "Fixed the skills {{refs}}",
+      },
+      agent: {
+        settings_changed: "Changed the settings of {{refs}}",
+      },
+      pr: {
+        merged: "Merged in <b>{{repo}}</b>: PRs {{refs}}",
+      },
+    },
     errors: {
       changed_since: "Someone changed this since. Undoing now would lose that change.",
       expired: "The time to undo is over.",
@@ -17814,7 +17852,6 @@ export const en = {
     only: "Only {{name}}",
     more_one: "{{names}} and {{count}} more",
     more_other: "{{names}} and {{count}} more",
-    some: "some people",
     taskTitle: "Who sees this task",
     pageTitle: "Who sees this page",
     admins: "Administrators always see it.",
@@ -17823,7 +17860,6 @@ export const en = {
     search: "Search people",
     noMatch: "Nobody with that name",
     moreOptions: "More options",
-    receipt: "Who sees it: {{who}}",
     limited: "limited access",
     rolesToo: "The roles already on this page keep seeing it.",
   },

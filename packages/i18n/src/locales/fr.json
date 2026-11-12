@@ -3359,6 +3359,40 @@
     "changes_other": "{{count}} modifications",
     "undoneBy": "Annulé par {{name}}",
     "group": "Modifications de {{name}}",
+    "several": {
+      "issue": {
+        "created": "A créé les tâches {{refs}}",
+        "updated": "A modifié les tâches {{refs}}",
+        "assigned": "A assigné à {{assignee}} les tâches {{refs}}",
+        "assigned_self": "J'ai pris moi-même les tâches {{refs}}"
+      },
+      "routine": {
+        "created": "A créé les routines {{refs}}",
+        "updated": "A modifié les routines {{refs}}",
+        "deleted": "A supprimé les routines {{refs}}"
+      },
+      "channel": {
+        "agent_added": "A ajouté {{agentName}} à {{refs}}",
+        "created": "A créé les canaux {{refs}}"
+      },
+      "wiki": {
+        "page_created": "A créé les pages wiki {{refs}}",
+        "page_edited": "A modifié les pages wiki {{refs}}"
+      },
+      "thread": {
+        "closed": "A clos les conversations {{refs}}"
+      },
+      "skill": {
+        "created": "J'ai fait de ce que j'ai appris les compétences {{refs}}",
+        "updated": "J'ai corrigé les compétences {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "J'ai modifié les paramètres de {{refs}}"
+      },
+      "pr": {
+        "merged": "J'ai mergé dans <b>{{repo}}</b> les PR {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "Quelqu'un a modifié ceci entre-temps. Annuler maintenant ferait perdre cette modification.",
       "expired": "Le délai pour annuler est dépassé.",
@@ -18283,7 +18317,6 @@
     "more_one": "{{names}} et {{count}} de plus",
     "more_many": "{{names}} et {{count}} de plus",
     "more_other": "{{names}} et {{count}} de plus",
-    "some": "quelques personnes",
     "taskTitle": "Qui voit cette tâche",
     "pageTitle": "Qui voit cette page",
     "admins": "Les administrateurs le voient toujours.",
@@ -18292,7 +18325,6 @@
     "search": "Chercher une personne",
     "noMatch": "Personne avec ce nom",
     "moreOptions": "Plus d'options",
-    "receipt": "Qui le voit : {{who}}",
     "limited": "accès limité",
     "rolesToo": "Les rôles déjà sur cette page continuent de la voir."
   },
