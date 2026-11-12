@@ -14,6 +14,7 @@ import { useOrg } from "../org-context";
  * The one way out where a tool is off on a computer (ADR 0036 §8): its owner turns it on right here, anyone else asks
  * them (they get the same button in their inbox), an app too old says to update it. Nothing where nobody can.
  * `label` replaces "Ligar o navegador" where the click does more ("Ligar e fazer login"); `onAllowed` runs once on.
+ * Several tools ask in one button (one ask each) and turn on one button each (`ToolOneClickButtons`).
  */
 export function ToolOneClickButton({
   machineId,
@@ -21,6 +22,7 @@ export function ToolOneClickButton({
   oneClick,
   tool,
   label,
+  ariaLabel,
   onAllowed,
   size = "sm",
   variant = "primary",
@@ -28,8 +30,9 @@ export function ToolOneClickButton({
   machineId: string;
   machineName: string;
   oneClick: ToolOneClick | null;
-  tool: MachineTool;
+  tool: MachineTool | readonly MachineTool[];
   label?: string;
+  ariaLabel?: string;
   onAllowed?: () => void;
   size?: ButtonProps["size"];
   variant?: ButtonProps["variant"];
@@ -42,6 +45,7 @@ export function ToolOneClickButton({
   if (oneClick.kind === "outdated")
     return <span className="small muted">{t("machines.oneClick.outdated", { machine: machineName })}</span>;
   const fail = (err: unknown) => toast.show(errorText(t, err), "error");
+  const tools: readonly MachineTool[] = typeof tool === "string" ? [tool] : tool;
   if (oneClick.kind === "ask") {
     const name = firstName(oneClick.ownerName);
     return (
@@ -49,10 +53,11 @@ export function ToolOneClickButton({
         size={size}
         variant={variant === "primary" ? "default" : variant}
         loading={allow.isPending}
+        aria-label={ariaLabel}
         onClick={() =>
-          allow.mutate(
-            { machineId, tool, ask: true },
-            { onSuccess: () => toast.show(t("machines.oneClick.asked", { name })), onError: fail },
+          Promise.all(tools.map((x) => allow.mutateAsync({ machineId, tool: x, ask: true }))).then(
+            () => toast.show(t("machines.oneClick.asked", { name })),
+            fail,
           )
         }
       >
@@ -65,9 +70,10 @@ export function ToolOneClickButton({
       size={size}
       variant={variant}
       loading={allow.isPending}
+      aria-label={ariaLabel}
       onClick={() =>
         allow.mutate(
-          { machineId, tool },
+          { machineId, tool: tools[0] as MachineTool },
           {
             onSuccess: () =>
               onAllowed ? onAllowed() : toast.show(t("machines.oneClick.done", { machine: machineName })),
@@ -76,7 +82,7 @@ export function ToolOneClickButton({
         )
       }
     >
-      {label ?? t("machines.oneClick.allow", { tool: toolWords(t, tool) })}
+      {label ?? t("machines.oneClick.allow", { tool: toolWords(t, tools[0] as MachineTool) })}
     </Button>
   );
 }
@@ -125,7 +131,7 @@ export function MachineToolButton({
   machine,
   tool,
   ...rest
-}: { machine: Machine; tool: MachineTool } & Omit<
+}: { machine: Machine; tool: MachineTool | readonly MachineTool[] } & Omit<
   Parameters<typeof ToolOneClickButton>[0],
   "machineId" | "machineName" | "oneClick" | "tool"
 >) {
@@ -138,5 +144,30 @@ export function MachineToolButton({
       tool={tool}
       {...rest}
     />
+  );
+}
+
+/**
+ * The switches a screen still needs on `machine`: one button each for whoever connected it, one ask for all of them
+ * for anyone else.
+ */
+export function MachineToolButtons({
+  machine,
+  tools,
+  onAllowed,
+}: {
+  machine: Machine;
+  tools: readonly MachineTool[];
+  onAllowed?: () => void;
+}) {
+  const oneClick = useToolOneClick(machine);
+  if (tools.length === 0) return null;
+  if (oneClick?.kind === "ask") return <MachineToolButton machine={machine} tool={tools} />;
+  return (
+    <>
+      {tools.map((tool) => (
+        <MachineToolButton key={tool} machine={machine} tool={tool} {...(onAllowed ? { onAllowed } : {})} />
+      ))}
+    </>
   );
 }

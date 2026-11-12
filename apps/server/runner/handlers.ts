@@ -372,7 +372,7 @@ function requireTool(ctx: HandlerContext, tool: keyof RunnerTools) {
       "Commands are turned off on this computer (the runner was paired with --no-exec)",
     );
   }
-  // The apps turn it on in one click for the computer's owner; the words stay the same in every place they show.
+  // The apps match "<Tool> is turned off" (`browserOffMessage`) to offer the one-click switch: keep those words.
   const how = "its owner can turn it on from agentes.chat";
   if (tool === "commands") throw new RunnerError("exec_disabled", `Commands are turned off on this computer (${how})`);
   throw new RunnerError("not_allowed", `${TOOL_LABEL[tool]} is turned off on this computer (${how})`);

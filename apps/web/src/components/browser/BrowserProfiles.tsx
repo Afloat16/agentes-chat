@@ -338,7 +338,17 @@ function ProfileView({
 /** Why "Fazer login" didn't open, under the profile's name, with the one way out (ADR 0036 §8). */
 type Refusal = { kind: "refused"; err: unknown } | { kind: "turningOn" };
 
-function RefusalLine({ refusal, machine, onRetry }: { refusal: Refusal; machine: Machine; onRetry: () => void }) {
+function RefusalLine({
+  refusal,
+  machine,
+  pending,
+  onRetry,
+}: {
+  refusal: Refusal;
+  machine: Machine;
+  pending: boolean;
+  onRetry: () => void;
+}) {
   const { t } = useTranslation();
   let text: string;
   let action: ReactNode = null;
@@ -359,7 +369,7 @@ function RefusalLine({ refusal, machine, onRetry }: { refusal: Refusal; machine:
       );
     else if (profileUnavailable(refusal.err))
       action = (
-        <Button size="sm" icon="refresh" onClick={onRetry}>
+        <Button size="sm" icon="refresh" loading={pending} onClick={onRetry}>
           {t("common.retry")}
         </Button>
       );
@@ -542,6 +552,7 @@ export function BrowserProfilesCard({ machine: m }: { machine: Machine }) {
                   <RefusalLine
                     refusal={refusals[p.id] as Refusal}
                     machine={m}
+                    pending={actions.takeover.isPending}
                     onRetry={() => {
                       if (
                         refusals[p.id]?.kind === "refused" &&

@@ -2,7 +2,7 @@ import type { Machine } from "@agenteschat/client";
 import { commandInReason, machineReasonText } from "@agenteschat/client/lib/machines";
 import { Card, CardHeader, Chip, Icon } from "@agenteschat/ui";
 import { useTranslation } from "react-i18next";
-import { MachineToolButton, useToolOneClick } from "../devices/ToolOneClick";
+import { MachineToolButtons, useToolOneClick } from "../devices/ToolOneClick";
 import { CommandBlock } from "../machine-bits";
 import "../browser/browser.css";
 
@@ -56,11 +56,10 @@ export function MachineDesktopUseCard({ machine: m }: { machine: Machine }) {
             <span>{t("desktop.use.offOne")}</span>
           </span>
           <span className="ac-acts">
-            {(["desktop", "commands"] as const)
-              .filter((tool) => m.access?.tools[tool] !== true)
-              .map((tool) => (
-                <MachineToolButton key={tool} machine={m} tool={tool} />
-              ))}
+            <MachineToolButtons
+              machine={m}
+              tools={(["desktop", "commands"] as const).filter((tool) => m.access?.tools[tool] !== true)}
+            />
           </span>
         </div>
       ) : (

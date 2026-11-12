@@ -508,6 +508,8 @@ const KNOWN = {
   "browser.not_in_control": "errors.said.takeControl",
   "browser_profile.busy": "errors.said.profileBusy",
   "browser_profile.name_taken": "errors.said.nameTaken",
+  "browser_profile.tool_off": "browser.profiles.toolOff",
+  "browser_profile.unavailable": "browser.profiles.notOpened",
   "channel.delete_name": "errors.said.deleteName",
   "channel.general": "errors.said.generalKept",
   "channel.general_stays": "errors.said.generalStays",
@@ -764,6 +766,8 @@ export function knownErrorText(t: TFunction, error: unknown, locale = "en"): str
   // The person who connected the mailbox is gone or unnamed: no blank name in the sentence.
   if (error.code === "mail.owner_only" && !error.params?.ownerName)
     return t("errors.mail.ownerOnlyUnknown", error.params);
+  if (error.code === "browser_profile.unavailable")
+    return t("browser.profiles.notOpened", { machine: error.params?.machineName ?? "" });
   // `provider`: the provider whose key is missing, when the server could name it.
   if (error.code === "missing_credential" && typeof error.params?.provider === "string")
     return t("agentPage.activity.errors.missing_credential", error.params);

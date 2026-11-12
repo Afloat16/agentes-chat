@@ -492,7 +492,10 @@ function FoldersSection({ machine: m }: { machine: Machine }) {
   );
 }
 
-/** Ferramentas: on or off; who manages the computer turns one off here (never on), except on the workspace's own. */
+/**
+ * Ferramentas: on or off; who manages the computer turns one off here, whoever connected it turns one on too; never on
+ * the workspace's own.
+ */
 function ToolsSection({ machine: m, onReduce }: { machine: Machine; onReduce: (r: Reduce) => void }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -849,6 +852,7 @@ function DesktopUseSection({ machine: m }: { machine: Machine }) {
   const use = m.desktopUse;
   if (!use) return null;
   const off = use.available && !(m.access?.tools.desktop && m.access.tools.commands);
+  const desktopOff = (["desktop", "commands"] as const).filter((tool) => m.access?.tools[tool] !== true);
   // A Mac or Windows has nothing to install for it: said in the app's words, not the runner's English.
   const linux = m.os === "linux";
   const reason = use.available
@@ -875,11 +879,11 @@ function DesktopUseSection({ machine: m }: { machine: Machine }) {
           <GroupedFooter>{t("desktop.use.offOne")}</GroupedFooter>
           <Gap />
           <View style={styles.oneClicks}>
-            {(["desktop", "commands"] as const)
-              .filter((tool) => m.access?.tools[tool] !== true)
-              .map((tool) => (
-                <MachineToolButton key={tool} machine={m} tool={tool} />
-              ))}
+            {oneClick.kind === "ask" ? (
+              <MachineToolButton machine={m} tool={desktopOff} />
+            ) : (
+              desktopOff.map((tool) => <MachineToolButton key={tool} machine={m} tool={tool} />)
+            )}
           </View>
         </>
       ) : off ? (

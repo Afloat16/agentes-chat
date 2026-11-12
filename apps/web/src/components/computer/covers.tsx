@@ -7,7 +7,7 @@ import { Button } from "@agenteschat/ui";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Cover } from "../browser/Cover";
-import { MachineToolButton, useToolOneClick } from "../devices/ToolOneClick";
+import { MachineToolButtons, useToolOneClick } from "../devices/ToolOneClick";
 import { CommandBlock } from "../machine-bits";
 import { Egress } from "./Egress";
 
@@ -88,11 +88,11 @@ export function CantShowCover({
         text={t("agentComputer.state.screensOffOne", { computer })}
         action={
           <span className="ac-acts">
-            {(["desktop", "commands"] as const)
-              .filter((tool) => machine.access?.tools[tool] !== true)
-              .map((tool) => (
-                <MachineToolButton key={tool} machine={machine} tool={tool} onAllowed={onRetry} />
-              ))}
+            <MachineToolButtons
+              machine={machine}
+              tools={(["desktop", "commands"] as const).filter((tool) => machine.access?.tools[tool] !== true)}
+              onAllowed={onRetry}
+            />
             {again}
           </span>
         }

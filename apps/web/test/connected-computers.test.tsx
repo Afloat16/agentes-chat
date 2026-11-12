@@ -879,7 +879,7 @@ describe("the computer page: pause, folders and tools (ADR 0036)", () => {
     expect(allowCalls(mine.state)).toEqual([[ORG_ID, mine.m.id, "browser"]]);
     // An off coding CLI in the tools list gets its own Ligar.
     const codex = document.querySelector('[data-tool="codex"]') as HTMLElement;
-    await click(within(codex).getByRole("button", { name: "Ligar" }));
+    await click(within(codex).getByRole("button", { name: "Ligar Codex" }));
     expect(allowCalls(mine.state).at(-1)).toEqual([ORG_ID, mine.m.id, "codex"]);
     cleanup();
     const theirs = await open({ pairedBy: { id: "u-rui", name: "Rui Tanaka" }, accessAllow: true });

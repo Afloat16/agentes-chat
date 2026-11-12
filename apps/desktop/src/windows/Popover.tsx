@@ -1182,7 +1182,6 @@ function JobRow({ home, job, now }: { home: Home; job: ControlJob; now: number }
   );
 }
 
-/** An agent asks for a folder: Liberar (this agent or all) or Agora não. The click is on the machine. */
 /** Its owner turned a tool on from the apps: said here until seen, with Undo (it goes off again on this computer). */
 function AllowedBanner({ home }: { home: Home }) {
   const { t } = useTranslation();
@@ -1223,6 +1222,7 @@ function AllowedBanner({ home }: { home: Home }) {
   );
 }
 
+/** An agent asks for a folder: Liberar (this agent or all) or Agora não. The click is on the machine. */
 function RequestCard({ home, request, now }: { home: Home; request: ControlAccessRequest; now: number }) {
   const { t } = useTranslation();
   const store = useStore();

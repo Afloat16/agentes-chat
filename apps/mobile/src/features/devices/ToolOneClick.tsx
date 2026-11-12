@@ -11,7 +11,7 @@ import { useMeId, useOrgId } from "../shared/hooks";
 
 /**
  * The phone's one way out where a tool is off on a computer, as the web's (ADR 0036 §8): its owner turns it on here,
- * anyone else asks them, an app too old says to update it; nothing where nobody can.
+ * anyone else asks them, an app too old says to update it; nothing where nobody can. Several tools: one ask for all.
  */
 export function ToolOneClickButton({
   machineId,
@@ -24,7 +24,7 @@ export function ToolOneClickButton({
   machineId: string;
   machineName: string;
   oneClick: ToolOneClick | null;
-  tool: MachineTool;
+  tool: MachineTool | readonly MachineTool[];
   label?: string;
   onAllowed?: () => void;
 }) {
@@ -39,6 +39,7 @@ export function ToolOneClickButton({
       </Text>
     );
   const fail = (err: unknown) => toast({ title: errorText(t, err), icon: "x" });
+  const tools: readonly MachineTool[] = typeof tool === "string" ? [tool] : tool;
   if (oneClick.kind === "ask") {
     const name = firstName(oneClick.ownerName);
     return (
@@ -48,9 +49,9 @@ export function ToolOneClickButton({
         label={t("machines.oneClick.ask", { name })}
         loading={allow.isPending}
         onPress={() =>
-          allow.mutate(
-            { machineId, tool, ask: true },
-            { onSuccess: () => toast({ title: t("machines.oneClick.asked", { name }) }), onError: fail },
+          Promise.all(tools.map((x) => allow.mutateAsync({ machineId, tool: x, ask: true }))).then(
+            () => toast({ title: t("machines.oneClick.asked", { name }) }),
+            fail,
           )
         }
       />
@@ -60,11 +61,11 @@ export function ToolOneClickButton({
     <Button
       variant="primary"
       size="sm"
-      label={label ?? t("machines.oneClick.allow", { tool: toolWords(t, tool) })}
+      label={label ?? t("machines.oneClick.allow", { tool: toolWords(t, tools[0] as MachineTool) })}
       loading={allow.isPending}
       onPress={() =>
         allow.mutate(
-          { machineId, tool },
+          { machineId, tool: tools[0] as MachineTool },
           {
             onSuccess: () =>
               onAllowed ? onAllowed() : toast({ title: t("machines.oneClick.done", { machine: machineName }) }),
@@ -98,7 +99,7 @@ export function MachineToolButton({
   onAllowed,
 }: {
   machine: Machine;
-  tool: MachineTool;
+  tool: MachineTool | readonly MachineTool[];
   label?: string;
   onAllowed?: () => void;
 }) {

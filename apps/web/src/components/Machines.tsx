@@ -583,7 +583,7 @@ function FoldersCard({ machine: m, onReduce }: { machine: Machine; onReduce: (r:
 function ToolsCard({ machine: m, onReduce }: { machine: Machine; onReduce: (r: Reduce) => void }) {
   const { t } = useTranslation();
   const { org } = useOrg();
-  // The site only turns a tool off. Turning one on happens in this Mac's app (ADR 0036).
+  // Whoever connected it turns a tool on from here too; anyone else only turns one off (ADR 0036 §8).
   const oneClick = useToolOneClick(m);
   const here = useIsThisMac(org.id, m.id);
   const access = m.access;
@@ -623,7 +623,13 @@ function ToolsCard({ machine: m, onReduce }: { machine: Machine; onReduce: (r: R
               <span className="machine-tool__tail ac-mediarow__end ac-mediarow__end--wrap">
                 <Chip icon={on ? "check" : "dash"}>{on ? t("machines.access.on") : t("machines.access.off")}</Chip>
                 {!on && oneClick?.kind === "allow" && (
-                  <MachineToolButton machine={m} tool={tool} variant="default" label={t("machines.access.enable")} />
+                  <MachineToolButton
+                    machine={m}
+                    tool={tool}
+                    variant="default"
+                    label={t("machines.access.enable")}
+                    ariaLabel={t("machines.access.enableLabel", { tool: name })}
+                  />
                 )}
                 {on && canReduceAccess(m) && (
                   <Button

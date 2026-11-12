@@ -657,6 +657,13 @@ test("a tool turned on from the apps: only whoever connected it; anyone else ask
   expect(stored.machines[0]?.access?.tools.browser).toBe(true);
   expect((await inbox()).filter((n) => n.kind === "device.tool_request")).toHaveLength(0);
 
+  // Turned on at the computer itself: the ask is answered all the same.
+  expect((await orgApi(caio)(`${path}/ask`, { json: { tool: "codex" } })).status).toBe(200);
+  expect((await inbox()).filter((n) => n.kind === "device.tool_request")).toHaveLength(1);
+  tools.codex = true;
+  await hub.message(conn, JSON.stringify({ type: "access.changed", access: { folders: [], tools: { ...tools } } }));
+  expect((await inbox()).filter((n) => n.kind === "device.tool_request")).toHaveLength(0);
+
   // A tool the API doesn't know is refused before anything is sent.
   expect((await orgApi(bia)(`${path}/allow`, { json: { tool: "everything" } })).status).toBe(400);
 

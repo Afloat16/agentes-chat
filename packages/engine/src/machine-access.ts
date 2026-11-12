@@ -60,6 +60,8 @@ export function agentFolders(access: RunnerAccess | null | undefined, agentId: s
   return access.folders.filter((f) => grantedTo(f, agentId)).map((f) => f.path);
 }
 
+const toolRequestKey = (machineId: string, tool: string) => `device-tool:${machineId}:${tool}`;
+
 /** The runner's report, stored as is (the machine is the source of truth), and told to the org. */
 export async function storeMachineAccess(deps: AccessDeps, machineId: string, access: RunnerAccess) {
   const [row] = await deps.db
@@ -68,8 +70,17 @@ export async function storeMachineAccess(deps: AccessDeps, machineId: string, ac
     .set({ access, execAllowed: access.tools.commands === true, updatedAt: new Date() })
     .where(eq(machines.id, machineId))
     .returning({ orgId: machines.orgId });
+  if (!row) return;
   // Members refetch; the folders themselves are only in the API, for admins and the pairer.
-  if (row) await publishMachineUpdated(deps.pubsub, row.orgId, machineId, { access: true });
+  await publishMachineUpdated(deps.pubsub, row.orgId, machineId, { access: true });
+  // A tool on, from the apps or the computer's own switch, answers whoever asked for it.
+  for (const [tool, on] of Object.entries(access.tools)) {
+    if (on !== true) continue;
+    await resolveNotifications(deps, row.orgId, {
+      groupKey: toolRequestKey(machineId, tool),
+      kind: "device.tool_request",
+    }).catch(() => 0);
+  }
 }
 
 /** What `machines.executors` keeps of the coding CLIs: each one found and when they were looked up. */
@@ -187,7 +198,7 @@ export async function reduceMachineAccess(
  * Undo. The workspace's own computer stays as it is.
  */
 export async function allowMachineTool(
-  deps: AccessDeps & Pick<NotificationDeps, "now"> & { hub: Pick<MachineCaller, "call" | "status"> },
+  deps: AccessDeps & { hub: Pick<MachineCaller, "call" | "status"> },
   actorId: string,
   orgId: string,
   machineId: string,
@@ -226,18 +237,13 @@ export async function allowMachineTool(
     target: { type: "machine", id: machine.id },
     details: { tool },
   });
-  if (reply.access.tools[tool] === true) {
-    await resolveNotifications(deps, orgId, { groupKey: toolRequestKey(machine.id, tool) }).catch(() => 0);
-  }
   return reply.access;
 }
-
-const toolRequestKey = (machineId: string, tool: string) => `device-tool:${machineId}:${tool}`;
 
 /**
  * `POST …/machines/{machineId}/access/ask`: someone else needs a tool on a person's computer ("Pedir ao Rui"). Its
  * owner gets one inbox row per computer and tool (`device.tool_request`) with the same one-click button; done once
- * the tool is on. Refused when the tool is on already or the asker is the owner (they turn it on themselves).
+ * the tool is on (`storeMachineAccess`). Refused to the owner themselves (they turn it on).
  */
 export async function askMachineTool(
   deps: AccessDeps & Pick<NotificationDeps, "now">,

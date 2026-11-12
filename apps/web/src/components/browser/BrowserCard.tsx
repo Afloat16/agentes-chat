@@ -855,7 +855,7 @@ export function BrowserCard({
   // A profile's Chrome the computer refused to start (`unavailable`) waits for nothing: said at once, with its way out
   // (the switch when the browser is off there). An agent's own browser retries by itself, as before.
   const refusedHere = unavailable?.reason === "unavailable" && Boolean(profile);
-  const offHere = refusedHere && Boolean(profile) && browserOffMessage(unavailable?.message);
+  const offHere = refusedHere && browserOffMessage(unavailable?.message);
   // What can't change by waiting is said plainly; everything else is "opening" while it retries.
   const blocker = shows
     ? null
