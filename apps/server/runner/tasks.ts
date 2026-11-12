@@ -56,7 +56,7 @@ import {
 import { codexThreadKey, unwrapShell } from "./brain-codex";
 import { commandApproval, ownBranches } from "./command-gate";
 import { RunnerError } from "./errors";
-import { shellCommand } from "./exec";
+import { shellCommand, windowsTaskkill } from "./exec";
 import { readJson, writeJson } from "./json-file";
 import {
   CODEX_MCP_ENV,
@@ -361,7 +361,8 @@ writeFileSync(file("child.pid"), String(child.pid ?? ""));
 const kill = (signal) => {
   if (!child.pid) return;
   if (process.platform === "win32") {
-    try { spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore", windowsHide: true }).on("error", () => {}); } catch {}
+    // By its full path: a bare name is looked for in the task's folder first.
+    try { spawn(path.win32.join(process.env.SystemRoot || "C:/Windows", "System32", "taskkill.exe"), ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore", windowsHide: true }).on("error", () => {}); } catch {}
     return;
   }
   try { process.kill(-child.pid, signal); } catch { try { child.kill(signal); } catch {} }
@@ -1548,7 +1549,7 @@ export class TaskManager {
       for (const pid of [childPid, t.pid]) {
         if (!pid) continue;
         try {
-          spawn("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
+          spawn(windowsTaskkill(), ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
         } catch {}
       }
       return;

@@ -1029,12 +1029,14 @@ export class ClaudeProcess {
     /** A token root handed over, on its own descriptor (`TOKEN_FD_ENV`). */
     token?: string,
   ) {
-    // A full path: the compiled runner would look the bare name up on the PATH it started with. On Windows, cmd.exe
-    // with every argument quoted (an empty `--setting-sources` stays one).
+    // A full path: the compiled runner would look the bare name up on the PATH it started with. On Windows, found on
+    // the PATH (never in the agent's folder), a launcher through cmd.exe with every argument quoted (an empty
+    // `--setting-sources` stays one).
     const run = cliSpawn(command.length ? command : ["claude"], args, env.PATH);
+    const runEnv = run.env ? { ...env, ...run.env } : env;
     this.child = start(run.file, run.args, {
       cwd,
-      env: token ? { ...env, ...TOKEN_FD_ENV } : env,
+      env: token ? { ...runEnv, ...TOKEN_FD_ENV } : runEnv,
       stdio: token ? [...TOKEN_STDIO] : ["pipe", "pipe", "pipe"],
       windowsHide: true,
       windowsVerbatimArguments: run.windowsVerbatimArguments,
