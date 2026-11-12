@@ -3062,6 +3062,8 @@
       "updated_priority": "<b>#{{number}}</b>の優先度を{{priority}}にしました · {{title}}",
       "assigned": "<b>#{{number}}</b>を{{assignee}}に割り当てました · {{title}}",
       "assigned_self": "<b>#{{number}}</b>を自分で引き受けました · {{title}}",
+      "assigned_you": "<b>#{{number}}</b>をあなたに割り当てました · {{title}}",
+      "assigned_none": "<b>#{{number}}</b>の担当者を外しました · {{title}}",
       "files": "{{names}}を添付しました"
     },
     "memory": {
@@ -3165,6 +3167,42 @@
     "changes_other": "{{count}}件の変更",
     "undoneBy": "{{name}}が元に戻しました",
     "group": "{{name}}による変更",
+    "several": {
+      "issue": {
+        "created": "タスクを作成しました: {{refs}}",
+        "updated": "タスクの{{fields}}を変更しました: {{refs}}",
+        "assigned": "タスクを{{assignee}}に割り当てました: {{refs}}",
+        "assigned_self": "タスクを自分で引き受けました: {{refs}}",
+        "assigned_you": "タスクをあなたに割り当てました: {{refs}}",
+        "assigned_none": "タスクの担当者を外しました: {{refs}}"
+      },
+      "routine": {
+        "created": "ルーティンを作成しました: {{refs}}",
+        "updated": "ルーティンの{{fields}}を変更しました: {{refs}}",
+        "deleted": "ルーティンを削除しました: {{refs}}"
+      },
+      "channel": {
+        "agent_added": "{{agentName}}をチャンネルに追加しました: {{refs}}",
+        "created": "チャンネルを作成しました: {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Wikiページを作成しました: {{refs}}",
+        "page_edited": "Wikiページを編集しました: {{refs}}"
+      },
+      "thread": {
+        "closed": "会話を終了しました: {{refs}}"
+      },
+      "skill": {
+        "created": "学んだことをスキルにまとめました: {{refs}}",
+        "updated": "スキルを修正しました: {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "設定を変更しました: {{refs}}"
+      },
+      "pr": {
+        "merged": "<b>{{repo}}</b>のPRをマージしました: {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "その後、誰かがこれを変更しました。今元に戻すと、その変更が失われます。",
       "expired": "元に戻せる時間が過ぎました。",
@@ -17162,7 +17200,6 @@
     "people": "特定の人",
     "only": "{{name}}のみ",
     "more_other": "{{names}}ほか{{count}}人",
-    "some": "一部の人",
     "taskTitle": "このタスクを閲覧できる人",
     "pageTitle": "このページを閲覧できる人",
     "admins": "管理者は常に閲覧できます。",
@@ -17171,7 +17208,6 @@
     "search": "人を検索",
     "noMatch": "その名前の人はいません",
     "moreOptions": "その他のオプション",
-    "receipt": "閲覧できる人：{{who}}",
     "limited": "アクセス制限あり",
     "rolesToo": "このページにすでに設定されているロールは引き続き閲覧できます。"
   },

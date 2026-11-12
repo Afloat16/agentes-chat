@@ -3298,6 +3298,10 @@ export const ptBR = {
       updated_priority: "Prioridade {{priority}} na <b>#{{number}}</b> · {{title}}",
       assigned: "Passei a <b>#{{number}}</b> para {{assignee}} · {{title}}",
       assigned_self: "Peguei a <b>#{{number}}</b> para mim · {{title}}",
+      /** Para quem lê: as palavras da língua para "para você" ("Te asigné"). */
+      assigned_you: "Passei a <b>#{{number}}</b> para você · {{title}}",
+      /** A tarefa ficou sem ninguém. */
+      assigned_none: "Tirei o responsável da <b>#{{number}}</b> · {{title}}",
       /** Under the line: the files that went with the task (their names). */
       files: "Anexei {{names}}",
     },
@@ -3405,6 +3409,47 @@ export const ptBR = {
     changes_other: "{{count}} mudanças",
     undoneBy: "Desfeito por {{name}}",
     group: "Mudanças de {{name}}",
+    /**
+     * Várias mudanças de um tipo numa linha, cortada com "…" quando longa: `{{refs}}` lista o que elas nomeiam (números
+     * de tarefa, nomes de rotina…), cada um em negrito e abrindo o seu. O que elas têm em comum vem antes, para a lista
+     * cortada nunca esconder.
+     */
+    several: {
+      issue: {
+        created: "Criei as tarefas {{refs}}",
+        updated: "Mudei {{fields}} das tarefas {{refs}}",
+        assigned: "Passei para {{assignee}} as tarefas {{refs}}",
+        assigned_self: "Peguei para mim as tarefas {{refs}}",
+        assigned_you: "Passei para você as tarefas {{refs}}",
+        assigned_none: "Tirei o responsável das tarefas {{refs}}",
+      },
+      routine: {
+        created: "Criei as rotinas {{refs}}",
+        updated: "Mudei {{fields}} das rotinas {{refs}}",
+        deleted: "Apaguei as rotinas {{refs}}",
+      },
+      channel: {
+        agent_added: "Chamei {{agentName}} para {{refs}}",
+        created: "Criei os canais {{refs}}",
+      },
+      wiki: {
+        page_created: "Criei na wiki as páginas {{refs}}",
+        page_edited: "Editei na wiki as páginas {{refs}}",
+      },
+      thread: {
+        closed: "Encerrei as conversas {{refs}}",
+      },
+      skill: {
+        created: "Transformei o que aprendi nas skills {{refs}}",
+        updated: "Corrigi as skills {{refs}}",
+      },
+      agent: {
+        settings_changed: "Mudei as configurações de {{refs}}",
+      },
+      pr: {
+        merged: "Fiz o merge em <b>{{repo}}</b> dos PRs {{refs}}",
+      },
+    },
     errors: {
       changed_since: "Alguém mudou isso depois. Não dá mais para desfazer sem perder essa mudança.",
       expired: "O tempo para desfazer acabou.",
@@ -17999,7 +18044,6 @@ export const ptBR = {
     only: "Só {{name}}",
     more_one: "{{names}} e mais {{count}}",
     more_other: "{{names}} e mais {{count}}",
-    some: "algumas pessoas",
     taskTitle: "Quem vê esta tarefa",
     pageTitle: "Quem vê esta página",
     admins: "Administradores sempre veem.",
@@ -18008,7 +18052,6 @@ export const ptBR = {
     search: "Buscar pessoa",
     noMatch: "Ninguém com esse nome",
     moreOptions: "Mais opções",
-    receipt: "Quem vê: {{who}}",
     limited: "acesso limitado",
     rolesToo: "Os papéis que já estão nesta página continuam vendo.",
   },

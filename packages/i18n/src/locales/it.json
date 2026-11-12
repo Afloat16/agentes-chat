@@ -3283,6 +3283,8 @@
       "updated_priority": "Ho impostato la priorità di <b>#{{number}}</b> su {{priority}} · {{title}}",
       "assigned": "Ho assegnato <b>#{{number}}</b> a {{assignee}} · {{title}}",
       "assigned_self": "Ho preso <b>#{{number}}</b> io · {{title}}",
+      "assigned_you": "Ti ho assegnato <b>#{{number}}</b> · {{title}}",
+      "assigned_none": "Ho tolto il responsabile di <b>#{{number}}</b> · {{title}}",
       "files": "Ho allegato {{names}}"
     },
     "memory": {
@@ -3388,6 +3390,42 @@
     "changes_other": "{{count}} modifiche",
     "undoneBy": "Annullato da {{name}}",
     "group": "Modifiche di {{name}}",
+    "several": {
+      "issue": {
+        "created": "Ho creato le attività {{refs}}",
+        "updated": "Ho cambiato {{fields}} delle attività {{refs}}",
+        "assigned": "Ho assegnato a {{assignee}} le attività {{refs}}",
+        "assigned_self": "Ho preso io le attività {{refs}}",
+        "assigned_you": "Ti ho assegnato le attività {{refs}}",
+        "assigned_none": "Ho tolto il responsabile delle attività {{refs}}"
+      },
+      "routine": {
+        "created": "Ho creato le routine {{refs}}",
+        "updated": "Ho cambiato {{fields}} delle routine {{refs}}",
+        "deleted": "Ho eliminato le routine {{refs}}"
+      },
+      "channel": {
+        "agent_added": "Ho portato {{agentName}} in {{refs}}",
+        "created": "Ho creato i canali {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Ho creato le pagine wiki {{refs}}",
+        "page_edited": "Ho modificato le pagine wiki {{refs}}"
+      },
+      "thread": {
+        "closed": "Ho chiuso le conversazioni {{refs}}"
+      },
+      "skill": {
+        "created": "Ho trasformato ciò che ho imparato nelle skill {{refs}}",
+        "updated": "Ho corretto le skill {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Ho cambiato le impostazioni di {{refs}}"
+      },
+      "pr": {
+        "merged": "Ho fatto il merge in <b>{{repo}}</b> delle PR {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "Qualcuno l'ha cambiato nel frattempo. Annullando ora perderesti quella modifica.",
       "expired": "Il tempo per annullare è scaduto.",
@@ -18368,7 +18406,6 @@
     "more_one": "{{names}} e altri {{count}}",
     "more_many": "{{names}} e altri {{count}}",
     "more_other": "{{names}} e altri {{count}}",
-    "some": "alcune persone",
     "taskTitle": "Chi vede questa attività",
     "pageTitle": "Chi vede questa pagina",
     "admins": "Gli amministratori lo vedono sempre.",
@@ -18377,7 +18414,6 @@
     "search": "Cerca una persona",
     "noMatch": "Nessuno con questo nome",
     "moreOptions": "Altre opzioni",
-    "receipt": "Chi lo vede: {{who}}",
     "limited": "accesso limitato",
     "rolesToo": "I ruoli già su questa pagina continuano a vederla."
   },
