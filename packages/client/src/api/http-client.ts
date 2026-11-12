@@ -240,6 +240,7 @@ import type {
   UsageQueue,
   UsageReport,
   WebhookSetup,
+  WifiIphones,
   WifiPairing,
   WikiGraph,
   WikiImportResult,
@@ -1218,6 +1219,13 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         }),
       lookForPhones: (orgId, machineId) =>
         request<void>(`${org(orgId)}/devices/computers/${enc(machineId)}/phone-looks`, { json: {} }),
+      wifiIphones: (orgId, machineId) =>
+        request<WifiIphones>(`${org(orgId)}/devices/computers/${enc(machineId)}/wifi-iphones`),
+      pickIphoneOverWifi: (orgId, machineId, serial) =>
+        request<WifiIphones>(`${org(orgId)}/devices/computers/${enc(machineId)}/wifi-iphones/${enc(serial)}`, {
+          method: "PUT",
+          json: {},
+        }),
     },
     machines: {
       list: async (orgId) => (await request<{ machines: Machine[] }>(`${org(orgId)}/machines`)).machines,
@@ -1297,8 +1305,12 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
       get: (orgId, id) => request<SkillDetail>(`${org(orgId)}/skills/${enc(id)}`),
       create: (orgId, input) => request<SkillDetail>(`${org(orgId)}/skills`, { json: input }),
       import: (orgId, input) => request<SkillDetail | SkillPick>(`${org(orgId)}/skills/import`, { json: input }),
-      importPicked: async (orgId, url, paths) =>
-        (await request<{ skills: SkillDetail[] }>(`${org(orgId)}/skills/import`, { json: { url, paths } })).skills,
+      importPicked: async (orgId, url, paths, forAgentId) =>
+        (
+          await request<{ skills: SkillDetail[] }>(`${org(orgId)}/skills/import`, {
+            json: { url, paths, ...(forAgentId ? { forAgentId } : {}) },
+          })
+        ).skills,
       update: (orgId, id, patch) =>
         request<SkillDetail>(`${org(orgId)}/skills/${enc(id)}`, { method: "PATCH", json: patch }),
       reimport: (orgId, id) => request<SkillDetail>(`${org(orgId)}/skills/${enc(id)}/reimport`, { json: {} }),

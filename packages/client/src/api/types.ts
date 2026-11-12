@@ -2203,6 +2203,7 @@ export type ProposalSettingField =
   | "channel_add"
   | "channel_remove"
   | "reply_mode"
+  | "skill"
   | "name"
   | "look"
   | "reports_to"
@@ -2213,14 +2214,16 @@ export type ProposalSettingField =
  * One line of a settings card: `model` a model id; `ai_account` `{ brain, accountId }`; `budget` nano-USD a month or
  * null (the workspace's default); `owner` a user id; `audience` `{ mode, userIds, roleIds }`; `channel_add` /
  * `channel_remove` / `reply_mode` its seat in `channelId` (null: not in it, else whether it answers without a
- * mention); `name` its name; `look` `{ color, eyes, accessory }`; `reports_to` an agent id or null (Responde a);
- * `archive` true. `label`: the server's names for ids.
+ * mention); `skill` whether it has the skill in `skillId` on (its name in `label.to`); `name` its name; `look`
+ * `{ color, eyes, accessory }`; `reports_to` an agent id or null (Responde a); `archive` true. `label`: the server's
+ * names for ids.
  */
 export interface ProposalSettingLine {
   field: ProposalSettingField;
   from: unknown;
   to: unknown;
   channelId?: string;
+  skillId?: string;
   label?: { from?: string; to?: string };
 }
 
@@ -4306,6 +4309,8 @@ export interface SkillChoice {
   path: string;
   name: string;
   description: string;
+  /** A skill of this name is installed (it becomes a new version of it) or was removed (it comes back, on for nobody). */
+  replaces?: "installed" | "removed";
 }
 
 /** A skill a GitHub link holds that can't be installed: its folder and the server's refusal. */
@@ -7646,6 +7651,21 @@ export interface ConnectLinkState {
   status: "waiting" | "asking" | "joined" | "denied" | "expired";
   request?: DeviceJoinRequest;
   machineId?: string;
+}
+
+/** An iPhone on a Mac's Wi-Fi that trusts it, not used until the person who manages the Mac picks it. */
+export interface WifiIphone {
+  /** Its UDID: the phone's `serial` once picked. */
+  serial: string;
+  model: string;
+  name?: string;
+  osVersion: string;
+}
+
+/** The iPhones a Mac offers over Wi-Fi; `update`: its agentes.chat is too old for it. */
+export interface WifiIphones {
+  available: WifiIphone[];
+  update?: true;
 }
 
 /** Pairing an Android phone over Wi-Fi with a computer: where it stands. */
