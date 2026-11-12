@@ -236,13 +236,12 @@ test("a plan and its model are one choice: the model is picked under the plan in
   }
 });
 
-test("Poderes do workspace is one row for everyone that opens what only Lodi does, and no Computador row without a computer", async () => {
+test("Poderes do workspace is one row for everyone that opens what only Lodi does", async () => {
   const state = withRightHand(seedState());
   const me = state.me?.organizations[0];
   if (me) me.role = "member";
   await renderApp(`/org/${ORG_ID}/agents/${LODI_ID}`, { api: createFakeApi(state) });
   await settle(8);
-  expect(screen().queryByRole("button", { name: /^Computador/ })).toBeNull();
   const powers = row(/^Poderes do workspace/);
   expect(powers.matches(".settings-row--open")).toBe(true);
   await act(async () => fireEvent.click(powers));

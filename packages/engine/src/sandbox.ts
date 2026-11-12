@@ -21,12 +21,12 @@ import { can, requirePermission } from "./organizations";
 import { isRightHand } from "./right-hand";
 import { machineScope, NO_HOME_MESSAGE, type ScopeContext, toolMachineId } from "./right-hand-seats";
 import { runnerUpdateWay } from "./runner-update";
+import { SANDBOX_SCOPE } from "./sandbox-scope";
 import type { ToolContext } from "./tools/types";
 
 const { orgSandboxSettings } = schema;
 
-/** The scope of the sandbox tools: on by default, and not covered by "all tools" (ADR 0021). */
-export const SANDBOX_SCOPE = "sandbox:run";
+export { SANDBOX_SCOPE };
 
 export const SANDBOX_LIMITS = {
   /** The most an organization's default command timeout (`execTimeoutSeconds`) can be. */

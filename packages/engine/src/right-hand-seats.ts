@@ -3,10 +3,9 @@ import { and, type Database, desc, type Executor, eq, isNotNull, isNull, schema,
 import { getAgentCached, workspaceHomeId } from "./agents";
 import { BROWSER_SCOPE, DESKTOP_SCOPE } from "./browser/types";
 import type { MachineCaller } from "./machine-hub";
-import { getMachine } from "./machines";
 import { personBehindCall } from "./requester";
 import { isRightHand, isRightHandId, RIGHT_HAND, readsAlone } from "./right-hand";
-import { getSandboxSettings, SANDBOX_SCOPE, SandboxUnavailableError } from "./sandbox";
+import { SANDBOX_SCOPE } from "./sandbox-scope";
 import { grantedScopeKeys, grantKey } from "./tools/scopes";
 import type { ToolContext } from "./tools/types";
 
@@ -19,6 +18,13 @@ const { agents, organizationMembers, rightHandSeats, users } = schema;
  * its locked chat turn (the hub refuses it), so a request built without a seat fails instead of landing every member
  * in one home.
  */
+
+/**
+ * Loaded on first use: both modules import this one, and a static import back would
+ * run their importers before they have finished loading.
+ */
+const machines = () => import("./machines");
+const sandbox = () => import("./sandbox");
 
 /** A call of the right hand outside a person's own conversation with it: no seat, so no computer. */
 export const NO_SEAT_MESSAGE =
@@ -220,11 +226,11 @@ export async function seatState(
   run: { orgId: string; agentId: string; channelId: string; id: string; triggerMessageId: string },
 ): Promise<SeatState> {
   const home = await workspaceHomeId(db, run.orgId);
-  const machine = home ? await getMachine(db, run.orgId, home) : null;
+  const machine = home ? await (await machines()).getMachine(db, run.orgId, home) : null;
   if (machine?.executors?.mode !== "system") return "none";
   const keys = await grantedScopeKeys(db, run.orgId, run.agentId);
   const has = (scope: string) => keys.has(grantKey(null, scope));
-  const commands = has(SANDBOX_SCOPE) && (await getSandboxSettings(db, run.orgId)).enabled;
+  const commands = has(SANDBOX_SCOPE) && (await (await sandbox()).getSandboxSettings(db, run.orgId)).enabled;
   if (!commands && !has(BROWSER_SCOPE) && !has(DESKTOP_SCOPE)) return "none";
   return (await seatPerson({ db, ...run, runId: run.id })) ? "seat" : "away";
 }
@@ -288,7 +294,7 @@ export async function machineScope(
           triggerMessageId: ctx.triggerMessageId ?? "",
         })
       : null;
-  if (!agent || !person) throw new SandboxUnavailableError(NO_SEAT_MESSAGE);
+  if (!agent || !person) throw new (await sandbox()).SandboxUnavailableError(NO_SEAT_MESSAGE);
   const status = await hub.status(machineId);
   const seat = await seatOn(
     ctx.db,
@@ -297,8 +303,8 @@ export async function machineScope(
     status && { id: machineId, orgId: status.orgId, name: status.name, system: status.mode === "system" },
     async (orgId) => hub.agentsChanged?.(orgId),
   );
-  if (!seat.ok) throw new SandboxUnavailableError(seat.message);
-  if (!seat.scope) throw new SandboxUnavailableError(NO_SEAT_MESSAGE);
+  if (!seat.ok) throw new (await sandbox()).SandboxUnavailableError(seat.message);
+  if (!seat.scope) throw new (await sandbox()).SandboxUnavailableError(NO_SEAT_MESSAGE);
   return seat.scope;
 }
 
@@ -348,7 +354,7 @@ export async function viewerScope(
     return { machineId: agent.machineId, scope: { id: agentId, handle: agent.handle, name: agent.name }, seat: false };
   }
   const machineId = await workspaceHomeId(db, orgId);
-  const machine = machineId ? await getMachine(db, orgId, machineId) : null;
+  const machine = machineId ? await (await machines()).getMachine(db, orgId, machineId) : null;
   const seat = await seatOn(
     db,
     agent,
