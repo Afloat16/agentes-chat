@@ -52,6 +52,7 @@ export async function rulesForPerson(
       by: contextItems.createdById,
       at: contextItems.createdAt,
       name: users.name,
+      scopeType: contextItems.scopeType,
     })
     .from(contextItems)
     .leftJoin(users, eq(users.id, contextItems.createdById))
@@ -67,7 +68,8 @@ export async function rulesForPerson(
       ),
     ),
   );
-  return rows.filter((r) => holds.get(r.by ?? ""));
+  // A rule kept for one person alone (the right hand's, ADR 0137) holds in that person's runs, whoever decides approvals.
+  return rows.filter((r) => (r.scopeType === "person" ? r.by === input.personId : holds.get(r.by ?? "")));
 }
 
 /** "# Rules people gave you" for a run, or "" when none holds in it. */

@@ -50,52 +50,34 @@ export const RIGHT_HAND_AUTO = {
     "Sets the team up with people through short questions and cards, and follows its work. A status, a greeting or a short question: the smallest tier and low effort. Handing work to an agent, following it up or reporting what came of it: the medium tier. More only when the person asks for something long or complex.",
 } as const;
 
-/** In `RIGHT_HAND_GRANTS`: nothing outside them can be turned on, so nobody is told to ask for it (`refusalOf`). */
-export const FIXED_GRANTS = "fixed";
-
-/** What it reads for a tool it doesn't have: a way forward, as no card or admin can give it one. */
-export const RIGHT_HAND_REFUSAL =
-  "this isn't one of your tools and nothing can turn it on: your tools are fixed. Hand the work to the agent whose job it is (ask_agent, tell_agent) or propose one, and never ask the person to try again";
-
 /**
- * Its tools, fixed in code whatever its grant rows say (`loadScopeKeys`): the setup cards, reading context, reading
- * the Drive, the wiki and tasks as the person behind the run (ADR 0137 §12, §13), routines for any agent,
- * `propose_instruction_change` (under `memory:write`, whose memory tools are denied: its runs keep no memory, so
- * nothing one person tells it reaches another), `create_issue`, a task written as itself, never in a person's name
- * (§13), `update_issue` on a task its person sees, and wiki pages its person may edit (written as itself, at their
- * request). No writing Drive files, apps, web, computer, databases or mail, nor posting elsewhere (`share_artifact`
- * too), putting agents in channels without a card, or long work.
+ * What it holds whatever its grant rows say (`loadScopeKeys` adds the rows on top: apps, mailboxes, databases, a
+ * tool turned off): every built-in scope an agent can be given, and the setup cards. Not a computer's (`sandbox:run`,
+ * `browser:use`, `desktop:use`): it has none of its own, and a row for one gives it nothing. One row answers
+ * everyone, so what is one person's stays in that person's own DM with it (`rightHandReader`): their Vault items,
+ * their mailbox, their tasks, and what it remembers for them.
  */
 export const RIGHT_HAND_GRANTS: readonly string[] = [
-  FIXED_GRANTS,
   "setup:write",
   "context:read",
+  "memory:write",
   "drive:read",
-  "wiki:read",
-  "wiki:write",
+  "drive:write",
   "issues:read",
   "issues:write",
+  "calendar:read",
+  "calendar:write",
+  "skills:read",
+  "wiki:read",
+  "wiki:write",
   "schedule:write",
-  "memory:write",
-  ...[
-    "request_permission",
-    "share_artifact",
-    "remember",
-    "update_memory",
-    "forget",
-    "save_how_to",
-    "web_search",
-    "web_fetch",
-    "post_message",
-    "send_dm",
-    "add_agent_to_channel",
-    "work_in_background",
-    "post_update",
-    "steer_work",
-    "stop_work",
-    "comment_issue",
-  ].map((name) => `deny:${name}`),
+  "vault:read",
+  "vault:write",
 ];
+
+/** What it reads for a computer tool: it has no computer, and no card or admin can give it one. */
+export const RIGHT_HAND_NO_COMPUTER =
+  "you have no computer yet, so you run no commands, keep no files there and open no browser. Hand this to an agent that has one (ask_agent, tell_agent, or create_issue assigned to it) or propose one, and never ask the person to try again";
 
 /**
  * Its owner (the person accountable for it) is the workspace's longest-standing owner who can still sign in: set
@@ -205,13 +187,18 @@ export const RIGHT_HAND_EDITABLE: ReadonlySet<string> = new Set([
   "approvalsLevel",
 ]);
 
-/** Refuses `what` for the right hand: archived, deleted. */
-export async function refuseRightHand(db: Executor, orgId: string, agentId: string, what: string) {
+/** Whether `agentId` is the workspace's right hand, for a caller that holds only its id. */
+export async function isRightHandId(db: Executor, orgId: string, agentId: string) {
   const [row] = await db
     .select({ builtin: agents.builtin })
     .from(agents)
     .where(and(eq(agents.orgId, orgId), eq(agents.id, agentId)));
-  if (isRightHand(row)) throw rightHandPermanent(what);
+  return isRightHand(row);
+}
+
+/** Refuses `what` for the right hand: archived, deleted. */
+export async function refuseRightHand(db: Executor, orgId: string, agentId: string, what: string) {
+  if (await isRightHandId(db, orgId, agentId)) throw rightHandPermanent(what);
 }
 
 /**
@@ -261,8 +248,7 @@ export async function scrubRightHandReply(
 export async function rightHandReader(
   ctx: Pick<ToolContext, "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId"> & { db: Executor },
 ): Promise<string | null> {
-  const [agent] = await ctx.db.select({ builtin: agents.builtin }).from(agents).where(eq(agents.id, ctx.agentId));
-  if (!isRightHand(agent)) return null;
+  if (!(await isRightHandId(ctx.db, ctx.orgId, ctx.agentId))) return null;
   const person = await personBehindCall(ctx);
   return person && (await readsAlone(ctx.db, ctx.channelId, person)) ? person : null;
 }
@@ -281,8 +267,19 @@ export async function readsAlone(db: Executor, channelId: string, person: string
 export async function rightHandAway(
   ctx: Pick<ToolContext, "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId"> & { db: Executor },
 ) {
-  const [agent] = await ctx.db.select({ builtin: agents.builtin }).from(agents).where(eq(agents.id, ctx.agentId));
-  return isRightHand(agent) && !(await rightHandReader(ctx));
+  return (await isRightHandId(ctx.db, ctx.orgId, ctx.agentId)) && !(await rightHandReader(ctx));
+}
+
+/** `rightHandAway` for a caller that holds only the run's id (the Vault): a run that is gone reads as away. */
+export async function rightHandAwayRun(db: Executor, run: { orgId: string; agentId: string; runId: string }) {
+  if (!(await isRightHandId(db, run.orgId, run.agentId))) return false;
+  const [row] = /^[0-9a-f-]{36}$/i.test(run.runId)
+    ? await db
+        .select({ channelId: schema.agentRuns.channelId, triggerMessageId: schema.agentRuns.triggerMessageId })
+        .from(schema.agentRuns)
+        .where(and(eq(schema.agentRuns.orgId, run.orgId), eq(schema.agentRuns.id, run.runId)))
+    : [];
+  return !row || !(await rightHandReader({ db, ...run, ...row }));
 }
 
 /** Its computer turns' permission profile: the runner's locked-down `chat` (`LOCKED_BRAIN_PROTOCOL`). */

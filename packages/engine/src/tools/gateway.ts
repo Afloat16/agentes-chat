@@ -27,7 +27,7 @@ import { cutMarked, cutText, pgSafeJson, pgSafeText } from "../format";
 import { mergeReposOfCall, recordMergeDone, reposOfGithubCall } from "../git/repos";
 import { recordRead } from "../outbound";
 import { routineCreatorOf } from "../requester";
-import { FIXED_GRANTS, RIGHT_HAND_REFUSAL } from "../right-hand";
+import { isRightHandId, RIGHT_HAND_NO_COMPUTER } from "../right-hand";
 import type { RoutineBrief } from "../routine-brief";
 import { addRunStep } from "../runs";
 import { describeWhen } from "../schedule";
@@ -66,7 +66,6 @@ import {
   BUILTIN_SCOPES,
   freshGrantedKeys,
   grantedScopeKeys,
-  grantKey,
   holdsConnection,
   isAllowed,
   NOT_IN_ALL,
@@ -369,7 +368,7 @@ async function refusalOf(
   granted: Set<string>,
 ) {
   const of = access.of;
-  if (granted.has(grantKey(null, FIXED_GRANTS))) return RIGHT_HAND_REFUSAL;
+  if (NOT_IN_ALL.has(of.scope) && (await isRightHandId(ctx.db, ctx.orgId, ctx.agentId))) return RIGHT_HAND_NO_COMPUTER;
   if (access.state === "denied") {
     return `${of === tool ? "this tool" : of.name} is turned off for this agent, not for good: an admin can turn it back on, on the agent's page in Tools and access (in Portuguese, Ferramentas e acesso). Say so in plain words (the person asking may be that admin), never that it can't be done`;
   }

@@ -111,7 +111,7 @@ import {
   unregisterRunAbort,
   unregisterTurnAbort,
 } from "./cancel";
-import { describeCapabilities, forComputerBrain } from "./capabilities";
+import { COMPUTER_SECTIONS_LINE, describeCapabilities, forComputerBrain } from "./capabilities";
 import { CATCH_UP_AFTER_MS, catchUpText, isCatchUp } from "./catch-up";
 import {
   askCatchUp,
@@ -5342,8 +5342,9 @@ function brainTurnOf(
         .filter((b) => !isComputerTurnBlock(b) && !isConversationBlock(b))
         .map((b) => b.text)
         .join("\n\n");
-      // A computer brain has its own tools (read, search, shell, git) besides ours.
-      const computer = forComputerBrain(text);
+      // A computer brain has its own tools (read, search, shell, git) besides ours; the right hand's locked turn
+      // (ADR 0137 §4) has only ours, so it is never told of a computer's.
+      const computer = isRightHand(agent) ? `${text}\n\n${COMPUTER_SECTIONS_LINE}` : forComputerBrain(text);
       // It also sees `react` as an MCP tool and tends to echo the emoji as its final text; a GIF or a sticker, too.
       const media = tools.filter((d) => MEDIA_TOOLS.has(d.name)).map((d) => d.name);
       return [
