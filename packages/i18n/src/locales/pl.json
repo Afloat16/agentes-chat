@@ -3180,7 +3180,7 @@
     "lead": "Kiedy {{name}} pyta człowieka przed działaniem.",
     "always": {
       "title": "Zawsze pytaj",
-      "text": "Pyta przed każdą zmianą w aplikacji."
+      "text": "Pyta przed każdą zmianą, tutaj, na swoim komputerze i w aplikacji."
     },
     "risky": {
       "title": "Tylko to, co ryzykowne",
@@ -3188,7 +3188,7 @@
     },
     "never": {
       "title": "Nigdy nie pytaj",
-      "text": "Nadal pyta przy merge, deploy i rollback."
+      "text": "Nigdy nie pyta, także przy merge, deploy, płatnościach i rutynach."
     }
   },
   "brakes": {
@@ -6675,7 +6675,7 @@
     "connectorsLabel": "Konektory i poziomy",
     "connectOther": "Podłącz inną aplikację",
     "opensConnectors": "otwiera Konektory",
-    "approvalsNote": "Merge, wdrożenie i rollback zawsze wymagają zatwierdzenia na czacie.",
+    "approvalsNote": "Merge, wdrożenie i rollback wymagają zatwierdzenia na czacie, chyba że agent nigdy nie pyta.",
     "approverOwner": "Zatwierdza {{name}}.",
     "approverAdmins": "Zatwierdza administrator.",
     "skillsTitle": "Umiejętności przestrzeni roboczej",
@@ -6948,8 +6948,8 @@
       "readDesc": "Widzi, co jest w {{app}}. Niczego nie zmienia.",
       "write": "Czytanie i pisanie",
       "writeDesc": "Także tworzy i edytuje w {{app}}.",
-      "asks": "{{actions}} zawsze wymagają twojej zgody, na każdym poziomie.",
-      "asksAny": "Wysyłanie, usuwanie i płacenie zawsze wymagają twojej zgody, na każdym poziomie.",
+      "asks": "{{actions}} wymagają twojej zgody, chyba że agent nigdy nie pyta.",
+      "asksAny": "Wysyłanie, usuwanie i płacenie wymagają twojej zgody, chyba że agent nigdy nie pyta.",
       "remove": "Usuń {{app}}",
       "done": "Gotowe"
     },
@@ -8203,7 +8203,7 @@
       "ownActions": "Robi sama"
     },
     "ownActions": {
-      "hint": "Każde uruchomienie robi to w twoich połączonych aplikacjach bez pytania. Każda inna akcja w nich najpierw prosi osobę o zgodę, a merge, deploy i rollback zawsze o nią proszą.",
+      "hint": "Każde uruchomienie robi to w twoich połączonych aplikacjach bez pytania. Każda inna akcja w nich najpierw prosi osobę o zgodę, chyba że agent nigdy nie pyta.",
       "none": "W połączonych aplikacjach przed każdą akcją prosi osobę o zgodę. Żeby wykonywała swoją pracę sama, powiedz agentowi na czacie, jakie akcje może wykonywać.",
       "remove": "Znowu pytaj przed: {{action}}",
       "hintShort": "Każde uruchomienie robi to bez pytania.",
@@ -9187,7 +9187,7 @@
       "offline": "{{name}} jest offline. Plan ruszy, gdy wróci.",
       "needsMachine": "Misje działają na podłączonym komputerze. Podłącz go do {{name}} w Ustawienia › Urządzenia.",
       "commandHint": "Możesz też rozpocząć misję, pisząc w polu wiadomości dowolnej rozmowy:",
-      "approvals": "Merge, wdrożenie i rollback zawsze wymagają zatwierdzenia",
+      "approvals": "Domyślnie merge, wdrożenie i rollback wymagają zatwierdzenia",
       "start": "Rozpocznij misję",
       "created": "Utworzono misję: {{name}} przygotowuje plan.",
       "who": "Kto programuje",
@@ -11787,7 +11787,7 @@
   },
   "access": {
     "matrixTitle": "Dostęp agentów",
-    "matrixHint": "Wrażliwe akcje (merge, deploy, udostępnianie, płatności) zawsze proszą o zatwierdzenie, na każdym poziomie. Aby ustawić to narzędzie po narzędziu, otwórz Narzędzia konektora.",
+    "matrixHint": "Domyślnie wrażliwe akcje (merge, deploy, udostępnianie, płatności) proszą o zatwierdzenie. Aby ustawić to narzędzie po narzędziu, otwórz Narzędzia konektora.",
     "matrixHow": "Kliknij komórkę, żeby ją zmienić:",
     "kindLabel": "Pokaż",
     "kind": {
@@ -12284,6 +12284,7 @@
     "notVisible": "Twoje konto GitHub nie widzi tej instalacji. Zainstaluj ją z konta, które ma do niej dostęp.",
     "otherWorkspace": "To konto GitHub jest już połączone z inną przestrzenią roboczą. Usuń tam aplikację, zanim zainstalujesz ją tutaj.",
     "installedOutside": "Aplikacja została zainstalowana na tym koncie GitHub poza agentes.chat. Usuń ją w GitHub i zainstaluj ponownie w Konektory › GitHub.",
+    "ownerUnknown": "GitHub nie podał, kto jest właścicielem tej organizacji. Osoba zarządzająca serwerem musi dodać do aplikacji GitHub uprawnienie organizacji Members (tylko odczyt), a potem instalujesz ją ponownie.",
     "misconfigured": "Aplikacja GitHub ma na serwerze zły klucz tajny, więc instalacja nie może się zakończyć. Osoba zarządzająca serwerem musi zmienić klucz w ustawieniach aplikacji.",
     "connectAccount": "Połącz konto GitHub",
     "ownerHint": "Właściciel tego serwera może utworzyć aplikację GitHub tutaj, w Konektorach.",
@@ -12334,7 +12335,7 @@
     "merge": {
       "label": "Może scalać bez pytania",
       "none": "Nie wybrano repozytoriów. Każde scalanie prosi o zatwierdzenie.",
-      "help": "W tych repozytoriach scalanie odbywa się bez karty zatwierdzenia, trafia do audytu i zostawia potwierdzenie w rozmowie. Wszystko inne, co wrażliwe, nadal pyta.",
+      "help": "W tych repozytoriach scalanie odbywa się bez karty zatwierdzenia, trafia do audytu i zostawia potwierdzenie w rozmowie. Agent, który zawsze pyta, nadal pyta.",
       "dialogTitle": "Gdzie {{name}} scala bez pytania",
       "dialogDesc": "Tylko repozytoria, których już używa. Scalanie gdzie indziej prosi o zatwierdzenie.",
       "short": "W tych repozytoriach scalanie odbywa się bez karty zatwierdzenia."
@@ -12473,7 +12474,7 @@
       "github": {
         "1": "Czytanie kodu, issues i pull requestów",
         "2": "Otwieranie pull requestów i komentowanie",
-        "ask": "Merge i deploy zawsze proszą o twoje zatwierdzenie"
+        "ask": "Domyślnie merge i deploy proszą o twoje zatwierdzenie"
       },
       "sentry": {
         "1": "Podgląd błędów i zdarzeń",
@@ -12507,7 +12508,7 @@
       "cloudflare_bindings": {
         "1": "Podgląd Workers, KV, R2 i D1",
         "2": "Zmiany w Workers i magazynie danych",
-        "ask": "Wdrożenia zawsze proszą o twoje zatwierdzenie"
+        "ask": "Domyślnie wdrożenia proszą o twoje zatwierdzenie"
       },
       "cloudflare_observability": {
         "1": "Podgląd logów i metryk Workers"
@@ -12515,7 +12516,7 @@
       "supabase": {
         "1": "Podgląd projektów i funkcji",
         "2": "Zapytania do bazy danych i zmiany w niej",
-        "ask": "Wdrożenia zawsze proszą o twoje zatwierdzenie"
+        "ask": "Domyślnie wdrożenia proszą o twoje zatwierdzenie"
       },
       "supabase_readonly": {
         "1": "Zapytania do bazy danych (tylko odczyt)",
@@ -13270,7 +13271,7 @@
     "see": "Zobacz",
     "seeAsks": "Zobacz, co prosi o zatwierdzenie",
     "agentTitle": "Z czego może korzystać {{name}}",
-    "agentSub": "Według konektora i tematu. Akcje wrażliwe zawsze proszą o zatwierdzenie."
+    "agentSub": "Według konektora i tematu. Domyślnie akcje wrażliwe proszą o zatwierdzenie."
   },
   "connectFlow": {
     "steps": "Kroki",
@@ -13344,7 +13345,7 @@
     "asksCount_few": "{{count}} akcje zawsze proszą o zatwierdzenie na czacie.",
     "asksCount_many": "{{count}} akcji zawsze prosi o zatwierdzenie na czacie.",
     "asksCount_other": "{{count}} akcji zawsze prosi o zatwierdzenie na czacie.",
-    "asksDefault": "Wrażliwe akcje zawsze proszą o zatwierdzenie na czacie.",
+    "asksDefault": "Domyślnie wrażliwe akcje proszą o zatwierdzenie na czacie.",
     "grant": "Przyznaj",
     "saved_one": "{{name}}: może z niego korzystać {{count}} agent.",
     "saved_few": "{{name}}: mogą z niego korzystać {{count}} agenci.",
@@ -16544,6 +16545,7 @@
         "plan": "Plan nie jest jeszcze zatwierdzony",
         "tooMany": "Za dużo do zatwierdzenia z rzędu",
         "off": "Uruchamianie poleceń jest wyłączone dla tego agenta",
+        "asks": "Ten agent pyta przed każdą zmianą",
         "team": "Zespół już to zrobił",
         "teamPersonal": "To już było zrobione",
         "unclear": "Nie da się tego jednoznacznie odczytać",

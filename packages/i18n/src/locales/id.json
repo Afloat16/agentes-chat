@@ -2888,7 +2888,7 @@
     "lead": "Kapan {{name}} bertanya kepada seseorang sebelum bertindak.",
     "always": {
       "title": "Selalu tanya",
-      "text": "Bertanya sebelum mengubah apa pun di aplikasi."
+      "text": "Bertanya sebelum mengubah apa pun, di sini, di komputernya, atau di aplikasi."
     },
     "risky": {
       "title": "Hanya yang berisiko",
@@ -2896,7 +2896,7 @@
     },
     "never": {
       "title": "Jangan pernah tanya",
-      "text": "Tetap bertanya untuk merge, deploy, dan rollback."
+      "text": "Tidak pernah bertanya, termasuk untuk merge, deploy, pembayaran, dan rutinitas."
     }
   },
   "brakes": {
@@ -6064,7 +6064,7 @@
     "connectorsLabel": "Konektor dan level",
     "connectOther": "Hubungkan aplikasi lain",
     "opensConnectors": "membuka Konektor",
-    "approvalsNote": "Merge, deploy, dan rollback selalu meminta persetujuan di chat.",
+    "approvalsNote": "Merge, deploy, dan rollback meminta persetujuan di chat, kecuali agen diatur untuk tidak pernah bertanya.",
     "approverOwner": "{{name}} yang menyetujui.",
     "approverAdmins": "Admin yang menyetujui.",
     "skillsTitle": "Skill ruang kerja",
@@ -6334,8 +6334,8 @@
       "readDesc": "Melihat isi {{app}}. Tidak mengubah apa pun.",
       "write": "Baca dan tulis",
       "writeDesc": "Juga membuat dan mengedit di {{app}}.",
-      "asks": "{{actions}} selalu meminta persetujuanmu, di level apa pun.",
-      "asksAny": "Mengirim, menghapus, dan membayar selalu meminta persetujuanmu, di level apa pun.",
+      "asks": "{{actions}} meminta persetujuanmu, kecuali agen diatur untuk tidak pernah bertanya.",
+      "asksAny": "Mengirim, menghapus, dan membayar meminta persetujuanmu, kecuali agen diatur untuk tidak pernah bertanya.",
       "remove": "Hapus {{app}}",
       "done": "Selesai"
     },
@@ -7509,7 +7509,7 @@
       "ownActions": "Dilakukan sendiri"
     },
     "ownActions": {
-      "hint": "Setiap jalannya melakukan ini di aplikasi terhubung kamu tanpa bertanya. Tindakan lain di sana meminta persetujuan seseorang dulu, dan merge, deploy, serta rollback selalu meminta.",
+      "hint": "Setiap jalannya melakukan ini di aplikasi terhubung kamu tanpa bertanya. Tindakan lain di sana meminta persetujuan seseorang dulu, kecuali agen diatur untuk tidak pernah bertanya.",
       "none": "Di aplikasi terhubung, rutinitas ini meminta persetujuan seseorang sebelum setiap tindakan. Agar bisa bekerja sendiri, beri tahu agen di chat tindakan apa saja yang boleh dilakukan.",
       "remove": "Tanya lagi sebelum: {{action}}",
       "hintShort": "Setiap jalannya melakukan ini tanpa bertanya.",
@@ -8344,7 +8344,7 @@
       "offline": "{{name}} sedang offline. Rencana dimulai saat ia kembali.",
       "needsMachine": "Misi berjalan di komputer yang terhubung. Hubungkan satu ke {{name}} di Pengaturan › Perangkat.",
       "commandHint": "Kamu juga bisa memulainya dengan mengetik di kolom pesan percakapan mana pun:",
-      "approvals": "Merge, deploy, dan rollback selalu meminta persetujuan",
+      "approvals": "Secara default, merge, deploy, dan rollback meminta persetujuan",
       "start": "Mulai misi",
       "created": "Misi dibuat: {{name}} sedang menyusun rencananya.",
       "who": "Siapa yang menulis kode",
@@ -10609,7 +10609,7 @@
   },
   "access": {
     "matrixTitle": "Akses agen",
-    "matrixHint": "Tindakan sensitif (merge, deploy, berbagi, bayar) selalu meminta persetujuan, di level apa pun. Untuk mengaturnya per alat, buka Alat milik konektor.",
+    "matrixHint": "Secara default, tindakan sensitif (merge, deploy, berbagi, bayar) meminta persetujuan. Untuk mengaturnya per alat, buka Alat milik konektor.",
     "matrixHow": "Klik sel untuk mengubahnya:",
     "kindLabel": "Tampilkan",
     "kind": {
@@ -11055,6 +11055,7 @@
     "notVisible": "Akun GitHub-mu tidak bisa melihat pemasangan itu. Pasang dengan akun yang punya akses ke sana.",
     "otherWorkspace": "Akun GitHub itu sudah terhubung ke ruang kerja lain. Hapus aplikasinya di sana sebelum memasangnya di sini.",
     "installedOutside": "Aplikasinya dipasang di akun GitHub itu di luar agentes.chat. Hapus di GitHub, lalu pasang lagi dari Konektor › GitHub.",
+    "ownerUnknown": "GitHub tidak memberi tahu siapa pemilik organisasi itu. Pengelola server perlu menambahkan izin organisasi Members (hanya baca) ke aplikasi GitHub, lalu kamu pasang lagi.",
     "misconfigured": "Aplikasi GitHub di server memakai kunci rahasia yang salah, jadi pemasangan tidak bisa selesai. Pengelola server perlu mengganti kunci itu di pengaturan aplikasi.",
     "connectAccount": "Hubungkan akun GitHub",
     "ownerHint": "Pemilik server ini bisa membuat aplikasi GitHub di sini, di Konektor.",
@@ -11105,7 +11106,7 @@
     "merge": {
       "label": "Boleh merge tanpa bertanya",
       "none": "Tidak ada repositori yang dipilih. Setiap merge meminta persetujuan.",
-      "help": "Di repositori ini merge berjalan tanpa kartu persetujuan, tercatat di audit, dan meninggalkan tanda terima di percakapan. Hal sensitif lainnya tetap bertanya.",
+      "help": "Di repositori ini merge berjalan tanpa kartu persetujuan, tercatat di audit, dan meninggalkan tanda terima di percakapan. Agen yang selalu bertanya tetap bertanya.",
       "dialogTitle": "Tempat {{name}} merge tanpa bertanya",
       "dialogDesc": "Hanya repositori yang sudah digunakan. Merge di tempat lain meminta persetujuan.",
       "short": "Di repositori ini merge berjalan tanpa kartu persetujuan."
@@ -11236,7 +11237,7 @@
       "github": {
         "1": "Membaca kode, issue, dan pull request",
         "2": "Membuka pull request dan berkomentar",
-        "ask": "Merge dan deploy selalu meminta persetujuanmu"
+        "ask": "Secara default, merge dan deploy meminta persetujuanmu"
       },
       "sentry": {
         "1": "Melihat error dan event",
@@ -11270,7 +11271,7 @@
       "cloudflare_bindings": {
         "1": "Melihat Workers, KV, R2, dan D1",
         "2": "Mengubah Workers dan penyimpanan",
-        "ask": "Deploy selalu meminta persetujuanmu"
+        "ask": "Secara default, deploy meminta persetujuanmu"
       },
       "cloudflare_observability": {
         "1": "Melihat log dan metrik Workers"
@@ -11278,7 +11279,7 @@
       "supabase": {
         "1": "Melihat proyek dan fungsi",
         "2": "Menjalankan query dan mengubah database",
-        "ask": "Deploy selalu meminta persetujuanmu"
+        "ask": "Secara default, deploy meminta persetujuanmu"
       },
       "supabase_readonly": {
         "1": "Menjalankan query ke database (hanya baca)",
@@ -11973,7 +11974,7 @@
     "see": "Lihat",
     "seeAsks": "Lihat yang minta persetujuan",
     "agentTitle": "Yang bisa dipakai {{name}}",
-    "agentSub": "Per konektor dan topik. Tindakan sensitif selalu minta persetujuan."
+    "agentSub": "Per konektor dan topik. Secara default, tindakan sensitif minta persetujuan."
   },
   "connectFlow": {
     "steps": "Langkah",
@@ -12041,7 +12042,7 @@
     "everyoneLevel": "Level untuk semua agen",
     "noAgents": "Belum ada agen. Berikan akses kapan saja di “Siapa yang memakai”.",
     "asksCount_other": "{{count}} tindakan selalu meminta persetujuan di chat.",
-    "asksDefault": "Tindakan sensitif selalu meminta persetujuan di chat.",
+    "asksDefault": "Secara default, tindakan sensitif meminta persetujuan di chat.",
     "grant": "Berikan",
     "saved_other": "{{name}}: {{count}} agen bisa memakainya.",
     "done": {
@@ -15079,6 +15080,7 @@
         "plan": "Rencananya belum disetujui",
         "tooMany": "Terlalu banyak untuk disetujui berturut-turut",
         "off": "Menjalankan perintah dimatikan untuk agen ini",
+        "asks": "Agen ini bertanya sebelum setiap perubahan",
         "team": "Tim sudah melakukan ini",
         "teamPersonal": "Ini sudah dilakukan",
         "unclear": "Tidak bisa dibaca dengan jelas",

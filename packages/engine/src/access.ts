@@ -10,7 +10,7 @@ import { exposedToolName } from "./connectors/mcp";
 import { sha256 } from "./crypto";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import { can, requirePermission } from "./organizations";
-import { ALWAYS_SENSITIVE } from "./tools/gateway";
+import { isSensitive } from "./tools/gateway";
 import {
   type AccessState,
   ALL_TOOLS,
@@ -368,7 +368,7 @@ export async function orgToolCatalog(db: Database, orgId: string) {
               name: exposed,
               label: humanize(name),
               description: s.description,
-              sensitive: t.sensitive === true || ALWAYS_SENSITIVE.test(exposed),
+              sensitive: isSensitive({ name: exposed, scope: "", sensitive: t.sensitive }),
               readOnly: id.endsWith(".read"),
             };
           }),

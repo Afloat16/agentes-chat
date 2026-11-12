@@ -964,7 +964,7 @@ const toolResultFor = (approval: Approval | undefined, by?: string | null): { co
   if (approval.status === "expired") {
     return {
       content: ahead
-        ? "Nobody approved this action ahead in time: at its time it asks a person first."
+        ? "Nobody approved this action ahead in time: at its time it goes the way calling its tool would."
         : "Nobody approved this action within 24 hours; it was not executed.",
       isError: true,
     };
