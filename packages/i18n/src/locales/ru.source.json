@@ -44074,6 +44074,18 @@
   "feedback.fileTooMany": {
     "value": "One feedback takes up to {{images}} photos and one video."
   },
+  "feedback.attachPhoto": {
+    "value": "Add a photo"
+  },
+  "feedback.photosHint": {
+    "value": "Up to {{images}} photos of {{imageMb}} MB."
+  },
+  "feedback.photoType": {
+    "value": "Only photos can be attached."
+  },
+  "feedback.photosTooMany": {
+    "value": "One feedback takes up to {{images}} photos."
+  },
   "feedback.send": {
     "value": "Send"
   },

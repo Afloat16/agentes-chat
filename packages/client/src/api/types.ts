@@ -152,6 +152,8 @@ export interface AuthConfig {
   supportEmail?: string | null;
   /** The server takes feedback (`POST /api/app/feedback`): the apps show the form; absent: a server too old to. */
   feedback?: boolean;
+  /** It goes to the agentes.chat team, not to whoever runs this server: the form says so and takes pictures only. */
+  feedbackRelay?: boolean;
   /** Every workspace gets a computer of its own (the Cloud); absent: a server too old to say. */
   workspaceComputer?: boolean;
   /** The billing service (ADR 0079): owners and admins open a workspace's plan there; null or absent: no billing. */
