@@ -13,7 +13,8 @@
 // change of that file), "RATE" (the plan's windows moved:
 // `account/rateLimits/updated`), "LEAK" (quotes $FAKE_SECRET in two deltas apart), "FAST_REFUSED" (a turn with
 // `serviceTier: "fast"` fails as the provider's refusal comes back); anything else answers "pong".
-// `account/rateLimits/read` answers the 5 hours at 12% and the week at 55%.
+// `account/rateLimits/read` answers the 5 hours at 12% and the week at 55%; `windowsSandbox/readiness`,
+// $FAKE_CODEX_WINDOWS_SANDBOX (default `notConfigured`).
 import { appendFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 
@@ -144,6 +145,8 @@ function appServer() {
           platformFamily: "unix",
           platformOs: "linux",
         });
+      case "windowsSandbox/readiness":
+        return ok({ status: process.env.FAKE_CODEX_WINDOWS_SANDBOX ?? "notConfigured" });
       case "account/rateLimits/read":
         return ok({
           rateLimits: {

@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import type { EventEmitter } from "node:events";
+import { homedir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import type { CommandProfile, CommandScope } from "@agenteschat/adapters/command-policy";
@@ -21,8 +22,9 @@ import {
   codexThreadKey,
   shellScript,
 } from "./brain-codex";
+import { CODEX_WINDOWS_CONFIG, codexLaunch } from "./codex-windows";
 import { killTree } from "./exec";
-import { resolveCommand } from "./executors";
+import { envValue } from "./executors";
 import {
   CODEX_MCP_ENV,
   codexWritableRoots,
@@ -85,6 +87,10 @@ import type { Spawn } from "./scope-gate";
  *   `CODEX_APP_MIN_VERSION`, all processes busy, an app-server that fails to
  *   start or to `initialize` (remembered for that binary and version), or one
  *   that dies mid-turn (that turn runs again with exec, resuming the thread).
+ * - Windows (`codex-windows.ts`): MXC named in `-c`, `approvalPolicy: "never"`
+ *   (nothing asks: the command policy doesn't read PowerShell, so the sandbox
+ *   is the limit, as for exec), and any approval Codex asks all the same is
+ *   declined.
  *
  * The protocol shapes below are the minimum this file reads, copied from
  * `codex app-server generate-ts` of codex-cli 0.163.0 (`ClientRequest`,
@@ -171,12 +177,15 @@ export function codexAppServerArgs(input: {
   writableRoots?: string[];
   /** Protocol 28: the agent's context limit (a process serves one). */
   contextTokens?: number;
+  /** Windows: the sandbox, named (`CODEX_WINDOWS_CONFIG`). */
+  windows?: boolean;
 }): string[] {
   return [
     "app-server",
     "-c",
     "features.fast_mode=true",
     ...(input.writableRoots?.length ? ["-c", codexWritableRoots(input.writableRoots)] : []),
+    ...(input.windows ? CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c]) : []),
     ...codexContextOverride(input.contextTokens),
     ...(input.mcp ? codexBridgeOverrides({ runId: input.processId, ...input.mcp }).flatMap((o) => ["-c", o]) : []),
   ];
@@ -185,11 +194,12 @@ export function codexAppServerArgs(input: {
 /**
  * A thread's sandbox and approval policy for the turn's profile (`thread/start`, `thread/resume`):
  * `plan` reads in a read-only sandbox, `work` writes in its folders; neither has the network. Codex
- * asks before anything else (`untrusted`), and the runner answers with the command policy.
+ * asks before anything else (`untrusted`), and the runner answers with the command policy. On Windows
+ * nothing asks (`never`): the sandbox is the limit (`codex-windows.ts`).
  */
-export const codexThreadPolicy = (profile: CommandProfile) => ({
+export const codexThreadPolicy = (profile: CommandProfile, windows = false) => ({
   sandbox: codexSandbox(profile),
-  approvalPolicy: "untrusted" as const,
+  approvalPolicy: windows ? ("never" as const) : ("untrusted" as const),
 });
 
 // ── JSON-RPC client ──────────────────────────────────────────────────────────
@@ -240,7 +250,11 @@ export class CodexAppClient {
   private readonly exitHandlers = new Set<() => void>();
   private requestHandler: ServerRequestHandler | null = null;
 
-  constructor(file: string, args: string[], opts: { cwd: string; env: NodeJS.ProcessEnv; spawn?: Spawn }) {
+  constructor(
+    file: string,
+    args: string[],
+    opts: { cwd: string; env: NodeJS.ProcessEnv; spawn?: Spawn; windowsVerbatimArguments?: boolean },
+  ) {
     this.child = (opts.spawn ?? spawn)(file, args, {
       cwd: opts.cwd,
       env: opts.env,
@@ -248,6 +262,7 @@ export class CodexAppClient {
       // Its own process group: closing it takes the commands it runs along (`killTree`).
       detached: process.platform !== "win32",
       windowsHide: true,
+      ...(opts.windowsVerbatimArguments ? { windowsVerbatimArguments: true } : {}),
     });
     const events = this.child as unknown as EventEmitter;
     events.on("error", (err: Error) => {
@@ -849,19 +864,31 @@ export class CodexAppServers implements CodexAppRunner {
     };
     // ADR 0041: the account's folder is this process's Codex home, and nothing else signs it in.
     const env = input.account ? accountEnv("codex", input.account.home, base) : base;
+    const platform = opts.platform ?? process.platform;
     const args = codexAppServerArgs({
       processId: id,
       mcp: { ...(opts.mcpCommand ? { command: opts.mcpCommand } : {}) },
       ...(input.writableRoots?.length ? { writableRoots: input.writableRoots } : {}),
       ...(input.contextTokens ? { contextTokens: input.contextTokens } : {}),
+      ...(platform === "win32" ? { windows: true } : {}),
     });
     const brokenKey = `${opts.bin ?? "codex"}@${input.version}`;
+    const launch = codexLaunch(args, {
+      ...(opts.bin ? { bin: opts.bin } : {}),
+      platform,
+      pathList: envValue(env, "PATH", platform) ?? "",
+    });
+    if ("error" in launch) {
+      this.log(`codex app-server didn't start: ${launch.error}`);
+      return null;
+    }
     let client: CodexAppClient;
     try {
-      client = new CodexAppClient(resolveCommand(opts.bin ?? "codex", env.PATH), args, {
+      client = new CodexAppClient(launch.file, launch.args, {
         cwd: input.cwd,
-        env,
+        env: launch.env ? { ...env, ...launch.env } : env,
         ...(this.opts.spawn ? { spawn: this.opts.spawn } : {}),
+        ...(launch.windowsVerbatimArguments ? { windowsVerbatimArguments: true } : {}),
       });
     } catch (err) {
       this.log(`codex app-server didn't start: ${err instanceof Error ? err.message : String(err)}`);
@@ -891,7 +918,7 @@ export class CodexAppServers implements CodexAppRunner {
       );
       client.notify("initialized");
     } catch (err) {
-      const tail = client.stderr.trim().split("\n").slice(-2).join(" ");
+      const tail = client.stderr.trim().split(/\r?\n/).slice(-2).join(" ");
       this.log(
         `codex app-server handshake failed (${err instanceof Error ? err.message : String(err)}${tail ? `: ${tail}` : ""}); using codex exec`,
       );
@@ -979,7 +1006,7 @@ export class CodexAppServers implements CodexAppRunner {
     const client = live.client;
     const common = {
       cwd: input.cwd,
-      ...codexThreadPolicy(input.profile ?? "work"),
+      ...codexThreadPolicy(input.profile ?? "work", (opts.platform ?? process.platform) === "win32"),
       ...(input.model ? { model: input.model } : {}),
     };
     const stored = opts.threads.get(live.threadKey);
@@ -1243,14 +1270,21 @@ export class CodexAppServers implements CodexAppRunner {
       const scope: CommandScope = {
         cwd: input.cwd,
         folders: [...new Set([input.cwd, input.folder ?? input.cwd, ...(input.writableRoots ?? [])])],
-        ...(process.env.HOME ? { home: process.env.HOME } : {}),
+        // Windows has no HOME, as a rule (the home is USERPROFILE): without one, `~` would read as the agent's folder.
+        home: process.env.HOME || homedir(),
         ...(opts.runnerHome ? { runnerHome: opts.runnerHome } : {}),
       };
+      const windows = (opts.platform ?? process.platform) === "win32";
       client.onRequest((method, params) => {
         if (settled) return null;
         if (typeof params.threadId === "string" && params.threadId !== threadId) return null;
         const calls = approvalCalls(method, params, items.get(str(params.itemId)), input.cwd);
         if (calls === null) return null;
+        // Windows asks nothing (`never`); one asked all the same is a PowerShell line the command policy can't read.
+        if (windows) {
+          this.log(`codex approval declined on Windows: ${redact(JSON.stringify(calls)).slice(0, 300)}`);
+          return Promise.resolve({ result: { decision: "decline" } });
+        }
         return decideApproval(calls, ask, {
           scope,
           profile: input.profile ?? "work",

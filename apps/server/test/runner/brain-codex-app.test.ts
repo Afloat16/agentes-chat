@@ -21,6 +21,7 @@ import {
   codexThreadPolicy,
   decideApproval,
 } from "../../runner/brain-codex-app";
+import { CODEX_WINDOWS_CONFIG } from "../../runner/codex-windows";
 import { handleRequest } from "../../runner/handlers";
 import { CODEX_MCP_SERVER, type IpcReply, type McpTaskInfo } from "../../runner/mcp";
 import { agentWorkspace } from "../../runner/paths";
@@ -609,6 +610,14 @@ test("profiles: plan is a read-only sandbox, work a workspace one; neither has t
   // Nothing to judge it by: declined.
   expect(approvalCalls("item/fileChange/requestApproval", {}, undefined, "/w")).toEqual([]);
   expect(approvalCalls("turn/started", {}, undefined, "/w")).toBeNull();
+});
+
+test("Windows: the app-server names MXC and nothing asks (the command policy doesn't read PowerShell)", () => {
+  expect(codexThreadPolicy("work", true)).toEqual({ sandbox: "workspace-write", approvalPolicy: "never" });
+  expect(codexThreadPolicy("plan", true)).toEqual({ sandbox: "read-only", approvalPolicy: "never" });
+  const args = codexAppServerArgs({ processId: "p", windows: true });
+  for (const c of CODEX_WINDOWS_CONFIG) expect(args).toContain(c);
+  expect(codexAppServerArgs({ processId: "p" }).join(" ")).not.toContain("windows.sandbox");
 });
 
 test("an approval is judged on its script exactly: a second line is a second command", async () => {

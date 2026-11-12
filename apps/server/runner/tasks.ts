@@ -1054,6 +1054,14 @@ export class TaskManager {
       );
     }
     const executor: TaskExecutor = req.executor === "claude" || req.executor === "codex" ? req.executor : "shell";
+    // A Codex task is `codex exec` with the network for its work, on a line cmd.exe would read: none of the Windows
+    // sandbox its turns run in (`codex-windows.ts`, ADR 0053 §3) holds it yet.
+    if (executor === "codex" && process.platform === "win32") {
+      throw new RunnerError(
+        "not_allowed",
+        "Background Codex tasks don't run on Windows yet. Do this work in your own turn instead (run_code).",
+      );
+    }
     const session = typeof req.session === "string" && SESSION_ID.test(req.session) ? req.session : undefined;
     const prompt = typeof req.prompt === "string" ? req.prompt : "";
     if (executor !== "shell" && !prompt.trim())

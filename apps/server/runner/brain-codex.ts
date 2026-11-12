@@ -23,9 +23,16 @@ import {
   withoutSignIns,
 } from "./accounts";
 import { CODEX_ROUTE_OFF } from "./brain-route";
+import {
+  CODEX_WINDOWS_CONFIG,
+  codexLaunch,
+  codexStdinPrompt,
+  WINDOWS_SANDBOX_MESSAGE,
+  windowsMxcReady,
+} from "./codex-windows";
 import { RunnerError } from "./errors";
 import { killTree } from "./exec";
-import { cachedCodexVersion, resolveCommand } from "./executors";
+import { cachedCodexVersion, envValue } from "./executors";
 import { CODEX_MCP_ENV, CODEX_MCP_SERVER, codexWritableRoots } from "./mcp";
 import { isInside, resolveForAgent } from "./paths";
 import type { Spawn } from "./scope-gate";
@@ -65,6 +72,10 @@ import { agentSecrets } from "./secrets";
  *   account's folder (missing: `account_missing`, never another account); its
  *   threads are remembered per account. `effort` is `-c model_reasoning_effort`
  *   (`xhigh` and `max` are `high`).
+ * - Windows (`codex-windows.ts`): the native `codex.exe`, started directly; a
+ *   `plan` or `work` turn only where MXC holds its commands (else
+ *   `windows_sandbox`), with it named in `-c` and nothing asked; a thread's
+ *   instructions lead its first prompt on stdin, never the command line.
  */
 
 /** Same as the engine's `CODEX_MIN_VERSION` (`packages/engine/src/missions.ts`): the release verified on a real machine. */
@@ -238,13 +249,25 @@ const fastMayHaveFailed = (error: Extract<CodexBrainEvent, { type: "error" }>) =
   error.code === "codex_failed" && (!error.retryable || CODEX_FAST_REFUSED.test(error.message));
 
 /** The computer's own Codex is on a ChatGPT sign-in, not an API key, where Fast bills the key at a higher rate. */
-const ownChatGptSignIn = (opts: Pick<CodexTurnOptions, "bin" | "env">) =>
+const ownChatGptSignIn = (opts: Pick<CodexTurnOptions, "bin" | "env" | "platform">) =>
   new Promise<boolean>((resolve) => {
     const env = { ...process.env, ...opts.env };
+    const platform = opts.platform ?? process.platform;
+    const launch = codexLaunch(["login", "status"], {
+      ...(opts.bin ? { bin: opts.bin } : {}),
+      platform,
+      pathList: envValue(env, "PATH", platform) ?? "",
+    });
+    if ("error" in launch) return resolve(false);
     execFile(
-      resolveCommand(opts.bin ?? "codex", env.PATH),
-      ["login", "status"],
-      { env, timeout: CODEX_LOGIN_STATUS_MS },
+      launch.file,
+      launch.args,
+      {
+        env: launch.env ? { ...env, ...launch.env } : env,
+        timeout: CODEX_LOGIN_STATUS_MS,
+        windowsHide: true,
+        ...(launch.windowsVerbatimArguments ? { windowsVerbatimArguments: true } : {}),
+      },
       (err, stdout, stderr) => resolve(!err && /logged in using chatgpt/i.test(`${stdout}${stderr}`)),
     );
   });
@@ -320,11 +343,22 @@ export class CodexThreads {
     this.save(map);
   }
 
+  /** Never throws: a thread that opened fine stays this process's, remembered at the next save. */
   private save(map: Record<string, string>) {
-    mkdirSync(path.dirname(this.file), { recursive: true });
-    const tmp = `${this.file}.tmp`;
-    writeFileSync(tmp, JSON.stringify(map), { mode: 0o600 });
-    renameSync(tmp, this.file);
+    const text = JSON.stringify(map);
+    try {
+      mkdirSync(path.dirname(this.file), { recursive: true });
+      const tmp = `${this.file}.tmp`;
+      writeFileSync(tmp, text, { mode: 0o600 });
+      renameSync(tmp, this.file);
+    } catch {
+      // Windows refuses to rename over a file another program holds open (an antivirus, the search indexer).
+      try {
+        writeFileSync(this.file, text, { mode: 0o600 });
+      } catch {
+        // kept in memory
+      }
+    }
   }
 }
 
@@ -386,8 +420,13 @@ export function codexTurnArgs(input: {
   profile?: CommandProfile;
   /** Protocol 41: the team's right hand. Read-only, none of the computer's config, rules or features. */
   chat?: boolean;
+  /**
+   * Windows: the instructions go on stdin (`codexStdinPrompt`), never here; a `plan` or `work` turn names its
+   * sandbox (`CODEX_WINDOWS_CONFIG`).
+   */
+  windows?: boolean;
 }): string[] {
-  const instructions = input.instructions?.trim();
+  const instructions = input.windows ? undefined : input.instructions?.trim();
   const sandbox = input.chat ? "read-only" : codexSandbox(input.profile ?? "work");
   return [
     "exec",
@@ -408,6 +447,7 @@ export function codexTurnArgs(input: {
     ...(sandbox === "workspace-write" && input.writableRoots?.length
       ? ["-c", codexWritableRoots(input.writableRoots)]
       : []),
+    ...(input.windows && !input.chat ? CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c]) : []),
     ...(instructions && !input.thread ? ["-c", `developer_instructions=${JSON.stringify(instructions)}`] : []),
     ...(input.mcp ? codexBridgeOverrides({ runId: input.runId, ...input.mcp }).flatMap((o) => ["-c", o]) : []),
     ...(isBrainEffort(input.effort)
@@ -682,6 +722,8 @@ export interface CodexTurnOptions {
   /** How `codex exec` starts (a worker under systemd: in the agent's AI CLIs slice, `scope-gate.ts`). */
   spawn?: Spawn;
   platform?: NodeJS.Platform;
+  /** Windows: whether MXC holds Codex's commands here (default `windowsMxcReady`); null: couldn't tell. */
+  windowsSandbox?: (version: string) => Promise<boolean | null>;
   /**
    * Protocol 15: the long-lived `codex app-server` processes
    * (`brain-codex-app.ts`): the turn runs there when it can (it takes
@@ -732,15 +774,30 @@ const codexVersion = cachedCodexVersion();
 export async function runCodexTurn(input: CodexTurnInput, opts: CodexTurnOptions): Promise<void> {
   const fail = (code: string, message: string, retryable?: boolean) =>
     opts.emit({ type: "error", code, message, ...(retryable ? { retryable } : {}) });
-  if ((opts.platform ?? process.platform) === "win32") {
-    return fail("unsupported", "The Codex brain isn't supported on Windows yet.");
-  }
   const version = await (opts.codexVersion ?? codexVersion)();
   if (version === null)
     return fail("codex_failed", "Couldn't check Codex on this computer (`codex --version` didn't answer).", true);
   if (!version) return fail("codex_missing", "Codex is not installed on this computer.");
   if (!codexVersionOk(version)) {
     return fail("codex_too_old", `Codex here is ${version}. Agents need ${CODEX_MIN_VERSION} or newer.`);
+  }
+  // ADR 0053 §3 on Windows: a plan or work turn runs only inside MXC, Windows' own isolation (`codex-windows.ts`).
+  if ((opts.platform ?? process.platform) === "win32" && !input.chat) {
+    const check =
+      opts.windowsSandbox ??
+      ((v: string) =>
+        opts.runnerHome
+          ? windowsMxcReady({ runnerHome: opts.runnerHome, version: v, ...(opts.bin ? { command: [opts.bin] } : {}) })
+          : Promise.resolve(null));
+    const mxc = await check(version).catch(() => null);
+    if (mxc === null) {
+      return fail(
+        "codex_failed",
+        "Couldn't check whether Windows can isolate Codex's commands on this computer.",
+        true,
+      );
+    }
+    if (!mxc) return fail("windows_sandbox", WINDOWS_SANDBOX_MESSAGE);
   }
   // A long-lived app-server takes messages mid-turn; exec runs the turns it can't (an older CLI, a failed handshake…).
   // A `chat` turn's flags exist only for `exec`.
@@ -779,6 +836,8 @@ async function runCodexExec(input: CodexTurnInput, opts: CodexTurnOptions): Prom
     opts.emit({ type: "error", code, message, ...(retryable ? { retryable } : {}) });
   const threadKey = codexThreadKey(input.sessionId, input.account?.id);
   const thread = opts.threads.get(threadKey);
+  const platform = opts.platform ?? process.platform;
+  const windows = platform === "win32";
   mkdirSync(opts.workDir, { recursive: true });
   const lastFile = path.join(opts.workDir, "last.txt");
   rmSync(lastFile, { force: true });
@@ -796,6 +855,7 @@ async function runCodexExec(input: CodexTurnInput, opts: CodexTurnOptions): Prom
     ...(input.contextTokens ? { contextTokens: input.contextTokens } : {}),
     profile: input.profile ?? "work",
     ...(input.chat ? { chat: true } : {}),
+    ...(windows ? { windows } : {}),
   });
   const base: NodeJS.ProcessEnv = {
     ...withoutContainers(input.chat ? withoutSignIns(process.env) : process.env),
@@ -812,13 +872,23 @@ async function runCodexExec(input: CodexTurnInput, opts: CodexTurnOptions): Prom
     ...(opts.redact ? { redact: opts.redact } : {}),
   });
 
+  const launch = codexLaunch(args, {
+    ...(opts.bin ? { bin: opts.bin } : {}),
+    platform,
+    pathList: envValue(env, "PATH", platform) ?? "",
+  });
+  if ("error" in launch) return fail(launch.missing ? "codex_missing" : "codex_failed", launch.error);
   let child: ChildProcess;
   try {
-    child = (opts.spawn ?? spawn)(resolveCommand(opts.bin ?? "codex", env.PATH), args, {
+    child = (opts.spawn ?? spawn)(launch.file, launch.args, {
       cwd: input.cwd,
-      env,
+      env: launch.env ? { ...env, ...launch.env } : env,
       stdio: ["pipe", "pipe", "pipe"],
-      detached: true,
+      // Its own process group, so `killTree` takes what it started along. Not on Windows: there it would have no
+      // console, so every command it runs would open a window of its own, and it would outlive the runner.
+      detached: !windows,
+      windowsHide: true,
+      ...(launch.windowsVerbatimArguments ? { windowsVerbatimArguments: true } : {}),
     });
   } catch (err) {
     return fail("codex_failed", err instanceof Error ? err.message : String(err));
@@ -849,7 +919,8 @@ async function runCodexExec(input: CodexTurnInput, opts: CodexTurnOptions): Prom
     if (mapper.thread) opts.threads.set(threadKey, mapper.thread);
   });
   child.stdin?.on("error", () => {});
-  child.stdin?.end(input.prompt);
+  // Windows: a new thread's instructions lead its first prompt (`codexTurnArgs` leaves them off the command line).
+  child.stdin?.end(windows && !thread ? codexStdinPrompt(input.system, input.prompt) : input.prompt);
 
   let killTimer: ReturnType<typeof setTimeout> | undefined;
   const abort = () => {
@@ -885,17 +956,19 @@ async function runCodexExec(input: CodexTurnInput, opts: CodexTurnOptions): Prom
   } catch {
     // none
   }
-  rmSync(opts.workDir, { recursive: true, force: true });
+  try {
+    rmSync(opts.workDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  } catch {
+    // Windows keeps a file a program still holds open (an antivirus, the indexer): it stays behind, the turn goes on.
+  }
 
   if (opts.signal.aborted) return fail("canceled", "The turn was canceled.");
   if (breach) return fail("tools_not_locked", breach);
-  if (exit.error) {
-    const missing = (exit.error as NodeJS.ErrnoException).code === "ENOENT";
-    return fail(
-      missing ? "codex_missing" : "codex_failed",
-      missing ? "Codex is not installed on this computer." : exit.error.message,
-    );
-  }
+  // cmd.exe's "not recognized" (a launcher of Codex's started there whose program is gone).
+  const missing =
+    (exit.error as NodeJS.ErrnoException | undefined)?.code === "ENOENT" || (windows && exit.code === 9009);
+  if (missing) return fail("codex_missing", "Codex is not installed on this computer.");
+  if (exit.error) return fail("codex_failed", exit.error.message);
   for (const event of mapper.finish({
     exitCode: exit.code,
     lastFile: last,

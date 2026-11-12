@@ -24,6 +24,7 @@ import {
   shellScript,
   unwrapShell,
 } from "../../runner/brain-codex";
+import { CODEX_WINDOWS_CONFIG, WINDOWS_SANDBOX_MESSAGE } from "../../runner/codex-windows";
 import { handleRequest } from "../../runner/handlers";
 import { CODEX_MCP_SERVER } from "../../runner/mcp";
 import { agentWorkspace } from "../../runner/paths";
@@ -130,6 +131,74 @@ test("a command's script is read the way its shell reads it, newlines kept; a tr
   expect(unwrapShell("/bin/zsh -lc 'ls\nrm -rf ~/x'")).toBe("ls rm -rf ~/x");
   expect(unwrapShell('/bin/zsh -lc "echo $HOME"')).toBe("echo $HOME");
   expect(unwrapShell("'C:\\Program Files\\PowerShell\\7\\pwsh.exe' -NoProfile -Command 'npm test'")).toBe("npm test");
+});
+
+test("Windows: the instructions never go on the command line; a plan or work turn names MXC, a chat turn no sandbox", () => {
+  const base = { cwd: "C:\\w", lastFile: "C:\\t\\last.txt", runId: RUN, instructions: "Be brief. %USERPROFILE%" };
+  const work = codexTurnArgs({ ...base, windows: true });
+  expect(work.join(" ")).not.toContain("developer_instructions");
+  expect(work.join(" ")).not.toContain("Be brief");
+  for (const c of CODEX_WINDOWS_CONFIG) expect(work).toContain(c);
+  expect(codexTurnArgs({ ...base, windows: true, profile: "plan" })).toContain('windows.sandbox="mxc"');
+  const chat = codexTurnArgs({ ...base, windows: true, chat: true }).join(" ");
+  expect(chat).not.toContain("windows.sandbox");
+  expect(chat).not.toContain("developer_instructions");
+  // Elsewhere, as before.
+  expect(codexTurnArgs(base).join(" ")).toContain("developer_instructions");
+  expect(codexTurnArgs(base).join(" ")).not.toContain("windows.sandbox");
+});
+
+test("Windows: a plan or work turn runs only where MXC holds Codex's commands; a chat turn never asks", async () => {
+  const dir = tempDir("codex-win-turn-");
+  dirs.push(dir);
+  const turn = async (mxc: boolean | null, chat = false) => {
+    const events: CodexBrainEvent[] = [];
+    const asked: string[] = [];
+    let spawned = 0;
+    await runCodexTurn(
+      {
+        runId: RUN,
+        sessionId: SESSION,
+        cwd: dir,
+        system: "Be brief.",
+        prompt: "Say pong",
+        mcp: { token: "t" },
+        ...(chat ? { chat: true } : {}),
+      },
+      {
+        threads: new CodexThreads(path.join(dir, "threads.json")),
+        workDir: path.join(dir, "turn"),
+        emit: (e) => events.push(e),
+        signal: new AbortController().signal,
+        codexVersion: () => "codex-cli 0.170.0",
+        platform: "win32",
+        // Not there: a turn that gets past the sandbox ends on the missing CLI, before anything starts.
+        bin: "C:\\nowhere\\codex.exe",
+        spawn: (() => {
+          spawned++;
+          throw new Error("nothing starts here");
+        }) as unknown as Spawn,
+        windowsSandbox: async (version) => {
+          asked.push(version);
+          return mxc;
+        },
+      },
+    );
+    return { events, asked, spawned };
+  };
+  const refused = await turn(false);
+  expect(refused.events).toEqual([{ type: "error", code: "windows_sandbox", message: WINDOWS_SANDBOX_MESSAGE }]);
+  expect(refused.asked).toEqual(["codex-cli 0.170.0"]);
+  expect((await turn(null)).events).toMatchObject([{ type: "error", code: "codex_failed", retryable: true }]);
+  const held = await turn(true);
+  expect(held.events).toEqual([
+    { type: "error", code: "codex_missing", message: "Codex is not installed on this computer." },
+  ]);
+  // The right hand: Codex refuses its own commands there with no sandbox, and the turn stops at the first anyway.
+  const chat = await turn(false, true);
+  expect(chat.asked).toEqual([]);
+  expect(chat.events).toMatchObject([{ type: "error", code: "codex_missing" }]);
+  expect(refused.spawned + held.spawned + chat.spawned).toBe(0);
 });
 
 test("MCP bridge overrides: stdio by run with the token through env_vars, or HTTP with a bearer from the env", () => {
