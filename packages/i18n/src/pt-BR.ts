@@ -15504,6 +15504,10 @@ export const ptBR = {
       text: "O ChatGPT recusou a velocidade Rápida nesta conta ou neste modelo, então esta resposta veio no padrão.",
       action: "Abrir agente",
     },
+    /** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
+    modelStandIn: {
+      text: "O {{plan}} recusou o {{from}} com esta chave. Respondi com o {{to}}, que funciona nela.",
+    },
     /** When a waiting agent goes on (`usageWhen`). */
     usageWhen: { at: "às {{time}}", on: "{{day}} às {{time}}", date: "em {{date}}" },
     /** Typing bar: "{{names}} está {{doing}}" (agents' verbs come from their tool calls). */

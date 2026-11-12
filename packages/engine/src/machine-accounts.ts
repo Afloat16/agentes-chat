@@ -1369,7 +1369,14 @@ export async function accountLoginStatus(
   if (!settled.row || !LISTED_ACCOUNT_STATUSES.includes(settled.row.status)) {
     return { state: "failed", error: "The account was removed from this computer." };
   }
-  if (settled.changed) await publishAccountsChanged(deps.pubsub, orgId, machine.id);
+  // A new key: what the plan refused the old one (a model switched off, its region) is asked again.
+  if (settled.row.usage?.models) {
+    await deps.db
+      .update(schema.machineAccounts)
+      .set({ usage: sql`${schema.machineAccounts.usage} #- '{models}'` })
+      .where(and(eq(schema.machineAccounts.orgId, orgId), eq(schema.machineAccounts.id, settled.row.id)));
+  }
+  if (settled.changed || settled.row.usage?.models) await publishAccountsChanged(deps.pubsub, orgId, machine.id);
   return { state, account: await accountViewOf(deps.db, orgId, settled.row, userId) };
 }
 

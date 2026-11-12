@@ -151,6 +151,11 @@ export function SpeedFallbackLine({ message }: { message: Message }) {
   );
 }
 
+/** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
+export function ModelStandInLine({ text }: { text: string }) {
+  return <EventPill mark="info">{text}</EventPill>;
+}
+
 const styles = StyleSheet.create({
   // Aligned with the messages' words, as the other automatic events (`EventLine`). The list sets its top.
   line: { paddingRight: 16 },

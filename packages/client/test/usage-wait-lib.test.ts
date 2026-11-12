@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import type { TFunction } from "i18next";
 import { waitsForComputer } from "../src/lib/machine-outages";
 import { serverBody } from "../src/lib/message-body";
-import { modelLimitText, usageWhen } from "../src/lib/plan-usage";
+import { modelLimitText, modelStandInText, usageWhen } from "../src/lib/plan-usage";
 import { usageWaitFix } from "../src/lib/usage-pause";
 
 /** Says the key and its values, so a test reads which words were picked. */
@@ -99,9 +99,10 @@ test("a model's own limit: the note names the model and the way out, the brain c
   expect(modelLimitText(t, "en", region, "opencode", "deepseek-v4.1-flash", now)).toBe(
     'brain.modelRegion {"model":"DeepSeek V4.1 Flash"}',
   );
-  expect(
-    modelLimitText(t, "en", region, "opencode", "deepseek-v4.1-flash", new Date(now.getTime() + 3600_000)),
-  ).toBeNull();
+  // The region holds until something changes: the key, the model chosen again, a turn on it going through.
+  expect(modelLimitText(t, "en", region, "opencode", "deepseek-v4.1-flash", new Date(now.getTime() + 86_400_000))).toBe(
+    'brain.modelRegion {"model":"DeepSeek V4.1 Flash"}',
+  );
   // Refused for the key: the model or the account switched off in OpenCode.
   const off = { models: { "minimax-m3": { at, off: true as const } } };
   expect(modelLimitText(t, "en", off, "opencode", "sonnet", now)).toBe('brain.modelOff {"model":"MiniMax M3"}');
@@ -115,6 +116,13 @@ test("a model's own limit: the note names the model and the way out, the brain c
     'chat.body.plan_inactive_wait {"model":"MiniMax M3","when":""}',
   );
   expect(usageWaitFix({ bodyCode: "plan_inactive_wait" }, { admin: true, owner: true })).toBeNull();
+  // Automático answered with another model: the line under the reply, and nothing for a malformed or absent one.
+  const standIn = { modelStandIn: { plan: "OpenCode Go", from: "MiniMax M3", to: "GLM-5.3" } };
+  expect(modelStandInText(t, standIn)).toBe(
+    'chat.modelStandIn.text {"plan":"OpenCode Go","from":"MiniMax M3","to":"GLM-5.3"}',
+  );
+  expect(modelStandInText(t, { modelStandIn: { plan: "x", from: 1, to: "y" } })).toBeNull();
+  expect(modelStandInText(t, {})).toBeNull();
 });
 
 test("a wait's way out: another model for its owner or an admin, a higher budget for an admin, none for a plan's limit", () => {

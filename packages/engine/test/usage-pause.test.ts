@@ -1887,16 +1887,52 @@ describe("a model OpenCode refuses for the key (a 403: the model or the account 
     expect(seen.at(-1)?.model).toBe("deepseek-v4.1-flash");
   });
 
-  test("Automático with no model known to answer: it waits naming the model refused", async () => {
+  test("Automático with no model known to answer: one go on a tagged model of the plan, then it waits naming that one", async () => {
     f = await setup({ reply: () => ({ chunks: ["pela API"] }) });
     await goAgent(f, "auto", reading());
     const { brain, seen } = scripted(() => [{ type: "error", code: "claude_failed", message: FORBIDDEN }]);
     await post(f, "@dev oi");
     await drainOutbox(f.db, accountHandlers(f, brain));
-    expect(seen).toHaveLength(1);
+    expect(seen.map((t) => t.model)).toEqual(["sonnet", "glm-5.3"]);
     expect(waitOf((await runs(f))[0])).toMatchObject({ scope: "off" });
     const [note] = await notes(f, "plan_model_off_wait");
-    expect(note?.meta.bodyParams).toMatchObject({ model: "MiniMax M3" });
+    expect(note?.meta.bodyParams).toMatchObject({ model: "GLM-5.3" });
+  });
+
+  test("Automático's stand-in says so under the reply, once, and the refusal stays until someone picks the model again", async () => {
+    f = await setup({ reply: () => ({ chunks: ["pela API"] }) });
+    const { accountId } = await goAgent(f, "auto", reading());
+    const { brain, seen } = scripted((n) =>
+      n === 0 ? [{ type: "error", code: "claude_failed", message: FORBIDDEN }] : [{ type: "done", text: "feito" }],
+    );
+    await post(f, "@dev oi");
+    await drainOutbox(f.db, accountHandlers(f, brain));
+    expect(seen.map((t) => t.model)).toEqual(["sonnet", "glm-5.3"]);
+    const replies = (await listMessages(f.db, f.owner.id, f.org.id, f.general.id, {})).filter(
+      (m) => m.author.type === "agent" && m.body === "feito",
+    );
+    expect(replies[0]?.meta.modelStandIn).toEqual({
+      plan: "OpenCode Go",
+      from: "MiniMax M3",
+      to: "GLM-5.3",
+      model: "glm-5.3",
+    });
+    // A day later MiniMax M3 is still held: the next run starts on the model that answers, and says nothing.
+    setSystemTime(new Date(Date.now() + 86_400_000));
+    try {
+      await post(f, "@dev e agora?");
+      await drainOutbox(f.db, accountHandlers(f, brain));
+      expect(seen.at(-1)?.model).toBe("glm-5.3");
+      const last = (await listMessages(f.db, f.owner.id, f.org.id, f.general.id, {})).filter(
+        (m) => m.author.type === "agent" && m.body === "feito",
+      );
+      expect(last.at(-1)?.meta.modelStandIn).toBeUndefined();
+    } finally {
+      setSystemTime();
+    }
+    expect((await accountUsage(f, accountId))?.models?.["minimax-m3"]).toMatchObject({ off: true });
+    await setAgentBrain({ db: f.db }, f.owner.id, f.org.id, f.agent.id, { model: "minimax-m3" });
+    expect((await accountUsage(f, accountId))?.models?.["minimax-m3"]).toBeUndefined();
   });
 
   test("no active Go subscription: the account's words, no stand-in that would be refused too, the key signed in", async () => {

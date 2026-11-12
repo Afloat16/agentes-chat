@@ -15519,6 +15519,10 @@ export const en = {
       text: "ChatGPT refused Fast speed on this account or model, so this reply came at standard speed.",
       action: "Open agent",
     },
+    /** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
+    modelStandIn: {
+      text: "{{plan}} refused {{from}} with this key. I answered with {{to}}, which works with it.",
+    },
     /** When a waiting agent goes on (`usageWhen`). */
     usageWhen: { at: "at {{time}}", on: "{{day}} at {{time}}", date: "on {{date}}" },
     doing_one: "{{names}} is {{doing}}",

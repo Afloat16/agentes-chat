@@ -199,6 +199,15 @@ export function SpeedFallbackLine({ agent }: { agent: Agent | undefined }) {
   );
 }
 
+/** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
+export function ModelStandInLine({ text }: { text: string }) {
+  return (
+    <EventPill className="cn-pill cn-pill--part" mark={<Icon name="info" size={14} />}>
+      {text}
+    </EventPill>
+  );
+}
+
 /** Who stopped a task, as its pill says it: the notice when there is one, else what the stopped reply knows. */
 export interface StopWho {
   /** The notice the agent got (ADR 0128): who, their name, the reason, and "Dizer o motivo" for who stopped it. */

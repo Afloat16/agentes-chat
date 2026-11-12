@@ -48,6 +48,7 @@ import {
   isPlanModelId,
   OPENCODE_FREE_MODELS,
   planModel,
+  planModelById,
   planOf,
   speedFits,
 } from "@agenteschat/providers/plans";
@@ -1116,6 +1117,21 @@ export async function setAgentBrain(
       : (changed && isComputerBrain(brain)) || newPlan
         ? false
         : agent.planForOthers;
+  // Choosing a model its plan refused for this key (switched off there) asks the plan again: the next turn tries it.
+  const picked = typeof input.model === "string" ? planModelById(input.model) : undefined;
+  if (account && picked) {
+    const { machineAccounts } = schema;
+    await deps.db
+      .update(machineAccounts)
+      .set({ usage: sql`${machineAccounts.usage} #- ${`{models,${picked.id}}`}::text[]` })
+      .where(
+        and(
+          eq(machineAccounts.orgId, orgId),
+          eq(machineAccounts.id, account),
+          sql`${machineAccounts.usage}->'models' ? ${picked.id}`,
+        ),
+      );
+  }
   const accounts = await brainAccounts(deps.db, userId, orgId, agent, machine, others);
   const thinks =
     changed ||
