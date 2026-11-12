@@ -10856,11 +10856,7 @@ export const ptBR = {
         label: "Link do GitHub",
         help: "O link de um repositório, de uma pasta ou de um arquivo .md. As notas em Markdown viram páginas e as imagens que elas mostram vão para o Drive. O resto do repositório fica de fora. Repositório privado é lido pelo GitHub do workspace.",
         read: "Ler as notas",
-        error: {
-          notGithub: "Cole um link do github.com.",
-          noNotes: "Nenhuma nota em Markdown neste link.",
-          tooLarge: "São notas demais para ler por link. Baixe o repositório em .zip e importe em Arquivos.",
-        },
+        error: { notGithub: "Cole um link do github.com." },
       },
       anotherLink: "Trocar link",
       dropTitle: "Solte o .zip da vault aqui",
@@ -13214,6 +13210,8 @@ export const ptBR = {
     },
     /** Restricted wiki pages (ADR 0023). */
     wiki: {
+      githubNoNotes: "Nenhuma nota em Markdown neste link.",
+      githubTooLarge: "São notas demais para ler por link. Baixe o repositório em .zip e importe em Arquivos.",
       noAccess: "Você não tem acesso a esta página.",
       audienceForbidden: "Só quem edita a wiki e gerencia papéis escolhe quem vê uma página.",
       audienceExcludesYou: "Inclua você (um papel seu ou o seu nome) para continuar vendo a página.",

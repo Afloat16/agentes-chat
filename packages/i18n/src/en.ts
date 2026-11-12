@@ -10801,11 +10801,7 @@ export const en = {
         label: "GitHub link",
         help: "The link of a repository, a folder or a .md file. Markdown notes become pages and the images they show go to the Drive. The rest of the repository stays out. A private repository is read through the workspace's GitHub.",
         read: "Read the notes",
-        error: {
-          notGithub: "Paste a github.com link.",
-          noNotes: "No Markdown notes in this link.",
-          tooLarge: "Too many notes to read from a link. Download the repository as a .zip and import it in Files.",
-        },
+        error: { notGithub: "Paste a github.com link." },
       },
       anotherLink: "Change link",
       dropTitle: "Drop the vault .zip here",
@@ -13180,6 +13176,8 @@ export const en = {
         "The connection to {{provider}} is set up wrong on the server, so it can't finish. Whoever runs the server needs to replace the key in the app's settings.",
     },
     wiki: {
+      githubNoNotes: "No Markdown notes in this link.",
+      githubTooLarge: "Too many notes to read from a link. Download the repository as a .zip and import it in Files.",
       noAccess: "You don't have access to this page.",
       audienceForbidden: "Only people who edit the wiki and manage roles choose who sees a page.",
       audienceExcludesYou: "Include yourself (one of your roles, or your name) to keep seeing the page.",

@@ -454,10 +454,7 @@ export function WikiImportDialog({
       await read(filesFromZip(new File([notes], "notes.zip")), githubRoot(link) ?? undefined, "github");
     } catch (e) {
       const missing = hiddenRepoOf(e);
-      const code = (e as { code?: string }).code;
       if (missing) setHidden(missing);
-      else if (code === "wiki.github_no_notes") setLinkError(t("wiki.import.github.error.noNotes"));
-      else if (code === "wiki.github_too_large") setLinkError(t("wiki.import.github.error.tooLarge"));
       else setLinkError(errorText(t, e, i18n.language));
     } finally {
       setFetching(false);

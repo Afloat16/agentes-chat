@@ -203,6 +203,7 @@
       "wiki.form.tags",
       "wiki.import.stat.links",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "wiki.tags",
@@ -466,6 +467,7 @@
       "usageViews.tokens",
       "wiki.audienceRoles",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "work.duration.hours",
       "work.duration.hoursMinutes",
@@ -832,6 +834,7 @@
       "wiki.import.stat.notes",
       "wiki.legend.agents",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.pageCount",
       "wiki.props.addTag",
@@ -1268,6 +1271,7 @@
       "wiki.form.tags",
       "wiki.graph",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "wiki.rich.blocks.code",
@@ -1632,6 +1636,7 @@
       "wiki.home",
       "wiki.import.stat.links",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "work.duration.hours",
@@ -2154,6 +2159,7 @@
       "wiki.import.stat.links",
       "wiki.legend.agents",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "wiki.rich.blocks.code",
@@ -2403,6 +2409,7 @@
       "vault.field.keyNamePlaceholder",
       "vault.field.websitePlaceholder",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "endpoint.styles.openai",
       "endpoint.styles.anthropic",
@@ -2557,6 +2564,7 @@
       "vault.field.keyNamePlaceholder",
       "vault.field.websitePlaceholder",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "endpoint.styles.openai",
       "endpoint.styles.anthropic",
@@ -2701,6 +2709,7 @@
       "vault.field.keyNamePlaceholder",
       "vault.field.websitePlaceholder",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "endpoint.styles.openai",
       "endpoint.styles.anthropic",
@@ -2941,6 +2950,7 @@
       "toolNames.verb.transfer",
       "toolReview.ok",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "rightHand.field.archive",
@@ -3143,6 +3153,7 @@
       "taskManager.program.terminal",
       "toolNames.order",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "rightHand.field.model",
       "rightHand.profile.model",
@@ -3401,6 +3412,7 @@
       "wiki.import.stat.folders",
       "wiki.import.stat.links",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "wiki.props.addTag",
       "work.duration.minutes",
@@ -3571,6 +3583,7 @@
       "onboarding.team.placeholder",
       "taskManager.program.agentes",
       "wiki.legend.obsidian",
+      "wiki.import.source.obsidian",
       "wiki.markdown",
       "widgets.sizes.l",
       "widgets.sizes.m",
@@ -3608,18 +3621,55 @@
     ]
   },
   "mobile-base": {
-    "pt-BR": ["push.ask.minutes"],
-    "es": ["push.ask.minutes"],
-    "fr": ["a11y.agent", "a11y.agentPlain", "push.ask.minutes"],
-    "de": ["a11y.agentPlain", "auth.connect.on", "auth.server.line"],
-    "it": ["auth.connect.on", "auth.server.line", "push.ask.minutes"],
-    "nl": ["a11y.agent", "a11y.agentPlain", "auth.connect.on", "auth.server.line", "push.ask.minutes"],
-    "ja": ["auth.server.placeholder"],
-    "ko": ["auth.server.placeholder"],
-    "zh-Hans": ["auth.server.placeholder"],
-    "id": ["auth.connect.on", "auth.server.line"],
-    "pl": ["a11y.agent", "a11y.agentPlain", "push.ask.minutes"],
-    "ru": ["auth.server.placeholder"]
+    "pt-BR": [
+      "push.ask.minutes"
+    ],
+    "es": [
+      "push.ask.minutes"
+    ],
+    "fr": [
+      "a11y.agent",
+      "a11y.agentPlain",
+      "push.ask.minutes"
+    ],
+    "de": [
+      "a11y.agentPlain",
+      "auth.connect.on",
+      "auth.server.line"
+    ],
+    "it": [
+      "auth.connect.on",
+      "auth.server.line",
+      "push.ask.minutes"
+    ],
+    "nl": [
+      "a11y.agent",
+      "a11y.agentPlain",
+      "auth.connect.on",
+      "auth.server.line",
+      "push.ask.minutes"
+    ],
+    "ja": [
+      "auth.server.placeholder"
+    ],
+    "ko": [
+      "auth.server.placeholder"
+    ],
+    "zh-Hans": [
+      "auth.server.placeholder"
+    ],
+    "id": [
+      "auth.connect.on",
+      "auth.server.line"
+    ],
+    "pl": [
+      "a11y.agent",
+      "a11y.agentPlain",
+      "push.ask.minutes"
+    ],
+    "ru": [
+      "auth.server.placeholder"
+    ]
   },
   "mobile-features": {
     "pt-BR": [
