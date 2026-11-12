@@ -874,11 +874,12 @@ export async function insertMessageWithRuns(
           and ${audienceSql("wa", sql`${userId}::text`, inChannel)}
       ), task_agent as (
         -- A task's conversation is a DM with the task's agent: what names nobody there is for it, an ok or a status
-        -- line too ("feito", "pago"), never the router's to drop. Naming a person there still goes to the router.
-        select ${taskAgentSql(sql`${input.channelId}::uuid`)} as agent_id
+        -- line too ("feito", "pago"), never the router's to drop. Naming a person or quoting another agent goes to
+        -- the router.
+        select t.agent_id from (select ${taskAgentSql(sql`${input.channelId}::uuid`)} as agent_id) t
         where ${startRuns}::boolean and not exists (select 1 from mentioned)
           and not exists (select 1 from mentioned_people) and not exists (select 1 from task_readers_named)
-          and ${quotedAgentId}::uuid is null
+          and (${quotedAgentId}::uuid is null or t.agent_id = ${quotedAgentId}::uuid)
           and exists (select 1 from ${channels} tc where tc.id = ${input.channelId}::uuid and tc.kind = 'task')
       ), addressed as (
         select a.id as agent_id,
@@ -1010,8 +1011,8 @@ export async function insertMessageWithRuns(
             -- For an agent's background work, answered by its own reply turn: nobody routes it again.
             || coalesce((select jsonb_build_object('forWork', true) from work_thread limit 1), '{}'::jsonb)
             -- For the task's agent, which answers it as in a DM: nobody routes it again.
-            || coalesce((select jsonb_build_object('forTask', true) from task_agent where agent_id is not null
-                and agent_id not in (select agent_id from answered)), '{}'::jsonb)
+            || coalesce((select jsonb_build_object('forTask', true) from task_agent
+                where agent_id in (select agent_id from addressed)), '{}'::jsonb)
             -- Delivered to a task in progress: nobody routes it again (no second run).
             || coalesce((select jsonb_build_object('steeredRunIds', jsonb_agg(st.id)) from steered st
                 having count(*) > 0), '{}'::jsonb)
