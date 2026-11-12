@@ -279,11 +279,12 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
     pane(
       "selfhost",
       <Tools />,
-      (el) => el.querySelector("#tool-opencode"),
+      // The switches are there before the computer's access is: Claude Code's turns on once it arrives.
+      (el) => el.querySelector('#tool-claude[aria-checked="true"]'),
       async (el) => {
         const state = (id: string) => el.querySelector(`#tool-${id}`)?.getAttribute("aria-checked");
         const programs = ["claude", "codex", "cursor", "opencode", "grok", "antigravity"];
-        // One with no switch stored follows Codex's, off here; none found here but Claude Code and Codex.
+        // One with no switch stored follows Codex's, off here; none of the four is found here.
         expect(programs.map(state)).toEqual(["true", "false", "false", "false", "false", "false"]);
         expect(programs.every((id) => !(el.querySelector(`#tool-${id}`) as HTMLButtonElement).disabled)).toBe(true);
         await act(async () => (el.querySelector("#tool-opencode") as HTMLElement).click());
