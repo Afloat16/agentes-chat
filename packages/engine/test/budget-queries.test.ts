@@ -98,7 +98,7 @@ test("claim → model request stays within 18 statements; a whole mention run wi
   expect(run.total).toBeLessThanOrEqual(39);
 });
 
-test("with tools, as every production run has them (find_agent among them): within 24 before the model call, 45 in all", async () => {
+test("with tools, as every production run has them (find_agent among them): within 24 before the model call, 46 in all", async () => {
   const run = await mentionRun({ askAgent: true });
   // 4 more, all for the tool list and the prompt: who is behind the run (2, the Tool Gateway's policy), the connectors
   // it lacks (1) and whether the person may talk to agents ("# Your team", 1, beside the context's other reads).
@@ -118,5 +118,6 @@ test("with tools, as every production run has them (find_agent among them): with
   // 43 with the background work read before the model call above.
   // 44 with the app language read before the model call above.
   // 45 with what already waits on the person, read before the model call above.
-  expect(run.total).toBeLessThanOrEqual(45);
+  // 46 with the agent's approvals level, read fresh where its tools are listed (ADR 0173).
+  expect(run.total).toBeLessThanOrEqual(46);
 });

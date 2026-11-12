@@ -177,4 +177,14 @@ test("what was asked in another conversation is counted, never quoted", () => {
   expect(block).toContain("- 2 in other conversations");
   expect(block).not.toContain("cofre");
   expect(waitingOnPersonBlock([], "here")).toBeNull();
+
+  // More here than the block quotes: the one left out is not said to be elsewhere.
+  const many = waitingOnPersonBlock(
+    Array.from({ length: 9 }, (_, i) => ({ agentName: "Dev", channelId: "here", question: `Pergunta ${i}?` })),
+    "here",
+  );
+  expect(many).toContain('"Pergunta 7?"');
+  expect(many).not.toContain('"Pergunta 8?"');
+  expect(many).toContain("- more, here or in other conversations");
+  expect(many).not.toMatch(/- \d+ /);
 });

@@ -162,12 +162,15 @@ describe("a request still waiting, as a pill", () => {
       "features/ai/UsagePauseCard.tsx",
       "features/usage/people.tsx",
       "features/outages/WaitCard.tsx",
-      "features/right-hand/Intro.tsx",
     ]) {
       const text = src(file);
       expect([file, text.includes("<AskWaiting")]).toEqual([file, true]);
-      expect([file, text.includes("<AskDone")]).toEqual([file, !file.endsWith("Intro.tsx")]);
+      expect([file, text.includes("<AskDone")]).toEqual([file, true]);
     }
+    // The right hand's connect card is the request card's note, with a kit button.
+    const intro = src("features/right-hand/Intro.tsx");
+    expect(intro).toContain("<AskNote");
+    expect(intro).not.toContain("<AskWaiting");
     // A computer coming back waits for no one here: never the viewer's mark, never a tinted action.
     const outage = src("features/outages/WaitCard.tsx");
     expect(outage).toContain("forMe={false}");

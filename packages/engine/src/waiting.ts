@@ -142,13 +142,16 @@ export async function waitingOnPerson(
  */
 export function waitingOnPersonBlock(rows: WaitingOnPerson[], channelId: string): string | null {
   if (rows.length === 0) return null;
-  const here = rows.filter((r) => r.channelId === channelId).slice(0, MAX_IN_PROMPT);
-  const elsewhere = rows.length - here.length;
+  const asked = rows.filter((r) => r.channelId === channelId);
+  const here = asked.slice(0, MAX_IN_PROMPT);
+  const elsewhere = rows.length - asked.length;
   const more = rows.length > MAX_IN_PROMPT ? "or more " : "";
   return [
     "# Already waiting on this person",
     "Other agents asked the person you answer for these, and nobody answered yet:",
     ...here.map((r) => `- ${r.agentName}, here: "${cutText(r.question, 200)}"`),
+    // The read stops one past the cap, this conversation's first: past it, where the rest was asked is unknown.
+    ...(asked.length > here.length ? ["- more, here or in other conversations"] : []),
     ...(elsewhere > 0 ? [`- ${elsewhere} ${more}in other conversations`] : []),
     "Don't pile a new question on these. If one of them already covers what you need, wait for its answer. If yours can wait, go on with what you can do and say what you need in your reply. Ask only what blocks you, in one question.",
   ].join("\n");
