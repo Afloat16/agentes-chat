@@ -760,6 +760,8 @@ export const en = {
         bring: "Copy the request, paste it in {{app}} and bring back the answer. I'll do the rest.",
         /** The same, for an app that hands back a file or a folder, dropped on the step. */
         bringFiles: "Drop here what the app exported. I'll do the rest.",
+        /** The same, while the import's "Connect with MCP" steps are on screen: the app creates the agents itself. */
+        bringMcp: "Follow the steps in the app and it creates the agents here itself. I'll watch for them.",
         found: "Found your team. Check that everyone is here.",
         foundPersonal: "Found your agents. Check that they're all here.",
         /** The AI step: picking an AI wakes the team (or, alone, Lodi). */
@@ -1027,20 +1029,38 @@ export const en = {
       title: "Already using agents in another app?",
       lead: "They come with their instructions, skills, routines and memory.",
       sourcesLabel: "Where the agents come from",
+      /** Each source's two ways in: its app connects to this server's MCP and creates the agents, or the request. */
+      method: {
+        label: "How to bring them",
+        mcp: "Connect with MCP",
+        prompt: "Prompt only",
+        file: "From a file",
+      },
       aiApp: {
-        title: "From your AI app (most reliable)",
-        lead: "Your AI app creates here each agent, instruction, skill and routine you have in it.",
-        connect: "Connect the app to this address:",
+        /** What connecting does, in a person's words. {{app}}: the source's name, as Grok Bot. */
+        lead: "MCP lets {{app}} reach this workspace, so it creates the agents here itself.",
+        leadAny: "MCP lets your AI app reach this workspace, so it creates the agents here itself.",
+        /** ChatGPT dots: a dot reaches MCP servers only through the plugins added in ChatGPT. */
+        leadDots:
+          "MCP lets your dot reach this workspace through a plugin you add in ChatGPT, so it creates the agents here itself.",
         howTo: "How to connect, app by app",
-        allow: "On the permission page, pick Create and edit agents, routines and skills.",
-        paste: "Then paste this request into the app:",
+        paste: "Paste this request into the app:",
         prompt:
-          "Connect {{url}} and, for every agent, instruction, skill and routine you have, create the equivalent in agentes.chat. First list what already exists there so nothing is duplicated.",
+          "Use the agentes.chat MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory.",
         promptLabel: "Request for your AI app",
         copy: "Copy the request",
         copied: "Now paste it into your AI app.",
+        waiting: "Waiting for the agents to arrive…",
+        arrived_one: "{{count}} agent arrived",
+        arrived_other: "{{count}} agents arrived",
+        /** Shown after a few minutes with nothing. {{access}}: the consent page's option, as it reads there. */
+        stuck: "Nothing after a few minutes? Connect the app again, pick {{access}}, then send the request again.",
         private:
-          "From your AI app: not available on this server, because apps like Claude and ChatGPT only connect to a public https address.",
+          "Connect with MCP isn't available on this server, because apps on the internet only reach a public https address.",
+        /** A workspace on a billing hold, as a new Cloud one is until its first plan: apps can't sign in to it. */
+        held: "Connect with MCP works once the workspace's plan is active. Bring the agents this way for now.",
+        /** A workspace paused for any other reason. */
+        paused: "Connect with MCP is off while this workspace is paused. Bring the agents this way for now.",
       },
       otherName: "Another app",
       agenteschatName: "agentes.chat",
@@ -14195,9 +14215,16 @@ export const en = {
         orFile: "Or paste into <code>{{file}}</code>:",
         pasteConfig: "Paste:",
         mode: "In the chat, switch to {{mode}} mode.",
+        /** Grok Bot adds a server when asked in its chat: the message to send follows. */
+        sendInChat: "In the chat with your bot, send:",
+        reload: "Then type <code>{{command}}</code> in the chat.",
         loginRun: "To sign in, run <code>{{command}}</code>.",
         loginType: "To sign in, type <code>{{command}}</code> in the app.",
         signIn: "Sign in with your agentes.chat account on the page that opens.",
+        /** {{access}}: the consent page's option, as it reads there. */
+        signInManage: "Sign in with your agentes.chat account on the page that opens, and pick {{access}}.",
+        /** Grok Bot uses a connected server only once it is attached to the message. */
+        mention: "In the chat, type <code>@</code> and pick <code>{{name}}</code>.",
         signInFirst: "The app asks you to sign in the first time you use it.",
         /** {{placeholder}} is the spot in the config above where the token goes. */
         token: "Create a personal token and put it in place of {{placeholder}}.",

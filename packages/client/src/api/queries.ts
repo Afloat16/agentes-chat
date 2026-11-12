@@ -636,12 +636,13 @@ export function useRevokeInvitation(orgId: string) {
 
 // ── Agents ──────────────────────────────────────────────────────────────────
 
-export const useAgents = (orgId: string) => {
+export const useAgents = (orgId: string, enabled = true) => {
   const api = useApi();
   return useQuery({
     queryKey: keys.agents(orgId),
     queryFn: () => api.agents.list(orgId),
     staleTime: 30_000,
+    enabled,
     ...BACK_TO_TAB,
   });
 };
