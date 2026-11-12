@@ -2390,6 +2390,16 @@
     "failedShort": "N'a pas pu répondre",
     "popoverTitle": "Agents",
     "seenBy": "Vu par {{names}}",
+    "everyone": {
+      "seen_one": "{{count}} agent l’a vu",
+      "seen_many": "{{count}} agents l’ont vu",
+      "seen_other": "{{count}} agents l’ont vu",
+      "answering": "{{name}} répond pour tous",
+      "answered": "{{name}} a répondu pour tous",
+      "about": "Qui a répondu",
+      "hintOne": "Une seule réponse suffisait pour tous, donc seul {{name}} a répondu. Les autres agents ont lu le message.",
+      "hintNone": "Le message ne demandait rien aux agents, donc aucun n’a répondu. Tous l’ont lu."
+    },
     "retry": "Réessayer",
     "retrying": "Nouvelle tentative…",
     "platformCap": "Mentionnez un agent avec @ pour qu'il réponde.",
@@ -3336,6 +3346,8 @@
     "memory": {
       "saved": "Enregistré dans la <b>mémoire</b> : {{text}}",
       "saved_rule": "Enregistré dans <b>mes règles</b> : {{text}}",
+      "saved_team_rule": "Enregistré dans les <b>règles de l’équipe</b> : {{text}}",
+      "saved_team": "Enregistré dans la <b>mémoire de l’équipe</b> : {{text}}",
       "updated": "<b>Mémoire</b> mise à jour : {{text}}",
       "forgotten": "Retiré de la <b>mémoire</b> : {{text}}"
     },

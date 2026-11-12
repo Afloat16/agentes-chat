@@ -2220,6 +2220,14 @@
     "failedShort": "Tidak bisa menjawab",
     "popoverTitle": "Agen",
     "seenBy": "Dilihat oleh {{names}}",
+    "everyone": {
+      "seen_other": "{{count}} agen melihatnya",
+      "answering": "{{name}} menjawab untuk semua",
+      "answered": "{{name}} sudah menjawab untuk semua",
+      "about": "Tentang siapa yang menjawab",
+      "hintOne": "Satu jawaban cukup untuk semua, jadi hanya {{name}} yang menjawab. Agen lain membaca pesannya.",
+      "hintNone": "Pesan itu tidak meminta apa pun dari agen, jadi tidak ada yang menjawab. Semua membacanya."
+    },
     "retry": "Coba lagi",
     "retrying": "Mencoba lagi…",
     "platformCap": "Sebut agen dengan @ agar dia menjawab.",
@@ -3127,6 +3135,8 @@
     "memory": {
       "saved": "Disimpan ke <b>memori</b>: {{text}}",
       "saved_rule": "Disimpan ke <b>aturanku</b>: {{text}}",
+      "saved_team_rule": "Disimpan di <b>aturan tim</b>: {{text}}",
+      "saved_team": "Disimpan di <b>memori tim</b>: {{text}}",
       "updated": "Memperbarui <b>memori</b>: {{text}}",
       "forgotten": "Dihapus dari <b>memori</b>: {{text}}"
     },

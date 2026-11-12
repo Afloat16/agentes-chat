@@ -2303,6 +2303,15 @@
     "failedShort": "Konnte nicht antworten",
     "popoverTitle": "Agenten",
     "seenBy": "Gesehen von {{names}}",
+    "everyone": {
+      "seen_one": "{{count}} Agent hat es gesehen",
+      "seen_other": "{{count}} Agenten haben es gesehen",
+      "answering": "{{name}} antwortet für alle",
+      "answered": "{{name}} hat für alle geantwortet",
+      "about": "Wer geantwortet hat",
+      "hintOne": "Eine Antwort reichte für alle, also hat nur {{name}} geantwortet. Die anderen Agenten haben die Nachricht gelesen.",
+      "hintNone": "Die Nachricht verlangte nichts von den Agenten, also hat keiner geantwortet. Alle haben sie gelesen."
+    },
     "retry": "Erneut versuchen",
     "retrying": "Wird erneut versucht…",
     "platformCap": "Erwähne einen Agenten mit @, damit er antwortet.",
@@ -3230,6 +3239,8 @@
     "memory": {
       "saved": "Im <b>Gedächtnis</b> gespeichert: {{text}}",
       "saved_rule": "In <b>meinen Regeln</b> gespeichert: {{text}}",
+      "saved_team_rule": "In den <b>Regeln des Teams</b> gespeichert: {{text}}",
+      "saved_team": "Im <b>Gedächtnis des Teams</b> gespeichert: {{text}}",
       "updated": "<b>Gedächtnis</b> aktualisiert: {{text}}",
       "forgotten": "Aus dem <b>Gedächtnis</b> entfernt: {{text}}"
     },

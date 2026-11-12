@@ -5744,6 +5744,27 @@
   "receipts.seenBy": {
     "value": "Seen by {{names}}"
   },
+  "receipts.everyone.seen": {
+    "value": {
+      "one": "{{count}} agent saw it",
+      "other": "{{count}} agents saw it"
+    }
+  },
+  "receipts.everyone.answering": {
+    "value": "{{name}} answers for everyone"
+  },
+  "receipts.everyone.answered": {
+    "value": "{{name}} answered for everyone"
+  },
+  "receipts.everyone.about": {
+    "value": "About who answered"
+  },
+  "receipts.everyone.hintOne": {
+    "value": "One answer served everyone, so only {{name}} answered. The other agents read the message."
+  },
+  "receipts.everyone.hintNone": {
+    "value": "The message asked nothing of the agents, so none answered. They all read it."
+  },
   "receipts.retry": {
     "value": "Try again"
   },
@@ -7881,6 +7902,12 @@
   },
   "agentActions.memory.saved_rule": {
     "value": "Saved to <b>my rules</b>: {{text}}"
+  },
+  "agentActions.memory.saved_team_rule": {
+    "value": "Saved to the <b>team's rules</b>: {{text}}"
+  },
+  "agentActions.memory.saved_team": {
+    "value": "Saved to the <b>team's memory</b>: {{text}}"
   },
   "agentActions.memory.updated": {
     "value": "Updated <b>memory</b>: {{text}}"

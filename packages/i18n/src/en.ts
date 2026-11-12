@@ -2426,6 +2426,18 @@ export const en = {
     failedShort: "Couldn't answer",
     popoverTitle: "Agents",
     seenBy: "Seen by {{names}}",
+    /** A mention of everyone one agent answered for all of them, or that asked nothing of the agents. */
+    everyone: {
+      seen_one: "{{count}} agent saw it",
+      seen_other: "{{count}} agents saw it",
+      answering: "{{name}} answers for everyone",
+      answered: "{{name}} answered for everyone",
+      about: "About who answered",
+      /** Behind the ⓘ: why only one agent answered. */
+      hintOne: "One answer served everyone, so only {{name}} answered. The other agents read the message.",
+      /** Behind the ⓘ: why no agent answered. */
+      hintNone: "The message asked nothing of the agents, so none answered. They all read it.",
+    },
     retry: "Try again",
     /** On its way (`receipts.retry` pressed): the line says so until the server answers. */
     retrying: "Trying again…",
@@ -3438,6 +3450,10 @@ export const en = {
       saved: "Saved to <b>memory</b>: {{text}}",
       /** A lasting rule a person gave the agent (a permission, a destination), kept for all its work for them. */
       saved_rule: "Saved to <b>my rules</b>: {{text}}",
+      /** A rule saved for the whole team (no agent owns it): every agent follows it. */
+      saved_team_rule: "Saved to the <b>team's rules</b>: {{text}}",
+      /** Something saved for the whole team (no agent owns it): every agent reads it. */
+      saved_team: "Saved to the <b>team's memory</b>: {{text}}",
       updated: "Updated <b>memory</b>: {{text}}",
       forgotten: "Removed from <b>memory</b>: {{text}}",
     },

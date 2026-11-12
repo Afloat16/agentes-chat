@@ -12,7 +12,7 @@ import { listNames } from "@agenteschat/client/lib/activity";
 import { failedRunFix, runFailureLine } from "@agenteschat/client/lib/errors";
 import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
-import { deciderOf } from "@agenteschat/client/lib/routing";
+import { deciderOf, everyoneLineOf } from "@agenteschat/client/lib/routing";
 import { helpUrl } from "@agenteschat/client/lib/server";
 import { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +24,7 @@ import {
   Card,
   Icon,
   type IconName,
+  InfoHint,
   InkOrbit,
   Row,
   SectionHeader,
@@ -39,6 +40,7 @@ import { useColors, useDirectory, useMeId, useOrgId } from "../shared/hooks";
 import { SheetTitle } from "../shared/PromptForm";
 import { useSheet } from "../shared/SheetHost";
 import {
+  FACES,
   keptLine,
   markLabel,
   markOf,
@@ -200,6 +202,43 @@ export const AgentReceiptLine = memo(function AgentReceiptLine({
     </Animated.View>
   );
   return plain;
+});
+
+/**
+ * Under a person's mention of everyone that one agent answered for all, or that asked nothing of the agents: one
+ * quiet line, "5 agentes viram · Ada respondeu por todos", with why behind its ⓘ (as on the web).
+ */
+export const EveryoneLine = memo(function EveryoneLine({
+  message: m,
+  receipt,
+  mine,
+}: {
+  message: Message;
+  receipt: MessageReceipt | undefined;
+  mine: boolean;
+}) {
+  const { t } = useTranslation();
+  const dir = useDirectory();
+  const inset = useQuietInset();
+  const name = (id: string) => dir.agentById.get(id)?.name ?? t("channel.unknownAgent");
+  const line = everyoneLineOf(t, m.meta, receiptView(receipt), { agent: name });
+  if (!line) return null;
+  return (
+    <View style={[styles.line, mine ? styles.end : [styles.start, { paddingLeft: inset }]]}>
+      <InfoHint name={t("receipts.everyone.about")} text={line.hint} variant="caption">
+        <View style={styles.row}>
+          <View style={styles.faces}>
+            {line.faces.slice(0, FACES).map((id) => (
+              <AgentFace key={id} agentId={id} size={16} live={false} framed={false} />
+            ))}
+          </View>
+          <Text variant="caption" tone="muted" style={styles.words}>
+            {line.text}
+          </Text>
+        </View>
+      </InfoHint>
+    </View>
+  );
 });
 
 /** What this run of the app already asked to be answered (`KeptAnswer`). */

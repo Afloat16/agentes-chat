@@ -2223,6 +2223,14 @@
     "failedShort": "无法回答",
     "popoverTitle": "智能体",
     "seenBy": "{{names}} 已读",
+    "everyone": {
+      "seen_other": "{{count}} 个智能体已看到",
+      "answering": "{{name}} 正在代表大家回答",
+      "answered": "{{name}} 已代表大家回答",
+      "about": "关于谁回答了",
+      "hintOne": "一个回答就能满足所有人，所以只有 {{name}} 回答了。其他智能体都读了这条消息。",
+      "hintNone": "这条消息没有要求智能体做什么，所以没有智能体回答。大家都读了。"
+    },
     "retry": "重试",
     "retrying": "正在重试…",
     "platformCap": "用 @ 提及智能体，让它来回答。",
@@ -3117,6 +3125,8 @@
     "memory": {
       "saved": "已存入<b>记忆</b>：{{text}}",
       "saved_rule": "已存入<b>我的规则</b>：{{text}}",
+      "saved_team_rule": "已保存到<b>团队规则</b>：{{text}}",
+      "saved_team": "已保存到<b>团队记忆</b>：{{text}}",
       "updated": "已更新<b>记忆</b>：{{text}}",
       "forgotten": "已从<b>记忆</b>中移除：{{text}}"
     },

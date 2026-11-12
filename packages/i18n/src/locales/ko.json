@@ -2220,6 +2220,14 @@
     "failedShort": "답하지 못했어요",
     "popoverTitle": "에이전트",
     "seenBy": "{{names}}이(가) 봤어요",
+    "everyone": {
+      "seen_other": "에이전트 {{count}}명이 봤어요",
+      "answering": "{{name}}이(가) 모두를 대신해 답하는 중",
+      "answered": "{{name}}이(가) 모두를 대신해 답했어요",
+      "about": "누가 답했는지",
+      "hintOne": "하나의 답으로 모두에게 충분해서 {{name}}만 답했어요. 다른 에이전트는 메시지를 읽었어요.",
+      "hintNone": "메시지가 에이전트에게 아무것도 요청하지 않아서 아무도 답하지 않았어요. 모두 읽었어요."
+    },
     "retry": "다시 시도",
     "retrying": "다시 시도하는 중…",
     "platformCap": "에이전트가 답하게 하려면 @로 멘션하세요.",
@@ -3114,6 +3122,8 @@
     "memory": {
       "saved": "<b>메모리</b>에 저장했어요: {{text}}",
       "saved_rule": "<b>내 규칙</b>에 저장했어요: {{text}}",
+      "saved_team_rule": "<b>팀 규칙</b>에 저장했어요: {{text}}",
+      "saved_team": "<b>팀 메모리</b>에 저장했어요: {{text}}",
       "updated": "<b>메모리</b>를 업데이트했어요: {{text}}",
       "forgotten": "<b>메모리</b>에서 삭제했어요: {{text}}"
     },

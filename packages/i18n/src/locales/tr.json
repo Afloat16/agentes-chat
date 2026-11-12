@@ -2303,6 +2303,15 @@
     "failedShort": "Yanıtlayamadı",
     "popoverTitle": "Ajanlar",
     "seenBy": "{{names}} gördü",
+    "everyone": {
+      "seen_one": "{{count}} ajan gördü",
+      "seen_other": "{{count}} ajan gördü",
+      "answering": "{{name}} herkes adına yanıtlıyor",
+      "answered": "{{name}} herkes adına yanıtladı",
+      "about": "Kimin yanıtladığı hakkında",
+      "hintOne": "Tek bir yanıt herkese yetiyordu, bu yüzden yalnızca {{name}} yanıtladı. Diğer ajanlar mesajı okudu.",
+      "hintNone": "Mesaj ajanlardan bir şey istemiyordu, bu yüzden hiçbiri yanıtlamadı. Hepsi okudu."
+    },
     "retry": "Yeniden dene",
     "retrying": "Yeniden deneniyor…",
     "platformCap": "Yanıt vermesi için bir ajandan @ ile bahsedin.",
@@ -3216,6 +3225,8 @@
     "memory": {
       "saved": "<b>Belleğe</b> kaydettim: {{text}}",
       "saved_rule": "<b>Kurallarıma</b> kaydettim: {{text}}",
+      "saved_team_rule": "<b>Ekibin kurallarına</b> kaydettim: {{text}}",
+      "saved_team": "<b>Ekibin hafızasına</b> kaydettim: {{text}}",
       "updated": "<b>Belleği</b> güncelledim: {{text}}",
       "forgotten": "<b>Bellekten</b> kaldırdım: {{text}}"
     },

@@ -16,8 +16,8 @@ import { joinNames } from "@agenteschat/client/lib/format";
 import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { retryAnswer } from "@agenteschat/client/lib/retry-answer";
-import { deciderOf } from "@agenteschat/client/lib/routing";
-import { Icon, type IconName, PixelSpinner, Popover } from "@agenteschat/ui";
+import { deciderOf, everyoneLineOf } from "@agenteschat/client/lib/routing";
+import { AvatarStack, HintLine, Icon, type IconName, PixelSpinner, Popover } from "@agenteschat/ui";
 import { type ReactNode, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActorAvatar, AgentAvatar } from "@/components/AgentAvatar";
@@ -181,12 +181,28 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
     (status?.kind === "failed" && actions !== null && message.author.type === "person");
   // An agent's message that called several: one strip says where each stands once they start (`fanShows`).
   const fanned = part === "line" && message.author.type === "agent" && message.mentionedAgentIds.length > 1;
-  // The mark stays where a line says the rest (a failure, no AI): what became of it in the task is its own news.
-  if (part === "line" ? !worded && !fanned : worded && !steered) return null;
-  const marked = view.seen.length > 0 || view.picking === true || steered !== null;
-  if (!marked && status?.kind !== "no_ai" && status?.kind !== "platform_cap") return null;
-
   const name = (id: string) => dir.agentById.get(id)?.name ?? t("channel.unknownAgent");
+  // A mention of everyone one agent answered for all: one quiet line under it, never one reply each.
+  const everyone = part === "line" ? everyoneLineOf(t, message.meta, view, { agent: name }) : null;
+  const everyoneRow = everyone && (
+    <div className="ac-receipt ac-receipt--everyone">
+      <AvatarStack aria-hidden="true">
+        {everyone.faces.slice(0, 5).map((id) => (
+          <AgentAvatar key={id} agentId={id} size="xs" name={name(id)} />
+        ))}
+      </AvatarStack>
+      <span className="ac-receipt__words">
+        <HintLine name={t("receipts.everyone.about")} hint={everyone.hint}>
+          {everyone.text}
+        </HintLine>
+      </span>
+    </div>
+  );
+  // The mark stays where a line says the rest (a failure, no AI): what became of it in the task is its own news.
+  if (part === "line" ? !worded && !fanned : worded && !steered) return everyoneRow || null;
+  const marked = view.seen.length > 0 || view.picking === true || steered !== null;
+  if (!marked && status?.kind !== "no_ai" && status?.kind !== "platform_cap") return everyoneRow || null;
+
   const names = (ids: string[]) => joinNames(ids.map(name), t);
   const failure = failedAgent && !rowSaysWhy ? receipt?.failures?.[failedAgent] : undefined;
   const failedWhy = failedAgent && failure ? runFailureLine(t, name(failedAgent), failure, i18n.language) : null;
@@ -390,7 +406,15 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
       )}
     </div>
   );
-  if (!fanned) return words;
+  if (!fanned)
+    return everyoneRow ? (
+      <>
+        {words}
+        {everyoneRow}
+      </>
+    ) : (
+      words
+    );
   // The strip says where each agent stands; without it (fewer than two started, all done), the receipt as usual.
   return <FanOutStrip message={message} otherwise={worded ? words : null} />;
 }
