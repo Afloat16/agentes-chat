@@ -1656,7 +1656,7 @@ export function createSandboxToolSource(
     holds: string,
   ): ToolDefinition => ({
     name: "keep_running",
-    description: `Keep a program you started on your computer running while nobody uses it (a bot, a tunnel, a server called from outside, a job on its own timer), or a page in your browser that must stay live (\`browser\`), and show people what runs for them: they see it on your computer and can stop it. Give \`what\` (a few words people read) and \`why\`, with the program's \`pid\` (the hold ends when it exits), \`browser: true\`, or \`until\` alone (an ISO date and time, at most 7 days ahead; call again before then to keep it). The same pid or the browser again changes that hold. \`end\` with a hold's id ends it (the program keeps running until you stop it); no arguments lists them. At most ${MAX_HOLDS_PER_AGENT} at once.${holds ? `\n${holds}` : ""}`,
+    description: `Keep a program you started on your computer running while nobody uses it (a bot, a tunnel, a server called from outside, a job on its own timer), or a page in your browser that must stay live (\`browser\`), and show people what runs for them: they see it on your computer and can stop it. Give \`what\` (a few words people read) and \`why\`, with the program's \`pid\` (the hold ends when it exits), \`browser: true\` with \`until\`, or \`until\` alone (an ISO date and time, at most 7 days ahead). To keep a hold longer, call with \`hold\` (its id) and a new \`until\` before then; the same pid or the browser again changes that hold too. \`end\` with a hold's id ends it (the program keeps running until you stop it); no arguments lists them. At most ${MAX_HOLDS_PER_AGENT} at once.${holds ? `\n${holds}` : ""}`,
     scope: SANDBOX_SCOPE,
     sensitive: requireApproval,
     inputSchema: {
@@ -1670,8 +1670,14 @@ export function createSandboxToolSource(
           maximum: 4_194_304,
           description: "The program's process id on your computer",
         },
-        browser: { type: "boolean", description: "Your browser, with the page it shows" },
+        browser: { type: "boolean", description: "Your browser, with the page it shows (with `until`)" },
         until: { type: "string", maxLength: 40, description: "When it ends at the latest, ISO (2026-11-20T18:00:00Z)" },
+        hold: {
+          type: "string",
+          minLength: 36,
+          maxLength: 36,
+          description: "A hold's id, to change it (a new `until` keeps it longer)",
+        },
         end: { type: "string", minLength: 36, maxLength: 36, description: "A hold's id, to end it now" },
       },
       additionalProperties: false,
@@ -1699,10 +1705,19 @@ export function createSandboxToolSource(
             content: `Ended hold ${row.id} ("${row.what}").${row.pid !== null ? " Its program runs on until you stop it." : ""}`,
           };
         }
-        const what = str(input.what).trim();
-        const why = str(input.why).trim();
-        const pid = typeof input.pid === "number" ? input.pid : undefined;
-        const browser = input.browser === true;
+        const holdId = str(input.hold).trim();
+        // Changed by its id: it stays on what it holds, with its words unless new ones are given.
+        const kept = holdId ? await liveHold(ctx.db, ctx.orgId, ctx.agentId, holdId) : null;
+        if (holdId && kept?.machineId !== info.machineId) {
+          return { content: "No hold of yours with that id is live on this computer.", isError: true };
+        }
+        if (kept && typeof input.pid === "number" && input.pid !== kept.pid) {
+          return { content: "A hold stays on its program: end it and keep the other one.", isError: true };
+        }
+        const what = str(input.what).trim() || kept?.what || "";
+        const why = str(input.why).trim() || kept?.why || "";
+        const pid = typeof input.pid === "number" ? input.pid : (kept?.pid ?? undefined);
+        const browser = input.browser === true || kept?.browser === true;
         const untilText = str(input.until).trim();
         if (!what && !why && pid === undefined && !browser && !untilText) {
           const text = await holdsText(ctx.db, ctx.orgId, ctx.agentId);
@@ -1711,8 +1726,14 @@ export function createSandboxToolSource(
         if (!what || !why) return { content: "Give `what` and `why`: people read both.", isError: true };
         if (pid !== undefined && browser)
           return { content: "One hold is for a program or your browser.", isError: true };
-        if (pid === undefined && !browser && !untilText) {
-          return { content: "Give the program's `pid`, `browser: true`, or `until`.", isError: true };
+        // A browser held with no end would never restart on a newer Chrome.
+        if (pid === undefined && !untilText) {
+          return {
+            content: browser
+              ? "Your browser's hold needs `until` too, at most 7 days ahead: call again with `hold` before then to keep it."
+              : "Give the program's `pid`, `browser: true` with `until`, or `until`.",
+            isError: true,
+          };
         }
         const until = untilText ? new Date(Date.parse(untilText)) : undefined;
         if (until && Number.isNaN(until.getTime())) {
@@ -1720,7 +1741,7 @@ export function createSandboxToolSource(
         }
         if (until && until.getTime() <= Date.now()) return { content: "That time has passed.", isError: true };
         if (until && until.getTime() > Date.now() + HOLD_MAX_MS + 60_000) {
-          return { content: "At most 7 days ahead: call again before then to keep it.", isError: true };
+          return { content: "At most 7 days ahead: call again with `hold` before then to keep it.", isError: true };
         }
         const status = await hub.status(info.machineId);
         if (status?.executors?.mode !== "system" || status.os !== "linux") {
@@ -1734,6 +1755,7 @@ export function createSandboxToolSource(
           orgId: ctx.orgId,
           agent: { id: ctx.agentId, handle: agent?.handle ?? "agent" },
           machineId: info.machineId,
+          ...(kept ? { holdId: kept.id } : {}),
           runId: ctx.runId ?? null,
           what,
           why,

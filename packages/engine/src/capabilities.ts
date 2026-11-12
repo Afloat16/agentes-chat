@@ -265,7 +265,7 @@ export const GITHUB_GUIDANCE =
  * whatever its computer does while nobody uses it: never a word about computers going to sleep or turning off.
  */
 export const KEEP_RUNNING_GUIDANCE =
-  "- A program you leave running that must keep working while nobody uses the computer (a bot, a tunnel, a server called from outside, a job on its own timer, a page in your browser that must stay live): call `keep_running` with its pid (or `browser`), so it is kept running and people see what runs for them. Jobs that end go in `start_task`, schedules in a routine; end a hold (`end`) once it's no longer needed.";
+  "- A program you leave running that must keep working while nobody uses the computer (a bot, a tunnel, a server called from outside, a job on its own timer, a page in your browser that must stay live): call `keep_running` with its pid (or `browser` with `until`), so it is kept running and people see what runs for them. Jobs that end go in `start_task`, schedules in a routine; end a hold (`end`) once it's no longer needed.";
 
 /** GitHub for an agent with no computer to clone onto: the connector's tools alone. */
 export const GITHUB_TOOLS_GUIDANCE =

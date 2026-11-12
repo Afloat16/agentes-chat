@@ -1,5 +1,5 @@
 import type { MachineReplies, MachineRequest, PubSub, RunnerFrame, RunnerHolds } from "@agenteschat/adapters";
-import { and, type Database, desc, eq, gt, isNotNull, isNull, lte, type SQL, schema } from "@agenteschat/db";
+import { and, type Database, desc, eq, gt, inArray, isNotNull, isNull, lte, type SQL, schema } from "@agenteschat/db";
 import { getAgentCached } from "./agents";
 import { recordAudit } from "./audit";
 import { publishOrgEvent } from "./events";
@@ -148,6 +148,8 @@ export interface HoldAsk {
   orgId: string;
   agent: { id: string; handle: string };
   machineId: string;
+  /** The agent's live hold to change, by its id (a time's hold has no program to find it by). */
+  holdId?: string;
   runId?: string | null;
   what: string;
   why: string;
@@ -157,8 +159,9 @@ export interface HoldAsk {
 }
 
 /**
- * Takes a hold on the agent's computer, or changes the agent's live one on the same program (or its browser): the
- * computer first, then the row, so a hold people see is one the computer holds. Throws the computer's refusal.
+ * Takes a hold on the agent's computer, or changes the agent's live one of that id, or on the same program (or its
+ * browser): the computer first, then the row, so a hold people see is one the computer holds. Throws the computer's
+ * refusal.
  */
 export async function takeHold(
   deps: Deps & { call: Call },
@@ -168,7 +171,9 @@ export async function takeHold(
   const same = live.find(
     (h) =>
       h.machineId === ask.machineId &&
-      ((ask.pid !== undefined && h.pid === ask.pid) || (ask.browser === true && h.browser && h.pid === null)),
+      (h.id === ask.holdId ||
+        (ask.pid !== undefined && h.pid === ask.pid) ||
+        (ask.browser === true && h.browser && h.pid === null)),
   );
   if (!same && live.length >= MAX_HOLDS_PER_AGENT) return { full: true };
   const id = same?.id ?? Bun.randomUUIDv7();
@@ -183,7 +188,12 @@ export async function takeHold(
   const now = new Date();
   const fields = { what: ask.what, why: ask.why, until: ask.until ?? null, runId: ask.runId ?? null, updatedAt: now };
   const [row] = same
-    ? await deps.db.update(machineHolds).set(fields).where(eq(machineHolds.id, same.id)).returning()
+    ? await deps.db
+        .update(machineHolds)
+        // The computer holds it now: an end it heard meanwhile (its old lock's, a time run out) is undone.
+        .set({ ...fields, endedAt: null, endReason: null, endedByUserId: null })
+        .where(eq(machineHolds.id, same.id))
+        .returning()
     : await deps.db
         .insert(machineHolds)
         .values({
@@ -226,7 +236,8 @@ export async function releaseHold(
       ...(how.reason === "stopped_by_person" ? { stop: true } : {}),
     });
   } catch {
-    // Offline or too old: its next hello says the hold lives, and hears it ended (`reconcileHolds`).
+    // Offline or too old: its next hello says the hold lives, and hears it ended, a Stop with what it held
+    // (`reconcileHolds`).
   }
   await endHold(
     deps,
@@ -238,8 +249,9 @@ export async function releaseHold(
 
 /**
  * The computer said hello: each live hold here it doesn't hold any more ended there (the reason it gives), or with a
- * restart; a time's hold is taken again for its time left; one it holds that ended here (a person's Stop while it was
- * away) ends there too. A runner before `KEEP_RUNNING_PROTOCOL` (no `call`) holds none.
+ * restart; a time's hold is taken again for its time left; one it holds that ended here ends there too, and a person's
+ * Stop while it was away stops its program or browser then. A runner before `KEEP_RUNNING_PROTOCOL` (no `call`) holds
+ * none.
  */
 export async function reconcileHolds(
   deps: Deps & { call: Call | null },
@@ -279,8 +291,24 @@ export async function reconcileHolds(
   const known = new Set(live.map((r) => r.id));
   const stale = [...held].filter((id) => !known.has(id));
   if (!call || stale.length === 0) return;
-  // Ended here meanwhile, or never recorded (the server failed between the computer's answer and its write).
-  for (const holdId of stale) await call(machineId, { op: "keep.end", holdId }).catch(() => undefined);
+  // Ended here meanwhile, or never recorded (the server failed between the computer's answer and its write). A
+  // person's Stop while it was away stops what it held now.
+  const stopped = await deps.db
+    .select({ id: machineHolds.id })
+    .from(machineHolds)
+    .where(
+      and(
+        eq(machineHolds.machineId, machineId),
+        inArray(machineHolds.id, stale),
+        eq(machineHolds.endReason, "stopped_by_person"),
+      ),
+    );
+  const stop = new Set(stopped.map((r) => r.id));
+  for (const holdId of stale) {
+    await call(machineId, { op: "keep.end", holdId, ...(stop.has(holdId) ? { stop: true } : {}) }).catch(
+      () => undefined,
+    );
+  }
 }
 
 /** `keep.ended`: a hold ended on the computer by itself (its program or browser went away, or its time ran out). */

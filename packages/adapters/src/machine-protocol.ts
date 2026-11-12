@@ -2450,8 +2450,8 @@ export type MachineRequest = (
   | { op: "phone.wifi"; action: "list" | "allow" | "forget"; serial?: string }
   /**
    * `KEEP_RUNNING_PROTOCOL`: takes hold `holdId` for the request's agent, or again with these bounds: bound to its
-   * program `pid` (one of its own), to its browser (`browser`, open now), and with `until` (ISO) ending then at the
-   * latest; `until` alone binds it to that time.
+   * program `pid` (one of its own), to its browser (`browser`, open now, always with `until`), and with `until` (ISO)
+   * ending then at the latest; `until` alone binds it to that time.
    */
   | { op: "keep.start"; holdId: string; pid?: number; browser?: boolean; until?: string }
   /** Ends hold `holdId`; with `stop`, what it holds too: its program (SIGTERM, SIGKILL 10 s later) or the browser. */
