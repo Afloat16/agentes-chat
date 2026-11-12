@@ -2,7 +2,7 @@ import { PERMISSION_TOOL, type PubSub } from "@agenteschat/adapters";
 import { and, type Database, type Executor, eq, inArray, isNull, type SQL, schema, sql } from "@agenteschat/db";
 import { linkRunActions, publishMessageActions } from "./agent-actions";
 import { followWork } from "./agent-status";
-import { openApprovalCard, publishApproval } from "./approvals";
+import { openApprovalCard, publishApproval, supersedeApprovals } from "./approvals";
 import { runAuthorityById } from "./authority";
 import type { BrainTool, ToolResult } from "./brains/types";
 import { readableChannelIds } from "./channels";
@@ -727,6 +727,8 @@ export interface PostedPause {
   secrets: SecretRequestRow[];
   /** Cards that took the run's receipts (`message.actions` goes out with them). */
   withReceipts: string[];
+  /** Older requests the new ones replaced (`supersedeApprovals`). */
+  superseded: Approval[];
 }
 
 /** A run's trigger, as its messages and cards read it. */
@@ -788,7 +790,14 @@ export function runMessageMeta(
  * Runs inside the caller's transaction; nothing is published here (`publishPauseCards`).
  */
 export async function postPauseCards(tx: Executor, run: AgentRun, requests: PauseRequests): Promise<PostedPause> {
-  const out: PostedPause = { messages: [], approvals: [], questions: [], secrets: [], withReceipts: [] };
+  const out: PostedPause = {
+    messages: [],
+    approvals: [],
+    questions: [],
+    secrets: [],
+    withReceipts: [],
+    superseded: [],
+  };
   if (requests.approvals.length + requests.questions.length + requests.secretRequestIds.length === 0) return out;
   const trigger = await runTriggerOf(tx, run);
   const extra = runMessageMeta(run, trigger);
@@ -931,6 +940,7 @@ export async function postPauseCards(tx: Executor, run: AgentRun, requests: Paus
       .where(eq(approvals.id, approval.id))
       .returning();
     out.approvals.push(linked ?? approval);
+    out.superseded.push(...(await supersedeApprovals(tx, linked ?? approval)));
   }
   return out;
 }
@@ -951,6 +961,7 @@ export async function publishPauseCards(deps: { db: Database; pubsub?: PubSub },
       if (card.missionId) await notifyMissionApproval({ db, pubsub }, card).catch(() => undefined);
     }
   }
+  for (const old of posted.superseded) await publishApproval({ db, pubsub }, old, "approval.decided").catch(() => {});
   for (const q of posted.questions) {
     await publishQuestion(pubsub, q, "question.asked");
     await notifyQuestion({ db, pubsub } as Parameters<typeof notifyQuestion>[0], q).catch(() => {});
