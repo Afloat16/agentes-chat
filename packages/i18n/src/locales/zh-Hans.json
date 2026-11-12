@@ -4974,6 +4974,7 @@
             "no_token": "{{brand}} 结束时没有显示账号的令牌，请重试。",
             "not_kept": "账号已登录，但 {{computer}} 无法保存登录状态，请重试。"
           },
+          "geminiNotShared": "Gemini 已登录，但 {{computer}} 无法把这个登录共享给所有智能体。请改用 Gemini API 密钥。",
           "duplicate": {
             "claude_code": "Claude 已登录为 {{account}}，这个账号你已经连接过了。要使用其他账号，请在 Claude 的页面上退出登录后重试。",
             "codex": "ChatGPT 已登录为 {{account}}，这个账号你已经连接过了。要使用其他账号，请在 ChatGPT 的页面上退出登录后重试。",

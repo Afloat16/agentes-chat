@@ -5,6 +5,7 @@ import { knownErrorText } from "@agenteschat/client/lib/errors";
 import {
   beginLogin,
   freeDuplicate,
+  geminiNotShared,
   isSignInCode,
   isUrlWithoutCode,
   loginFailureLine,
@@ -359,6 +360,8 @@ function AddAccountFlow({
   const otherEmail = other?.email ?? (hint ? result?.signedInAs : undefined);
   // The computer's own reason is the line only when nothing nearer the person explains it.
   const byCode = !otherEmail && !noAnswer && result?.state !== "expired" && !result?.duplicate;
+  // Trying again would end the same way: no Tentar de novo, the words say what to use instead.
+  const notShared = geminiNotShared(kind, result);
   const why = otherEmail
     ? t(`connectAi.otherAccount.${kind}`, { email: otherEmail, account: hint })
     : noAnswer
@@ -371,12 +374,14 @@ function AddAccountFlow({
             : t(`agentPage.work.brain.add.duplicate.${kind}`, {
                 account: result.duplicate.account?.email ?? result.duplicate.label,
               })
-          : t(failure.key ?? "agentPage.work.brain.add.failed", {
-              brand: plan?.label ?? t(`aiAccounts.connect.${kind}`),
-              computer,
-            });
+          : notShared
+            ? t("agentPage.work.brain.add.geminiNotShared", { computer })
+            : t(failure.key ?? "agentPage.work.brain.add.failed", {
+                brand: plan?.label ?? t(`aiAccounts.connect.${kind}`),
+                computer,
+              });
   // What the provider's own program said, under the line about it.
-  const said = byCode && failure.detail ? result?.message?.trim() || null : null;
+  const said = byCode && !notShared && failure.detail ? result?.message?.trim() || null : null;
 
   const key = code.trim();
   const keyOk = plan ? planKeyFits(plan, key) : key.length > 0;
@@ -622,17 +627,19 @@ function AddAccountFlow({
               {said}
             </Text>
           ) : null}
-          <Button
-            size="sm"
-            variant="secondary"
-            icon="undo"
-            label={t("common.retry")}
-            onPress={() => {
-              // A new login that came back as another account goes; one signed in again stays the person's account.
-              if (other && !again) void api.machines.removeAccount(orgId, machineId, other.id).catch(() => undefined);
-              onRetry();
-            }}
-          />
+          {notShared ? null : (
+            <Button
+              size="sm"
+              variant="secondary"
+              icon="undo"
+              label={t("common.retry")}
+              onPress={() => {
+                // A new login that came back as another account goes; one signed in again stays the person's account.
+                if (other && !again) void api.machines.removeAccount(orgId, machineId, other.id).catch(() => undefined);
+                onRetry();
+              }}
+            />
+          )}
           {other ? (
             <Button
               size="sm"

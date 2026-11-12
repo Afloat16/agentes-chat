@@ -305,6 +305,18 @@ describe("the agent's AI", () => {
     expect(t("connectAi.own.shared")).toBe("A conta que os seus agentes dividem");
   });
 
+  test("a Gemini sign-in the computer can't share with every agent says so and what to use instead, no Tentar de novo", async () => {
+    // The flow is a component the tests can't render: what it wires in, as text.
+    const flow = await Bun.file(new URL("../../src/features/ai/AddAccount.tsx", import.meta.url).pathname).text();
+    expect(flow).toContain("const notShared = geminiNotShared(kind, result);");
+    expect(flow).toMatch(/: notShared\s+\? t\("agentPage\.work\.brain\.add\.geminiNotShared", \{ computer \}\)/);
+    expect(flow).toMatch(/\{notShared \? null : \(\s*<Button[^>]*?label=\{t\("common\.retry"\)\}/s);
+    const t = await translator("pt-BR");
+    expect(t("agentPage.work.brain.add.geminiNotShared", { computer: "MacBook" })).toBe(
+      "O Gemini entrou, mas o MacBook não consegue compartilhar esse login com todos os agentes. Use uma chave de API do Gemini.",
+    );
+  });
+
   test("signing in again sends the account's own email as the hint, from Settings and from Connect an AI", async () => {
     const read = (file: string) => Bun.file(new URL(`../../src/features/ai/${file}`, import.meta.url).pathname).text();
     const settings = await read("AiAccountsScreen.tsx");
@@ -354,7 +366,7 @@ describe("the agent's AI", () => {
       /: t\(failure\.key \?\? "agentPage\.work\.brain\.add\.failed", \{\s+brand: plan\?\.label \?\? t\(/,
     );
     // The CLI's own words only under the two lines they explain, whole and selectable.
-    expect(flow).toContain("const said = byCode && failure.detail ? result?.message?.trim() || null : null;");
+    expect(flow).toContain("const said = byCode && !notShared && failure.detail ? result?.message?.trim() || null : null;");
     expect(flow).toMatch(/<Text variant="small" tone="muted" selectable style=\{\[styles\.said,/);
     expect(flow).not.toMatch(/styles\.said[^>]*numberOfLines/);
     // Canceled is no failure: no line, the sign-in starts over.

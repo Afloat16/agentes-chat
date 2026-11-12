@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 57;
+export const MACHINE_PROTOCOL_VERSION = 58;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -610,6 +610,12 @@ export const IPHONE_WIFI_PROTOCOL = 56;
  * own pause (stored, `runner.state` sent) and keeps `by`, the person who did it, until the next local change.
  */
 export const REMOTE_PAUSE_PROTOCOL = 57;
+/**
+ * From this protocol on, in system mode a Gemini sign-in is made for all of its owner's agents there too (`begin`'s
+ * `shared` for `antigravity`): root's Antigravity CLI keeps the Google sign-in and each turn gets a copy (`agy_auth`
+ * grant). Older runners lend it to one agent.
+ */
+export const SHARED_GEMINI_PROTOCOL = 58;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -1111,7 +1117,10 @@ export const ACCOUNT_LOGIN_FAILURES = [
   "cli_exit",
   /** The CLI finished, but its status says the account isn't signed in (its words in `message`). */
   "not_signed_in_after_login",
-  /** The CLI finished, but its status didn't answer in time. */
+  /**
+   * The CLI finished, but its status didn't answer in time; or a Gemini sign-in for all agents' copy said nothing for
+   * sure (its words, if any, in `message`).
+   */
   "status_unknown",
   /** `claude setup-token` finished without showing its token. */
   "no_token",

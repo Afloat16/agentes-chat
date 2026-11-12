@@ -5148,6 +5148,7 @@
             "no_token": "{{brand}} was klaar zonder het token van het account te tonen. Probeer het opnieuw.",
             "not_kept": "Het account is ingelogd, maar {{computer}} kon de login niet bewaren. Probeer het opnieuw."
           },
+          "geminiNotShared": "Gemini is ingelogd, maar {{computer}} kan die login niet met alle agents delen. Gebruik liever een Gemini-API-sleutel.",
           "duplicate": {
             "claude_code": "Claude is ingelogd als {{account}}, een account dat je al hebt gekoppeld. Wil je een ander gebruiken? Log uit op de pagina van Claude en probeer het opnieuw.",
             "codex": "ChatGPT is ingelogd als {{account}}, een account dat je al hebt gekoppeld. Wil je een ander gebruiken? Log uit op de pagina van ChatGPT en probeer het opnieuw.",

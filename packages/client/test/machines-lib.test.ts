@@ -18,6 +18,7 @@ import {
   foldersOfAgent,
   formatUserCode,
   freeDuplicate,
+  geminiNotShared,
   installCommand,
   isHandheld,
   isPaused,
@@ -338,6 +339,15 @@ describe("connected computers helpers (ADR 0036)", () => {
     expect(freeDuplicate(failed({ label: "Claude Max" }))).toBeNull();
     expect(freeDuplicate({ state: "failed" })).toBeNull();
     expect(freeDuplicate(undefined)).toBeNull();
+  });
+
+  test("a Gemini sign-in the computer couldn't share with every agent: trying again ends the same way", () => {
+    expect(geminiNotShared("antigravity", { state: "failed", code: "not_kept" })).toBe(true);
+    // Claude's token the computer couldn't write, and Gemini's other failures, may pass on another try.
+    expect(geminiNotShared("claude_code", { state: "failed", code: "not_kept" })).toBe(false);
+    expect(geminiNotShared("antigravity", { state: "failed", code: "bad_code" })).toBe(false);
+    expect(geminiNotShared("antigravity", { state: "failed" })).toBe(false);
+    expect(geminiNotShared("antigravity", undefined)).toBe(false);
   });
 
   test("a new sign-in is another account only when its hint named a different email", () => {
