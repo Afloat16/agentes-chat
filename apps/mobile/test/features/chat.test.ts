@@ -808,6 +808,7 @@ describe("an agent's question (ask_user)", () => {
     status: "open",
     answer: null,
     answeredByUserId: null,
+    answeredAt: null,
   };
 
   test("meta.question becomes the card's data; bad shapes are ignored", () => {

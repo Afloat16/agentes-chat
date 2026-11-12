@@ -486,7 +486,7 @@ export function ProposalGroup({ proposalIds }: { proposalIds: string[] }) {
  * it never depends on which composer is on screen.
  */
 export function QuestionCard({ question }: { question: AgentQuestion }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { org, me } = useOrg();
   const api = useApi();
   const dir = useDirectory(org.id);
@@ -557,6 +557,7 @@ export function QuestionCard({ question }: { question: AgentQuestion }) {
             {...TYPED_VALUES}
           />
         ),
+        time: current.answeredAt ? whenAt(t, i18n.language, current.answeredAt) : undefined,
       }
     : undefined;
   // Open: a request card, the choices a list in its body, each with its number key, and "Outra resposta" the list's

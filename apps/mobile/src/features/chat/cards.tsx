@@ -33,7 +33,7 @@ import {
   decisionOutcome,
   requesterDecidesLine,
 } from "@agenteschat/client/lib/approval-words";
-import { nextLabel } from "@agenteschat/client/lib/format";
+import { nextLabel, whenAt } from "@agenteschat/client/lib/format";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import { type ReactNode, useRef, useState } from "react";
@@ -668,7 +668,7 @@ function ApprovalAsk({ approval: a }: { approval: Approval }) {
  * everyone else reads who it waits for, and nothing to press.
  */
 export function QuestionCard({ question }: { question: AgentQuestion }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const api = useApi();
   const orgId = useOrgId();
   const meId = useMeId();
@@ -741,6 +741,7 @@ export function QuestionCard({ question }: { question: AgentQuestion }) {
                 : who
                   ? t("mobile.chat.question.answered", { name: who, answer: said })
                   : t("mobile.chat.question.answeredByYou", { answer: said }),
+          time: q.answeredAt ? whenAt(t, i18n.language, q.answeredAt) : undefined,
         }}
       />
     );
