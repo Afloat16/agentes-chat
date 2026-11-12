@@ -279,7 +279,8 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
     pane(
       "selfhost",
       <Tools />,
-      (el) => el.querySelector("#tool-opencode"),
+      // Every row draws at once; the stored switches come with the workspaces' access, a moment later.
+      (el) => el.querySelector('#tool-claude[aria-checked="true"]'),
       async (el) => {
         const state = (id: string) => el.querySelector(`#tool-${id}`)?.getAttribute("aria-checked");
         const programs = ["claude", "codex", "cursor", "opencode", "grok", "antigravity"];
