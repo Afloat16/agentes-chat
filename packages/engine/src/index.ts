@@ -125,6 +125,7 @@ export * from "./feedback";
 export * from "./feedback-offers";
 export * from "./feedback-tools";
 export * from "./file-pulls";
+export * from "./file-reader";
 export * from "./follow-through";
 export * from "./follows";
 export * from "./gateway";
