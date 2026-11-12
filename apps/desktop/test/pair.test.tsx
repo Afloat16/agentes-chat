@@ -450,8 +450,8 @@ describe("pairing from the app", () => {
         expect(host.window).toBe("welcome");
 
         // Pausing one workspace pauses only its own agents. Every switch waits while another request is pending, and
-        // a click on a disabled one, or one a re-render replaced, does nothing: click whenever it takes clicks and still
-        // shows on, until the pause shows. A second pause is the same pause.
+        // on a slow runner the fake runner's answer can come late or fail (a toast, the switch back on): click whenever
+        // it takes clicks and still shows on, until the pause shows. A second pause is the same pause.
         const horizonte = () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]');
         await until(() => {
           if (on("Horizonte") === "false") return true;
