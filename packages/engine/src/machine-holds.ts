@@ -1,5 +1,6 @@
 import type { MachineReplies, MachineRequest, PubSub, RunnerFrame, RunnerHolds } from "@agenteschat/adapters";
-import { and, type Database, desc, eq, gt, inArray, isNotNull, isNull, lte, type SQL, schema } from "@agenteschat/db";
+import { and, type Database, desc, eq, gt, isNotNull, isNull, lte, type SQL, schema } from "@agenteschat/db";
+import { getAgentCached } from "./agents";
 import { recordAudit } from "./audit";
 import { publishOrgEvent } from "./events";
 
@@ -57,6 +58,12 @@ type Call = <Op extends "keep.start" | "keep.end">(
   machineId: string,
   request: Extract<MachineRequest, { op: Op }>,
 ) => Promise<MachineReplies[Op]>;
+
+/** The hold's agent as requests name it: the computer finds its user by the id, and names a new one after it. */
+async function agentOf(db: Database, row: Pick<HoldRow, "orgId" | "agentId">) {
+  const agent = await getAgentCached(db, row.orgId, row.agentId).catch(() => null);
+  return { id: row.agentId, handle: agent?.handle ?? "agent", ...(agent?.name ? { name: agent.name } : {}) };
+}
 
 /** The apps that show the agent's computer read its holds again (only ids go out). */
 const holdsChanged = (pubsub: PubSub | undefined, row: Pick<HoldRow, "orgId" | "machineId" | "agentId">) =>
@@ -214,7 +221,7 @@ export async function releaseHold(
   try {
     await deps.call(row.machineId, {
       op: "keep.end",
-      agent: { id: row.agentId, handle: "agent" },
+      agent: await agentOf(deps.db, row),
       holdId: row.id,
       ...(how.reason === "stopped_by_person" ? { stop: true } : {}),
     });
@@ -258,7 +265,7 @@ export async function reconcileHolds(
       try {
         await call(machineId, {
           op: "keep.start",
-          agent: { id: row.agentId, handle: "agent" },
+          agent: await agentOf(deps.db, row),
           holdId: row.id,
           until: row.until.toISOString(),
         });
@@ -273,16 +280,7 @@ export async function reconcileHolds(
   const stale = [...held].filter((id) => !known.has(id));
   if (!call || stale.length === 0) return;
   // Ended here meanwhile, or never recorded (the server failed between the computer's answer and its write).
-  const rows = await deps.db
-    .select({ id: machineHolds.id, agentId: machineHolds.agentId })
-    .from(machineHolds)
-    .where(inArray(machineHolds.id, stale));
-  const agentOf = new Map(rows.map((r) => [r.id, r.agentId]));
-  for (const id of stale) {
-    await call(machineId, { op: "keep.end", agent: { id: agentOf.get(id) ?? id, handle: "agent" }, holdId: id }).catch(
-      () => undefined,
-    );
-  }
+  for (const holdId of stale) await call(machineId, { op: "keep.end", holdId }).catch(() => undefined);
 }
 
 /** `keep.ended`: a hold ended on the computer by itself (its program or browser went away, or its time ran out). */
