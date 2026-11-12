@@ -17865,6 +17865,15 @@
       "timeout": "La actualización tardó demasiado.",
       "invalid_data": "{{name}} no pudo poner los datos en este formato."
     },
+    "wait": {
+      "plan": "Esperando a que el plan de {{name}} se renueve {{when}}",
+      "planUnknown": "Esperando a que el plan de {{name}} se renueve",
+      "budget": "Esperando a que el presupuesto de {{name}} se renueve {{when}}",
+      "budgetSoon": "Esperando un momento el presupuesto de {{name}}",
+      "computer": "Esperando la computadora de {{name}}",
+      "busy": "Esperando lugar en la computadora de {{name}}",
+      "provider": "Esperando al proveedor de IA de {{name}}, próximo intento {{when}}"
+    },
     "menu": {
       "label": "Más",
       "open": "Abrir",

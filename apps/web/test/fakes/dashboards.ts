@@ -82,6 +82,7 @@ export function createFakeDashboards(
   log: (method: string, ...args: unknown[]) => void,
   now: () => Date,
   me: () => string | null,
+  agentName: (agentId: string) => string = () => "",
 ): FakeDashboards {
   const at = () => now().toISOString();
   const notFound = (what: "dashboard" | "widget") =>
@@ -185,6 +186,7 @@ export function createFakeDashboards(
     alert: { enabled: false, condition: "" },
     status: "building",
     failure: null,
+    wait: null,
     refreshedAt: null,
     nextRunAt: null,
     routineId: null,
@@ -445,6 +447,22 @@ export function createFakeDashboards(
       refreshWidget: async (orgId, widgetId) => {
         log("dashboards.refreshWidget", orgId, widgetId);
         const { w } = find(widgetId);
+        // As the server: a pause near the limit goes on now for who may let it, any other wait says why it can't go
+        // sooner.
+        if (w.wait?.code === "usage_pause" && !w.wait.canContinue) {
+          throw new ApiError(
+            403,
+            "run.continue_forbidden",
+            "Only who asked, the agent's owner or an admin can continue it",
+          );
+        }
+        if (w.wait && w.wait.code !== "usage_pause") {
+          throw new ApiError(409, "widget.waiting", "Its run waits for its plan, budget, computer or AI provider", {
+            ...w.wait,
+            agentName: agentName(w.agentId),
+          });
+        }
+        w.wait = null;
         w.status = w.spec ? "updating" : "building";
         w.failure = null;
         return clone(w);

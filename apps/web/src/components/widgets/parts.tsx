@@ -1,10 +1,14 @@
-import type { Widget, WidgetFailure, WidgetKind } from "@agenteschat/client";
-import { widgetFailureKey } from "@agenteschat/client";
+import type { Widget, WidgetFailure, WidgetKind, WidgetWait } from "@agenteschat/client";
+import { useDesktopStatus, widgetFailureKey, widgetWaitFix, widgetWaiting, widgetWaitText } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
+import { can } from "@agenteschat/client/lib/permissions";
 import { type AgentColor, Icon, PixelSpinner } from "@agenteschat/ui";
+import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
+import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { useOpenComputer } from "@/components/computer/open";
 import { useOrg } from "@/components/org-context";
 import { colorOf } from "@/components/Sky";
 import { useDirectory } from "@/hooks/useDirectory";
@@ -49,7 +53,9 @@ export function failureText(t: TFunction, failure: WidgetFailure | null, name: s
 
 /**
  * A widget's footer on a board (ADR 0135): who looks after it, when it last updated and how often; while it is built
- * or updated, the agent at it; failed, why, with Resolve (an update asked now).
+ * or updated, the agent at it, or what its run waits for, with Continue now on a pause near the limit (greyed for
+ * anyone but Continuar agora's people) or what ends the wait sooner (`WaitFix`); failed, why, with Resolve (an update
+ * asked now).
  */
 export function WidgetFoot({
   widget,
@@ -63,12 +69,45 @@ export function WidgetFoot({
   name: string;
   color: AgentColor;
   now: number;
-  /** Resolve: run it again (only for whoever may). */
+  /** Resolve, or Continue now on a pause: an update asked now (only for whoever may). */
   onResolve?: () => void;
+  /** An update asked now is on its way. */
   resolving?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const schedule = t(`widgets.schedulesInline.${widget.schedule}`);
+  const waiting = resolving ? null : widgetWaiting(widget, now);
+  if (waiting)
+    return (
+      <span className="wg__wait ac-iconline" role="status">
+        <Icon name="pause" size={14} />
+        <span>
+          {widgetWaitText(t, i18n.language, waiting, name, new Date(now))}{" "}
+          {waiting.code !== "usage_pause" ? (
+            <WaitFix agentId={widget.agentId} wait={waiting} />
+          ) : onResolve ? (
+            <button
+              type="button"
+              className="wg__resolve"
+              disabled={!waiting.canContinue}
+              title={t(
+                !waiting.canContinue
+                  ? "usageCard.forbidden"
+                  : waiting.source === "budget"
+                    ? "usageCard.hintBudget"
+                    : "usageCard.hint",
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onResolve();
+              }}
+            >
+              {t("usageCard.continue")}
+            </button>
+          ) : null}
+        </span>
+      </span>
+    );
   if (widget.status === "building")
     return (
       <>
@@ -118,6 +157,46 @@ export function WidgetFoot({
       )}{" "}
       <span className="wg__dot">·</span> {schedule}
     </span>
+  );
+}
+
+/**
+ * What ends a widget's wait sooner, beside its words, for who may do it (`widgetWaitFix`): the agent's budget or model
+ * on its page, or its computer opened in place for whoever may watch it.
+ */
+function WaitFix({ agentId, wait }: { agentId: string; wait: WidgetWait }) {
+  const { t } = useTranslation();
+  const { org, me } = useOrg();
+  const dir = useDirectory(org.id);
+  const openComputer = useOpenComputer();
+  const owner = dir.anyAgent(agentId)?.ownerUserId === me.user.id;
+  const fix = widgetWaitFix(wait, { admin: can(org, "manage_agents"), owner });
+  const watches = useDesktopStatus(org.id, agentId, { enabled: fix === "openComputer" }).isSuccess;
+  const stop = (e: MouseEvent) => e.stopPropagation();
+  if (fix === "openComputer")
+    return watches ? (
+      <button
+        type="button"
+        className="wg__resolve"
+        onClick={(e) => {
+          stop(e);
+          openComputer(agentId);
+        }}
+      >
+        {t("queue.openComputer")}
+      </button>
+    ) : null;
+  if (!fix) return null;
+  return (
+    <Link
+      to="/org/$orgId/agents/$agentId"
+      params={{ orgId: org.id, agentId }}
+      search={{ tab: "settings", sec: fix === "raiseBudget" ? "budget" : "brain" }}
+      className="wg__resolve"
+      onClick={stop}
+    >
+      {t(`usageCard.${fix}`)}
+    </Link>
   );
 }
 

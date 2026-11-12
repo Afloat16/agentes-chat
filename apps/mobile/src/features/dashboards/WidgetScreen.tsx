@@ -1,5 +1,6 @@
 import {
   useAskWidgetChange,
+  useDesktopStatus,
   useRefreshWidget,
   useRemoveWidget,
   useUpdateWidget,
@@ -7,9 +8,14 @@ import {
   type WidgetDetail,
   type WidgetSchedule,
   type WidgetUpdate,
+  type WidgetWait,
+  widgetCardStatus,
+  widgetWaitFix,
+  widgetWaiting,
 } from "@agenteschat/client";
 import { upcomingAt, whenAt } from "@agenteschat/client/lib/format";
 import { plainInline } from "@agenteschat/client/lib/markdown";
+import { can } from "@agenteschat/client/lib/permissions";
 import { WIDGET_LIMITS, WIDGET_SCHEDULES } from "@agenteschat/ui/widgets/spec";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
@@ -34,9 +40,12 @@ import {
   useToast,
 } from "@/ui";
 import { router } from "@/ui/navigation";
+import { openAgentEdit } from "../agents/AgentEditScreen";
+import { openAgentAi } from "../ai/AgentAiScreen";
+import { openComputer } from "../computer/AgentComputerRow";
 import { boardHref, routineHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
-import { useOrgId, usePullRefresh } from "../shared/hooks";
+import { useDirectory, useMeId, useOrgId, usePullRefresh } from "../shared/hooks";
 import { PushedLargeTitle } from "../shared/PushedLargeTitle";
 import { goBack, PushedHeader, successHaptic } from "../shared/parts";
 import { TextArea } from "../shared/TextArea";
@@ -50,7 +59,8 @@ const HISTORY_SHOWN = 10;
 const CONDITION_MAX = 200;
 
 /**
- * A widget, pushed from its board (ADR 0135): the widget big, why it didn't update (with Resolve), its title (renamed
+ * A widget, pushed from its board (ADR 0135): the widget big, why it didn't update (with Resolve) or what its refresh
+ * waits for (with Continue now on a pause), its title (renamed
  * in place; a person's title is kept: the agent no longer changes it), how it updates
  * (its schedule, picked in place; the alert and its condition; what the agent reads; its routine), the latest updates,
  * "Update now" and the remove; at the bottom, "Ask <agent> for a change" goes to the agent, who redoes it in place.
@@ -97,7 +107,10 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
   const [condition, setCondition] = useState(w.alert.condition);
   const [title, setTitle] = useState(w.title);
   const home = w.dashboard.kind === "home";
-  const busy = w.status === "building" || w.status === "updating";
+  // A refresh that waits stands still: Update now on it goes on now, or says why it can't.
+  const waiting = widgetWaiting(w, words.now);
+  const status = widgetCardStatus(w, words.now);
+  const busy = status === "building" || status === "updating";
   const shown = shownWidgetTitle(w.title, w.kind, (k) => t(k));
   const toggle = (what: "title" | "schedule" | "alert") => {
     // The title field opens with the widget's title as it is now (the agent may have named it meanwhile).
@@ -229,8 +242,32 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
             refreshedAt: w.refreshedAt,
             schedule: w.schedule,
             w: 2,
+            wait: w.wait,
           }}
         />
+        {waiting?.code === "usage_pause" && w.canEdit ? (
+          <View style={styles.failure}>
+            <Text variant="footnote" tone="muted" style={styles.grow}>
+              {t(
+                !waiting.canContinue
+                  ? "usageCard.forbidden"
+                  : waiting.source === "budget"
+                    ? "usageCard.hintBudget"
+                    : "usageCard.hint",
+              )}
+            </Text>
+            <Button
+              size="sm"
+              variant="secondary"
+              label={t("usageCard.continue")}
+              loading={refresh.isPending}
+              disabled={!waiting.canContinue}
+              onPress={updateNow}
+            />
+          </View>
+        ) : waiting ? (
+          <WaitFix agentId={w.agentId} wait={waiting} />
+        ) : null}
         {w.status === "failed" && w.failure ? (
           <View style={styles.failure}>
             <View style={styles.failureLine}>
@@ -411,6 +448,32 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
         ) : null}
       </View>
     </PushedLargeTitle>
+  );
+}
+
+/**
+ * What ends a widget's wait sooner, under it, for who may do it (`widgetWaitFix`): the agent's budget or AI on its
+ * screens, or its computer for whoever may watch it.
+ */
+function WaitFix({ agentId, wait }: { agentId: string; wait: WidgetWait }) {
+  const { t } = useTranslation();
+  const { org, orgId } = useOrg();
+  const dir = useDirectory();
+  const meId = useMeId();
+  const owner = dir.anyAgent(agentId)?.ownerUserId === meId;
+  const fix = widgetWaitFix(wait, { admin: can(org, "manage_agents"), owner });
+  const watches = useDesktopStatus(orgId, agentId, { enabled: fix === "openComputer" }).isSuccess;
+  if (!fix || (fix === "openComputer" && !watches)) return null;
+  const go = fix === "openComputer" ? openComputer : fix === "raiseBudget" ? openAgentEdit : openAgentAi;
+  return (
+    <View style={styles.failure}>
+      <Button
+        size="sm"
+        variant="secondary"
+        label={t(fix === "openComputer" ? "queue.openComputer" : `usageCard.${fix}`)}
+        onPress={() => go(agentId)}
+      />
+    </View>
   );
 }
 

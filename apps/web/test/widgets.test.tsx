@@ -20,6 +20,17 @@ afterEach(() => {
 const click = (el: Element) => act(async () => fireEvent.click(el));
 const ago = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
 const soon = (m: number) => new Date(Date.now() + m * 60_000).toISOString();
+/** A refresh's wait as the server sends it. */
+const waitOf = (over: Partial<NonNullable<Widget["wait"]>>): Widget["wait"] => ({
+  code: "plan_limit",
+  source: "plan",
+  resetsAt: null,
+  scope: null,
+  model: null,
+  since: null,
+  canContinue: false,
+  ...over,
+});
 
 const SALES: WidgetSpec = {
   kind: "kpi",
@@ -155,6 +166,78 @@ describe("My Home as a mural (ADR 0135)", () => {
     expect(widget("Vendas hoje").getAttribute("data-state")).toBe("updating");
     // The last data stays under the sweep while it updates.
     expect(widget("Vendas hoje").querySelector(".wk-num")?.textContent).toBe("R$18.420");
+  });
+
+  test("a refresh that waits says what for and stands still; Update now on it says why it can't go sooner", async () => {
+    const s = setup();
+    Object.assign(s.sales, { status: "updating", wait: waitOf({ resetsAt: soon(90) }) });
+    const { state } = await open(`/org/${ORG_ID}/home`, s);
+    const card = widget("Vendas hoje");
+    expect(card.getAttribute("data-state")).toBe("ok");
+    expect(card.getAttribute("aria-busy")).toBeNull();
+    expect(card.querySelector(".wg__wait")?.textContent).toContain("Esperando o plano de Ada renovar");
+    // Its data as it was, and no Continue now: only time ends a limit.
+    expect(card.querySelector(".wk-num")?.textContent).toBe("R$18.420");
+    expect(within(card).queryByRole("button", { name: "Continuar agora" })).toBeNull();
+    const update = within(card).getByRole("button", { name: "Atualizar agora" });
+    expect(update.hasAttribute("disabled")).toBe(false);
+    await click(update);
+    await settle(3);
+    expect(last(state, "dashboards.refreshWidget")).toEqual([ORG_ID, s.sales.id]);
+    const toasts = [...document.querySelectorAll(".ac-toast")].map((t) => t.textContent ?? "");
+    expect(toasts.some((t) => t.includes("Esperando o plano de Ada renovar"))).toBe(true);
+  });
+
+  test("a refresh paused near its plan's limit: Continue now lets it go on", async () => {
+    const s = setup();
+    const wait = waitOf({ code: "usage_pause", resetsAt: soon(90), canContinue: true });
+    Object.assign(s.sales, { status: "updating", wait });
+    const { state } = await open(`/org/${ORG_ID}/home`, s);
+    await click(within(widget("Vendas hoje")).getByRole("button", { name: "Continuar agora" }));
+    await settle(3);
+    expect(last(state, "dashboards.refreshWidget")).toEqual([ORG_ID, s.sales.id]);
+    expect(widget("Vendas hoje").getAttribute("data-state")).toBe("updating");
+    expect(widget("Vendas hoje").querySelector(".wg__wait")).toBeNull();
+  });
+
+  test("Continue now is greyed for an editor who may not continue it, and says who may", async () => {
+    const s = setup();
+    Object.assign(s.sales, { status: "updating", wait: waitOf({ code: "usage_pause", resetsAt: soon(90) }) });
+    const { state } = await open(`/org/${ORG_ID}/home`, s);
+    const go = within(widget("Vendas hoje")).getByRole("button", { name: "Continuar agora" });
+    expect(go.hasAttribute("disabled")).toBe(true);
+    expect(go.getAttribute("title")).toBe("Só quem pediu, o dono do agente ou um admin pode continuar agora");
+    await click(go);
+    await settle(3);
+    expect(last(state, "dashboards.refreshWidget")).toBeUndefined();
+  });
+
+  test("a limit of its model alone says what it needs, never the plan's reset, with Change model for an admin", async () => {
+    const s = setup();
+    const wait = waitOf({ scope: "region", model: "DeepSeek V4 Pro", resetsAt: soon(90) });
+    Object.assign(s.sales, { status: "updating", wait });
+    await open(`/org/${ORG_ID}/home`, s);
+    const line = widget("Vendas hoje").querySelector(".wg__wait");
+    expect(line?.textContent).toContain("O DeepSeek V4 Pro precisa da região Global ligada no OpenCode");
+    expect(line?.textContent).not.toContain("renovar");
+    const change = within(widget("Vendas hoje")).getByRole("link", { name: "Trocar modelo" });
+    expect(change.getAttribute("href")).toContain(`/agents/${ADA_ID}`);
+    expect(change.getAttribute("href")).toContain("sec=brain");
+  });
+
+  test("in line for its computer: at work at first, then, ten minutes in, it says it waits for room", async () => {
+    const s = setup();
+    Object.assign(s.sales, { status: "updating", wait: waitOf({ code: "busy", source: null, since: ago(2) }) });
+    await open(`/org/${ORG_ID}/home`, s);
+    expect(widget("Vendas hoje").getAttribute("data-state")).toBe("updating");
+    expect(widget("Vendas hoje").querySelector(".wg__wait")).toBeNull();
+    cleanup();
+    Object.assign(s.sales, { wait: waitOf({ code: "busy", source: null, since: ago(11) }) });
+    await open(`/org/${ORG_ID}/home`, s);
+    expect(widget("Vendas hoje").getAttribute("data-state")).toBe("ok");
+    expect(widget("Vendas hoje").querySelector(".wg__wait")?.textContent).toContain(
+      "Esperando vaga no computador de Ada",
+    );
   });
 
   test("Organize: size, grip arrows and drag, each saved at once; Remove takes it off", async () => {

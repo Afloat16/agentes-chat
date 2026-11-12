@@ -12,6 +12,8 @@ import {
   useWidgetSuggestions,
   WIDGET_STILL_MS,
   widgetStepWords,
+  widgetWaiting,
+  widgetWaitText,
 } from "@agenteschat/client";
 import { canTalk } from "@agenteschat/client/lib/audience";
 import { errorText } from "@agenteschat/client/lib/errors";
@@ -80,10 +82,10 @@ export interface NewWidgetDialogProps {
  * to follow is written in its body (with the agent's suggestions), the agent's face in its footer opens the list of
  * agents, the schedule beside it how often it updates, the bell in its head the alert, S/M/L its size; its title is
  * edited in place. Test has the agent build it there with real data (a draft), and only a draft that worked for what
- * is asked now can be created; while it builds the card says the step its agent is in and for how long, and Stop
- * ends the build with the ask as it was written; after the test the ask folds into one line that opens it again. Or
- * a chart an agent already sent in the chat is pinned. Under the card, the board it goes on. Used by a board's page
- * and by Home.
+ * is asked now can be created; while it builds the card says the step its agent is in (or what its run waits for)
+ * and for how long, and Stop ends the build with the ask as it was written; after the test the ask folds into one
+ * line that opens it again. Or a chart an agent already sent in the chat is pinned. Under the card, the board it goes
+ * on. Used by a board's page and by Home.
  */
 export function NewWidgetDialog({ orgId, open, onClose, dashboardId, tab = "ask" }: NewWidgetDialogProps) {
   const { t } = useTranslation();
@@ -232,6 +234,8 @@ function NewWidgetBody({
     mode === "ask" ? phaseOf(sending, draft, draftId, draftId !== null && testedFor !== askKey) : "none";
   const clock = useNow(phase === "testing" ? 1000 : false);
   const elapsed = phase === "testing" ? Math.max(0, clock - since) : 0;
+  // The test's run waits (its plan, its budget, its computer): the card says what for instead of a build at work.
+  const waiting = phase === "testing" && draft ? widgetWaiting(draft, clock) : null;
   const stepWords = widgetStepWords(t, detail?.id === draftId ? detail?.step : null, i18n.language);
   // The draft's data, still shown (dimmed) once the ask changed since the test.
   const built = draft?.status === "ok" && draft.spec ? draft : null;
@@ -642,15 +646,19 @@ function NewWidgetBody({
       )
     ) : phase === "testing" ? (
       <div className="wk-build nw-build">
-        <BuildingDither color={color} />
+        <BuildingDither color={color} still={waiting !== null} />
         <div className="nw-build__words">
           <p className="nw-build__step" role="status">
-            <span key={stepWords}>{stepWords}</span>
+            {waiting ? (
+              <span>{widgetWaitText(t, i18n.language, waiting, name, new Date(clock))}</span>
+            ) : (
+              <span key={stepWords}>{stepWords}</span>
+            )}
           </p>
           <div
             className="nw-build__still"
-            data-on={elapsed >= WIDGET_STILL_MS || undefined}
-            aria-hidden={elapsed < WIDGET_STILL_MS}
+            data-on={(!waiting && elapsed >= WIDGET_STILL_MS) || undefined}
+            aria-hidden={waiting !== null || elapsed < WIDGET_STILL_MS}
           >
             <p>{t("dashboards.newWidget.stillWorking")}</p>
           </div>
@@ -725,8 +733,10 @@ function NewWidgetBody({
   const foot: ReactNode =
     phase === "testing" ? (
       <>
-        <PixelSpinner size={14} color={color} />
-        <span className="wg__when nwc-building">{t("dashboards.newWidget.buildingFoot", { name })}</span>
+        {waiting ? <Icon name="pause" size={14} /> : <PixelSpinner size={14} color={color} />}
+        <span className="wg__when nwc-building">
+          {waiting ? name : t("dashboards.newWidget.buildingFoot", { name })}
+        </span>
         <span className="nwc-clock" role="timer">
           {taskClock(elapsed)}
         </span>
@@ -775,10 +785,10 @@ function NewWidgetBody({
       data-size={size}
       data-w={layout.w}
       data-h={layout.h}
-      data-state={phase === "testing" ? "building" : "ok"}
+      data-state={phase === "testing" && !waiting ? "building" : "ok"}
       data-stale={(stale && !editing) || undefined}
       aria-label={title.trim() || t("dashboards.newWidget.title")}
-      aria-busy={phase === "testing" || undefined}
+      aria-busy={(phase === "testing" && !waiting) || undefined}
       style={widgetTileVars(color, dark)}
     >
       <span className="wg__sweep" aria-hidden="true" />
@@ -875,8 +885,8 @@ function NewWidgetBody({
         {t("dashboards.newWidget.pin")}
       </Button>
     ) : phase === "testing" ? (
-      <Button variant="primary" disabled loading>
-        {t("dashboards.newWidget.testingShort")}
+      <Button variant="primary" disabled loading={!waiting}>
+        {waiting ? t("dashboards.newWidget.create") : t("dashboards.newWidget.testingShort")}
       </Button>
     ) : stale ? (
       <Button variant="primary" icon="refresh" disabled={!canTest} onClick={runTest}>

@@ -18483,6 +18483,15 @@
       "timeout": "Aktualizacja trwała za długo.",
       "invalid_data": "Agentowi {{name}} nie udało się ułożyć danych w tym formacie."
     },
+    "wait": {
+      "plan": "Czeka na odnowienie planu agenta {{name}} {{when}}",
+      "planUnknown": "Czeka na odnowienie planu agenta {{name}}",
+      "budget": "Czeka na odnowienie budżetu agenta {{name}} {{when}}",
+      "budgetSoon": "Czeka chwilę na budżet agenta {{name}}",
+      "computer": "Czeka na komputer agenta {{name}}",
+      "busy": "Czeka na miejsce na komputerze agenta {{name}}",
+      "provider": "Czeka na dostawcę AI agenta {{name}}, następna próba {{when}}"
+    },
     "menu": {
       "label": "Więcej",
       "open": "Otwórz",
