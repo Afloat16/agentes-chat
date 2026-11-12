@@ -1,10 +1,11 @@
 import { LOCKED_BRAIN_PROTOCOL } from "@agenteschat/adapters";
-import { and, type Database, type Executor, eq, isNotNull, isNull, type SQL, schema, sql } from "@agenteschat/db";
+import { and, type Database, type Executor, eq, isNull, type SQL, schema, sql } from "@agenteschat/db";
 import { serverText } from "@agenteschat/i18n";
 import { appLocale } from "@agenteschat/i18n/locale";
 import { AUTO_MODEL } from "@agenteschat/providers";
 import type { Agent } from "./agents";
 import { recordAudit } from "./audit";
+import { accountablePerson, runAuthorityById } from "./authority";
 import type { BrainUnavailability, ModelScope } from "./brains/select";
 import { ForbiddenError } from "./errors";
 import type { MachineStatus } from "./machine-hub";
@@ -242,25 +243,36 @@ export async function scrubRightHandReply(
 }
 
 /**
- * Who a run of the right hand reads for (ADR 0137 §13): the person behind it, in their own DM with it. Null anywhere
- * else, since others read a reply in a channel, and for any other agent.
+ * Who a run of the right hand reads for (ADR 0137 §13): the person behind it, in their own DM with it. A routine's own
+ * run there reads for its creator: only they set what it does (`updateRoutine`), and only they read what it says.
+ * Null anywhere else, since others read a reply in a channel, and for any other agent.
  */
 export async function rightHandReader(
   ctx: Pick<ToolContext, "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId"> & { db: Executor },
 ): Promise<string | null> {
   if (!(await isRightHandId(ctx.db, ctx.orgId, ctx.agentId))) return null;
-  const person = await personBehindCall(ctx);
-  return person && (await readsAlone(ctx.db, ctx.channelId, person)) ? person : null;
+  const person =
+    (await personBehindCall(ctx)) ??
+    (ctx.runId ? accountablePerson(await runAuthorityById(ctx.db, ctx.orgId, ctx.runId)) : null);
+  return person && (await readsAlone(ctx.db, ctx.channelId, person, ctx.agentId)) ? person : null;
 }
 
-/** Whether `person` is the one person who reads `channelId`: their own DM with an agent, where nobody else reads a reply. */
-export async function readsAlone(db: Executor, channelId: string, person: string) {
-  const people = await db
-    .select({ userId: channelMembers.userId })
+/**
+ * Whether `person` is the one person who reads `channelId`: their own DM with an agent, where nobody else reads a
+ * reply. With `agentId`, no other agent is in it either.
+ */
+export async function readsAlone(db: Executor, channelId: string, person: string, agentId?: string) {
+  const members = await db
+    .select({ userId: channelMembers.userId, agentId: channelMembers.agentId })
     .from(channelMembers)
     .innerJoin(channels, eq(channels.id, channelMembers.channelId))
-    .where(and(eq(channelMembers.channelId, channelId), eq(channels.kind, "dm"), isNotNull(channelMembers.userId)));
-  return people.length === 1 && people[0]?.userId === person;
+    .where(and(eq(channelMembers.channelId, channelId), eq(channels.kind, "dm")));
+  const people = members.filter((m) => m.userId);
+  return (
+    people.length === 1 &&
+    people[0]?.userId === person &&
+    (!agentId || members.every((m) => !m.agentId || m.agentId === agentId))
+  );
 }
 
 /** The right hand anywhere but a person's own DM with it: what only reads or writes for that person stays out. */

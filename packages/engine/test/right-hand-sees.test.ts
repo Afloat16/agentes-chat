@@ -5,6 +5,7 @@ import {
   addChannelMember,
   addRunStep,
   buildRunContext,
+  consolidateOrg,
   createAgent,
   createAskAgentToolSource,
   createChannel,
@@ -450,11 +451,69 @@ describe("what it remembers is each person's, kept in their own DM with it", () 
     const mine = await lodiRun(f.owner.id, "sempre me responda em inglês");
     const saved = await use(contextTools(), mine, "remember", { content: "Responder em inglês", kind: "rule" });
     expect(saved.isError).toBeFalsy();
-    expect((await items())[0]).toMatchObject({ kind: "rule", scopeType: "person", scopeId: f.owner.id });
+    // Its channel is that DM, so only its giver finds it in a list of what the agent keeps.
+    const [rule] = await items();
+    expect(rule).toMatchObject({
+      kind: "rule",
+      scopeType: "person",
+      scopeId: f.owner.id,
+      channelIds: [mine.channelId],
+    });
     const rules = (personId: string) =>
       rulesForPerson(f.db, { orgId: f.org.id, agentId: lodi.id, ownerUserId: lodi.ownerUserId, personId });
     expect((await rules(f.owner.id)).map((r) => r.content)).toEqual(["Responder em inglês"]);
     expect(await rules(bia.id)).toEqual([]);
+
+    // One agent answers the whole workspace: thirty older rules of other people never push this person's out.
+    if (!rule) throw new Error("no rule");
+    await f.db.insert(schema.contextItems).values(
+      Array.from({ length: 30 }, (_, i) => ({
+        ...rule,
+        id: crypto.randomUUID(),
+        scopeId: bia.id,
+        createdById: bia.id,
+        content: `Regra ${i} da Bia`,
+        subjectKey: `regra bia ${i}`,
+        createdAt: new Date(rule.createdAt.getTime() - (i + 1) * 60_000),
+      })),
+    );
+    expect((await rules(f.owner.id)).map((r) => r.content)).toEqual(["Responder em inglês"]);
+    expect(await rules(bia.id)).toHaveLength(30);
+  });
+
+  test("two people who say the same thing each keep theirs, when saved and after the nightly merge", async () => {
+    f = await setup({ rightHand: true });
+    const bia = await addMember(f.db, f.org.id, "member", "Bia");
+    for (const [person, kind] of [
+      [f.owner.id, "preference"],
+      [bia.id, "preference"],
+      [f.owner.id, "rule"],
+      [bia.id, "rule"],
+    ] as const) {
+      const run = await lodiRun(person, "sempre me responda em português");
+      const saved = await use(contextTools(), run, "remember", { content: "Responder sempre em português", kind });
+      expect(saved.isError).toBeFalsy();
+    }
+    const active = async () =>
+      (await items())
+        .filter((i) => i.status === "active")
+        .map((i) => `${i.kind}:${i.scopeId}`)
+        .sort();
+    const each = [`preference:${bia.id}`, `preference:${f.owner.id}`, `rule:${bia.id}`, `rule:${f.owner.id}`].sort();
+    expect(await active()).toEqual(each);
+    await consolidateOrg(f.context, f.org.id);
+    expect(await active()).toEqual(each);
+  });
+
+  test("asked in a channel to keep something for the whole team, it saves it: nothing of one person's is in it", async () => {
+    f = await setup({ rightHand: true });
+    const away = await lodiRun(f.owner.id, "@lodi pessoal, lembrem que o lançamento é em dezembro", f.general.id);
+    const out = await use(contextTools(), away, "remember", {
+      content: "O lançamento é em dezembro",
+      for: "team",
+    });
+    expect(out.content).not.toContain("only in a person's own private conversation with you");
+    expect(out.isError).toBeFalsy();
   });
 });
 

@@ -2496,7 +2496,7 @@ export const en = {
     profile: {
       how: "How it works",
       permissions: "Acts with your permissions",
-      private: "Talks only with you in your DM",
+      private: "Keeps what is yours in your DM",
       channels: "Replies in channels when called",
       model: "Model",
       message: "Message",
@@ -12828,6 +12828,7 @@ export const en = {
       needsReconnect: "Agents can't use it until it's reconnected.",
       ownerOnly: "Only {{name}} can give access: they connected this mailbox.",
       ownerOnlyUnknown: "Only the person who connected this mailbox can give access.",
+      onlyYou: "{{name}} uses this mailbox only for you, in your DM.",
       remove: "Remove access",
       removed: "{{name}} no longer has access to {{address}}.",
       saveError: {

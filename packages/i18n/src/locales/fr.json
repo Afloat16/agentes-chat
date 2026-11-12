@@ -2446,7 +2446,7 @@
     "profile": {
       "how": "Comment ça marche",
       "permissions": "Agit avec vos permissions",
-      "private": "Ne parle qu’avec vous dans votre DM",
+      "private": "Ce qui est à vous reste dans votre DM",
       "channels": "Répond dans les canaux quand on l’appelle",
       "model": "Modèle",
       "message": "Message",
@@ -13279,6 +13279,7 @@
       "needsReconnect": "Les agents ne peuvent pas l'utiliser tant qu'elle n'est pas reconnectée.",
       "ownerOnly": "Seule la personne {{name}} peut donner l'accès : c'est elle qui a connecté cette boîte mail.",
       "ownerOnlyUnknown": "Seule la personne qui a connecté cette boîte mail peut donner l'accès.",
+      "onlyYou": "{{name}} n'utilise cette boîte mail que pour vous, dans votre DM.",
       "remove": "Retirer l'accès",
       "removed": "{{name}} n'a plus accès à {{address}}.",
       "saveError": {

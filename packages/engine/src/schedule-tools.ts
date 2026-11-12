@@ -10,6 +10,7 @@ import { getChannelCached } from "./context";
 import { schedulesOf } from "./context/summaries";
 import { ForbiddenError } from "./errors";
 import { cutText, stringsOf } from "./format";
+import { watchesFor } from "./mail/watches";
 import { isRightHand } from "./right-hand";
 import { ROUTINE_REPORT, routineReportOf } from "./routine-brief";
 import { HOOK_METHODS, routineHookKeys } from "./routine-hooks";
@@ -354,14 +355,25 @@ export const MAILBOX_NOT_GIVEN_TEXT = `You can't read any of this workspace's ma
 async function mailboxOf(ctx: ToolContext, raw: string) {
   const { mailAccounts } = schema;
   const accounts = await ctx.db
-    .select({ id: mailAccounts.id, address: mailAccounts.address, label: mailAccounts.label })
+    .select({
+      id: mailAccounts.id,
+      address: mailAccounts.address,
+      label: mailAccounts.label,
+      createdByUserId: mailAccounts.createdByUserId,
+    })
     .from(mailAccounts)
     .where(
       and(eq(mailAccounts.orgId, ctx.orgId), isNull(mailAccounts.revokedAt), sql`${mailAccounts.status} <> 'pending'`),
     );
   const readable: typeof accounts = [];
+  // The right hand watches a mailbox only for who connected it (`watchesFor`), and names no one else's to who asks.
+  const creator = await requesterOf(ctx);
   for (const a of accounts) {
-    if (await hasScope(ctx.db, ctx.orgId, ctx.agentId, a.id, "mail:read")) readable.push(a);
+    if (
+      (await hasScope(ctx.db, ctx.orgId, ctx.agentId, a.id, "mail:read")) &&
+      (await watchesFor(ctx.db, ctx.orgId, ctx.agentId, a, creator))
+    )
+      readable.push(a);
   }
   const name = raw.trim();
   const want = name.toLowerCase();

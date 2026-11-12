@@ -806,6 +806,8 @@ function Profile({ id }: { id: string }) {
               />
             </GroupedList>
             {details ? accessView : null}
+            {/* What it keeps for the viewer and the rules they gave it: theirs to see and take back. */}
+            {memoryView}
           </View>
         ) : details ? (
           <>

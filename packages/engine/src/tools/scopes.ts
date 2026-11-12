@@ -403,10 +403,12 @@ export async function setAgentScopes(
 ) {
   await requirePermission(db, actorId, orgId, "manage_agents");
   const [agent] = await db
-    .select({ id: agents.id })
+    .select({ id: agents.id, builtin: agents.builtin })
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId), isNull(agents.deletedAt)));
   if (!agent) throw new NotFoundError("Agent not found");
+  // What is off for the right hand is kept tool by tool (`setAgentAccess`), which a plain list of scopes can't carry.
+  if (isRightHand(agent)) throw new ValidationError("Set what it may use on its page, under what it can use");
   // Mail grants stay as they are (the mail API manages them); any sent back here are ignored.
   const mail = await mailConnectionIds(
     db,

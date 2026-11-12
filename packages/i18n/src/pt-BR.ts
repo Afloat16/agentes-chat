@@ -2406,7 +2406,7 @@ export const ptBR = {
     profile: {
       how: "Como funciona",
       permissions: "Age com as suas permissões",
-      private: "Conversa só com você na sua DM",
+      private: "Guarda o que é seu na sua DM",
       channels: "Responde nos canais quando chamado",
       model: "Modelo",
       message: "Mensagem",
@@ -12865,6 +12865,7 @@ export const ptBR = {
       needsReconnect: "Os agentes só usam depois de reconectar.",
       ownerOnly: "Só {{name}} pode dar acesso: foi quem conectou esta caixa.",
       ownerOnlyUnknown: "Só quem conectou esta caixa pode dar acesso.",
+      onlyYou: "{{name}} só usa esta caixa para você, na sua DM.",
       remove: "Remover acesso",
       removed: "{{name}} não tem mais acesso a {{address}}.",
       saveError: {

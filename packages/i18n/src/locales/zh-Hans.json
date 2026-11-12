@@ -2275,7 +2275,7 @@
     "profile": {
       "how": "运作方式",
       "permissions": "以你的权限行事",
-      "private": "只在你的私信里和你交谈",
+      "private": "属于你的内容只留在你的私信里",
       "channels": "被呼叫时在频道里回复",
       "model": "模型",
       "message": "发消息",
@@ -12410,6 +12410,7 @@
       "needsReconnect": "重新连接之前，智能体无法使用它。",
       "ownerOnly": "只有 {{name}} 可以授予访问权限：这个邮箱是对方连接的。",
       "ownerOnlyUnknown": "只有连接这个邮箱的人可以授予访问权限。",
+      "onlyYou": "{{name}} 只在你的私信里为你使用这个邮箱。",
       "remove": "移除访问权限",
       "removed": "{{name}} 不再能访问 {{address}}。",
       "saveError": {

@@ -2358,7 +2358,7 @@
     "profile": {
       "how": "Zo werkt het",
       "permissions": "Handelt met jouw rechten",
-      "private": "Praat alleen met jou in je DM",
+      "private": "Wat van jou is, blijft in je DM",
       "channels": "Antwoordt in kanalen als je hem roept",
       "model": "Model",
       "message": "Bericht",
@@ -12893,6 +12893,7 @@
       "needsReconnect": "Agents kunnen hem niet gebruiken tot hij opnieuw is gekoppeld.",
       "ownerOnly": "Alleen {{name}} kan toegang geven: die persoon heeft deze mailbox gekoppeld.",
       "ownerOnlyUnknown": "Alleen de persoon die deze mailbox heeft gekoppeld kan toegang geven.",
+      "onlyYou": "{{name}} gebruikt deze mailbox alleen voor jou, in je DM.",
       "remove": "Toegang intrekken",
       "removed": "{{name}} heeft geen toegang meer tot {{address}}.",
       "saveError": {

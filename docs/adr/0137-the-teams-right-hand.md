@@ -438,7 +438,9 @@ threw its rows away. The owner decided it has every tool an agent can have, by d
 - **Its page shows and changes them.** `/agents/{id}` has two tabs for it: its settings (as before) and the agent
   page's own "Ferramentas e acesso" (apps, mailboxes, databases, built-in areas, approvals, skills), saved with the
   same bar. Its built-in scopes are held in code, so an area an admin turns off there is kept as denials of its tools
-  (`setAgentAccess`), lifted when the area is turned on again. A save made from its grants as a list
+  (`setAgentAccess`), lifted when the area is turned on again; that covers the tools with no row of their own on
+  the page (`UNLISTED_TOOLS`). Its setup cards are its job and have no area to turn off. The older save of scopes
+  as a list (`setAgentScopes`) is refused for it, since it can't carry those denials. A save made from its grants as a list
   (`replaceableGrants`, an access proposal) carries the scopes it holds in code, so it turns none of them off. On the
   phone its profile lists what it may use, and a mailbox's owner gives or takes it there. Changing an app's level for
   it from the phone is not there yet.
@@ -460,22 +462,34 @@ threw its rows away. The owner decided it has every tool an agent can have, by d
 - **The locked turn on a plan** (`RIGHT_HAND_TURN`, §4) is unchanged: the CLI gets our bridge and nothing else. Every
   tool above is ours, served by the Tool Gateway on the server (the web tools fetch from the server, with no browser
   to fall back on), so the lock stops none of them. Long work is the same run going on in the background. Its turn on
-  a plan is no longer told of a computer's own tools, which it never had there.
+  a plan is no longer told of a computer's own tools, which it never had there: not by the turn-end judge's means
+  either, and its "What you can do" names no browser, no `git_clone` (left off its list) and no way to type a Vault
+  login or pass a key (`describeCapabilities` with `noComputer`).
 - **One person's things stay that person's.** One row answers everyone, each acting as the person behind the run, so
-  what is one person's is used only in that person's own DM with it (`rightHandReader`, null anywhere else):
+  what is one person's is used only in that person's own DM with it (`rightHandReader`, null anywhere else). That DM
+  has one person and no agent but the right hand. A routine's own run there counts as its creator: only a routine's
+  creator sets what it does, and only they read that DM. A run a routine's report or work woke counts as nobody.
   - **The Vault** (`vaultPersonOfRun`): a personal item for its owner, a team item for its audience, only in that DM.
-    Called in a channel, or by a routine, it reaches only team items open to everyone and shared with it.
+    Called in a channel, or by a routine that reports anywhere else, it reaches only team items open to everyone and
+    shared with it.
   - **A mailbox** (`mailboxUserCheck`): only for the person who connected it, in that DM. Being in its audience opens
-    no one else's mailbox, since its audience is everyone, and a mail watch (nobody behind the run) opens none.
+    no one else's mailbox, since its audience is everyone. Its routine watches a mailbox only when the routine's
+    creator connected it (`watchesFor`, checked when the routine is saved and again as mail arrives, so a routine
+    taken over by someone else gets none), and `create_routine` names only that person's mailboxes. The mailbox's
+    row for it tells its owner that it uses the mailbox only for them (`mail.agent.onlyYou`).
   - **Tasks** (§13): `comment_issue` joins `list_issues`, `create_issue` and `update_issue`: in that DM, on a task
     the person sees.
   - **Memory**: `remember`, `update_memory`, `forget` and `save_how_to` work only in that DM, and what they save is
-    that person's alone with fields that already existed (`scope_type = 'person'`, `scope_id` the person, and for
-    anything but a rule that DM as its only channel): read back in that DM for that person, never in another
-    person's DM or in a channel, and changed or forgotten only by them there. A rule it keeps holds in the runs of the person who gave it and nobody else's,
-    whoever decides its approvals (`rulesForPerson`). `for: "team"` still asks to share with every agent, as the
-    person's own choice. Reflection and learning still skip its conversations (§2), so nothing is written for the
-    team from what people tell it.
+    that person's alone with fields that already existed (`scope_type = 'person'`, `scope_id` the person, and that
+    DM as its only channel, a rule's too): read back in that DM for that person, never in another person's DM or in
+    a channel, and changed or forgotten only by them there. A rule it keeps holds in the runs of the person who gave
+    it and nobody else's, whoever decides its approvals (`rulesForPerson`, which filters by person before its cut of
+    30). The DM as a rule's channel keeps it out of the lists of who reviews memory. One person's items never merge
+    into another's, when saved (`findCandidates`) or in the nightly pass (`consolidateOrg`). `for: "team"` still
+    asks to share with every agent, as the person's own choice, and is the one save it makes in a channel.
+    Reflection and learning still skip its conversations (§2), so nothing is written for the team from what people
+    tell it. Its page has a Memory tab on the web and the same lists on the phone, which show each viewer only
+    their own.
   - **The Drive, the wiki and context** already read as the person behind the run (§12, §13), and writing follows
     the same rule.
 - **Shared by nature, as for any agent open to everyone:** a connected app or a database is the workspace's, with one

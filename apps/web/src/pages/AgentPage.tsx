@@ -106,7 +106,7 @@ const sortIds = (ids: string[]) => [...ids].sort();
 const MAIN_TABS: AgentTab[] = ["overview", "instructions", "memory", "activity"];
 const MORE_TABS = AGENT_TABS.filter((id) => !MAIN_TABS.includes(id) && id !== "advanced");
 const PERSONAL_TABS: readonly AgentTab[] = PERSONAL_AGENT_TABS;
-const RIGHT_HAND_TABS: readonly AgentTab[] = ["settings", "access"];
+const RIGHT_HAND_TABS: readonly AgentTab[] = ["settings", "access", "memory"];
 const MORE_ICON: Partial<Record<AgentTab, IconName>> = {
   access: "plug",
   files: "file",
@@ -192,10 +192,11 @@ function AgentProfile({
   const viewer: Viewer = admin ? "admin" : agent.ownerUserId === me.user.id ? "owner" : "member";
   // A personal workspace's page (ADR 0159 §3): a shorter bar, the hard parts in Advanced; every address still works.
   const personal = isPersonal(org);
-  // The right hand's page (ADR 0137): its settings and what it may use. Its instructions are the product's, and it
-  // is in no channel and on no computer, so the other tabs have nothing of its own.
+  // The right hand's page (ADR 0137): its settings, what it may use and what it keeps for the viewer. Its
+  // instructions are the product's, and it is in no channel and on no computer, so the other tabs have nothing of
+  // its own.
   const rightHand = isRightHand(agent);
-  const view = rightHand ? (tab === "access" ? "access" : "settings") : shownAgentTab(tab, section, personal);
+  const view = rightHand ? (RIGHT_HAND_TABS.includes(tab) ? tab : "settings") : shownAgentTab(tab, section, personal);
   const models = useModels();
   const detail = useAgentDetail(org.id, agent.id);
   const settings = useSettings(org.id);
@@ -323,6 +324,8 @@ function AgentProfile({
     // sections are; the apps' levels stay in "Can use".
     const advanced =
       personal &&
+      // The right hand's page has no Advanced: all of what it may use is on one tab.
+      !rightHand &&
       (field === "skills" || (field === "levels" && resourceById.get(resource ?? "")?.kind !== "connector"));
     const base = {
       key,
@@ -755,7 +758,13 @@ function AgentProfile({
               {null}
             </Tabs>
           </div>
-          {view === "access" ? <AccessTab /> : <RightHandSettingsSection agent={agent} />}
+          {view === "access" ? (
+            <AccessTab />
+          ) : view === "memory" ? (
+            <MemoryTab item={item} />
+          ) : (
+            <RightHandSettingsSection agent={agent} />
+          )}
           <SaveBar saving={saving} onSave={() => void save()} onDiscard={discard} onJump={(c) => goTo(c.tab, c.sec)} />
         </div>
       ) : (

@@ -611,7 +611,8 @@ export function createContextToolSource(deps: ContextDeps): ToolSource {
       },
       async execute(input, ctx) {
         try {
-          const kept = await rightHandKeeps(ctx);
+          // What is kept for the whole team holds nothing of one person's: the right hand saves it where it was said.
+          const kept = input.for === "team" ? { person: null } : await rightHandKeeps(ctx);
           if ("refused" in kept) return { content: kept.refused, isError: true };
           const content = str(input.content);
           // A run that read outside content saves no rule pointing somewhere no person here wrote (ADR 0117): a
@@ -675,7 +676,8 @@ export function createContextToolSource(deps: ContextDeps): ToolSource {
               sourceIds: [ctx.triggerMessageId],
               // A rule about the agent's own conduct holds in every conversation: no channel keeps it out of a run.
               // Only when a person said it. What the right hand keeps for a person stays in their DM with it.
-              channelIds: (rule || (input.everywhere === true && !kept.person)) && said ? [] : [ctx.channelId],
+              // Its rule too: it holds by its giver, not by channel (`rulesForPerson`), and lists only to who reads there.
+              channelIds: (rule || input.everywhere === true) && !kept.person && said ? [] : [ctx.channelId],
               trust: said ? "high" : trust,
               evidence: said
                 ? [

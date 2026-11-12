@@ -1,4 +1,4 @@
-import { and, type Executor, eq, isNull, schema } from "@agenteschat/db";
+import { and, type Executor, eq, isNull, ne, or, schema } from "@agenteschat/db";
 import { decidesAgentApprovals } from "../approval-rules";
 import { type AuthorityRun, type RunAuthority, runAuthority } from "../authority";
 import { caches, rulesPresenceKey } from "../cache";
@@ -56,7 +56,15 @@ export async function rulesForPerson(
     })
     .from(contextItems)
     .leftJoin(users, eq(users.id, contextItems.createdById))
-    .where(activeRulesOf(input.orgId, input.agentId))
+    .where(
+      and(
+        activeRulesOf(input.orgId, input.agentId),
+        // A rule kept for one person alone (the right hand's, ADR 0137) holds in that person's runs, whoever decides
+        // approvals. Filtered before the cut: one agent answers the whole workspace, and other people's rules would
+        // fill it.
+        or(ne(contextItems.scopeType, "person"), eq(contextItems.createdById, input.personId ?? "")),
+      ),
+    )
     .orderBy(contextItems.createdAt)
     .limit(30);
   const givers = [...new Set(rows.map((r) => r.by ?? ""))];
@@ -68,8 +76,7 @@ export async function rulesForPerson(
       ),
     ),
   );
-  // A rule kept for one person alone (the right hand's, ADR 0137) holds in that person's runs, whoever decides approvals.
-  return rows.filter((r) => (r.scopeType === "person" ? r.by === input.personId : holds.get(r.by ?? "")));
+  return rows.filter((r) => r.scopeType === "person" || holds.get(r.by ?? ""));
 }
 
 /** "# Rules people gave you" for a run, or "" when none holds in it. */

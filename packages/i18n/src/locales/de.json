@@ -2359,7 +2359,7 @@
     "profile": {
       "how": "So funktioniert es",
       "permissions": "Handelt mit deinen Berechtigungen",
-      "private": "Spricht nur mit dir in deiner DM",
+      "private": "Behält, was dir gehört, in deiner DM",
       "channels": "Antwortet in Kanälen, wenn man ihn ruft",
       "model": "Modell",
       "message": "Nachricht",
@@ -12831,6 +12831,7 @@
       "needsReconnect": "Agenten können es erst nutzen, wenn es neu verbunden ist.",
       "ownerOnly": "Nur {{name}} kann Zugriff geben: Diese Person hat das Postfach verbunden.",
       "ownerOnlyUnknown": "Nur die Person, die dieses Postfach verbunden hat, kann Zugriff geben.",
+      "onlyYou": "{{name}} nutzt dieses Postfach nur für dich, in deiner DM.",
       "remove": "Zugriff entfernen",
       "removed": "{{name}} hat keinen Zugriff mehr auf {{address}}.",
       "saveError": {

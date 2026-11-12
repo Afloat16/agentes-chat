@@ -5859,7 +5859,7 @@
     "value": "Acts with your permissions"
   },
   "rightHand.profile.private": {
-    "value": "Talks only with you in your DM"
+    "value": "Keeps what is yours in your DM"
   },
   "rightHand.profile.channels": {
     "value": "Replies in channels when called"
@@ -31005,6 +31005,9 @@
   },
   "mail.agent.ownerOnlyUnknown": {
     "value": "Only the person who connected this mailbox can give access."
+  },
+  "mail.agent.onlyYou": {
+    "value": "{{name}} uses this mailbox only for you, in your DM."
   },
   "mail.agent.remove": {
     "value": "Remove access"

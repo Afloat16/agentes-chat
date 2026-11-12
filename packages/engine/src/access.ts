@@ -92,6 +92,17 @@ export const BUILTIN_TOOLS: Record<string, string[]> = {
   [DESKTOP_SCOPE]: Object.keys(DESKTOP_TOOL_INFO),
 };
 
+/**
+ * Tools a built-in scope carries with no row of their own on the access page: turned off with their scope.
+ */
+const UNLISTED_TOOLS: Record<string, string[]> = {
+  "context:read": ["read_conversation"],
+  "schedule:write": ["delete_routine", "run_routine_now"],
+};
+
+/** Setting the workspace up is the right hand's job (ADR 0137): never an area to turn off, so its page has no row for it. */
+const RIGHT_HAND_ALWAYS = "setup:write";
+
 export interface ToolRef {
   connectionId: string | null;
   name: string;
@@ -414,14 +425,17 @@ function builtinInfo(name: string, scope: string): Omit<AccessTool, "state"> {
   };
 }
 
-/** `noComputer`: the right hand's tree, which leaves out what only a computer of its own would give it. */
+/**
+ * `rightHand`: its tree, which leaves out what only a computer of its own would give it and the setup tools it
+ * always has.
+ */
 function treeFor(
   granted: Set<string>,
   catalog: Awaited<ReturnType<typeof orgToolCatalog>>,
-  noComputer = false,
+  rightHand = false,
 ): AccessTree {
   const builtins: AccessScope[] = Object.entries(BUILTIN_TOOLS)
-    .filter(([scope]) => !(noComputer && NOT_IN_ALL.has(scope)))
+    .filter(([scope]) => !(rightHand && (NOT_IN_ALL.has(scope) || scope === RIGHT_HAND_ALWAYS)))
     .map(([scope, names]) => ({
       scope,
       label: scope === "" ? "Ask the person" : (BUILTIN_SCOPES[scope]?.label ?? scope),
@@ -526,8 +540,8 @@ export async function setAgentAccess(
   // turned off tool by tool, and a later save that names the scope again lifts it.
   if (isRightHand(agent)) {
     const wanted = new Set(rows.map((r) => grantKey(r.connectionId, r.scope)));
-    for (const scope of RIGHT_HAND_GRANTS)
-      for (const name of BUILTIN_TOOLS[scope] ?? [])
+    for (const scope of RIGHT_HAND_GRANTS.filter((s) => s !== RIGHT_HAND_ALWAYS))
+      for (const name of [...(BUILTIN_TOOLS[scope] ?? []), ...(UNLISTED_TOOLS[scope] ?? [])])
         if (toolAccess(wanted, { name, scope }) === "off")
           rows.push({ connectionId: null, scope: toolDenyScope(name) });
   }

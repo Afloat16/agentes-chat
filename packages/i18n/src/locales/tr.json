@@ -2355,7 +2355,7 @@
     "profile": {
       "how": "Nasıl çalışır",
       "permissions": "Senin izinlerinle çalışır",
-      "private": "DM'inde yalnızca seninle konuşur",
+      "private": "Sana ait olan DM'inde kalır",
       "channels": "Çağrıldığında kanallarda yanıt verir",
       "model": "Model",
       "message": "Mesaj",
@@ -12766,6 +12766,7 @@
       "needsReconnect": "Yeniden bağlanana kadar ajanlar kullanamaz.",
       "ownerOnly": "Erişimi yalnızca {{name}} verebilir: bu posta kutusunu o bağladı.",
       "ownerOnlyUnknown": "Erişimi yalnızca bu posta kutusunu bağlayan kişi verebilir.",
+      "onlyYou": "{{name}} bu posta kutusunu yalnızca senin için, DM'inde kullanır.",
       "remove": "Erişimi kaldır",
       "removed": "{{name}} artık {{address}} adresine erişemiyor.",
       "saveError": {

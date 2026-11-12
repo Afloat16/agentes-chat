@@ -2441,7 +2441,7 @@
     "profile": {
       "how": "Cómo funciona",
       "permissions": "Actúa con tus permisos",
-      "private": "Habla solo contigo en tu DM",
+      "private": "Lo que es tuyo se queda en tu DM",
       "channels": "Responde en los canales cuando lo llaman",
       "model": "Modelo",
       "message": "Mensaje",
@@ -13208,6 +13208,7 @@
       "needsReconnect": "Los agentes no pueden usarlo hasta que se reconecte.",
       "ownerOnly": "Solo {{name}} puede dar acceso: conectó este buzón.",
       "ownerOnlyUnknown": "Solo la persona que conectó este buzón puede dar acceso.",
+      "onlyYou": "{{name}} usa este buzón solo para ti, en tu DM.",
       "remove": "Quitar acceso",
       "removed": "{{name}} ya no tiene acceso a {{address}}.",
       "saveError": {

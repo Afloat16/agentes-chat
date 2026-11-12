@@ -2441,7 +2441,7 @@
     "profile": {
       "how": "Come funziona",
       "permissions": "Agisce con i tuoi permessi",
-      "private": "Parla solo con te nella tua DM",
+      "private": "Ciò che è tuo resta nella tua DM",
       "channels": "Risponde nei canali quando lo chiamano",
       "model": "Modello",
       "message": "Messaggio",
@@ -13289,6 +13289,7 @@
       "needsReconnect": "Gli agenti non possono usarla finché non viene ricollegata.",
       "ownerOnly": "Solo {{name}} può dare l'accesso: ha collegato questa casella.",
       "ownerOnlyUnknown": "Solo la persona che ha collegato questa casella può dare l'accesso.",
+      "onlyYou": "{{name}} usa questa casella solo per te, nella tua DM.",
       "remove": "Rimuovi accesso",
       "removed": "{{name}} non ha più accesso a {{address}}.",
       "saveError": {

@@ -2150,7 +2150,9 @@ async function executeRunInner(
         choices: choicesApply && tools.some((t) => t.name === ASK_CHOICES_TOOL),
         // "What you can do" names the loaded groups: it waits for the judge.
         capabilities: Promise.resolve(judging).then(() =>
-          [describeCapabilities(tools, pending), browsers, repositories].filter(Boolean).join("\n\n"),
+          [describeCapabilities(tools, pending, isRightHand(agent)), browsers, repositories]
+            .filter(Boolean)
+            .join("\n\n"),
         ),
         skills: skillList,
         // Granted: `find_agent` is on demand (token-trim B3), and "# Your team" stays.
@@ -2845,7 +2847,8 @@ async function executeRunInner(
     const gather = async () => {
       const names = new Set([...granted, ...tools].map((x) => x.name));
       const own =
-        plan.kind === "model"
+        // The right hand's turn is locked (`RIGHT_HAND_TURN`): a nudge toward shell or files would get it killed.
+        plan.kind === "model" || isRightHand(agent)
           ? []
           : // The web is ours on every brain (`web_search`, `web_fetch`, in `turnMeans`).
             ["your computer's own tools: shell and files"];

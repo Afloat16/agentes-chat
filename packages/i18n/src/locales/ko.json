@@ -2276,7 +2276,7 @@
     "profile": {
       "how": "작동 방식",
       "permissions": "당신의 권한으로 일해요",
-      "private": "당신의 DM에서 당신하고만 이야기해요",
+      "private": "당신의 것은 당신의 DM 안에서만 다뤄요",
       "channels": "부르면 채널에서 답해요",
       "model": "모델",
       "message": "메시지",
@@ -12342,6 +12342,7 @@
       "needsReconnect": "다시 연결하기 전까지 에이전트가 사용할 수 없어요.",
       "ownerOnly": "접근 권한은 이 메일함을 연결한 {{name}} 님만 줄 수 있어요.",
       "ownerOnlyUnknown": "접근 권한은 이 메일함을 연결한 사람만 줄 수 있어요.",
+      "onlyYou": "{{name}}은(는) 이 메일함을 당신의 DM에서 당신을 위해서만 써요.",
       "remove": "접근 권한 삭제",
       "removed": "{{name}}은(는) 이제 {{address}}에 접근할 수 없어요.",
       "saveError": {
