@@ -249,7 +249,8 @@ export interface HandlerContext {
   /**
    * A brain turn found no room: closes one idle warm CLI on this computer (any agent's in system mode), least
    * recently used first, `spare` (the waiting turn's own session, `brainKey`) last, never one mid-turn or
-   * holding the agent's work; false when none could close.
+   * holding the agent's work; with none left, an agent's browser idle for `BROWSER_RECLAIM_IDLE_MS`; false when
+   * nothing could close.
    */
   reclaimBrains?: (spare: string) => Promise<boolean>;
   /** Whether the session `spare` (`brainKey`) has an open CLI: a turn on it takes no new process's memory. */
@@ -1653,7 +1654,7 @@ export class RequestRunner {
   }
 
   /**
-   * No room for a turn: idle warm CLIs close, one at a time, until there is, for up to `RECLAIM_MS`. Not where
+   * No room for a turn: idle warm CLIs, then idle browsers, close one at a time until there is, for up to `RECLAIM_MS`. Not where
    * memory isn't known: room there is a count of turns, which closing idle CLIs doesn't change.
    */
   private async reclaim(

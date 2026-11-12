@@ -7,7 +7,7 @@ import { CONTROL_PROTOCOL_VERSION, type ControlEvent, type ControlOut } from "@a
 import { configPath, readStoredConfig, type StoredConfig, writeConfig } from "../../runner/config";
 import type { Dial, Socket, SocketHandlers } from "../../runner/connection";
 import { EXIT_LOCKED, type RunControlOptions, runControl } from "../../runner/control";
-import { RunnerDaemon } from "../../runner/daemon";
+import { DEFAULT_LIMITS, RunnerDaemon } from "../../runner/daemon";
 import { RUNNER_VERSION } from "../../runner/errors";
 import { ORG_LOGO_MAX_BYTES, orgLogoPath } from "../../runner/org-logo";
 import type { FetchFn } from "../../runner/pairing";
@@ -612,8 +612,8 @@ test("folders, tools and settings from the app: system folders refused, everythi
     name: "box",
     maxConcurrentTasks: 3,
     taskMaxSeconds: 14400,
-    brainIdleMinutes: 3,
-    brainMaxProcesses: 1,
+    brainIdleMinutes: DEFAULT_LIMITS.brainIdleMinutes,
+    brainMaxProcesses: DEFAULT_LIMITS.brainMaxProcesses,
     workspace: expect.any(String),
     managedBy: "desktop",
   });
