@@ -7,15 +7,19 @@
   yet"), ADR 0057 (§2: an OS user per id the server sends, not only per agent), ADR 0169 (§9: a seat has its
   containers service)
 - Code: `packages/db/src/schema/agents.ts` (`right_hand_seats`), `packages/db/src/schema/runtime.ts`
-  (`machine_tasks.scope_id`), migration `0255_right_hand_seats`, `packages/engine/src/right-hand-seats.ts` (`seatOf`,
-  `seatPerson`, `machineScope`, `viewerScope`, `toolMachineId`, `seatState`, `screenKey`),
-  `packages/engine/src/machine-hub.ts` (`outgoing`, `isLockedTurn`, `agentsChanged`, `MachineStatus.mode`),
-  `packages/engine/src/machines.ts` (`machineAgents`, `deletedAgentIds`, `machineViews`, `computerDriving`),
-  `packages/engine/src/sandbox.ts` (`withConnectedMachine`), `machine-tasks.ts` (`taskScope`), `git/machine.ts`,
-  `git/proxy.ts`, `browser/tools.ts`, `browser/status.ts`, `browser/handoff.ts` (`screenAccess`), `browser/live.ts`,
-  `desktop.ts` (`desktopTarget`), `desktop/tools.ts`, `desktop/status.ts`, `right-hand-prompt.ts` (`rightHandTools`),
-  `right-hand.ts` (`RIGHT_HAND_COMPUTER_GRANTS`), `organizations.ts` (`removeSeat` on leaving)
-- Tests: `packages/engine/test/right-hand-computer.test.ts`
+  (`machine_tasks.scope_id`), `packages/db/src/schema/browser.ts` (`browser_handoffs.seat_user_id`), migrations
+  `0255_right_hand_seats` and `0256_handoff_seat`, `packages/engine/src/right-hand-seats.ts` (`seatOf`, `seatPerson`,
+  `machineScope`, `viewerScope`, `toolMachineId`, `seatState`, `screenPersonOf`, `seatScopes`, `seatLive`,
+  `screenKey`), `packages/engine/src/machine-hub.ts` (`outgoing`, `isLockedTurn`, `agentsChanged`,
+  `MachineStatus.mode`), `packages/engine/src/machines.ts` (`machineAgents`, `deletedAgentIds`, `machineViews`,
+  `computerDriving`), `packages/engine/src/sandbox.ts` (`withConnectedMachine`), `machine-tasks.ts` (`taskScope`),
+  `git/machine.ts`, `git/proxy.ts`, `browser/tools.ts`, `browser/status.ts`, `browser/handoff.ts` (`screenAccess`,
+  `ofScreen`, `openHandoffOf`, `startTakeover`), `browser/live.ts`, `desktop.ts` (`desktopTarget`, `streamAccess`,
+  `createDesktopControl`), `desktop/tools.ts`, `desktop/status.ts`, `standing.ts` (`agentHold`), `cancel.ts`
+  (`stopOrgWork`), `tools/gateway.ts` and `right-hand.ts` (`RIGHT_HAND_NOT_OFFERED`, `RIGHT_HAND_COMPUTER_GRANTS`),
+  `right-hand-prompt.ts` (`rightHandTools`), `organizations.ts` (`removeSeat` on leaving),
+  `apps/server/runner/agent-users.ts` (`sweepAgent`)
+- Tests: `packages/engine/test/right-hand-computer.test.ts`, `packages/engine/test/right-hand-screens.test.ts`
 
 ## Context
 
@@ -35,8 +39,10 @@ it gets `ag-<first 8 of the seat id>`: its own OS user, home (0700), worker, sli
 sign-ins, by the machinery every agent already has. The runner learns nothing new.
 
 The id is stored, not derived from the agent's and the person's ids: the runner names a user from the first 8 letters
-and digits of an id, so anything that starts with the agent's id would give everyone the same user; a clash can be
-answered with a new row; and the computer must be able to list seats and hear which are gone.
+and digits of an id, so anything that starts with the agent's id would give everyone the same user; and the computer
+must be able to list seats and hear which are gone. A new seat's id is drawn again until its first 8 are no agent's
+and no seat's, gone ones included (`newSeatId`): a computer never frees a user's name, and a clash there would leave
+the person with no seat.
 
 ### 2. The agent's own id never reaches a computer, but for its locked turn
 
@@ -44,7 +50,8 @@ Every request to a computer goes out through one function of the hub (`outgoing`
 replicas and for a task's resume). There, a request whose agent is the right hand's own row is refused
 (`not_allowed`) unless it is its locked chat turn or what follows one: `brain.turn` with `permissions.mode: "chat"`,
 `brain.steer`, `brain.route` (`isLockedTurn`). So a call site that still builds a request from the agent's id fails
-loudly and sends nothing, instead of putting every member in one shared home.
+loudly and sends nothing, instead of putting every member in one shared home. The check fails closed: when the
+agent can't be read (the database is away), nothing is sent.
 
 ### 3. Who gets a seat
 
@@ -56,8 +63,16 @@ loudly and sends nothing, instead of putting every member in one shared home.
 - **A person's own request** (watching, taking control, a terminal, the screen's state and picture) reaches the seat of
   whoever asks, through one function (`viewerScope`, called by `desktopTarget`). It takes who asks and never whose
   seat, so no route can name another person's. On the right hand, the checks of who may watch and drive
-  (`screenAccess`, `computerDriving`) let every member through to their own seat and nobody to another's, admins
+  (`screenAccess`, `computerDriving`) let a member through to their own seat and nobody to another's, admins
   included: an admin who opens it sees their own.
+- **What narrows it.** The same switches as any agent's computer. A person needs the role key that gives them their
+  own agents' computers (`own_computers`, on by default for everyone; `own_browsers` for its browser), so an admin
+  who takes it from a role takes that role's seats too. The terminal needs the right hand's `sandbox:run` grant and
+  the workspace's switch for commands, the desktop its `desktop:use` grant: turned off on its page, nobody gets that
+  half, whatever their roles.
+- **Asking is not opening.** The screen's state and picture never make a seat (`viewerScope` with `make` off): a
+  person who only opens its conversation or its page leaves nothing on the computer. Opening a stream, taking
+  control or a run's first request makes it.
 - **Where.** Only on the workspace's own computer (managed, else the server's own: `workspaceHomeId`), and only when
   it says `mode: "system"`. Anywhere else a seat would be a folder, not a user, so there is none: a computer a person
   brought, a phone's host and a computer that runs every agent as one user are refused with their own lines.
@@ -71,7 +86,11 @@ account is signed in (ADR 0137 §1). The tools read its computer through `toolMa
 Commands and files (`withConnectedMachine`, so `run_code`, the file tools, uploads, pulls and skill scripts),
 background tasks (`machine_tasks.scope_id` keeps the seat for the task's later status, output, cancel and resume:
 `taskScope`), `git_clone` and its proxy credential, the browser tools, the desktop tools, a Vault key or a made
-password (sealed to the seat's id, which is what its worker opens with) and a person's streams.
+password (sealed to the seat's id, which is what its worker opens with), a person's streams, and the screen a
+control stream is screened by (`Stream.scope`).
+
+Its browser runs on the seat's desktop (`browserOnDesktop` reads the workspace's own computer for it), so the person
+sees the same Chrome their right hand drives.
 
 What the server remembers of a screen between calls is kept per seat too: the look memory of the browser and desktop
 tools (`screenKey`) and the desktop's recent picture.
@@ -107,25 +126,62 @@ time, so the workspace's plan could not be lent to every seat.
 
 "# Your tools" has three wordings (`rightHandTools`, by `seatState`): with a seat, that this conversation has a
 computer that is this person's own place; in a channel or a run nobody asked for, that it has one only in a person's
-private conversation; with no computer of the workspace's own in system mode, the earlier "no computer yet". "What you
+private conversation; with no computer of the workspace's own in system mode, or with every tool of a computer turned
+off for it, that it has none here. With a seat it is also told that its browser shows on its desktop, that the person
+can take control there and is asked there (`desktop_ask_person`), and that the shared folder is everyone's. "What you
 can do" keeps naming no browser, clone or typed login only when the run has no seat.
+
+### 9. Handoffs are per seat
+
+A person takes control of their own seat's desktop, and the right hand asks a person onto it (`desktop_ask_person`),
+like any agent's. Each seat is another screen, so a handoff of the right hand carries whose seat it is
+(`browser_handoffs.seat_user_id`, null for every other agent) and one is open per screen, not per agent: two people
+hold their own at once.
+
+- Every read of an agent's handoffs goes through one condition (`ofScreen`): for the right hand it takes a person
+  and matches only that person's rows, and a caller that names nobody gets nothing. A person's request names
+  themselves; a run's tool names the person whose seat it uses (`screenPersonOf`). So one person's take-over never
+  hides another's screen, pauses another's run, moves into another's conversation or makes another's run read its
+  screen again.
+- A handoff reached by its id (read, take, done, cancel) is refused in the one access check (`screenAccess`) unless
+  it is the asker's own seat's, an admin's included.
+- The desktops' control on each server follows the seat too: a change names its person, and only that person's
+  streams switch between watching and control.
+- Its browser has no handoff of its own. A take-over of it is refused (`requireBrowserControl`) and
+  `browser_ask_person` is not offered: the window is on the seat's desktop, and both happen there.
+
+### 10. What stops it
+
+- **A hold.** A computer knows a seat by the seat's id, so the hold read for a request (`agentHold`) follows a seat
+  to the right hand: held, none of its seats takes new work. Stopping its work (`stopOrgWork`) ends every seat's
+  desktop.
+- **A person who leaves.** The frame's `deleted` list names their seat, and the runner kills every process of that
+  OS user (`sweepAgent`), so nothing they left running in a terminal outlives their membership. A task of theirs
+  the computer cut is not started again (`seatLive`).
 
 ## What is not in this change
 
-- **No live view or take-over of its browser.** One view per agent goes to everyone watching, and the right hand's
-  browser is a different one per person: `watch` answers "unavailable" for it. Its desktop shows each person their own.
-  `browser_ask_person` and the browser's own hand-off still send the agent's id and are refused by the hub.
-- **One open hand-off per agent.** While one person controls their seat's desktop, another's view of theirs reads
-  "someone is in control". Nothing of the first person's screen is shown.
-- **Folders granted on a computer**, **missions** and **devices people brought** are not for it: the first two send
-  the agent's id (refused), the third is refused by name.
-- **`claude` and `codex` background tasks** need a sign-in the seat does not have. Shell tasks run.
+- **No live view of its browser apart from its desktop.** One view per agent goes to everyone watching, and the right
+  hand's browser is a different one per person: `watch` answers "unavailable" for it. The seat's desktop shows it.
+- **Folders granted on a computer**, **missions** and **devices people brought** are not for it: the first two would
+  send the agent's id, so their tools are not offered to it (`RIGHT_HAND_NOT_OFFERED`); the third is refused by name.
+- **`claude` and `codex` background tasks** need a sign-in the seat does not have: `start_task` says so and what to
+  do instead. Shell tasks run.
+- **Work in the background** (`work_in_background`) and a routine's own run act with a routine's authority, so they
+  get no seat.
+- **The shared folder is not closed to seats.** See "Consequences". Closing it needs the runner to tell a seat's user
+  from an agent's (a new field, so a protocol version), and is an open decision.
 
 ## Consequences
 
 - One Linux user, and possibly a Chrome and a desktop, per member, sharing the agents' memory. Users are never removed
   from a computer (ADR 0057), so a departed member's home stays on disk with its worker stopped.
-- The shared folder joins every user, so two seats, and a seat and an agent, can exchange files there.
+- The shared folder joins every user, so two seats, and a seat and an agent, can exchange files there, and a member
+  with a terminal reads and writes what agents leave in it. Its prompt says the folder is everyone's and to put
+  nothing of the person's there unless they ask; the page's line claims only what holds (who may watch and control).
+- A member's name is in the OS user's description ("Lodi (Ana)"), which every user of that computer can read. They
+  are members of one workspace, who see each other's names anyway, and the computer's own lists need to tell seats
+  apart.
 - In their own DM a run reads web pages and files while it can act as that person on their seat. Outside content
   marks the run as before (ADR 0117).
 - On a plan every command goes through the server.
@@ -134,5 +190,6 @@ can do" keeps naming no browser, clone or typed login only when the run has no s
 
 Nothing here was run on a real system-mode computer. The checks are listed with the change's hand-over: two seats get
 two users with 0700 homes that cannot read each other's files, processes or browser profiles; a plan's chat turn still
-runs as the thinking user and its tool call lands in the asker's seat; a removed member's worker and containers stop;
+runs as the thinking user and its tool call lands in the asker's seat; a person takes control of their own seat's
+desktop while another watches theirs; a removed member's processes are killed and their worker and containers stop;
 a single-user runner is refused cleanly.

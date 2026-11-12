@@ -1236,6 +1236,14 @@ Chrome is missing. Since its agents run as the
 person who connected it, a computer leaves the organization with them when they leave, are removed or
 delete their account; one installed with `--system` is the team's and stays.
 
+**Lodi's computer.** Lodi, the built-in agent every member talks to, works on the workspace's own computer (the
+server's own, set up with `--system`), where each person gets a place of their own: a separate user with its
+own files, browser, desktop and sign-ins, which only that person can watch or take control of, from Lodi's
+page. A computer that runs every agent as one user (the simple mode, a Mac, a computer a person connected)
+can't keep people's places apart, so Lodi has no computer there, and its page says so. Turn its commands,
+browser or desktop off for everyone on its page, under what it can use. The computer's shared folder is
+still shared: every agent and every person's Lodi reads and writes it.
+
 **What an agent reaches on its computer (`--system`).** Each agent reaches the local ports its own
 processes open (any port, port 0 included, on 127.0.0.1, ::1 or the computer's own addresses), and
 nobody else's: another agent's listeners refuse it at once, so two agents can run dev servers, test
