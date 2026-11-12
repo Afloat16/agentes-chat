@@ -161,8 +161,9 @@ export function useConsultById(channelId: string, id: string | undefined): RunCo
  * (`tell_agent`): the asker's face and name, ⇄, the consulted agent's (several fold into stacked faces, "Atlas e
  * mais 2"), then how long it took, or while it runs "perguntando 42 s", or "não respondeu". Never what they said: in a
  * conversation (a channel, a DM, a thread, a task's) a click opens the two agents' conversation in a dialog; inside
- * that dialog, and for an old question with no id of its own, the question and the answer open under the row. The same row stands for an answer whose reply
- * is farther up or not here, and for a hand-off by direct message on a reach line.
+ * that dialog, and for an old question with no id of its own, the question and the answer open under the row. The
+ * same row stands for an answer whose reply is farther up or not here, and for a hand-off by direct message on a
+ * reach line.
  */
 export function ConsultPairRow({ askerId, items }: { askerId: string; items: readonly ConsultPairItem[] }) {
   const { t, i18n } = useTranslation();

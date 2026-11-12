@@ -433,6 +433,9 @@ describe("the agents' receipt line under a person's message", () => {
     const faces = { faces: true, bubbles: false };
     expect(markRowId(rows, "c", faces)).toBe("c");
     expect(markRowId(rows, "c", { faces: false, bubbles: true })).toBe("c");
+    // A bubble look's grouped row with no words has no bubble to wear it: its turn's name line does.
+    const wordless = rows.map((r) => (r.message?.id === "c" ? { ...r, message: message({ id: "c", body: "" }) } : r));
+    expect(markRowId(wordless, "c", { faces: false, bubbles: true })).toBe("a");
     expect(markRowId(rows, "a", faces)).toBe("a");
     const bare = { faces: false, bubbles: false };
     expect(markRowId(rows, "c", bare)).toBe("a");

@@ -187,7 +187,8 @@ export function markLabel(
 
 /**
  * The row that wears a receipt's mark: its own message's, a grouped one in its face's place or its bubble's corner.
- * Only rows with neither (no faces, no bubbles) hand it to the name line of the turn they end.
+ * A grouped row with neither (no faces, and no bubble: no faces in another look, or no words) hands it to the name
+ * line of the turn it ends.
  */
 export function markRowId(
   rows: readonly { kind: string; message?: Message; grouped?: boolean }[],
@@ -196,7 +197,9 @@ export function markRowId(
 ): string | null {
   let at = rows.findIndex((r) => r.kind === "message" && r.message?.id === messageId);
   if (at < 0) return null;
-  if (!look.faces && !look.bubbles) while (at > 0 && rows[at]?.grouped && rows[at - 1]?.kind === "message") at--;
+  const m = rows[at]?.message;
+  const bubbled = look.bubbles && Boolean(m?.body) && !m?.meta?.choiceReply;
+  if (!look.faces && !bubbled) while (at > 0 && rows[at]?.grouped && rows[at - 1]?.kind === "message") at--;
   return rows[at]?.message?.id ?? null;
 }
 
