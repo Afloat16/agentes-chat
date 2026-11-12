@@ -4017,7 +4017,7 @@
     "value": "Notifications on in this browser"
   },
   "webPushAsk.failed": {
-    "value": "Couldn't turn on notifications. Try again in Settings › Notifications."
+    "value": "Couldn't turn on notifications in this browser."
   },
   "webPushAsk.someone": {
     "value": "An agent"
@@ -6776,7 +6776,7 @@
     "value": "Add an API key"
   },
   "connectAi.toolOff.text": {
-    "value": "{{computer}} is connected, but {{program}} is switched off on it. For safety, it can only be turned on at the computer itself."
+    "value": "{{computer}} is connected, but {{program}} is switched off on it. Only whoever connected the computer turns it on."
   },
   "connectAi.toolOff.where": {
     "value": "On {{computer}}"
@@ -6798,6 +6798,12 @@
   },
   "connectAi.toolOff.here": {
     "value": "Turn on <b>{{program}}</b> under <b>Tools</b>."
+  },
+  "connectAi.toolOff.oneClick": {
+    "value": "<b>{{program}}</b> is off on this computer."
+  },
+  "connectAi.toolOff.oneClickOther": {
+    "value": "<b>{{program}}</b> is off on {{name}}'s computer."
   },
   "connectAi.toolOff.waiting": {
     "value": "Waiting for you to turn it on. This screen changes by itself."
@@ -23920,6 +23926,9 @@
   "voice.blockedMac": {
     "value": "The microphone is blocked. On a Mac: System Settings › Privacy › Microphone."
   },
+  "voice.openMacSettings": {
+    "value": "Open Mac Settings"
+  },
   "voice.blockedWeb": {
     "value": "The microphone is blocked. Allow it from the lock next to the site's address."
   },
@@ -26526,6 +26535,9 @@
   },
   "brain.reasons.tool_offLinux": {
     "value": "{{program}} is turned off on {{computer}}. Turn it on there, in the agentes.chat app or with {{command}}."
+  },
+  "brain.reasons.tool_offOne": {
+    "value": "{{program}} is turned off on {{computer}}."
   },
   "brain.reasons.not_installed": {
     "value": "{{program}} isn't installed on {{computer}}."
@@ -32401,6 +32413,12 @@
   "errors.machine.pausePast": {
     "value": "Choose a time in the future."
   },
+  "errors.machine.notOwner": {
+    "value": "Only whoever connected this computer turns its tools on. Ask them."
+  },
+  "errors.machine.askSelf": {
+    "value": "It's your computer: turn it on with the button."
+  },
   "errors.machine.accountMethodUnsupported": {
     "value": "This computer can't connect Claude this way yet. Update the agentes.chat program on it, or use an API key."
   },
@@ -32715,6 +32733,51 @@
   },
   "machines.pausedHint": {
     "value": "Paused on the computer itself by whoever connected it."
+  },
+  "machines.oneClick.tools.claude": {
+    "value": "Claude Code"
+  },
+  "machines.oneClick.tools.codex": {
+    "value": "Codex"
+  },
+  "machines.oneClick.tools.cursor": {
+    "value": "Cursor"
+  },
+  "machines.oneClick.tools.opencode": {
+    "value": "OpenCode"
+  },
+  "machines.oneClick.tools.grok": {
+    "value": "Grok Build"
+  },
+  "machines.oneClick.tools.antigravity": {
+    "value": "Antigravity CLI"
+  },
+  "machines.oneClick.tools.commands": {
+    "value": "commands"
+  },
+  "machines.oneClick.tools.browser": {
+    "value": "the browser"
+  },
+  "machines.oneClick.tools.desktop": {
+    "value": "the screen"
+  },
+  "machines.oneClick.tools.terminal": {
+    "value": "the terminal"
+  },
+  "machines.oneClick.allow": {
+    "value": "Turn on {{tool}}"
+  },
+  "machines.oneClick.ask": {
+    "value": "Ask {{name}}"
+  },
+  "machines.oneClick.asked": {
+    "value": "Asked. {{name}} gets a button to turn it on."
+  },
+  "machines.oneClick.done": {
+    "value": "On at {{machine}}."
+  },
+  "machines.oneClick.outdated": {
+    "value": "Update the agentes.chat app on {{machine}} to turn it on from here."
   },
   "machines.remotePause.button": {
     "value": "Pause"
@@ -33138,6 +33201,12 @@
   "machines.access.off": {
     "value": "Off"
   },
+  "machines.access.enable": {
+    "value": "Turn on"
+  },
+  "machines.access.enableLabel": {
+    "value": "Turn on {{tool}}"
+  },
   "machines.access.disable": {
     "value": "Turn off"
   },
@@ -33148,7 +33217,7 @@
     "value": "Turn off {{tool}}?"
   },
   "machines.access.disableText": {
-    "value": "Agents stop using {{tool}} on this computer. To turn it back on, only on the computer itself."
+    "value": "Agents stop using {{tool}} on this computer. To turn it back on: on the computer itself, or here by whoever connected it."
   },
   "machines.access.disabled": {
     "value": "{{tool}} turned off."
@@ -34535,6 +34604,9 @@
   },
   "devices.notice.waiting": {
     "value": "<b>{{who}}</b> is waiting for <b>{{deviceName}}</b>"
+  },
+  "devices.notice.toolRequest": {
+    "value": "<b>{{who}}</b> asks you to turn on {{tool}} on your <b>{{deviceName}}</b>"
   },
   "devices.notice.once": {
     "value": "Allow once"
@@ -39872,6 +39944,42 @@
   "browser.profiles.controlSub": {
     "value": "Browser profile · you're in control · the agents wait"
   },
+  "browser.profiles.controlSubOn": {
+    "value": "On {{machine}} · you're in control · the agents wait"
+  },
+  "browser.profiles.loginTitle": {
+    "value": "Sign in to the {{name}} profile"
+  },
+  "browser.profiles.opening": {
+    "value": "Opening the {{name}} profile…"
+  },
+  "browser.profiles.backWhen": {
+    "value": {
+      "one": "When you're done, {{count}} agent uses this profile.",
+      "other": "When you're done, {{count}} agents use this profile."
+    }
+  },
+  "browser.profiles.backWhenNone": {
+    "value": "When you're done, hand the profile back."
+  },
+  "browser.profiles.handBack": {
+    "value": "Hand back to the agents"
+  },
+  "browser.profiles.toolOff": {
+    "value": "The browser is off on this computer."
+  },
+  "browser.profiles.toolOffOther": {
+    "value": "The browser is off on {{name}}'s computer."
+  },
+  "browser.profiles.loginOn": {
+    "value": "Turn on and sign in"
+  },
+  "browser.profiles.turningOn": {
+    "value": "Browser on at {{machine}}. Opening the profile…"
+  },
+  "browser.profiles.notOpened": {
+    "value": "The browser didn't open on {{machine}}."
+  },
   "browser.profiles.backTitle": {
     "value": "Hand {{name}} back to the agents"
   },
@@ -39891,7 +39999,7 @@
     "value": "Off"
   },
   "browser.machine.offHelp": {
-    "value": "Only someone at the computer turns it on, in the agentes.chat app: Preferences → Tools."
+    "value": "Whoever connected the computer turns it on here or in the agentes.chat app on it: Preferences → Tools."
   },
   "browser.machine.needsCommand": {
     "value": "Needs a command"
@@ -41418,6 +41526,9 @@
   "desktop.use.offHelp": {
     "value": "Turn on the screens and commands on this computer:"
   },
+  "desktop.use.offOne": {
+    "value": "This computer needs both the screen and commands on."
+  },
   "desktop.use.linuxOnly": {
     "value": "Agents use apps on their own screens only on Linux computers."
   },
@@ -41628,6 +41739,9 @@
   },
   "agentComputer.state.screensOff": {
     "value": "Screens are off on {{computer}}. Turn them on there:"
+  },
+  "agentComputer.state.screensOffOne": {
+    "value": "Screens are off on {{computer}}."
   },
   "agentComputer.state.screensMissing": {
     "value": "{{computer}} can't show screens yet. On it:"
