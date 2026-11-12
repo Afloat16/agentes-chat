@@ -10,8 +10,8 @@ import { writeValue } from "@/lib/storage";
 import { Button } from "../Button";
 import { useTheme } from "../theme";
 import { OrDivider } from "./AuthLink";
+import { socialProvidersOn } from "./providers-on";
 import { SocialMark } from "./SocialMarks";
-import { socialProvidersOn } from "./social-providers";
 
 /**
  * How this phone signed in last. Kept out of `STORED` on purpose: signing out clears those, and this one is for the

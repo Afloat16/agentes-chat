@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { socialProvidersOn } from "../src/ui/auth/social-providers";
+import { socialProvidersOn } from "../src/ui/auth/providers-on";
 
 describe("the providers a phone signs in with", () => {
   const on = { google: true, github: true, apple: false };

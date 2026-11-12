@@ -19,14 +19,15 @@ import { useLaunched } from "@/features/launch/launched";
 import { authClient } from "@/lib/auth";
 import { setServer, useServerToReturn } from "@/lib/server";
 import { readValueSync, writeValue } from "@/lib/storage";
+import { signUpHere } from "@/lib/store";
 import { AuthField } from "@/ui/auth/AuthField";
 import { AuthLink } from "@/ui/auth/AuthLink";
 import { AuthScaffold, CENTER } from "@/ui/auth/AuthScaffold";
 import { PasswordField } from "@/ui/auth/PasswordField";
+import { socialProvidersOn } from "@/ui/auth/providers-on";
 import { AuthFootLine } from "@/ui/auth/ServerLine";
 import { Shake } from "@/ui/auth/Shake";
 import { rememberSignIn, SocialButtons, useSocialProviders } from "@/ui/auth/SocialButtons";
-import { socialProvidersOn } from "@/ui/auth/social-providers";
 import { Button } from "@/ui/Button";
 import { haptics } from "@/ui/haptics";
 import { Locked } from "@/ui/Locked";
@@ -168,7 +169,7 @@ export function AuthFlow({
       // app): the web's "noPassword" step says where to add one, instead of an empty provider list.
       const on = config.data?.socialProviders as Partial<Record<SignInProvider, boolean>> | undefined;
       const usable = socialProvidersOn(on, Platform.OS, found.providers).length > 0;
-      go(lookUpStep(found, usable));
+      go(lookUpStep(found, usable, signUpHere(config.data?.cloud)));
     } catch (e) {
       // No connection: the e-mail stays, a quiet line says so, and the lookup tries again by itself (below).
       if (e instanceof TypeError && /network|fetch/i.test(e.message)) setOffline(true);

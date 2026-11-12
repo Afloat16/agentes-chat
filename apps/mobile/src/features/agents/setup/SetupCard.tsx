@@ -23,6 +23,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { Easing, FadeIn } from "react-native-reanimated";
+import { paysHere } from "@/lib/store";
 import { useOrg } from "@/providers/org";
 import { Button, Card, Icon, type IconName, MEDIA_ROW, MediaRow, Text, useReducedMotion } from "@/ui";
 import { openConnectAi } from "../../ai/NoAiCard";
@@ -259,7 +260,7 @@ export function AgentSetupCard({
             icon: STEP_ICON[s],
             done: false,
             dim: true,
-            title: planHoldPhoneLine(t, can(org, "manage_billing")),
+            title: planHoldPhoneLine(t, paysHere(can(org, "manage_billing"))),
           };
         }
         return {
