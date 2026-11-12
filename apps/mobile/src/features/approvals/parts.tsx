@@ -492,20 +492,17 @@ export function ApprovalWhy({
   name: string;
 }) {
   const { t } = useTranslation();
-  const c = useColors();
   const said = approvalSaid(a);
   const origin = approvalOriginWords(a);
   if (!said && !origin) return null;
   const tt = t as unknown as (key: string, options?: Record<string, unknown>) => string;
   return (
     <View style={styles.why}>
+      {/* No icon before it: these words wrap, and an icon would set them in from the title and the quote. */}
       {origin ? (
-        <View style={styles.origin}>
-          <LineIcon name="clock" size={13} color={c.muted} variant="footnote" />
-          <Text variant="footnote" tone="muted" style={styles.grow}>
-            {tt(origin.key, origin.values)}
-          </Text>
-        </View>
+        <Text variant="footnote" tone="muted">
+          {tt(origin.key, origin.values)}
+        </Text>
       ) : null}
       {said ? (
         <Text variant="small" tone="ink2" style={styles.said}>

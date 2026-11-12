@@ -39,7 +39,7 @@ export interface WaitingCardProps {
 }
 
 /**
- * One thing waiting on you, as Atividade, Conversas' strip and an agent's profile show it, read as the chat's request
+ * One thing waiting on you, as Atividade and an agent's profile show it, read as the chat's request
  * card: the card with its cut corner (square bottom left, as the chat's blocks), the asking agent's sky faint across
  * the top (gray when no agent asks), its face with the name (15, regular: the request is the card's one bold) and
  * the kind under it (its icon quiet: no "waiting for you" mark, the card itself is the ask) and, at the right, where
