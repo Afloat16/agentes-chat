@@ -349,6 +349,20 @@ html:not([data-pointer]) .brw-key:focus-visible {
   flex-wrap: wrap;
   gap: 6px;
 }
+/* A reason is a sentence: on a narrow card it wraps inside its toggle instead of running past the row. */
+.brw-reasons > .ac-filtertoggle {
+  flex: 0 1 auto;
+  min-width: 0;
+  height: auto;
+  min-height: var(--control-h-sm);
+  padding-block: var(--space-1);
+  white-space: normal;
+  text-align: start;
+}
+.brw-reasons .ac-filtertoggle__text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .brw-log {
   display: flex;
   flex-direction: column;
