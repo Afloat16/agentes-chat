@@ -3178,6 +3178,8 @@
       "updated_priority": "Prioriteit van <b>#{{number}}</b> op {{priority}} gezet · {{title}}",
       "assigned": "<b>#{{number}}</b> toegewezen aan {{assignee}} · {{title}}",
       "assigned_self": "<b>#{{number}}</b> zelf opgepakt · {{title}}",
+      "assigned_you": "<b>#{{number}}</b> aan jou toegewezen · {{title}}",
+      "assigned_none": "Toewijzing van <b>#{{number}}</b> verwijderd · {{title}}",
       "files": "Bijgevoegd: {{names}}"
     },
     "memory": {
@@ -3283,6 +3285,42 @@
     "changes_other": "{{count}} wijzigingen",
     "undoneBy": "Ongedaan gemaakt door {{name}}",
     "group": "Wijzigingen door {{name}}",
+    "several": {
+      "issue": {
+        "created": "Taken aangemaakt: {{refs}}",
+        "updated": "Bij taken {{fields}} gewijzigd: {{refs}}",
+        "assigned": "Taken toegewezen aan {{assignee}}: {{refs}}",
+        "assigned_self": "Taken zelf opgepakt: {{refs}}",
+        "assigned_you": "Taken aan jou toegewezen: {{refs}}",
+        "assigned_none": "Toewijzing van taken verwijderd: {{refs}}"
+      },
+      "routine": {
+        "created": "Routines aangemaakt: {{refs}}",
+        "updated": "Bij routines {{fields}} gewijzigd: {{refs}}",
+        "deleted": "Routines verwijderd: {{refs}}"
+      },
+      "channel": {
+        "agent_added": "{{agentName}} toegevoegd aan {{refs}}",
+        "created": "Kanalen aangemaakt: {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Wikipagina's aangemaakt: {{refs}}",
+        "page_edited": "Wikipagina's bewerkt: {{refs}}"
+      },
+      "thread": {
+        "closed": "Gesprekken gesloten: {{refs}}"
+      },
+      "skill": {
+        "created": "Wat ik leerde omgezet in de skills {{refs}}",
+        "updated": "Skills verbeterd: {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Instellingen gewijzigd van {{refs}}"
+      },
+      "pr": {
+        "merged": "Gemerged in <b>{{repo}}</b>: PR's {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "Iemand heeft dit sindsdien gewijzigd. Nu ongedaan maken zou die wijziging wissen.",
       "expired": "De tijd om ongedaan te maken is voorbij.",
@@ -17988,7 +18026,6 @@
     "only": "Alleen {{name}}",
     "more_one": "{{names}} en nog {{count}}",
     "more_other": "{{names}} en nog {{count}}",
-    "some": "sommige mensen",
     "taskTitle": "Wie deze taak ziet",
     "pageTitle": "Wie deze pagina ziet",
     "admins": "Beheerders zien het altijd.",
@@ -17997,7 +18034,6 @@
     "search": "Persoon zoeken",
     "noMatch": "Niemand met die naam",
     "moreOptions": "Meer opties",
-    "receipt": "Wie het ziet: {{who}}",
     "limited": "beperkte toegang",
     "rolesToo": "De rollen die al op deze pagina staan, blijven haar zien."
   },

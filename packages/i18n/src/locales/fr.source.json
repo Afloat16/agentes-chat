@@ -7774,6 +7774,12 @@
   "agentActions.issue.assigned_self": {
     "value": "Took <b>#{{number}}</b> myself · {{title}}"
   },
+  "agentActions.issue.assigned_you": {
+    "value": "Assigned <b>#{{number}}</b> to you · {{title}}"
+  },
+  "agentActions.issue.assigned_none": {
+    "value": "Removed the assignee of <b>#{{number}}</b> · {{title}}"
+  },
   "agentActions.issue.files": {
     "value": "Attached {{names}}"
   },
@@ -8019,6 +8025,60 @@
   },
   "agentActions.group": {
     "value": "Changes by {{name}}"
+  },
+  "agentActions.several.issue.created": {
+    "value": "Created tasks {{refs}}"
+  },
+  "agentActions.several.issue.updated": {
+    "value": "Changed {{fields}} of tasks {{refs}}"
+  },
+  "agentActions.several.issue.assigned": {
+    "value": "Assigned {{assignee}} tasks {{refs}}"
+  },
+  "agentActions.several.issue.assigned_self": {
+    "value": "Took on tasks {{refs}}"
+  },
+  "agentActions.several.issue.assigned_you": {
+    "value": "Assigned you tasks {{refs}}"
+  },
+  "agentActions.several.issue.assigned_none": {
+    "value": "Removed the assignee of tasks {{refs}}"
+  },
+  "agentActions.several.routine.created": {
+    "value": "Created the routines {{refs}}"
+  },
+  "agentActions.several.routine.updated": {
+    "value": "Changed {{fields}} of the routines {{refs}}"
+  },
+  "agentActions.several.routine.deleted": {
+    "value": "Deleted the routines {{refs}}"
+  },
+  "agentActions.several.channel.agent_added": {
+    "value": "Brought {{agentName}} into {{refs}}"
+  },
+  "agentActions.several.channel.created": {
+    "value": "Created the channels {{refs}}"
+  },
+  "agentActions.several.wiki.page_created": {
+    "value": "Created the wiki pages {{refs}}"
+  },
+  "agentActions.several.wiki.page_edited": {
+    "value": "Edited the wiki pages {{refs}}"
+  },
+  "agentActions.several.thread.closed": {
+    "value": "Closed the conversations {{refs}}"
+  },
+  "agentActions.several.skill.created": {
+    "value": "Turned what I learned into the skills {{refs}}"
+  },
+  "agentActions.several.skill.updated": {
+    "value": "Fixed the skills {{refs}}"
+  },
+  "agentActions.several.agent.settings_changed": {
+    "value": "Changed the settings of {{refs}}"
+  },
+  "agentActions.several.pr.merged": {
+    "value": "Merged in <b>{{repo}}</b>: PRs {{refs}}"
   },
   "agentActions.errors.changed_since": {
     "value": "Someone changed this since. Undoing now would lose that change."
@@ -43123,9 +43183,6 @@
       "other": "{{names}} and {{count}} more"
     }
   },
-  "whoSees.some": {
-    "value": "some people"
-  },
   "whoSees.taskTitle": {
     "value": "Who sees this task"
   },
@@ -43149,9 +43206,6 @@
   },
   "whoSees.moreOptions": {
     "value": "More options"
-  },
-  "whoSees.receipt": {
-    "value": "Who sees it: {{who}}"
   },
   "whoSees.limited": {
     "value": "limited access"
