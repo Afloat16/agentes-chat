@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { CODEX_WINDOWS_PROTOCOL } from "@agenteschat/adapters";
+import { CODEX_WINDOWS_PROTOCOL, orgTopic } from "@agenteschat/adapters";
 import { eq, schema } from "@agenteschat/db";
 import {
   agentHoldsFor,
@@ -12,6 +12,7 @@ import {
   stopAgentHold,
   type ToolContext,
   takeHold,
+  updateSandboxSettings,
 } from "../src";
 import { addMember, type Fixture, setup } from "./fixtures";
 import { connectedComputer, type FakeRunnerOptions, fakeRunner } from "./machine-fixtures";
@@ -81,7 +82,7 @@ test("a program's hold: the computer takes it for the agent, and people see it w
   expect(start).toMatchObject({ op: "keep.start", holdId: row?.id, pid: 4242, agent: { id: f.agent.id } });
   // The words people read stay here: the computer gets only what binds the hold.
   expect(JSON.stringify(start)).not.toContain("Telegram");
-  const seen = await agentHoldsFor(f.db, f.owner.id, f.org.id, f.agent.id);
+  const seen = await agentHoldsFor({ db: f.db }, f.owner.id, f.org.id, f.agent.id);
   expect(seen).toEqual({
     holds: [
       {
@@ -220,19 +221,62 @@ test("the agent ends its hold; its next turns see it gone, with no arguments it 
   expect((await t.keep({})).content).toContain("Ended lately:");
 });
 
+test("where every command asks a person first, taking a hold asks; listing and ending one need no why", async () => {
+  const t = await holdsSetup();
+  await t.keep({ ...BOT, pid: 4242 });
+  const [row] = await t.holds();
+  await updateSandboxSettings(f.db, f.owner.id, f.org.id, { requireApproval: true });
+  const why = "answers the support group's customers within a minute, day and night";
+  const asked = await f.tools?.invoke(t.ctx, {
+    toolUseId: "tu_take",
+    name: "keep_running",
+    input: { what: "Weekend campaign", why, until: inDays(1) },
+  });
+  expect(asked?.type).toBe("approval");
+  expect((await t.keep({})).content).toContain("Your holds now:");
+  expect((await t.keep({ end: row?.id })).content).toBe(
+    `Ended hold ${row?.id} ("${BOT.what}"). Its program runs on until you stop it.`,
+  );
+});
+
 test("a person's Stop ends the program too; only who may use the computer, and admins, may", async () => {
   const t = await holdsSetup();
   await t.keep({ ...BOT, pid: 4242 });
   const [row] = await t.holds();
   const member = await addMember(f.db, f.org.id, "member", "bruno");
-  expect((await agentHoldsFor(f.db, f.owner.id, f.org.id, f.agent.id)).canStop).toBe(true);
+  expect((await agentHoldsFor({ db: f.db }, f.owner.id, f.org.id, f.agent.id)).canStop).toBe(true);
   const deps = { db: f.db, pubsub: f.pubsub, hub: f.machineHub as MachineHub };
   await expect(stopAgentHold(deps, member.id, f.org.id, f.agent.id, row?.id as string)).rejects.toThrow();
   await stopAgentHold(deps, f.owner.id, f.org.id, f.agent.id, row?.id as string);
   expect(t.asked("keep.end").at(-1)).toMatchObject({ holdId: row?.id, stop: true });
   const [after] = await t.holds();
   expect(after).toMatchObject({ endReason: "stopped_by_person", endedByUserId: f.owner.id });
-  expect((await agentHoldsFor(f.db, f.owner.id, f.org.id, f.agent.id)).holds).toEqual([]);
+  expect((await agentHoldsFor({ db: f.db }, f.owner.id, f.org.id, f.agent.id)).holds).toEqual([]);
+});
+
+test("a time's hold that ran out with no word from the computer ends at its time, audited, the apps told", async () => {
+  const t = await holdsSetup();
+  await t.keep({ what: "Weekend campaign", why: "posts on schedule", until: inDays(1) });
+  const [row] = await t.holds();
+  if (!row) throw new Error("no hold");
+  const past = new Date(Date.now() - 60_000);
+  await f.db.update(schema.machineHolds).set({ until: past }).where(eq(schema.machineHolds.id, row.id));
+  const heard: unknown[] = [];
+  f.pubsub.subscribe(orgTopic(f.org.id), (e) => {
+    const event = (e as { event?: { type?: string } }).event;
+    if (e.type === "org.broadcast" && event?.type === "machine.holds") heard.push(event);
+  });
+  const seen = await agentHoldsFor({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, f.agent.id);
+  expect(seen.holds).toEqual([]);
+  expect((await t.holds())[0]).toMatchObject({ endReason: "expired", endedAt: past });
+  const audit = await f.db.select().from(schema.auditLog).where(eq(schema.auditLog.action, "machine.hold_ended"));
+  expect(audit).toEqual([
+    expect.objectContaining({
+      actorType: "system",
+      details: expect.objectContaining({ holdId: row.id, reason: "expired" }),
+    }),
+  ]);
+  expect(heard).toEqual([{ type: "machine.holds", machineId: t.paired.machineId, agentId: f.agent.id }]);
 });
 
 test("the computer says one ended by itself, and on hello what it holds: a time's hold is taken again", async () => {
@@ -271,7 +315,7 @@ test("the computer says one ended by itself, and on hello what it holds: a time'
   expect(t.asked("keep.start").length).toBe(startsBefore);
 });
 
-test("only on a Linux computer whose runner knows it, and its line says nothing of computers going to sleep", async () => {
+test("only on a Linux computer whose runner knows it, each agent its own user; its line says nothing of sleep", async () => {
   f = await setup({ machines: true });
   await connectedComputer(f, { protocol: CODEX_WINDOWS_PROTOCOL, hello: SYSTEM });
   const names = async () => {
@@ -286,5 +330,10 @@ test("only on a Linux computer whose runner knows it, and its line says nothing 
     return ((await f.tools?.list(ctx as ToolContext)) ?? []).map((t) => t.name);
   };
   expect(await names()).not.toContain("keep_running");
+  // Its agents share the runner's user there: every call would be refused.
+  await connectedComputer(f, {}, "Laptop");
+  expect(await names()).not.toContain("keep_running");
+  await connectedComputer(f, { hello: SYSTEM }, "Server");
+  expect(await names()).toContain("keep_running");
   expect(KEEP_RUNNING_GUIDANCE).not.toMatch(/sleep|paus|turn(s|ed)? off|awake/i);
 });

@@ -587,11 +587,20 @@ async function mayStopHolds(db: Database, userId: string, orgId: string, agentId
 }
 
 /** `GET …/agents/{agentId}/holds`: for whoever may watch the agent's computer (its screen or its browser). */
-export async function agentHoldsFor(db: Database, userId: string, orgId: string, agentId: string): Promise<AgentHolds> {
+export async function agentHoldsFor(
+  deps: { db: Database; pubsub?: PubSub },
+  userId: string,
+  orgId: string,
+  agentId: string,
+): Promise<AgentHolds> {
+  const { db } = deps;
   if ((await screenAccess(db, userId, orgId, agentId, undefined, "desktop")).refusal) {
     await requireBrowserAccess(db, userId, orgId, agentId);
   }
-  const [rows, canStop] = await Promise.all([agentHolds(db, orgId, agentId), mayStopHolds(db, userId, orgId, agentId)]);
+  const [rows, canStop] = await Promise.all([
+    agentHolds(deps, orgId, agentId),
+    mayStopHolds(db, userId, orgId, agentId),
+  ]);
   return { holds: rows.map(holdView), canStop };
 }
 
@@ -609,7 +618,7 @@ export async function stopAgentHold(
       "Only people who may use this agent's computer, and admins, can stop what it keeps running",
     );
   }
-  const row = await liveHold(db, orgId, agentId, holdId);
+  const row = await liveHold(deps, orgId, agentId, holdId);
   if (!row) throw new NotFoundError("Nothing of this agent's runs under that hold now");
   const hub = deps.hub;
   await releaseHold(

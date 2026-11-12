@@ -139,7 +139,7 @@ export function desktopRoutes(deps: AppDeps) {
     }),
     async (c) => {
       const { orgId, agentId } = c.req.valid("param");
-      return c.json(await agentHoldsFor(db, c.get("user").id, orgId, agentId), 200);
+      return c.json(await agentHoldsFor({ db, pubsub: deps.adapters.pubsub }, c.get("user").id, orgId, agentId), 200);
     },
   );
 

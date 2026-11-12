@@ -73,24 +73,24 @@ const holdsChanged = (pubsub: PubSub | undefined, row: Pick<HoldRow, "orgId" | "
     event: { type: "machine.holds", machineId: row.machineId, agentId: row.agentId },
   });
 
-/** Holds whose time passed end as expired, here as on the computer (where only the runner's clock says so). */
-async function expire(db: Database, where: SQL | undefined) {
-  const now = new Date();
-  const rows = await db
+/**
+ * Holds whose time passed end as expired, here as on the computer (where only the runner's clock says so), at their
+ * time: one that ran out while the computer was away ends with no word from it.
+ */
+async function expire(deps: Deps, where: SQL | undefined) {
+  const rows = await deps.db
     .select()
     .from(machineHolds)
-    .where(and(where, isNull(machineHolds.endedAt), isNotNull(machineHolds.until), lte(machineHolds.until, now)));
-  for (const row of rows) {
-    await db
-      .update(machineHolds)
-      .set({ endedAt: row.until ?? now, endReason: "expired", updatedAt: now })
-      .where(and(eq(machineHolds.id, row.id), isNull(machineHolds.endedAt)));
-  }
+    .where(
+      and(where, isNull(machineHolds.endedAt), isNotNull(machineHolds.until), lte(machineHolds.until, new Date())),
+    );
+  for (const row of rows) await endHold(deps, row, "expired", {}, row.until ?? undefined);
 }
 
 /** The agent's live holds, oldest first. */
-export async function agentHolds(db: Database, orgId: string, agentId: string): Promise<HoldRow[]> {
-  await expire(db, and(eq(machineHolds.orgId, orgId), eq(machineHolds.agentId, agentId)));
+export async function agentHolds(deps: Deps, orgId: string, agentId: string): Promise<HoldRow[]> {
+  const { db } = deps;
+  await expire(deps, and(eq(machineHolds.orgId, orgId), eq(machineHolds.agentId, agentId)));
   return db
     .select()
     .from(machineHolds)
@@ -120,11 +120,11 @@ export async function endHold(
   row: HoldRow,
   reason: HoldEndReason,
   by: { userId?: string; runId?: string } = {},
+  at = new Date(),
 ): Promise<boolean> {
-  const now = new Date();
   const [ended] = await deps.db
     .update(machineHolds)
-    .set({ endedAt: now, endReason: reason, endedByUserId: by.userId ?? null, updatedAt: now })
+    .set({ endedAt: at, endReason: reason, endedByUserId: by.userId ?? null, updatedAt: new Date() })
     .where(and(eq(machineHolds.id, row.id), isNull(machineHolds.endedAt)))
     .returning();
   if (!ended) return false;
@@ -167,7 +167,7 @@ export async function takeHold(
   deps: Deps & { call: Call },
   ask: HoldAsk,
 ): Promise<{ row: HoldRow; updated: boolean } | { full: true }> {
-  const live = await agentHolds(deps.db, ask.orgId, ask.agent.id);
+  const live = await agentHolds(deps, ask.orgId, ask.agent.id);
   const same = live.find(
     (h) =>
       h.machineId === ask.machineId &&
@@ -259,7 +259,7 @@ export async function reconcileHolds(
   reported: RunnerHolds | undefined,
 ): Promise<void> {
   const { call } = deps;
-  await expire(deps.db, eq(machineHolds.machineId, machineId));
+  await expire(deps, eq(machineHolds.machineId, machineId));
   const live = await deps.db
     .select()
     .from(machineHolds)
@@ -325,8 +325,8 @@ export async function holdEndedOnComputer(
 }
 
 /** The agent's live holds and those that ended lately, for its tool's description. */
-export async function holdsText(db: Database, orgId: string, agentId: string): Promise<string> {
-  const [live, ended] = await Promise.all([agentHolds(db, orgId, agentId), endedHolds(db, orgId, agentId)]);
+export async function holdsText(deps: Deps, orgId: string, agentId: string): Promise<string> {
+  const [live, ended] = await Promise.all([agentHolds(deps, orgId, agentId), endedHolds(deps.db, orgId, agentId)]);
   const bound = (r: HoldRow) =>
     r.pid !== null ? `program ${r.pid}` : r.browser ? "your browser" : `until ${r.until?.toISOString()}`;
   const why: Record<HoldEndReason, string> = {
@@ -359,7 +359,7 @@ export async function holdsText(db: Database, orgId: string, agentId: string): P
 }
 
 /** The agent's live hold of this id (one the agent or a person named), or null. */
-export async function liveHold(db: Database, orgId: string, agentId: string, holdId: string) {
-  const live = await agentHolds(db, orgId, agentId);
+export async function liveHold(deps: Deps, orgId: string, agentId: string, holdId: string) {
+  const live = await agentHolds(deps, orgId, agentId);
   return live.find((h) => h.id === holdId) ?? null;
 }
