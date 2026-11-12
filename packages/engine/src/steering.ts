@@ -114,10 +114,16 @@ export async function afterSteered(deps: SteeringDeps, input: SteeredInput) {
     const computer =
       active.status === "running" &&
       (await getAgentCached(deps.db, orgId, active.agentId).then((a) => !!a && runBrainOf(active, a) !== "model"));
+    // The task stops for the message to be read. A plain "stop" sent this way is a stop, not a message to start again
+    // from, so with a judge the task is stopped only once it has said which (`judgeStop`).
+    const stopToSend = () =>
+      cancelRun(deps, userId, orgId, runId, { sendMessageId: message.id }).catch(() => undefined);
+    let toSend: (() => Promise<unknown>) | undefined;
     if (now && active.status === "running") {
       if (computer) {
         live = await deliverLive(deps, active, { messageId: message.id, urgent: true }).catch(() => false);
-        if (!live) await cancelRun(deps, userId, orgId, runId, { tell: false }).catch(() => undefined);
+        if (!live && deps.judge) toSend = stopToSend;
+        else if (!live) await stopToSend();
       } else await interruptRun(deps.pubsub, runId, message.id);
     } else if (computer) {
       live = await deliverLive(deps, active, { messageId: message.id, urgent: false }).catch(() => false);
@@ -171,7 +177,7 @@ export async function afterSteered(deps: SteeringDeps, input: SteeredInput) {
     }
     // A plain "stop", in any language, cancels the task instead (the judge decides; short messages
     // only). Never in the way of the send: judged after the response, the app hears `stop` then.
-    if (deps.judge) trackStopCheck(judgeStop(deps, deps.judge, input, active, threadId));
+    if (deps.judge) trackStopCheck(judgeStop(deps, deps.judge, input, active, threadId, toSend));
   }
 }
 
@@ -181,6 +187,8 @@ async function judgeStop(
   input: SteeredInput,
   run: AgentRun,
   threadId: string | null,
+  /** What a message that is no stop still does to the task ("Parar e mandar" to a computer brain). */
+  otherwise?: () => Promise<unknown>,
 ) {
   const agentName = (await getAgentCached(deps.db, input.orgId, run.agentId))?.name ?? "the agent";
   const stop = await isStopRequest(judge, {
@@ -190,7 +198,7 @@ async function judgeStop(
     agentId: run.agentId,
     runId: run.id,
   }).catch(() => false);
-  if (!stop) return;
+  if (!stop) return otherwise?.();
   await publishChannelEvent(deps.pubsub, {
     type: "agent.run.steered",
     channelId: input.channelId,

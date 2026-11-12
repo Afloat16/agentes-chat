@@ -4,7 +4,7 @@ import { and, type Database, type Executor, eq, inArray, isNull, schema, sql } f
 import type { SteerMessage, SteerReply } from "./brains/types";
 import { attachedLine, taskNotice } from "./context";
 import { publishChannelEvent } from "./events";
-import { ACTIVE_RUN_STATUSES, releaseInbox } from "./run-inbox";
+import { ACTIVE_RUN_STATUSES, releaseInbox, stoppedToSend } from "./run-inbox";
 import type { AgentRun } from "./runs";
 
 const { agentRuns, messages, users, agents } = schema;
@@ -164,7 +164,8 @@ type InboxRun = Pick<
 
 /**
  * Puts taken messages back at the front of the run's inbox (read with its next step). A run that
- * ended meanwhile (stopped while its turn ran) hands them on at once, as every ending does.
+ * ended meanwhile (stopped while its turn ran) hands them on at once, as every ending does, unless it was stopped
+ * to read a message: that one restarts from it.
  */
 export async function returnToInbox(db: Database, pubsub: PubSub | undefined, run: InboxRun, ids: string[]) {
   if (ids.length === 0) return;
@@ -176,8 +177,12 @@ export async function returnToInbox(db: Database, pubsub: PubSub | undefined, ru
     .update(agentRuns)
     .set({ pendingMessageIds: sql`${list} || ${agentRuns.pendingMessageIds}` })
     .where(eq(agentRuns.id, run.id))
-    .returning({ status: agentRuns.status });
+    .returning({ status: agentRuns.status, background: agentRuns.background, createdAt: agentRuns.createdAt });
   if (row && !(ACTIVE_RUN_STATUSES as readonly string[]).includes(row.status)) {
+    // Stopped to read a message ("Parar e mandar"): its worker starts it again from that message with what it knows,
+    // then hands on the rest (the executor's `stopCanceled`). Handing them on here would answer in a run that
+    // knows nothing of this one.
+    if (!row.background && (await stoppedToSend(db, { ...run, createdAt: row.createdAt }))) return;
     await releaseInbox(db, pubsub, run, { reason: "interrupted" });
   }
 }

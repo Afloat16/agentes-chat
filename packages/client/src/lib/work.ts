@@ -1,5 +1,5 @@
 import type { TFunction } from "i18next";
-import type { ConnectorDef, OrgSummary, Run, RunStep } from "../api/types";
+import type { ConnectorDef, Message, OrgSummary, Run, RunStep } from "../api/types";
 import type { LiveCode, LiveOutput, LiveRun, LiveStep, LiveWork } from "../realtime/streams";
 import { type Activity, type ActivityKind, activityVerb, appLabel, PERMISSION_TOOL, toolActivity } from "./activity";
 import { appConnector } from "./connected";
@@ -399,6 +399,32 @@ export function splitCanceled(body: string, meta: Record<string, unknown> | unde
     byUserId,
     note: (match[1] ?? "").trim().replace(/\.$/, ""),
   };
+}
+
+/**
+ * The stopped replies (`meta.canceled`) with nothing left to pick up, by run: their agent works in the conversation
+ * now (`working`, agent ids), or wrote again after them in the same thread. "Continuar" leaves those: the agent went
+ * on, and an ended stop never looks live. `messages` in any order.
+ */
+export function stopsMovedOn(
+  messages: readonly Pick<Message, "author" | "agentRunId" | "threadId" | "createdAt" | "meta">[],
+  working: Iterable<string> = [],
+): Set<string> {
+  const busy = new Set(working);
+  const moved = new Set<string>();
+  const stops = messages.filter((m) => m.author.type === "agent" && m.agentRunId && m.meta?.canceled);
+  for (const stop of stops) {
+    const wroteAgain = (m: (typeof messages)[number]) =>
+      m.author.type === "agent" &&
+      m.author.id === stop.author.id &&
+      (m.threadId ?? null) === (stop.threadId ?? null) &&
+      Boolean(m.agentRunId) &&
+      m.agentRunId !== stop.agentRunId &&
+      !m.meta?.notice &&
+      m.createdAt > stop.createdAt;
+    if (busy.has(stop.author.id ?? "") || messages.some(wroteAgain)) moved.add(stop.agentRunId as string);
+  }
+  return moved;
 }
 
 // ───────────────────────────── the tool block (one per reply) ─────────────────────────────
