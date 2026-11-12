@@ -5760,6 +5760,8 @@ export interface PlanUsage {
    * the plan refused it for the key.
    */
   models?: Record<string, { at: string; until?: string; region?: true; off?: true; inactive?: true }>;
+  /** On a plan whose models have their own limits: the model that last answered with this key. */
+  answered?: string;
 }
 
 export interface AgentBrainInput {

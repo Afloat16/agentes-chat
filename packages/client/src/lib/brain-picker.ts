@@ -1,5 +1,13 @@
 import type { TFunction } from "i18next";
-import type { AgentBrain, AgentBrainInput, AiAccounts, BrainMachine, MachineAccountKind, Model } from "../api/types";
+import type {
+  AgentBrain,
+  AgentBrainInput,
+  AiAccounts,
+  BrainMachine,
+  MachineAccountKind,
+  Model,
+  PlanUsage,
+} from "../api/types";
 import { accountChoices, accountTitle, ownSignInReady } from "./ai-accounts";
 import { thinksWith } from "./brain";
 import { isClaudeAlias } from "./brain-advanced";
@@ -10,8 +18,10 @@ import {
   brainModelChoice,
   brainModelChoices,
   type CodingPlan,
+  modelLimitOf,
   type PlanModelNeed,
   planFreeHint,
+  planModelValue,
   planOf,
 } from "./plans";
 import { AUTO, isAuto, type ModelChoice, providerLabel } from "./providers";
@@ -441,3 +451,42 @@ export const modelRowOptions = (rows: readonly ModelRow[]) =>
     ...(r.sub ? { description: r.sub } : {}),
     ...(r.maker ? { group: providerLabel(r.maker) } : {}),
   }));
+
+/** A model of a coding plan's key, as "Usar em todos os agentes" lists it. */
+export interface KeyModel {
+  /** What an agent stores (`planModelValue`). */
+  value: string;
+  label: string;
+  maker?: string;
+  /** It reads text only (no images or PDFs). */
+  textOnly: boolean;
+  /** Why the plan refused it for this key: switched off there, or its Global region off. */
+  refused?: "off" | "region";
+}
+
+/**
+ * A coding plan key's models in three runs (web and phone): the one that last answered with the key, those the plan
+ * refused for it (`modelLimitOf`), and the rest, not tried yet. A model at a limit of its own that resets is none of
+ * these: it answers again then, so it counts as not tried.
+ */
+export function keyModelGroups(
+  plan: CodingPlan,
+  usage: Pick<PlanUsage, "models" | "answered"> | null | undefined,
+  now = Date.now(),
+): { works: KeyModel[]; refused: KeyModel[]; untested: KeyModel[] } {
+  const out = { works: [] as KeyModel[], refused: [] as KeyModel[], untested: [] as KeyModel[] };
+  for (const m of plan.claudeCode.models) {
+    const limit = modelLimitOf(usage?.models, m.id, now);
+    const row: KeyModel = {
+      value: planModelValue(m),
+      label: m.label,
+      ...(m.maker ? { maker: m.maker } : {}),
+      textOnly: m.images === false,
+    };
+    if (limit && (limit.off || limit.region || limit.inactive))
+      out.refused.push({ ...row, refused: limit.region ? "region" : "off" });
+    else if (usage?.answered === m.id) out.works.push(row);
+    else out.untested.push(row);
+  }
+  return out;
+}

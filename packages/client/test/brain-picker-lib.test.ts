@@ -9,6 +9,7 @@ import {
   brainPickOptions,
   brainPickText,
   brainPickValue,
+  keyModelGroups,
   needsOwnSignIn,
   newPlanAccountOption,
   pickGroups,
@@ -333,4 +334,28 @@ test("the plan account just connected: one not among the options when Conectar u
   expect(newPlanAccountOption(after, new Set(before.map((o: { value: string }) => o.value)))?.value).toBe(
     "claude@m1#new/auto",
   );
+});
+
+test("a key's models for every agent: the one that answered, the refused ones and why, the rest not tried", () => {
+  const at = new Date().toISOString();
+  const until = new Date(Date.now() + 3600_000).toISOString();
+  const groups = keyModelGroups(CODING_PLANS.opencode, {
+    answered: "deepseek-v4.1-flash",
+    models: {
+      "minimax-m3": { at, off: true },
+      "deepseek-v4-pro": { at, region: true },
+      "glm-5.3": { at, until },
+    },
+  });
+  expect(groups.works).toEqual([
+    { value: "deepseek-v4.1-flash", label: "DeepSeek V4.1 Flash", maker: "deepseek", textOnly: true },
+  ]);
+  expect(groups.refused.map((m) => [m.value, m.refused])).toEqual([
+    ["sonnet", "off"],
+    ["deepseek-v4-pro", "region"],
+  ]);
+  expect(groups.untested.some((m) => m.value === "glm-5.3" && !m.textOnly)).toBe(true);
+  const total = groups.works.length + groups.refused.length + groups.untested.length;
+  expect(total).toBe(CODING_PLANS.opencode.claudeCode.models.length);
+  expect(keyModelGroups(CODING_PLANS.opencode, null).works).toEqual([]);
 });

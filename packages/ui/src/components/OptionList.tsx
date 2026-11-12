@@ -10,7 +10,7 @@ export interface OptionListItem<V extends string> {
   tag?: ReactNode;
   /** One short line under the title. */
   description?: ReactNode;
-  /** Before the text: an illustration (`AutonomyPixels`), an icon, an avatar. Without it, a radio dot. */
+  /** Before the text: an illustration (`AutonomyPixels`), an icon, an avatar. No radio dot: the border marks the chosen one. */
   leading?: ReactNode;
   /** Shown but not choosable now (say why in `description`). */
   disabled?: boolean;
@@ -39,7 +39,7 @@ export interface OptionListProps<V extends string> {
   layout?: "rows" | "cards" | "tiles";
   /**
    * Rows only: the chosen row and its settings are one card, the
-   * settings full width under a hairline; rows with a leading keep their radio dot too.
+   * settings full width under a hairline.
    */
   attached?: boolean;
   className?: string;
@@ -49,7 +49,8 @@ export interface OptionListProps<V extends string> {
  * A vertical list of choices as full-width rows of the same height, one left
  * edge, neutral selection (e.g. a mission's Autonomia and Quem faz o
  * trabalho). Radix RadioGroup: `role="radio"` rows, one tab stop, arrow
- * keys move and select. A row leads with its illustration, or a radio dot.
+ * keys move and select. A row may lead with its illustration; the chosen one is
+ * marked by its border alone, never a radio dot.
  * The chosen row can carry its own settings (`children`) right under it.
  */
 export function OptionList<V extends string>({
@@ -73,9 +74,7 @@ export function OptionList<V extends string>({
       disabled={o.disabled}
       className={cx("ac-optrow", o.leading ? "ac-optrow--lead" : undefined)}
     >
-      {(!o.leading || card) && <span className="ac-optrow__dot" aria-hidden="true" />}
       {o.leading && <span className="ac-optrow__lead">{o.leading}</span>}
-      {cards && o.leading && <span className="ac-optrow__dot ac-optrow__dot--corner" aria-hidden="true" />}
       <span className="ac-optrow__text">
         <span className="ac-optrow__title">
           {o.title}
