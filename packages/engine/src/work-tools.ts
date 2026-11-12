@@ -155,7 +155,7 @@ export function createWorkToolSource(deps: { pubsub?: PubSub }): ToolSource {
   const steer: ToolDefinition = {
     name: STEER_WORK_TOOL,
     description:
-      'Pass the person\'s message on, unchanged, to your background work it is about (by its id in "# Your background work here"). From who asked for the work, the work reads it as their words at its next step and keeps going; from anyone else, it runs after the work ends, as them. Then tell them which in one short line, in their language.',
+      'Pass the person\'s message on, unchanged, to your background work it is about (by its id in "# Your background work here"). From who asked for the work, the work reads it as their words at its next step and keeps going; from anyone else, it runs once the work ends or is stopped, as them. Then tell them which in one short line, in their language.',
     scope: "",
     inputSchema: {
       type: "object",
@@ -170,7 +170,7 @@ export function createWorkToolSource(deps: { pubsub?: PubSub }): ToolSource {
       const out = await steerWork({ db: ctx.db, pubsub: deps.pubsub }, run, str(input.work_id));
       if (!out.ok) return refused(out.reason);
       const kept = out.kept.length
-        ? `${andList(out.kept)} didn't ask for this work, so it doesn't take it: what they asked runs after it ends, as them, with their own access. Tell them so in one short line.`
+        ? `${andList(out.kept)} didn't ask for this work, so it doesn't take it: what they asked runs once it ends or is stopped, as them, with their own access, and a correction to it becomes their own step after it. Tell them so in one short line.`
         : "";
       return {
         content: [out.delivered > 0 ? "Passed on: the work reads it now." : "", kept].filter(Boolean).join(" "),

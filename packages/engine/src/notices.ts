@@ -194,12 +194,19 @@ export function noticeText(
     case "work_check_in":
       return `[Your background work]: ${n.text}`;
     // Not enveloped: the text is the requests of the person the run acts for (`followUpWork`).
-    case "work_follow_up":
-      return `[Your background work${n.refs?.title ? ` "${n.refs.title}"` : ""} ended. While it ran, these messages were passed on to it]:\n${n.text}${
-        current
-          ? "\nIts report is above. Do now what they asked that the work didn't do and didn't say why not, then tell them what came of it. If the report says it did, says why not, or says it waits on them, pass: nothing is posted."
-          : ""
-      }`;
+    case "work_follow_up": {
+      const how = n.refs?.stopped ? "was stopped by a person" : "ended";
+      // Followed up where they asked: the work went on in a conversation they can't read.
+      const away = Boolean(n.refs?.away);
+      const head = `[Your background work${n.refs?.title ? ` "${n.refs.title}"` : ""} ${how}${away ? ", in a conversation they can't read" : ""}. While it ran, these messages were passed on to it]:\n${n.text}`;
+      if (!current) return head;
+      const end = away ? "Don't pass on what it did or found there." : "Its report is above.";
+      const ask =
+        n.refs?.stopped || away
+          ? `Do now what still makes sense of what they asked${n.refs?.stopped ? ", now that it was stopped" : ""}, then tell them what came of it. If nothing does,`
+          : "Do now what they asked that the work didn't do and didn't say why not, then tell them what came of it. If the report says it did, says why not, or says it waits on them,";
+      return `${head}\n${end} ${ask} pass: nothing is posted.`;
+    }
     // A person stopped one of its tasks (ADR 0128); the reason is that person's words.
     case "run_stopped":
       return `[A person stopped your task]: ${n.text}`;

@@ -900,14 +900,17 @@ export async function endWork(
       .set({ resultMessageId: resultId })
       .where(eq(agentWorks.id, work.id))
       .returning();
-    // What people passed on to it, unless a person stopped it (they meant that too).
-    if (status !== "canceled")
-      await queueWorkFollowUp(
-        tx,
-        work,
-        run.id,
-        status === "failed" && continuableEnd({ ...run, status: runStatus }, reply),
-      );
+    // What people passed on to it: a person's stop and any end Continuar can't go on from follow it up now.
+    await queueWorkFollowUp(
+      tx,
+      work,
+      run.id,
+      status === "canceled"
+        ? "stopped"
+        : status === "failed" && continuableEnd({ ...run, status: runStatus }, reply)
+          ? "continued"
+          : "ended",
+    );
     const released = await releaseQueuedWorks(tx, work.orgId);
     return { work: closed ?? work, end, released, status };
   });
@@ -946,12 +949,13 @@ async function takeUnreadAsks(tx: Executor, work: WorkRow, runId: string, option
 }
 
 /**
- * The end of a work (done or failed) follows up what people passed on to it, once. Anyone else's than its asker's never
- * reached it (`heldAsks`): theirs now, at any such end. Its asker's did: what its runs read (reading one doesn't mean
- * the work did it) and what is still unread, since nothing else brings the agent back to it, unless Continuar can go on
- * from this end (`continued`), which carries them (its transcript, `unreadAsks`).
+ * The end of a work follows up what people passed on to it, once. Anyone else's than its asker's never reached it
+ * (`heldAsks`): theirs now, at any end. Its asker's did: at an end Continuar can go on from (`continued`) they go on
+ * with it (its transcript, `unreadAsks`); at a stop, what it never read (what it read stays in its transcript, for a
+ * Continuar); at any other end, what its runs read (reading one doesn't mean the work did it) and what is still unread,
+ * since nothing else brings the agent back to it.
  */
-async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string, continued: boolean) {
+async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string, end: "ended" | "continued" | "stopped") {
   const [anchor] = await tx
     .select({ meta: messages.meta })
     .from(messages)
@@ -964,7 +968,8 @@ async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string, con
       .set({ meta: sql`${messages.meta} - 'heldAsks'` })
       .where(and(eq(messages.orgId, work.orgId), eq(messages.id, work.anchorMessageId)));
   let own: string[] = [];
-  if (continued) await takeUnreadAsks(tx, work, runId, { keep: true });
+  if (end === "continued") await takeUnreadAsks(tx, work, runId, { keep: true });
+  else if (end === "stopped") own = await takeUnreadAsks(tx, work, runId);
   else {
     const reads = await tx
       .select({ data: agentRunSteps.data })
@@ -988,7 +993,7 @@ async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string, con
   await enqueue(tx, {
     orgId: work.orgId,
     kind: WORK_FOLLOW_UP_JOB,
-    payload: { workId: work.id, runId, messageIds: asks },
+    payload: { workId: work.id, runId, messageIds: asks, ...(end === "stopped" ? { stopped: true } : {}) },
     // Per end: a work that Continuar goes on with ends again in another run, with only what came in since.
     dedupeKey: `${WORK_FOLLOW_UP_JOB}:${work.id}:${runId}`,
     maxAttempts: 4,
@@ -1007,7 +1012,7 @@ const ASK_QUOTE_MAX = 4000;
 export async function followUpWork(
   deps: { db: Database; pubsub?: PubSub },
   orgId: string,
-  input: { workId: string; runId: string; messageIds: string[] },
+  input: { workId: string; runId: string; messageIds: string[]; stopped?: boolean },
 ): Promise<Message[]> {
   if (input.messageIds.length === 0) return [];
   const delivered = await deps.db.transaction(async (tx) => {
@@ -1025,7 +1030,12 @@ export async function followUpWork(
       : [];
     if (!work || !run || !isTerminal(run.status)) return [];
     const asks = await tx
-      .select({ id: messages.id, userId: messages.authorUserId })
+      .select({
+        id: messages.id,
+        userId: messages.authorUserId,
+        channelId: messages.channelId,
+        threadId: messages.threadId,
+      })
       .from(messages)
       .where(
         and(
@@ -1042,7 +1052,7 @@ export async function followUpWork(
       .where(
         and(
           eq(messages.orgId, orgId),
-          eq(messages.channelId, work.channelId),
+          inArray(messages.channelId, [...new Set([work.channelId, ...asks.map((a) => a.channelId)])]),
           gte(messages.createdAt, work.startedAt),
           sql`${messages.meta}->'notice'->>'kind' = 'work_follow_up'`,
           sql`${messages.meta}->'notice'->'refs'->>'workId' = ${work.id}`,
@@ -1051,25 +1061,33 @@ export async function followUpWork(
       );
     const followed = new Set(sent.map((s) => s.personId));
     const out: { message: Message; runs: AgentRun[] }[] = [];
+    // They may still ask the agent there and post there.
+    const reaches = async (personId: string, channelId: string) =>
+      (await eligibleChannelAgents(tx, orgId, channelId, [work.agentId], { requesterUserId: personId })).length > 0 &&
+      (await personCanPost(tx, orgId, personId, channelId));
     for (const personId of new Set(asks.flatMap((a) => (a.userId ? [a.userId] : [])))) {
       if (followed.has(personId)) continue;
-      const [here] = await eligibleChannelAgents(tx, orgId, work.channelId, [work.agentId], {
-        requesterUserId: personId,
-      });
-      if (!here || !(await personCanPost(tx, orgId, personId, work.channelId))) continue;
+      const theirs = asks.filter((a) => a.userId === personId);
+      const last = theirs.at(-1);
+      if (!last) continue;
+      // Where the work reports; when it went on where they aren't (`moveRun`), where they asked.
+      const home = await reaches(personId, work.channelId);
+      if (!home && (last.channelId === work.channelId || !(await reaches(personId, last.channelId)))) continue;
+      const place = home
+        ? { channelId: work.channelId, threadId: work.homeThreadId }
+        : { channelId: last.channelId, threadId: last.threadId };
       // Their words as conversation lines ("[Bia]: …"), each with what it attached.
       const quoted = await renderSteered(
         tx,
         orgId,
-        asks.filter((a) => a.userId === personId).map((a) => a.id),
+        theirs.map((a) => a.id),
         { beforeStart: true },
       );
       out.push(
         await deliverNotice(tx, {
           orgId,
           agentId: work.agentId,
-          channelId: work.channelId,
-          threadId: work.homeThreadId,
+          ...place,
           hop: run.hop,
           stretchId: runStretchOf(run),
           // Nobody reads the body: its agent reads `meta.notice`.
@@ -1077,7 +1095,14 @@ export async function followUpWork(
           notice: {
             kind: "work_follow_up",
             text: quoted.map((q) => cutMarked(q.text, ASK_QUOTE_MAX)).join("\n\n"),
-            refs: { workId: work.id, endRunId: run.id, personId, ...(work.title ? { title: work.title } : {}) },
+            refs: {
+              workId: work.id,
+              endRunId: run.id,
+              personId,
+              ...(work.title ? { title: work.title } : {}),
+              ...(input.stopped ? { stopped: "1" } : {}),
+              ...(home ? {} : { away: "1" }),
+            },
           },
           trigger: run.trigger === "dm" ? "dm" : "mention",
         }),
@@ -1307,7 +1332,7 @@ export async function workBrief(db: Executor, run: Pick<AgentRun, "orgId" | "age
     "# Your background work here",
     "You are already working on this in the background (each one reports here by itself when it ends):",
     ...lines,
-    `A person's message here comes to you, not to the work, which keeps running: answer it now. A question about the work (how it goes, what it covers, what it found): answer from the lines above, plainly, without starting that work again. If the message changes the work (a correction, a narrower or wider scope, more detail) or asks for a next step once it is done, pass it on with ${STEER_WORK_TOOL} and tell them in one short line what it answers: the work takes it on, or, from someone who didn't ask for the work, it runs after the work ends, as them. Never say you will do it yourself later: this turn ends here. To stop one, ${STOP_WORK_TOOL}. Anything else, answer it normally here. Never poll or wait for your own work.`,
+    `A person's message here comes to you, not to the work, which keeps running: answer it now. A question about the work (how it goes, what it covers, what it found): answer from the lines above, plainly, without starting that work again. If the message changes the work (a correction, a narrower or wider scope, more detail) or asks for a next step once it is done, pass it on with ${STEER_WORK_TOOL} and tell them in one short line what it answers: the work takes it on, or, from someone who didn't ask for the work, it runs once the work ends or is stopped, as them. Never say you will do it yourself later: this turn ends here. To stop one, ${STOP_WORK_TOOL}. Anything else, answer it normally here. Never poll or wait for your own work.`,
   ].join("\n");
 }
 

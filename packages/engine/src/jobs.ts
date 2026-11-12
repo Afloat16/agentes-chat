@@ -839,6 +839,7 @@ export function createJobHandlers(deps: JobDeps): JobHandlers {
         workId: String(job.payload.workId),
         runId: String(job.payload.runId),
         messageIds: ids.filter((id): id is string => typeof id === "string"),
+        stopped: job.payload.stopped === true,
       });
     },
     "secret.activate": async (job) => {
