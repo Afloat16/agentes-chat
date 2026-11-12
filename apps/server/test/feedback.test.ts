@@ -169,7 +169,7 @@ async function relaying(down = false) {
   inbox = await createTestServer({ env: { FEEDBACK_EMAIL: "team@example.com", FEEDBACK_INBOX: "true" } });
   const posted: string[] = [];
   const there = inbox;
-  const http = (async (url: RequestInfo | URL, init?: RequestInit) => {
+  const http = (async (url: string | URL | Request, init?: RequestInit) => {
     if (String(url) !== INBOX_URL) return new Response(null, { status: 404 });
     posted.push(String(url));
     if (down) return new Response("busy", { status: 503 });
