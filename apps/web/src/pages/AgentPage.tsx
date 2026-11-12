@@ -106,6 +106,7 @@ const sortIds = (ids: string[]) => [...ids].sort();
 const MAIN_TABS: AgentTab[] = ["overview", "instructions", "memory", "activity"];
 const MORE_TABS = AGENT_TABS.filter((id) => !MAIN_TABS.includes(id) && id !== "advanced");
 const PERSONAL_TABS: readonly AgentTab[] = PERSONAL_AGENT_TABS;
+const RIGHT_HAND_TABS: readonly AgentTab[] = ["settings", "access"];
 const MORE_ICON: Partial<Record<AgentTab, IconName>> = {
   access: "plug",
   files: "file",
@@ -136,7 +137,7 @@ export function AgentPage(props: AgentPageProps) {
   const dir = useDirectory(org.id);
   const agent = dir.agentById.get(props.agentId);
   // Only the full profile edits, so only it asks before closing; every other view here closes on the request.
-  const full = Boolean(agent && !dir.loading && seesDetails(agent) && !isRightHand(agent));
+  const full = Boolean(agent && !dir.loading && seesDetails(agent));
   const closeRef = useRef(props.onClose);
   closeRef.current = full ? undefined : props.onClose;
   useEffect(() => {
@@ -156,9 +157,8 @@ export function AgentPage(props: AgentPageProps) {
       </div>
     );
   }
-  // The right hand (ADR 0137) has no tabs: its instructions are the product's. Its page is its settings, each
-  // person's own and, for who manages agents, the workspace's.
-  if (isRightHand(agent)) {
+  // The right hand (ADR 0137) to someone who sees only its card: its settings, each person's own.
+  if (isRightHand(agent) && !seesDetails(agent)) {
     return (
       <div className="page page--full">
         <PageHeader title={agent.name} meta={t("settings.sectionText.right_hand")} />
@@ -192,7 +192,10 @@ function AgentProfile({
   const viewer: Viewer = admin ? "admin" : agent.ownerUserId === me.user.id ? "owner" : "member";
   // A personal workspace's page (ADR 0159 §3): a shorter bar, the hard parts in Advanced; every address still works.
   const personal = isPersonal(org);
-  const view = shownAgentTab(tab, section, personal);
+  // The right hand's page (ADR 0137): its settings and what it may use. Its instructions are the product's, and it
+  // is in no channel and on no computer, so the other tabs have nothing of its own.
+  const rightHand = isRightHand(agent);
+  const view = rightHand ? (tab === "access" ? "access" : "settings") : shownAgentTab(tab, section, personal);
   const models = useModels();
   const detail = useAgentDetail(org.id, agent.id);
   const settings = useSettings(org.id);
@@ -738,95 +741,114 @@ function AgentProfile({
 
   return (
     <AgentEditProvider value={value}>
-      <div className={cx("page page--full agp", onClose && "agp--panel")} data-dirty={dirty || undefined}>
-        <AgentHero
-          onArchive={() => setArchiving(true)}
-          panel={Boolean(onClose)}
-          onExpand={
-            onClose &&
-            (() =>
-              void navigate({
-                to: "/org/$orgId/agents/$agentId",
-                params: { orgId: org.id, agentId: agent.id },
-                search: { tab: tab === "overview" ? undefined : tab, sec: section },
-              }))
-          }
-        />
-        <div className="agp-tabs" ref={top}>
-          <Tabs
-            label={t("agentPage.tabsLabel", g)}
-            value={view}
-            onValueChange={(next) => goTo(next)}
-            items={(personal
-              ? [...PERSONAL_TABS, ...(PERSONAL_TABS.includes(view) ? [] : [view])]
-              : [...MAIN_TABS, ...(MORE_TABS.includes(view) ? [view] : [])]
-            ).map((id) => ({
-              value: id,
-              label: tabLabel(id),
-            }))}
-            after={
-              personal ? undefined : (
-                <Menu
-                  align="end"
-                  label={t("agentPage.tabs.more")}
-                  trigger={
-                    <button type="button" className="ac-tab agp-more">
-                      {t("agentPage.tabs.more")}
-                      {moreChanges > 0 && (
-                        <span
-                          className="agp-badge agp-badge--edit ac-num"
-                          title={t("agentPage.changesCount", { count: moreChanges })}
-                        >
-                          <Icon name="edit" size={14} />
-                          {moreChanges}
-                        </span>
-                      )}
-                      <Icon name="chevronDown" size={14} />
-                    </button>
-                  }
-                >
-                  {MORE_TABS.filter((id) => id !== view).map((id) => (
-                    <MenuItem key={id} icon={MORE_ICON[id]} onSelect={() => goTo(id)}>
-                      {tabLabel(id)}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              )
-            }
-          >
-            <TabPanel value={view}>
-              <div className="agp-view" key={view}>
-                {view === "overview" && <OverviewTab />}
-                {view === "instructions" && <InstructionsTab />}
-                {view === "access" && <AccessTab part={personal ? "basic" : "all"} />}
-                {view === "memory" && <MemoryTab item={item} />}
-                {view === "files" && <FilesTab />}
-                {view === "usage" && <UsageTab />}
-                {view === "activity" && <ActivityTab />}
-                {view === "settings" && (
-                  <SettingsTab
-                    part={personal ? "basic" : "all"}
-                    section={section}
-                    onSection={(sec) => goTo("settings", sec)}
-                    onArchive={() => setArchiving(true)}
-                    onDelete={() => setDeleting(true)}
-                  />
-                )}
-                {view === "advanced" && (
-                  <AdvancedTab
-                    section={section}
-                    onSection={(sec) => goTo("settings", sec)}
-                    onOpen={(next) => goTo(next)}
-                    onArchive={() => setArchiving(true)}
-                    onDelete={() => setDeleting(true)}
-                  />
-                )}
-              </div>
-            </TabPanel>
-          </Tabs>
+      {rightHand ? (
+        <div className="page page--full" data-dirty={dirty || undefined}>
+          <PageHeader title={agent.name} meta={t("settings.sectionText.right_hand")} />
+          {tellsNameStory(agent) && <p className="small muted">{t("rightHand.profile.nameStory")}</p>}
+          <div className="tabs-bar">
+            <Tabs
+              label={t("agentPage.tabsLabel", g)}
+              value={view}
+              onValueChange={(next) => goTo(next)}
+              items={RIGHT_HAND_TABS.map((id) => ({ value: id, label: tabLabel(id) }))}
+            >
+              {null}
+            </Tabs>
+          </div>
+          {view === "access" ? <AccessTab /> : <RightHandSettingsSection agent={agent} />}
+          <SaveBar saving={saving} onSave={() => void save()} onDiscard={discard} onJump={(c) => goTo(c.tab, c.sec)} />
         </div>
-        <SaveBar saving={saving} onSave={() => void save()} onDiscard={discard} onJump={(c) => goTo(c.tab, c.sec)} />
-      </div>
+      ) : (
+        <div className={cx("page page--full agp", onClose && "agp--panel")} data-dirty={dirty || undefined}>
+          <AgentHero
+            onArchive={() => setArchiving(true)}
+            panel={Boolean(onClose)}
+            onExpand={
+              onClose &&
+              (() =>
+                void navigate({
+                  to: "/org/$orgId/agents/$agentId",
+                  params: { orgId: org.id, agentId: agent.id },
+                  search: { tab: tab === "overview" ? undefined : tab, sec: section },
+                }))
+            }
+          />
+          <div className="agp-tabs" ref={top}>
+            <Tabs
+              label={t("agentPage.tabsLabel", g)}
+              value={view}
+              onValueChange={(next) => goTo(next)}
+              items={(personal
+                ? [...PERSONAL_TABS, ...(PERSONAL_TABS.includes(view) ? [] : [view])]
+                : [...MAIN_TABS, ...(MORE_TABS.includes(view) ? [view] : [])]
+              ).map((id) => ({
+                value: id,
+                label: tabLabel(id),
+              }))}
+              after={
+                personal ? undefined : (
+                  <Menu
+                    align="end"
+                    label={t("agentPage.tabs.more")}
+                    trigger={
+                      <button type="button" className="ac-tab agp-more">
+                        {t("agentPage.tabs.more")}
+                        {moreChanges > 0 && (
+                          <span
+                            className="agp-badge agp-badge--edit ac-num"
+                            title={t("agentPage.changesCount", { count: moreChanges })}
+                          >
+                            <Icon name="edit" size={14} />
+                            {moreChanges}
+                          </span>
+                        )}
+                        <Icon name="chevronDown" size={14} />
+                      </button>
+                    }
+                  >
+                    {MORE_TABS.filter((id) => id !== view).map((id) => (
+                      <MenuItem key={id} icon={MORE_ICON[id]} onSelect={() => goTo(id)}>
+                        {tabLabel(id)}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                )
+              }
+            >
+              <TabPanel value={view}>
+                <div className="agp-view" key={view}>
+                  {view === "overview" && <OverviewTab />}
+                  {view === "instructions" && <InstructionsTab />}
+                  {view === "access" && <AccessTab part={personal ? "basic" : "all"} />}
+                  {view === "memory" && <MemoryTab item={item} />}
+                  {view === "files" && <FilesTab />}
+                  {view === "usage" && <UsageTab />}
+                  {view === "activity" && <ActivityTab />}
+                  {view === "settings" && (
+                    <SettingsTab
+                      part={personal ? "basic" : "all"}
+                      section={section}
+                      onSection={(sec) => goTo("settings", sec)}
+                      onArchive={() => setArchiving(true)}
+                      onDelete={() => setDeleting(true)}
+                    />
+                  )}
+                  {view === "advanced" && (
+                    <AdvancedTab
+                      section={section}
+                      onSection={(sec) => goTo("settings", sec)}
+                      onOpen={(next) => goTo(next)}
+                      onArchive={() => setArchiving(true)}
+                      onDelete={() => setDeleting(true)}
+                    />
+                  )}
+                </div>
+              </TabPanel>
+            </Tabs>
+          </div>
+          <SaveBar saving={saving} onSave={() => void save()} onDiscard={discard} onJump={(c) => goTo(c.tab, c.sec)} />
+        </div>
+      )}
       {picking && (
         <RepoDialog
           add={picking.add}

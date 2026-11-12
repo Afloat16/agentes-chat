@@ -200,7 +200,7 @@ function Profile({ id }: { id: string }) {
   const usage = useUsage(orgId);
   const forYou = useAgentForYou(orgId, id);
   const knows = useMemoryAboutMe(orgId, id);
-  const mailboxes = useAgentMailboxes(id, details && !rightHand);
+  const mailboxes = useAgentMailboxes(id, details);
   const work = useWorkingNow().filter((w) => w.agentId === id);
   const asking = useWaitingApprovals().filter((a) => a.agentId === id);
   // On a billing hold an AI comes after the plan: no row to connect one.
@@ -545,9 +545,10 @@ function Profile({ id }: { id: string }) {
       : uses.asks
         ? asksNote()
         : null;
+  // The right hand's AI is each person's, on its settings ("Sua IA"): its access shows only what it may use.
   const accessView = (
     <>
-      {thinks ? (
+      {thinks && !rightHand ? (
         <>
           <GroupedHeader>{t("mobile.intentAgents.thinks")}</GroupedHeader>
           <GroupedList>
@@ -804,6 +805,7 @@ function Profile({ id }: { id: string }) {
                 )}
               />
             </GroupedList>
+            {details ? accessView : null}
           </View>
         ) : details ? (
           <>
