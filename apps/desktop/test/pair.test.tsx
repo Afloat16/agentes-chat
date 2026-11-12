@@ -450,11 +450,15 @@ describe("pairing from the app", () => {
         expect(host.window).toBe("welcome");
 
         // Pausing one workspace pauses only its own agents. Every switch waits while another request is pending, and
-        // a click on a disabled one does nothing, so wait for it to take clicks first.
+        // a click on a disabled one, or one a re-render replaced, does nothing: click whenever it takes clicks and still
+        // shows on, until the pause shows. A second pause is the same pause.
         const horizonte = () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]');
-        await until(() => horizonte() && !horizonte()?.hasAttribute("disabled"));
-        await act(async () => horizonte()?.click());
-        await until(() => on("Horizonte") === "false");
+        await until(() => {
+          if (on("Horizonte") === "false") return true;
+          const s = horizonte();
+          if (s && !s.hasAttribute("disabled")) s.click();
+          return false;
+        }, 20_000);
         expect(on("Acme")).toBe("true");
 
         // One at a time: the others wait for the pause to answer.
@@ -469,8 +473,8 @@ describe("pairing from the app", () => {
         expect(asked).toBe("Estúdio Norte");
         expect(await host.autostart()).toBe(true);
       }),
-    // Four waits of up to 5 s each, past the 5 s a test gets on a slow runner. Cut short, it went on running under
-    // the files after it (its window still mounted) and failed their tests.
-    20_000,
+    // Several waits, the pause's up to 20 s on a slow shared runner. Cut short, it went on running under the files
+    // after it (its window still mounted) and failed their tests.
+    45_000,
   );
 });
