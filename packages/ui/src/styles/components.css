@@ -509,11 +509,8 @@ html:not([data-pointer]) .ac-btn:focus-visible {
 }
 /* Two of them side by side read as one phrase when only a small gap parts them: at least a step more, and in a row of
    actions the row's own 16. */
-.ac-link--action + .ac-link--action {
+:not(.ac-acts) > .ac-link--action + .ac-link--action {
   margin-inline-start: var(--space-2);
-}
-.ac-acts > .ac-link--action + .ac-link--action {
-  margin-inline-start: 0;
 }
 /* Busy: the words keep their room unseen and the spinner takes their middle, as a loading button does, so nothing
    beside it moves. */
@@ -12349,7 +12346,7 @@ html:not([data-pointer]) .ac-foldrow__head:focus-visible {
   }
   /* The row's one plated action takes a line of its own, so the bare ones after it share the next and none is left
      alone on a third. */
-  .ac-foldrow__more > .ac-acts > .ac-btn--primary {
+  .ac-foldrow__more > .ac-acts > :is(.ac-btn--primary) {
     flex: 1 0 100%;
   }
 }

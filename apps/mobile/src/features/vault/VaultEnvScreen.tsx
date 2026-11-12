@@ -126,7 +126,7 @@ export function VaultEnvScreen({ scope: asked }: { scope: VaultScope }) {
           spellCheck={false}
           autoComplete="off"
           textContentType="none"
-          placeholder="ACME_API_KEY="
+          placeholder={"ACME_API_KEY="}
           accessibilityLabel={t("vault.env.paste")}
           style={styles.mono}
         />
