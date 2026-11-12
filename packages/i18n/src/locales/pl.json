@@ -18316,8 +18316,10 @@
       "plan": "Czeka na odnowienie planu agenta {{name}} {{when}}",
       "planUnknown": "Czeka na odnowienie planu agenta {{name}}",
       "budget": "Czeka na odnowienie budżetu agenta {{name}} {{when}}",
-      "budgetUnknown": "Czeka na odnowienie budżetu agenta {{name}}",
-      "computer": "Czeka na komputer agenta {{name}}"
+      "budgetSoon": "Czeka chwilę na budżet agenta {{name}}",
+      "computer": "Czeka na komputer agenta {{name}}",
+      "busy": "Czeka na miejsce na komputerze agenta {{name}}",
+      "provider": "Czeka na dostawcę AI agenta {{name}}, następna próba {{when}}"
     },
     "menu": {
       "label": "Więcej",

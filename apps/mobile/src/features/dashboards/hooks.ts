@@ -13,7 +13,7 @@ import { isEveryone, sortRoles } from "@agenteschat/client/lib/roles";
 import type { AgentColorName } from "@agenteschat/ui/agent/engine";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useDirectory, useOrgId } from "../shared/hooks";
+import { useDirectory, useNow, useOrgId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
 import { HOME } from "./logic";
 
@@ -46,11 +46,13 @@ export function useCustomRoles() {
 
 /**
  * What a widget says about itself: why it didn't update, what its refresh waits for ("Waiting for Theo's plan to reset
- * at 13:00", "" when nothing does), and when it last updated ("12 min ago").
+ * at 13:00", "" when nothing does), and when it last updated ("12 min ago"). `now` moves on every minute, so a wait
+ * reads as over once its reset passes, and room on the computer is said once it waited long enough.
  */
 export function useWidgetWords() {
   const { t, i18n } = useTranslation();
   const dir = useDirectory();
+  const now = useNow(60_000);
   const failure = useCallback(
     (w: Pick<Widget, "failure" | "agentId">) => {
       if (!w.failure) return "";
@@ -62,11 +64,12 @@ export function useWidgetWords() {
   );
   const wait = useCallback(
     (w: Pick<Widget, "status" | "agentId"> & { wait?: Widget["wait"] }) => {
-      const waiting = widgetWaiting({ status: w.status, wait: w.wait ?? null });
-      return waiting ? widgetWaitText(t, i18n.language, waiting, dir.anyAgent(w.agentId)?.name ?? "") : "";
+      const waiting = widgetWaiting({ status: w.status, wait: w.wait ?? null }, now);
+      const name = dir.anyAgent(w.agentId)?.name ?? "";
+      return waiting ? widgetWaitText(t, i18n.language, waiting, name, new Date(now)) : "";
     },
-    [t, i18n.language, dir],
+    [t, i18n.language, dir, now],
   );
-  const ago = useCallback((iso: string) => relativeTime(t, i18n.language, iso), [t, i18n.language]);
-  return { failure, wait, ago, locale: i18n.language };
+  const ago = useCallback((iso: string) => relativeTime(t, i18n.language, iso, new Date(now)), [t, i18n.language, now]);
+  return { failure, wait, ago, now, locale: i18n.language };
 }

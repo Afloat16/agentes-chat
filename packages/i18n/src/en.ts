@@ -17382,8 +17382,13 @@ export const en = {
       plan: "Waiting for {{name}}'s plan to reset {{when}}",
       planUnknown: "Waiting for {{name}}'s plan to reset",
       budget: "Waiting for {{name}}'s budget to renew {{when}}",
-      budgetUnknown: "Waiting for {{name}}'s budget to renew",
+      /** The agent's other runs hold what is left of its budget for a moment. */
+      budgetSoon: "Waiting a moment for {{name}}'s budget",
       computer: "Waiting for {{name}}'s computer",
+      /** In line behind other work on the computer, for 10 minutes or more. */
+      busy: "Waiting for room on {{name}}'s computer",
+      /** Its AI provider is down or limits the key ({{when}}: when it tries again). */
+      provider: "Waiting for {{name}}'s AI provider, next try {{when}}",
     },
     menu: {
       label: "More",

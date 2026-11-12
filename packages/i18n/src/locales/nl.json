@@ -17383,8 +17383,10 @@
       "plan": "Wacht tot het abonnement van {{name}} {{when}} wordt vernieuwd",
       "planUnknown": "Wacht tot het abonnement van {{name}} wordt vernieuwd",
       "budget": "Wacht tot het budget van {{name}} {{when}} wordt vernieuwd",
-      "budgetUnknown": "Wacht tot het budget van {{name}} wordt vernieuwd",
-      "computer": "Wacht op de computer van {{name}}"
+      "budgetSoon": "Wacht even op het budget van {{name}}",
+      "computer": "Wacht op de computer van {{name}}",
+      "busy": "Wacht op ruimte op de computer van {{name}}",
+      "provider": "Wacht op de AI-aanbieder van {{name}}, volgende poging {{when}}"
     },
     "menu": {
       "label": "Meer",

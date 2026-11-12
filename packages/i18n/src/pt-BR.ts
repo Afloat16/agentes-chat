@@ -17483,8 +17483,10 @@ export const ptBR = {
       plan: "Esperando o plano de {{name}} renovar {{when}}",
       planUnknown: "Esperando o plano de {{name}} renovar",
       budget: "Esperando o orçamento de {{name}} renovar {{when}}",
-      budgetUnknown: "Esperando o orçamento de {{name}} renovar",
+      budgetSoon: "Esperando um instante pelo orçamento de {{name}}",
       computer: "Esperando o computador de {{name}}",
+      busy: "Esperando vaga no computador de {{name}}",
+      provider: "Esperando o provedor de IA de {{name}}, próxima tentativa {{when}}",
     },
     menu: {
       label: "Mais",

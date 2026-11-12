@@ -17842,8 +17842,10 @@
       "plan": "En attente du renouvellement de l'abonnement de {{name}} {{when}}",
       "planUnknown": "En attente du renouvellement de l'abonnement de {{name}}",
       "budget": "En attente du renouvellement du budget de {{name}} {{when}}",
-      "budgetUnknown": "En attente du renouvellement du budget de {{name}}",
-      "computer": "En attente de l'ordinateur de {{name}}"
+      "budgetSoon": "Brève attente du budget de {{name}}",
+      "computer": "En attente de l'ordinateur de {{name}}",
+      "busy": "En attente de place sur l'ordinateur de {{name}}",
+      "provider": "En attente du fournisseur d'IA de {{name}}, prochain essai {{when}}"
     },
     "menu": {
       "label": "Plus",

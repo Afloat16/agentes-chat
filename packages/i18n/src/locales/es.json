@@ -17699,8 +17699,10 @@
       "plan": "Esperando a que el plan de {{name}} se renueve {{when}}",
       "planUnknown": "Esperando a que el plan de {{name}} se renueve",
       "budget": "Esperando a que el presupuesto de {{name}} se renueve {{when}}",
-      "budgetUnknown": "Esperando a que el presupuesto de {{name}} se renueve",
-      "computer": "Esperando la computadora de {{name}}"
+      "budgetSoon": "Esperando un momento el presupuesto de {{name}}",
+      "computer": "Esperando la computadora de {{name}}",
+      "busy": "Esperando lugar en la computadora de {{name}}",
+      "provider": "Esperando al proveedor de IA de {{name}}, próximo intento {{when}}"
     },
     "menu": {
       "label": "Más",

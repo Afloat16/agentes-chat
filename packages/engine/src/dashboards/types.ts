@@ -8,6 +8,7 @@ import type {
   WidgetSpec,
   WidgetStatus,
 } from "@agenteschat/ui/widgets/spec";
+import type { ModelScope } from "../brains/select";
 import type { ContextDeps } from "../context/summaries";
 
 /**
@@ -108,8 +109,8 @@ export const DASHBOARD_ERRORS = {
   /** 409: a draft is confirmed only once its test build worked (`ok`, ADR 0135 §16). */
   notTested: "widget.not_tested",
   /**
-   * 409: Update now or Resolve while its run waits at its plan's or budget's limit, or for its computer: nothing can run
-   * it sooner (`params`: the wait's `code`, `source` and `resetsAt`, and `agentName`).
+   * 409: Update now or Resolve while its run waits at its plan's or budget's limit, for its computer or its AI provider:
+   * nothing can run it sooner (`params`: the wait's `code`, `source`, `resetsAt`, `scope` and `model`, and `agentName`).
    */
   waiting: "widget.waiting",
 } as const;
@@ -230,13 +231,20 @@ export interface WidgetView {
 /**
  * What a widget's refresh run waits on (ADR 0118, ADR 0135 §6): paused near its plan's or budget's limit
  * (`usage_pause`, so Update now lets it go on), at its plan's limit (`plan_limit`), at its agent's budget (`budget`),
- * or for its computer (`computer`). `source`: whose limit (null for the computer). `resetsAt`: when it picks up by
- * itself (null: not known). Waiting its turn on its computer is no wait here: it ends with the turns ahead of it.
+ * for its computer to be back (`computer`) or to have room (`busy`), or for its AI provider to answer (`outage`).
+ * `source`: whose limit (null for the others). `resetsAt`: when it picks up by itself, an outage's next try (null: not
+ * known; a budget's: other runs hold it for a moment). `scope` and `model`: a plan's limit on its model alone
+ * (`ModelScope`), and that model's name. `since`: when a `busy` one began waiting for room (the apps say it once that is
+ * `COMPUTER_QUEUE_NOTE_MS` old, as the chat does). `canContinue`: the viewer may press Continue now on a pause.
  */
 export interface WidgetWaitView {
-  code: "usage_pause" | "plan_limit" | "budget" | "computer";
+  code: "usage_pause" | "plan_limit" | "budget" | "computer" | "busy" | "outage";
   source: "plan" | "budget" | null;
   resetsAt: string | null;
+  scope: ModelScope | null;
+  model: string | null;
+  since: string | null;
+  canContinue: boolean;
 }
 
 export interface DashboardView extends DashboardSummaryView {

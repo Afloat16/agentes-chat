@@ -68,16 +68,23 @@ people than asked.
    creator can no longer run it, and resumes it when it paused itself: failures, its creator gone or out of the board).
    A routine a person paused on purpose in Routines stays paused: "Update now", "Resolve" and "Ask for a change" run
    once, and only Resume in Routines brings the schedule back. While it is `building` or `updating`, a widget whose run
-   waits carries what for (`wait`: paused near its plan's or budget's limit, at that limit, or its computer away, with
-   when it picks up by itself), and the apps say it in place of the spinner ("Waiting for Theo's plan to reset at
-   13:00"), its data as it was. The run's event goes out when it parks and when it goes on. "Update now" and "Resolve"
-   on a waiting widget never do nothing: a pause near the limit goes on now (Continuar agora's rule, ADR 0118), and any
-   other wait is refused with its cause and when it picks up (`widget.waiting`, 409). A refresh isn't long work by
-   kind, so it pauses near the limit only once it grew long (ADR 0118, addendum of 2026-11-11). Each update or
-   failure is kept with what it showed (`dashboard_widget_updates`, the latest 20), shown in the widget's panel. When
-   the alert is on and the agent says its condition was met, the person who set the alert hears it in "Waiting on
-   you" (`widget_alert`, waiting, one row per widget merging while open); never in the chat. A widget that stops
-   updating tells its creator once per failure streak (`widget_failed`, inbox only), resolved by its next good update.
+   waits carries what for (`wait`: paused near its plan's or budget's limit, at that limit, a limit of its model alone
+   with that model's name, its computer away or, after 10 minutes in its line, out of room, or its AI provider down,
+   with when it picks up by itself or tries again), and the apps say it in place of the spinner ("Waiting for Theo's
+   plan to reset at 13:00", a model's own limit in the brain card's words), its data as it was. A budget held only by
+   the agent's other runs reads as a moment's wait, never as the month's. The run's event goes out when it parks, when
+   it goes on and when a long wait for room ends, never on each ask for room, and nothing polls a waiting widget.
+   "Update now" and "Resolve" on a waiting widget never do nothing: a pause near the limit goes on now, for Continuar
+   agora's people and by its rule (ADR 0118; anyone else sees Continue now greyed and is refused with
+   `run.continue_forbidden`, and `wait.canContinue` says which), and any other wait is refused with its cause and when
+   it picks up (`widget.waiting`, 409). Beside the cause, the one thing that ends it sooner, for who may do it: a higher
+   budget (admins), another model for a model's own limit (its owner and admins), or its computer opened. A refresh
+   isn't long work by kind, so it pauses near the limit only once it grew long (ADR 0118, addendum of 2026-11-11). Each
+   update or failure is kept with what it showed (`dashboard_widget_updates`, the latest 20), shown in the widget's
+   panel. When the alert is on and the agent says its condition was met, the person who set the alert hears it in
+   "Waiting on you" (`widget_alert`, waiting, one row per widget merging while open); never in the chat. A widget that
+   stops updating tells its creator once per failure streak (`widget_failed`, inbox only), resolved by its next good
+   update.
 7. **Schedules, the floor, the cap and the cost.** Every 30 minutes (`half`), every hour, every day at 08:00, every
    Monday at 08:00 (in the time zone of whoever set it up), or only when asked (`manual`): never more often than every
    30 minutes, so the 15-minute floor of routines never binds. A workspace keeps at most 60 widgets updating on a

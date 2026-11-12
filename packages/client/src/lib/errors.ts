@@ -722,9 +722,9 @@ export function knownErrorText(t: TFunction, error: unknown, locale = "en"): str
     return t("agentPage.activity.errors.missing_credential", error.params);
   // A widget's run waits (Update now, Resolve): what for, and when it picks up, on the reader's clock.
   if (error.code === "widget.waiting") {
-    const wait = widgetWaitOf(error.params) ?? { code: "plan_limit", source: "plan", resetsAt: null };
+    const wait = widgetWaitOf(error.params);
     const name = typeof error.params?.agentName === "string" ? error.params.agentName : "";
-    return widgetWaitText(t, locale, wait, name);
+    return wait ? widgetWaitText(t, locale, wait, name) : t("widgets.wait.planUnknown", { name });
   }
   // Own keys only: a code from an address (`/login?error=toString`) names no line of Object's.
   const key = Object.hasOwn(KNOWN, error.code) ? KNOWN[error.code as keyof typeof KNOWN] : undefined;

@@ -16833,8 +16833,10 @@
       "plan": "正在等待 {{name}} 的套餐在 {{when}} 重置",
       "planUnknown": "正在等待 {{name}} 的套餐重置",
       "budget": "正在等待 {{name}} 的预算在 {{when}} 更新",
-      "budgetUnknown": "正在等待 {{name}} 的预算更新",
-      "computer": "正在等待 {{name}} 的电脑"
+      "budgetSoon": "正在短暂等待 {{name}} 的预算",
+      "computer": "正在等待 {{name}} 的电脑",
+      "busy": "正在等待 {{name}} 的电脑空出位置",
+      "provider": "正在等待 {{name}} 的 AI 服务商，将于 {{when}} 重试"
     },
     "menu": {
       "label": "更多",

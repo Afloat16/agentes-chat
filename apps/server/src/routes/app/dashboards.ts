@@ -386,7 +386,7 @@ export function dashboardRoutes(deps: AppDeps) {
       security,
       summary: "Update now, or Resolve a failed widget: its agent redoes it",
       description:
-        "While its run waits: one paused near its plan's or budget's limit goes on now (`routine.continue_*` when that would pass the plan with extra usage off). One at the limit, or waiting for its computer, is refused with `widget.waiting` (409, `params`: the wait's `code`, `source`, `resetsAt` and `agentName`).",
+        "While its run waits: one paused near its plan's or budget's limit goes on now, for who may continue it (`run.continue_forbidden`, 403, for anyone else; `routine.continue_*` when that would pass the plan with extra usage off). One at the limit, or waiting for its computer or its AI provider, is refused with `widget.waiting` (409, `params`: the wait's `code`, `source`, `resetsAt`, `scope` and `model`, and `agentName`).",
       request: { params: WidgetParams },
       responses: { 200: json(Widget), ...errors },
     }),

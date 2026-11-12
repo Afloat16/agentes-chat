@@ -11,14 +11,14 @@ import { nextCronTime } from "../cron";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../errors";
 import { publishRoutineRuns } from "../events";
 import { notifyWidgetAlert, resolveRoutinePaused, resolveWidgetFailed } from "../notification-producers";
-import { can, getMembership } from "../organizations";
+import { can, getMembership, type Membership } from "../organizations";
 import { type EventMerge, queueEventRun, routineInFlight } from "../routine-events";
 import { haltRoutineRuns } from "../routine-firing";
 import { queueRoutineRun } from "../routines";
 import { assertMayContinuePause, overrideUsagePause } from "../usage-pause";
 import { dashboardRights, requireWidget, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
-import { WIDGET_CHANGE_EVENT, type WidgetRunWait, widgetRunWaits } from "./refresh-fire";
+import { mayContinueWidgetWait, WIDGET_CHANGE_EVENT, type WidgetRunWait, widgetRunWaits } from "./refresh-fire";
 import { failWidget, trimWidgetHistory, widgetChangeOf, widgetNoticesDone } from "./refresh-ledger";
 import { widgetView } from "./service";
 import {
@@ -340,39 +340,45 @@ export async function refreshWidgetNow(
   orgId: string,
   widgetId: string,
 ): Promise<WidgetView> {
-  const { widget, board } = actorId
-    ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit")
-    : await loadWidget(deps.db, orgId, widgetId);
+  const access = actorId ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit") : null;
+  const { widget, board } = access ?? (await loadWidget(deps.db, orgId, widgetId));
+  const viewer = access?.viewer ?? null;
   const routine = await readyRoutine(deps, orgId, widget, board, actorId);
   if (await routineInFlight(deps.db, routine.id)) {
-    const wait = actorId ? (await widgetRunWaits(deps.db, [routine.id])).get(routine.id) : undefined;
-    if (actorId && wait) await goOnNow(deps, actorId, orgId, routine.id, widget.agentId, wait);
-    const view = await widgetView(deps.db, await widgetRow(deps.db, widget.id));
+    const wait = access ? (await widgetRunWaits(deps.db, [routine.id])).get(routine.id) : undefined;
+    if (actorId && access && wait) await goOnNow(deps, actorId, access.membership, routine.id, widget.agentId, wait);
+    const view = await widgetView(deps.db, await widgetRow(deps.db, widget.id), viewer);
     return wait ? { ...view, wait: null } : view;
   }
   await queueRoutineRun({ db: deps.db }, routine, nowOf(deps), "manual");
   const row = await markBusy(deps, await widgetRow(deps.db, widget.id), board);
   await publishRoutineRuns(deps.pubsub, orgId, routine.id).catch(() => {});
-  return widgetView(deps.db, row);
+  return widgetView(deps.db, row, viewer);
 }
 
 /**
  * "Update now" and "Resolve" while the widget's run waits (ADR 0118, ADR 0135 §6): one paused near its plan's or
- * budget's limit goes on now, by Continuar agora's rule (`assertMayContinuePause`: never past the plan with extra usage
- * off); one at the limit, or waiting for its computer, can't, and the person hears why and when it picks up
- * (`widget.waiting`). One whose reset passed is about to go on by itself.
+ * budget's limit goes on now, for Continuar agora's people (`mayContinueWidgetWait`) and by its rule
+ * (`assertMayContinuePause`: never past the plan with extra usage off); one at the limit, or waiting for its computer
+ * or its AI provider, can't, and the person hears why and when it picks up (`widget.waiting`). One whose reset (an
+ * outage's next try) passed is about to go on by itself.
  */
 async function goOnNow(
   deps: DashboardDeps,
   actorId: string,
-  orgId: string,
+  membership: Membership,
   routineId: string,
   agentId: string,
   wait: WidgetRunWait,
 ) {
   if (wait.resetsAt && Date.parse(wait.resetsAt) <= nowOf(deps).getTime()) return;
-  const { runId, waitId } = wait;
+  const { orgId, runId, waitId } = wait;
   if (wait.code === "usage_pause" && waitId) {
+    if (!(await mayContinueWidgetWait(deps.db, actorId, membership, wait)))
+      throw new ForbiddenError(
+        "Only who asked, the agent's owner or an admin can continue it",
+        "run.continue_forbidden",
+      );
     await assertMayContinuePause(deps.db, orgId, runId, "routine");
     await deps.db.transaction((tx) =>
       overrideUsagePause(tx, {
@@ -388,12 +394,14 @@ async function goOnNow(
   }
   const agent = await getAgent(deps.db, orgId, agentId);
   throw new ConflictError(
-    "Its run waits for its plan, budget or computer: it can't update sooner",
+    "Its run waits for its plan, budget, computer or AI provider: it can't update sooner",
     DASHBOARD_ERRORS.waiting,
     {
       code: wait.code,
       source: wait.source,
       resetsAt: wait.resetsAt,
+      scope: wait.scope,
+      model: wait.model,
       agentName: agent?.name ?? "",
     },
   );
@@ -421,7 +429,7 @@ export async function askWidgetChange(
   widgetId: string,
   text: string,
 ): Promise<WidgetView> {
-  const { widget, board } = await requireWidget(deps.db, actorId, orgId, widgetId, "edit");
+  const { widget, board, viewer } = await requireWidget(deps.db, actorId, orgId, widgetId, "edit");
   const words = text.trim().slice(0, WIDGET_CHANGE_MAX);
   if (!words) throw new ValidationError("Say what to change", DASHBOARD_ERRORS.promptRequired);
   await requireTalksTo(deps.db, orgId, actorId, widget.agentId);
@@ -430,7 +438,7 @@ export async function askWidgetChange(
   await queueEventRun({ db: deps.db }, routine, { event, merge: mergeChanges });
   const row = await markBusy(deps, await widgetRow(deps.db, widget.id), board);
   await publishRoutineRuns(deps.pubsub, orgId, routine.id).catch(() => {});
-  return widgetView(deps.db, row);
+  return widgetView(deps.db, row, viewer);
 }
 
 /** Who hears a widget's alert (ADR 0135 §6): whoever set it (else its creator), while they still see its board. */

@@ -1,7 +1,8 @@
 import type { TFunction } from "i18next";
 import { activityVerb, toolActivity } from "../lib/activity";
 import { capitalize } from "../lib/format";
-import { usageWhen } from "../lib/plan-usage";
+import { modelLimitWords, usageWhen } from "../lib/plan-usage";
+import { waitFix } from "../lib/usage-pause";
 import type {
   DashboardAudience,
   DashboardEditPolicy,
@@ -247,24 +248,32 @@ export function widgetCostLine(
   return schedule === "week" ? { kind: "week", usd } : { kind: "day", usd };
 }
 
-/** The widgets of a board that are updating or being built (a sweep on each). */
-export const busyWidgets = (widgets: readonly Widget[]) =>
-  widgets.filter((w) => w.status === "updating" || w.status === "building");
+/** The widgets of a board at work: updating or being built (a sweep on each), and not standing still on a wait. */
+export const busyWidgets = (widgets: readonly Widget[], now = Date.now()) =>
+  widgets.filter((w) => (w.status === "updating" || w.status === "building") && !widgetWaiting(w, now));
+
+/** Waiting for room on its computer is said only past this long (the engine's `COMPUTER_QUEUE_NOTE_MS`). */
+export const WIDGET_LINE_NOTE_MS = 10 * 60_000;
 
 /**
- * What holds a widget's refresh (`Widget.wait`) while it still does: its reset ahead, or not known. Past its reset it
- * is about to go on, so the apps show it at work again. Null: nothing waits.
+ * What holds a widget's refresh (`Widget.wait`) while it still does: its reset (an outage's next try) ahead, or not
+ * known. Past its reset it is about to go on, so the apps show it at work again, as they do for room on its computer
+ * until it waited `WIDGET_LINE_NOTE_MS`. Null: nothing waits.
  */
 export function widgetWaiting(w: Pick<Widget, "status" | "wait">, now = Date.now()): WidgetWait | null {
-  if (!w.wait || (w.status !== "building" && w.status !== "updating")) return null;
-  return w.wait.resetsAt && Date.parse(w.wait.resetsAt) <= now ? null : w.wait;
+  const wait = w.wait;
+  if (!wait || (w.status !== "building" && w.status !== "updating")) return null;
+  if (wait.code === "busy") return wait.since && now - Date.parse(wait.since) >= WIDGET_LINE_NOTE_MS ? wait : null;
+  return wait.resetsAt && Date.parse(wait.resetsAt) <= now ? null : wait;
 }
 
 /** The status a widget's card draws: one whose refresh waits (`widgetWaiting`) stands still, its data as it was. */
 export const widgetCardStatus = (w: Pick<Widget, "status" | "wait">, now = Date.now()): WidgetStatus =>
   widgetWaiting(w, now) ? "ok" : w.status;
 
-const WAIT_CODES: readonly string[] = ["usage_pause", "plan_limit", "budget", "computer"];
+const WAIT_CODES: readonly string[] = ["usage_pause", "plan_limit", "budget", "computer", "busy", "outage"];
+const WAIT_SCOPES: readonly string[] = ["model", "region", "off", "inactive"];
+const textOf = (v: unknown) => (typeof v === "string" && v ? v : null);
 
 /** A wait as the server sends it (`Widget.wait`, the params of a `widget.waiting` refusal); null when it isn't one. */
 export function widgetWaitOf(raw: unknown): WidgetWait | null {
@@ -273,19 +282,47 @@ export function widgetWaitOf(raw: unknown): WidgetWait | null {
   return {
     code: w.code as WidgetWait["code"],
     source: w.source === "plan" || w.source === "budget" ? w.source : null,
-    resetsAt: typeof w.resetsAt === "string" && w.resetsAt ? w.resetsAt : null,
+    resetsAt: textOf(w.resetsAt),
+    scope: typeof w.scope === "string" && WAIT_SCOPES.includes(w.scope) ? (w.scope as WidgetWait["scope"]) : null,
+    model: textOf(w.model),
+    since: textOf(w.since),
+    canContinue: w.canContinue === true,
   };
 }
 
 /**
  * A wait in the reader's words, on the widget and when Update now can't go sooner: "Waiting for Theo's plan to reset
- * at 13:00", "Waiting for Theo's budget to renew on December 1", "Waiting for Theo's computer".
+ * at 13:00", "Waiting for Theo's budget to renew on December 1", its model's own limit as the brain card says it,
+ * "Waiting for room on Theo's computer", "Waiting for Theo's AI provider, next try at 13:05".
  */
 export function widgetWaitText(t: TFunction, locale: string, wait: WidgetWait, name: string, now = new Date()) {
+  const when = (iso: string) => usageWhen(t, locale, iso, now);
   if (wait.code === "computer") return t("widgets.wait.computer", { name });
-  const on = wait.source === "budget" ? "budget" : "plan";
-  if (!wait.resetsAt) return t(`widgets.wait.${on}Unknown`, { name });
-  return t(`widgets.wait.${on}`, { name, when: usageWhen(t, locale, wait.resetsAt, now) });
+  if (wait.code === "busy") return t("widgets.wait.busy", { name });
+  if (wait.code === "outage")
+    return wait.resetsAt
+      ? t("widgets.wait.provider", { name, when: when(wait.resetsAt) })
+      : t("presence.agent.provider_down");
+  if (wait.scope && wait.model) {
+    const { scope } = wait;
+    const until = wait.resetsAt ? Date.parse(wait.resetsAt) : null;
+    const limit = { until, region: scope === "region", off: scope === "off", inactive: scope === "inactive" };
+    return modelLimitWords(t, locale, limit, wait.model, now);
+  }
+  const budget = wait.source === "budget";
+  if (!wait.resetsAt) return t(budget ? "widgets.wait.budgetSoon" : "widgets.wait.planUnknown", { name });
+  return t(budget ? "widgets.wait.budget" : "widgets.wait.plan", { name, when: when(wait.resetsAt) });
+}
+
+/**
+ * The one thing that ends a widget's wait sooner, for who may do it (`waitFix`): a higher budget (admins), another model
+ * for one at a limit of its own (its owner, admins), or its computer opened. Null: only time ends it.
+ */
+export function widgetWaitFix(wait: WidgetWait, who: { admin: boolean; owner: boolean }) {
+  if (wait.code === "computer" || wait.code === "busy") return "openComputer" as const;
+  const on =
+    wait.code === "budget" && wait.resetsAt ? "budget" : wait.code === "plan_limit" && wait.scope ? "model" : null;
+  return waitFix(on, who);
 }
 
 /** A build that takes longer than this says it is still at it. */

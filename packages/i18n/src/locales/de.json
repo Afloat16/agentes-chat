@@ -17207,8 +17207,10 @@
       "plan": "Wartet, bis das Abo von {{name}} {{when}} zurückgesetzt wird",
       "planUnknown": "Wartet, bis das Abo von {{name}} zurückgesetzt wird",
       "budget": "Wartet, bis das Budget von {{name}} {{when}} erneuert wird",
-      "budgetUnknown": "Wartet, bis das Budget von {{name}} erneuert wird",
-      "computer": "Wartet auf den Computer von {{name}}"
+      "budgetSoon": "Wartet kurz auf das Budget von {{name}}",
+      "computer": "Wartet auf den Computer von {{name}}",
+      "busy": "Wartet auf Platz am Computer von {{name}}",
+      "provider": "Wartet auf den KI-Anbieter von {{name}}, nächster Versuch {{when}}"
     },
     "menu": {
       "label": "Mehr",

@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { MACHINE_PROTOCOL_VERSION } from "@agenteschat/adapters";
+import { MACHINE_PROTOCOL_VERSION, userTopic } from "@agenteschat/adapters";
 import { and, eq, schema } from "@agenteschat/db";
 import { extraUsageLeft, extraUsageOn, planBinding } from "@agenteschat/ui/plan-state";
 import {
@@ -8,6 +8,8 @@ import {
   type Brain,
   type BrainEvent,
   type BrainTurn,
+  COMPUTER_BUSY_RETRY_MS,
+  COMPUTER_QUEUE_NOTE_MS,
   cancelRun,
   clearPlanLimits,
   continueRoutineUsagePause,
@@ -18,6 +20,7 @@ import {
   drainOutbox,
   enqueueRunJob,
   getRoutineView,
+  getWidget,
   holdsMessages,
   insertMessage,
   isLongWork,
@@ -581,6 +584,56 @@ test("a widget's test raises no notice that its computer is away either, where a
     .where(eq(schema.notifications.kind, "routine_stalled"));
   expect(heard.length).toBeGreaterThan(0);
   expect(heard.every((n) => n.groupKey.startsWith(`routine_stalled:${routine.id}:`))).toBe(true);
+});
+
+test("a widget's refresh in line for its computer: asking again tells its widget nothing, its turn starting does", async () => {
+  f = await setup();
+  await computerAgent(f);
+  let room = false;
+  const { brain } = scripted(() =>
+    room
+      ? [{ type: "done", text: "ok" }]
+      : [{ type: "error", code: "busy", message: "The computer is busy.", retryable: true }],
+  );
+  const handlers = handlersWith(f, brain);
+  const deps = { db: f.db, pubsub: f.pubsub, context: f.context };
+  const board = await createDashboard(deps, f.owner.id, f.org.id, {
+    title: "Vendas",
+    audience: "private",
+    editPolicy: "owner",
+  });
+  const statuses: string[] = [];
+  f.pubsub.subscribe(userTopic(f.org.id, f.owner.id), (e) => {
+    const event = e as { type: string; status?: string };
+    if (event.type === "dashboard.widget" && event.status) statuses.push(event.status);
+  });
+  const w = await createWidget(deps, f.owner.id, f.org.id, board.id, {
+    agentId: f.agent.id,
+    prompt: "vendas de hoje",
+    format: "kpi",
+    schedule: "manual",
+  });
+  await drainOutbox(f.db, handlers);
+  const [run] = await runs(f);
+  if (!run) throw new Error("no run");
+  expect(run.transcript).toMatchObject({ waitingForBrain: { code: "busy" } });
+  const parked = statuses.length;
+  await drainOutbox(f.db, handlers, { now: later(COMPUTER_BUSY_RETRY_MS + 1_000) });
+  await drainOutbox(f.db, handlers, { now: later(2 * (COMPUTER_BUSY_RETRY_MS + 1_000)) });
+  expect((await runs(f))[0]?.status).toBe("waiting_input");
+  expect(statuses).toHaveLength(parked);
+
+  // In line past ten minutes, the widget says so; the turn that finds room tells it, before the run ends.
+  const [row] = await f.db.select().from(schema.agentRuns).where(eq(schema.agentRuns.id, run.id));
+  await f.db
+    .update(schema.agentRuns)
+    .set({ transcript: { ...row?.transcript, roomWaitSince: Date.now() - COMPUTER_QUEUE_NOTE_MS - 1_000 } })
+    .where(eq(schema.agentRuns.id, run.id));
+  expect((await getWidget(deps, f.owner.id, f.org.id, w.id)).wait).toMatchObject({ code: "busy" });
+  room = true;
+  await drainOutbox(f.db, handlers, { now: later(3 * (COMPUTER_BUSY_RETRY_MS + 1_000)) });
+  expect(statuses[parked]).toBe("building");
+  expect(statuses.length).toBeGreaterThan(parked + 1);
 });
 
 test("a widget's refresh isn't long work by kind: at 96% of the plan its slot runs, where a routine's slot pauses", async () => {

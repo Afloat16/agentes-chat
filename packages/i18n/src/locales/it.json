@@ -17846,8 +17846,10 @@
       "plan": "In attesa che il piano di {{name}} si rinnovi {{when}}",
       "planUnknown": "In attesa che il piano di {{name}} si rinnovi",
       "budget": "In attesa che il budget di {{name}} si rinnovi {{when}}",
-      "budgetUnknown": "In attesa che il budget di {{name}} si rinnovi",
-      "computer": "In attesa del computer di {{name}}"
+      "budgetSoon": "Breve attesa del budget di {{name}}",
+      "computer": "In attesa del computer di {{name}}",
+      "busy": "In attesa di spazio sul computer di {{name}}",
+      "provider": "In attesa del provider IA di {{name}}, prossimo tentativo {{when}}"
     },
     "menu": {
       "label": "Altro",

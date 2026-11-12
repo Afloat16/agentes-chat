@@ -689,7 +689,7 @@ export function WidgetCard({
   const large = big || isTall(w.h ?? 1);
   const title = shownWidgetTitle(w.title, w.kind, (key) => t(key));
   // A refresh that waits stands still and says what for: its data as it was, or (with none yet) under a still sweep.
-  const status = widgetCardStatus({ status: w.status, wait: w.wait ?? null });
+  const status = widgetCardStatus({ status: w.status, wait: w.wait ?? null }, words.now);
   const waits = status !== w.status;
   const shownBody =
     body !== undefined ? (

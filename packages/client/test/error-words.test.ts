@@ -178,10 +178,16 @@ describe("a failed request in the person's words (errorText)", () => {
     const waiting = (params: Record<string, unknown>) =>
       new ApiError(409, "widget.waiting", "Its run waits for its plan, budget or computer", params);
     const budget = waiting({ code: "budget", source: "budget", resetsAt: null, agentName: "Theo" });
-    expect(errorText(lang("en"), budget)).toBe("Waiting for Theo's budget to renew");
-    expect(errorText(lang("pt-BR"), budget)).toBe("Esperando o orçamento de Theo renovar");
+    expect(errorText(lang("en"), budget)).toBe("Waiting a moment for Theo's budget");
+    expect(errorText(lang("pt-BR"), budget)).toBe("Esperando um instante pelo orçamento de Theo");
     expect(errorText(lang("en"), waiting({ code: "computer", source: null, resetsAt: null, agentName: "Theo" }))).toBe(
       "Waiting for Theo's computer",
+    );
+    // A limit of its model alone names the model and what it needs, never the plan's reset.
+    const region = waiting({ code: "plan_limit", source: "plan", scope: "region", model: "DeepSeek V4 Pro" });
+    expect(errorText(lang("en"), region)).toStartWith("DeepSeek V4 Pro needs the Global region turned on in OpenCode");
+    expect(errorText(lang("en"), waiting({ code: "busy", agentName: "Theo" }))).toBe(
+      "Waiting for room on Theo's computer",
     );
   });
 

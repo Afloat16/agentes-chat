@@ -660,8 +660,8 @@ export interface Transcript {
   usageWait?: { since: number; step: number; noticed?: boolean; parkedAt?: number; resetsAt?: string };
   /**
    * The provider failed every attempt with a retryable error (I5): the run is parked on `OUTAGE_PARK`'s ladder
-   * (`waitId`: the job that resumes it) since `since` (ms), `n` times so far. Cleared by the next model call that
-   * answers. On a rate limit it also waits in its key's line (`key-line.ts`).
+   * (`waitId`: the job that resumes it, at `at`) since `since` (ms), `n` times so far. Cleared by the next model call
+   * that answers. On a rate limit it also waits in its key's line (`key-line.ts`).
    */
   outage?: { since: number; n: number; waitId: string; noteId?: string } & KeyLinePlace;
   /**
@@ -1448,6 +1448,10 @@ async function executeRunInner(
     await publishChannelEvent(deps.pubsub, event("running"));
     await announceAgentStatus(deps.pubsub, run.orgId, run.agentId).catch(() => {});
     await publishQueueChanged(deps.pubsub, run.orgId, machineId);
+    // A widget says it waits for room once that wait is `COMPUTER_QUEUE_NOTE_MS` old: it hears the turn started.
+    const since = transcript?.roomWaitSince;
+    if (since !== undefined && Date.now() - since >= COMPUTER_QUEUE_NOTE_MS)
+      await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
   };
   /** Writes that don't need to finish before the model call (steps, usage log); flushed after it. */
   let deferred: Promise<unknown> = Promise.resolve();
@@ -2359,7 +2363,7 @@ async function executeRunInner(
     const minutes = line && people ? Math.min(step, KEY_LINE_PERSON_MINUTES) : step;
     const at = Date.now() + minutes * 60_000;
     const noteId = t.outage?.noteId;
-    t.outage = { since, n: n + 1, waitId, ...(noteId ? { noteId } : {}), ...(line ? { line, at, people } : {}) };
+    t.outage = { since, n: n + 1, waitId, at, ...(noteId ? { noteId } : {}), ...(line ? { line, people } : {}) };
     // The computer failing on its own waits on the same ladder as a wait for that computer: the apps say it waits for
     // its computer, and the computer coming back resumes it (`resumeRunsWaitingForMachine`).
     const own = error instanceof BrainFailure && computersOwn(error, plan.account) ? error.code : null;
@@ -2410,16 +2414,17 @@ async function executeRunInner(
     const outage = machineId ? undefined : true;
     const computer = machineId ? "away" : undefined;
     await publishChannelEvent(deps.pubsub, event("waiting_input", undefined, outage, computer));
+    await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
     await finished("waiting_input", undefined, outage, computer);
     return true;
   };
 
-  // Back from waiting for the computer: it is tried again below.
+  // Back from waiting for the computer: it is tried again below. Asking for room again ends no wait anyone reads.
   const backFromComputerWait = Boolean(transcript.waitingForBrain);
   if (backFromComputerWait) {
     delete transcript.waitingForBrain;
     await saveTranscript(db, transcript);
-    await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    if (!askingForRoom) await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
   }
   // Resuming after approvals: run what was approved, report what was refused.
   if (transcript.pending) {
