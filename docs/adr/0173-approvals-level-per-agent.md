@@ -4,7 +4,7 @@
 - Date: 2026-11-11
 - Extends: ADR 0015 (Tool Gateway and approvals, "Aprovar sempre"), ADR 0053 (who is behind a run, a routine's
   bounds), ADR 0131 (autonomy brakes)
-- Code: `packages/db/src/schema/agents.ts` (`approvals_level`, migration `0253_agent_approvals_level`),
+- Code: `packages/db/src/schema/agents.ts` (`approvals_level`, migration `0254_agent_approvals_level`),
   `packages/engine/src/tools/run-policy.ts` (`ApprovalsLevel`, `approvalsLevelOf`, `toolPolicy`'s third argument),
   `packages/engine/src/tools/gateway.ts` (`unaskedAtNever`, the listing and the call), `packages/engine/src/agents.ts`
   (who sets it), `packages/engine/src/agent-audit.ts` (`approvalsLevel: "never"` on a call that ran unasked),

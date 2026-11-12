@@ -32143,6 +32143,9 @@
   "errors.machine.targetPaused": {
     "value": "That computer is paused. Choose another one."
   },
+  "errors.machine.pausePast": {
+    "value": "Choose a time in the future."
+  },
   "errors.machine.accountMethodUnsupported": {
     "value": "This computer can't connect Claude this way yet. Update the agentes.chat program on it, or use an API key."
   },
@@ -32454,6 +32457,45 @@
   },
   "machines.pausedHint": {
     "value": "Paused on the computer itself by whoever connected it."
+  },
+  "machines.remotePause.button": {
+    "value": "Pause"
+  },
+  "machines.remotePause.menu": {
+    "value": "Pause {{name}}"
+  },
+  "machines.remotePause.oneHour": {
+    "value": "For 1 hour"
+  },
+  "machines.remotePause.tomorrow": {
+    "value": "Until tomorrow at 9 AM"
+  },
+  "machines.remotePause.manual": {
+    "value": "Until I resume"
+  },
+  "machines.remotePause.resume": {
+    "value": "Resume"
+  },
+  "machines.remotePause.byYou": {
+    "value": "Paused by you."
+  },
+  "machines.remotePause.byYouUntil": {
+    "value": "Paused by you until {{time}}."
+  },
+  "machines.remotePause.byName": {
+    "value": "Paused by {{name}}."
+  },
+  "machines.remotePause.byNameUntil": {
+    "value": "Paused by {{name}} until {{time}}."
+  },
+  "machines.remotePause.outdated": {
+    "value": "Update the agentes.chat app on this computer to pause it from here."
+  },
+  "machines.remotePause.paused": {
+    "value": "{{name}} is paused"
+  },
+  "machines.remotePause.resumed": {
+    "value": "{{name}} is back to work"
   },
   "machines.seenNow": {
     "value": "connected now"
@@ -33536,6 +33578,12 @@
   },
   "devices.choose.serverLine": {
     "value": "One line to paste in its terminal"
+  },
+  "devices.choose.httpLine": {
+    "value": "One line to paste in its terminal. The app connects in one click on an https address."
+  },
+  "devices.choose.httpHow": {
+    "value": "How"
   },
   "devices.choose.other": {
     "value": "Another computer"
