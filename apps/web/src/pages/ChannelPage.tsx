@@ -1697,52 +1697,27 @@ function ChannelView({
 
   // `[[` in the composer links wiki pages.
   const wikiPages = useWikiTree(org.id);
-  // Composer context: who it goes to (the DM agent, or the agents @mentioned in the draft).
   const dmAgent = chrome?.dmAgentId ? dir.agentById.get(chrome.dmAgentId) : undefined;
   const look = useConversationLook(
     Boolean(chrome?.dmAgentId || chrome?.dmPersonId || thread?.channelKind === "dm"),
     dmAgent ? colorOf(dmAgent) : undefined,
   );
   const namedLook = useMemo(() => ({ ...look, names: true, faces: true }), [look]);
-  const draftAgents = useMemo(
-    () =>
-      [
-        ...new Set(
-          tokenizeBody(draft).flatMap((tok) =>
-            tok.type === "mention" ? [dir.agentByHandle.get(tok.handle.toLowerCase())?.id] : [],
-          ),
-        ),
-      ]
-        .map((id) => (id ? dir.agentById.get(id) : undefined))
-        .filter((a): a is Agent => Boolean(a)),
-    [draft, dir.agentByHandle, dir.agentById],
-  );
-  const pillAgents = dmAgent ? [dmAgent] : draftAgents;
-  const composerPills =
-    pillAgents.length > 0 || missionReply ? (
-      <>
-        {missionReply && (
-          <span className="ac-composer__pill composer-reply">
-            <Icon name="message" size={14} />
-            <span className="ac-composer__pill-text">{t("missions.reply.pill", { label: missionReply.label })}</span>
-            <button
-              type="button"
-              className="composer-reply__close"
-              aria-label={t("missions.reply.cancel")}
-              onClick={() => setMissionReply(null)}
-            >
-              <Icon name="close" size={14} />
-            </button>
-          </span>
-        )}
-        {pillAgents.map((a) => (
-          <span key={a.id} className="ac-composer__agent">
-            <AgentAvatar agentId={a.id} channelId={channel.id} name={a.name} size="xs" />
-            <span className="ac-composer__pill-text">{a.name}</span>
-          </span>
-        ))}
-      </>
-    ) : undefined;
+  // The composer's one pill: the mission this message answers, which can be called off.
+  const composerPills = missionReply ? (
+    <span className="ac-composer__pill composer-reply">
+      <Icon name="message" size={14} />
+      <span className="ac-composer__pill-text">{t("missions.reply.pill", { label: missionReply.label })}</span>
+      <button
+        type="button"
+        className="composer-reply__close"
+        aria-label={t("missions.reply.cancel")}
+        onClick={() => setMissionReply(null)}
+      >
+        <Icon name="close" size={14} />
+      </button>
+    </span>
+  ) : undefined;
   // "/" commands, for the DM agent or the channel's suggested agent.
   const commandAgent = dmAgent ?? suggestedAgent;
   const navigateTo = useNavigate();
@@ -2340,7 +2315,7 @@ function ChannelView({
     };
   }, [channelAgents, inThread, replies]);
 
-  // A DM with an agent: the agent's chip sits in the composer's toolbar row.
+  // A DM with an agent (not one of its threads): its side column.
   const agentDm = Boolean(chrome?.dmAgentId) && !thread;
   const tasksControl = useMemo(
     () => (tasksAgentId ? { tasks: agentTasks, open: tasksOpen, toggle: toggleTasks } : null),
@@ -2784,7 +2759,6 @@ function ChannelView({
                                 sendText={t("channel.send")}
                                 attachLabel={t("channel.attach")}
                                 pills={composerPills}
-                                inlinePills={agentDm}
                                 links={{
                                   listLabel: t("wiki.editor.suggest"),
                                   search: (q) =>

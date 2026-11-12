@@ -416,7 +416,7 @@ describe("single-line controls", () => {
       ".ac-palette__q input",
       ".ac-seg__item",
       ".ac-filtertoggle",
-      ".ac-composer__pill,\n.ac-composer__agent",
+      ".ac-composer__pill",
       ".ac-recur__day",
       ".ac-react",
     ]) {
