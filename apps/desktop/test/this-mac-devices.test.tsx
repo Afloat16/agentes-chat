@@ -93,6 +93,22 @@ describe("Preferences › This Mac", () => {
       writePref(IPHONE_SETUP_PREF, false);
     }));
 
+  test("an iPhone on this Mac's Wi-Fi: offered, used once picked, and let go again", () =>
+    mount("prefs", <OneWorkspace />, async (el, host) => {
+      const offer = "Also on this Mac's Wi-Fi: Ana's iPhone 14";
+      await until(() => rowOf(el, offer));
+      expect(host.site.calls.some((c) => c.method === "PUT")).toBe(false);
+      await act(async () => button(rowOf(el, offer), "Use over Wi-Fi")?.click());
+      await until(() => rowOf(el, "Ana's iPhone 14"));
+      expect(rowOf(el, offer)).toBeUndefined();
+      expect(host.site.calls.find((c) => c.method === "PUT")?.path).toMatch(
+        /^\/api\/app\/organizations\/org_acme\/devices\/computers\/[^/]+\/wifi-iphones\/00008120-000A1B2C3D4E5F60$/,
+      );
+      // Over Wi-Fi now, its helper still being set up: Show me how, as for one on the cable.
+      const phone = rowOf(el, "Ana's iPhone 14");
+      expect(button(phone, "Show me how")).toBeTruthy();
+    }));
+
   test("signed out on that server: says so, with the way to sign in", () =>
     mount("prefs", <OneWorkspace />, async (el, host) => {
       host.site.signedOut = true;
