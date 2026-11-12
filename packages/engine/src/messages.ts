@@ -49,7 +49,7 @@ import { computerWaitSql, KEPT_ON_HOLD, NO_AI, outageParkedSql, passedSql, runEr
 import { accountInUse, closedRefusal } from "./standing";
 import { afterSteered } from "./steering";
 import type { Talker } from "./talker";
-import { admitTaskAgents, taskReaderSql } from "./task-access";
+import { admitTaskAgents, taskAgentSql, taskReaderSql } from "./task-access";
 import { WEB_USAGE_PROVIDER } from "./web-tools";
 import { syncWikiLinks, withWikiLinks } from "./wiki-links";
 import { type WorkView, workViews } from "./works";
@@ -872,6 +872,14 @@ export async function insertMessageWithRuns(
           and not ${forAnother(sql`w.agent_id`)}
           and exists (select 1 from ${channels} wc where wc.id = ${input.channelId}::uuid and wc.kind = 'channel')
           and ${audienceSql("wa", sql`${userId}::text`, inChannel)}
+      ), task_agent as (
+        -- A task's conversation is a DM with the task's agent: what names nobody there is for it, an ok or a status
+        -- line too ("feito", "pago"), never the router's to drop. Naming a person there still goes to the router.
+        select ${taskAgentSql(sql`${input.channelId}::uuid`)} as agent_id
+        where ${startRuns}::boolean and not exists (select 1 from mentioned)
+          and not exists (select 1 from mentioned_people) and not exists (select 1 from task_readers_named)
+          and ${quotedAgentId}::uuid is null
+          and exists (select 1 from ${channels} tc where tc.id = ${input.channelId}::uuid and tc.kind = 'task')
       ), addressed as (
         select a.id as agent_id,
           case when exists (select 1 from mentioned) or a.id in (select agent_id from work_thread) then 'mention'
@@ -885,6 +893,7 @@ export async function insertMessageWithRuns(
           and a.id not in (select agent_id from answered)
           and a.id <> all(${referenced}::uuid[])
           and (a.id in (select id from mentioned) or a.id in (select agent_id from work_thread)
+            or a.id in (select agent_id from task_agent)
             or (not exists (select 1 from mentioned) and not exists (select 1 from answered) and exists (
               select 1 from ${channels} c where c.id = ${input.channelId}::uuid and c.kind = 'dm')))
       ), answering as (
@@ -1000,6 +1009,9 @@ export async function insertMessageWithRuns(
             || coalesce((select jsonb_build_object('answersQuestionId', id) from answered), '{}'::jsonb)
             -- For an agent's background work, answered by its own reply turn: nobody routes it again.
             || coalesce((select jsonb_build_object('forWork', true) from work_thread limit 1), '{}'::jsonb)
+            -- For the task's agent, which answers it as in a DM: nobody routes it again.
+            || coalesce((select jsonb_build_object('forTask', true) from task_agent where agent_id is not null
+                and agent_id not in (select agent_id from answered)), '{}'::jsonb)
             -- Delivered to a task in progress: nobody routes it again (no second run).
             || coalesce((select jsonb_build_object('steeredRunIds', jsonb_agg(st.id)) from steered st
                 having count(*) > 0), '{}'::jsonb)
@@ -1235,10 +1247,12 @@ export async function postPersonMessage(
   const closed = closedRefusal(membership.standing);
   if (closed) throw closed;
   if (!can(membership, "post")) throw postRefusal(workspace);
-  // A task's conversation (ADR 0145): an agent mentioned there that sees the task joins it, so the mention wakes it.
+  // A task's conversation (ADR 0145): an agent mentioned there that sees the task joins it, so the mention wakes it,
+  // and so does the task's agent, which answers what names nobody there (`taskAgentSql`).
   if (channel.kind === "task") {
     await admitTaskAgents(deps.db, orgId, channelId, {
       handles: await currentHandles(deps.db, orgId, parseMentionHandles(input.body)),
+      taskAgent: true,
     });
   }
   const clientId = normalizeClientId(input.clientId);
