@@ -13590,11 +13590,14 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   flex: 1 1 240px;
   margin: 0;
 }
-/* What the provider's own program said, in the code well under the line about it: whole, wrapped, to select and copy.
-   It takes a line of the row, so the button goes under it, and gives up the room of the indent it gets there. */
+/* What the provider's own program said (a `pre`: its words as it wrote them), in the code well under the line about
+   it: whole, wrapped, to select and copy. It takes a line of the row, so the button goes under it, and gives up the
+   room of the indent it gets there. As tall as what it says: the dialog scrolls, never a second scroller inside it. */
 .ai-panel__row > .agp-addacct__said {
   flex: 1 1 100%;
   min-width: 0;
+  max-height: none;
+  overflow: visible;
   user-select: text;
 }
 /* Its two actions (an account already there): one under the other when they don't fit, and a long email ends in "…"

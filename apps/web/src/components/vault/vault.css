@@ -555,13 +555,13 @@ html:not([data-pointer]) .vlt-drop__area:focus-visible {
 .vlt-env__row + .vlt-env__row {
   border-top: 1px solid var(--line);
 }
+/* As tall as its words: the row's 12px above them is the 12px under the value's eye. */
 .vlt-env__head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-1) var(--space-3);
-  min-height: var(--control-h-sm);
 }
 .vlt-env__name {
   min-width: 0;
@@ -586,7 +586,6 @@ html:not([data-pointer]) .vlt-drop__area:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--control-h-sm);
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
