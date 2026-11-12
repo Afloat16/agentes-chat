@@ -93,7 +93,8 @@ sentence of 5 above, and the Consequences where they differ.
    agent merges in any repository it may use, with the same audit line and receipt, through the connector or by
    command (the runner names the merge of an approved command, protocol 59). The autonomy brakes' go-ahead card
    for costly work the agent started is skipped too. `schedule_action` posts no card either: the action is stored
-   as already approved and its run does it at its time.
+   as already approved and its run does it at its time, while the agent still never asks. Narrowed before then,
+   its run asks.
 2. **What `never` does not lift.** It lifts asking and nothing else. The policy's refusals (what a routine may
    not use), scopes, a tool turned off, the budget, a mailbox's recipients and From address, the git proxy's
    never-allowed operations, a secret read, an action a person refused ahead, a cost a person said never to and
@@ -151,20 +152,23 @@ sentence of 5 above, and the Consequences where they differ.
       brain's own shell with what it is and where it runs (`run_code`, which runs it without asking), never with a
       wait for a person. A push the git proxy never allows and a secret read keep their own refusals. Codex's
       approvals read the same. Claude Code's own deny rules still refuse a merge or a deploy in its shell with the
-      CLI's words.
+      CLI's words, so the level's prompt line says to run the same command with `run_code` then. A background
+      task's executor has no `run_code`: there the refusal stays "stop and say so".
 11. **"Aprovar sempre" is absolute too** (`rememberKinds`). At `risky` every approval card offers it: merge,
     deploy, rollback, a tool that runs whatever its input says, a call on a routine's run, a call the run policy
-    sends to approval, a mailbox owner's card, a tool an admin set to ask. A kept rule is the agent's and holds on
-    every kind of run: a person's, the agent's own, a routine's and one a routine's reading feeds. What is kept:
-    the tool by the server's own name, and each action for a tool that runs others. A command on the computer is
-    kept by its kind (`gh pr merge`, a held one too), and one with no kind (a script, a pipeline) by the tool
-    itself, which then covers any command. SQL proven read-only is kept as that project's reads, anything else as
-    the tool. A held command of a kept kind runs again the approved way, with the merge receipt when it is one.
-    Not offered: on the agent's own asking tools (`request_approval`, `request_permission`, `send_feedback`;
-    `request_branch_push` keeps its one-branch rule), at `always` (no rule is offered or read), and where a
-    routine's card offers the narrower "Sempre nesta rotina", which still leaves out merge, deploy, payments and
-    deletions. A rule only skips the question: scopes, the run policy's refusals, the credential refusal on a fed
-    run and the arguments' checks still come first.
+    sends to approval, a tool an admin set to ask. A kept rule is the agent's and holds on every kind of run: a
+    person's, the agent's own, a routine's and one a routine's reading feeds. What is kept: the tool by the
+    server's own name, and each action for a tool that runs others. A command on the computer is kept by its kind
+    (`gh pr merge`, a held one too), and one with no kind (a script, a pipeline) by the tool itself, which then
+    covers only commands with no kind of their own: a merge or a deploy needs its own rule. SQL proven read-only
+    is kept as that project's reads, anything else as the tool. A held command of a kept kind runs again the
+    approved way, with the merge receipt when it is one. Not offered: on a mailbox's tools (whether a send asks is
+    the mailbox's setting, and a card that names who decides is kept for good by them alone), on the agent's own
+    asking tools (`request_approval`, `request_permission`, `send_feedback`; `request_branch_push` keeps its
+    one-branch rule, which the git proxy stops reading while the agent always asks), at `always` (no rule is
+    offered or read), and where a routine's card offers the narrower "Sempre nesta rotina", which still leaves out
+    merge, deploy, payments and deletions. A rule only skips the question: scopes, the run policy's refusals, the
+    credential refusal on a fed run and the arguments' checks still come first.
 
 Consequences of the amendment:
 
@@ -181,7 +185,7 @@ Consequences of the amendment:
   the run its report wakes). Text nobody checked can then trigger an action of a kept kind with values of its
   choosing, with no person in between. Before, such runs always asked.
 - A rule kept for a whole tool that runs anything (`run_code` for a script, an executor call of unknown shape) is
-  as wide as the tool. The card's line says what it covers.
+  as wide as the tool, short of a command with a kind of its own. The card's line says what it covers.
 - Screens that named merge, deploy and rollback as always asking now say "by default" or "unless the agent never
   asks". Lines about other sensitive actions (a send, a share, a delete "always asks for approval") are unchanged
   and are untrue for an agent set to never ask.

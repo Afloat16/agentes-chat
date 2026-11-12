@@ -688,7 +688,7 @@ export class DelegatedTools {
       return message;
     };
     if (verdict?.behavior === "deny") {
-      return refuse(s.scope.asks === "never" ? unaskedMessage(verdict.message) : verdict.message);
+      return refuse(s.scope.asks === "never" && !s.scope.task ? unaskedMessage(verdict.message) : verdict.message);
     }
     if (s.rules.deny.some((rule) => ruleMatches(rule, tool, input))) {
       return refuse(`Permission to use ${tool} has been denied.`);

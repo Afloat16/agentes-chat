@@ -712,6 +712,13 @@ describe("branches that aren't the agent's own", () => {
     expect(await push()).toContain("unpack ok");
     const [pushed] = await audits("git.push");
     expect(pushed?.details.grants).toEqual({ "refs/heads/release-x": { ruleId: rule?.id } });
+    // While the agent always asks its rules are not read, here as in the gateway. Back to the default, they are.
+    const level = (approvalsLevel: "always" | "risky") =>
+      f.db.update(schema.agents).set({ approvalsLevel }).where(eq(schema.agents.id, f.agent.id));
+    await level("always");
+    expect(await push()).toContain("release-x isn't your branch");
+    await level("risky");
+    expect(await push()).toContain("unpack ok");
     // Turned off for the agent, by the name its access lists, the rule lets nothing through; back on, it does.
     const listed = (await getAgentAccess(f.db, f.owner.id, f.org.id, f.agent.id)).connectors.flatMap((c) =>
       c.scopes.flatMap((s) => s.tools.map((tool) => tool.name)),

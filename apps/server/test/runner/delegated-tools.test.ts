@@ -448,6 +448,11 @@ test("an agent that never asks: a held command names where it runs, and nobody i
   expect(merge).toContain("Run the same command with run_code");
   expect(merge).not.toContain("a person approves it first");
   expect(asked).toEqual([]);
+  // A background task's executor has no run_code to go to.
+  const task = setup({ asks: "never", task: "local" });
+  const inTask = textOf(await task.call("Bash", { command: "git merge main" }));
+  expect(inTask).toContain("stop and say so in your result");
+  expect(inTask).not.toContain("run_code");
 });
 
 test("anything else goes to the prompt, and the person's word decides", async () => {

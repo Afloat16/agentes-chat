@@ -936,7 +936,8 @@ export async function permissionPrompt(
   if (!toolName) return { behavior: "deny", message: "Unknown tool." };
   const how = opts.task ? ASK_AFTER_TASK : ASK_IN_CHAT;
   const verdict = localVerdict(toolName, input, opts.scope, opts.profile ?? "work", how);
-  const said = (message: string) => (opts.asks === "never" ? unaskedMessage(message) : message);
+  // A background task's executor has no run_code to be pointed to: it keeps "stop and say so".
+  const said = (message: string) => (opts.asks === "never" && !opts.task ? unaskedMessage(message) : message);
   if (verdict?.behavior === "deny") return { behavior: "deny", message: said(verdict.message) };
   if (verdict?.behavior === "allow") return { behavior: "allow", updatedInput: input };
   if (toolName === "Bash" && typeof input.command === "string") {

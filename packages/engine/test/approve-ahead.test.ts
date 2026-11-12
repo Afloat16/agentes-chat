@@ -334,6 +334,31 @@ describe("an action approved ahead", () => {
     expect(await f.db.select().from(schema.approvals)).toHaveLength(1);
   });
 
+  test("set while it never asked, then narrowed: its run asks a person instead of doing it", async () => {
+    f = await setup();
+    const { mcp, gateway } = await world(f);
+    const level = (approvalsLevel: "never" | "risky" | "always") =>
+      f.db.update(schema.agents).set({ approvalsLevel }).where(eq(schema.agents.id, f.agent.id));
+    await level("never");
+    answered(
+      await invoke(gateway, await personRun(f), "schedule_action", {
+        tool: EXEC,
+        arguments: post("Lançamos hoje!"),
+        when: inTwoHours(),
+        title: "Post de lançamento no LinkedIn",
+        why: WHY,
+      }),
+    );
+    const [set] = await f.db.select().from(schema.approvals);
+    if (!set?.routineId || !set.runAt) throw new Error("not set for a run");
+    const run = await routineRun(f, set.routineId, set.runAt);
+    for (const narrowed of ["risky", "always"] as const) {
+      await level(narrowed);
+      asked(await invoke(gateway, run, EXEC, { ...post("Lançamos hoje!"), why: WHY }));
+      expect(mcp.calls).toEqual([]);
+    }
+  });
+
   test("when its run does it, its cards hear it ran", async () => {
     f = await setup();
     const { gateway } = await world(f);

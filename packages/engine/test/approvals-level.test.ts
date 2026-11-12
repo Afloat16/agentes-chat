@@ -772,6 +772,8 @@ describe("what the agent is told", () => {
     expect(never).toContain("none of your tools waits for a person's approval");
     expect(never).toContain("don't ask before acting either, in words or with ask_user");
     expect(never).not.toContain("Actions marked sensitive");
+    // A coding CLI's own shell still refuses these in its own words: the line says where the same command runs.
+    expect(never).toContain("refuses a merge, a deploy or a publish, run the same command with run_code");
     const always = approvalsLine("always", false);
     expect(always).toContain("every call that changes something");
     expect(always).not.toContain("Actions marked sensitive");

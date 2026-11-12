@@ -257,6 +257,38 @@ test("an email in someone's own mailbox: they approve their own; asked by anyone
   expect(decided.status).toBe("approved");
 });
 
+test("a mailbox's card offers no Aprovar sempre, and a card that names who decides is kept for good by them alone", async () => {
+  m = await mailSetup();
+  const { f } = m;
+  const bia = await addMember(f.db, f.org.id, "member", "bia");
+  const account = await imapAccount(m);
+  await giveMail(m, account.id, "read_write");
+  await f.db.update(schema.mailAccounts).set({ createdByUserId: bia.id }).where(eq(schema.mailAccounts.id, account.id));
+  const asked = await m.tools.invoke(await runFor(bia.id), {
+    toolUseId: "tu_1",
+    name: "mail_support_send",
+    input: { to: ["client@example.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
+  });
+  if (asked.type !== "approval") throw new Error("expected an approval");
+  expect(asked.approval.approveAlways).toBeNull();
+  // Were such a card ever to offer it: the workspace's owner may approve this one send, never keep the kind.
+  await f.db
+    .update(schema.approvals)
+    .set({ approveAlways: { tool: "mail_support_send", actions: [] } })
+    .where(eq(schema.approvals.id, asked.approval.id));
+  await expect(
+    decideApproval({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, asked.approval.id, {
+      decision: "approve",
+      always: true,
+    }),
+  ).rejects.toBeInstanceOf(ConflictError);
+  expect(await f.db.select().from(schema.approvalRules)).toEqual([]);
+  const once = await decideApproval({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, asked.approval.id, {
+    decision: "approve",
+  });
+  expect(once.status).toBe("approved");
+});
+
 test("an agent that never asks sends from someone's own mailbox without a card; the mailbox's recipients still bind", async () => {
   m = await mailSetup();
   const { f } = m;

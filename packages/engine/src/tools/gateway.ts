@@ -8,7 +8,7 @@ import {
   type PubSub,
 } from "@agenteschat/adapters";
 import { startInFlight } from "@agenteschat/adapters/in-flight";
-import { and, desc, eq, inArray, isNull, schema, sql } from "@agenteschat/db";
+import { and, desc, eq, inArray, isNotNull, isNull, or, schema, sql } from "@agenteschat/db";
 import { auditsCall, callSubject, callTitle, recordToolCall, type ToolCallSubject } from "../agent-audit";
 import {
   COMMAND_RULE_TOOL,
@@ -90,7 +90,6 @@ type AuditOutcome = schema.AuditOutcome;
 /** Merge, deploy and rollback need a person whatever a connector says, unless the agent never asks (ADR 0173). */
 export const ALWAYS_SENSITIVE = /(^|[^a-z])(merge|deploy|rollback|revert_deploy|promote)([^a-z]|$)/i;
 
-/** `unasked`: the listing's mark on a tool whose card an agent that never asks doesn't get (`asListed`). */
 /**
  * Sensitive by a word of its name or scope. Not a tool that opens a pull request (`create_merge_request`): the word
  * names what it opens, and merging it is another tool.
@@ -143,13 +142,16 @@ export const highRisk = (tool: string, scope: string) =>
  * The kinds "Aprovar sempre" keeps for this call (`approval_rules`), the narrowest first: a saved rule of any of them
  * lets the call run without asking, and the first is what its card offers. Every call that asks has one (ADR 0173,
  * amended 2026-11-12), on every run a person, the agent, a routine or a routine's reading is behind: a merge, a
- * deploy, a tool that runs whatever its input says and a mailbox's send too. Only at the level that asks for some
- * things: an agent that always asks keeps no rule, and one that never asks needs none.
+ * deploy and a tool that runs whatever its input says too. Only at the level that asks for some things: an agent that
+ * always asks keeps no rule, and one that never asks needs none.
  *
+ * - A mailbox's tools are never kept: a rule belongs to a connector's connection and theirs is the mail account, and
+ *   whether a send asks is the mailbox's own setting, with its owner the one who decides.
  * - A tool that names one exact target per call (`rememberTarget`) is kept by that target alone.
  * - Our tools whose job is asking (`asksByChoice`) are never kept: the agent chose to ask.
  * - A tool that runs one shell command on the agent's computer (`rememberCommand`) is kept by the command's kind
- *   (`commandKind`: `gh pr merge`), for that agent alone, then by the tool itself.
+ *   (`commandKind`: `gh pr merge`), for that agent alone. Only a command with no kind (a script, a pipeline) is kept
+ *   by the tool itself, and that rule covers no command that has a kind.
  * - A tool that runs SQL (`sqlReads`) is kept by the reads of its project when the Postgres guard proves the call
  *   read-only, then by the tool itself.
  * - Any other is kept by its name and, when it runs other actions, by each action (none: the tool itself).
@@ -160,7 +162,7 @@ export async function rememberKinds(
   authority: RunAuthority | null,
   level: ApprovalsLevel,
 ): Promise<RememberedKind[]> {
-  if (!authority || level !== "risky") return [];
+  if (!authority || level !== "risky" || tool.scope.startsWith("mail:")) return [];
   if (tool.rememberTarget && tool.connectionId) {
     const target = tool.rememberTarget(input);
     return target ? [{ tool: tool.name, actions: [target] }] : [];
@@ -170,7 +172,9 @@ export async function rememberKinds(
   if (tool.rememberCommand && !tool.connectionId) {
     const command = tool.rememberCommand(input);
     const kind = command ? (commandKind(command) ?? commandKind(command, true)) : null;
-    if (kind) kinds.push({ tool: COMMAND_RULE_TOOL, actions: [kind] });
+    // A command with a kind of its own is kept by that kind alone: the whole-tool rule someone kept on a script's
+    // card must not also cover a merge or a deploy the computer holds.
+    if (kind) return [{ tool: COMMAND_RULE_TOOL, actions: [kind] }];
   }
   if (tool.sqlReads && tool.connectionId) {
     const sql = input[tool.sqlReads.arg];
@@ -745,9 +749,11 @@ export function createToolGateway(deps: {
   /**
    * What a person last decided ahead about this exact call (its hash) for this routine run's slot, while that slot
    * is within its grace: approved and not run yet, or refused. The latest decision wins: the same post refused and
-   * then prepared again and approved goes out, and one approved and then refused on another card doesn't.
+   * then prepared again and approved goes out, and one approved and then refused on another card doesn't. One the
+   * agent set by itself while it never asked (approved, with nobody deciding) counts only while it still never asks:
+   * narrowed since, the call asks.
    */
-  async function aheadFor(ctx: ToolContext, brief: RoutineBrief, hash: string) {
+  async function aheadFor(ctx: ToolContext, brief: RoutineBrief, hash: string, level: ApprovalsLevel) {
     const slot = new Date(brief.dueAt);
     if (!UUID.test(brief.routineId) || Number.isNaN(slot.getTime())) return null;
     if (slot.getTime() < now().getTime() - AHEAD_GRACE_MS) return null;
@@ -762,6 +768,7 @@ export function createToolGateway(deps: {
           eq(approvals.runAt, slot),
           eq(approvals.actionHash, hash),
           inArray(approvals.status, ["approved", "refused"]),
+          level === "never" ? undefined : or(eq(approvals.status, "refused"), isNotNull(approvals.decidedByUserId)),
           isNull(approvals.executedAt),
         ),
       )
@@ -1277,6 +1284,7 @@ export function createToolGateway(deps: {
                 connectionId: tool.connectionId ?? null,
                 params: call.input,
               }),
+              level,
             )
           : null;
       if (ahead?.status === "refused") {

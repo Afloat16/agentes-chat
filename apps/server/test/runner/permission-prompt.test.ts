@@ -271,6 +271,9 @@ test("an agent that never asks: a held command is refused with where it runs, ne
   expect(out).toEqual({ behavior: "deny", message: unaskedMessage(approvalMessage("This is a merge", ASK_IN_CHAT)) });
   expect(out).toMatchObject({ message: expect.stringContaining("Run the same command with run_code") });
   expect(out).toMatchObject({ message: expect.not.stringContaining("a person approves it first") });
+  // A background task's executor has no run_code: it is told to stop and say so, as at any level.
+  const inTask = await permissionPrompt(bash("gh pr merge 914"), s.call, { ...instant, asks: "never", task: true });
+  expect(inTask).toEqual({ behavior: "deny", message: approvalMessage("This is a merge", ASK_AFTER_TASK) });
   // A secret read stays what it was.
   const secret = await permissionPrompt(bash("cat ~/.ssh/id_rsa"), s.call, { ...instant, asks: "never" });
   expect(secret).toEqual(await permissionPrompt(bash("cat ~/.ssh/id_rsa"), s.call, instant));

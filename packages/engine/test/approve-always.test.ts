@@ -931,6 +931,12 @@ describe("Aprovar sempre for a command on the agent's computer", () => {
     await decide(f, f.owner.id, script.id, { decision: "approve", always: true });
     expect((await invoke(gateway, ctx, "run_code", { language: "python", code: "print(2)" })).type).toBe("result");
     expect(ran.at(-1)).toBe("print(2)");
+    // The whole-tool rule covers what has no kind of its own, never a command that has one: a merge still asks.
+    expect(asked(await invoke(gateway, ctx, "run_code", bash("gh pr merge 9", WHY))).approveAlways).toEqual({
+      tool: COMMAND_RULE_TOOL,
+      actions: ["gh pr merge"],
+    });
+    expect(ran).not.toContain("gh pr merge 9");
     const [whole] = (await rules(f)).filter((r) => r.tool === "run_code");
     await removeApprovalRule(f.db, f.owner.id, f.org.id, f.agent.id, whole?.id ?? "");
 

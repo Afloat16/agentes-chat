@@ -760,8 +760,11 @@ export async function decideApproval(
   }
   const via = await approvalCardVia(db, orgId, input.via, approvalId);
   const kind = input.always ? alwaysKindOf(current) : null;
-  // Approving for good outlives the cover and changes the agent for everyone: never in someone else's name.
-  if (input.always && (input.decision !== "approve" || !kind || forUserId)) {
+  // Approving for good outlives the cover and changes the agent for everyone: never in someone else's name. A card
+  // that names who decides (someone's own mailbox) is kept for good by them alone: an admin's rule would take their
+  // say away on every later call.
+  const namedElsewhere = current.approvers ? !current.approvers.userIds.includes(actorId) : false;
+  if (input.always && (input.decision !== "approve" || !kind || forUserId || namedElsewhere)) {
     throw new ConflictError("This request can't be approved for good", "approval.always_unavailable");
   }
 
