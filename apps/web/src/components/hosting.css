@@ -26,7 +26,7 @@
   font-weight: 650;
   line-height: 26px;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+  text-wrap: balance;
 }
 /* The pill ends the title's line, the name keeps its words on one line. */
 .hosting-sheet .ac-optrow__title {

@@ -2,7 +2,6 @@ import { type Me, type OrgSummary, useApi, useMe } from "@agenteschat/client";
 import { workspaceNotes } from "@agenteschat/client/lib/deletion";
 import { CLOUD_SERVER, checkServer, normalizeServer, serverHost } from "@agenteschat/client/lib/server";
 import { isPersonal, modeKey } from "@agenteschat/client/lib/workspace-mode";
-import { skyHourOf } from "@agenteschat/ui/sky/workspace";
 import { useQueries } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -150,7 +149,7 @@ export function WorkspaceGroups({
           <View key={g.server}>
             {/* Where they live: the Cloud by its name, one's own server by its host. */}
             <GroupedHeader>
-              {skyHourOf(g.host) === "day" ? t("hosting.badge.cloud") : `${t("hosting.badge.own")} · ${g.host}`}
+              {g.server === CLOUD_SERVER ? t("hosting.badge.cloud") : `${t("hosting.badge.own")} · ${g.host}`}
             </GroupedHeader>
             <GroupedList>
               {g.failed ? (

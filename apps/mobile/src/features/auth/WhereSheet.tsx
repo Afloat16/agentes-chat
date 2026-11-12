@@ -107,7 +107,8 @@ function Option({ hosting, on, onPress }: { hosting: Hosting; on: boolean; onPre
 /**
  * "Onde fica o seu workspace?" (the web's sheet, from the sign-in's Trocar): the Cloud chosen and recommended, one's
  * own server free beside it, each said by what it takes on. One's own server goes to its address screen (which scans
- * a QR code too); "Ainda não tem um?" lists the two ways to have one. The Cloud goes back to it.
+ * a QR code too); "Ainda não tem um?" lists the two ways to have one, and a way back to the Cloud. The Cloud goes
+ * back to it.
  */
 export function WhereSheet() {
   const { t, i18n } = useTranslation();
@@ -165,6 +166,22 @@ export function WhereSheet() {
                 onPress={() => openPage(helpUrl("run-on-your-computer", i18n.language))}
               />
             </View>
+            <Pressable
+              onPress={() => {
+                setGetting(false);
+                setPick("cloud");
+              }}
+              accessibilityRole="button"
+              hitSlop={12}
+              style={styles.getNext}
+            >
+              <Text variant="footnote" tone="muted">
+                {t("hosting.get.foot")}{" "}
+                <Text variant="footnote" tone="ink2" style={styles.bold}>
+                  {t("hosting.get.footLink")}
+                </Text>
+              </Text>
+            </Pressable>
           </View>
         ) : (
           <Pressable onPress={() => setGetting(true)} accessibilityRole="button" hitSlop={12}>
