@@ -30,7 +30,8 @@ function StepsHead({ title }: { title: string }) {
 
 /**
  * What turns one of a computer's tools on, there (the browser, or the program a plan thinks with); the page notices by
- * itself, since the computer's switches come back as its own event. The app's three clicks, drawn small; on a Linux
+ * itself, since the computer's switches come back as its own event. The app's three clicks, drawn small (the icon
+ * where that computer has it: the menu bar on a Mac, by the clock at the bottom on a PC); on a Linux
  * computer, which may be a server without the app, the command. In the agentes.chat app on this very computer: one
  * button to Preferences → Tools instead (ADR 0036). `name`: the tool as its switch names it there ("Claude Code");
  * none for the browser, which has its own words.
@@ -64,9 +65,12 @@ export function ToolSteps({
       </section>
     );
   }
+  // On a PC the icon sits by the clock at the bottom of the screen, often behind the arrow of hidden icons, and its
+  // menu opens upwards; on a Mac it is in the menu bar at the top.
+  const pc = row?.os === "windows";
   const step = (n: number, shot: ReactNode, text: string) => (
     <div className="brw-step">
-      <div className="brw-step__shot" aria-hidden="true">
+      <div className="brw-step__shot" data-os={pc ? "windows" : undefined} aria-hidden="true">
         {shot}
       </div>
       <p>
@@ -102,7 +106,7 @@ export function ToolSteps({
         </div>
       ) : (
         <div className="brw-steps__grid">
-          {step(1, bar(true), t("agentPage.work.steps.one"))}
+          {step(1, bar(true), t(pc ? "agentPage.work.steps.onePc" : "agentPage.work.steps.one"))}
           {step(
             2,
             <>

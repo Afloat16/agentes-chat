@@ -822,7 +822,7 @@ describe("Conectar uma IA: one picker, plans first", () => {
     const mac = await reason("darwin", "MacBook");
     expect(mac).toContain("O MacBook está conectado, mas ainda não deixa os agentes usarem o Codex.");
     expect(mac).toContain("Clique no ícone do agentes.chat perto do relógio");
-    expect(mac).toContain("Ligue o Codex");
+    expect(mac).toContain("Em Ferramentas, ligue o Codex");
     expect(mac).toContain("Usar uma chave de API agora");
   });
 
