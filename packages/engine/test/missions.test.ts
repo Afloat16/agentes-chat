@@ -38,6 +38,7 @@ import {
   MISSION_RULES,
   machineExecutors,
   missionBranchPrefix,
+  missionExecutors,
   missionSummary,
   missionWorktreePath,
   openDm,
@@ -1104,6 +1105,14 @@ describe("missions (ADR 0029)", () => {
         executors: { codex: { version: "codex-cli 0.163.0" }, detectedAt: "x" },
       }).available,
     ).toEqual(["codex", "agent"]);
+    // Codex background tasks don't run on Windows yet: a mission there can't ask Codex for its items.
+    const codexHere = {
+      protocol: 7,
+      execAllowed: true,
+      executors: { codex: { version: "codex-cli 0.163.0" }, detectedAt: "x" },
+    };
+    expect(missionExecutors({ ...codexHere, os: "windows" }).available).toEqual(["agent"]);
+    expect(missionExecutors({ ...codexHere, os: "darwin" }).available).toEqual(["codex", "agent"]);
     await expect(
       createMission(md(), f.owner.id, f.org.id, {
         agentId: f.agent.id,

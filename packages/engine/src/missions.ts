@@ -200,6 +200,17 @@ export function machineExecutors(machine: {
   return { available, codexTooOld };
 }
 
+/**
+ * What a computer can run a mission's items with: `machineExecutors`, less Codex on Windows, where the runner doesn't
+ * run Codex background tasks yet (ADR 0053's addendum of 2026-11-12), though Codex brain turns run there.
+ */
+export function missionExecutors(
+  machine: Parameters<typeof machineExecutors>[0] & { os?: string | null },
+): ReturnType<typeof machineExecutors> {
+  const found = machineExecutors(machine);
+  return machine.os === "windows" ? { ...found, available: found.available.filter((e) => e !== "codex") } : found;
+}
+
 /** The default: Claude Code when the computer has it, else our agent. */
 export const defaultExecutor = (available: MissionExecutor[]): MissionExecutor =>
   available.includes("claude") ? "claude" : "agent";
@@ -687,6 +698,7 @@ export async function missionViews(
             protocol: machines.protocol,
             execAllowed: machines.execAllowed,
             executors: machines.executors,
+            os: machines.os,
           })
           .from(machines)
           .where(inArray(machines.id, machineIds))
@@ -788,8 +800,8 @@ export async function missionViews(
             name: m.name,
             online: machineOnline(m),
             lentBy: r.machineLentBy,
-            executors: machineExecutors(m).available,
-            codexTooOld: machineExecutors(m).codexTooOld,
+            executors: missionExecutors(m).available,
+            codexTooOld: missionExecutors(m).codexTooOld,
           }
         : null,
       needsComputer,
@@ -963,7 +975,7 @@ async function usableMachine(
       computer: status.name,
     });
   }
-  const { available, codexTooOld } = machineExecutors(status);
+  const { available, codexTooOld } = missionExecutors(status);
   // Every mission works in its own copy of the project (ADR 0044): runner protocol 14.
   if (
     available.length === 0 ||
@@ -971,6 +983,13 @@ async function usableMachine(
     (asked && asked !== "agent" && status.protocol < MISSION_PROTOCOL)
   ) {
     throw missionUpdateRefusal(status, "is too old for missions");
+  }
+  if (asked === "codex" && status.os === "windows") {
+    throw new ConflictError(
+      `Codex can't run a mission's items on ${status.name} yet (Windows): choose Claude Code or the agent itself`,
+      "mission.executor_unavailable",
+      { computer: status.name, executor: asked },
+    );
   }
   if (asked && !available.includes(asked)) {
     throw new ConflictError(
@@ -2333,7 +2352,7 @@ export async function setMissionMachine(
   }
   if (
     machine.protocol < MISSION_WORKTREE_PROTOCOL ||
-    !machineExecutors(machine).available.includes(mission.executor as MissionExecutor)
+    !missionExecutors(machine).available.includes(mission.executor as MissionExecutor)
   ) {
     throw missionUpdateRefusal(machine, "can't run this mission");
   }
@@ -3313,12 +3332,13 @@ export async function eligibleMissionAgents(deps: Pick<MissionDeps, "db">, userI
     protocol: number | null;
     exec_allowed: boolean | null;
     executors: schema.MachineExecutors | string | null;
+    os: string | null;
   }>(
     await deps.db.execute(sql`select agents.id, agents.handle, agents.name, agents.owner_user_id,
         agents.mission_command_approval,
         ${audienceSql("agents", sql`${userId}::text`)} as can_talk,
         mc.id as machine_id, mc.name as machine_name, mc.online, mc.last_seen_at, mc.protocol,
-        mc.exec_allowed, mc.executors
+        mc.exec_allowed, mc.executors, mc.os
       from ${schema.agents} agents
       left join ${machines} mc on mc.id = agents.machine_id and mc.org_id = agents.org_id and mc.deleted_at is null
       where agents.org_id = ${orgId}::uuid and agents.archived_at is null
@@ -3367,7 +3387,7 @@ export async function eligibleMissionAgents(deps: Pick<MissionDeps, "db">, userI
       };
     }
     const found = typeof r.executors === "string" ? (JSON.parse(r.executors) as schema.MachineExecutors) : r.executors;
-    const { available, codexTooOld } = machineExecutors({ protocol, execAllowed: true, executors: found });
+    const { available, codexTooOld } = missionExecutors({ protocol, execAllowed: true, executors: found, os: r.os });
     return {
       ...base,
       eligible: true,
