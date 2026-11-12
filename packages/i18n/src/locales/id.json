@@ -16996,6 +16996,7 @@
       "agent_archived": "{{name}} sudah diarsipkan.",
       "audience": "Orang yang menyiapkannya tidak bisa lagi bicara dengan {{name}}.",
       "failing": "Gagal beberapa kali berturut-turut lalu berhenti.",
+      "failingLast": "Berhenti setelah 5 kali gagal berturut-turut. Yang terakhir: {{cause}}",
       "stopped": "Pembaruan dihentikan.",
       "missing_credential": "{{name}} tidak punya kunci AI atau paket untuk bekerja.",
       "timeout": "Pembaruan terlalu lama.",

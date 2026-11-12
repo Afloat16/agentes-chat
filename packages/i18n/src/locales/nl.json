@@ -17625,6 +17625,7 @@
       "agent_archived": "{{name}} is gearchiveerd.",
       "audience": "Wie hem heeft ingesteld, kan niet meer met {{name}} praten.",
       "failing": "Hij is meerdere keren achter elkaar mislukt en gestopt.",
+      "failingLast": "Gestopt na 5 mislukkingen achter elkaar. De laatste: {{cause}}",
       "stopped": "De update is gestopt.",
       "missing_credential": "{{name}} heeft geen AI-sleutel of abonnement om mee te werken.",
       "timeout": "De update duurde te lang.",

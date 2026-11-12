@@ -17,7 +17,7 @@ import {
   sql,
 } from "@agenteschat/db";
 import { getAgent } from "./agents";
-import type { AiStatusDeps } from "./ai-status";
+import { type AiStatusDeps, rightHandWorkAi } from "./ai-status";
 import { decidesAgentApprovals, MAX_OWN_ACTIONS, OWN_ACTION_NAME } from "./approval-rules";
 import { cancelRoutineAhead, type RoutineAheadView, routinesAhead } from "./approvals";
 import { audienceError, audienceSql, canTalkTo, speakerFor, speakerOf } from "./audience";
@@ -41,7 +41,7 @@ import { type ContextDeps, schedulesOf } from "./context/summaries";
 import { nextCronTime, zonedTimeForward } from "./cron";
 import { dashboardRights, viewerOf } from "./dashboards/access";
 import { isWidgetChangeRun, widgetFiring, widgetRunStarting } from "./dashboards/refresh-fire";
-import { widgetRoutineGone, widgetRoutineHeld } from "./dashboards/refresh-ledger";
+import { widgetChangeOf, widgetRoutineGone, widgetRoutineHeld } from "./dashboards/refresh-ledger";
 import { openDm } from "./dms";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import { publishListChanged, publishMessageCreated, publishRoutineRuns, publishUserEvent } from "./events";
@@ -61,6 +61,7 @@ import { resolveRoutinePaused } from "./notification-producers";
 import { can, getMembership, requirePermission } from "./organizations";
 import { PermanentJobError } from "./outbox";
 import { maySql } from "./permissions";
+import { isRightHand } from "./right-hand";
 import {
   type RoutineAccess,
   type RoutineBrief,
@@ -2215,11 +2216,17 @@ async function fireClaimedRun(deps: RoutineDeps, run: RunRow) {
   // A widget's refresh (ADR 0135 §4): its widget and board are still there, its creator still sees the board and its
   // agent has an AI.
   let widget: RoutineBrief["widget"];
+  // The right hand's: whose AI this firing thinks with (ADR 0137 §11), its creator's when it can, else the workspace's.
+  let aiUserId: string | null | undefined;
   if (target.type === "widget") {
-    const firing = await widgetFiring(deps, routine.orgId, target, creator, membership);
+    const asker = widgetChangeOf(run.event)?.byUserId;
+    const firing = await widgetFiring(deps, routine.orgId, target, creator, membership, asker);
     if ("skip" in firing) return skip(firing.skip);
     if ("pause" in firing) return paused(firing.pause);
     widget = firing.widget;
+    aiUserId = firing.aiUserId;
+  } else if (deps.ai && isRightHand(agent)) {
+    aiUserId = (await rightHandWorkAi({ ...deps.ai, db }, agent, [creator])).person;
   }
 
   // Where it reports: its channel or the conversation it was asked in, else the creator's DM with the agent.
@@ -2266,6 +2273,7 @@ async function fireClaimedRun(deps: RoutineDeps, run: RunRow) {
     trigger: run.trigger,
     dueAt: run.at.toISOString(),
     ...(widget ? { widget } : {}),
+    ...(aiUserId !== undefined ? { aiUserId } : {}),
   };
   // The widget shows it is being redone (its last data stays on screen).
   if (widget) await widgetRunStarting(deps, routine.orgId, widget.widgetId);

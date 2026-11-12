@@ -1398,6 +1398,11 @@ export interface AiStatus {
   apiKey?: boolean;
   /** Memory reflects on finished conversations: there is a summary model it can call (absent from an older server). */
   reflection?: boolean;
+  /**
+   * The right hand's widgets waiting for an AI, or stopped for the lack of one, whose build has one now, among those
+   * the viewer sees (`widgetAiReady`). Absent from an older server.
+   */
+  widgetsReady?: string[];
   agents: {
     agentId: string;
     /** `waiting`: its computer is away for now (not "no AI"). */

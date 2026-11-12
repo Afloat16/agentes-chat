@@ -16894,6 +16894,7 @@
       "agent_archived": "{{name}}はアーカイブされました。",
       "audience": "設定した人がもう{{name}}と話せません。",
       "failing": "続けて何度も失敗したため停止しました。",
+      "failingLast": "5回続けて失敗したため停止しました。最後の失敗: {{cause}}",
       "stopped": "更新は停止されました。",
       "missing_credential": "{{name}}には作業に使うAIキーもプランもありません。",
       "timeout": "更新に時間がかかりすぎました。",

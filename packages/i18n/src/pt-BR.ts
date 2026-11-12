@@ -17775,6 +17775,7 @@ export const ptBR = {
       agent_archived: "{{name}} foi arquivado.",
       audience: "Quem criou não pode mais falar com {{name}}.",
       failing: "Falhou várias vezes seguidas e parou.",
+      failingLast: "Parou depois de 5 falhas seguidas. A última: {{cause}}",
       stopped: "A atualização foi parada.",
       missing_credential: "{{name}} está sem chave ou plano de IA para trabalhar.",
       timeout: "A atualização demorou demais.",
