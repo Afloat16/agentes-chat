@@ -17,12 +17,7 @@ import type { BrainScreen } from "@agenteschat/client/lib/agent-edit";
 import { ownSignInName } from "@agenteschat/client/lib/ai-accounts";
 import { effortLevel } from "@agenteschat/client/lib/brain-advanced";
 import { computerNameOf, setupPortrait, WORKSPACE_COMPUTER_KIND } from "@agenteschat/client/lib/computer";
-import {
-  commandInReason,
-  computerKind,
-  computerState,
-  machineReasonText,
-} from "@agenteschat/client/lib/machines";
+import { commandInReason, computerKind, computerState, machineReasonText } from "@agenteschat/client/lib/machines";
 import {
   type AiChoice,
   aiChoiceOf,
@@ -59,13 +54,7 @@ import { usePlanHold } from "@/components/ai/ConnectAiSteps";
 import { useConnectAi } from "@/components/ConnectAi";
 import { CommandBlock } from "@/components/machine-bits";
 import { useOrg } from "@/components/org-context";
-import {
-  ReconnectThisMacButton,
-  ThisMacButton,
-  useAgentsHere,
-  useIsThisMac,
-  useThisMac,
-} from "@/components/ThisMac";
+import { ReconnectThisMacButton, ThisMacButton, useAgentsHere, useIsThisMac, useThisMac } from "@/components/ThisMac";
 import { ToolSteps } from "@/components/ToolSteps";
 import { useComputerEdition } from "@/components/WorkspaceComputer";
 import { useDirectory } from "@/hooks/useDirectory";
