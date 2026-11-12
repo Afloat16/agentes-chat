@@ -955,7 +955,7 @@
         "leadAny": "MCP lässt deine KI-App auf diesen Workspace zugreifen, damit sie die Agenten hier selbst anlegt.",
         "leadDots": "MCP lässt deinen Dot über ein Plugin, das du in ChatGPT hinzufügst, auf diesen Workspace zugreifen, damit er die Agenten hier selbst anlegt.",
         "howTo": "So verbindest du jede App",
-        "paste": "Füge dann diese Anfrage in die App ein:",
+        "paste": "Füge diese Anfrage in die App ein:",
         "prompt": "Nutze den MCP-Server von agentes.chat, den du gerade verbunden hast ({{url}}), um das, was du hast, zu agentes.chat zu übertragen. Rufe zuerst import_summary auf, um zu sehen, was dort schon existiert, damit nichts doppelt angelegt wird. Lege dann für jeden Agenten, jede Anweisung, jeden Skill und jede Routine, die du hast, das Gegenstück mit create_agent, create_skill und create_routine an, und speichere mit add_memory, was sich jeder Agent merken soll.",
         "promptLabel": "Anfrage für deine KI-App",
         "copy": "Anfrage kopieren",
@@ -964,7 +964,9 @@
         "arrived_one": "{{count}} Agent ist angekommen",
         "arrived_other": "{{count}} Agenten sind angekommen",
         "stuck": "Nach ein paar Minuten noch nichts? Verbinde die App noch einmal, wähle {{access}} und schick die Anfrage erneut.",
-        "private": "Mit MCP verbinden ist auf diesem Server nicht verfügbar, weil Apps im Internet nur eine öffentliche https-Adresse erreichen."
+        "private": "Mit MCP verbinden ist auf diesem Server nicht verfügbar, weil Apps im Internet nur eine öffentliche https-Adresse erreichen.",
+        "held": "Mit MCP verbinden geht, sobald der Tarif des Workspaces aktiv ist. Hol die Agenten vorerst auf diesem Weg.",
+        "paused": "Mit MCP verbinden ist aus, solange dieser Workspace pausiert ist. Hol die Agenten vorerst auf diesem Weg."
       },
       "otherName": "Andere App",
       "agenteschatName": "agentes.chat",

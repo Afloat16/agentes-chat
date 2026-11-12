@@ -4,6 +4,7 @@ import { setupDom } from "@agenteschat/ui/testing/dom";
 setupDom();
 
 import type { ApiClient, ImportInput, ImportItemResult, TeamTemplate } from "@agenteschat/client";
+import { keys } from "@agenteschat/client";
 import { act, cleanup, fireEvent } from "@testing-library/react";
 import { WATCH_POLL_MS } from "@/components/ImportFlow";
 import { createFakeApi, type FakeState, GENERAL_ID, ORG_ID, seedState, withRightHand } from "./fake-api";
@@ -247,7 +248,7 @@ describe("bringing the team from an app that answers in its chat", () => {
     }) as typeof setInterval;
     try {
       const state = settingUp();
-      await open(state, withoutAi(createFakeApi(state), state));
+      const r = await open(state, withoutAi(createFakeApi(state), state));
       await click(answer("Hermes Agent"), 4);
       await click(button("Trazer do Hermes Agent"), 10);
       expect(heading()).toBe("Traga o seu time do Hermes Agent");
@@ -272,9 +273,33 @@ describe("bringing the team from an app that answers in its chat", () => {
       });
       await settle(24);
       expect(heading()).toBe(CONNECT);
+      // The app may still be at it after the first one moved the rail on, with the step's own reads gone: the page
+      // keeps reading the team.
+      const query = r.services.queryClient.getQueryCache().find({ queryKey: keys.agents(ORG_ID) });
+      if (!query) throw new Error("no agents query");
+      const every = query.observers.map((o) => {
+        const ms = o.options.refetchInterval;
+        return typeof ms === "function" ? ms(query) : ms;
+      });
+      expect(every.some((ms) => typeof ms === "number" && ms > 0)).toBe(true);
     } finally {
       globalThis.setInterval = realSetInterval;
     }
+  });
+
+  test("on agentes.chat Cloud, before its first plan, an app that takes MCP brings its file and says why MCP waits", async () => {
+    // A workspace on a hold refuses an app's sign-in: MCP couldn't bring anyone yet.
+    await open(settingUp({ cloud: true }));
+    await click(answer("Hermes Agent"), 4);
+    await click(button("Trazer do Hermes Agent"), 10);
+    expect(heading()).toBe("Traga o seu time do Hermes Agent");
+    expect(screen().queryByRole("radiogroup", { name: "Como trazer" })).toBeNull();
+    expect(text()).not.toContain("Esperando os agentes chegarem…");
+    expect(document.querySelector(".imp-drop")).toBeTruthy();
+    expect(text()).toContain(
+      "Conectar com MCP funciona quando o plano do workspace estiver ativo. Por enquanto, traga os agentes por aqui.",
+    );
+    expect(document.querySelector(".onb__say")?.textContent).toBe("Solte aqui o que o app exportou. O resto é comigo.");
   });
 
   test("with MCP switched to the file, Lodi says to drop it again", async () => {

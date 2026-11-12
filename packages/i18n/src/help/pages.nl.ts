@@ -278,7 +278,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "mcp",
         heading: "Verbinden met MCP",
         blocks: [
-          "Met MCP kan je AI-app bij deze werkruimte, zodat die de agents hier zelf aanmaakt, met hun instructies, skills en routines. Kies je app, laat **Verbinden met MCP** staan en dan:",
+          "Met MCP kan je AI-app bij deze werkruimte, zodat die de agents hier zelf aanmaakt, met hun instructies, skills en routines. Kies je app, selecteer **Verbinden met MCP** en dan:",
           {
             list: [
               "Koppel het adres dat de stap toont, met de stappen van de app zelf. [Zo koppel je het, per app](/help/apps-de-ia#connect)",
@@ -286,7 +286,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
               "Plak het verzoek in de app. De agents verschijnen in de stap zodra ze binnenkomen.",
             ],
           },
-          "Kan een app niet koppelen, kies dan **Alleen het verzoek** en volg [Uit een andere app](/help/import#other-apps).",
+          "Kan een app niet koppelen, kies dan **Uit een bestand** of **Alleen het verzoek**, afhankelijk van wat de stap toont. [Uit een andere app](/help/import#other-apps) legt het verzoek uit.",
         ],
       },
       {

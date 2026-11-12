@@ -103,11 +103,24 @@ describe("Apps de IA on the phone (ADR 0119)", () => {
     });
   });
 
-  test("the import's AI app option: the address and the request, or unavailable on a private server", async () => {
+  test("the import's AI app option: the address and the request, or unavailable on a private server or a held workspace", async () => {
     const pt = await translator("pt-BR");
-    expect(aiAppImport(pt, undefined)).toBeNull();
-    expect(aiAppImport(pt, { serverUrl: "http://10.0.0.5/mcp", serverPublic: false })).toEqual({ available: false });
-    const ready = aiAppImport(pt, { serverUrl: "https://app.agentes.chat/mcp", serverPublic: true });
+    const open = { serverUrl: "https://app.agentes.chat/mcp", serverPublic: true };
+    expect(aiAppImport(pt, undefined, undefined)).toBeNull();
+    expect(aiAppImport(pt, { serverUrl: "http://10.0.0.5/mcp", serverPublic: false }, undefined)).toEqual({
+      available: false,
+      note: "Conectar com MCP não está disponível neste servidor, porque apps na internet só alcançam um endereço https público.",
+    });
+    // A hold refuses an app's sign-in and its calls (`workRefusal`): a new Cloud workspace waits for its first plan.
+    expect(aiAppImport(pt, open, { state: "hold", reason: "payment" })).toEqual({
+      available: false,
+      note: "Conectar com MCP funciona quando o plano do workspace estiver ativo. Por enquanto, traga os agentes por aqui.",
+    });
+    expect(aiAppImport(pt, open, { state: "suspended", reason: null })).toEqual({
+      available: false,
+      note: "Conectar com MCP fica desligado enquanto este workspace está pausado. Por enquanto, traga os agentes por aqui.",
+    });
+    const ready = aiAppImport(pt, open, { state: "active", reason: null });
     expect(ready?.available && ready.prompt).toStartWith(
       "Use o servidor MCP do agentes.chat que você acabou de conectar (https://app.agentes.chat/mcp)",
     );
@@ -117,6 +130,8 @@ describe("Apps de IA on the phone (ADR 0119)", () => {
       "utf8",
     );
     expect(card).toContain('{ text: t("onboarding.import.aiApp.paste"), copy: prompt }');
+    // A command carried in the step's words (Hermes' `hermes mcp login`, `/reload-mcp`) is copied from under it too.
+    expect(card).toContain("copy: s.address ? url : (s.code ?? s.vars?.command)");
     expect(card).toMatch(/<Text selectable[^>]*>\s*\{text\}/);
   });
 

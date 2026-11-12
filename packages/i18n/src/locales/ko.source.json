@@ -2337,7 +2337,7 @@
     "value": "How to connect, app by app"
   },
   "onboarding.import.aiApp.paste": {
-    "value": "Then paste this request into the app:"
+    "value": "Paste this request into the app:"
   },
   "onboarding.import.aiApp.prompt": {
     "value": "Use the agentes.chat MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory."
@@ -2365,6 +2365,12 @@
   },
   "onboarding.import.aiApp.private": {
     "value": "Connect with MCP isn't available on this server, because apps on the internet only reach a public https address."
+  },
+  "onboarding.import.aiApp.held": {
+    "value": "Connect with MCP works once the workspace's plan is active. Bring the agents this way for now."
+  },
+  "onboarding.import.aiApp.paused": {
+    "value": "Connect with MCP is off while this workspace is paused. Bring the agents this way for now."
   },
   "onboarding.import.otherName": {
     "value": "Another app"

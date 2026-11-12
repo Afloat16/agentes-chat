@@ -278,7 +278,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "mcp",
         heading: "Hubungkan dengan MCP",
         blocks: [
-          "MCP memberi aplikasi AI-mu akses ke ruang kerja ini, jadi ia membuat agen di sini sendiri, lengkap dengan instruksi, skill, dan rutinitasnya. Pilih aplikasimu, biarkan **Hubungkan dengan MCP**, lalu:",
+          "MCP memberi aplikasi AI-mu akses ke ruang kerja ini, jadi ia membuat agen di sini sendiri, lengkap dengan instruksi, skill, dan rutinitasnya. Pilih aplikasimu dan **Hubungkan dengan MCP**, lalu:",
           {
             list: [
               "Hubungkan alamat yang ditampilkan langkah ini, dengan langkah aplikasi itu sendiri. [Cara menghubungkan, per aplikasi](/help/apps-de-ia#connect)",
@@ -286,7 +286,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
               "Tempel permintaannya di aplikasi. Agen muncul di langkah ini begitu tiba.",
             ],
           },
-          "Kalau aplikasi tidak bisa terhubung, pilih **Hanya permintaan** dan ikuti [Dari aplikasi lain](/help/import#other-apps).",
+          "Kalau aplikasi tidak bisa terhubung, pilih **Dari file** atau **Hanya permintaan**, sesuai yang ditampilkan langkahnya. [Dari aplikasi lain](/help/import#other-apps) menjelaskan permintaannya.",
         ],
       },
       {

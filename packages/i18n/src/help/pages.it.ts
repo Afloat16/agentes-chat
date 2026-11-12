@@ -276,7 +276,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "mcp",
         heading: "Connetti con MCP",
         blocks: [
-          "MCP permette alla tua app di IA di accedere a questo spazio di lavoro, così crea gli agenti qui da sola, con le loro istruzioni, skill e routine. Scegli la tua app, lascia **Connetti con MCP** e poi:",
+          "MCP permette alla tua app di IA di accedere a questo spazio di lavoro, così crea gli agenti qui da sola, con le loro istruzioni, skill e routine. Scegli la tua app, seleziona **Connetti con MCP** e poi:",
           {
             list: [
               "Collega l’indirizzo che mostra il passaggio, con i passaggi dell’app stessa. [Come collegarla, app per app](/help/apps-de-ia#connect)",
@@ -284,7 +284,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
               "Incolla la richiesta nell’app. Gli agenti compaiono nel passaggio man mano che arrivano.",
             ],
           },
-          "Se un’app non si collega, scegli **Solo la richiesta** e segui [Da un’altra app](/help/import#other-apps).",
+          "Se un’app non si collega, scegli **Da un file** o **Solo la richiesta**, a seconda di cosa mostra il passaggio. [Da un’altra app](/help/import#other-apps) spiega la richiesta.",
         ],
       },
       {

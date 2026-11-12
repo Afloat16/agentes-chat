@@ -278,7 +278,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "mcp",
         heading: "Mit MCP verbinden",
         blocks: [
-          "MCP lässt deine KI-App auf diesen Workspace zugreifen, damit sie die Agenten hier selbst anlegt, mit ihren Anweisungen, Skills und Routinen. Wähle deine App, lass **Mit MCP verbinden** gewählt und dann:",
+          "MCP lässt deine KI-App auf diesen Workspace zugreifen, damit sie die Agenten hier selbst anlegt, mit ihren Anweisungen, Skills und Routinen. Wähle deine App, nimm **Mit MCP verbinden** und dann:",
           {
             list: [
               "Verbinde die Adresse, die der Schritt zeigt, mit den Schritten der App selbst. [So verbindest du jede App](/help/apps-de-ia#connect)",
@@ -286,7 +286,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
               "Füge die Anfrage in die App ein. Die Agenten erscheinen im Schritt, sobald sie ankommen.",
             ],
           },
-          "Wenn sich eine App nicht verbinden lässt, wähle **Nur die Anfrage** und folge [Aus einer anderen App](/help/import#other-apps).",
+          "Wenn sich eine App nicht verbinden lässt, wähle **Aus einer Datei** oder **Nur die Anfrage**, je nachdem, was der Schritt zeigt. [Aus einer anderen App](/help/import#other-apps) erklärt die Anfrage.",
         ],
       },
       {

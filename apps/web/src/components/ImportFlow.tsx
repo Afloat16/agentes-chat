@@ -515,18 +515,19 @@ export function SourceMark({ card }: { card: ImportCard }) {
 
 /**
  * This server's MCP way in and the way on screen for the flow's source, which an embedder reads to say what the step
- * asks. Prompt only for an app that takes no MCP, or when this server's address couldn't be read. Null while it loads,
- * so the default never changes under the person.
+ * asks. Prompt only for an app that takes no MCP, where MCP can't work now (`aiAppImport`), or when this server's
+ * address couldn't be read. Null while it loads, so the default never changes under the person.
  */
 export function useImportMethod(flow: ImportFlowState, orgId: string) {
   const { t } = useTranslation();
   const apps = useApps(orgId);
-  const mcp = aiAppImport(t, apps.data);
+  const standing = useMe().data?.organizations.find((o) => o.id === orgId)?.standing;
+  const mcp = aiAppImport(t, apps.data, standing);
   const method: ImportMethod | null =
     !flow.card || !mcpClient(flow.card)
       ? "prompt"
       : mcp
-        ? (flow.methods[flow.card] ?? defaultMethod(flow.card, mcp.available))
+        ? ((mcp.available ? flow.methods[flow.card] : undefined) ?? defaultMethod(flow.card, mcp.available))
         : apps.isError
           ? "prompt"
           : null;
@@ -725,7 +726,8 @@ const STUCK_MS = 2 * 60_000;
 /**
  * What to do in the picked source: the two ways in, MCP first where the app takes it and apps on the internet reach
  * this server, then that way's steps. With no MCP for the app, or no way to tell, its request or where its file is;
- * on a server apps can't reach, that and one line saying why. Nothing while the server's address is still loading.
+ * where MCP can't work now (a server apps can't reach, a workspace on hold), that and one line saying why. Nothing
+ * while the server's address is still loading.
  */
 function SourceSteps({
   card,
@@ -762,7 +764,7 @@ function SourceSteps({
         {prompt}
         <p className="imp-note ac-iconline">
           <Icon name="info" size={16} />
-          <span>{t("onboarding.import.aiApp.private")}</span>
+          <span>{mcp.note}</span>
         </p>
       </>
     );

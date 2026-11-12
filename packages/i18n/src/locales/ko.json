@@ -939,7 +939,7 @@
         "leadAny": "MCP로 AI 앱이 이 워크스페이스에 접근해 여기에 에이전트를 직접 만들어요.",
         "leadDots": "MCP로 dot이 ChatGPT에서 추가한 플러그인을 통해 이 워크스페이스에 접근해 여기에 에이전트를 직접 만들어요.",
         "howTo": "앱별 연결 방법",
-        "paste": "그다음 이 요청을 앱에 붙여넣으세요:",
+        "paste": "이 요청을 앱에 붙여넣으세요:",
         "prompt": "방금 연결한 agentes.chat MCP 서버({{url}})를 사용해 가지고 있는 것을 agentes.chat으로 옮겨 주세요. 먼저 import_summary를 호출해 이미 있는 것을 확인하고 중복되지 않게 하세요. 그다음 가지고 있는 각 에이전트, 지침, 스킬, 루틴마다 create_agent, create_skill, create_routine으로 같은 것을 만들고, 각 에이전트가 기억해야 할 내용은 add_memory로 저장하세요.",
         "promptLabel": "AI 앱에 보낼 요청",
         "copy": "요청 복사",
@@ -947,7 +947,9 @@
         "waiting": "에이전트가 도착하기를 기다리는 중…",
         "arrived_other": "에이전트 {{count}}개가 도착했어요",
         "stuck": "몇 분이 지나도 아무것도 없나요? 앱을 다시 연결하고 {{access}} 권한을 고른 다음 요청을 다시 보내세요.",
-        "private": "이 서버에서는 MCP로 연결을 쓸 수 없어요. 인터넷의 앱은 공개 https 주소에만 닿기 때문이에요."
+        "private": "이 서버에서는 MCP로 연결을 쓸 수 없어요. 인터넷의 앱은 공개 https 주소에만 닿기 때문이에요.",
+        "held": "워크스페이스 요금제가 활성화되면 MCP로 연결을 쓸 수 있어요. 지금은 이 방법으로 에이전트를 가져오세요.",
+        "paused": "이 워크스페이스가 일시 중지된 동안에는 MCP로 연결이 꺼져 있어요. 지금은 이 방법으로 에이전트를 가져오세요."
       },
       "otherName": "다른 앱",
       "agenteschatName": "agentes.chat",

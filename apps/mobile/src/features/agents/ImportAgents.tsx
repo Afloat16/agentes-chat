@@ -1,4 +1,4 @@
-import { useApps } from "@agenteschat/client";
+import { useApps, useMe } from "@agenteschat/client";
 import type { GuideIcon } from "@agenteschat/client/lib/app-clients";
 import { aiAppImport } from "@agenteschat/client/lib/apps";
 import { errorText } from "@agenteschat/client/lib/errors";
@@ -99,14 +99,15 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
   const apps = useApps(orgId);
-  const mcp = aiAppImport(t, apps.data);
-  // Prompt only for an app that takes no MCP, or when this server's address couldn't be read. Nothing to choose from
-  // while it loads, so the default never changes under the person.
+  const standing = useMe().data?.organizations.find((o) => o.id === orgId)?.standing;
+  const mcp = aiAppImport(t, apps.data, standing);
+  // Prompt only for an app that takes no MCP, where MCP can't work now, or when this server's address couldn't be
+  // read. Nothing to choose from while it loads, so the default never changes under the person.
   const method: ImportMethod | null =
     !imp.card || !mcpClient(imp.card)
       ? "prompt"
       : mcp
-        ? (imp.methods[imp.card] ?? defaultMethod(imp.card, mcp.available))
+        ? ((mcp.available ? imp.methods[imp.card] : undefined) ?? defaultMethod(imp.card, mcp.available))
         : apps.isError
           ? "prompt"
           : null;
@@ -285,7 +286,7 @@ function SourceSteps({
     return (
       <>
         {prompt}
-        <Note icon="info">{t("onboarding.import.aiApp.private")}</Note>
+        <Note icon="info">{mcp.note}</Note>
       </>
     );
   return (
@@ -317,12 +318,12 @@ function McpSteps({ card, imp, url, prompt }: { card: ImportCard; imp: AgentImpo
   if (!client) return null;
   const guide = client.guide(url);
   const access = t("apps.consent.manage");
-  // The guide's code and paths show whole, copied from under the step.
+  // The guide's code, commands and addresses show whole, copied from under the step.
   const steps: { text: string; open?: string; copy?: string; mono?: boolean }[] = [
     ...guide.steps.map((s) => ({
       text: stripCodeTags(t(`apps.dialog.${s.text}`, { access, ...s.vars })),
       open: s.open,
-      copy: s.address ? url : s.code,
+      copy: s.address ? url : (s.code ?? s.vars?.command),
       mono: true,
     })),
     { text: t("onboarding.import.aiApp.paste"), copy: prompt },

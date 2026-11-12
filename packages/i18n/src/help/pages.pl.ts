@@ -276,7 +276,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "mcp",
         heading: "Połącz przez MCP",
         blocks: [
-          "Dzięki MCP twoja aplikacja AI ma dostęp do tej przestrzeni roboczej i sama utworzy tu agentów, z ich instrukcjami, umiejętnościami i rutynami. Wybierz swoją aplikację, zostaw **Połącz przez MCP**, a potem:",
+          "Dzięki MCP twoja aplikacja AI ma dostęp do tej przestrzeni roboczej i sama utworzy tu agentów, z ich instrukcjami, umiejętnościami i rutynami. Wybierz swoją aplikację, zaznacz **Połącz przez MCP**, a potem:",
           {
             list: [
               "Połącz adres, który pokazuje krok, według kroków samej aplikacji. [Jak połączyć, aplikacja po aplikacji](/help/apps-de-ia#connect)",
@@ -284,7 +284,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
               "Wklej prośbę w aplikacji. Agenci pojawią się w kroku, gdy dotrą.",
             ],
           },
-          "Jeśli aplikacja nie może się połączyć, wybierz **Tylko prośba** i postępuj według [Z innej aplikacji](/help/import#other-apps).",
+          "Jeśli aplikacja nie może się połączyć, wybierz **Z pliku** lub **Tylko prośba**, zależnie od tego, co pokazuje krok. Prośbę opisuje [Z innej aplikacji](/help/import#other-apps).",
         ],
       },
       {

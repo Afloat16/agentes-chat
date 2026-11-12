@@ -973,7 +973,7 @@
         "leadAny": "MCP permette alla tua app di IA di accedere a questo spazio di lavoro, così crea gli agenti qui da sola.",
         "leadDots": "MCP permette al tuo dot di accedere a questo spazio di lavoro con un plugin che aggiungi in ChatGPT, così crea gli agenti qui da solo.",
         "howTo": "Come collegarla, app per app",
-        "paste": "Poi incolla questa richiesta nell'app:",
+        "paste": "Incolla questa richiesta nell'app:",
         "prompt": "Usa il server MCP di agentes.chat che hai appena collegato ({{url}}) per portare quello che hai su agentes.chat. Prima chiama import_summary per vedere cosa esiste già, così non duplichi nulla. Poi, per ogni agente, istruzione, skill e routine che hai, crea l'equivalente con create_agent, create_skill e create_routine, e salva quello che ogni agente deve ricordare con add_memory.",
         "promptLabel": "Richiesta per la tua app di IA",
         "copy": "Copia la richiesta",
@@ -983,7 +983,9 @@
         "arrived_many": "Sono arrivati {{count}} agenti",
         "arrived_other": "Sono arrivati {{count}} agenti",
         "stuck": "Niente dopo qualche minuto? Collega di nuovo l'app, scegli {{access}} e invia di nuovo la richiesta.",
-        "private": "Connetti con MCP non è disponibile su questo server, perché le app su internet raggiungono solo un indirizzo https pubblico."
+        "private": "Connetti con MCP non è disponibile su questo server, perché le app su internet raggiungono solo un indirizzo https pubblico.",
+        "held": "Connetti con MCP funziona quando il piano dello spazio di lavoro è attivo. Per ora porta gli agenti da qui.",
+        "paused": "Connetti con MCP è disattivato finché questo spazio di lavoro è in pausa. Per ora porta gli agenti da qui."
       },
       "otherName": "Un'altra app",
       "agenteschatName": "agentes.chat",

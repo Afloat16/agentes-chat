@@ -1044,7 +1044,7 @@ export const en = {
         leadDots:
           "MCP lets your dot reach this workspace through a plugin you add in ChatGPT, so it creates the agents here itself.",
         howTo: "How to connect, app by app",
-        paste: "Then paste this request into the app:",
+        paste: "Paste this request into the app:",
         prompt:
           "Use the agentes.chat MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory.",
         promptLabel: "Request for your AI app",
@@ -1057,6 +1057,10 @@ export const en = {
         stuck: "Nothing after a few minutes? Connect the app again, pick {{access}}, then send the request again.",
         private:
           "Connect with MCP isn't available on this server, because apps on the internet only reach a public https address.",
+        /** A workspace on a billing hold, as a new Cloud one is until its first plan: apps can't sign in to it. */
+        held: "Connect with MCP works once the workspace's plan is active. Bring the agents this way for now.",
+        /** A workspace paused for any other reason. */
+        paused: "Connect with MCP is off while this workspace is paused. Bring the agents this way for now.",
       },
       otherName: "Another app",
       agenteschatName: "agentes.chat",

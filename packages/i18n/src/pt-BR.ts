@@ -967,7 +967,7 @@ export const ptBR = {
         leadDots:
           "O MCP deixa o seu dot acessar este workspace por um plugin que você adiciona no ChatGPT, e ele cria os agentes aqui sozinho.",
         howTo: "Como conectar, app por app",
-        paste: "Depois cole este pedido no app:",
+        paste: "Cole este pedido no app:",
         prompt:
           "Use o servidor MCP do agentes.chat que você acabou de conectar ({{url}}) para trazer o que você tem para o agentes.chat. Primeiro chame import_summary para ver o que já existe lá e não duplicar nada. Depois, para cada agente, instrução, skill e rotina que você tem, crie o equivalente com create_agent, create_skill e create_routine, e guarde o que cada agente deve lembrar com add_memory.",
         promptLabel: "Pedido para o seu app de IA",
@@ -979,6 +979,9 @@ export const ptBR = {
         stuck: "Nada depois de alguns minutos? Conecte o app de novo, escolha {{access}} e mande o pedido outra vez.",
         private:
           "Conectar com MCP não está disponível neste servidor, porque apps na internet só alcançam um endereço https público.",
+        held: "Conectar com MCP funciona quando o plano do workspace estiver ativo. Por enquanto, traga os agentes por aqui.",
+        paused:
+          "Conectar com MCP fica desligado enquanto este workspace está pausado. Por enquanto, traga os agentes por aqui.",
       },
       otherName: "Outro app",
       agenteschatName: "agentes.chat",

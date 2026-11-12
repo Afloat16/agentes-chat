@@ -275,7 +275,7 @@ export const helpKo: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "mcp",
         heading: "MCP로 연결",
         blocks: [
-          "MCP로 AI 앱이 이 워크스페이스에 접근해 지침, 스킬, 루틴과 함께 에이전트를 여기에 직접 만들어요. 앱을 고르고 **MCP로 연결**을 그대로 둔 다음:",
+          "MCP로 AI 앱이 이 워크스페이스에 접근해 지침, 스킬, 루틴과 함께 에이전트를 여기에 직접 만들어요. 앱을 고르고 **MCP로 연결**을 선택한 다음:",
           {
             list: [
               "단계에 표시된 주소를 그 앱의 단계대로 연결하세요. [앱별 연결 방법](/help/apps-de-ia#connect)",
@@ -283,7 +283,7 @@ export const helpKo: Partial<Record<HelpSlug, HelpDocument>> = {
               "요청을 앱에 붙여넣으세요. 에이전트가 도착하는 대로 단계에 표시돼요.",
             ],
           },
-          "앱이 연결되지 않으면 **요청만**을 고르고 [다른 앱에서](/help/import#other-apps)를 따라 하세요.",
+          "앱이 연결되지 않으면 단계에 보이는 **파일에서** 또는 **요청만**을 고르세요. 요청은 [다른 앱에서](/help/import#other-apps)에서 설명해요.",
         ],
       },
       {

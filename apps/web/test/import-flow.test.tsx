@@ -280,7 +280,7 @@ describe("Configurações → Importar e exportar", () => {
       "Clique em Add it e depois em Authorize.",
       "Entre com sua conta do agentes.chat na página que abrir e escolha Criar e editar agentes, rotinas e skills.",
       "Na conversa, digite @ e escolha agentes.",
-      "Depois cole este pedido no app:",
+      "Cole este pedido no app:",
     ]);
     expect([...mcp.querySelectorAll(".machine-command__code")].map((c) => c.textContent)).toEqual([
       `Add a custom MCP server called agentes at ${SERVER_URL}`,
@@ -343,7 +343,7 @@ describe("Configurações → Importar e exportar", () => {
       "Para entrar, rode hermes mcp login agentes.",
       "Entre com sua conta do agentes.chat na página que abrir e escolha Criar e editar agentes, rotinas e skills.",
       "Depois digite /reload-mcp na conversa.",
-      "Depois cole este pedido no app:",
+      "Cole este pedido no app:",
     ]);
     expect(document.querySelector(".imp-tip")).toBeNull();
     expect(document.querySelector(".imp-drop")).toBeNull();

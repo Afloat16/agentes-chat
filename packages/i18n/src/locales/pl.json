@@ -990,7 +990,7 @@
         "leadAny": "Dzięki MCP twoja aplikacja AI ma dostęp do tej przestrzeni roboczej i sama utworzy tu agentów.",
         "leadDots": "Dzięki MCP twoja kropka ma dostęp do tej przestrzeni roboczej przez wtyczkę dodaną w ChatGPT i sama utworzy tu agentów.",
         "howTo": "Jak połączyć, aplikacja po aplikacji",
-        "paste": "Potem wklej tę prośbę do aplikacji:",
+        "paste": "Wklej tę prośbę do aplikacji:",
         "prompt": "Użyj serwera MCP agentes.chat, który właśnie połączyłeś ({{url}}), aby przenieść to, co masz, do agentes.chat. Najpierw wywołaj import_summary, aby zobaczyć, co już tam jest, i niczego nie zduplikować. Potem dla każdego agenta, instrukcji, umiejętności i rutyny, które masz, utwórz odpowiednik za pomocą create_agent, create_skill i create_routine, a to, co każdy agent ma zapamiętać, zapisz za pomocą add_memory.",
         "promptLabel": "Prośba do twojej aplikacji AI",
         "copy": "Kopiuj prośbę",
@@ -1001,7 +1001,9 @@
         "arrived_many": "Dotarło {{count}} agentów",
         "arrived_other": "Dotarło {{count}} agenta",
         "stuck": "Nic po kilku minutach? Połącz aplikację jeszcze raz, wybierz {{access}} i wyślij prośbę ponownie.",
-        "private": "Połącz przez MCP nie jest dostępne na tym serwerze, bo aplikacje w internecie docierają tylko do publicznego adresu https."
+        "private": "Połącz przez MCP nie jest dostępne na tym serwerze, bo aplikacje w internecie docierają tylko do publicznego adresu https.",
+        "held": "Połącz przez MCP zadziała, gdy plan przestrzeni roboczej będzie aktywny. Na razie przenieś agentów w ten sposób.",
+        "paused": "Połącz przez MCP jest wyłączone, dopóki ta przestrzeń robocza jest wstrzymana. Na razie przenieś agentów w ten sposób."
       },
       "otherName": "Inna aplikacja",
       "agenteschatName": "agentes.chat",

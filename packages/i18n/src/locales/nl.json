@@ -955,7 +955,7 @@
         "leadAny": "Met MCP kan je AI-app bij deze werkruimte, zodat die de agents hier zelf aanmaakt.",
         "leadDots": "Met MCP kan je dot via een plugin die je in ChatGPT toevoegt bij deze werkruimte, zodat hij de agents hier zelf aanmaakt.",
         "howTo": "Zo koppel je het, per app",
-        "paste": "Plak daarna dit verzoek in de app:",
+        "paste": "Plak dit verzoek in de app:",
         "prompt": "Gebruik de MCP-server van agentes.chat die je net hebt gekoppeld ({{url}}) om wat je hebt naar agentes.chat over te zetten. Roep eerst import_summary aan om te zien wat er al is, zodat niets dubbel wordt. Maak daarna voor elke agent, instructie, skill en routine die je hebt het equivalent met create_agent, create_skill en create_routine, en sla met add_memory op wat elke agent moet onthouden.",
         "promptLabel": "Verzoek voor je AI-app",
         "copy": "Het verzoek kopiëren",
@@ -964,7 +964,9 @@
         "arrived_one": "{{count}} agent binnengekomen",
         "arrived_other": "{{count}} agents binnengekomen",
         "stuck": "Na een paar minuten nog niets? Koppel de app opnieuw, kies {{access}} en stuur het verzoek opnieuw.",
-        "private": "Verbinden met MCP is niet beschikbaar op deze server, omdat apps op internet alleen een openbaar https-adres bereiken."
+        "private": "Verbinden met MCP is niet beschikbaar op deze server, omdat apps op internet alleen een openbaar https-adres bereiken.",
+        "held": "Verbinden met MCP werkt zodra het abonnement van de werkruimte actief is. Haal de agents voorlopig op deze manier op.",
+        "paused": "Verbinden met MCP staat uit zolang deze werkruimte gepauzeerd is. Haal de agents voorlopig op deze manier op."
       },
       "otherName": "Een andere app",
       "agenteschatName": "agentes.chat",
