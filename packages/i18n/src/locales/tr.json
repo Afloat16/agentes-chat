@@ -3209,6 +3209,8 @@
       "updated_priority": "<b>#{{number}}</b> görevinin önceliğini {{priority}} yaptım · {{title}}",
       "assigned": "<b>#{{number}}</b> görevini {{assignee}} kişisine atadım · {{title}}",
       "assigned_self": "<b>#{{number}}</b> görevini kendim üstlendim · {{title}}",
+      "assigned_you": "<b>#{{number}}</b> görevini size atadım · {{title}}",
+      "assigned_none": "<b>#{{number}}</b> görevinin atamasını kaldırdım · {{title}}",
       "files": "{{names}} ekledim"
     },
     "memory": {
@@ -3314,6 +3316,42 @@
     "changes_other": "{{count}} değişiklik",
     "undoneBy": "{{name}} geri aldı",
     "group": "{{name}} tarafından yapılan değişiklikler",
+    "several": {
+      "issue": {
+        "created": "Görevleri oluşturdum: {{refs}}",
+        "updated": "Görevlerde {{fields}} değiştirdim: {{refs}}",
+        "assigned": "Görevleri {{assignee}} kişisine atadım: {{refs}}",
+        "assigned_self": "Görevleri kendim üstlendim: {{refs}}",
+        "assigned_you": "Görevleri size atadım: {{refs}}",
+        "assigned_none": "Görevlerin atamasını kaldırdım: {{refs}}"
+      },
+      "routine": {
+        "created": "Rutinleri oluşturdum: {{refs}}",
+        "updated": "Rutinlerde {{fields}} değiştirdim: {{refs}}",
+        "deleted": "Rutinleri sildim: {{refs}}"
+      },
+      "channel": {
+        "agent_added": "{{agentName}} ajanını kanallara getirdim: {{refs}}",
+        "created": "Kanalları oluşturdum: {{refs}}"
+      },
+      "wiki": {
+        "page_created": "Wiki sayfalarını oluşturdum: {{refs}}",
+        "page_edited": "Wiki sayfalarını düzenledim: {{refs}}"
+      },
+      "thread": {
+        "closed": "Sohbetleri kapattım: {{refs}}"
+      },
+      "skill": {
+        "created": "Öğrendiklerimi becerilere dönüştürdüm: {{refs}}",
+        "updated": "Becerileri düzelttim: {{refs}}"
+      },
+      "agent": {
+        "settings_changed": "Ayarlarını değiştirdim: {{refs}}"
+      },
+      "pr": {
+        "merged": "<b>{{repo}}</b> içindeki PR'ları birleştirdim: {{refs}}"
+      }
+    },
     "errors": {
       "changed_since": "O zamandan beri biri bunu değiştirdi. Şimdi geri almak o değişikliği kaybettirir.",
       "expired": "Geri alma süresi doldu.",
@@ -17781,7 +17819,6 @@
     "only": "Yalnızca {{name}}",
     "more_one": "{{names}} ve {{count}} kişi daha",
     "more_other": "{{names}} ve {{count}} kişi daha",
-    "some": "bazı kişiler",
     "taskTitle": "Bu görevi kimler görüyor",
     "pageTitle": "Bu sayfayı kimler görüyor",
     "admins": "Yöneticiler her zaman görür.",
@@ -17790,7 +17827,6 @@
     "search": "Kişi ara",
     "noMatch": "Bu adda kimse yok",
     "moreOptions": "Diğer seçenekler",
-    "receipt": "Kimler görüyor: {{who}}",
     "limited": "sınırlı erişim",
     "rolesToo": "Bu sayfada zaten olan roller onu görmeye devam eder."
   },

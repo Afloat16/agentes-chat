@@ -928,7 +928,7 @@ export async function insertMessageWithRuns(
           and r.status in ('queued', 'running', 'waiting_input')
           and not r.background
           -- Background work (ADR 0121) never holds a person's message while it works: a reply turn answers it.
-          and ${workTakesPersonMessage(sql`r`)}
+          and ${workTakesPersonMessage(sql`r`, userId)}
           and r.agent_id not in (select agent_id from answered)
           and r.agent_id not in (select agent_id from muted)
           and r.agent_id <> all(${referenced}::uuid[])
