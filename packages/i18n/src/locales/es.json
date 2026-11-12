@@ -3126,6 +3126,7 @@
     "continuedByYou": "Los dejaste seguir · {{time}}"
   },
   "usageCard": {
+    "checked": "Comprobado {{when}}",
     "window": {
       "five_hour": "de sus 5 horas",
       "seven_day": "de su semana",
@@ -9970,6 +9971,34 @@
       "disconnected": "{{label}} desconectado.",
       "useFor": "Usar también para {{name}}",
       "useForMenu": "Usar para…",
+      "useAll": "Usar en todos los agentes",
+      "useAllTitle": "Usar {{plan}} en todos los agentes",
+      "useAllSub": "Elige el modelo que usarán con esta clave.",
+      "useAllWorks": "Funcionan con esta clave",
+      "useAllRefused": "Rechazados con esta clave",
+      "useAllAnswered": "Respondió con esta clave",
+      "useAllOff": "Desactivado en {{maker}}",
+      "useAllRegion": "Necesita la región Global en {{maker}}",
+      "useAllUntested_one": "{{count}} modelo aún sin probar",
+      "useAllUntested_many": "{{count}} modelos aún sin probar",
+      "useAllUntested_other": "{{count}} modelos aún sin probar",
+      "textOnly": "Solo lee texto",
+      "useAllTextOnly": "{{model}} no ve imágenes ni PDF. A un agente que necesita ver capturas le va mejor otro modelo.",
+      "useAllAgents": "Todos los agentes",
+      "useAllAgentsLine_one": "{{count}} agente pasa a usar este modelo",
+      "useAllAgentsLine_many": "{{count}} agentes pasan a usar este modelo",
+      "useAllAgentsLine_other": "{{count}} agentes pasan a usar este modelo",
+      "useAllNone": "Ningún agente puede usar esta clave ahora.",
+      "useAllGo_one": "Usar en {{count}} agente",
+      "useAllGo_many": "Usar en {{count}} agentes",
+      "useAllGo_other": "Usar en {{count}} agentes",
+      "useAllPick": "Elige un modelo",
+      "useAllDone_one": "{{count}} agente ahora piensa con {{model}}.",
+      "useAllDone_many": "{{count}} agentes ahora piensan con {{model}}.",
+      "useAllDone_other": "{{count}} agentes ahora piensan con {{model}}.",
+      "useAllMissed_one": "{{count}} agente no cambió. Abre su página para ver por qué.",
+      "useAllMissed_many": "{{count}} agentes no cambiaron. Abre la página de cada uno para ver por qué.",
+      "useAllMissed_other": "{{count}} agentes no cambiaron. Abre la página de cada uno para ver por qué.",
       "revokeOnClaude": "Para cerrarlo también en Claude, revócalo en la configuración de Claude."
     },
     "usage": {
@@ -11139,6 +11168,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "Cambiar el modelo de {{agent}}",
+      "ownSignIn": "Cuenta de este ordenador",
+      "apiKey": "{{provider}} con clave de API",
+      "default": "predeterminado",
+      "refused": "Rechazado con esta clave",
+      "textOnly": "Solo lee texto",
+      "search": "Buscar modelos",
+      "account": "Cuenta",
+      "connect": "Conectar una IA",
+      "applies": "Se aplica desde la próxima respuesta.",
+      "more": "Más opciones",
+      "undo": "Deshacer",
+      "saved": "{{agent}} ahora piensa con {{model}}.",
+      "readOnly": "Solo los administradores y el dueño del agente cambian su modelo."
+    },
     "title": "Quién piensa",
     "auto": {
       "label": "Automático",
@@ -15864,6 +15909,9 @@
       "text": "ChatGPT rechazó la velocidad Rápida en esta cuenta o modelo, así que esta respuesta salió en estándar.",
       "action": "Abrir agente"
     },
+    "modelStandIn": {
+      "text": "{{plan}} rechazó {{from}} con esta clave. Respondí con {{to}}, que funciona con ella."
+    },
     "usageWhen": {
       "at": "a las {{time}}",
       "on": "el {{day}} a las {{time}}",
@@ -16349,7 +16397,7 @@
       "brain_interrupted": "{{brain}} se detuvo antes de terminar. Ya hecho, no se repite: {{tools}}.",
       "plan_limit_cut": "Me detuve en el límite del plan {{plan}}. Retomaré donde lo dejé {{when}}, cuando se renueve.",
       "plan_limit_cut_unknown": "Me detuve en el límite del plan {{plan}}. Retomaré donde lo dejé en cuanto se renueve.",
-      "plan_limit_wait": "El plan {{plan}} llegó a su límite. Responderé {{when}}, cuando se renueve.",
+      "plan_limit_wait": "El plan {{plan}} llegó a su límite. Responderé {{when}}, cuando se renueve. Si se libera antes en {{plan}}, lo noto y respondo enseguida.",
       "plan_limit_wait_unknown": "El plan {{plan}} llegó a su límite. Responderé en cuanto se renueve.",
       "plan_model_limit_wait": "{{model}} llegó a su propio límite en {{plan}}. Los demás modelos del plan siguen funcionando: cambia el modelo de {{agent}} o espera a que se renueve {{when}}.",
       "plan_model_limit_wait_unknown": "{{model}} llegó a su propio límite en {{plan}}. Los demás modelos del plan siguen funcionando: cambia el modelo de {{agent}} o espera a que se renueve.",

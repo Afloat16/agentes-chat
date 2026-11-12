@@ -2923,6 +2923,7 @@
     "continuedByYou": "내가 계속 진행하게 했어요 · {{time}}"
   },
   "usageCard": {
+    "checked": "확인함: {{when}}",
     "window": {
       "five_hour": "(5시간 기준)",
       "seven_day": "(주간 기준)",
@@ -9297,6 +9298,24 @@
       "disconnected": "{{label}} 연결을 해제했어요.",
       "useFor": "{{name}}에도 사용",
       "useForMenu": "다음에 사용…",
+      "useAll": "모든 에이전트에 사용",
+      "useAllTitle": "{{plan}}을(를) 모든 에이전트에 사용",
+      "useAllSub": "이 키로 사용할 모델을 고르세요.",
+      "useAllWorks": "이 키로 작동하는 모델",
+      "useAllRefused": "이 키로 거부된 모델",
+      "useAllAnswered": "이 키로 응답함",
+      "useAllOff": "{{maker}}에서 꺼짐",
+      "useAllRegion": "{{maker}}에서 Global 리전이 필요해요",
+      "useAllUntested_other": "아직 시험하지 않은 모델 {{count}}개",
+      "textOnly": "텍스트만 읽어요",
+      "useAllTextOnly": "{{model}}은(는) 이미지나 PDF를 보지 못해요. 스크린샷을 봐야 하는 에이전트에는 다른 모델이 좋아요.",
+      "useAllAgents": "모든 에이전트",
+      "useAllAgentsLine_other": "에이전트 {{count}}개가 이 모델로 바뀌어요",
+      "useAllNone": "지금 이 키를 쓸 수 있는 에이전트가 없어요.",
+      "useAllGo_other": "에이전트 {{count}}개에 사용",
+      "useAllPick": "모델 고르기",
+      "useAllDone_other": "에이전트 {{count}}개가 이제 {{model}}(으)로 생각해요.",
+      "useAllMissed_other": "에이전트 {{count}}개는 바뀌지 않았어요. 각 페이지에서 이유를 확인하세요.",
       "revokeOnClaude": "Claude에서도 끝내려면 Claude 설정에서 해지하세요."
     },
     "usage": {
@@ -10386,6 +10405,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "{{agent}}의 모델 바꾸기",
+      "ownSignIn": "이 컴퓨터의 계정",
+      "apiKey": "API 키로 쓰는 {{provider}}",
+      "default": "기본값",
+      "refused": "이 키로 거부됨",
+      "textOnly": "텍스트만 읽어요",
+      "search": "모델 검색",
+      "account": "계정",
+      "connect": "AI 연결",
+      "applies": "다음 답변부터 적용돼요.",
+      "more": "옵션 더 보기",
+      "undo": "되돌리기",
+      "saved": "{{agent}}이(가) 이제 {{model}}(으)로 생각해요.",
+      "readOnly": "관리자와 에이전트 소유자만 모델을 바꿀 수 있어요."
+    },
     "title": "생각하는 AI",
     "auto": {
       "label": "자동",
@@ -14914,6 +14949,9 @@
       "text": "ChatGPT가 이 계정이나 모델에서 빠른 속도를 거부해서 이 답변은 표준 속도로 왔어요.",
       "action": "에이전트 열기"
     },
+    "modelStandIn": {
+      "text": "{{plan}}이(가) 이 키로 {{from}}을(를) 거부했어요. 이 키로 작동하는 {{to}}(으)로 답했어요."
+    },
     "usageWhen": {
       "at": "{{time}}",
       "on": "{{day}} {{time}}",
@@ -15387,7 +15425,7 @@
       "brain_interrupted": "{{brain}}이(가) 끝내기 전에 멈췄어요. 이미 완료되어 반복하지 않은 것: {{tools}}.",
       "plan_limit_cut": "{{plan}} 요금제 한도에서 멈췄어요. 초기화되는 {{when}}에 멈춘 곳부터 이어 갈게요.",
       "plan_limit_cut_unknown": "{{plan}} 요금제 한도에서 멈췄어요. 초기화되는 대로 멈춘 곳부터 이어 갈게요.",
-      "plan_limit_wait": "{{plan}} 요금제가 한도에 도달했어요. 초기화되는 {{when}}에 답할게요.",
+      "plan_limit_wait": "{{plan}} 요금제가 한도에 도달했어요. 초기화되는 {{when}}에 답할게요. {{plan}}에서 더 일찍 풀리면 바로 알아채고 답할게요.",
       "plan_limit_wait_unknown": "{{plan}} 요금제가 한도에 도달했어요. 초기화되는 대로 답할게요.",
       "plan_model_limit_wait": "{{model}} 모델이 {{plan}}에서 자체 한도에 도달했어요. 요금제의 다른 모델은 계속 쓸 수 있어요. {{agent}}의 모델을 바꾸거나 {{when}}에 초기화될 때까지 기다리세요.",
       "plan_model_limit_wait_unknown": "{{model}} 모델이 {{plan}}에서 자체 한도에 도달했어요. 요금제의 다른 모델은 계속 쓸 수 있어요. {{agent}}의 모델을 바꾸거나 초기화될 때까지 기다리세요.",

@@ -2928,6 +2928,7 @@
     "continuedByYou": "你让它们继续了 · {{time}}"
   },
   "usageCard": {
+    "checked": "已检查：{{when}}",
     "window": {
       "five_hour": "（5 小时额度）",
       "seven_day": "（每周额度）",
@@ -9357,6 +9358,24 @@
       "useFor": "也用于 {{name}}",
       "useFor_female": "也用于 {{name}}",
       "useForMenu": "用于…",
+      "useAll": "用于所有智能体",
+      "useAllTitle": "将 {{plan}} 用于所有智能体",
+      "useAllSub": "选择它们使用此密钥时的模型。",
+      "useAllWorks": "可用于此密钥",
+      "useAllRefused": "此密钥被拒绝",
+      "useAllAnswered": "已用此密钥回复",
+      "useAllOff": "已在 {{maker}} 中关闭",
+      "useAllRegion": "需要在 {{maker}} 中开启 Global 区域",
+      "useAllUntested_other": "{{count}} 个模型尚未测试",
+      "textOnly": "仅读取文本",
+      "useAllTextOnly": "{{model}} 看不到图片或 PDF。需要查看截图的智能体最好用其他模型。",
+      "useAllAgents": "所有智能体",
+      "useAllAgentsLine_other": "{{count}} 个智能体将改用此模型",
+      "useAllNone": "目前没有智能体可以使用此密钥。",
+      "useAllGo_other": "用于 {{count}} 个智能体",
+      "useAllPick": "选择一个模型",
+      "useAllDone_other": "{{count}} 个智能体现在使用 {{model}} 思考。",
+      "useAllMissed_other": "{{count}} 个智能体没有变化。打开各自的页面查看原因。",
       "revokeOnClaude": "要在 Claude 那边也终止，请在 Claude 的设置中撤销。"
     },
     "usage": {
@@ -10455,6 +10474,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "更改 {{agent}} 的模型",
+      "ownSignIn": "此电脑的账号",
+      "apiKey": "通过 API 密钥使用 {{provider}}",
+      "default": "默认",
+      "refused": "此密钥被拒绝",
+      "textOnly": "仅读取文本",
+      "search": "搜索模型",
+      "account": "账号",
+      "connect": "连接一个 AI",
+      "applies": "从下一次回复起生效。",
+      "more": "更多选项",
+      "undo": "撤销",
+      "saved": "{{agent}} 现在使用 {{model}} 思考。",
+      "readOnly": "只有管理员和智能体的所有者可以更改其模型。"
+    },
     "title": "思考方式",
     "auto": {
       "label": "自动",
@@ -14978,6 +15013,9 @@
       "text": "ChatGPT 拒绝了此账号或模型的快速模式，因此这条回复以标准速度发送。",
       "action": "打开智能体"
     },
+    "modelStandIn": {
+      "text": "{{plan}} 用此密钥拒绝了 {{from}}。我改用可用的 {{to}} 回复了。"
+    },
     "usageWhen": {
       "at": "{{time}}",
       "on": "{{day}} {{time}}",
@@ -15463,7 +15501,7 @@
       "brain_interrupted": "{{brain}} 在完成前停止了。已完成的不会重复：{{tools}}。",
       "plan_limit_cut": "我在 {{plan}} 套餐的限额处停了下来。{{when}}重置后，我会从停下的地方继续。",
       "plan_limit_cut_unknown": "我在 {{plan}} 套餐的限额处停了下来。重置后我会立即从停下的地方继续。",
-      "plan_limit_wait": "{{plan}} 套餐已达限额。{{when}}重置后我会回复。",
+      "plan_limit_wait": "{{plan}} 套餐已达限额。{{when}}重置后我会回复。如果在 {{plan}} 中提前解除，我会察觉并立即回复。",
       "plan_limit_wait_unknown": "{{plan}} 套餐已达限额。重置后我会立即回复。",
       "plan_model_limit_wait": "{{model}} 在 {{plan}} 中达到了自身的限额。套餐里的其他模型仍可正常使用：更换 {{agent}} 的模型，或等它{{when}}重置。",
       "plan_model_limit_wait_unknown": "{{model}} 在 {{plan}} 中达到了自身的限额。套餐里的其他模型仍可正常使用：更换 {{agent}} 的模型，或等它重置。",

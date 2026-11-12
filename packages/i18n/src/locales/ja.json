@@ -2925,6 +2925,7 @@
     "continuedByYou": "あなたが続行を許可しました · {{time}}"
   },
   "usageCard": {
+    "checked": "確認: {{when}}",
     "window": {
       "five_hour": "（5時間枠）",
       "seven_day": "（1週間枠）",
@@ -9303,6 +9304,24 @@
       "disconnected": "{{label}}の接続を解除しました。",
       "useFor": "{{name}}にも使う",
       "useForMenu": "ほかにも使う…",
+      "useAll": "すべてのエージェントで使う",
+      "useAllTitle": "{{plan}}をすべてのエージェントで使う",
+      "useAllSub": "このキーで使うモデルを選んでください。",
+      "useAllWorks": "このキーで使えるモデル",
+      "useAllRefused": "このキーで拒否されたモデル",
+      "useAllAnswered": "このキーで応答済み",
+      "useAllOff": "{{maker}}でオフ",
+      "useAllRegion": "{{maker}}でGlobalリージョンが必要",
+      "useAllUntested_other": "未テストのモデル {{count}} 件",
+      "textOnly": "テキストのみ",
+      "useAllTextOnly": "{{model}}は画像やPDFを見られません。スクリーンショットを見る必要があるエージェントには別のモデルが向いています。",
+      "useAllAgents": "すべてのエージェント",
+      "useAllAgentsLine_other": "{{count}} 件のエージェントがこのモデルに切り替わります",
+      "useAllNone": "今このキーを使えるエージェントはいません。",
+      "useAllGo_other": "{{count}} 件のエージェントで使う",
+      "useAllPick": "モデルを選ぶ",
+      "useAllDone_other": "{{count}} 件のエージェントが{{model}}で考えるようになりました。",
+      "useAllMissed_other": "{{count}} 件のエージェントは変わりませんでした。理由はそれぞれのページで確認できます。",
       "revokeOnClaude": "Claude側でも終了するには、Claudeの設定で取り消してください。"
     },
     "usage": {
@@ -10392,6 +10411,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "{{agent}}のモデルを変更",
+      "ownSignIn": "このコンピューターのアカウント",
+      "apiKey": "APIキーで使う{{provider}}",
+      "default": "既定",
+      "refused": "このキーでは拒否されました",
+      "textOnly": "テキストのみ",
+      "search": "モデルを検索",
+      "account": "アカウント",
+      "connect": "AIを接続",
+      "applies": "次の返信から適用されます。",
+      "more": "その他のオプション",
+      "undo": "元に戻す",
+      "saved": "{{agent}}は{{model}}で考えるようになりました。",
+      "readOnly": "モデルを変更できるのは管理者とエージェントの所有者だけです。"
+    },
     "title": "考えるAI",
     "auto": {
       "label": "自動",
@@ -14922,6 +14957,9 @@
       "text": "ChatGPTがこのアカウントまたはモデルでの高速を拒否したため、この返信は標準の速度で届きました。",
       "action": "エージェントを開く"
     },
+    "modelStandIn": {
+      "text": "{{plan}}がこのキーで{{from}}を拒否しました。このキーで使える{{to}}で返信しました。"
+    },
     "usageWhen": {
       "at": "{{time}}",
       "on": "{{day}} {{time}}",
@@ -15395,7 +15433,7 @@
       "brain_interrupted": "{{brain}}が完了前に停止しました。完了済みで繰り返さないもの: {{tools}}。",
       "plan_limit_cut": "{{plan}}プランの上限で停止しました。リセットされる{{when}}に、続きから再開します。",
       "plan_limit_cut_unknown": "{{plan}}プランの上限で停止しました。リセットされ次第、続きから再開します。",
-      "plan_limit_wait": "{{plan}}プランが上限に達しました。リセットされる{{when}}に返信します。",
+      "plan_limit_wait": "{{plan}}プランが上限に達しました。リセットされる{{when}}に返信します。{{plan}}側で先に解除されたら、気づいてすぐに返信します。",
       "plan_limit_wait_unknown": "{{plan}}プランが上限に達しました。リセットされ次第、返信します。",
       "plan_model_limit_wait": "{{model}}は{{plan}}でモデル自体の上限に達しました。プランのほかのモデルはそのまま使えます。{{agent}}のモデルを変えるか、{{when}}のリセットまでお待ちください。",
       "plan_model_limit_wait_unknown": "{{model}}は{{plan}}でモデル自体の上限に達しました。プランのほかのモデルはそのまま使えます。{{agent}}のモデルを変えるか、リセットまでお待ちください。",

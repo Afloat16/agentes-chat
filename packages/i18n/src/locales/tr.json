@@ -3020,6 +3020,7 @@
     "continuedByYou": "Devam etmelerine siz izin verdiniz · {{time}}"
   },
   "usageCard": {
+    "checked": "Kontrol edildi: {{when}}",
     "window": {
       "five_hour": "5 saatinin",
       "seven_day": "haftasının",
@@ -9620,6 +9621,29 @@
       "disconnected": "{{label}} bağlantısı kesildi.",
       "useFor": "{{name}} için de kullan",
       "useForMenu": "Şunun için kullan…",
+      "useAll": "Tüm ajanlarda kullan",
+      "useAllTitle": "{{plan}} planını tüm ajanlarda kullan",
+      "useAllSub": "Bu anahtarla kullanacakları modeli seçin.",
+      "useAllWorks": "Bu anahtarla çalışanlar",
+      "useAllRefused": "Bu anahtar için reddedilenler",
+      "useAllAnswered": "Bu anahtarla yanıt verdi",
+      "useAllOff": "{{maker}} içinde kapalı",
+      "useAllRegion": "{{maker}} içinde Global bölgesi gerekir",
+      "useAllUntested_one": "{{count}} model henüz denenmedi",
+      "useAllUntested_other": "{{count}} model henüz denenmedi",
+      "textOnly": "Yalnızca metin okur",
+      "useAllTextOnly": "{{model}} görselleri ve PDF'leri göremez. Ekran görüntüsü görmesi gereken bir ajan için başka bir model daha iyi olur.",
+      "useAllAgents": "Tüm ajanlar",
+      "useAllAgentsLine_one": "{{count}} ajan bu modele geçer",
+      "useAllAgentsLine_other": "{{count}} ajan bu modele geçer",
+      "useAllNone": "Şu anda bu anahtarı kullanabilecek ajan yok.",
+      "useAllGo_one": "{{count}} ajanda kullan",
+      "useAllGo_other": "{{count}} ajanda kullan",
+      "useAllPick": "Bir model seçin",
+      "useAllDone_one": "{{count}} ajan artık {{model}} ile düşünüyor.",
+      "useAllDone_other": "{{count}} ajan artık {{model}} ile düşünüyor.",
+      "useAllMissed_one": "{{count}} ajan değişmedi. Nedenini görmek için sayfasını açın.",
+      "useAllMissed_other": "{{count}} ajan değişmedi. Nedenini görmek için her birinin sayfasını açın.",
       "revokeOnClaude": "Claude tarafında da sonlandırmak için Claude ayarlarından iptal edin."
     },
     "usage": {
@@ -10755,6 +10779,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "{{agent}} modelini değiştir",
+      "ownSignIn": "Bu bilgisayarın hesabı",
+      "apiKey": "API anahtarıyla {{provider}}",
+      "default": "varsayılan",
+      "refused": "Bu anahtar için reddedildi",
+      "textOnly": "Yalnızca metin okur",
+      "search": "Model ara",
+      "account": "Hesap",
+      "connect": "Bir yapay zekâ bağla",
+      "applies": "Bir sonraki yanıttan itibaren geçerli.",
+      "more": "Diğer seçenekler",
+      "undo": "Geri al",
+      "saved": "{{agent}} artık {{model}} ile düşünüyor.",
+      "readOnly": "Modeli yalnızca yöneticiler ve ajanın sahibi değiştirebilir."
+    },
     "title": "Düşünen yapay zeka",
     "auto": {
       "label": "Otomatik",
@@ -15375,6 +15415,9 @@
       "text": "ChatGPT bu hesap veya model için Hızlı hızı reddetti, bu yüzden bu yanıt standart hızda geldi.",
       "action": "Ajanı aç"
     },
+    "modelStandIn": {
+      "text": "{{plan}} bu anahtarla {{from}} modelini reddetti. Onunla çalışan {{to}} ile yanıt verdim."
+    },
     "usageWhen": {
       "at": "saat {{time}}",
       "on": "{{day}}, saat {{time}}",
@@ -15854,7 +15897,7 @@
       "brain_interrupted": "{{brain}} bitirmeden durdu. Zaten yapılanlar tekrarlanmadı: {{tools}}.",
       "plan_limit_cut": "{{plan}} planının sınırında durdum. Sıfırlandığında, {{when}}, kaldığım yerden devam edeceğim.",
       "plan_limit_cut_unknown": "{{plan}} planının sınırında durdum. Sıfırlanır sıfırlanmaz kaldığım yerden devam edeceğim.",
-      "plan_limit_wait": "{{plan}} planı sınırına ulaştı. Sıfırlandığında, {{when}}, yanıt vereceğim.",
+      "plan_limit_wait": "{{plan}} planı sınırına ulaştı. Sıfırlandığında, {{when}}, yanıt vereceğim. {{plan}} tarafında daha önce açılırsa fark eder ve hemen yanıt veririm.",
       "plan_limit_wait_unknown": "{{plan}} planı sınırına ulaştı. Sıfırlanır sıfırlanmaz yanıt vereceğim.",
       "plan_model_limit_wait": "{{model}}, {{plan}} üzerinde kendi sınırına ulaştı. Planın diğer modelleri çalışmaya devam ediyor: {{agent}} için modeli değiştirin veya sıfırlanmasını bekleyin ({{when}}).",
       "plan_model_limit_wait_unknown": "{{model}}, {{plan}} üzerinde kendi sınırına ulaştı. Planın diğer modelleri çalışmaya devam ediyor: {{agent}} için modeli değiştirin veya sıfırlanmasını bekleyin.",
