@@ -7462,6 +7462,12 @@
       "now": "现在",
       "lane": "{{name}}：下次 {{when}}",
       "laneNone": "{{name}}：接下来几小时没有安排",
+      "agentRoutines_other": "{{count}} 个例行工作",
+      "andMore": "{{name}} 等另外 {{count}} 个",
+      "pick": "查看 {{name}} 的例行工作",
+      "restLater_other": "另有 {{count}} 个智能体稍后运行",
+      "restIdle_other": "{{count}} 个在接下来 {{hours}} 小时内没有安排",
+      "showAll": "全部显示",
       "legend": {
         "ok": "已回答",
         "silent": "没有新内容",

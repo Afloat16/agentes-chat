@@ -7415,6 +7415,12 @@
       "now": "現在",
       "lane": "{{name}}: 次回{{when}}",
       "laneNone": "{{name}}: この先数時間は予定なし",
+      "agentRoutines_other": "ルーティン{{count}}件",
+      "andMore": "{{name}} ほか{{count}}件",
+      "pick": "{{name}}のルーティンを見る",
+      "restLater_other": "ほか{{count}}件のエージェントはそれ以降に実行",
+      "restIdle_other": "{{count}}件はこの先{{hours}}時間の予定なし",
+      "showAll": "すべて表示",
       "legend": {
         "ok": "回答",
         "silent": "新しい情報なし",

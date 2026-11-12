@@ -923,7 +923,8 @@
       "install.scene.applications",
       "install.page.version",
       "install.page.versionSize",
-      "devices.armBuild"
+      "devices.armBuild",
+      "routines.horizon.agentRoutines"
     ],
     "de": [
       "devices.iphone.steps.account",
@@ -1696,7 +1697,8 @@
       "install.page.beta",
       "install.scene.finder",
       "install.scene.password",
-      "devices.armBuild"
+      "devices.armBuild",
+      "routines.horizon.agentRoutines"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -2267,7 +2269,8 @@
       "install.scene.downloads",
       "devices.armBuild",
       "issues.projects.label",
-      "issues.display.field.project"
+      "issues.display.field.project",
+      "routines.horizon.agentRoutines"
     ],
     "ja": [
       "channel.tooLong.fileName",

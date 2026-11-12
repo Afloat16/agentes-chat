@@ -7452,6 +7452,12 @@
       "now": "sekarang",
       "lane": "{{name}}: berikutnya {{when}}",
       "laneNone": "{{name}}: tidak ada dalam beberapa jam ke depan",
+      "agentRoutines_other": "{{count}} rutinitas",
+      "andMore": "{{name}} dan {{count}} lainnya",
+      "pick": "Lihat rutinitas {{name}}",
+      "restLater_other": "{{count}} agen lagi berjalan nanti",
+      "restIdle_other": "{{count}} tanpa jadwal dalam {{hours}} jam ke depan",
+      "showAll": "Tampilkan semua",
       "legend": {
         "ok": "menjawab",
         "silent": "tidak ada yang baru",
