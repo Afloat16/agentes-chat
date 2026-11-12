@@ -39,6 +39,7 @@ import { MISSION_RULES } from "./mission-rules";
 import { recordTaskFinished } from "./operator-events";
 import { enqueue } from "./outbox";
 import { lineLocale, personBehindCall } from "./requester";
+import { seatLive } from "./right-hand-seats";
 import { routineBriefOf } from "./routine-brief";
 import { issueRunToolToken } from "./run-tool-tokens";
 import { runnerUpdateWay } from "./runner-update";
@@ -898,7 +899,9 @@ export async function settleInterruptedTask(
         .from(schema.missions)
         .where(eq(schema.missions.id, claimed.missionId))
     : [];
-  const resumable = resumesByItself(claimed, machine, mission) && Boolean(deps.start);
+  // A seat's task (ADR 0174) starts again only while the seat is still its person's: never for someone who left.
+  const seated = !claimed.scopeId || (await seatLive(deps.db, claimed.scopeId));
+  const resumable = seated && resumesByItself(claimed, machine, mission) && Boolean(deps.start);
   if (resumable && deps.start && machine) {
     const handle = (await deps.db
       .select({ handle: schema.agents.handle })

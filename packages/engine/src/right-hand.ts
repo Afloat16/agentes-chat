@@ -77,6 +77,17 @@ export const RIGHT_HAND_GRANTS: readonly string[] = [
   "vault:write",
 ];
 
+/**
+ * Tools it is never offered, whatever its grants: each acts on a computer under the agent's own id, which reaches
+ * none (ADR 0174 §2), so offering it would only end in a refusal. A folder outside its own, its browser's own hand-off
+ * (its browser shows on the seat's desktop, asked for there) and missions.
+ */
+export const RIGHT_HAND_NOT_OFFERED: ReadonlySet<string> = new Set([
+  "request_folder_access",
+  "browser_ask_person",
+  "propose_mission",
+]);
+
 /** The grant rows it is made with: its computer's scopes, each a person's own seat there (ADR 0174). */
 export const RIGHT_HAND_COMPUTER_GRANTS = ["sandbox:run", "browser:use", "desktop:use"] as const;
 

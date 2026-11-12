@@ -32,6 +32,7 @@ import {
 } from "@agenteschat/adapters";
 import { and, type Database, eq, inArray, lt, schema } from "@agenteschat/db";
 import { getAgentCached } from "./agents";
+import { UUID } from "./authority";
 import { type MachinePhoneRow, publishDevicesChanged, syncMachinePhones } from "./devices";
 import { cutText } from "./format";
 import {
@@ -343,6 +344,10 @@ export function requestTimeoutMs(request: MachineRequest) {
 }
 
 type RpcReply = { ok: true; data: unknown } | { ok: false; error: { code: string; message: string } };
+
+/** What a tool of the right hand reads when its request would go out under its own id: nothing was sent. */
+export const RIGHT_HAND_OWN_ID_MESSAGE =
+  "Not done: on a computer you work only in a person's own place, in their private conversation with you, and this can't be done there yet. Say so plainly, or hand it to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it). Never ask the person to try again.";
 
 /** The right hand's locked chat turn and what follows it (ADR 0137 §4): all that goes out under its own id. */
 export const isLockedTurn = (request: MachineRequest) =>
@@ -887,12 +892,11 @@ export function createMachineHub(deps: MachineHubDeps) {
   async function outgoing<R extends MachineRequest>(orgId: string | null, request: R): Promise<R> {
     const scope = request.agent;
     if (!scope || !orgId) return request;
-    const agent = await getAgentCached(db, orgId, scope.id).catch(() => null);
+    // A read that fails sends nothing: who the id is must be known before it goes out. An id that is no row's
+    // (a shared browser profile's key) is nobody's to look up.
+    const agent = UUID.test(scope.id) ? await getAgentCached(db, orgId, scope.id) : null;
     if (isRightHand(agent) && !isLockedTurn(request)) {
-      throw new MachineRequestError(
-        "not_allowed",
-        `${request.op} was not sent: ${agent?.name ?? "the right hand"} uses a computer only as a person's own seat.`,
-      );
+      throw new MachineRequestError("not_allowed", RIGHT_HAND_OWN_ID_MESSAGE);
     }
     return agent && !scope.name ? { ...request, agent: { ...scope, name: agent.name } } : request;
   }

@@ -34,6 +34,7 @@ import {
   drivesComputer,
   getMachine,
   mayDriveComputer,
+  publishMachineAgentsChanged,
   requireComputerDriver,
   servesDesktops,
 } from "../machines";
@@ -50,9 +51,11 @@ import {
 } from "../notification-producers";
 import { can, getMembership } from "../organizations";
 import { enqueue } from "../outbox";
-import { isRightHand } from "../right-hand";
+import { isRightHand, isRightHandId } from "../right-hand";
+import { machineScope, NO_SEAT_MESSAGE, screenPersonOf, toolMachineId, viewerScope } from "../right-hand-seats";
 import { resumeRunWithResult } from "../run-resume";
 import { bodyCode, runWhere } from "../run-tools";
+import { SandboxUnavailableError } from "../sandbox";
 import { closedRefusal } from "../standing";
 import { grantedScopeKeys, isAllowed, toolAccess } from "../tools/scopes";
 import type { ToolContext, ToolDefinition, ToolOutput, ToolSource } from "../tools/types";
@@ -462,16 +465,19 @@ export async function screenAccess(
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
   if (!row) throw new NotFoundError("Agent not found");
-  // The right hand's screens are each person's own seat (ADR 0174): theirs to watch and drive, and nobody else's,
-  // an admin's included. What they reach is decided where the seat is (`viewerScope`).
-  if (isRightHand(row)) {
-    const access = { owner: userId, machineId: await workspaceHomeId(db, orgId), admin: false };
-    return { access, refusal: null };
-  }
-  const agent = { owner: row.owner, machineId: row.machineId };
   const full = screen === "desktop";
   const admin = can(membership, full ? "control_computers" : "control_browsers");
-  const access = { ...agent, admin };
+  // The right hand's screens are each person's own seat (ADR 0174): theirs to watch and drive with the same role keys
+  // as any agent of their own, and nobody else's, an admin's included. What they reach is decided where the seat is
+  // (`viewerScope`), and a handoff of another person's seat is never theirs to read or end.
+  if (isRightHand(row)) {
+    const access = { owner: userId, machineId: await workspaceHomeId(db, orgId), admin: false, seat: true };
+    if (handoff && handoff.seatUserId !== userId) return { access, refusal: "none" } as const;
+    const keyed = admin || can(membership, full ? "own_computers" : "own_browsers");
+    return { access, refusal: keyed ? null : "level" } as const;
+  }
+  const agent = { owner: row.owner, machineId: row.machineId };
+  const access = { ...agent, admin, seat: false };
   if (admin) return { access, refusal: null };
   const theirs = await seesScreenAsTheirs(db, userId, orgId, agentId, agent, handoff, screen);
   if (theirs && can(membership, full ? "own_computers" : "own_browsers")) return { access, refusal: null };
@@ -489,7 +495,7 @@ async function seesScreenAsTheirs(
   screen: ScreenKind,
 ) {
   if (agent.owner === userId) return true;
-  const open = handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen) : handoff;
+  const open = handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, userId) : handoff;
   if (open?.requestedForUserId === userId) return true;
   const runs = open?.runId
     ? [open.runId]
@@ -535,8 +541,12 @@ export async function requireBrowserControl(
   handoff?: BrowserHandoffRow | null,
   screen: ScreenKind = "browser",
 ) {
-  const open = handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen) : handoff;
+  const open = handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, userId) : handoff;
   const access = await requireBrowserAccess(db, userId, orgId, agentId, open, screen);
+  // A seat's browser has no view of its own: its window is on the seat's desktop, driven there.
+  if (access.seat && screen === "browser") {
+    throw new ForbiddenError("Its browser shows on its desktop: take control of the desktop instead");
+  }
   if (access.admin || access.owner === userId) return access;
   if (open && OPEN.includes(open.status) && open.requestedForUserId === userId) return access;
   if (screen === "desktop" && access.machineId) {
@@ -555,34 +565,54 @@ export async function requireBrowserControl(
  * the one its browser last used), and that computer serves desktops. Its browser requests say so (`desktop`).
  */
 export async function browserOnDesktop(db: Executor, orgId: string, agentId: string, machineId?: string) {
-  const [row] = await db
-    .select({ agent: agents, machine: machines })
+  const [agent] = await db
+    .select()
     .from(agents)
-    .innerJoin(machines, and(eq(machines.id, agents.machineId), isNull(machines.deletedAt)))
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
-  if (!row || (machineId ?? row.agent.browserMachineId ?? row.machine.id) !== row.machine.id) return false;
-  return servesDesktops(row.machine) && (await agentUsesScreen(db, orgId, agentId, "desktop"));
+  // The right hand's own is the workspace's, where each person's seat has its desktop (ADR 0174).
+  const own = await toolMachineId(db, agent);
+  if (!agent || !own || (machineId ?? agent.browserMachineId ?? own) !== own) return false;
+  const [machine] = await db
+    .select()
+    .from(machines)
+    .where(and(eq(machines.id, own), isNull(machines.deletedAt)));
+  return Boolean(machine && servesDesktops(machine)) && (await agentUsesScreen(db, orgId, agentId, "desktop"));
 }
 
 /** The open handoff of the agent's other screen that shows the same window as `screen`, if any. */
-export async function openElsewhere(db: Executor, orgId: string, agentId: string, screen: ScreenKind) {
+export async function openElsewhere(
+  db: Executor,
+  orgId: string,
+  agentId: string,
+  screen: ScreenKind,
+  person?: ScreenPerson,
+) {
   const other = SAME_WINDOW[screen];
-  const open = other ? await openHandoffOf(db, orgId, agentId, other) : null;
+  const open = other ? await openHandoffOf(db, orgId, agentId, other, person) : null;
   return open && (await browserOnDesktop(db, orgId, agentId)) ? open : null;
 }
 
 /** The handoff that holds `screen`: its own, else the one of the screen showing the same window. */
-export async function openHandoffOn(db: Executor, orgId: string, agentId: string, screen: ScreenKind) {
-  return (await openHandoffOf(db, orgId, agentId, screen)) ?? (await openElsewhere(db, orgId, agentId, screen));
+export async function openHandoffOn(
+  db: Executor,
+  orgId: string,
+  agentId: string,
+  screen: ScreenKind,
+  person?: ScreenPerson,
+) {
+  return (
+    (await openHandoffOf(db, orgId, agentId, screen, person)) ??
+    (await openElsewhere(db, orgId, agentId, screen, person))
+  );
 }
 
 /**
  * Inside the transaction that opens a handoff of one of the agent's screens: one opens at a time per agent
  * (a lock), and none while the screen showing the same window has one.
  */
-async function claimScreens(tx: Executor, orgId: string, agentId: string, screen: ScreenKind) {
+async function claimScreens(tx: Executor, orgId: string, agentId: string, screen: ScreenKind, person?: ScreenPerson) {
   await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`agent-screens:${agentId}`}))`);
-  const open = await openElsewhere(tx, orgId, agentId, screen);
+  const open = await openElsewhere(tx, orgId, agentId, screen, person);
   if (open) throw new SameWindowError(open);
 }
 
@@ -611,14 +641,21 @@ export async function browserMachineOf(
   orgId: string,
   agentId: string,
   screen: ScreenKind = "browser",
+  person?: ScreenPerson,
 ): Promise<string | null> {
-  const open = await openHandoffOf(db, orgId, agentId, screen);
+  const open = await openHandoffOf(db, orgId, agentId, screen, person);
   if (open) return open.machineId;
   const [agent] = await db
-    .select({ machineId: agents.machineId, browserMachineId: agents.browserMachineId })
+    .select({
+      orgId: agents.orgId,
+      machineId: agents.machineId,
+      browserMachineId: agents.browserMachineId,
+      builtin: agents.builtin,
+    })
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
-  return agent ? SCREENS[screen].machine(agent) : null;
+  if (!agent) return null;
+  return SCREENS[screen].machine({ ...agent, machineId: await toolMachineId(db, agent) });
 }
 
 async function loadHandoff(db: Executor, orgId: string, handoffId: string) {
@@ -630,19 +667,47 @@ async function loadHandoff(db: Executor, orgId: string, handoffId: string) {
   return row;
 }
 
+/**
+ * Whose screen is meant where an agent's is asked for. Only the right hand's reads it (ADR 0174): each person's seat
+ * there is another screen. A person's own request names that person, a run's tool the person whose seat it uses
+ * (`screenPersonOf`: `false` when it has none). Any other agent has one screen, whoever asks.
+ */
+export type ScreenPerson = string | null | false;
+
+/**
+ * The handoffs of one screen: an agent's, or on the right hand one person's seat's. Null: no screen at all (the right
+ * hand's with nobody named). Every read of an agent's handoffs goes through here, so a caller that names nobody sees
+ * nothing of anyone's seat.
+ */
+async function ofScreen(db: Executor, orgId: string, agentId: string, screen: ScreenKind, person?: ScreenPerson) {
+  const seats = await isRightHandId(db, orgId, agentId);
+  if (seats && !person) return null;
+  return and(
+    eq(browserHandoffs.orgId, orgId),
+    eq(browserHandoffs.agentId, agentId),
+    eq(browserHandoffs.screen, screen),
+    seats && person ? eq(browserHandoffs.seatUserId, person) : isNull(browserHandoffs.seatUserId),
+  );
+}
+
+/** A run's tool call as the screen it acts on is found from it (`screenPersonOf`). */
+type RunScreen = Pick<ToolContext, "orgId" | "agentId"> &
+  Partial<Pick<ToolContext, "channelId" | "runId" | "triggerMessageId">>;
+
 /** The handoff open on one of an agent's screens (a person in control, or asked to be), if any. */
-export async function openHandoffOf(db: Executor, orgId: string, agentId: string, screen: ScreenKind = "browser") {
+export async function openHandoffOf(
+  db: Executor,
+  orgId: string,
+  agentId: string,
+  screen: ScreenKind = "browser",
+  person?: ScreenPerson,
+) {
+  const mine = await ofScreen(db, orgId, agentId, screen, person);
+  if (!mine) return null;
   const [row] = await db
     .select()
     .from(browserHandoffs)
-    .where(
-      and(
-        eq(browserHandoffs.orgId, orgId),
-        eq(browserHandoffs.agentId, agentId),
-        eq(browserHandoffs.screen, screen),
-        inArray(browserHandoffs.status, OPEN),
-      ),
-    )
+    .where(and(mine, inArray(browserHandoffs.status, OPEN)))
     .orderBy(desc(browserHandoffs.createdAt))
     .limit(1);
   return row ?? null;
@@ -765,6 +830,7 @@ async function afterChange(deps: HandoffDeps, row: BrowserHandoffRow, movedFrom?
       handoffId: row.id,
       machineId: row.machineId,
       screen: row.screen,
+      seatUserId: row.seatUserId,
     })
     .catch(() => {});
   const places = [await handoffPlace(deps.db, row)];
@@ -836,7 +902,8 @@ export function createBrowserHandoffToolSource(
     },
     async desktop(ctx) {
       const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
-      const s = agent?.machineId && hub ? await hub.status(agent.machineId) : null;
+      const machineId = await toolMachineId(ctx.db, agent);
+      const s = machineId && hub ? await hub.status(machineId) : null;
       if (!s || s.orgId !== ctx.orgId) {
         return { unavailable: "Your desktop only runs on a connected computer, and you don't use one. Say so." };
       }
@@ -854,6 +921,15 @@ export function createBrowserHandoffToolSource(
     const instructions = String(input.instructions ?? "").trim();
     if (!instructions) return { content: "Say what the person should do.", isError: true };
     if (namesOwnApp(instructions)) return { content: ownAppRefusal(ctx.orgId), isError: true };
+    // The right hand's screen is the seat of the person behind the run (ADR 0174), whose browser shows on its desktop.
+    const person = await screenPersonOf(ctx.db, ctx);
+    if (person === false) return { content: NO_SEAT_MESSAGE, isError: true };
+    if (person && screen === "browser") {
+      return {
+        content: `Nothing was asked: your browser here shows on your desktop, so ask there with ${DESKTOP_ASK_PERSON_TOOL}.`,
+        isError: true,
+      };
+    }
     const minutes =
       typeof input.timeout_minutes === "number"
         ? Math.min(HANDOFF_TIMEOUT_MAX_MINUTES, Math.max(1, Math.floor(input.timeout_minutes)))
@@ -875,6 +951,15 @@ export function createBrowserHandoffToolSource(
         isError: true,
       };
     }
+    if (person && hub) {
+      // Their seat is there before they are asked to it, or the right hand has none on this computer.
+      try {
+        await machineScope(hub, ctx, place.machineId);
+      } catch (error) {
+        if (error instanceof SandboxUnavailableError) return { content: error.message, isError: true };
+        throw error;
+      }
+    }
     if (screen === "browser" && hub) {
       const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
       const url = agent && (await browserUrl(hub, place.machineId, { id: agent.id, handle: agent.handle }));
@@ -885,7 +970,7 @@ export function createBrowserHandoffToolSource(
       .from(agentRuns)
       .where(and(eq(agentRuns.id, ctx.runId), eq(agentRuns.orgId, ctx.orgId)));
     if (!run) return { content: "This call can't wait for a person here.", isError: true };
-    const open = await openHandoffOn(ctx.db, ctx.orgId, ctx.agentId, screen);
+    const open = await openHandoffOn(ctx.db, ctx.orgId, ctx.agentId, screen, person);
     if (open) {
       return {
         content:
@@ -896,7 +981,14 @@ export function createBrowserHandoffToolSource(
       };
     }
     // A desktop goes only to who may drive its computer (ADR 0058 §4); a browser to who asked for the work.
-    const drivers = screen === "desktop" ? await computerDrivers(ctx.db, ctx.orgId, ctx.agentId) : null;
+    // A seat's only to its own person, while their roles let them drive it.
+    const drivers = person
+      ? (await mayDriveComputer(ctx.db, person, ctx.orgId, ctx.agentId))
+        ? [person]
+        : []
+      : screen === "desktop"
+        ? await computerDrivers(ctx.db, ctx.orgId, ctx.agentId)
+        : null;
     if (drivers?.length === 0) {
       return {
         content: "No one in this workspace may take control of your desktop. Say what you need in your reply instead.",
@@ -950,7 +1042,7 @@ export function createBrowserHandoffToolSource(
     let created: { card: Awaited<ReturnType<typeof insertMessage>>; row: BrowserHandoffRow };
     try {
       created = await ctx.db.transaction(async (tx) => {
-        await claimScreens(tx, run.orgId, run.agentId, screen);
+        await claimScreens(tx, run.orgId, run.agentId, screen, person);
         const card = await insertMessage(tx, {
           orgId: run.orgId,
           channelId: where.channelId,
@@ -972,6 +1064,7 @@ export function createBrowserHandoffToolSource(
             kind: "ask",
             instructions,
             requestedForUserId: recipient,
+            seatUserId: person,
             expiresAt: new Date(Date.now() + minutes * 60_000),
           })
           .returning();
@@ -1279,15 +1372,22 @@ export async function startTakeover(
     if (!run || run.agentId !== agentId) throw new ValidationError("That run isn't this agent's");
     if (LIVE_RUN.includes(run.status)) boundRun = runId;
   }
-  const open = await openHandoffOf(deps.db, orgId, agentId, screen);
+  // On the right hand the screen taken is the actor's own seat (ADR 0174), made here if this is their first use.
+  const seat = (await isRightHandId(deps.db, orgId, agentId)) ? actorId : null;
+  if (seat) {
+    const told = (org: string) => publishMachineAgentsChanged(deps.pubsub, org);
+    const theirs = await viewerScope(deps.db, orgId, agentId, actorId, told);
+    if (!theirs || "reason" in theirs) throw new ValidationError("This agent has no computer");
+  }
+  const open = await openHandoffOf(deps.db, orgId, agentId, screen, seat);
   if (open) return claimHandoff(deps, actorId, orgId, open.id);
-  const machineId = await browserMachineOf(deps.db, orgId, agentId, screen);
+  const machineId = await browserMachineOf(deps.db, orgId, agentId, screen, seat);
   if (!machineId) throw new ValidationError("This agent has no computer");
   const now = Date.now();
   let row: BrowserHandoffRow | undefined;
   try {
     row = await deps.db.transaction(async (tx) => {
-      await claimScreens(tx, orgId, agentId, screen);
+      await claimScreens(tx, orgId, agentId, screen, seat);
       const [created] = await tx
         .insert(browserHandoffs)
         .values({
@@ -1299,6 +1399,7 @@ export async function startTakeover(
           kind: "takeover",
           status: "active",
           controllerUserId: actorId,
+          seatUserId: seat,
           expiresAt: new Date(now + CONTROL_GRACE_MS),
         })
         .returning();
@@ -1307,7 +1408,7 @@ export async function startTakeover(
   } catch (error) {
     // Opened meanwhile (another person, or the agent asked): that one is claimed instead, or it says who has it.
     if (!isUniqueViolation(error)) throw error;
-    const raced = await openHandoffOf(deps.db, orgId, agentId, screen);
+    const raced = await openHandoffOf(deps.db, orgId, agentId, screen, seat);
     if (!raced) throw new ConflictError("Someone else just took control");
     return claimHandoff(deps, actorId, orgId, raced.id);
   }
@@ -1330,11 +1431,11 @@ export async function startTakeover(
  */
 export async function waitIfPersonInControl(
   db: Database,
-  ctx: { orgId: string; agentId: string; runId: string },
+  ctx: RunScreen & { runId: string },
   pubsub?: PubSub,
   screen: ScreenKind = "browser",
 ): Promise<ToolOutput | null> {
-  const open = await openHandoffOn(db, ctx.orgId, ctx.agentId, screen);
+  const open = await openHandoffOn(db, ctx.orgId, ctx.agentId, screen, await screenPersonOf(db, ctx));
   if (!open) return null;
   const busy = `A person has control of your ${SCREENS[open.screen].what}, or has been asked to take it.`;
   if (open.runId !== ctx.runId) {
@@ -1379,17 +1480,17 @@ async function runIsLive(db: Executor, orgId: string, runId: string) {
  */
 export async function requirePageRead(
   db: Database,
-  ctx: { orgId: string; agentId: string },
+  ctx: RunScreen,
   screen: ScreenKind = "browser",
 ): Promise<ToolOutput | null> {
+  const mine = await ofScreen(db, ctx.orgId, ctx.agentId, screen, await screenPersonOf(db, ctx));
+  if (!mine) return null;
   const [changed] = await db
     .select()
     .from(browserHandoffs)
     .where(
       and(
-        eq(browserHandoffs.orgId, ctx.orgId),
-        eq(browserHandoffs.agentId, ctx.agentId),
-        eq(browserHandoffs.screen, screen),
+        mine,
         isNotNull(browserHandoffs.resolvedAt),
         isNotNull(browserHandoffs.controllerUserId),
         isNull(browserHandoffs.pageReadAt),
@@ -1415,46 +1516,25 @@ export async function requirePageRead(
  * A person had the agent's screen and gave it back after `since` (a take over that began and
  * ended within one step of a plan): the page may not be what the plan's next steps expect.
  */
-export async function handedBackSince(
-  db: Database,
-  ctx: { orgId: string; agentId: string },
-  since: Date,
-  screen: ScreenKind = "browser",
-) {
+export async function handedBackSince(db: Database, ctx: RunScreen, since: Date, screen: ScreenKind = "browser") {
+  const mine = await ofScreen(db, ctx.orgId, ctx.agentId, screen, await screenPersonOf(db, ctx));
+  if (!mine) return false;
   const [row] = await db
     .select({ id: browserHandoffs.id })
     .from(browserHandoffs)
-    .where(
-      and(
-        eq(browserHandoffs.orgId, ctx.orgId),
-        eq(browserHandoffs.agentId, ctx.agentId),
-        eq(browserHandoffs.screen, screen),
-        isNotNull(browserHandoffs.controllerUserId),
-        gt(browserHandoffs.resolvedAt, since),
-      ),
-    )
+    .where(and(mine, isNotNull(browserHandoffs.controllerUserId), gt(browserHandoffs.resolvedAt, since)))
     .limit(1);
   return Boolean(row);
 }
 
 /** The agent read its screen: whatever a person changed before is now seen. */
-export async function markPageRead(
-  db: Database,
-  ctx: { orgId: string; agentId: string },
-  screen: ScreenKind = "browser",
-) {
+export async function markPageRead(db: Database, ctx: RunScreen, screen: ScreenKind = "browser") {
+  const mine = await ofScreen(db, ctx.orgId, ctx.agentId, screen, await screenPersonOf(db, ctx));
+  if (!mine) return;
   const seen = await db
     .update(browserHandoffs)
     .set({ pageReadAt: new Date() })
-    .where(
-      and(
-        eq(browserHandoffs.orgId, ctx.orgId),
-        eq(browserHandoffs.agentId, ctx.agentId),
-        eq(browserHandoffs.screen, screen),
-        isNotNull(browserHandoffs.resolvedAt),
-        isNull(browserHandoffs.pageReadAt),
-      ),
-    )
+    .where(and(mine, isNotNull(browserHandoffs.resolvedAt), isNull(browserHandoffs.pageReadAt)))
     .returning({ id: browserHandoffs.id });
   for (const { id } of seen) controlFacts.delete(id);
 }
@@ -1598,10 +1678,13 @@ export async function stopAgentBrowser(
   if (!hub) throw new ValidationError("Connected computers are not available on this server");
   const machineId = await browserMachineOf(db, orgId, agentId, "browser");
   if (!machineId) throw new ValidationError("This agent has no computer");
-  const agent = await getAgentCached(db, orgId, agentId);
-  if (!agent) throw new NotFoundError("Agent not found");
-  const scope = { id: agentId, handle: agent.handle, ...(agent.name ? { name: agent.name } : {}) };
-  await hub.call<"browser.stop">(machineId, { op: "browser.stop", agent: scope }, { timeoutMs: 30_000 });
+  // Whose browser it is there: the agent's, or on the right hand the asker's own seat's (ADR 0174).
+  const theirs = await viewerScope(db, orgId, agentId, actorId, undefined, false);
+  if (!theirs) throw new NotFoundError("Agent not found");
+  if ("reason" in theirs) throw new ValidationError("This agent has no computer");
+  // A seat never opened has no browser to stop.
+  if (!theirs.scope) return;
+  await hub.call<"browser.stop">(machineId, { op: "browser.stop", agent: theirs.scope }, { timeoutMs: 30_000 });
   await pubsub
     ?.publish(BROWSER_HANDOFF_TOPIC, {
       type: "browser.stopped",

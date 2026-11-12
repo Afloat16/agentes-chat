@@ -47,7 +47,15 @@ export interface StreamInput {
  * the agent or its workspace is held, so a desktop that runs may be watched but none is started for it.
  */
 export type StreamTarget =
-  | { machineId: string; agent?: AgentScope; held?: boolean; switches?: boolean; phone?: PhoneTarget }
+  | {
+      machineId: string;
+      agent?: AgentScope;
+      held?: boolean;
+      switches?: boolean;
+      phone?: PhoneTarget;
+      /** The right hand's seat for this person isn't made yet (a screen's state was asked, nothing opened). */
+      unmade?: boolean;
+    }
   | { refused: number; reason: string };
 
 export interface Stream extends StreamInput {
@@ -56,6 +64,8 @@ export interface Stream extends StreamInput {
   readonly viewer: StreamSocket;
   /** The computer, once `authorize` let it open. */
   machineId: string | null;
+  /** Who the computer takes its agent for, once it opened: the agent, or a person's seat of the right hand. */
+  scope?: AgentScope;
   /** The runner's data socket, once its hello named this stream. */
   runner: StreamSocket | null;
   /** Bytes from the person (keys, pointer, a resize) and to them (the screen, the shell's output). */
@@ -271,6 +281,7 @@ export function createStreamBroker(deps: StreamBrokerDeps) {
     // A card's view only watches: it never turns into control (no control audit, no screening).
     s.switches = s.request.kind === "desktop" && s.switches && target.switches === true && !s.preview;
     const { machineId, agent } = target;
+    if (agent) s.scope = agent;
     const held = target.held === true;
     // A card's view never starts a stopped screen: only someone opening it does.
     const starts = s.request.kind === "desktop" && !held && !s.preview ? { start: true } : {};

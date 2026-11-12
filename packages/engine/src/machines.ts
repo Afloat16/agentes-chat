@@ -375,13 +375,16 @@ export async function computerDriving(db: Database, userId: string, orgId: strin
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
   if (!agent) throw new NotFoundError("Agent not found");
-  // The right hand's computer is each person's own seat on the workspace's (ADR 0174): theirs to drive, whatever
-  // their roles, and reached only as themselves (`viewerScope`).
+  // The right hand's computer is each person's own seat on the workspace's (ADR 0174): theirs to drive with the role
+  // key that gives a person their own agents' computers, and reached only as themselves (`viewerScope`).
   const home = isRightHand(agent) ? await workspaceHomeId(db, orgId) : null;
   const machineId = home ?? agent.machineId;
   const machine = machineId ? await getMachine(db, orgId, machineId) : null;
   if (!machine) throw new NotFoundError("This agent has no computer");
-  if (home) return { machine, refusal: null };
+  if (home) {
+    const keyed = can(membership, "own_computers") || can(membership, "control_computers");
+    return { machine, refusal: keyed ? null : ("role" as const) };
+  }
   const person = {
     userId,
     admin: can(membership, "control_computers"),

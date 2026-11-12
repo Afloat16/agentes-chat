@@ -75,6 +75,7 @@ import {
 } from "./machines";
 import { missionOfRun, type RunMission, runActsForMission } from "./mission-context";
 import { recordTaskFinished } from "./operator-events";
+import { isRightHandId } from "./right-hand";
 import { machineScope, seatIdOf } from "./right-hand-seats";
 import { runnerUpdateWay } from "./runner-update";
 import { replyThreadOf } from "./runs";
@@ -734,14 +735,15 @@ export function createSandboxToolSource(
           const { item, kept } = await restoreMadePassword(vault, runIds, undo);
           return { content: undoneText(vaultItemName(item), kept) };
         }
-        const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
-        const scope = {
-          id: ctx.agentId,
-          handle: agent?.handle ?? "agent",
-          ...(agent?.name ? { name: agent.name } : {}),
-        };
-        const value = await run(ctx, (computer) =>
-          requestMadePassword(hub, computer.machineId, scope, input, ctx.signal),
+        // Made where the agent's work is: for the right hand, the seat of the person behind the run (ADR 0174).
+        const value = await run(ctx, async (computer) =>
+          requestMadePassword(
+            hub,
+            computer.machineId,
+            await machineScope(hub, ctx, computer.machineId),
+            input,
+            ctx.signal,
+          ),
         );
         const saved = await saveMadePassword(
           vault,
@@ -1331,6 +1333,13 @@ export function createSandboxToolSource(
           if (executor === "shell" && !command) return { content: "A shell task needs `command`.", isError: true };
           if (executor !== "shell" && !prompt)
             return { content: `A ${executor} task needs \`prompt\`.`, isError: true };
+          // A CLI job thinks with a sign-in, and a person's seat of the right hand holds none (ADR 0174 §7).
+          if (executor !== "shell" && (await isRightHandId(ctx.db, ctx.orgId, ctx.agentId))) {
+            return {
+              content: `Not started: a ${executor} job needs a sign-in your place on this computer doesn't have. Run it as a command (executor "shell"), or hand it to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it).`,
+              isError: true,
+            };
+          }
           const hub = hubOf();
           // On another device (`computer`), a full one keeps the task in its line instead of refusing it.
           const elsewhere = str(input.computer).trim() !== "";

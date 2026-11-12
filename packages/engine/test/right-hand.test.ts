@@ -223,7 +223,7 @@ test("its prompt says what the person may do, and shows only the agents they may
   // Only our tools, whichever CLI thinks for it (ADR 0137 §4), and no computer of its own.
   expect(member).toContain("Your tools are the agentes tools listed to you, the same an agent here can have");
   expect(member).toContain(
-    "You have no computer yet, so you run no commands, keep no files on a machine and open no browser",
+    "You have no computer here, so you run no commands, keep no files on a machine and open no browser",
   );
   expect(member).toContain("Use nothing that isn't an agentes tool");
   expect(member).toContain("never write out tokens, keys, passwords or sign-in data");

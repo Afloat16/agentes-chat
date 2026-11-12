@@ -743,6 +743,7 @@ export function profileControlRow(
     status: "active",
     requestedForUserId: holder.userId,
     controllerUserId: holder.userId,
+    seatUserId: null,
     note: null,
     expiresAt: p.heldUntil,
     pageReadAt: null,

@@ -92,8 +92,10 @@ export function browserRoutes(deps: AppDeps) {
       }),
       async (c) => {
         const { orgId, agentId } = c.req.valid("param");
-        await requireBrowserAccess(db, c.get("user").id, orgId, agentId, undefined, screen);
-        const open = await openHandoffOf(db, orgId, agentId, screen);
+        const userId = c.get("user").id;
+        await requireBrowserAccess(db, userId, orgId, agentId, undefined, screen);
+        // Whoever asks: on the right hand each person reads only their own seat's (ADR 0174).
+        const open = await openHandoffOf(db, orgId, agentId, screen, userId);
         return c.json({ handoff: open ? handoffView(open) : null }, 200);
       },
     );
