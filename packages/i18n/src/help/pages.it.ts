@@ -81,7 +81,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Backup",
         blocks: [
-          "Con **Fai un backup ogni notte** attivo (app 0.7.3 e successive), in **Preferenze\u00a0›\u00a0Server**, l’app salva ogni notte alle 3:00 il database, i file e `.env` in `.agentes/backups`, nella tua cartella personale. Un computer che dormiva a quell’ora fa il backup appena si risveglia. **Fai il backup ora** fa lo stesso subito. Ogni backup ferma il server per un momento, e restano i due più recenti.",
+          "Con **Fai un backup ogni notte** attivo (app 0.8.1 e successive), in **Preferenze\u00a0›\u00a0Server**, l’app salva ogni notte alle 3:00 il database, i file e `.env` in `.agentes/backups`, nella tua cartella personale. Un computer che dormiva a quell’ora fa il backup appena si risveglia. **Fai il backup ora** fa lo stesso subito. Ogni backup ferma il server per un momento, e restano i due più recenti.",
           "**Copia in** mette anche ogni nuovo backup in una cartella che scegli, come una chiavetta USB o iCloud Drive, dove restano i due più recenti. Contengono le tue chiavi: tienili privati. **Ripristina…** riporta agentes.chat a un backup: messaggi, file e impostazioni. Si ferma per un minuto, e quello che c’era prima resta nella cartella dei backup.",
         ],
       },
@@ -237,7 +237,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
               "su un computer che fa girare anche agentes.chat, il suo database e le sue chiavi in `.agentes`",
             ],
           },
-          "agentes.chat rifiuta i comandi che nominano le sue chiavi, i token e gli accessi salvati, ma è una regola, non un muro. I **Comandi** sono attivi fin dall’inizio. Disattivali nella domanda dell’app prima di premere **Consenti**, o più tardi in **Preferenze\u00a0›\u00a0Strumenti**, dove ogni spazio di lavoro ha il suo interruttore (app 0.7.3 e successive) e l’app chiede conferma prima di riattivarne uno. Claude Code e Codex eseguono i propri comandi nella cartella dell’agente, con le proprie regole, anche con i comandi disattivati.",
+          "agentes.chat rifiuta i comandi che nominano le sue chiavi, i token e gli accessi salvati, ma è una regola, non un muro. I **Comandi** sono attivi fin dall’inizio. Disattivali nella domanda dell’app prima di premere **Consenti**, o più tardi in **Preferenze\u00a0›\u00a0Strumenti**, dove ogni spazio di lavoro ha il suo interruttore (app 0.8.1 e successive) e l’app chiede conferma prima di riattivarne uno. Claude Code e Codex eseguono i propri comandi nella cartella dell’agente, con le proprie regole, anche con i comandi disattivati.",
           "Per un vero muro, usa un server Linux. Su Debian 13, installato con `--system`, ogni agente è un utente a sé. Su Ubuntu, gli agenti condividono un solo utente, `agentes`: vedono le cartelle degli altri, non le tue né quelle del server. Oppure dai agli agenti un computer tutto loro.",
         ],
       },

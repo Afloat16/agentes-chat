@@ -81,7 +81,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Backups",
         blocks: [
-          "Ist **Jede Nacht sichern** an (ab App-Version 0.7.3), unter **Einstellungen\u00a0›\u00a0Server**, speichert die App jede Nacht um 3:00 die Datenbank, die Dateien und `.env` in `.agentes/backups` in deinem Benutzerordner. Ein Computer, der da schlief, sichert, sobald er wach ist. **Jetzt sichern** macht dasselbe sofort. Jede Sicherung stoppt den Server kurz, und die zwei neuesten bleiben erhalten.",
+          "Ist **Jede Nacht sichern** an (ab App-Version 0.8.1), unter **Einstellungen\u00a0›\u00a0Server**, speichert die App jede Nacht um 3:00 die Datenbank, die Dateien und `.env` in `.agentes/backups` in deinem Benutzerordner. Ein Computer, der da schlief, sichert, sobald er wach ist. **Jetzt sichern** macht dasselbe sofort. Jede Sicherung stoppt den Server kurz, und die zwei neuesten bleiben erhalten.",
           "**Kopieren nach** legt jede neue Sicherung zusätzlich in einen Ordner deiner Wahl, etwa auf einen USB-Stick oder in iCloud Drive, wo die zwei neuesten bleiben. Sie enthalten deine Schlüssel: Behalte sie für dich. **Wiederherstellen…** setzt agentes.chat auf eine Sicherung zurück: Nachrichten, Dateien und Einstellungen. Es stoppt dafür eine Minute, und was vorher da war, bleibt im Sicherungsordner.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
               "auf einem Computer, der auch agentes.chat ausführt, dessen Datenbank und Schlüssel in `.agentes`",
             ],
           },
-          "agentes.chat lehnt Befehle ab, die seine Schlüssel, Tokens und Anmeldungen nennen, aber das ist eine Regel, keine Mauer. **Befehle** sind von Anfang an eingeschaltet. Schalte sie in der Frage der App aus, bevor du **Erlauben** drückst, oder später unter **Einstellungen\u00a0›\u00a0Tools**, wo jeder Workspace einen eigenen Schalter hat (ab App-Version 0.7.3) und die App nachfragt, bevor sie einen wieder einschaltet. Claude Code und Codex führen ihre eigenen Befehle im Ordner des Agenten aus, nach ihren eigenen Regeln, auch wenn Befehle aus sind.",
+          "agentes.chat lehnt Befehle ab, die seine Schlüssel, Tokens und Anmeldungen nennen, aber das ist eine Regel, keine Mauer. **Befehle** sind von Anfang an eingeschaltet. Schalte sie in der Frage der App aus, bevor du **Erlauben** drückst, oder später unter **Einstellungen\u00a0›\u00a0Tools**, wo jeder Workspace einen eigenen Schalter hat (ab App-Version 0.8.1) und die App nachfragt, bevor sie einen wieder einschaltet. Claude Code und Codex führen ihre eigenen Befehle im Ordner des Agenten aus, nach ihren eigenen Regeln, auch wenn Befehle aus sind.",
           "Für eine echte Mauer nimm einen Linux-Server. Unter Debian 13, installiert mit `--system`, ist jeder Agent ein eigener Benutzer. Unter Ubuntu teilen sich die Agenten einen Benutzer, `agentes`: Sie sehen die Ordner der anderen, aber nicht deine oder die des Servers. Oder gib den Agenten einen eigenen Computer.",
         ],
       },

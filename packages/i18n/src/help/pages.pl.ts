@@ -81,7 +81,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Kopie zapasowe",
         blocks: [
-          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.7.3 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
+          "Gdy **Rób kopię co noc** jest włączone (aplikacja 0.8.1 i nowsze), w **Preferencje\u00a0›\u00a0Serwery**, aplikacja co noc o 3:00 zapisuje bazę danych, pliki i `.env` w `.agentes/backups`, w twoim folderze domowym. Komputer, który wtedy spał, robi kopię, gdy się obudzi. **Zrób kopię zapasową teraz** robi to samo od razu. Każda kopia na chwilę zatrzymuje serwer, a zostają dwie najnowsze.",
           "**Kopiuj do** umieszcza też każdą nową kopię w wybranym folderze, na przykład na pendrivie albo w iCloud Drive, gdzie zostają dwie najnowsze. Zawierają twoje klucze: trzymaj je w tajemnicy. **Przywróć…** cofa agentes.chat do kopii: wiadomości, plików i ustawień. Zatrzymuje się na minutę, a to, co było wcześniej, zostaje w folderze kopii.",
         ],
       },
@@ -237,7 +237,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
               "na komputerze, który uruchamia też agentes.chat, jego bazę danych i klucze w `.agentes`",
             ],
           },
-          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. **Polecenia** są domyślnie włączone. Wyłącz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**, albo później w **Preferencje\u00a0›\u00a0Narzędzia**, gdzie każda przestrzeń robocza ma własny przełącznik (aplikacja 0.7.3 i nowsze), a aplikacja pyta, zanim ponownie jakiś włączy. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, według własnych zasad, nawet przy wyłączonych poleceniach.",
+          "agentes.chat odrzuca polecenia, które wskazują jego klucze, tokeny i dane logowania, ale to zasada, nie mur. **Polecenia** są domyślnie włączone. Wyłącz je w pytaniu aplikacji, zanim naciśniesz **Zezwól**, albo później w **Preferencje\u00a0›\u00a0Narzędzia**, gdzie każda przestrzeń robocza ma własny przełącznik (aplikacja 0.8.1 i nowsze), a aplikacja pyta, zanim ponownie jakiś włączy. Claude Code i Codex uruchamiają własne polecenia w folderze agenta, według własnych zasad, nawet przy wyłączonych poleceniach.",
           "Prawdziwy mur da ci serwer z Linuksem. Na Debianie 13, zainstalowanym z `--system`, każdy agent jest osobnym użytkownikiem. Na Ubuntu agenci dzielą jednego użytkownika, `agentes`: widzą nawzajem swoje foldery, ale nie twoje ani serwera. Możesz też dać agentom osobny komputer.",
         ],
       },
