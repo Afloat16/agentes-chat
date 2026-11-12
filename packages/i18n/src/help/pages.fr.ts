@@ -81,7 +81,7 @@ export const helpFr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Sauvegardes",
         blocks: [
-          "Avec **Sauvegarder chaque nuit** activé (app 0.7.2 et plus récente), dans **Préférences\u00a0›\u00a0Serveurs**, l’app enregistre chaque nuit à 3:00 la base de données, les fichiers et le `.env` dans `.agentes/backups`, dans votre dossier personnel. Un ordinateur en veille à ce moment-là sauvegarde dès qu’il se réveille. **Sauvegarder maintenant** fait la même chose tout de suite. Chaque sauvegarde arrête le serveur un instant, et les deux plus récentes sont gardées.",
+          "Avec **Sauvegarder chaque nuit** activé (app 0.7.3 et plus récente), dans **Préférences\u00a0›\u00a0Serveurs**, l’app enregistre chaque nuit à 3:00 la base de données, les fichiers et le `.env` dans `.agentes/backups`, dans votre dossier personnel. Un ordinateur en veille à ce moment-là sauvegarde dès qu’il se réveille. **Sauvegarder maintenant** fait la même chose tout de suite. Chaque sauvegarde arrête le serveur un instant, et les deux plus récentes sont gardées.",
           "**Copier dans** place aussi chaque nouvelle sauvegarde dans un dossier de votre choix, comme une clé USB ou iCloud Drive, où les deux plus récentes sont gardées. Elles contiennent vos clés\u00a0: gardez-les privées. **Restaurer…** ramène agentes.chat à une sauvegarde\u00a0: messages, fichiers et réglages. Il s’arrête une minute, et ce qui était là avant est gardé dans le dossier des sauvegardes.",
         ],
       },
@@ -239,7 +239,7 @@ export const helpFr: Partial<Record<HelpSlug, HelpDocument>> = {
               "sur un ordinateur qui fait aussi tourner agentes.chat, sa base de données et ses clés dans `.agentes`",
             ],
           },
-          "agentes.chat refuse les commandes qui citent ses clés, ses jetons et les connexions enregistrées, mais c’est une règle, pas un mur. Les **Commandes** sont activées par défaut. Désactivez-les dans la question de l’app avant d’appuyer sur **Autoriser**, ou plus tard dans **Préférences\u00a0›\u00a0Outils**, où chaque espace de travail a son propre interrupteur (app 0.7.2 et plus récente) et où l’app demande confirmation avant d’en réactiver un. Claude Code et Codex lancent leurs propres commandes dans le dossier de l’agent, selon leurs propres règles, même avec les commandes désactivées.",
+          "agentes.chat refuse les commandes qui citent ses clés, ses jetons et les connexions enregistrées, mais c’est une règle, pas un mur. Les **Commandes** sont activées par défaut. Désactivez-les dans la question de l’app avant d’appuyer sur **Autoriser**, ou plus tard dans **Préférences\u00a0›\u00a0Outils**, où chaque espace de travail a son propre interrupteur (app 0.7.3 et plus récente) et où l’app demande confirmation avant d’en réactiver un. Claude Code et Codex lancent leurs propres commandes dans le dossier de l’agent, selon leurs propres règles, même avec les commandes désactivées.",
           "Pour un vrai mur, utilisez un serveur Linux. Sous Debian 13, installé avec `--system`, chaque agent est un utilisateur à part. Sous Ubuntu, les agents partagent un utilisateur, `agentes`\u00a0: ils voient les dossiers les uns des autres, pas les vôtres ni ceux du serveur. Ou donnez aux agents un ordinateur rien qu’à eux.",
         ],
       },

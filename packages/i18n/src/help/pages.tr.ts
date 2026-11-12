@@ -81,7 +81,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Yedekler",
         blocks: [
-          "**Tercihler\u00a0›\u00a0Sunucular** içinde **Her gece yedekle** açıksa (uygulama 0.7.2 ve sonrası), uygulama her gece saat 3:00'te veritabanını, dosyaları ve `.env` dosyasını ana klasörünüzdeki `.agentes/backups` içine kaydeder. O saatte uykuda olan bir bilgisayar uyandığında yedekler. **Şimdi yedekle** aynısını hemen yapar. Her yedekleme sunucuyu kısa bir süre durdurur ve en yeni iki yedek kalır.",
+          "**Tercihler\u00a0›\u00a0Sunucular** içinde **Her gece yedekle** açıksa (uygulama 0.7.3 ve sonrası), uygulama her gece saat 3:00'te veritabanını, dosyaları ve `.env` dosyasını ana klasörünüzdeki `.agentes/backups` içine kaydeder. O saatte uykuda olan bir bilgisayar uyandığında yedekler. **Şimdi yedekle** aynısını hemen yapar. Her yedekleme sunucuyu kısa bir süre durdurur ve en yeni iki yedek kalır.",
           "**Şuraya kopyala**, her yeni yedeği seçtiğiniz bir klasöre de koyar, örneğin bir USB belleğe ya da iCloud Drive'a, ve orada da en yeni iki yedek kalır. İçlerinde anahtarlarınız var: onları gizli tutun. **Geri yükle…** agentes.chat'i bir yedeğe döndürür: mesajlar, dosyalar ve ayarlar. Bir dakikalığına durur ve önceden orada olanlar yedek klasöründe kalır.",
         ],
       },
@@ -199,7 +199,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
               "agentes.chat'i de çalıştıran bir bilgisayarda, onun `.agentes` içindeki veritabanı ve anahtarları",
             ],
           },
-          "agentes.chat anahtarların, token'ların ve oturum bilgilerinin adını geçiren komutları reddeder, ama bu bir kuraldır, duvar değil. **Komutlar** varsayılan olarak açıktır. Onları uygulamanın sorusunda **İzin ver**'e basmadan önce ya da daha sonra **Tercihler\u00a0›\u00a0Araçlar** içinde kapatın. Orada her çalışma alanının kendi anahtarı vardır (uygulama 0.7.2 ve sonrası) ve uygulama birini yeniden açmadan önce sorar. Claude Code ve Codex, Komutlar kapalıyken bile kendi komutlarını ajanın klasöründe, kendi kurallarıyla çalıştırır.",
+          "agentes.chat anahtarların, token'ların ve oturum bilgilerinin adını geçiren komutları reddeder, ama bu bir kuraldır, duvar değil. **Komutlar** varsayılan olarak açıktır. Onları uygulamanın sorusunda **İzin ver**'e basmadan önce ya da daha sonra **Tercihler\u00a0›\u00a0Araçlar** içinde kapatın. Orada her çalışma alanının kendi anahtarı vardır (uygulama 0.7.3 ve sonrası) ve uygulama birini yeniden açmadan önce sorar. Claude Code ve Codex, Komutlar kapalıyken bile kendi komutlarını ajanın klasöründe, kendi kurallarıyla çalıştırır.",
           "Gerçek bir duvar için bir Linux sunucu kullanın. Debian 13'te `--system` ile kurulduğunda her ajan ayrı bir kullanıcıdır. Ubuntu'da ajanlar tek bir kullanıcıyı, `agentes` kullanıcısını paylaşır: birbirlerinin klasörlerini görürler, sizinkileri ya da sunucununkileri görmezler. Ya da ajanlara kendilerine ait bir bilgisayar verin.",
         ],
       },

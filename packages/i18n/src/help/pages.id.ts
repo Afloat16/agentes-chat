@@ -81,7 +81,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "backups",
         heading: "Cadangan",
         blocks: [
-          "Kalau **Cadangkan setiap malam** menyala (aplikasi 0.7.2 ke atas), di **Preferensi\u00a0›\u00a0Server**, aplikasi menyimpan database, file, dan `.env` di `.agentes/backups`, di folder pribadimu, setiap malam pukul 3:00. Komputer yang sedang tidur saat itu mencadangkan begitu bangun. **Cadangkan sekarang** melakukan hal yang sama saat itu juga. Setiap pencadangan menghentikan server sebentar, dan dua cadangan terbaru yang disimpan.",
+          "Kalau **Cadangkan setiap malam** menyala (aplikasi 0.7.3 ke atas), di **Preferensi\u00a0›\u00a0Server**, aplikasi menyimpan database, file, dan `.env` di `.agentes/backups`, di folder pribadimu, setiap malam pukul 3:00. Komputer yang sedang tidur saat itu mencadangkan begitu bangun. **Cadangkan sekarang** melakukan hal yang sama saat itu juga. Setiap pencadangan menghentikan server sebentar, dan dua cadangan terbaru yang disimpan.",
           "**Salin ke** juga menaruh setiap cadangan baru di folder pilihanmu, seperti flashdisk atau iCloud Drive, tempat dua cadangan terbaru disimpan. Isinya kunci-kuncimu: jaga kerahasiaannya. **Pulihkan…** mengembalikan agentes.chat ke sebuah cadangan: pesan, file, dan pengaturan. agentes.chat berhenti selama semenit, dan isi sebelumnya tetap disimpan di folder cadangan.",
         ],
       },
@@ -199,7 +199,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
               "di komputer yang juga menjalankan agentes.chat, database dan kuncinya di `.agentes`",
             ],
           },
-          "agentes.chat menolak perintah yang menyebut kunci, token, dan data login, tapi itu aturan, bukan tembok. **Perintah** menyala sejak awal. Matikan di pertanyaan aplikasi sebelum menekan **Izinkan**, atau nanti di **Preferensi\u00a0›\u00a0Alat**, tempat tiap ruang kerja punya sakelarnya sendiri (aplikasi 0.7.2 ke atas) dan aplikasi bertanya dulu sebelum menyalakannya lagi. Claude Code dan Codex menjalankan perintahnya sendiri di folder agen, dengan aturannya sendiri, bahkan saat Perintah mati.",
+          "agentes.chat menolak perintah yang menyebut kunci, token, dan data login, tapi itu aturan, bukan tembok. **Perintah** menyala sejak awal. Matikan di pertanyaan aplikasi sebelum menekan **Izinkan**, atau nanti di **Preferensi\u00a0›\u00a0Alat**, tempat tiap ruang kerja punya sakelarnya sendiri (aplikasi 0.7.3 ke atas) dan aplikasi bertanya dulu sebelum menyalakannya lagi. Claude Code dan Codex menjalankan perintahnya sendiri di folder agen, dengan aturannya sendiri, bahkan saat Perintah mati.",
           "Untuk tembok sungguhan, pakai server Linux. Di Debian 13, kalau dipasang dengan `--system`, tiap agen jadi pengguna tersendiri. Di Ubuntu, agen berbagi satu pengguna, `agentes`: mereka bisa melihat folder satu sama lain, tapi bukan foldermu atau folder server. Atau beri agen komputer milik mereka sendiri.",
         ],
       },

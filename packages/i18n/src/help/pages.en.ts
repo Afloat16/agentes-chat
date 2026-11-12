@@ -80,7 +80,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
         id: "backups",
         heading: "Backups",
         blocks: [
-          "With **Back up every night** on (app 0.7.2 and later), in **Preferences\u00a0›\u00a0Servers**, the app saves the database, the files and `.env` in `.agentes/backups`, in your home folder, every night at 3:00. A computer that was asleep then backs up once it's awake. **Back up now** does the same at once. Each backup stops the server for a moment, and the two newest stay.",
+          "With **Back up every night** on (app 0.7.3 and later), in **Preferences\u00a0›\u00a0Servers**, the app saves the database, the files and `.env` in `.agentes/backups`, in your home folder, every night at 3:00. A computer that was asleep then backs up once it's awake. **Back up now** does the same at once. Each backup stops the server for a moment, and the two newest stay.",
           "**Copy to** also puts each new backup in a folder you pick, like a USB drive or iCloud Drive, where the two newest stay. They hold your keys: keep them private. **Restore…** takes agentes.chat back to a backup: messages, files and settings. It stops for a minute, and what was there before is kept in the backups folder.",
         ],
       },
@@ -236,7 +236,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
               "on a computer that also runs agentes.chat, its database and keys in `.agentes`",
             ],
           },
-          "agentes.chat refuses commands that name its keys, tokens and sign-ins, but that's a rule, not a wall. **Commands** are on by default. Turn them off in the app's ask before you press **Allow**, or later in **Preferences\u00a0›\u00a0Tools**, where each workspace has its own switch (app 0.7.2 and later) and the app asks before turning one back on. Claude Code and Codex run their own commands in the agent's folder, under their own rules, even with Commands off.",
+          "agentes.chat refuses commands that name its keys, tokens and sign-ins, but that's a rule, not a wall. **Commands** are on by default. Turn them off in the app's ask before you press **Allow**, or later in **Preferences\u00a0›\u00a0Tools**, where each workspace has its own switch (app 0.7.3 and later) and the app asks before turning one back on. Claude Code and Codex run their own commands in the agent's folder, under their own rules, even with Commands off.",
           "For a real wall, use a Linux server. On Debian 13, installed with `--system`, each agent is a user of its own. On Ubuntu, agents share one user, `agentes`: they see each other's folders, not yours or the server's. Or give the agents a computer of their own.",
         ],
       },
