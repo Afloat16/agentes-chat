@@ -2355,7 +2355,7 @@
     "profile": {
       "how": "Nasıl çalışır",
       "permissions": "Senin izinlerinle çalışır",
-      "private": "DM'inde yalnızca seninle konuşur",
+      "private": "Sana ait olan DM'inde kalır",
       "channels": "Çağrıldığında kanallarda yanıt verir",
       "model": "Model",
       "message": "Mesaj",
@@ -2973,7 +2973,7 @@
     "lead": "{{name}} harekete geçmeden önce birine ne zaman sorar.",
     "always": {
       "title": "Her zaman sor",
-      "text": "Bir uygulamada bir şeyi değiştirmeden önce sorar."
+      "text": "Burada, bilgisayarında veya bir uygulamada bir şeyi değiştirmeden önce sorar."
     },
     "risky": {
       "title": "Yalnızca riskli olanlar",
@@ -2981,7 +2981,7 @@
     },
     "never": {
       "title": "Hiç sorma",
-      "text": "Merge, deploy ve rollback için yine sorar."
+      "text": "Hiç sormaz, merge, deploy, ödemeler ve rutinler dahil."
     }
   },
   "brakes": {
@@ -5399,6 +5399,7 @@
       "verified_other": "{{count}} doğrulanmış",
       "lessons": "Dersler",
       "fromTeam": "ekipten öğrenildi",
+      "fromTeamRightHand": "senden öğrenildi",
       "proposals": "Öneriler",
       "waiting": "karar bekliyor",
       "noneWaiting": "bekleyen yok",
@@ -5422,6 +5423,7 @@
       "saved": "Kaydedildi. Artık doğrulanmış sayılıyor.",
       "rules": "Kişilerin verdiği kurallar",
       "rulesNote": "Kuralı verenin tüm işlerinde, istek nereden gelirse gelsin geçerlidir. Sorumlunun veya bir yöneticinin kuralları herkes için geçerlidir.",
+      "rulesNoteRightHand": "DM'inde verdiğin kurallar yalnızca senin için geçerlidir. Onları yalnızca sen görürsün.",
       "ruleBy": "{{name}} · {{date}}",
       "removeRule": "Kaldır",
       "ruleRemoved": "Kural kaldırıldı. Geri isterseniz Arşivlenenler bölümünde.",
@@ -6225,7 +6227,7 @@
     "connectorsLabel": "Bağlayıcılar ve seviyeler",
     "connectOther": "Başka bir uygulama bağla",
     "opensConnectors": "Bağlayıcıları açar",
-    "approvalsNote": "Birleştirme, dağıtım ve geri alma her zaman sohbette onay ister.",
+    "approvalsNote": "Birleştirme, dağıtım ve geri alma, ajan hiç sormayacak şekilde ayarlanmadıkça sohbette onay ister.",
     "approverOwner": "{{name}} onaylar.",
     "approverAdmins": "Bir yönetici onaylar.",
     "skillsTitle": "Çalışma alanının becerileri",
@@ -6493,8 +6495,8 @@
       "readDesc": "{{app}} içinde olanı görür. Hiçbir şeyi değiştirmez.",
       "write": "Okuma ve yazma",
       "writeDesc": "{{app}} içinde oluşturur ve düzenler de.",
-      "asks": "{{actions}} her seviyede her zaman onayını ister.",
-      "asksAny": "Göndermek, silmek ve ödemek her seviyede her zaman onayını ister.",
+      "asks": "{{actions}}, ajan hiç sormayacak şekilde ayarlanmadıkça onayını ister.",
+      "asksAny": "Göndermek, silmek ve ödemek, ajan hiç sormayacak şekilde ayarlanmadıkça onayını ister.",
       "remove": "{{app}} kaldır",
       "done": "Tamam"
     },
@@ -7686,7 +7688,7 @@
       "ownActions": "Kendisi yapar"
     },
     "ownActions": {
-      "hint": "Her çalıştırma bunları bağlı uygulamalarında sormadan yapar. Oradaki diğer her işlem önce bir kişinin onayını ister, merge, deploy ve rollback ise her zaman onay ister.",
+      "hint": "Her çalıştırma bunları bağlı uygulamalarında sormadan yapar. Oradaki diğer her işlem, ajan hiç sormayacak şekilde ayarlanmadıkça önce bir kişinin onayını ister.",
       "none": "Bağlı uygulamalarda her işlemden önce bir kişinin onayını ister. İşini kendisi yapması için sohbette ajana hangi işlemleri yapabileceğini söyle.",
       "remove": "Şundan önce yine sor: {{action}}",
       "hintShort": "Her çalıştırma bunları sormadan yapar.",
@@ -8566,7 +8568,7 @@
       "offline": "{{name}} çevrimdışı. Geri gelince plan başlar.",
       "needsMachine": "Misyonlar bağlı bir bilgisayarda çalışır. Ayarlar › Cihazlar bölümünden {{name}} için bir bilgisayar bağlayın.",
       "commandHint": "Herhangi bir sohbetin mesaj kutusuna yazarak da başlatabilirsiniz:",
-      "approvals": "Birleştirme, dağıtım ve geri alma her zaman onay ister",
+      "approvals": "Varsayılan olarak birleştirme, dağıtım ve geri alma onay ister",
       "start": "Misyonu başlat",
       "created": "Misyon oluşturuldu: {{name}} planı hazırlıyor.",
       "who": "Kim programlıyor",
@@ -10926,7 +10928,7 @@
   },
   "access": {
     "matrixTitle": "Ajan erişimi",
-    "matrixHint": "Hassas işlemler (birleştirme, dağıtım, paylaşım, ödeme) hangi düzeyde olursa olsun her zaman onay ister. Araç araç ayarlamak için bağlayıcının Araçlar bölümünü açın.",
+    "matrixHint": "Varsayılan olarak hassas işlemler (birleştirme, dağıtım, paylaşım, ödeme) onay ister. Araç araç ayarlamak için bağlayıcının Araçlar bölümünü açın.",
     "matrixHow": "Değiştirmek için bir hücreye tıklayın:",
     "kindLabel": "Göster",
     "kind": {
@@ -11389,6 +11391,7 @@
     "notVisible": "GitHub hesabınız o kurulumu göremiyor. Ona erişimi olan bir hesapla yükleyin.",
     "otherWorkspace": "Bu GitHub hesabı zaten başka bir çalışma alanına bağlı. Buraya yüklemeden önce uygulamayı oradan kaldırın.",
     "installedOutside": "Uygulama bu GitHub hesabına agentes.chat dışında yüklendi. GitHub'da kaldırın ve Bağlayıcılar › GitHub bölümünden yeniden yükleyin.",
+    "ownerUnknown": "GitHub bu kuruluşun sahibinin kim olduğunu söylemedi. Sunucuyu yöneten kişinin GitHub uygulamasına Members (salt okunur) kuruluş iznini eklemesi gerekiyor, ardından uygulamayı yeniden yükleyin.",
     "misconfigured": "Sunucudaki GitHub uygulamasının gizli anahtarı yanlış, bu yüzden yükleme tamamlanamıyor. Sunucuyu yöneten kişinin anahtarı uygulamanın ayarlarında değiştirmesi gerekiyor.",
     "connectAccount": "GitHub hesabı bağla",
     "ownerHint": "Bu sunucunun sahibi GitHub uygulamasını burada, Bağlayıcılar bölümünde oluşturabilir.",
@@ -11439,7 +11442,7 @@
     "merge": {
       "label": "Sormadan birleştirebilir",
       "none": "Depo seçilmedi. Her birleştirme onay ister.",
-      "help": "Bu depolarda birleştirme onay kartı olmadan çalışır, denetim kaydına geçer ve konuşmaya bir makbuz bırakır. Diğer tüm hassas işlemler sormaya devam eder.",
+      "help": "Bu depolarda birleştirme onay kartı olmadan çalışır, denetim kaydına geçer ve konuşmaya bir makbuz bırakır. Her zaman soran bir ajan sormaya devam eder.",
       "dialogTitle": "{{name}} nerede sormadan birleştirir",
       "dialogDesc": "Yalnızca zaten kullandığı depolar. Başka bir yerdeki birleştirme onay ister.",
       "short": "Bu depolarda birleştirme onay kartı olmadan çalışır."
@@ -11570,7 +11573,7 @@
       "github": {
         "1": "Kodu, sorun kayıtlarını ve çekme isteklerini okur",
         "2": "Pull request açar ve yorum yapar",
-        "ask": "Birleştirme ve dağıtım her zaman onayınızı ister"
+        "ask": "Varsayılan olarak birleştirme ve dağıtım onayınızı ister"
       },
       "sentry": {
         "1": "Hataları ve olayları görür",
@@ -11604,7 +11607,7 @@
       "cloudflare_bindings": {
         "1": "Workers, KV, R2 ve D1'i görür",
         "2": "Workers'ı ve depolamayı değiştirir",
-        "ask": "Dağıtımlar her zaman onayınızı ister"
+        "ask": "Varsayılan olarak dağıtımlar onayınızı ister"
       },
       "cloudflare_observability": {
         "1": "Workers günlüklerini ve ölçümlerini görür"
@@ -11612,7 +11615,7 @@
       "supabase": {
         "1": "Projeleri ve fonksiyonları görür",
         "2": "Veritabanını sorgular ve değiştirir",
-        "ask": "Dağıtımlar her zaman onayınızı ister"
+        "ask": "Varsayılan olarak dağıtımlar onayınızı ister"
       },
       "supabase_readonly": {
         "1": "Veritabanını sorgular (salt okunur)",
@@ -12327,7 +12330,7 @@
     "see": "Gör",
     "seeAsks": "Onay isteyenleri gör",
     "agentTitle": "{{name}} neleri kullanabilir",
-    "agentSub": "Bağlayıcıya ve konuya göre. Hassas eylemler her zaman onay ister."
+    "agentSub": "Bağlayıcıya ve konuya göre. Varsayılan olarak hassas eylemler onay ister."
   },
   "connectFlow": {
     "steps": "Adımlar",
@@ -12397,7 +12400,7 @@
     "noAgents": "Henüz ajan yok. “Kim kullanır” bölümünden istediğiniz zaman erişim verin.",
     "asksCount_one": "{{count}} işlem sohbette her zaman onay ister.",
     "asksCount_other": "{{count}} işlem sohbette her zaman onay ister.",
-    "asksDefault": "Hassas işlemler sohbette her zaman onay ister.",
+    "asksDefault": "Varsayılan olarak hassas işlemler sohbette onay ister.",
     "grant": "Erişim ver",
     "saved_one": "{{name}}: {{count}} ajan kullanabilir.",
     "saved_other": "{{name}}: {{count}} ajan kullanabilir.",
@@ -12767,6 +12770,7 @@
       "needsReconnect": "Yeniden bağlanana kadar ajanlar kullanamaz.",
       "ownerOnly": "Erişimi yalnızca {{name}} verebilir: bu posta kutusunu o bağladı.",
       "ownerOnlyUnknown": "Erişimi yalnızca bu posta kutusunu bağlayan kişi verebilir.",
+      "onlyYou": "{{name}} bu posta kutusunu yalnızca senin için, DM'inde kullanır.",
       "remove": "Erişimi kaldır",
       "removed": "{{name}} artık {{address}} adresine erişemiyor.",
       "saveError": {
@@ -15482,6 +15486,7 @@
         "plan": "Plan henüz onaylanmadı",
         "tooMany": "Art arda onaylanacak çok fazla şey var",
         "off": "Bu ajan için komut çalıştırma kapalı",
+        "asks": "Bu ajan her değişiklikten önce sorar",
         "team": "Ekip bunu zaten yaptı",
         "teamPersonal": "Bu zaten yapılmıştı",
         "unclear": "Açıkça okunamıyor",

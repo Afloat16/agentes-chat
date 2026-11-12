@@ -2496,7 +2496,7 @@ export const en = {
     profile: {
       how: "How it works",
       permissions: "Acts with your permissions",
-      private: "Talks only with you in your DM",
+      private: "Keeps what is yours in your DM",
       channels: "Replies in channels when called",
       model: "Model",
       message: "Message",
@@ -3176,7 +3176,7 @@ export const en = {
     lead: "When {{name}} asks a person before acting.",
     always: {
       title: "Always ask",
-      text: "Asks before changing anything in an app.",
+      text: "Asks before changing anything, here, on its computer or in an app.",
     },
     risky: {
       title: "Only what is risky",
@@ -3184,7 +3184,7 @@ export const en = {
     },
     never: {
       title: "Never ask",
-      text: "Still asks for merge, deploy and rollback.",
+      text: "Never asks, merge, deploy, payments and routines included.",
     },
   },
   /** Agent settings: what it may start that nobody asked for directly, and which agents it may call (ADR 0131). */
@@ -5715,6 +5715,8 @@ export const en = {
       verified_other: "{{count}} verified",
       lessons: "Lessons",
       fromTeam: "learned from the team",
+      /** The right hand keeps what it learns per person: only that person's runs read it. */
+      fromTeamRightHand: "learned from you",
       proposals: "Proposals",
       waiting: "waiting for a decision",
       noneWaiting: "none waiting",
@@ -5740,6 +5742,7 @@ export const en = {
       rules: "Rules people gave",
       rulesNote:
         "Followed in all its work for whoever gave each one, wherever the work comes from. Rules from its owner or an admin hold for everyone.",
+      rulesNoteRightHand: "Rules you give in your DM hold only for you. Only you see them.",
       /** Who gave the rule and when ("From Ana · Nov 4"). */
       ruleBy: "From {{name}} · {{date}}",
       removeRule: "Remove",
@@ -6540,7 +6543,7 @@ export const en = {
     connectorsLabel: "Connectors and levels",
     connectOther: "Connect another app",
     opensConnectors: "opens Connectors",
-    approvalsNote: "Merge, deploy and rollback always ask for approval in chat.",
+    approvalsNote: "Merge, deploy and rollback ask for approval in chat, unless the agent never asks.",
     approverOwner: "{{name}} approves.",
     approverAdmins: "An admin approves.",
     skillsTitle: "Workspace skills",
@@ -6817,8 +6820,8 @@ export const en = {
       readDesc: "Sees what's in {{app}}. Changes nothing.",
       write: "Read and write",
       writeDesc: "Also creates and edits in {{app}}.",
-      asks: "{{actions}} always ask for your approval, at any level.",
-      asksAny: "Sending, deleting and paying always ask for your approval, at any level.",
+      asks: "{{actions}} ask for your approval, unless the agent never asks.",
+      asksAny: "Sending, deleting and paying ask for your approval, unless the agent never asks.",
       remove: "Remove {{app}}",
       done: "Done",
     },
@@ -7990,7 +7993,7 @@ export const en = {
     },
     /** The connected-app actions a routine's runs do without asking: the job its creator set it up for. */
     ownActions: {
-      hint: "Every run does these in your connected apps without asking. Any other action there asks a person first, and merge, deploy and rollback always ask.",
+      hint: "Every run does these in your connected apps without asking. Any other action there asks a person first, unless the agent never asks.",
       none: "In connected apps it asks a person before each action. To let it do its job on its own, tell the agent in the chat which actions it may do.",
       /** The one line a screen shows, with `hint` (or `none`) behind its ⓘ. */
       hintShort: "Every run does these without asking.",
@@ -8873,7 +8876,7 @@ export const en = {
       offline: "{{name}} is offline. The plan starts when it's back.",
       needsMachine: "Missions run on a connected computer. Connect one to {{name}} in Settings\u00a0›\u00a0Devices.",
       commandHint: "You can also start one by typing in any conversation's composer:",
-      approvals: "Merge, deploy and rollback always ask for approval",
+      approvals: "By default, merge, deploy and rollback ask for approval",
       start: "Start mission",
       created: "Mission created: {{name}} is putting the plan together.",
       who: "Who programs",
@@ -11193,7 +11196,7 @@ export const en = {
   access: {
     matrixTitle: "Agent access",
     matrixHint:
-      "Sensitive actions (merge, deploy, share, pay) always ask for approval, at any level. To set it tool by tool, open the connector's Tools.",
+      "By default, sensitive actions (merge, deploy, share, pay) ask for approval. To set it tool by tool, open the connector's Tools.",
     matrixHow: "Click a cell to change it:",
     kindLabel: "Show",
     kind: { connectors: "Connectors", builtin: "Built-in" },
@@ -11654,6 +11657,13 @@ export const en = {
     installedOutside:
       "The app was installed on that GitHub account outside agentes.chat. Remove it on GitHub and install it again from Connectors › GitHub.",
     /**
+     * GitHub refused to say whether the person owns the organization (`github_app_error=owner_unknown`, a 403): most
+     * likely this server's own GitHub App was made without the organization permission Members, which only whoever
+     * runs it can add.
+     */
+    ownerUnknown:
+      "GitHub didn't say who owns that organization. Whoever runs the server needs to add the organization permission Members (read-only) to the GitHub app, then you install it again.",
+    /**
      * GitHub refused this server's own GitHub App, whose client secret (or id) is wrong
      * (`github_app_error=misconfigured`): trying again can't help, only whoever runs the server can fix it.
      */
@@ -11715,7 +11725,7 @@ export const en = {
     merge: {
       label: "Can merge without asking",
       none: "No repositories chosen. Every merge asks for approval.",
-      help: "In these repositories a merge runs with no approval card, goes in the audit and leaves a receipt in the conversation. Everything else that's sensitive still asks.",
+      help: "In these repositories a merge runs with no approval card, goes in the audit and leaves a receipt in the conversation. An agent that always asks still asks.",
       /** The one line a screen shows, with `help` behind its ⓘ. */
       short: "In these repositories a merge runs with no approval card.",
       dialogTitle: "Where {{name}} merges without asking",
@@ -11851,7 +11861,7 @@ export const en = {
       github: {
         "1": "Read code, issues and pull requests",
         "2": "Open pull requests and comment",
-        ask: "Merge and deploy always ask for your approval",
+        ask: "By default, merge and deploy ask for your approval",
       },
       sentry: { "1": "See errors and events", "2": "See releases" },
       linear: { "1": "Read and create issues", "2": "Change status, projects and cycles" },
@@ -11870,13 +11880,13 @@ export const en = {
       cloudflare_bindings: {
         "1": "See Workers, KV, R2 and D1",
         "2": "Change Workers and storage",
-        ask: "Deploys always ask for your approval",
+        ask: "By default, deploys ask for your approval",
       },
       cloudflare_observability: { "1": "See Workers logs and metrics" },
       supabase: {
         "1": "See projects and functions",
         "2": "Query and change the database",
-        ask: "Deploys always ask for your approval",
+        ask: "By default, deploys ask for your approval",
       },
       supabase_readonly: { "1": "Query the database (read only)", "2": "Read the docs and debug" },
       intercom: { "1": "Read conversations and contacts", ask: "Replies always ask for your approval" },
@@ -12424,7 +12434,7 @@ export const en = {
     see: "See",
     seeAsks: "See what asks for approval",
     agentTitle: "What {{name}} can use",
-    agentSub: "By connector and subject. Sensitive actions always ask for approval.",
+    agentSub: "By connector and subject. By default, sensitive actions ask for approval.",
   },
   connectFlow: {
     steps: "Steps",
@@ -12496,7 +12506,7 @@ export const en = {
     noAgents: "No agents yet. Grant access any time in “Who uses it”.",
     asksCount_one: "{{count}} action always asks for approval in the chat.",
     asksCount_other: "{{count}} actions always ask for approval in the chat.",
-    asksDefault: "Sensitive actions always ask for approval in the chat.",
+    asksDefault: "By default, sensitive actions ask for approval in the chat.",
     grant: "Grant",
     saved_one: "{{name}}: {{count}} agent can use it.",
     saved_other: "{{name}}: {{count}} agents can use it.",
@@ -12830,6 +12840,7 @@ export const en = {
       needsReconnect: "Agents can't use it until it's reconnected.",
       ownerOnly: "Only {{name}} can give access: they connected this mailbox.",
       ownerOnlyUnknown: "Only the person who connected this mailbox can give access.",
+      onlyYou: "{{name}} uses this mailbox only for you, in your DM.",
       remove: "Remove access",
       removed: "{{name}} no longer has access to {{address}}.",
       saveError: {
@@ -15662,6 +15673,8 @@ export const en = {
         plan: "The plan isn't approved yet",
         tooMany: "Too many to approve in a row",
         off: "Running commands is off for this agent",
+        /** Its agent is set to always ask: the command goes to a person first. */
+        asks: "This agent asks before every change",
         team: "The team already did this",
         /** In a personal workspace (ADR 0159). */
         teamPersonal: "This was already done",

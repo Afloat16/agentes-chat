@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { CODEX_FOLDER_PROTOCOL, CODEX_WINDOWS_PROTOCOL } from "@agenteschat/adapters";
+import { CODEX_FOLDER_PROTOCOL, CODEX_WINDOWS_PROTOCOL, MACHINE_PROTOCOL_VERSION } from "@agenteschat/adapters";
 import { type BrainTurnRequest, CodexBrain, type ComputerBrainLink, codexVersionOk } from "../src/brains/codex";
 import { computerPrompt } from "../src/brains/prompt";
 import type { BrainEvent, BrainTurn } from "../src/brains/types";
@@ -299,6 +299,21 @@ test("live steering (protocol 15): the turn on its way takes messages through br
     }).run(turn(), { ...io(), steerable: (s) => old.push(s) }),
   );
   expect(old).toEqual([]);
+});
+
+test("an agent that always asks: Codex's own tools can't each ask, so its turn only reads", async () => {
+  const sent = async (asks: "always" | "never") => {
+    const l = link({ protocol: MACHINE_PROTOCOL_VERSION, events: [{ type: "done", text: "ok" }] });
+    const brain = new CodexBrain({
+      link: l,
+      mcp: async () => ({ token: "t" }),
+      permissions: async () => ({ mode: "work", asks }),
+    });
+    await collect(brain.run(turn(), io()));
+    return (l.sent[0] as { permissions?: unknown } | undefined)?.permissions;
+  };
+  expect(await sent("always")).toEqual({ mode: "plan", asks: "always" });
+  expect(await sent("never")).toEqual({ mode: "work", asks: "never" });
 });
 
 test("a runner before CODEX_FOLDER_PROTOCOL: the turn stays in the agent's folder and its session, no checkout", async () => {

@@ -235,7 +235,7 @@ ADR 0163 takes this further: workspaces take turns in each lane, the long lane g
 
 ## Addendum 2026-11-12: Codex on Windows (§3)
 
-Codex runs on Windows from runner protocol 59 (ADR 0032, "Codex"). There §3 holds through Windows' own isolation, not the command policy:
+Codex runs on Windows from runner protocol 60 (ADR 0032, "Codex"). There §3 holds through Windows' own isolation, not the command policy:
 
 1. **The sandbox is MXC** (Microsoft Execution Containers, Windows 11 24H2 and later), named on every Codex process of a `plan` or `work` turn. It keeps the network out and writes to the turn's folders, with no setup. Codex picks no sandbox on Windows by itself, and its other two don't do: `unelevated` keeps the network out only through proxy variables, and `elevated` needs an administrator's setup that several Codex homes (each AI account's folder, ADR 0041) can't share. Codex's own MXC check (a command run inside MXC) decides; a computer where it fails runs no `plan` or `work` Codex turn: it fails with `windows_sandbox`, worded as what Windows needs.
 2. **Nothing asks** (`approvalPolicy: never`, as `codex exec` everywhere). Codex runs its commands in PowerShell there, which the command policy doesn't read: answering its approvals with POSIX rules would let through what they can't see, and an approved command that its sandbox refuses runs again outside it. So whatever MXC refuses stays refused, and an approval Codex asks all the same is declined. So on Windows, what needs the network (a push, an install) doesn't run from Codex's own shell. Nothing else lifts MXC either, as on every system (the next addendum): no one's own Codex rules, no network and no folder beyond the agent's, whatever the Codex home's config says.

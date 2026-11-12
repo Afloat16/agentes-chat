@@ -256,6 +256,31 @@ test("Poderes do workspace is one row for everyone that opens what only Lodi doe
   ]);
 });
 
+test("Lodi's page has three tabs: its settings, what it may use on the agent page's own access tab, and what it keeps for the viewer", async () => {
+  const state = withRightHand(seedState());
+  await renderApp(`/org/${ORG_ID}/agents/${LODI_ID}`, { api: createFakeApi(state) });
+  await settle(8);
+  const tabs = () => within(screen().getByRole("tablist", { name: "Seções do Lodi" })).getAllByRole("tab");
+  expect(tabs().map((tab) => tab.textContent)).toEqual(["Configurações", "Ferramentas e acesso", "Memória"]);
+  expect(tabs()[0]?.getAttribute("aria-selected")).toBe("true");
+  expect(row(/^Poderes do workspace/)).toBeTruthy();
+  cleanup();
+  await renderApp(`/org/${ORG_ID}/agents/${LODI_ID}?tab=access`, { api: createFakeApi(state) });
+  await settle(8);
+  expect(tabs()[1]?.getAttribute("aria-selected")).toBe("true");
+  // The same cards as any agent's: its apps, mailboxes and skills. Its settings are the other tab.
+  for (const id of ["ac-connectors", "ac-builtin", "ac-skills"]) expect(document.getElementById(id)).toBeTruthy();
+  expect(screen().queryByRole("button", { name: /^Poderes do workspace/ })).toBeNull();
+  // No sky, tabs of an agent's own work or archive: it is part of the workspace.
+  expect(document.querySelector(".agp-hero")).toBeNull();
+  cleanup();
+  // What it keeps for the viewer, and the rules they gave it, on the agent page's own memory tab.
+  await renderApp(`/org/${ORG_ID}/agents/${LODI_ID}?tab=memory`, { api: createFakeApi(state) });
+  await settle(8);
+  expect(tabs()[2]?.getAttribute("aria-selected")).toBe("true");
+  expect(document.getElementById("mem-known")).toBeTruthy();
+});
+
 test("the worst case keeps its shape: a very long account and owner name stay under the row's name, whole", async () => {
   const state = withRightHand(seedState(), { brain: { kind: "claude_code", model: "Sonnet" } });
   const long = "Assinatura corporativa compartilhada do time de operações e atendimento da América Latina";

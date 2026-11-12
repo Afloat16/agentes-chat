@@ -2359,7 +2359,7 @@
     "profile": {
       "how": "So funktioniert es",
       "permissions": "Handelt mit deinen Berechtigungen",
-      "private": "Spricht nur mit dir in deiner DM",
+      "private": "Behält, was dir gehört, in deiner DM",
       "channels": "Antwortet in Kanälen, wenn man ihn ruft",
       "model": "Modell",
       "message": "Nachricht",
@@ -2984,7 +2984,7 @@
     "lead": "Wann {{name}} vor dem Handeln eine Person fragt.",
     "always": {
       "title": "Immer fragen",
-      "text": "Fragt, bevor in einer App etwas geändert wird."
+      "text": "Fragt vor jeder Änderung, hier, auf seinem Computer oder in einer App."
     },
     "risky": {
       "title": "Nur Riskantes",
@@ -2992,7 +2992,7 @@
     },
     "never": {
       "title": "Nie fragen",
-      "text": "Fragt weiterhin bei Merge, Deploy und Rollback."
+      "text": "Fragt nie, auch nicht bei Merge, Deploy, Zahlungen und Routinen."
     }
   },
   "brakes": {
@@ -5416,6 +5416,7 @@
       "verified_other": "{{count}} bestätigt",
       "lessons": "Lektionen",
       "fromTeam": "vom Team gelernt",
+      "fromTeamRightHand": "von dir gelernt",
       "proposals": "Vorschläge",
       "waiting": "warten auf eine Entscheidung",
       "noneWaiting": "keine warten",
@@ -5439,6 +5440,7 @@
       "saved": "Gespeichert. Es gilt jetzt als bestätigt.",
       "rules": "Regeln von Personen",
       "rulesNote": "Gilt bei aller Arbeit für die Person, die die Regel gegeben hat, egal woher der Auftrag kommt. Regeln des Verantwortlichen oder eines Admins gelten für alle.",
+      "rulesNoteRightHand": "Regeln, die du in deiner DM gibst, gelten nur für dich. Nur du siehst sie.",
       "ruleBy": "Von {{name}} · {{date}}",
       "removeRule": "Entfernen",
       "ruleRemoved": "Regel entfernt. Sie liegt im Archiv, falls du sie zurückwillst.",
@@ -6260,7 +6262,7 @@
     "connectorsLabel": "Konnektoren und Stufen",
     "connectOther": "Weitere App verbinden",
     "opensConnectors": "öffnet Konnektoren",
-    "approvalsNote": "Merge, Deploy und Rollback fragen im Chat immer nach Freigabe.",
+    "approvalsNote": "Merge, Deploy und Rollback fragen im Chat nach Freigabe, außer der Agent fragt nie.",
     "approverOwner": "{{name}} gibt frei.",
     "approverAdmins": "Ein Admin gibt frei.",
     "skillsTitle": "Skills des Workspace",
@@ -6532,8 +6534,8 @@
       "readDesc": "Sieht, was in {{app}} ist. Ändert nichts.",
       "write": "Lesen und schreiben",
       "writeDesc": "Erstellt und bearbeitet auch in {{app}}.",
-      "asks": "{{actions}} fragen immer nach deiner Freigabe, auf jeder Stufe.",
-      "asksAny": "Senden, Löschen und Bezahlen fragen immer nach deiner Freigabe, auf jeder Stufe.",
+      "asks": "{{actions}} fragen nach deiner Freigabe, außer der Agent fragt nie.",
+      "asksAny": "Senden, Löschen und Bezahlen fragen nach deiner Freigabe, außer der Agent fragt nie.",
       "remove": "{{app}} entfernen",
       "done": "Fertig"
     },
@@ -7729,7 +7731,7 @@
       "ownActions": "Macht selbst"
     },
     "ownActions": {
-      "hint": "Jeder Lauf erledigt das in deinen verbundenen Apps, ohne zu fragen. Jede andere Aktion dort fragt zuerst eine Person, und Merge, Deploy und Rollback fragen immer.",
+      "hint": "Jeder Lauf erledigt das in deinen verbundenen Apps, ohne zu fragen. Jede andere Aktion dort fragt zuerst eine Person, außer der Agent fragt nie.",
       "none": "In verbundenen Apps fragt sie vor jeder Aktion eine Person. Damit sie ihre Aufgabe selbst erledigt, sag dem Agenten im Chat, welche Aktionen sie ausführen darf.",
       "remove": "Wieder vorher fragen: {{action}}",
       "hintShort": "Jeder Lauf erledigt das, ohne zu fragen.",
@@ -8616,7 +8618,7 @@
       "offline": "{{name}} ist offline. Der Plan startet, sobald er wieder da ist.",
       "needsMachine": "Missionen laufen auf einem verbundenen Computer. Verbinde einen mit {{name}} unter Einstellungen › Geräte.",
       "commandHint": "Du kannst auch eine starten, indem du in einer beliebigen Unterhaltung im Eingabefeld tippst:",
-      "approvals": "Merge, Deploy und Rollback fragen immer nach Freigabe",
+      "approvals": "Standardmäßig fragen Merge, Deploy und Rollback nach Freigabe",
       "start": "Mission starten",
       "created": "Mission erstellt: {{name}} stellt den Plan zusammen.",
       "who": "Wer programmiert",
@@ -10987,7 +10989,7 @@
   },
   "access": {
     "matrixTitle": "Zugriff der Agenten",
-    "matrixHint": "Sensible Aktionen (Merge, Deploy, Teilen, Bezahlen) fragen immer nach einer Freigabe, auf jeder Stufe. Um es pro Tool festzulegen, öffne die Tools des Konnektors.",
+    "matrixHint": "Standardmäßig fragen sensible Aktionen (Merge, Deploy, Teilen, Bezahlen) nach einer Freigabe. Um es pro Tool festzulegen, öffne die Tools des Konnektors.",
     "matrixHow": "Klicke auf eine Zelle, um sie zu ändern:",
     "kindLabel": "Anzeigen",
     "kind": {
@@ -11450,6 +11452,7 @@
     "notVisible": "Dein GitHub-Konto kann diese Installation nicht sehen. Installier sie mit einem Konto, das Zugriff darauf hat.",
     "otherWorkspace": "Dieses GitHub-Konto ist schon mit einem anderen Workspace verbunden. Entferne die App dort, bevor du sie hier installierst.",
     "installedOutside": "Die App wurde auf diesem GitHub-Konto außerhalb von agentes.chat installiert. Entferne sie auf GitHub und installier sie noch einmal über Konnektoren › GitHub.",
+    "ownerUnknown": "GitHub hat nicht gesagt, wem diese Organisation gehört. Die Person, die den Server betreibt, muss der GitHub-App die Organisationsberechtigung Members (nur Lesen) geben, danach installierst du sie noch einmal.",
     "misconfigured": "Die GitHub-App hat auf dem Server den falschen geheimen Schlüssel, deshalb kann die Installation nicht abgeschlossen werden. Die Person, die den Server betreibt, muss den Schlüssel in den Einstellungen der App ersetzen.",
     "connectAccount": "GitHub-Konto verbinden",
     "ownerHint": "Der Inhaber dieses Servers kann die GitHub-App hier unter Konnektoren erstellen.",
@@ -11500,7 +11503,7 @@
     "merge": {
       "label": "Darf ohne Nachfrage mergen",
       "none": "Keine Repositorys ausgewählt. Jeder Merge fragt nach Freigabe.",
-      "help": "In diesen Repositorys läuft ein Merge ohne Freigabekarte, steht im Audit und hinterlässt einen Beleg in der Unterhaltung. Alles andere Sensible fragt weiter nach.",
+      "help": "In diesen Repositorys läuft ein Merge ohne Freigabekarte, steht im Audit und hinterlässt einen Beleg in der Unterhaltung. Ein Agent, der immer fragt, fragt weiter nach.",
       "dialogTitle": "Wo {{name}} ohne Nachfrage mergt",
       "dialogDesc": "Nur Repositorys, die bereits genutzt werden. Ein Merge an jedem anderen Ort fragt nach Freigabe.",
       "short": "In diesen Repositorys läuft ein Merge ohne Freigabekarte."
@@ -11635,7 +11638,7 @@
       "github": {
         "1": "Code, Issues und Pull Requests lesen",
         "2": "Pull Requests öffnen und kommentieren",
-        "ask": "Merge und Deploy fragen immer nach deiner Freigabe"
+        "ask": "Standardmäßig fragen Merge und Deploy nach deiner Freigabe"
       },
       "sentry": {
         "1": "Fehler und Events ansehen",
@@ -11669,7 +11672,7 @@
       "cloudflare_bindings": {
         "1": "Workers, KV, R2 und D1 ansehen",
         "2": "Workers und Speicher ändern",
-        "ask": "Deploys fragen immer nach deiner Freigabe"
+        "ask": "Standardmäßig fragen Deploys nach deiner Freigabe"
       },
       "cloudflare_observability": {
         "1": "Logs und Metriken der Workers ansehen"
@@ -11677,7 +11680,7 @@
       "supabase": {
         "1": "Projekte und Funktionen ansehen",
         "2": "Datenbank abfragen und ändern",
-        "ask": "Deploys fragen immer nach deiner Freigabe"
+        "ask": "Standardmäßig fragen Deploys nach deiner Freigabe"
       },
       "supabase_readonly": {
         "1": "Datenbank abfragen (nur lesen)",
@@ -12392,7 +12395,7 @@
     "see": "Ansehen",
     "seeAsks": "Ansehen, was nach Freigabe fragt",
     "agentTitle": "Was {{name}} nutzen kann",
-    "agentSub": "Nach Konnektor und Thema. Sensible Aktionen fragen immer nach Freigabe."
+    "agentSub": "Nach Konnektor und Thema. Standardmäßig fragen sensible Aktionen nach Freigabe."
   },
   "connectFlow": {
     "steps": "Schritte",
@@ -12462,7 +12465,7 @@
     "noAgents": "Noch keine Agenten. Gib jederzeit Zugriff unter „Wer ihn nutzt“.",
     "asksCount_one": "{{count}} Aktion fragt im Chat immer nach Freigabe.",
     "asksCount_other": "{{count}} Aktionen fragen im Chat immer nach Freigabe.",
-    "asksDefault": "Sensible Aktionen fragen im Chat immer nach Freigabe.",
+    "asksDefault": "Standardmäßig fragen sensible Aktionen im Chat nach Freigabe.",
     "grant": "Zugriff geben",
     "saved_one": "{{name}}: {{count}} Agent kann ihn nutzen.",
     "saved_other": "{{name}}: {{count}} Agenten können ihn nutzen.",
@@ -12832,6 +12835,7 @@
       "needsReconnect": "Agenten können es erst nutzen, wenn es neu verbunden ist.",
       "ownerOnly": "Nur {{name}} kann Zugriff geben: Diese Person hat das Postfach verbunden.",
       "ownerOnlyUnknown": "Nur die Person, die dieses Postfach verbunden hat, kann Zugriff geben.",
+      "onlyYou": "{{name}} nutzt dieses Postfach nur für dich, in deiner DM.",
       "remove": "Zugriff entfernen",
       "removed": "{{name}} hat keinen Zugriff mehr auf {{address}}.",
       "saveError": {
@@ -15553,6 +15557,7 @@
         "plan": "Der Plan ist noch nicht freigegeben",
         "tooMany": "Zu viele Freigaben hintereinander",
         "off": "Befehle ausführen ist für diesen Agenten aus",
+        "asks": "Dieser Agent fragt vor jeder Änderung",
         "team": "Das Team hat das schon gemacht",
         "teamPersonal": "Das wurde schon gemacht",
         "unclear": "Es lässt sich nicht eindeutig lesen",

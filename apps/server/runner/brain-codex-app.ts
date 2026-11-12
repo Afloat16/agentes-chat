@@ -604,7 +604,7 @@ export function approvalCalls(
 export async function decideApproval(
   calls: PolicyCall[],
   ask: (tool: string, args: Record<string, unknown>) => Promise<IpcReply>,
-  opts: { scope: CommandScope; profile: CommandProfile; signal?: AbortSignal },
+  opts: { scope: CommandScope; profile: CommandProfile; signal?: AbortSignal; asks?: "never" },
 ): Promise<"accept" | "decline"> {
   if (calls.length === 0) return "decline";
   const sleep = (ms: number) =>
@@ -624,7 +624,12 @@ export async function decideApproval(
   const call = (tool: string, args: Record<string, unknown>): Promise<IpcReply> =>
     opts.signal?.aborted ? Promise.resolve({ ok: false, error: "The turn ended." }) : ask(tool, args);
   for (const c of calls) {
-    const answer = await permissionPrompt(c, call, { scope: opts.scope, profile: opts.profile, sleep });
+    const answer = await permissionPrompt(c, call, {
+      scope: opts.scope,
+      profile: opts.profile,
+      sleep,
+      ...(opts.asks ? { asks: opts.asks } : {}),
+    });
     if (answer.behavior !== "allow") return "decline";
   }
   return "accept";
@@ -1297,6 +1302,7 @@ export class CodexAppServers implements CodexAppRunner {
           scope,
           profile: input.profile ?? "work",
           signal: approvals.signal,
+          ...(input.asks ? { asks: input.asks } : {}),
         }).then((decision) => {
           if (decision === "decline")
             this.log(`codex approval declined: ${redact(JSON.stringify(calls)).slice(0, 300)}`);

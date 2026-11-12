@@ -14,6 +14,7 @@ import {
   type GitPush,
   githubRepo,
   gitPushes,
+  heldForPerson,
   heldPush,
   INLINE_CODE_DENY_RULES,
   inlineCode,
@@ -35,6 +36,7 @@ import {
   secretRead,
   shellWords,
   simpleCommands,
+  unaskedMessage,
 } from "../src/command-policy";
 import { ruleMatches } from "../src/machine-protocol";
 
@@ -1060,7 +1062,7 @@ describe("whether a push waits for a person", () => {
     const proxied = facts({ proxied: ["origin"] });
     const never = async (command: string, f = proxied) => approvalNeeded(command, ASK_IN_CHAT, { own, facts: () => f });
     const toPr =
-      "our git proxy never lets it through. Push to a branch of your own (agentes/ada/…) and open a pull request; merging asks a person. Never give the person a terminal command to run.";
+      "our git proxy never lets it through. Push to a branch of your own (agentes/ada/…) and open a pull request; merging is a separate step. Never give the person a terminal command to run.";
     expect(await never("git push origin --delete cursor/pap-582-fix")).toEqual({
       message: `This deletes the remote branch cursor/pap-582-fix: ${DELETE_BRANCHES_POINTER}`,
       never: true,
@@ -1130,6 +1132,33 @@ describe('the kind "Aprovar sempre" keeps for a command', () => {
     expect(commandKind("git commit -m 'fix: x'")).toBe("git commit");
     expect(commandKind("swift build")).toBe("swift build");
     expect(commandKind("make")).toBe("make");
+  });
+
+  test("a command the computer holds has a kind too, for a rule of the agent's own; a secret and a script never", () => {
+    expect(commandKind("gh pr merge 12 --squash")).toBeNull();
+    expect(commandKind("gh pr merge 12 --squash", true)).toBe("gh pr merge");
+    expect(commandKind("vercel deploy --prod", true)).toBe("vercel deploy");
+    expect(commandKind("git push --force origin main", true)).toBe("git push");
+    expect(commandKind("gh issue create --title x", true)).toBe("gh issue create");
+    for (const command of [
+      "gh auth token",
+      "cat .env",
+      "python3 deploy.py",
+      "bash deploy.sh",
+      "gh pr merge 12 | tee log",
+    ]) {
+      expect({ command, kind: commandKind(command, true) }).toEqual({ command, kind: null });
+    }
+  });
+
+  test("a held command's refusal for an agent that never asks names where it runs, with nobody to wait for", () => {
+    const held = approvalMessage("This is a merge", ASK_IN_CHAT);
+    expect(heldForPerson(held)).toBe(true);
+    expect(unaskedMessage(held)).toBe(
+      "This is a merge: your own shell doesn't run it. Run the same command with run_code: it runs there without asking anyone.",
+    );
+    expect(heldForPerson(SECRET_MESSAGE)).toBe(false);
+    expect(unaskedMessage(SECRET_MESSAGE)).toBe(SECRET_MESSAGE);
   });
 
   test("never offered for what isn't one plain command, the deny list, secrets, pushes or what can't be undone", () => {

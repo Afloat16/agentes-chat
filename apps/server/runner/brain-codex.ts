@@ -141,7 +141,7 @@ export interface CodexBrainTurnRequest {
   /** Protocol 28: the agent's context limit in tokens. */
   contextTokens?: number;
   /** Protocol 16: the turn's permission profile (absent: `work`); protocol 41: `chat`, the team's right hand. */
-  permissions?: { mode?: "plan" | "work" | "chat" };
+  permissions?: { mode?: "plan" | "work" | "chat"; asks?: "always" | "never" };
   /** Protocol 16: false for a background turn (no app-server is kept for it). */
   keepAlive?: boolean;
 }
@@ -822,6 +822,8 @@ export interface CodexTurnInput {
   folder?: string;
   /** Protocol 16: the turn's permission profile (default `work`). */
   profile?: CommandProfile;
+  /** The agent never asks (`permissions.asks`): what a held command's refusal says (`PromptContext.asks`). */
+  asks?: "never";
   /** Protocol 16: false for a background turn: its app-server closes when the turn ends. */
   keepAlive?: boolean;
   /** Protocol 41: the team's right hand (`codexTurnArgs`' `chat`), always on `codex exec`, killed at a tool of Codex's own. */
@@ -1158,6 +1160,7 @@ export async function handleCodexBrainTurn(
         agentId: String(req.agent.id),
         folder,
         profile: codexProfileOf(req),
+        ...(req.permissions?.asks === "never" ? { asks: "never" as const } : {}),
         ...(req.keepAlive === false ? { keepAlive: false } : {}),
         ...(chat ? { chat } : {}),
       },

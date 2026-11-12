@@ -12,7 +12,6 @@ import { appTokenForRepo, boundInstallations, type GitHubAppConfig, type GitHubH
 import { assertStorageRoom } from "./limits";
 import { assertPublicHttpsUrl, type ResolveHost } from "./net-guard";
 import { can, requirePermission } from "./organizations";
-import { isRightHand } from "./right-hand";
 import { inflateZipEntry, listZip, type ZipListing } from "./zip";
 
 const { skills, skillFiles, agentSkills } = schema;
@@ -1147,13 +1146,13 @@ export async function importSkillFromUrl(
 
 /**
  * Skills installed from an agent's card (`offer_install_skill`), the installer's box checked, go on for that agent when
- * the installer may change its skills, as on its page. Not for an agent archived or gone, nor the right hand (it has
- * no skill tools): the install still stands, and an agent asks for them on its own settings card.
+ * the installer may change its skills, as on its page. Not for an agent archived or gone: the install still stands,
+ * and an agent asks for them on its own settings card.
  */
 async function turnOnFor(deps: SkillDeps, actorId: string, orgId: string, agentId: string | undefined, ids: string[]) {
   if (!agentId || ids.length === 0) return;
   const agent = await getAgent(deps.db, orgId, agentId);
-  if (!agent || agent.archivedAt || isRightHand(agent)) return;
+  if (!agent || agent.archivedAt) return;
   try {
     await setAgentSkills(
       deps.db,

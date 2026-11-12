@@ -200,7 +200,7 @@ function Profile({ id }: { id: string }) {
   const usage = useUsage(orgId);
   const forYou = useAgentForYou(orgId, id);
   const knows = useMemoryAboutMe(orgId, id);
-  const mailboxes = useAgentMailboxes(id, details && !rightHand);
+  const mailboxes = useAgentMailboxes(id, details);
   const work = useWorkingNow().filter((w) => w.agentId === id);
   const asking = useWaitingApprovals().filter((a) => a.agentId === id);
   // On a billing hold an AI comes after the plan: no row to connect one.
@@ -545,9 +545,10 @@ function Profile({ id }: { id: string }) {
       : uses.asks
         ? asksNote()
         : null;
+  // The right hand's AI is each person's, on its settings ("Sua IA"): its access shows only what it may use.
   const accessView = (
     <>
-      {thinks ? (
+      {thinks && !rightHand ? (
         <>
           <GroupedHeader>{t("mobile.intentAgents.thinks")}</GroupedHeader>
           <GroupedList>
@@ -698,7 +699,7 @@ function Profile({ id }: { id: string }) {
     <>
       {knows.data ? memoryKnows : null}
       {/* What people told it to always do, under what it learned, as the web's Memória. */}
-      <GivenRules agentId={id} name={name} />
+      <GivenRules agentId={id} name={name} rightHand={rightHand} />
     </>
   );
 
@@ -804,6 +805,9 @@ function Profile({ id }: { id: string }) {
                 )}
               />
             </GroupedList>
+            {details ? accessView : null}
+            {/* What it keeps for the viewer and the rules they gave it: theirs to see and take back. */}
+            {memoryView}
           </View>
         ) : details ? (
           <>
@@ -977,7 +981,7 @@ function ButtonRow({
  * giver, the agent's owner and admins take one back with a swipe, confirmed by a system alert (never a bare × that
  * deletes on the tap). Shown only when there is something.
  */
-function GivenRules({ agentId, name }: { agentId: string; name: string }) {
+function GivenRules({ agentId, name, rightHand }: { agentId: string; name: string; rightHand: boolean }) {
   const { t } = useTranslation();
   const c = useColors();
   const orgId = useOrgId();
@@ -1037,7 +1041,9 @@ function GivenRules({ agentId, name }: { agentId: string; name: string }) {
           );
         })}
       </GroupedList>
-      <GroupedFooter>{t("agentPage.memory.rulesNote")}</GroupedFooter>
+      <GroupedFooter>
+        {t(rightHand ? "agentPage.memory.rulesNoteRightHand" : "agentPage.memory.rulesNote")}
+      </GroupedFooter>
     </>
   );
 }

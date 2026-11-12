@@ -1419,6 +1419,12 @@ html:not([data-pointer]) .member-row--add:focus-visible {
   border-bottom: 0;
   flex: 1 1 auto;
 }
+/* A tab with unsaved changes carries their count (`.agp-badge`), one step after its words. */
+.tabs-bar .ac-tab:has(> .agp-badge) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 .tabs-bar .ac-toolbar {
   flex: 0 1 280px;
   margin-bottom: 8px;
@@ -9486,6 +9492,9 @@ html:not([data-pointer]) .newag__addrow:focus-visible {
   text-align: start;
   text-decoration: none;
   cursor: pointer;
+  /* Where its words and where it goes don't fit one line, the second goes under, whole. */
+  flex-wrap: wrap;
+  row-gap: var(--space-1);
   transition:
     background-color var(--dur-base) var(--out),
     color var(--dur-base) var(--out);
@@ -10641,7 +10650,7 @@ html:not([data-pointer]) .agp-cell:focus-visible {
 }
 .agp-readonly {
   gap: 10px;
-  margin: 0 0 14px;
+  margin: 0;
   padding: 10px 14px;
   border-radius: 14px;
   box-shadow: inset 0 0 0 1px var(--line);
