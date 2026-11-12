@@ -12827,6 +12827,7 @@
       "machineChanged": "专项任务的电脑已更换，请重试。",
       "executorUnavailable": "专项任务的电脑上没有安装这种编程方式。",
       "executorOutdated": "那台电脑上的 Codex 版本过旧，请在那里更新。",
+      "codexWindows": "Codex 暂时还不能在 Windows 上为专项任务编程：请选择 Claude Code、智能体本身或另一台电脑。",
       "invalidExecutor": "请选择由谁编程：Claude Code、Codex 或智能体。",
       "rateLimited": "专项任务在过去一小时内操作过多，请稍等后重试。",
       "pausedStuck": "专项任务已暂停，因为它停止了进展。"

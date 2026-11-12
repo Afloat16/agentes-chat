@@ -1113,6 +1113,12 @@ describe("missions (ADR 0029)", () => {
     };
     expect(missionExecutors({ ...codexHere, os: "windows" }).available).toEqual(["agent"]);
     expect(missionExecutors({ ...codexHere, os: "darwin" }).available).toEqual(["codex", "agent"]);
+    // No update makes it, so an old Codex there isn't worth an "update it".
+    const oldCodex = { codex: { version: "codex-cli 0.150.0" }, detectedAt: "x" };
+    expect(missionExecutors({ ...codexHere, executors: oldCodex, os: "windows" })).toEqual({
+      available: ["agent"],
+      codexTooOld: false,
+    });
     await expect(
       createMission(md(), f.owner.id, f.org.id, {
         agentId: f.agent.id,
@@ -1128,6 +1134,34 @@ describe("missions (ADR 0029)", () => {
     });
     expect(view.executor).toBe("agent");
     expect(view.machine?.executors).toEqual(["agent"]);
+  });
+
+  test("Codex on a Windows computer: asking it for a mission's items says it doesn't run there, not to update", async () => {
+    f = await setup({ machines: true, missionTools: true });
+    const paired = await pairedMachine();
+    const runner = missionRunner(f.machineHub as MachineHub);
+    await runner.close();
+    const hub = f.machineHub as MachineHub;
+    const conn = hub.open({ send() {}, close() {} });
+    await hub.message(
+      conn,
+      JSON.stringify({
+        type: "hello",
+        token: paired.token,
+        ...RUNNER,
+        os: "windows",
+        exec: true,
+        executors: { codex: { version: "codex-cli 0.150.0" } },
+      }),
+    );
+    await expect(
+      createMission(md(), f.owner.id, f.org.id, {
+        agentId: f.agent.id,
+        channelId: f.general.id,
+        goal: "Build",
+        executor: "codex",
+      }),
+    ).rejects.toMatchObject({ code: "mission.codex_windows" });
   });
 
   describe("command approvals (Claude Code's permission prompts)", () => {

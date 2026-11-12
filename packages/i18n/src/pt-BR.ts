@@ -13283,6 +13283,9 @@ export const ptBR = {
       machineChanged: "O computador da missão mudou. Tente de novo.",
       executorUnavailable: "Esse jeito de programar não está instalado no computador da missão.",
       executorOutdated: "O Codex nesse computador é antigo demais: atualize-o lá.",
+      /** Codex on a Windows computer: the runner runs no Codex mission item there yet. */
+      codexWindows:
+        "O Codex ainda não programa missões no Windows: escolha o Claude Code, o próprio agente ou outro computador.",
       invalidExecutor: "Escolha quem programa: Claude Code, Codex ou o agente.",
       rateLimited: "A missão fez coisas demais na última hora. Espere um pouco e tente de novo.",
       pausedStuck: "A missão pausou porque parou de avançar.",

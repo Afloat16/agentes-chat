@@ -12819,6 +12819,7 @@
       "machineChanged": "Komputer misi berubah. Coba lagi.",
       "executorUnavailable": "Cara pemrograman itu tidak terpasang di komputer misi.",
       "executorOutdated": "Codex di komputer itu terlalu lama: perbarui di sana.",
+      "codexWindows": "Codex belum bisa memprogram misi di Windows: pilih Claude Code, agen itu sendiri, atau komputer lain.",
       "invalidExecutor": "Pilih siapa yang memprogram: Claude Code, Codex, atau agen.",
       "rateLimited": "Misi melakukan terlalu banyak hal dalam satu jam terakhir. Tunggu sebentar lalu coba lagi.",
       "pausedStuck": "Misi dijeda karena berhenti mengalami kemajuan."

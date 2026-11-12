@@ -13316,6 +13316,7 @@
       "machineChanged": "De computer van de missie is veranderd. Probeer het opnieuw.",
       "executorUnavailable": "Die manier van programmeren is niet geïnstalleerd op de computer van de missie.",
       "executorOutdated": "Codex op die computer is te oud: werk het daar bij.",
+      "codexWindows": "Codex programmeert nog geen missies op Windows: kies Claude Code, de agent zelf of een andere computer.",
       "invalidExecutor": "Kies wie programmeert: Claude Code, Codex of de agent.",
       "rateLimited": "De missie heeft het afgelopen uur te veel gedaan. Wacht even en probeer het opnieuw.",
       "pausedStuck": "De missie is gepauzeerd omdat hij niet meer vooruitkwam."

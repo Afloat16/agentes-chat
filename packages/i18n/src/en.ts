@@ -13250,6 +13250,9 @@ export const en = {
       machineChanged: "The mission's computer changed. Try again.",
       executorUnavailable: "That way of programming isn't installed on the mission's computer.",
       executorOutdated: "Codex on that computer is too old: update it there.",
+      /** Codex on a Windows computer: the runner runs no Codex mission item there yet. */
+      codexWindows:
+        "Codex doesn't program missions on Windows yet: choose Claude Code, the agent itself or another computer.",
       invalidExecutor: "Choose who programs: Claude Code, Codex or the agent.",
       rateLimited: "The mission did too much in the last hour. Wait a little and try again.",
       pausedStuck: "The mission paused because it stopped moving forward.",

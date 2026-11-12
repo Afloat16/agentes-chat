@@ -32026,6 +32026,9 @@
   "errors.mission.executorOutdated": {
     "value": "Codex on that computer is too old: update it there."
   },
+  "errors.mission.codexWindows": {
+    "value": "Codex doesn't program missions on Windows yet: choose Claude Code, the agent itself or another computer."
+  },
   "errors.mission.invalidExecutor": {
     "value": "Choose who programs: Claude Code, Codex or the agent."
   },

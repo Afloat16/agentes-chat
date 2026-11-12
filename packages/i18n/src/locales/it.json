@@ -13718,6 +13718,7 @@
       "machineChanged": "Il computer della missione è cambiato. Riprova.",
       "executorUnavailable": "Quel modo di programmare non è installato sul computer della missione.",
       "executorOutdated": "Codex su quel computer è troppo vecchio: aggiornalo lì.",
+      "codexWindows": "Codex non programma ancora missioni su Windows: scegli Claude Code, l'agente stesso o un altro computer.",
       "invalidExecutor": "Scegli chi programma: Claude Code, Codex o l'agente.",
       "rateLimited": "La missione ha fatto troppo nell'ultima ora. Aspetta un po' e riprova.",
       "pausedStuck": "La missione è in pausa perché aveva smesso di avanzare."

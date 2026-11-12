@@ -13189,6 +13189,7 @@
       "machineChanged": "Misyonun bilgisayarı değişti. Tekrar deneyin.",
       "executorUnavailable": "Bu programlama yolu misyonun bilgisayarında kurulu değil.",
       "executorOutdated": "O bilgisayardaki Codex çok eski: orada güncelleyin.",
+      "codexWindows": "Codex henüz Windows'ta misyon programlamıyor: Claude Code'u, ajanın kendisini veya başka bir bilgisayarı seçin.",
       "invalidExecutor": "Kimin programlayacağını seçin: Claude Code, Codex veya ajan.",
       "rateLimited": "Misyon son bir saatte çok fazla şey yaptı. Biraz bekleyip tekrar deneyin.",
       "pausedStuck": "Misyon ilerlemeyi bıraktığı için duraklatıldı."

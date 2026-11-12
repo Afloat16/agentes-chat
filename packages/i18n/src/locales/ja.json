@@ -12765,6 +12765,7 @@
       "machineChanged": "ミッションのコンピューターが変更されました。もう一度お試しください。",
       "executorUnavailable": "そのプログラミング方法は、ミッションのコンピューターにインストールされていません。",
       "executorOutdated": "そのコンピューターのCodexが古すぎます。そちらで更新してください。",
+      "codexWindows": "CodexはまだWindowsでミッションをプログラミングできません。Claude Code、エージェント自身、または別のコンピューターを選んでください。",
       "invalidExecutor": "プログラミングの担当を選んでください: Claude Code、Codex、またはエージェント。",
       "rateLimited": "この1時間でミッションの処理が多すぎました。少し待ってからお試しください。",
       "pausedStuck": "進展がなくなったため、ミッションは一時停止しました。"
