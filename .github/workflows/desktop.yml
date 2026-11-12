@@ -635,7 +635,8 @@ jobs:
         with:
           projectPath: apps/desktop
           tauriScript: bun run tauri
-          args: --config src-tauri/tauri.native.conf.json
+          # --verbose: without it a failed AppImage says only "failed to run linuxdeploy", never which file or step.
+          args: --config src-tauri/tauri.native.conf.json --verbose
 
       - name: Name the build files and the checksums
         shell: bash
