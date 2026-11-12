@@ -40,8 +40,7 @@ export function createFeedbackToolSource(deps: {
   const reader = isFeedbackRelay(deps.to) ? "the agentes.chat team, who make this app" : "whoever runs this server";
   const tool: ToolDefinition = {
     name: SEND_FEEDBACK_TOOL,
-    description:
-      `Send the person's feedback about this app itself (a bug, something confusing, an idea) to ${reader}, by email in their name, only when they ask you to ('manda um feedback dizendo…', 'report this bug for me'). \`text\`: what they want said, in their words and language, plus what you saw yourself that helps whoever reads it (what was being done, the error as it appeared). Nothing from the conversation they didn't ask to send. They read it on a card and approve it before it goes.`,
+    description: `Send the person's feedback about this app itself (a bug, something confusing, an idea) to ${reader}, by email in their name, only when they ask you to ('manda um feedback dizendo…', 'report this bug for me'). \`text\`: what they want said, in their words and language, plus what you saw yourself that helps whoever reads it (what was being done, the error as it appeared). Nothing from the conversation they didn't ask to send. They read it on a card and approve it before it goes.`,
     scope: "",
     sensitive: true,
     inputSchema: {
@@ -123,8 +122,7 @@ export function createFeedbackToolSource(deps: {
    */
   const offer: ToolDefinition = {
     name: OFFER_FEEDBACK_TOOL,
-    description:
-      `Offer, on your own initiative, to report a problem with this app itself to ${reader}: a row under your reply with the report, which the person sends with one click or dismisses; nothing waits on it. Only when the app really failed: one of its own tools broke with an internal error, your browser or desktop crashed, you went in circles on the same app error, or the person complains that something of the app doesn't work and what you see confirms it. Never for an outside service's failure, a limit, a missing permission or setting, or your own mistake. \`summary\`: the problem in a few words, in their language, no capital letter and no period ('the browser closed while opening a page'). \`text\`: the report in their language: what was being done, what happened as it appeared, when; nothing else from the conversation. Still answer them as well as you can, and don't ask in words whether to send it: the row asks.`,
+    description: `Offer, on your own initiative, to report a problem with this app itself to ${reader}: a row under your reply with the report, which the person sends with one click or dismisses; nothing waits on it. Only when the app really failed: one of its own tools broke with an internal error, your browser or desktop crashed, you went in circles on the same app error, or the person complains that something of the app doesn't work and what you see confirms it. Never for an outside service's failure, a limit, a missing permission or setting, or your own mistake. \`summary\`: the problem in a few words, in their language, no capital letter and no period ('the browser closed while opening a page'). \`text\`: the report in their language: what was being done, what happened as it appeared, when; nothing else from the conversation. Still answer them as well as you can, and don't ask in words whether to send it: the row asks.`,
     scope: "",
     inputSchema: {
       type: "object",

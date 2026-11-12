@@ -212,8 +212,6 @@ test("feedback relay: with no address it goes to the agentes.chat team's inbox, 
   expect(mail?.text).not.toContain("/api/feedback-files/");
   expect(mail?.inline).toMatchObject([{ filename: "shot.png", contentType: "image/png", content: PNG }]);
 });
-  expect(inbox?.email.sent.at(-1)?.idempotencyKey).toBe(key);
-});
 
 test("feedback relay: the inbox takes only a feedback, pictures by their bytes, thirty an hour", async () => {
   await relaying();

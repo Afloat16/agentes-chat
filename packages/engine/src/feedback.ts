@@ -49,7 +49,7 @@ export const FEEDBACK_RELAYED_MS = 6 * 60 * 60_000;
 export const FEEDBACK_INBOX_BYTES = Math.ceil((INLINE_BYTES * 4) / 3) + 2 * MB;
 /** What the inbox takes in an hour: from one address (a whole server's people come from one), and in all. */
 export const FEEDBACK_INBOX_PER_HOUR = { limit: 30, windowMs: 60 * 60_000 } as const;
-export const FEEDBACK_INBOX_ALL_PER_HOUR = { limit: 300, windowMs: 60 * 60_000 } as const;
+export const FEEDBACK_INBOX_ALL_PER_HOUR = { limit: 60, windowMs: 60 * 60_000 } as const;
 const RELAY_TIMEOUT_MS = 60_000;
 
 /**
@@ -168,9 +168,7 @@ export function renderFeedback(f: Feedback) {
       .split("\n")
       .map((l) => `> ${l}`)
       .join("\n");
-  const listed = files
-    .map((x) => `- ${line(x.name, 80)} (${sizeOf(x.size)})${x.url ? `: ${x.url}` : ""}`)
-    .join("\n");
+  const listed = files.map((x) => `- ${line(x.name, 80)} (${sizeOf(x.size)})${x.url ? `: ${x.url}` : ""}`).join("\n");
 
   const plain = [
     text,

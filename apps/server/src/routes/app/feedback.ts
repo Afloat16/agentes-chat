@@ -143,10 +143,7 @@ export function feedbackRoutes(deps: AppDeps) {
       if (video && !(await adapters.rateLimiter.consume(`feedback-video:${user.id}`, VIDEOS_PER_HOUR)).allowed)
         throw new TooManyError("Too many videos for now");
       try {
-        return c.json(
-          await storeFeedbackFile(files, user.id, { name: file.name, bytes, picturesOnly: relayed }),
-          200,
-        );
+        return c.json(await storeFeedbackFile(files, user.id, { name: file.name, bytes, picturesOnly: relayed }), 200);
       } catch (error) {
         if (error instanceof ValidationError && error.code === "feedback.file_too_large")
           return apiError(c, 413, error.code, error.message, error.params);
