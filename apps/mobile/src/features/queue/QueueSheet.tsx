@@ -22,14 +22,30 @@ import {
   queueView,
   queueWhereText,
 } from "@agenteschat/client/lib/computer-queue";
+import { errorText } from "@agenteschat/client/lib/errors";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, FadeOut, LayoutAnimationConfig, LinearTransition } from "react-native-reanimated";
-import { Button, CHROME_MAX_SCALE, Chip, Count, Icon, type IconName, PressScale, Text, useReducedMotion } from "@/ui";
+import {
+  Button,
+  CHROME_MAX_SCALE,
+  Chip,
+  Count,
+  GroupedList,
+  GroupedRow,
+  Icon,
+  type IconName,
+  PressScale,
+  Text,
+  useReducedMotion,
+  useToast,
+} from "@/ui";
 import { router } from "@/ui/navigation";
 import { useComputerSays, useWatchableComputer } from "../chat/DmComputerButton";
 import { openComputer } from "../computer/AgentComputerRow";
+import { StatusLine } from "../devices/parts";
+import { useDeviceMutation, useDevices } from "../devices/queries";
 import { AgentFace, OpensAgent } from "../shared/Face";
 import { useColors, useDirectory, useMeId, useNow, useOrgId } from "../shared/hooks";
 import { SheetTitle } from "../shared/PromptForm";
@@ -180,8 +196,54 @@ export function QueueSheet({ machineId, computer }: { machineId: string; compute
       <Text variant="caption" tone="faint" style={styles.rule}>
         {t("queue.rule")}
       </Text>
+      <SpillHere machineId={machineId} />
       {computer ? <OpenComputer {...computer} /> : null}
     </>
+  );
+}
+
+/**
+ * "More computers, shorter line": my other online computers, each with its switch for my replies to start there while
+ * this one is full (`spill.own`). Nothing when I have none.
+ */
+function SpillHere({ machineId }: { machineId: string }) {
+  const { t } = useTranslation();
+  const c = useColors();
+  const meId = useMeId();
+  const toast = useToast();
+  const devices = useDevices();
+  const spill = useDeviceMutation((api, orgId, input: { id: string; own: boolean }) =>
+    api.devices.updateComputer(orgId, input.id, { spill: { own: input.own } }),
+  );
+  const mine = (devices.data?.devices ?? []).filter(
+    (d) => d.id !== machineId && d.ownerUserId === meId && d.machineKind === "connected" && !d.systemMode,
+  );
+  if (mine.length === 0) return null;
+  return (
+    <View style={[styles.group, styles.nextGroup, { borderTopColor: c.line }]}>
+      <GroupHead title={t("queue.spill.title")} />
+      <GroupedList>
+        {mine.map((d) => (
+          <GroupedRow
+            key={d.id}
+            icon="laptop"
+            label={d.name}
+            below={<StatusLine status={d.status} />}
+            toggle={d.spill.own}
+            disabled={spill.isPending}
+            onPress={() =>
+              spill.mutate(
+                { id: d.id, own: !d.spill.own },
+                { onError: (err) => toast({ title: errorText(t, err), icon: "x" }) },
+              )
+            }
+          />
+        ))}
+      </GroupedList>
+      <Text variant="caption" tone="faint">
+        {t("queue.spill.text")}
+      </Text>
+    </View>
   );
 }
 

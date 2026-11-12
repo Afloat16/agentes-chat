@@ -175,6 +175,40 @@ describe("a computer's line", () => {
     expect(screen().getByRole("dialog", { name: "Fila de Studio" })).toBeTruthy();
   });
 
+  test("the waiting turn says what holds the computer's memory; the line offers my own computers for my replies", async () => {
+    const { api, state, me, machines } = setup();
+    machines?.pair({ name: "MacBook da Ana", pairedBy: { id: me, name: "Ana" } });
+    state.messages.push(
+      said({
+        author: { type: "person", id: me },
+        receipts: {
+          seenBy: [ATLAS_ID],
+          pickedBy: [ATLAS_ID],
+          handled: [{ agentId: ATLAS_ID, runId: "r-atlas", status: "waiting_input", computer: "queued" }],
+          blocked: [],
+        },
+      }),
+    );
+    await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api });
+    await settle(10);
+    const [turn] = turns();
+    expect(turn?.querySelector(".cq-turn__cause")?.textContent).toBe(
+      "Computador cheio: 1 trabalho usa a memória agora (1 pedida por agente).",
+    );
+    await click(within(turn as HTMLElement).getByRole("button", { name: "Ver fila" }));
+    await settle(6);
+    const dialog = screen().getByRole("dialog", { name: "Fila de Studio" });
+    expect(dialog.textContent).toContain("Mais computadores, menos fila");
+    const own = within(dialog).getByRole("switch", { name: "Suas respostas podem pensar aqui: MacBook da Ana" });
+    expect(own.getAttribute("aria-checked")).toBe("true");
+    // Studio itself, and computers someone else connected, are never offered here.
+    expect(within(dialog).queryAllByRole("switch")).toHaveLength(1);
+    await click(own);
+    await settle(4);
+    const call = state.calls.find((c) => c.method === "devices.updateComputer");
+    expect(call?.args.at(-1)).toEqual({ spill: { own: false } });
+  });
+
   test("an agent further back names who is ahead", async () => {
     const { api, state } = setup();
     state.messages.push(

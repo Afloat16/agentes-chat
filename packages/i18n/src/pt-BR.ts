@@ -11204,6 +11204,14 @@ export const ptBR = {
     allStarted: "todos começam em ~{{n}} min",
     nothingWorking: "Nada rodando agora",
     rule: "Um trabalho novo começa quando o computador tem memória livre. Pessoas vão primeiro. Agentes chamados juntos começam um de cada vez.",
+    /** Why a turn waits: `fill` is `queue.fill`'s line. */
+    cause_one: "Computador cheio: {{count}} trabalho usa a memória agora ({{fill}}).",
+    cause_other: "Computador cheio: {{count}} trabalhos usam a memória agora ({{fill}}).",
+    /** The viewer's own computers that may take their replies while this one is full (`machines.spill_own`). */
+    spill: {
+      title: "Mais computadores, menos fila",
+      text: "Quando este computador estiver cheio, as respostas para você podem começar num computador seu. Trabalhos longos e os arquivos dos agentes continuam aqui.",
+    },
     youFirst: "Você vai primeiro",
     startsIn: "começa em ~{{n}} min",
     startsAfter: "começa quando {{after}} terminar",
@@ -13767,6 +13775,11 @@ export const ptBR = {
     maxTasksHint: "Quantas tarefas em segundo plano os agentes rodam aqui ao mesmo tempo. As outras esperam a vez.",
     belongs: "Pertence ao workspace",
     belongsHint: "Ele fica quando quem o conectou sai, e todos podem usá-lo enquanto ninguém for dono dele.",
+    spillOwn: "Suas respostas podem pensar aqui",
+    spillOwnHint: "Quando o computador de um agente estiver cheio, as respostas dele para você começam aqui.",
+    spillOthers: "Agentes de outras pessoas podem pensar aqui",
+    spillOthersHint:
+      "Quando o computador de um agente estiver cheio, as respostas dele para outras pessoas também podem começar aqui.",
     connectedBy: "Conectado por {{name}}",
     downloadFor: "Baixar para {{system}}",
     downloadApp: "Baixar o app",

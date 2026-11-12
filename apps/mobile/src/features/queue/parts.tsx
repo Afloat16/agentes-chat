@@ -5,6 +5,7 @@ import {
   fanOutOf,
   fanOutText,
   fanShows,
+  queueCauseText,
   queueLiveText,
   waitingFor,
 } from "@agenteschat/client/lib/computer-queue";
@@ -36,6 +37,7 @@ export function QueueWaitRow({ channelId, wait: { agentId, runId } }: { channelI
   const w = waitingFor(queue, runId ? { runOf: { [agentId]: runId } } : undefined, agentId, channelId);
   const text = (w && queueLiveText(t, i18n.language, queue, w.runId, name, now)) ?? t("queue.live.waiting");
   const first = w?.people && w.purpose.kind === "person" && w.purpose.userId === meId;
+  const cause = w ? queueCauseText(t, queue) : null;
   const c = useColors();
   return (
     <View style={[styles.turn, rowFrame(rhythm.block, rhythm.turn)]} accessibilityLiveRegion="polite">
@@ -54,6 +56,11 @@ export function QueueWaitRow({ channelId, wait: { agentId, runId } }: { channelI
             {text}
           </Text>
         </View>
+        {cause ? (
+          <Text variant="footnote" tone="muted">
+            {cause}
+          </Text>
+        ) : null}
         <View style={styles.acts}>
           {first ? <Chip icon="person" label={t("queue.youFirst")} /> : null}
           {machineId ? (

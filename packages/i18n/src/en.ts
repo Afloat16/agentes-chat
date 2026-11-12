@@ -11149,6 +11149,14 @@ export const en = {
     allStarted: "all started in ~{{n}} min",
     nothingWorking: "Nothing running right now",
     rule: "New work starts when the computer has free memory. People go first. Agents mentioned together start one at a time.",
+    /** Why a turn waits: `fill` is `queue.fill`'s line. */
+    cause_one: "Computer full: {{count}} job uses its memory now ({{fill}}).",
+    cause_other: "Computer full: {{count}} jobs use its memory now ({{fill}}).",
+    /** The viewer's own computers that may take their replies while this one is full (`machines.spill_own`). */
+    spill: {
+      title: "More computers, shorter line",
+      text: "When this computer is full, replies to you can start on one of yours. Long work and the agents' files stay here.",
+    },
     youFirst: "You go first",
     startsIn: "starts ~{{n}} min",
     /** {{after}} is `queue.who`: the agent's name, with an article where the language needs one. */
@@ -13742,6 +13750,10 @@ export const en = {
     maxTasksHint: "How many background tasks agents run here at the same time. The rest wait their turn.",
     belongs: "Belongs to the workspace",
     belongsHint: "It stays when the person who connected it leaves, and everyone can use it while nobody owns it.",
+    spillOwn: "Your replies can think here",
+    spillOwnHint: "When an agent's computer is full, its replies to you start here.",
+    spillOthers: "Other people's agents can think here",
+    spillOthersHint: "When an agent's computer is full, its replies to other people can start here too.",
     connectedBy: "Connected by {{name}}",
     downloadFor: "Download for {{system}}",
     downloadApp: "Download the app",

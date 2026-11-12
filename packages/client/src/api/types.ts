@@ -7658,6 +7658,8 @@ export interface ComputerDevice {
   memoryGb: number | null;
   ownerUserId: string | null;
   belongsToWorkspace: boolean;
+  /** While an agent's own computer is full, replies people wait on may think here: to its owner, to anyone else. */
+  spill: { own: boolean; others: boolean };
   systemMode: boolean;
   audience: DeviceAudience;
   status: DeviceStatus;
@@ -7750,6 +7752,7 @@ export interface ComputerDeviceInput {
   audience?: DeviceAudience;
   belongsToWorkspace?: boolean;
   maxTasks?: number;
+  spill?: { own?: boolean; others?: boolean };
 }
 
 export interface PhoneDeviceInput {

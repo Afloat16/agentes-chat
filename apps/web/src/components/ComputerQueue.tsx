@@ -13,6 +13,7 @@ import {
   type QueuePlace,
   queueAllStartedText,
   queueButtonText,
+  queueCauseText,
   queuedNextText,
   queueFillText,
   queueLeftText,
@@ -24,6 +25,7 @@ import {
   queueWhereText,
   waitingFor,
 } from "@agenteschat/client/lib/computer-queue";
+import { computerLine, statusPill } from "@agenteschat/client/lib/devices";
 import { badgeCount } from "@agenteschat/client/lib/unread";
 import {
   Button,
@@ -34,12 +36,14 @@ import {
   DialogFooter,
   Icon,
   Message as MessageRow,
+  Switch,
   useNow,
 } from "@agenteschat/ui";
 import { useNavigate } from "@tanstack/react-router";
 import { type CSSProperties, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { useDevices, useUpdateComputer } from "@/components/devices/queries";
 import { ErrorState, LoadingList } from "@/components/Loading";
 import { OpensAgent } from "@/components/OpensAgent";
 import { useOrg } from "@/components/org-context";
@@ -296,7 +300,48 @@ function QueueLists({
         </section>
       )}
       <p className="cq__rule">{t("queue.rule")}</p>
+      <SpillHere machineId={queue.machineId} />
     </div>
+  );
+}
+
+/**
+ * "More computers, shorter line": the viewer's other online computers, each with its switch for their replies to start
+ * there while this one is full (`spill.own`). Nothing when they have none.
+ */
+function SpillHere({ machineId }: { machineId: string }) {
+  const { t } = useTranslation();
+  const { org, me } = useOrg();
+  const devices = useDevices(org.id);
+  const update = useUpdateComputer(org.id);
+  const mine = (devices.data?.devices ?? []).filter(
+    (d) => d.id !== machineId && d.ownerUserId === me.user.id && d.machineKind === "connected" && !d.systemMode,
+  );
+  if (mine.length === 0) return null;
+  return (
+    <section className="cq-spill" aria-labelledby="cq-spill-title">
+      <h3 className="cq__title" id="cq-spill-title">
+        <span>{t("queue.spill.title")}</span>
+      </h3>
+      <ul className="cq-spill__rows">
+        {mine.map((d) => (
+          <li key={d.id} className="cq-spill__row">
+            <Icon name="computer" size={16} />
+            <span className="cq-spill__name">
+              <b>{d.name}</b>
+              <small>{[statusPill(t, d.status), computerLine(t, d)].join(" · ")}</small>
+            </span>
+            <Switch
+              aria-label={`${t("devices.spillOwn")}: ${d.name}`}
+              checked={d.spill.own}
+              disabled={update.isPending}
+              onCheckedChange={(own) => update.mutate({ id: d.id, spill: { own } })}
+            />
+          </li>
+        ))}
+      </ul>
+      <p className="cq__rule">{t("queue.spill.text")}</p>
+    </section>
   );
 }
 
@@ -363,6 +408,8 @@ function QueueWaitTurn({ wait: { agentId, runId }, channelId }: { wait: Conversa
   const name = agentName(agentId) ?? t("channel.unknownAgent");
   const text = w ? queueLiveText(t, i18n.language, queue, w.runId, agentName, now) : t("queue.live.waiting");
   const first = w?.people && w.purpose.kind === "person" && w.purpose.userId === me.user.id;
+  // The real cause, once the line knows the turn: what holds the computer's memory now.
+  const cause = w ? queueCauseText(t, queue) : null;
   return (
     <MessageRow
       agent
@@ -376,6 +423,7 @@ function QueueWaitTurn({ wait: { agentId, runId }, channelId }: { wait: Conversa
         <Icon name="waiting" size={14} />
         <span>{text}</span>
       </p>
+      {cause && <p className="cq-turn__cause">{cause}</p>}
       <span className="cq-turn__acts">
         {first && <Chip className="cq-first">{t("queue.youFirst")}</Chip>}
         {machineId && <SeeQueue machineId={machineId} />}

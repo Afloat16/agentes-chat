@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { ComputerQueue, QueueWaiting } from "@agenteschat/client";
-import { queueLiveText, queueWhereText, waitingFor } from "@agenteschat/client/lib/computer-queue";
+import { queueCauseText, queueLiveText, queueWhereText, waitingFor } from "@agenteschat/client/lib/computer-queue";
 import { machineOfAgents, queuePlace } from "../../src/features/queue/logic";
 import { translator } from "./fixtures";
 
@@ -92,5 +92,13 @@ describe("a shared computer's line on the phone", () => {
     const name = (id: string) => names[id];
     expect(queueLiveText(en, "en", queue, "q1", name, NOW)).toBe("Waiting for the computer. Next up, in about 1 min");
     expect(queueLiveText(en, "en", queue, "q2", name, NOW)).toBe("In line, 2nd. After Nova");
+  });
+
+  test("the wait's cause, as the web says it: what holds the computer's memory now; nothing on an empty one", async () => {
+    const pt = await translator("pt-BR");
+    expect(queueCauseText(pt, queue)).toBe("Computador cheio: 1 trabalho usa a memória agora (1 pedida por agente).");
+    const en = await translator("en");
+    expect(queueCauseText(en, { working: [] })).toBeNull();
+    expect(queueCauseText(en, null)).toBeNull();
   });
 });

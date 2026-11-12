@@ -73,6 +73,7 @@ const computer = (c: Partial<ComputerDevice>): ComputerDevice => ({
   memoryGb: 36,
   ownerUserId: "u-sam",
   belongsToWorkspace: false,
+  spill: { own: true, others: false },
   systemMode: false,
   audience: owner,
   status: { kind: "ready" },

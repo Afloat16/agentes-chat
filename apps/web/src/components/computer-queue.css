@@ -181,6 +181,12 @@ html:not([data-pointer]) .cq__open:focus-visible {
 :where(:not(.ac-msg__body)) > .cq-turn__say {
   margin: 0;
 }
+.cq-turn__cause {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
+}
 .cq-turn__acts {
   display: flex;
   flex-wrap: wrap;
@@ -455,4 +461,43 @@ html:not([data-pointer]) .uq__open:focus-visible {
   .uq__row[data-two] .uq__act {
     padding-top: 0;
   }
+}
+
+/* "More computers, shorter line": the viewer's own computers, each with its switch. */
+.cq-spill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.cq-spill .cq__title {
+  margin: 0;
+}
+.cq-spill__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cq-spill__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  color: var(--ink-muted);
+}
+.cq-spill__name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--ink);
+}
+.cq-spill__name small {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
 }

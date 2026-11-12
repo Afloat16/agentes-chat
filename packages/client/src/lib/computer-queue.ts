@@ -67,6 +67,12 @@ export function queueFillText(t: TFunction, working: readonly Pick<QueueWorking,
   return parts.length ? joinNames(parts, t) : null;
 }
 
+/** Why a turn waits: "Computer full: 4 jobs use its memory now (2 for people, 1 routine…)", null with nothing on it. */
+export function queueCauseText(t: TFunction, queue: Pick<ComputerQueue, "working"> | null | undefined) {
+  const fill = queue ? queueFillText(t, queue.working) : null;
+  return fill ? t("queue.cause", { count: queue?.working.length ?? 0, fill }) : null;
+}
+
 /** "Computer · 9 waiting", or "Computer" while nothing waits. */
 export const queueButtonText = (t: TFunction, queue: ComputerQueue | null | undefined) =>
   queue?.waiting.length ? t("queue.button", { count: queue.waiting.length }) : t("queue.buttonIdle");
