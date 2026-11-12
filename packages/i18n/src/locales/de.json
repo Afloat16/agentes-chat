@@ -2386,6 +2386,8 @@
       "planOwner": "Konto von {{owner}}",
       "planName": "{{name}}-Abo",
       "mine": "Deine KI",
+      "mineTitle": "Wer für {{name}} denkt, wenn du schreibst",
+      "mineOnly": "Gilt nur für dein Gespräch mit {{name}}.",
       "mineHelp": "Dein Gespräch mit {{name}} denkt mit deinem Abo oder einem, das mit dir geteilt wurde, und nur deins.",
       "connectMine": "Mein Abo verbinden",
       "useWorkspace": "Die des Workspace nutzen",
@@ -2403,6 +2405,8 @@
       "fallbackYours": "Ohne anderes Abo nutzt es das des Workspace, das dir gehört.",
       "fallbackNone": "Ohne eigenes Abo kann {{name}} dir nicht antworten: Das Abo des Workspace antwortet nur {{owner}}.",
       "workspace": "KI für alle ohne eigenes Abo",
+      "workspaceTitle": "Wer im Workspace für {{name}} denkt",
+      "workspaceOnly": "Gilt für alle ohne eigenes Abo.",
       "workspaceHelp": "Wer kein eigenes Abo hat, spricht über diese KI mit {{name}}.",
       "noPlans": "Verbinde unter KI und Verbrauch ein Abo, um es hier zu nutzen.",
       "lend": "Dieses Abo an alle ohne eigenes verleihen",
@@ -14944,8 +14948,8 @@
       "personal": "Persönlich",
       "teamHelp": "Kanäle, Personen und Rollen für die Zusammenarbeit. Ein Wechsel ändert nur, was zu sehen ist.",
       "personalHelp": "Einfacher, für dich und deine Familie, wenn du sie einlädst. Ein Wechsel ändert nur, was zu sehen ist.",
-      "toTeam": "Zu Team wechseln…",
-      "toPersonal": "Zu persönlich wechseln…"
+      "toTeam": "Zu Team wechseln",
+      "toPersonal": "Zu persönlich wechseln"
     },
     "telemetry": {
       "title": "Nutzungsstatistiken",

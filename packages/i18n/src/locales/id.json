@@ -2303,6 +2303,8 @@
       "planOwner": "akun {{owner}}",
       "planName": "Paket {{name}}",
       "mine": "AI kamu",
+      "mineTitle": "Siapa yang berpikir untuk {{name}} bagi Anda",
+      "mineOnly": "Hanya untuk percakapan Anda dengan {{name}}.",
       "mineHelp": "Percakapanmu dengan {{name}} berpikir dengan paketmu atau paket yang dibagikan kepadamu, dan hanya percakapanmu.",
       "connectMine": "Hubungkan paket saya",
       "useWorkspace": "Pakai milik workspace",
@@ -2320,6 +2322,8 @@
       "fallbackYours": "Tanpa paket lain, ia memakai paket workspace, yang milikmu.",
       "fallbackNone": "Tanpa paket sendiri, {{name}} tidak bisa menjawabmu: paket workspace hanya menjawab {{owner}}.",
       "workspace": "AI bagi yang tidak punya paket sendiri",
+      "workspaceTitle": "Siapa yang berpikir untuk {{name}} di workspace",
+      "workspaceOnly": "Untuk yang tidak punya paket sendiri.",
       "workspaceHelp": "Yang tidak punya paket sendiri berbicara dengan {{name}} lewat AI ini.",
       "noPlans": "Hubungkan paket di AI dan pemakaian untuk memakainya di sini.",
       "lend": "Pinjamkan paket ini ke yang tidak punya",
@@ -14487,8 +14491,8 @@
       "personal": "Pribadi",
       "teamHelp": "Kanal, orang, dan peran untuk bekerja bersama. Beralih hanya mengubah apa yang terlihat.",
       "personalHelp": "Lebih sederhana, untukmu dan keluargamu jika kamu mengundang mereka. Beralih hanya mengubah apa yang terlihat.",
-      "toTeam": "Beralih ke tim…",
-      "toPersonal": "Beralih ke pribadi…"
+      "toTeam": "Beralih ke tim",
+      "toPersonal": "Beralih ke pribadi"
     },
     "telemetry": {
       "title": "Statistik pemakaian",

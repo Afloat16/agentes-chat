@@ -2556,6 +2556,8 @@
       "planOwner": "konto: {{owner}}",
       "planName": "Plan {{name}}",
       "mine": "Twoja AI",
+      "mineTitle": "Kto myśli za agenta {{name}} w rozmowie z tobą",
+      "mineOnly": "Tylko dla twojej rozmowy z agentem {{name}}.",
       "mineHelp": "Twoja rozmowa z {{name}} myśli z Twoim planem lub udostępnionym Ci planem, i tylko Twoja.",
       "connectMine": "Połącz mój plan",
       "useWorkspace": "Użyj AI workspace'u",
@@ -2573,6 +2575,8 @@
       "fallbackYours": "Bez innego planu korzysta z planu workspace'u, który jest Twój.",
       "fallbackNone": "Bez własnego planu {{name}} nie może Ci odpowiedzieć: plan workspace'u odpowiada tylko użytkownikowi {{owner}}.",
       "workspace": "AI dla osób bez własnego planu",
+      "workspaceTitle": "Kto myśli za agenta {{name}} w workspace",
+      "workspaceOnly": "Dla osób bez własnego planu.",
       "workspaceHelp": "Osoby bez własnego planu rozmawiają z {{name}} przez tę AI.",
       "noPlans": "Połącz plan w sekcji AI i zużycie, aby użyć go tutaj.",
       "lend": "Użycz tego planu osobom, które go nie mają",
@@ -15902,8 +15906,8 @@
       "personal": "Osobista",
       "teamHelp": "Kanały, osoby i role do wspólnej pracy. Zmiana zmienia tylko to, co widać.",
       "personalHelp": "Prostsza, dla ciebie i twojej rodziny, jeśli ją zaprosisz. Zmiana zmienia tylko to, co widać.",
-      "toTeam": "Przełącz na zespół…",
-      "toPersonal": "Przełącz na osobistą…"
+      "toTeam": "Przełącz na zespół",
+      "toPersonal": "Przełącz na osobistą"
     },
     "telemetry": {
       "title": "Statystyki użycia",

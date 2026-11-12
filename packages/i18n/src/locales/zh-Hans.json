@@ -2302,6 +2302,8 @@
       "planOwner": "{{owner}}的账号",
       "planName": "{{name}} 套餐",
       "mine": "你的 AI",
+      "mineTitle": "与你对话时 {{name}} 的思考方式",
+      "mineOnly": "仅适用于你与 {{name}} 的对话。",
       "mineHelp": "你与{{name}}的对话使用你的套餐或共享给你的套餐思考，且仅限你的对话。",
       "connectMine": "连接我的套餐",
       "useWorkspace": "使用工作区的",
@@ -2319,6 +2321,8 @@
       "fallbackYours": "没有其他套餐时，使用工作区的套餐，它是你的。",
       "fallbackNone": "没有自己的套餐时，{{name}}无法回复你：工作区的套餐只回复{{owner}}。",
       "workspace": "没有自己套餐的人使用的 AI",
+      "workspaceTitle": "工作区中 {{name}} 的思考方式",
+      "workspaceOnly": "适用于没有自己套餐的人。",
       "workspaceHelp": "没有自己套餐的人通过这个 AI 与{{name}}交谈。",
       "noPlans": "请先在“AI 和用量”中连接套餐，才能在这里使用。",
       "lend": "把这个套餐借给没有套餐的人",
@@ -14495,8 +14499,8 @@
       "personal": "个人",
       "teamHelp": "用频道、成员和角色一起工作。切换只会改变显示的内容。",
       "personalHelp": "更简单，适合你，以及你邀请的家人。切换只会改变显示的内容。",
-      "toTeam": "切换为团队…",
-      "toPersonal": "切换为个人…"
+      "toTeam": "切换为团队",
+      "toPersonal": "切换为个人"
     },
     "telemetry": {
       "title": "使用统计",

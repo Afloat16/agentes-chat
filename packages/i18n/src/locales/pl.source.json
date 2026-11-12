@@ -5930,6 +5930,12 @@
   "rightHand.settings.mine": {
     "value": "Your AI"
   },
+  "rightHand.settings.mineTitle": {
+    "value": "Who thinks for {{name}} with you"
+  },
+  "rightHand.settings.mineOnly": {
+    "value": "Only for your conversation with {{name}}."
+  },
   "rightHand.settings.mineHelp": {
     "value": "Your conversation with {{name}} thinks with your plan or one shared with you, and only yours does."
   },
@@ -5980,6 +5986,12 @@
   },
   "rightHand.settings.workspace": {
     "value": "AI for people without their own plan"
+  },
+  "rightHand.settings.workspaceTitle": {
+    "value": "Who thinks for {{name}} in the workspace"
+  },
+  "rightHand.settings.workspaceOnly": {
+    "value": "For people without their own plan."
   },
   "rightHand.settings.workspaceHelp": {
     "value": "People without their own plan talk to {{name}} through this AI."
@@ -36376,10 +36388,10 @@
     "value": "Simpler, for you and your family if you invite them. Switching changes only what's in sight."
   },
   "settings.mode.toTeam": {
-    "value": "Switch to team…"
+    "value": "Switch to team"
   },
   "settings.mode.toPersonal": {
-    "value": "Switch to personal…"
+    "value": "Switch to personal"
   },
   "settings.telemetry.title": {
     "value": "Usage statistics"

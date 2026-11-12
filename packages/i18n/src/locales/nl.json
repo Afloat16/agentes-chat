@@ -2385,6 +2385,8 @@
       "planOwner": "account van {{owner}}",
       "planName": "{{name}}-abonnement",
       "mine": "Jouw AI",
+      "mineTitle": "Wie denkt voor {{name}}, voor jou",
+      "mineOnly": "Alleen voor jouw gesprek met {{name}}.",
       "mineHelp": "Jouw gesprek met {{name}} denkt met jouw abonnement of een abonnement dat met je gedeeld is, en alleen dat van jou.",
       "connectMine": "Mijn abonnement koppelen",
       "useWorkspace": "Die van de workspace gebruiken",
@@ -2402,6 +2404,8 @@
       "fallbackYours": "Zonder ander abonnement gebruikt het dat van de workspace, dat van jou is.",
       "fallbackNone": "Zonder eigen abonnement kan {{name}} je niet antwoorden: het abonnement van de workspace antwoordt alleen {{owner}}.",
       "workspace": "AI voor wie geen eigen abonnement heeft",
+      "workspaceTitle": "Wie denkt voor {{name}} in de workspace",
+      "workspaceOnly": "Voor wie geen eigen abonnement heeft.",
       "workspaceHelp": "Wie geen eigen abonnement heeft, praat via deze AI met {{name}}.",
       "noPlans": "Koppel een abonnement onder AI en gebruik om het hier te gebruiken.",
       "lend": "Dit abonnement uitlenen aan wie er geen heeft",
@@ -15006,8 +15010,8 @@
       "personal": "Persoonlijk",
       "teamHelp": "Kanalen, mensen en rollen om samen te werken. Wisselen verandert alleen wat je ziet.",
       "personalHelp": "Eenvoudiger, voor jou en je gezin als je ze uitnodigt. Wisselen verandert alleen wat je ziet.",
-      "toTeam": "Naar team wisselen…",
-      "toPersonal": "Naar persoonlijk wisselen…"
+      "toTeam": "Naar team wisselen",
+      "toPersonal": "Naar persoonlijk wisselen"
     },
     "telemetry": {
       "title": "Gebruiksstatistieken",

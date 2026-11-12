@@ -2382,6 +2382,8 @@
       "planOwner": "{{owner}} kişisinin hesabı",
       "planName": "{{name}} planı",
       "mine": "Yapay zekân",
+      "mineTitle": "Sizinle konuşurken {{name}} için kim düşünüyor",
+      "mineOnly": "Yalnızca {{name}} ile konuşmanız için.",
       "mineHelp": "{{name}} ile konuşman, kendi planınla ya da seninle paylaşılan bir planla düşünür, yalnızca seninki.",
       "connectMine": "Planımı bağla",
       "useWorkspace": "Çalışma alanınınkini kullan",
@@ -2399,6 +2401,8 @@
       "fallbackYours": "Başka plan yoksa senin olan çalışma alanı planını kullanır.",
       "fallbackNone": "Kendi planın yoksa {{name}} sana yanıt veremez: çalışma alanının planı yalnızca {{owner}} için yanıt verir.",
       "workspace": "Kendi planı olmayanların yapay zekâsı",
+      "workspaceTitle": "Çalışma alanında {{name}} için kim düşünüyor",
+      "workspaceOnly": "Kendi planı olmayanlar için.",
       "workspaceHelp": "Kendi planı olmayanlar {{name}} ile bu yapay zekâ üzerinden konuşur.",
       "noPlans": "Burada kullanmak için Yapay zeka ve kullanım bölümünden bir plan bağla.",
       "lend": "Bu planı, planı olmayanlara ödünç ver",
@@ -14879,8 +14883,8 @@
       "personal": "Kişisel",
       "teamHelp": "Birlikte çalışmak için kanallar, kişiler ve roller. Geçiş yalnızca görünenleri değiştirir.",
       "personalHelp": "Daha sade: sizin ve davet ederseniz aileniz için. Geçiş yalnızca görünenleri değiştirir.",
-      "toTeam": "Ekibe geç…",
-      "toPersonal": "Kişisele geç…"
+      "toTeam": "Ekibe geç",
+      "toPersonal": "Kişisele geç"
     },
     "telemetry": {
       "title": "Kullanım istatistikleri",

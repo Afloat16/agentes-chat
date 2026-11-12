@@ -2473,6 +2473,8 @@
       "planOwner": "compte de {{owner}}",
       "planName": "Forfait {{name}}",
       "mine": "Votre IA",
+      "mineTitle": "Qui réfléchit pour {{name}}, pour vous",
+      "mineOnly": "Seulement pour votre conversation avec {{name}}.",
       "mineHelp": "Votre conversation avec {{name}} pense avec votre forfait ou un forfait partagé avec vous, et seulement la vôtre.",
       "connectMine": "Connecter mon forfait",
       "useWorkspace": "Utiliser celle du workspace",
@@ -2490,6 +2492,8 @@
       "fallbackYours": "Sans autre forfait, elle utilise celui du workspace, qui est le vôtre.",
       "fallbackNone": "Sans forfait à vous, {{name}} ne peut pas vous répondre : le forfait du workspace ne répond qu'à {{owner}}.",
       "workspace": "IA des personnes sans forfait à elles",
+      "workspaceTitle": "Qui réfléchit pour {{name}} dans le workspace",
+      "workspaceOnly": "Pour les personnes sans forfait à elles.",
       "workspaceHelp": "Les personnes sans forfait à elles parlent à {{name}} par cette IA.",
       "noPlans": "Connectez un forfait dans IA et utilisation pour l'utiliser ici.",
       "lend": "Prêter ce forfait à ceux qui n’en ont pas",
@@ -15420,8 +15424,8 @@
       "personal": "Personnel",
       "teamHelp": "Des canaux, des personnes et des rôles pour travailler ensemble. Changer ne modifie que ce qui est affiché.",
       "personalHelp": "Plus simple, pour vous et votre famille si vous l'invitez. Changer ne modifie que ce qui est affiché.",
-      "toTeam": "Passer en équipe…",
-      "toPersonal": "Passer en personnel…"
+      "toTeam": "Passer en équipe",
+      "toPersonal": "Passer en personnel"
     },
     "telemetry": {
       "title": "Statistiques d'utilisation",

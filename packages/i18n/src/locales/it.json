@@ -2468,6 +2468,8 @@
       "planOwner": "account di {{owner}}",
       "planName": "Piano {{name}}",
       "mine": "La tua IA",
+      "mineTitle": "Chi pensa per {{name}}, per te",
+      "mineOnly": "Vale solo per la tua conversazione con {{name}}.",
       "mineHelp": "La tua conversazione con {{name}} pensa con il tuo piano o uno condiviso con te, e solo la tua.",
       "connectMine": "Collega il mio piano",
       "useWorkspace": "Usa quella del workspace",
@@ -2485,6 +2487,8 @@
       "fallbackYours": "Senza un altro piano, usa quello del workspace, che è tuo.",
       "fallbackNone": "Senza un piano tuo, {{name}} non può risponderti: il piano del workspace risponde solo a {{owner}}.",
       "workspace": "IA di chi non ha un piano proprio",
+      "workspaceTitle": "Chi pensa per {{name}} nel workspace",
+      "workspaceOnly": "Vale per chi non ha un piano proprio.",
       "workspaceHelp": "Chi non ha un piano proprio parla con {{name}} tramite questa IA.",
       "noPlans": "Collega un piano in IA e consumi per usarlo qui.",
       "lend": "Presta questo piano a chi non ne ha uno",
@@ -15430,8 +15434,8 @@
       "personal": "Personale",
       "teamHelp": "Canali, persone e ruoli per lavorare insieme. Cambiare modifica solo ciò che è in vista.",
       "personalHelp": "Più semplice, per te e la tua famiglia se la inviti. Cambiare modifica solo ciò che è in vista.",
-      "toTeam": "Passa a team…",
-      "toPersonal": "Passa a personale…"
+      "toTeam": "Passa a team",
+      "toPersonal": "Passa a personale"
     },
     "telemetry": {
       "title": "Statistiche di utilizzo",
