@@ -86,7 +86,7 @@ export function ChoiceChip({
       ]}
     >
       {on ? <Icon name="check" size={15} color={c.bg} /> : null}
-      <Text variant="small" style={on ? { color: c.bg } : undefined}>
+      <Text variant="small" style={[styles.chipText, on ? { color: c.bg } : undefined]}>
         {label}
       </Text>
     </Pressable>
@@ -921,6 +921,8 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 3,
     borderWidth: StyleSheet.hairlineWidth,
   },
+  // The words give way inside the chip: with the check before them, a long answer ran past its edge.
+  chipText: { flexShrink: 1 },
   rows: { gap: 8 },
   // 12 above the hairline (with the rows' gap) and 12 under it.
   divided: { marginTop: 4, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },

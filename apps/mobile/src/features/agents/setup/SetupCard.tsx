@@ -142,7 +142,7 @@ export function AgentSetupIntro({ agent, channelId }: { agent: Agent; channelId:
     <View style={styles.intro}>
       <View style={styles.head}>
         <AgentFace agentId={agent.id} size={36} />
-        <Text variant="body" style={styles.bold}>
+        <Text variant="body" numberOfLines={2} style={[styles.bold, styles.fill]}>
           {agent.name}
         </Text>
       </View>
