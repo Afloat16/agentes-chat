@@ -114,9 +114,10 @@ test("a workspace being deleted reads as ever, its sockets open; any other chang
   // Someone outside never hears it's being deleted.
   const zoe = browser(t);
   await signUp(zoe, "zoe@example.com");
-  expect((await answer(await zoe(`${app}/channels/${channelId}/messages`, { json: { body: "hi" } })))[1]).not.toBe(
-    "org.deleting",
-  );
+  expect(await answer(await zoe(`${app}/channels/${channelId}/messages`, { json: { body: "hi" } }))).toEqual([
+    403,
+    "forbidden",
+  ]);
   // Leaving, and who you are, still answer.
   expect((await meOf(ana)).organizations.map((o) => o.id)).toEqual([orgId]);
   expect((await ana(`${app}/members/${anaId}`, { method: "DELETE" })).status).toBe(204);

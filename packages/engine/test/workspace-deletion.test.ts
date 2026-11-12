@@ -41,6 +41,7 @@ import {
   joinOrganization,
   listMachineRequests,
   listMemberships,
+  listRoutines,
   MACHINE_CONTROL_TOPIC,
   type MachineHub,
   ORG_DELETE_JOB,
@@ -165,7 +166,9 @@ describe("a workspace being deleted is read-only", () => {
 
     const ways: [string, () => Promise<boolean>][] = [
       ["every permission check", () => lets(requirePermission(f.db, f.owner.id, f.org.id, "read"))],
-      ["reading and posting", () => lets(requireChannelAccess(f.db, f.owner.id, f.org.id, f.general.id))],
+      ["reading a channel", () => lets(requireChannelAccess(f.db, f.owner.id, f.org.id, f.general.id))],
+      // What posts without the API too (a voice note's job).
+      ["posting", () => lets(postPersonMessage(deps, f.owner.id, f.org.id, f.general.id, { body: "still here?" }))],
       ["work", async () => (await standingRefusal(f.db, f.org.id)) === null],
       [
         "inviting",
@@ -257,7 +260,7 @@ describe("a workspace being deleted is read-only", () => {
     const dueAt = new Date(Date.now() + 7 * DAY);
     await closing(f.org.id, dueAt);
     // Reading stays open until it goes (the API refuses its changes): what only reads.
-    const reads = ["every permission check", "reading and posting", "brain settings", "usage"];
+    const reads = ["every permission check", "reading a channel", "brain settings", "usage"];
     expect(await open()).toEqual({ ...all(false), ...Object.fromEntries(reads.map((way) => [way, true])) });
     expect(await standingRefusal(f.db, f.org.id)).toMatchObject({
       code: "org.deleting",
@@ -292,6 +295,12 @@ describe("a workspace being deleted is read-only", () => {
     expect(await listMemberships(f.db, bia.id)).toEqual([]);
   });
 
+  test("a sign-in begun before it began being deleted comes back to nothing: no connection is saved", async () => {
+    f = await setup();
+    await expect(githubGrant(() => closing(f.org.id))).rejects.toBeInstanceOf(OrgDeletingError);
+    expect(await f.db.select().from(schema.connectorConnections)).toEqual([]);
+  });
+
   test("asking for a new invitation tells nobody there, and the router asks no agent to answer in it", async () => {
     f = await setup();
     const { token } = await createInvitation(f.db, f.owner.id, f.org.id, { email: "zoe@example.com", role: "member" });
@@ -314,13 +323,16 @@ describe("a workspace being deleted is read-only", () => {
     expect(routed).toEqual({ runs: [], skipped: "org_deleting" });
   });
 
-  test("work stops at once: a run fails and says why, a routine's slot passes, a job fails for good", async () => {
+  test("work stops at once: a run fails and says why, a routine's slot passes and none is ahead, a job fails for good", async () => {
     f = await setup();
     const routine = await channelRoutine(f);
+    expect(routine.nextRunAt).not.toBeNull();
     await postPersonMessage({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, f.general.id, {
       body: "@dev check the build",
     });
     await closing(f.org.id);
+    // Its slots pass: nothing says when it runs next.
+    expect(await listRoutines(f.db, f.owner.id, f.org.id)).toMatchObject([{ id: routine.id, nextRunAt: null }]);
     await drainOutbox(f.db, f.handlers);
     expect(f.provider.calls).toHaveLength(0);
     const [run] = await runs();
@@ -724,8 +736,11 @@ async function rowsPurgedByHand() {
 const countOf = async (table: string) =>
   rowsOf<{ n: number }>(await f.db.execute(sql`select count(*)::int as n from ${sql.identifier(table)}`))[0]?.n;
 
-/** A GitHub connection over OAuth, on a fake GitHub that records calls and drops the grant. */
-async function githubGrant() {
+/**
+ * A GitHub connection over OAuth, on a fake GitHub that records calls and drops the grant. `meanwhile` happens while
+ * the person is at GitHub, between the start and the return.
+ */
+async function githubGrant(meanwhile?: () => Promise<unknown>) {
   const calls: { url: string; method: string }[] = [];
   const http = (async (url: string, init: RequestInit = {}) => {
     calls.push({ url, method: init.method ?? "GET" });
@@ -743,6 +758,7 @@ async function githubGrant() {
     http,
   };
   const { state } = await startOAuth(deps, f.owner.id, f.org.id, "github");
+  await meanwhile?.();
   await completeOAuth(deps, { id: f.owner.id }, { state, code: "good-code" });
   return { deps, revoked: () => calls.filter((c) => c.method === "DELETE").map((c) => c.url) };
 }

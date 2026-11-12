@@ -242,6 +242,17 @@ export async function requirePermission(db: Database, userId: string, orgId: str
   return membership;
 }
 
+/**
+ * `requirePermission` for a change that never passes `readOnlyWhileDeleting` (an OAuth return, a socket's input): a
+ * workspace being deleted refuses it too (`closedRefusal`).
+ */
+export async function requireChangePermission(db: Database, userId: string, orgId: string, permission: Permission) {
+  const membership = await requirePermission(db, userId, orgId, permission);
+  const closed = closedRefusal(membership.standing);
+  if (closed) throw closed;
+  return membership;
+}
+
 /** Invitations go out only from an active workspace that isn't being deleted (`standing.ts`). */
 export function assertInviting(membership: Membership) {
   const refusal = workRefusal(membership.standing);
