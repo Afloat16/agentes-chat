@@ -1802,6 +1802,9 @@
   "onboarding.flow.lodi.bringFiles": {
     "value": "Drop here what the app exported. I'll do the rest."
   },
+  "onboarding.flow.lodi.bringMcp": {
+    "value": "Follow the steps in the app and it creates the agents here itself. I'll watch for them."
+  },
   "onboarding.flow.lodi.found": {
     "value": "Found your team. Check that everyone is here."
   },
@@ -2309,26 +2312,35 @@
   "onboarding.import.sourcesLabel": {
     "value": "Where the agents come from"
   },
-  "onboarding.import.aiApp.title": {
-    "value": "From your AI app (most reliable)"
+  "onboarding.import.method.label": {
+    "value": "How to bring them"
+  },
+  "onboarding.import.method.mcp": {
+    "value": "Connect with MCP"
+  },
+  "onboarding.import.method.prompt": {
+    "value": "Prompt only"
+  },
+  "onboarding.import.method.file": {
+    "value": "From a file"
   },
   "onboarding.import.aiApp.lead": {
-    "value": "Your AI app creates here each agent, instruction, skill and routine you have in it."
+    "value": "MCP lets {{app}} reach this workspace, so it creates the agents here itself."
   },
-  "onboarding.import.aiApp.connect": {
-    "value": "Connect the app to this address:"
+  "onboarding.import.aiApp.leadAny": {
+    "value": "MCP lets your AI app reach this workspace, so it creates the agents here itself."
+  },
+  "onboarding.import.aiApp.leadDots": {
+    "value": "MCP lets your dot reach this workspace through a plugin you add in ChatGPT, so it creates the agents here itself."
   },
   "onboarding.import.aiApp.howTo": {
     "value": "How to connect, app by app"
   },
-  "onboarding.import.aiApp.allow": {
-    "value": "On the permission page, pick Create and edit agents, routines and skills."
-  },
   "onboarding.import.aiApp.paste": {
-    "value": "Then paste this request into the app:"
+    "value": "Paste this request into the app:"
   },
   "onboarding.import.aiApp.prompt": {
-    "value": "Connect {{url}} and, for every agent, instruction, skill and routine you have, create the equivalent in agentes.chat. First list what already exists there so nothing is duplicated."
+    "value": "Use the agentes.chat MCP server you just connected ({{url}}) to move what you have to agentes.chat. First call import_summary to see what is already there, so nothing is duplicated. Then, for every agent, instruction, skill and routine you have, create the equivalent with create_agent, create_skill and create_routine, and save what each agent should remember with add_memory."
   },
   "onboarding.import.aiApp.promptLabel": {
     "value": "Request for your AI app"
@@ -2339,8 +2351,26 @@
   "onboarding.import.aiApp.copied": {
     "value": "Now paste it into your AI app."
   },
+  "onboarding.import.aiApp.waiting": {
+    "value": "Waiting for the agents to arrive…"
+  },
+  "onboarding.import.aiApp.arrived": {
+    "value": {
+      "one": "{{count}} agent arrived",
+      "other": "{{count}} agents arrived"
+    }
+  },
+  "onboarding.import.aiApp.stuck": {
+    "value": "Nothing after a few minutes? Connect the app again, pick {{access}}, then send the request again."
+  },
   "onboarding.import.aiApp.private": {
-    "value": "From your AI app: not available on this server, because apps like Claude and ChatGPT only connect to a public https address."
+    "value": "Connect with MCP isn't available on this server, because apps on the internet only reach a public https address."
+  },
+  "onboarding.import.aiApp.held": {
+    "value": "Connect with MCP works once the workspace's plan is active. Bring the agents this way for now."
+  },
+  "onboarding.import.aiApp.paused": {
+    "value": "Connect with MCP is off while this workspace is paused. Bring the agents this way for now."
   },
   "onboarding.import.otherName": {
     "value": "Another app"
@@ -33012,6 +33042,18 @@
   "devices.reason.adb_offline": {
     "value": "The phone isn't answering"
   },
+  "devices.reason.wifi_away": {
+    "value": "The iPhone isn't on the Mac's Wi-Fi"
+  },
+  "devices.reason.wifi_asleep": {
+    "value": "The iPhone didn't answer over Wi-Fi"
+  },
+  "devices.reason.tunnel_down": {
+    "value": "The Wi-Fi link to the iPhone dropped"
+  },
+  "devices.reason.wifi_untrusted": {
+    "value": "The iPhone doesn't trust this Mac"
+  },
   "devices.reason.other": {
     "value": "It needs something on the device"
   },
@@ -33077,6 +33119,18 @@
   },
   "devices.fix.adb_offline": {
     "value": "Plug it in again"
+  },
+  "devices.fix.wifi_away": {
+    "value": "Join the Mac's Wi-Fi, or plug it in"
+  },
+  "devices.fix.wifi_asleep": {
+    "value": "Wake and unlock the iPhone"
+  },
+  "devices.fix.tunnel_down": {
+    "value": "Keep it near the Mac, or plug it in"
+  },
+  "devices.fix.wifi_untrusted": {
+    "value": "Plug it in once and tap Trust"
   },
   "devices.fix.other": {
     "value": "See what it needs"
@@ -33782,6 +33836,42 @@
   },
   "devices.iphone.ready": {
     "value": "{{name}} is ready for agents."
+  },
+  "devices.iphone.wifi.list": {
+    "value": "iPhones on the Wi-Fi of {{mac}}"
+  },
+  "devices.iphone.wifi.also": {
+    "value": "Also on this Mac's Wi-Fi: {{name}}"
+  },
+  "devices.iphone.wifi.use": {
+    "value": "Use over Wi-Fi"
+  },
+  "devices.iphone.wifi.hint": {
+    "value": "Only an iPhone that trusted this Mac over a cable shows up here. The Mac reaches it through Apple's own encrypted link, the one Xcode uses."
+  },
+  "devices.iphone.wifi.stop": {
+    "value": "Stop using over Wi-Fi"
+  },
+  "devices.iphone.wifi.stopTitle": {
+    "value": "Stop using {{name}} over Wi-Fi?"
+  },
+  "devices.iphone.wifi.stopText": {
+    "value": "Agents can't reach it any more. Pick it again on its Mac to use it."
+  },
+  "devices.iphone.wifi.stopped": {
+    "value": "{{name}} isn't used over Wi-Fi any more."
+  },
+  "devices.iphone.wifiState.wifi_away": {
+    "value": "{{name}} isn't on the Mac's Wi-Fi now. Join the same network on the iPhone, or plug it in."
+  },
+  "devices.iphone.wifiState.wifi_asleep": {
+    "value": "{{name}} didn't answer over Wi-Fi. Wake and unlock it, and keep it near the Mac."
+  },
+  "devices.iphone.wifiState.tunnel_down": {
+    "value": "The Wi-Fi link to {{name}} dropped. Keep it unlocked and near the Mac, or plug it in."
+  },
+  "devices.iphone.wifiState.wifi_untrusted": {
+    "value": "{{name}} doesn't trust this Mac. Plug it in once, tap Trust and enter its passcode."
   },
   "devices.iphone.path.settings": {
     "value": "Settings"
@@ -34575,6 +34665,12 @@
   "apps.dialog.step.mode": {
     "value": "In the chat, switch to {{mode}} mode."
   },
+  "apps.dialog.step.sendInChat": {
+    "value": "In the chat with your bot, send:"
+  },
+  "apps.dialog.step.reload": {
+    "value": "Then type <code>{{command}}</code> in the chat."
+  },
   "apps.dialog.step.loginRun": {
     "value": "To sign in, run <code>{{command}}</code>."
   },
@@ -34583,6 +34679,12 @@
   },
   "apps.dialog.step.signIn": {
     "value": "Sign in with your agentes.chat account on the page that opens."
+  },
+  "apps.dialog.step.signInManage": {
+    "value": "Sign in with your agentes.chat account on the page that opens, and pick {{access}}."
+  },
+  "apps.dialog.step.mention": {
+    "value": "In the chat, type <code>@</code> and pick <code>{{name}}</code>."
   },
   "apps.dialog.step.signInFirst": {
     "value": "The app asks you to sign in the first time you use it."

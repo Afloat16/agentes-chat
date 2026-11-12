@@ -230,6 +230,7 @@ import type {
   UsageQueue,
   UsageReport,
   WebhookSetup,
+  WifiIphones,
   WifiPairing,
   WikiGraph,
   WikiImportResult,
@@ -1205,6 +1206,13 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         }),
       lookForPhones: (orgId, machineId) =>
         request<void>(`${org(orgId)}/devices/computers/${enc(machineId)}/phone-looks`, { json: {} }),
+      wifiIphones: (orgId, machineId) =>
+        request<WifiIphones>(`${org(orgId)}/devices/computers/${enc(machineId)}/wifi-iphones`),
+      pickIphoneOverWifi: (orgId, machineId, serial) =>
+        request<WifiIphones>(`${org(orgId)}/devices/computers/${enc(machineId)}/wifi-iphones/${enc(serial)}`, {
+          method: "PUT",
+          json: {},
+        }),
     },
     machines: {
       list: async (orgId) => (await request<{ machines: Machine[] }>(`${org(orgId)}/machines`)).machines,
