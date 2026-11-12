@@ -376,6 +376,56 @@
       "say": "kümmert sich um die Abrechnung"
     }
   },
+  "hosting": {
+    "title": "Wo liegt dein Workspace?",
+    "lead": "Die App ist dieselbe. Es ändert sich nur, wer sich um den Server kümmert.",
+    "recommended": "Empfohlen",
+    "free": "Kostenlos · Open Source",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Immer an, nichts zu installieren.",
+      "on": "Der Computer der Agenten ist immer an",
+      "care": "Updates und Backups übernehmen wir",
+      "ready": "In Minuten bereit, ohne Installation",
+      "price": "Monatlicher Plan pro Workspace",
+      "continue": "Weiter mit Cloud",
+      "enter": "Bei Cloud anmelden"
+    },
+    "own": {
+      "name": "Auf deinem eigenen Server",
+      "short": "Du installierst, aktualisierst und sicherst selbst.",
+      "server": "Du kümmerst dich um Server und Postgres",
+      "care": "Updates und Backups liegen bei dir",
+      "off": "Die Agenten stoppen, wenn er aus ist",
+      "license": "Für immer kostenlos, AGPL-Lizenz",
+      "continue": "Weiter mit meinem Server",
+      "address": "Serveradresse",
+      "connect": "Verbinden",
+      "invalid": "Das ist keine Adresse. Schreib sie wie im Browser, zum Beispiel agentes.example.com.",
+      "unreachable": "Wir haben agentes.chat unter {{host}} nicht gefunden. Prüf die Adresse und ob der Server an ist.",
+      "none": "Noch keinen?",
+      "noneLink": "So bekommst du deinen, kostenlos"
+    },
+    "get": {
+      "title": "Einen eigenen Server haben",
+      "server": "Auf einem Server installieren",
+      "serverText": "Für ein Team, immer an",
+      "serverAction": "Schritt für Schritt ansehen",
+      "here": "Auf deinem Computer ausführen",
+      "hereText": "Für dich oder ein kleines Team, ohne Docker",
+      "download": "App herunterladen",
+      "how": "So funktioniert es",
+      "foot": "Lieber um nichts kümmern?",
+      "footLink": "Nutze Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Dein Server",
+      "here": "Auf diesem Computer"
+    },
+    "whyPaid": "Wofür bezahle ich?",
+    "whyPaidText": "Cloud enthält den immer eingeschalteten Computer der Agenten und jemanden, der den Server betreibt. Auf deinem eigenen Server ist es kostenlos."
+  },
   "auth": {
     "email": "E-Mail",
     "password": "Passwort",
@@ -502,7 +552,9 @@
     },
     "server": {
       "into": "Anmeldung bei <b>{{server}}</b>",
-      "intoHere": "Anmeldung bei agentes.chat <b>auf diesem {{device}}</b>"
+      "intoHere": "Anmeldung bei agentes.chat <b>auf diesem {{device}}</b>",
+      "intoCloud": "Anmeldung bei <b>agentes.chat Cloud</b>",
+      "change": "Server wechseln"
     },
     "forgotHere": {
       "ownerTitle": "Hier brauchst du kein Passwort.",
@@ -1100,6 +1152,9 @@
       "linkSkipped_one": "{{count}} Datei über dem Limit des Links",
       "linkSkipped_other": "{{count}} Dateien über dem Limit des Links",
       "linkSkippedHelp": "Ein Link liest bis zu 200 Dateien und 8 MB. Um den Rest mitzubringen, lade den Ordner herunter und leg ihn hier ab.",
+      "systemFiles_one": "{{count}} Systemdatei ausgelassen",
+      "systemFiles_other": "{{count}} Systemdateien ausgelassen",
+      "systemFilesHelp": "Abhängigkeiten, Caches und Ordner wie node_modules und .git. Wir lesen nur, was den Agenten gehört.",
       "never": "Schlüssel, Passwörter und Chatverläufe kommen nie mit.",
       "go_one": "{{count}} Element importieren",
       "go_other": "{{count}} Elemente importieren",
@@ -1164,6 +1219,13 @@
       "errors": {
         "empty": "Dort gibt es nichts zu lesen. Prüfe, ob du den richtigen Ordner oder die richtige Datei gewählt hast.",
         "tooLarge": "Das ist zu groß, um es hier zu lesen. Versuch es nur mit dem Ordner der Agenten, ohne den Rest.",
+        "limit": {
+          "files": "Ohne Systemdateien sind es {{have}} Dateien. Ein Import liest bis zu {{max}}. Zieh nur den Ordner der Agenten hierher, ohne den Rest.",
+          "bytes": "{{name}} hat {{have}}. Ein Import öffnet bis zu {{max}}. Zieh nur den Ordner der Agenten hierher, ohne den Rest.",
+          "unpacked": "Entpackt sind es {{have}}. Ein Import liest bis zu {{max}}. Zieh nur den Ordner der Agenten hierher, ohne den Rest.",
+          "text": "Der eingefügte Text hat {{have}}. Ein Import liest bis zu {{max}}. Lass den Export in Teilen machen, einen Agenten nach dem anderen.",
+          "file": "{{name}} hat {{have}}. Ein Import liest bis zu {{max}} pro Datei. Lass den Export in Teilen machen, einen Agenten nach dem anderen."
+        },
         "unknown": "Diese Dateien erkennen wir nicht. Wähle die App, aus der sie stammen, um zu sehen, wo die richtige Datei liegt, oder nutze Andere App.",
         "newerVersion": "Diese Datei stammt aus einer neueren Version der App, die wir noch nicht lesen können. Solange kannst du Andere App nutzen.",
         "noAgents": "Wir haben die Dateien gelesen, aber keinen Agenten darin gefunden. Prüfe, ob es der Ordner oder die Datei des ganzen Teams ist.",

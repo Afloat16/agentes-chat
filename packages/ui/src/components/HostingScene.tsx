@@ -1,21 +1,12 @@
 import { type CSSProperties, useMemo } from "react";
 import { cx } from "../cx";
 import { useDawn } from "../hooks/useDawn";
-import { teamSky } from "../sky/team";
-import type { AgentAppearance } from "./AgentLook";
+import { HOSTING_CAST, type Hosting, teamSky } from "../sky/team";
 import { Avatar } from "./Avatar";
 import { ComputerPortrait } from "./Computer";
 import { PixelSky } from "./PixelSky";
 
-/** Where a workspace lives: on agentes.chat Cloud, or on a server of one's own. */
-export type Hosting = "cloud" | "own";
-
-/** Three of a team, their looks fixed: the scene shows any workspace, not the person's. */
-const CAST: { name: string; look: AgentAppearance }[] = [
-  { name: "a", look: { color: "amber", eyes: "round" } },
-  { name: "b", look: { color: "sky", eyes: "round" } },
-  { name: "c", look: { color: "green", eyes: "round" } },
-];
+export type { Hosting };
 
 /**
  * The choice of where a workspace lives, drawn: on the Cloud, day, the always-on server lit and the team up under it;
@@ -32,7 +23,7 @@ export function HostingScene({ hosting, shape = "band" }: { hosting: Hosting; sh
       <PixelSky options={options} />
       <div className="ac-hosting__row">
         <span className="ac-hosting__cast" data-awake={cloud ? "" : undefined}>
-          {CAST.map((a, i) => (
+          {HOSTING_CAST.map((a, i) => (
             <span key={a.name} className="ac-hosting__agent" style={{ "--i": i } as CSSProperties}>
               <Avatar
                 kind="agent"

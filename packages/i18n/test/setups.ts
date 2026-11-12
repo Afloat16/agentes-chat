@@ -269,6 +269,8 @@ export const ANYWHERE: readonly string[] = [
   "desktop.servers.",
   // The desktop app's workspaces by server: the line under a server that isn't agentes.chat, whichever server this is.
   "shell.yourServer",
+  // "Onde fica o seu workspace?": the Cloud and one's own server compared side by side, each named, whichever this is.
+  "hosting.",
   // People connect their own computers and phones in every setup, the Cloud included.
   "devices.",
   "mobile.devices.",

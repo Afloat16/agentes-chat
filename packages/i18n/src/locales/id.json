@@ -371,6 +371,56 @@
       "say": "mengurus tagihan"
     }
   },
+  "hosting": {
+    "title": "Di mana ruang kerjamu berada?",
+    "lead": "Aplikasinya sama. Yang berbeda hanya siapa yang mengurus servernya.",
+    "recommended": "Disarankan",
+    "free": "Gratis · sumber terbuka",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Selalu menyala, tanpa perlu instal apa pun.",
+      "on": "Komputer agen selalu menyala",
+      "care": "Pembaruan dan cadangan kami yang urus",
+      "ready": "Siap dalam hitungan menit, tanpa instal apa pun",
+      "price": "Paket bulanan per ruang kerja",
+      "continue": "Lanjut di Cloud",
+      "enter": "Masuk ke Cloud"
+    },
+    "own": {
+      "name": "Di server sendiri",
+      "short": "Kamu yang instal, perbarui, dan buat cadangan.",
+      "server": "Kamu yang mengurus server dan Postgres",
+      "care": "Pembaruan dan cadangan jadi tanggunganmu",
+      "off": "Agen berhenti saat server mati",
+      "license": "Gratis selamanya, lisensi AGPL",
+      "continue": "Lanjut di server saya",
+      "address": "Alamat server",
+      "connect": "Hubungkan",
+      "invalid": "Itu bukan alamat. Tulis seperti di peramban, misalnya agentes.example.com.",
+      "unreachable": "Kami tidak menemukan agentes.chat di {{host}}. Periksa alamatnya dan pastikan servernya menyala.",
+      "none": "Belum punya?",
+      "noneLink": "Lihat cara punya sendiri, gratis"
+    },
+    "get": {
+      "title": "Punya server sendiri",
+      "server": "Instal di server",
+      "serverText": "Untuk tim, selalu menyala",
+      "serverAction": "Lihat langkahnya",
+      "here": "Jalankan di komputermu",
+      "hereText": "Untuk kamu atau tim kecil, tanpa Docker",
+      "download": "Unduh aplikasinya",
+      "how": "Cara kerjanya",
+      "foot": "Lebih suka tidak mengurus apa pun?",
+      "footLink": "Pakai Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Server-mu",
+      "here": "Di komputer ini"
+    },
+    "whyPaid": "Kenapa berbayar?",
+    "whyPaidText": "Cloud mencakup komputer agen yang selalu menyala dan pihak yang merawat servernya. Menjalankan di server sendiri gratis."
+  },
   "auth": {
     "email": "Email",
     "password": "Kata sandi",
@@ -496,7 +546,9 @@
     },
     "server": {
       "into": "Masuk ke <b>{{server}}</b>",
-      "intoHere": "Masuk ke agentes.chat <b>di {{device}} ini</b>"
+      "intoHere": "Masuk ke agentes.chat <b>di {{device}} ini</b>",
+      "intoCloud": "Masuk ke <b>agentes.chat Cloud</b>",
+      "change": "Ganti server"
     },
     "forgotHere": {
       "ownerTitle": "Di sini kamu tidak perlu kata sandi.",
@@ -1076,6 +1128,8 @@
       },
       "linkSkipped_other": "{{count}} file melewati batas tautan",
       "linkSkippedHelp": "Tautan membaca hingga 200 file dan 8 MB. Untuk membawa sisanya, unduh foldernya lalu letakkan di sini.",
+      "systemFiles_other": "{{count}} file sistem dilewati",
+      "systemFilesHelp": "Dependensi, cache, dan folder seperti node_modules dan .git. Kami hanya membaca milik agen.",
       "never": "Kunci, kata sandi, dan riwayat chat tidak pernah ikut dibawa.",
       "go_other": "Impor {{count}} item",
       "nothingNew": "Semua ini sudah ada di sini.",
@@ -1128,6 +1182,13 @@
       "errors": {
         "empty": "Tidak ada yang bisa dibaca di sana. Pastikan kamu memilih folder atau file yang benar.",
         "tooLarge": "Terlalu besar untuk dibaca di sini. Coba folder agennya saja, tanpa yang lain.",
+        "limit": {
+          "files": "Tanpa file sistem, ada {{have}} file. Satu impor membaca hingga {{max}}. Letakkan folder agen saja, tanpa yang lain.",
+          "bytes": "{{name}} berukuran {{have}}. Satu impor membuka hingga {{max}}. Letakkan folder agen saja, tanpa yang lain.",
+          "unpacked": "Setelah diekstrak, ukurannya {{have}}. Satu impor membaca hingga {{max}}. Letakkan folder agen saja, tanpa yang lain.",
+          "text": "Teks yang ditempel berukuran {{have}}. Satu impor membaca hingga {{max}}. Minta ekspor per bagian, satu agen sekali.",
+          "file": "{{name}} berukuran {{have}}. Satu impor membaca hingga {{max}} per file. Minta ekspor per bagian, satu agen sekali."
+        },
         "unknown": "Kami tidak mengenali file ini. Pilih aplikasi asalnya untuk melihat letak file yang benar, atau pakai Aplikasi lain.",
         "newerVersion": "File ini berasal dari versi aplikasi yang lebih baru, yang belum bisa kami baca. Sementara itu, kamu bisa memakai Aplikasi lain.",
         "noAgents": "Kami sudah membaca file-nya tapi tidak menemukan agen di dalamnya. Pastikan itu folder atau file seluruh tim.",

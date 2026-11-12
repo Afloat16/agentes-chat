@@ -381,6 +381,56 @@
       "say": "gestisce la fatturazione"
     }
   },
+  "hosting": {
+    "title": "Dove si trova il tuo spazio di lavoro?",
+    "lead": "L'app è la stessa. Cambia chi si occupa del server.",
+    "recommended": "Consigliato",
+    "free": "Gratis · open source",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Sempre acceso, niente da installare.",
+      "on": "Il computer degli agenti sempre acceso",
+      "care": "Aggiornamenti e backup a carico nostro",
+      "ready": "Pronto in pochi minuti, senza installare nulla",
+      "price": "Piano mensile per spazio di lavoro",
+      "continue": "Continua su Cloud",
+      "enter": "Accedi a Cloud"
+    },
+    "own": {
+      "name": "Sul tuo server",
+      "short": "Lo installi, lo aggiorni e fai i backup tu.",
+      "server": "Ti occupi tu del server e di Postgres",
+      "care": "Aggiornamenti e backup restano a te",
+      "off": "Gli agenti si fermano quando si spegne",
+      "license": "Gratis per sempre, licenza AGPL",
+      "continue": "Continua sul mio server",
+      "address": "Indirizzo del server",
+      "connect": "Connetti",
+      "invalid": "Questo non è un indirizzo. Scrivilo come nel browser, per esempio agentes.example.com.",
+      "unreachable": "Non abbiamo trovato agentes.chat su {{host}}. Controlla l'indirizzo e che il server sia acceso.",
+      "none": "Non ne hai ancora uno?",
+      "noneLink": "Scopri come averne uno tuo, gratis"
+    },
+    "get": {
+      "title": "Avere un server tuo",
+      "server": "Installare su un server",
+      "serverText": "Per un team, sempre acceso",
+      "serverAction": "Vedi i passaggi",
+      "here": "Eseguirlo sul tuo computer",
+      "hereText": "Per te o un piccolo team, senza Docker",
+      "download": "Scarica l'app",
+      "how": "Come funziona",
+      "foot": "Preferisci non gestire nulla?",
+      "footLink": "Usa Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Il tuo server",
+      "here": "Su questo computer"
+    },
+    "whyPaid": "Perché pago?",
+    "whyPaidText": "Cloud include il computer degli agenti sempre acceso e qualcuno che mantiene il server. Eseguirlo sul tuo server è gratis."
+  },
   "auth": {
     "email": "Email",
     "password": "Password",
@@ -508,7 +558,9 @@
     },
     "server": {
       "into": "Accesso a <b>{{server}}</b>",
-      "intoHere": "Accesso all’agentes.chat <b>di questo {{device}}</b>"
+      "intoHere": "Accesso all’agentes.chat <b>di questo {{device}}</b>",
+      "intoCloud": "Accesso a <b>agentes.chat Cloud</b>",
+      "change": "Cambia server"
     },
     "forgotHere": {
       "ownerTitle": "Qui non ti serve una password.",
@@ -1126,6 +1178,10 @@
       "linkSkipped_many": "{{count}} file oltre il limite del link",
       "linkSkipped_other": "{{count}} file oltre il limite del link",
       "linkSkippedHelp": "Un link legge fino a 200 file e 8 MB. Per portare il resto, scarica la cartella e trascinala qui.",
+      "systemFiles_one": "{{count}} file di sistema escluso",
+      "systemFiles_many": "{{count}} di file di sistema esclusi",
+      "systemFiles_other": "{{count}} file di sistema esclusi",
+      "systemFilesHelp": "Dipendenze, cache e cartelle come node_modules e .git. Leggiamo solo ciò che appartiene agli agenti.",
       "never": "Chiavi, password e cronologia delle chat non vengono mai portate.",
       "go_one": "Importa {{count}} elemento",
       "go_many": "Importa {{count}} elementi",
@@ -1202,6 +1258,13 @@
       "errors": {
         "empty": "Lì non c'è niente da leggere. Controlla di aver scelto la cartella o il file giusto.",
         "tooLarge": "È troppo grande da leggere qui. Prova solo con la cartella degli agenti, senza il resto.",
+        "limit": {
+          "files": "Esclusi i file di sistema, sono {{have}} file. Un'importazione ne legge fino a {{max}}. Trascina solo la cartella degli agenti, senza il resto.",
+          "bytes": "{{name}} pesa {{have}}. Un'importazione apre fino a {{max}}. Trascina solo la cartella degli agenti, senza il resto.",
+          "unpacked": "Decompresso arriva a {{have}}. Un'importazione legge fino a {{max}}. Trascina solo la cartella degli agenti, senza il resto.",
+          "text": "Il testo incollato pesa {{have}}. Un'importazione legge fino a {{max}}. Chiedi l'esportazione a parti, un agente alla volta.",
+          "file": "{{name}} pesa {{have}}. Un'importazione legge fino a {{max}} per file. Chiedi l'esportazione a parti, un agente alla volta."
+        },
         "unknown": "Non riconosciamo questi file. Scegli l'app da cui arrivano per vedere dov'è il file giusto, oppure usa Un'altra app.",
         "newerVersion": "Questo file è di una versione più recente dell'app, che non sappiamo ancora leggere. Nel frattempo puoi usare Un'altra app.",
         "noAgents": "Abbiamo letto i file ma non abbiamo trovato nessun agente. Controlla che sia la cartella o il file di tutto il team.",

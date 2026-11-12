@@ -416,7 +416,6 @@ export const ptBR = {
       hereText: "Para você ou um time pequeno, sem Docker",
       download: "Baixar o app",
       how: "Como funciona",
-      runHere: "Rodar neste computador",
       foot: "Prefere não manter nada?",
       footLink: "Use o Cloud",
     },

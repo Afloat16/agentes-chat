@@ -376,6 +376,56 @@
       "say": "faturalandırmayla ilgilenir"
     }
   },
+  "hosting": {
+    "title": "Çalışma alanınız nerede olsun?",
+    "lead": "Uygulama aynı. Değişen, sunucuyla kimin ilgilendiği.",
+    "recommended": "Önerilen",
+    "free": "Ücretsiz · açık kaynak",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Her zaman açık, kurulacak bir şey yok.",
+      "on": "Ajanların bilgisayarı her zaman açık",
+      "care": "Güncellemeler ve yedekler bizden",
+      "ready": "Dakikalar içinde hazır, kurulum yok",
+      "price": "Çalışma alanı başına aylık plan",
+      "continue": "Cloud ile devam et",
+      "enter": "Cloud'a giriş yap"
+    },
+    "own": {
+      "name": "Kendi sunucunuzda",
+      "short": "Kurulum, güncelleme ve yedekleme sizde.",
+      "server": "Sunucu ve Postgres sizde",
+      "care": "Güncellemeler ve yedekler sizde",
+      "off": "Kapandığında ajanlar da durur",
+      "license": "Sonsuza dek ücretsiz, AGPL lisansı",
+      "continue": "Kendi sunucumla devam et",
+      "address": "Sunucu adresi",
+      "connect": "Bağlan",
+      "invalid": "Bu bir adres değil. Tarayıcıdaki gibi yazın, örneğin agentes.example.com.",
+      "unreachable": "{{host}} adresinde agentes.chat bulunamadı. Adresi ve sunucunun açık olduğunu kontrol edin.",
+      "none": "Henüz yok mu?",
+      "noneLink": "Nasıl ücretsiz edineceğinizi görün"
+    },
+    "get": {
+      "title": "Kendi sunucunuz",
+      "server": "Bir sunucuya kur",
+      "serverText": "Bir ekip için, her zaman açık",
+      "serverAction": "Adımları gör",
+      "here": "Kendi bilgisayarınızda çalıştırın",
+      "hereText": "Sizin veya küçük bir ekip için, Docker olmadan",
+      "download": "Uygulamayı indir",
+      "how": "Nasıl çalışır",
+      "foot": "Hiçbir şeyle uğraşmak istemiyor musunuz?",
+      "footLink": "Cloud'u kullanın"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Sunucunuz",
+      "here": "Bu bilgisayarda"
+    },
+    "whyPaid": "Neden ödüyorum?",
+    "whyPaidText": "Cloud, ajanların her zaman açık bilgisayarını ve sunucuyu ayakta tutan birini içerir. Kendi sunucunuzda çalıştırmak ücretsiz."
+  },
   "auth": {
     "email": "E-posta",
     "password": "Şifre",
@@ -502,7 +552,9 @@
     },
     "server": {
       "into": "<b>{{server}}</b> sunucusuna giriş",
-      "intoHere": "Bu {{device}} üzerindeki <b>agentes.chat</b>'e giriş"
+      "intoHere": "Bu {{device}} üzerindeki <b>agentes.chat</b>'e giriş",
+      "intoCloud": "<b>agentes.chat Cloud</b> hesabına giriliyor",
+      "change": "Sunucuyu değiştir"
     },
     "forgotHere": {
       "ownerTitle": "Burada şifreye ihtiyacın yok.",
@@ -1100,6 +1152,9 @@
       "linkSkipped_one": "Bağlantı sınırını aşan {{count}} dosya",
       "linkSkipped_other": "Bağlantı sınırını aşan {{count}} dosya",
       "linkSkippedHelp": "Bir bağlantı en fazla 200 dosya ve 8 MB okur. Gerisini getirmek için klasörü indirip buraya bırakın.",
+      "systemFiles_one": "{{count}} sistem dosyası dışarıda bırakıldı",
+      "systemFiles_other": "{{count}} sistem dosyası dışarıda bırakıldı",
+      "systemFilesHelp": "Bağımlılıklar, önbellekler ve node_modules ile .git gibi klasörler. Yalnızca ajanlara ait olanı okuruz.",
       "never": "Anahtarlar, şifreler ve sohbet geçmişi asla gelmez.",
       "go_one": "{{count}} öğeyi içe aktar",
       "go_other": "{{count}} öğeyi içe aktar",
@@ -1164,6 +1219,13 @@
       "errors": {
         "empty": "Orada okunacak bir şey yok. Doğru klasörü veya dosyayı seçtiğinizi kontrol edin.",
         "tooLarge": "Burada okumak için çok büyük. Yalnızca ajanların klasörünü, gerisi olmadan deneyin.",
+        "limit": {
+          "files": "Sistem dosyaları hariç {{have}} dosya var. Bir içe aktarma en fazla {{max}} dosya okur. Yalnızca ajanların klasörünü bırakın.",
+          "bytes": "{{name}} {{have}} boyutunda. Bir içe aktarma en fazla {{max}} açar. Yalnızca ajanların klasörünü bırakın.",
+          "unpacked": "Açıldığında {{have}} tutuyor. Bir içe aktarma en fazla {{max}} okur. Yalnızca ajanların klasörünü bırakın.",
+          "text": "Yapıştırılan metin {{have}}. Bir içe aktarma en fazla {{max}} okur. Dışa aktarmayı parça parça, her seferinde bir ajan isteyin.",
+          "file": "{{name}} {{have}} boyutunda. Bir içe aktarma dosya başına en fazla {{max}} okur. Dışa aktarmayı parça parça, her seferinde bir ajan isteyin."
+        },
         "unknown": "Bu dosyaları tanımıyoruz. Doğru dosyanın nerede olduğunu görmek için geldikleri uygulamayı seçin ya da Başka bir uygulama'yı kullanın.",
         "newerVersion": "Bu dosya uygulamanın henüz okuyamadığımız daha yeni bir sürümünden. Bu arada Başka bir uygulama'yı kullanabilirsiniz.",
         "noAgents": "Dosyaları okuduk ama içlerinde ajan bulamadık. Tüm ekibin klasörü veya dosyası olduğunu kontrol edin.",

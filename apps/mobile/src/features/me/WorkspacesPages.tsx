@@ -2,6 +2,7 @@ import { type Me, type OrgSummary, useApi, useMe } from "@agenteschat/client";
 import { workspaceNotes } from "@agenteschat/client/lib/deletion";
 import { CLOUD_SERVER, checkServer, normalizeServer, serverHost } from "@agenteschat/client/lib/server";
 import { isPersonal, modeKey } from "@agenteschat/client/lib/workspace-mode";
+import { skyHourOf } from "@agenteschat/ui/sky/workspace";
 import { useQueries } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -122,7 +123,7 @@ export function WorkspaceMark({
 }
 
 /**
- * The groups of workspaces, one per server (its host as the small header), each workspace with its own mark (logo,
+ * The groups of workspaces, one per server ("Cloud", or "Seu servidor" and its host, as the small header), each workspace with its own mark (logo,
  * or its initial), its role, the check on the current one and the unread count on the others; a server that didn't
  * answer this time keeps its workspaces in their place, faded ("Sem resposta agora" when none is known). Shared by the
  * page and the sheet. A personal workspace of yours (ADR 0159) is you: your face and your name, and whose it is
@@ -147,7 +148,10 @@ export function WorkspaceGroups({
         const several = g.orgs.filter(mine).length > 1;
         return (
           <View key={g.server}>
-            <GroupedHeader>{g.host}</GroupedHeader>
+            {/* Where they live: the Cloud by its name, one's own server by its host. */}
+            <GroupedHeader>
+              {skyHourOf(g.host) === "day" ? t("hosting.badge.cloud") : `${t("hosting.badge.own")} · ${g.host}`}
+            </GroupedHeader>
             <GroupedList>
               {g.failed ? (
                 <GroupedRow icon="wifi" label={t("mobile.me.workspacesUnreachable")} faint />

@@ -866,6 +866,126 @@
   "permissions.manage_billing.say": {
     "value": "looks after billing"
   },
+  "hosting.title": {
+    "value": "Where does your workspace live?"
+  },
+  "hosting.lead": {
+    "value": "The app is the same. What changes is who looks after the server."
+  },
+  "hosting.recommended": {
+    "value": "Recommended"
+  },
+  "hosting.free": {
+    "value": "Free · open source"
+  },
+  "hosting.cloud.name": {
+    "value": "agentes.chat Cloud"
+  },
+  "hosting.cloud.short": {
+    "value": "Always on, nothing to install."
+  },
+  "hosting.cloud.on": {
+    "value": "The agents' computer always on"
+  },
+  "hosting.cloud.care": {
+    "value": "Updates and backups are on us"
+  },
+  "hosting.cloud.ready": {
+    "value": "Ready in minutes, nothing to install"
+  },
+  "hosting.cloud.price": {
+    "value": "Monthly plan per workspace"
+  },
+  "hosting.cloud.continue": {
+    "value": "Continue on Cloud"
+  },
+  "hosting.cloud.enter": {
+    "value": "Sign in to Cloud"
+  },
+  "hosting.own.name": {
+    "value": "On your own server"
+  },
+  "hosting.own.short": {
+    "value": "You install it, update it and back it up."
+  },
+  "hosting.own.server": {
+    "value": "You look after the server and Postgres"
+  },
+  "hosting.own.care": {
+    "value": "Updates and backups are yours"
+  },
+  "hosting.own.off": {
+    "value": "The agents stop when it's off"
+  },
+  "hosting.own.license": {
+    "value": "Free forever, AGPL license"
+  },
+  "hosting.own.continue": {
+    "value": "Continue on my server"
+  },
+  "hosting.own.address": {
+    "value": "Server address"
+  },
+  "hosting.own.connect": {
+    "value": "Connect"
+  },
+  "hosting.own.invalid": {
+    "value": "That isn't an address. Write it as in the browser, for example agentes.example.com."
+  },
+  "hosting.own.unreachable": {
+    "value": "We didn't find agentes.chat at {{host}}. Check the address and that the server is on."
+  },
+  "hosting.own.none": {
+    "value": "Don't have one yet?"
+  },
+  "hosting.own.noneLink": {
+    "value": "See how to get yours, free"
+  },
+  "hosting.get.title": {
+    "value": "Get your own server"
+  },
+  "hosting.get.server": {
+    "value": "Install on a server"
+  },
+  "hosting.get.serverText": {
+    "value": "For a team, always on"
+  },
+  "hosting.get.serverAction": {
+    "value": "See the steps"
+  },
+  "hosting.get.here": {
+    "value": "Run it on your computer"
+  },
+  "hosting.get.hereText": {
+    "value": "For you or a small team, no Docker"
+  },
+  "hosting.get.download": {
+    "value": "Download the app"
+  },
+  "hosting.get.how": {
+    "value": "How it works"
+  },
+  "hosting.get.foot": {
+    "value": "Rather not look after anything?"
+  },
+  "hosting.get.footLink": {
+    "value": "Use Cloud"
+  },
+  "hosting.badge.cloud": {
+    "value": "Cloud"
+  },
+  "hosting.badge.own": {
+    "value": "Your server"
+  },
+  "hosting.badge.here": {
+    "value": "On this computer"
+  },
+  "hosting.whyPaid": {
+    "value": "Why pay?"
+  },
+  "hosting.whyPaidText": {
+    "value": "Cloud includes the agents' always-on computer and someone who keeps the server running. Running it on your own server is free."
+  },
   "auth.email": {
     "value": "Email"
   },
@@ -1204,6 +1324,12 @@
   },
   "auth.server.intoHere": {
     "value": "Signing in to the agentes.chat <b>on this {{device}}</b>"
+  },
+  "auth.server.intoCloud": {
+    "value": "Signing in to <b>agentes.chat Cloud</b>"
+  },
+  "auth.server.change": {
+    "value": "Change server"
   },
   "auth.forgotHere.ownerTitle": {
     "value": "You don't need a password here."
@@ -2696,6 +2822,15 @@
   "onboarding.import.linkSkippedHelp": {
     "value": "A link reads up to 200 files and 8 MB. To bring the rest, download the folder and drop it here."
   },
+  "onboarding.import.systemFiles": {
+    "value": {
+      "one": "{{count}} system file left out",
+      "other": "{{count}} system files left out"
+    }
+  },
+  "onboarding.import.systemFilesHelp": {
+    "value": "Dependencies, caches and folders like node_modules and .git. We only read what belongs to the agents."
+  },
   "onboarding.import.never": {
     "value": "Keys, passwords and chat history never come along."
   },
@@ -2860,6 +2995,21 @@
   },
   "onboarding.import.errors.tooLarge": {
     "value": "It's too big to read here. Try just the agents' folder, without the rest."
+  },
+  "onboarding.import.errors.limit.files": {
+    "value": "Leaving out system files, that's {{have}} files. One import reads up to {{max}}. Drop just the agents' folder, without the rest."
+  },
+  "onboarding.import.errors.limit.bytes": {
+    "value": "{{name}} is {{have}}. One import opens up to {{max}}. Drop just the agents' folder, without the rest."
+  },
+  "onboarding.import.errors.limit.unpacked": {
+    "value": "Unpacked, it comes to {{have}}. One import reads up to {{max}}. Drop just the agents' folder, without the rest."
+  },
+  "onboarding.import.errors.limit.text": {
+    "value": "The pasted text is {{have}}. One import reads up to {{max}}. Ask for the export in parts, one agent at a time."
+  },
+  "onboarding.import.errors.limit.file": {
+    "value": "{{name}} is {{have}}. One import reads up to {{max}} per file. Ask for the export in parts, one agent at a time."
   },
   "onboarding.import.errors.unknown": {
     "value": "We don't recognize these files. Pick the app they come from to see where the right file is, or use Another app."

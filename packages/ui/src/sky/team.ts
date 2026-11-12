@@ -1,4 +1,15 @@
 import type { SkyFrame, SkyOptions } from "./engine";
+
+/** Where a workspace lives: on agentes.chat Cloud, or on a server of one's own. */
+export type Hosting = "cloud" | "own";
+
+/** The team drawn over the choice of where a workspace lives: three looks, fixed, any workspace's, not the person's. */
+export const HOSTING_CAST = [
+  { name: "a", look: { color: "amber", eyes: "round" } },
+  { name: "b", look: { color: "sky", eyes: "round" } },
+  { name: "c", look: { color: "green", eyes: "round" } },
+] as const;
+
 import { mix, parseColor, pixelOf, TEAM_NIGHT } from "./math";
 
 /*
@@ -81,6 +92,10 @@ const isDark = (surface: string) => {
   return (r + g + b) / 3 < 110;
 };
 
+/** The team sky's tones at `day` (0 night, 1 day) over `surface` (deeper day blues on a dark one). DOM-free. */
+export const teamTones = (day: number, surface: string) =>
+  TEAM_NIGHT.map((n, i) => mix(n, (isDark(surface) ? DAY_DARK : DAY)[i] ?? n, day));
+
 /** The sky's options at `day` (0 night, 1 day), drawn by the shared sky engine. */
 export function teamSky(day: number, quiet = 0): SkyOptions {
   return {
@@ -88,7 +103,7 @@ export function teamSky(day: number, quiet = 0): SkyOptions {
     surface: "--raised",
     light: 0,
     sprites: 0,
-    palette: (surface) => TEAM_NIGHT.map((n, i) => mix(n, (isDark(surface) ? DAY_DARK : DAY)[i] ?? n, day)),
+    palette: (surface) => teamTones(day, surface),
     base: (u, v) => {
       const sun = day * 0.2 * Math.exp(-(((u - 0.5) * 1.5) ** 2 + ((v - 1.05) * 2.4) ** 2));
       return Math.min(1, Math.max(0, v ** 0.9 * 0.9 + 0.05 * Math.sin(u * 5.2 + v * 3) + sun));

@@ -425,7 +425,6 @@ export const en = {
       hereText: "For you or a small team, no Docker",
       download: "Download the app",
       how: "How it works",
-      runHere: "Run on this computer",
       foot: "Rather not look after anything?",
       footLink: "Use Cloud",
     },

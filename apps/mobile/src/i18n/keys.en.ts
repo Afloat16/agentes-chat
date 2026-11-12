@@ -48,10 +48,8 @@ export const mobileEn = {
       footChoose: "Server and language",
       footServer: "Another server",
       footLanguage: "Language",
-      /** The quiet line under the sign-in, on the Cloud: it opens the camera for the team computer's QR code. */
-      footTeam: "Use your team's server?",
-      footTeamAction: "Sign in through it",
-      /** On a team's server: where this sign-in goes, and the way to another. */
+      /** The quiet line under the sign-in: where it goes (the Cloud or a server), and the way to another. */
+      footCloud: "Signing in to agentes.chat Cloud",
       footOn: "Signing in on {{host}}",
       footSwitch: "Change",
       now: "Now on {{host}}",
