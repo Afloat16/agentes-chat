@@ -41617,6 +41617,15 @@
   "widgets.needsAi.short": {
     "value": "Needs an AI"
   },
+  "widgets.needsAi.not_signed_in": {
+    "value": "{{name}}'s plan is signed out."
+  },
+  "widgets.needsAi.no_computer": {
+    "value": "{{name}}'s AI needs a computer and there is none."
+  },
+  "widgets.needsAi.cli_missing": {
+    "value": "{{name}}'s AI program isn't installed on the computer."
+  },
   "widgets.menu.label": {
     "value": "More"
   },

@@ -18,7 +18,14 @@ import { queueRoutineRun } from "../routines";
 import { dashboardRights, requireWidget, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
 import { WIDGET_CHANGE_EVENT, widgetAgentWithoutAi } from "./refresh-fire";
-import { failWidget, holdWidgetForAi, trimWidgetHistory, widgetChangeOf, widgetNoticesDone } from "./refresh-ledger";
+import {
+  failWidget,
+  holdWidgetForAi,
+  trimWidgetHistory,
+  widgetChangeOf,
+  widgetNeedsAi,
+  widgetNoticesDone,
+} from "./refresh-ledger";
 import { widgetView } from "./service";
 import {
   DASHBOARD_ERRORS,
@@ -241,19 +248,22 @@ export async function dropWidgetRoutine(deps: DashboardDeps, orgId: string, widg
   await widgetNoticesDone(deps, orgId, widgetId);
 }
 
-/** Whether the routine's creator can still run it: a member who may post, talks to the agent and sees the board. */
-async function creatorFits(
+/**
+ * Why the routine's creator can no longer run it, null while they can (a member who may post, talks to the agent and
+ * sees the board): the reasons its firing pauses it with (ADR 0053 §6.2).
+ */
+async function creatorMisfit(
   db: Database,
   orgId: string,
   creatorId: string | null,
   agent: Parameters<typeof canTalkTo>[0],
   board: DashboardRow,
-) {
-  if (!creatorId) return false;
-  const membership = await getMembership(db, creatorId, orgId);
-  if (!membership || !can(membership, "post")) return false;
-  if (!canTalkTo(agent, creatorId, speakerOf(membership))) return false;
-  return dashboardRights(board, viewerOf(membership, creatorId)).see;
+): Promise<"creator_left" | "creator_no_access" | "audience" | null> {
+  const membership = creatorId ? await getMembership(db, creatorId, orgId) : null;
+  if (!creatorId || !membership) return "creator_left";
+  if (!can(membership, "post")) return "creator_no_access";
+  if (!canTalkTo(agent, creatorId, speakerOf(membership))) return "audience";
+  return dashboardRights(board, viewerOf(membership, creatorId)).see ? null : "creator_no_access";
 }
 
 /**
@@ -289,7 +299,7 @@ async function readyRoutine(
     });
   }
   const set: Partial<typeof routines.$inferInsert> = {};
-  if (!(await creatorFits(db, orgId, routine.createdByUserId, agent, board))) {
+  if (await creatorMisfit(db, orgId, routine.createdByUserId, agent, board)) {
     const membership = await getMembership(db, actorId, orgId);
     if (!membership || !canTalkTo(agent, actorId, speakerOf(membership))) {
       throw new ForbiddenError(`You can't talk to ${agent.name}`, DASHBOARD_ERRORS.agentUnreachable, {
@@ -326,17 +336,36 @@ async function markBusy(deps: DashboardDeps, widget: WidgetRow, board: Dashboard
 }
 
 /**
- * Its agent has no AI, so no run starts (it would only fail, ADR 0135 §6): the widget says it waits for one
- * (`holdWidgetForAi`), and a person who asked hears why (`widget.needs_ai`, 409). Nothing when the agent can think.
+ * Its agent has no AI, so no run starts (it would only fail, ADR 0135 §20): the widget says it waits for one, and why
+ * (`holdWidgetForAi`), and a person who asked hears it (`widget.needs_ai`, 409). Nothing when the agent can think.
  */
 async function holdUnlessAi(deps: DashboardDeps, actorId: string | null, widget: WidgetRow, board: DashboardRow) {
-  const agent = await widgetAgentWithoutAi(deps, widget.orgId, widget.agentId);
-  if (!agent) return false;
-  await holdWidgetForAi(deps, widget, board);
+  const without = await widgetAgentWithoutAi(deps, widget.orgId, widget.agentId);
+  if (!without) return false;
+  await holdWidgetForAi(deps, widget, board, without.reason);
   if (actorId) {
-    throw new ConflictError(`${agent.name} has no AI connected`, DASHBOARD_ERRORS.needsAi, { agentName: agent.name });
+    const { name } = without.agent;
+    throw new ConflictError(`${name} has no AI connected`, DASHBOARD_ERRORS.needsAi, { agentName: name });
   }
   return true;
+}
+
+/**
+ * What keeps a build nobody pressed for (`auto`) from starting: it never takes the routine over or resumes it, so one
+ * that paused itself (its reason), one a person paused (`stopped`) or one whose creator no longer fits
+ * (`creatorMisfit`) waits for a person's Resolve, the widget saying what holds it. Null: it starts.
+ */
+async function autoBuildBlocker(
+  db: Database,
+  orgId: string,
+  widget: WidgetRow,
+  board: DashboardRow,
+  routine: typeof routines.$inferSelect,
+) {
+  if (routine.pausedReason) return routine.pausedReason;
+  const agent = await getAgent(db, orgId, widget.agentId);
+  if (!agent || agent.archivedAt) return "agent_archived";
+  return (await creatorMisfit(db, orgId, routine.createdByUserId, agent, board)) ?? (routine.active ? null : "stopped");
 }
 
 /**
@@ -345,20 +374,29 @@ async function holdUnlessAi(deps: DashboardDeps, actorId: string | null, widget:
  * a person paused on purpose runs once and stays paused).
  * The widget turns `updating` (`building` while it has no data) and its event goes out. A run already queued or
  * working answers with the widget as it is. `actorId` null: a first build queued by the server (no checks). An agent
- * with no AI gets no run: the widget waits for one (`holdUnlessAi`).
+ * with no AI gets no run: the widget waits for one (`holdUnlessAi`). `auto`: the build the apps start by themselves
+ * once the agent of a widget waiting for an AI has one (`useBuildOnceAi`), which only queues (`autoBuildBlocker`).
  */
 export async function refreshWidgetNow(
   deps: DashboardDeps,
   actorId: string | null,
   orgId: string,
   widgetId: string,
+  options: { auto?: boolean } = {},
 ): Promise<WidgetView> {
   const { widget, board } = actorId
     ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit")
     : await loadWidget(deps.db, orgId, widgetId);
-  if (await holdUnlessAi(deps, actorId, widget, board)) return widgetView(deps.db, await widgetRow(deps.db, widget.id));
-  const routine = await readyRoutine(deps, orgId, widget, board, actorId);
-  if (await routineInFlight(deps.db, routine.id)) return widgetView(deps.db, await widgetRow(deps.db, widget.id));
+  const asIs = async () => widgetView(deps.db, await widgetRow(deps.db, widget.id));
+  if (options.auto && !widgetNeedsAi(widget)) return asIs();
+  if (await holdUnlessAi(deps, actorId, widget, board)) return asIs();
+  const routine = await readyRoutine(deps, orgId, widget, board, options.auto ? null : actorId);
+  const blocker = options.auto ? await autoBuildBlocker(deps.db, orgId, widget, board, routine) : null;
+  if (blocker) {
+    await failWidget(deps, widget, board, { code: blocker });
+    return asIs();
+  }
+  if (await routineInFlight(deps.db, routine.id)) return asIs();
   await queueRoutineRun({ db: deps.db }, routine, nowOf(deps), "manual");
   const row = await markBusy(deps, await widgetRow(deps.db, widget.id), board);
   await publishRoutineRuns(deps.pubsub, orgId, routine.id).catch(() => {});

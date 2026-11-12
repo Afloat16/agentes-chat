@@ -17440,6 +17440,9 @@ export const ptBR = {
     needsAi: {
       body: "{{name}} monta o widget assim que uma IA for conectada.",
       short: "Precisa de uma IA",
+      not_signed_in: "O plano de {{name}} foi desconectado.",
+      no_computer: "A IA de {{name}} precisa de um computador e não há nenhum.",
+      cli_missing: "O programa da IA de {{name}} não está instalado no computador.",
     },
     menu: {
       label: "Mais",

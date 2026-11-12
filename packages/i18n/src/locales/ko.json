@@ -16608,7 +16608,10 @@
     },
     "needsAi": {
       "body": "AI가 연결되면 {{name}}이(가) 바로 만들어요.",
-      "short": "AI가 필요해요"
+      "short": "AI가 필요해요",
+      "not_signed_in": "{{name}}의 요금제가 로그아웃되었어요.",
+      "no_computer": "{{name}}의 AI에 컴퓨터가 필요한데 하나도 없어요.",
+      "cli_missing": "{{name}}의 AI 프로그램이 컴퓨터에 설치되어 있지 않아요."
     },
     "menu": {
       "label": "더 보기",

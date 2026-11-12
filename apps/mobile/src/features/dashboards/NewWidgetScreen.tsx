@@ -17,7 +17,6 @@ import {
   widgetStepWords,
 } from "@agenteschat/client";
 import { canTalk } from "@agenteschat/client/lib/audience";
-import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { taskClock } from "@agenteschat/client/lib/task-manager";
 import {
   sizeToLayout,
@@ -32,7 +31,6 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useOrg } from "@/providers/org";
 import {
   Button,
   fieldText,
@@ -50,15 +48,14 @@ import {
   useToast,
 } from "@/ui";
 import { router } from "@/ui/navigation";
-import { openConnectAi } from "../ai/NoAiCard";
 import { boardHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
 import { AgentFace } from "../shared/Face";
-import { useDirectory, useMeId, useNow, useOrgId } from "../shared/hooks";
+import { useDirectory, useNow, useOrgId } from "../shared/hooks";
 import { goBack, PushedHeader, successHaptic, tapHaptic } from "../shared/parts";
 import { SheetHostProvider } from "../shared/SheetHost";
 import { closeAgentPick, openAgentPick } from "./agent-pick";
-import { useAgentLook, useWidgetWords } from "./hooks";
+import { useAgentLook, useWidgetAiWay, useWidgetWords } from "./hooks";
 import {
   asksInCard,
   confirmTitle,
@@ -171,9 +168,8 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
   // A draft that is gone (swept, or removed elsewhere) is no test any more.
   const draft: Widget | null = tested && !draftQ.isError ? (draftQ.data ?? tested.widget) : null;
   // Its agent has no AI: the test waits for one (no build started), and runs again once one is connected.
-  const { org } = useOrg();
-  const meId = useMeId();
   const needsAi = Boolean(draft && widgetNeedsAi(draft));
+  const aiWay = useWidgetAiWay(needsAi ? draft?.agentId : null);
   const aiStatus = useAiStatus(orgId, needsAi).data;
   const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
   const retested = useRef(false);
@@ -525,13 +521,13 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
         <Text variant="footnote" tone="muted">
           {t("widgets.needsAi.body", { name: look.name })}
         </Text>
-        {mayConnectAi(dir.agentById.get(draft.agentId), meId, org) ? (
-          <Button
-            size="sm"
-            variant="secondary"
-            label={t("noAi.action")}
-            onPress={() => openConnectAi({ agentId: draft.agentId })}
-          />
+        {aiWay && "locked" in aiWay ? (
+          <Text variant="footnote" tone="muted">
+            {aiWay.locked}
+          </Text>
+        ) : null}
+        {aiWay && "connect" in aiWay ? (
+          <Button size="sm" variant="secondary" label={t("noAi.action")} onPress={aiWay.connect} />
         ) : null}
       </View>
     );

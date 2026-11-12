@@ -54,7 +54,7 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { AgentPickerDialog } from "@/components/agents/AgentPickerDialog";
 import { useOrg } from "@/components/org-context";
 import { colorOf } from "@/components/Sky";
-import { failureText, useConnectForWidget } from "@/components/widgets/parts";
+import { failureText, useWidgetAiWay } from "@/components/widgets/parts";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useToast } from "@/lib/toast";
 import "@/pages/dashboards.css";
@@ -189,7 +189,7 @@ function NewWidgetBody({
   const aiStatus = useAiStatus(orgId, needsAi).data;
   const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
   const retested = useRef(false);
-  const connectAi = useConnectForWidget(draft?.agentId);
+  const aiWay = useWidgetAiWay(draft?.agentId);
 
   // A draft nobody created is deleted when the dialog closes or another test replaces it (the server sweeps any
   // left behind after a day). `pending` is the draft still to delete; one being created is kept.
@@ -674,9 +674,10 @@ function NewWidgetBody({
         <div>
           <b>{failureText(t, draft?.failure ?? null, name)}</b>
           <p>{t("widgets.needsAi.body", { name })}</p>
+          {aiWay && "locked" in aiWay && <p>{aiWay.locked}</p>}
           <span className="nw-fail__acts">
-            {connectAi && (
-              <Button size="sm" onClick={connectAi}>
+            {aiWay && "connect" in aiWay && (
+              <Button size="sm" onClick={aiWay.connect}>
                 {t("noAi.action")}
               </Button>
             )}

@@ -510,7 +510,8 @@ describe("an agent with no AI", () => {
       format: "auto",
       schedule: "manual",
     });
-    expect(w).toMatchObject({ status: "failed", failure: { code: "missing_credential" } });
+    // Why, for the apps' words: no key for its model.
+    expect(w).toMatchObject({ status: "failed", failure: { code: "missing_credential", detail: "no_key" } });
     // No run that could only fail, and nobody told: the widget says it where it was just made.
     expect(await f.db.select().from(schema.routineRuns)).toEqual([]);
     expect(await f.db.select().from(schema.agentRuns)).toEqual([]);
@@ -568,6 +569,44 @@ describe("an agent with no AI", () => {
     const told = await notificationsOf(f, "widget_failed");
     expect(told).toHaveLength(1);
     expect(told[0]?.latest).toMatchObject({ reason: "missing_credential" });
+  });
+
+  test("the apps' own build once it has an AI only queues: it never takes the routine over or resumes it", async () => {
+    await setupWidgets(() => ({ chunks: ["Ok."] }));
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    const b = await board();
+    const w = await shownWidget(b.id, { schedule: "hour" });
+    const routineId = w.routineId ?? "";
+    const routine = (set: Partial<typeof schema.routines.$inferInsert>) =>
+      f.db.update(schema.routines).set(set).where(eq(schema.routines.id, routineId));
+    const auto = () => refreshWidgetNow(checked(), f.owner.id, f.org.id, w.id, { auto: true });
+    const waitingAuto = async () => {
+      await f.db
+        .update(schema.dashboardWidgets)
+        .set({ status: "failed", failureCode: "missing_credential", failureDetail: "no_key" })
+        .where(eq(schema.dashboardWidgets.id, w.id));
+      return auto();
+    };
+    // Its creator left: the widget says so for a person's Resolve, and the routine stays theirs.
+    await routine({ createdByUserId: bia.id });
+    await f.db.delete(schema.organizationMembers).where(eq(schema.organizationMembers.userId, bia.id));
+    expect(await waitingAuto()).toMatchObject({ status: "failed", failure: { code: "creator_left" } });
+    expect(await routineRow(f, routineId)).toMatchObject({ active: true, createdByUserId: bia.id });
+    // Not waiting for an AI any more: nothing.
+    await auto();
+    expect((await historyOf(w.id)).filter((h) => h.failureCode === "creator_left")).toHaveLength(1);
+    // Paused by itself, it stays paused. Paused by a person, the widget reads as stopped.
+    await routine({ active: false, nextRunAt: null, pausedReason: "failing", createdByUserId: f.owner.id });
+    expect(await waitingAuto()).toMatchObject({ failure: { code: "failing" } });
+    expect(await routineRow(f, routineId)).toMatchObject({ active: false, pausedReason: "failing" });
+    await routine({ pausedReason: null });
+    expect(await waitingAuto()).toMatchObject({ failure: { code: "stopped" } });
+    expect(await f.db.select().from(schema.routineRuns)).toEqual([]);
+    // On, with a creator who still fits: it builds, nothing else changes.
+    await routine({ active: true });
+    expect((await waitingAuto()).status).toBe("updating");
+    expect(await routineRow(f, routineId)).toMatchObject({ active: true, createdByUserId: f.owner.id });
+    expect((await f.db.select().from(schema.routineRuns)).map((r) => r.trigger)).toEqual(["manual"]);
   });
 });
 

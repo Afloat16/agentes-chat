@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import type { Dir } from "@/components/NotificationParts";
 import { useOrg } from "@/components/org-context";
 import { useToast } from "@/lib/toast";
-import { failureText, useConnectForWidget } from "./parts";
+import { failureText, useWidgetAiWay } from "./parts";
 import "./widgets.css";
 
 /**
@@ -53,7 +53,7 @@ export function WidgetNoticeActions({
   const notice = widgetNoticeOf(n);
   // Waiting for an AI: Connect, never Resolve (it builds by itself once one is there).
   const needsAi = notice?.kind === "failed" && notice.reason === "missing_credential";
-  const connectAi = useConnectForWidget(needsAi ? notice.agentId : null);
+  const aiWay = useWidgetAiWay(needsAi ? notice.agentId : null);
   if (!notice) return null;
   const say = (e: unknown) => toast.show(errorText(t, e, i18n.language), "error");
   const stop = (run: () => void) => (e: { stopPropagation: () => void }) => {
@@ -108,8 +108,8 @@ export function WidgetNoticeActions({
   const widgetId = notice.widgetId;
   return (
     <span className="wn-acts">
-      {connectAi && (
-        <Button size="sm" variant={quiet ? undefined : "primary"} onClick={stop(connectAi)}>
+      {aiWay && "connect" in aiWay && (
+        <Button size="sm" variant={quiet ? undefined : "primary"} onClick={stop(aiWay.connect)}>
           {t("noAi.action")}
         </Button>
       )}

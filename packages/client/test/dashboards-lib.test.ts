@@ -225,6 +225,11 @@ describe("words", () => {
     expect(widgetFailureKey("no_update")).toBe("widgets.failure.no_update");
     expect(widgetFailureKey("budget_exceeded")).toBe("widgets.failure.budget_exceeded");
     expect(widgetFailureKey("something_new")).toBe("widgets.failure.error");
+    // Waiting for an AI, the reason it was held for: no key keeps the code's words.
+    expect(widgetFailureKey("missing_credential", "not_signed_in")).toBe("widgets.needsAi.not_signed_in");
+    expect(widgetFailureKey("missing_credential", "cli_missing")).toBe("widgets.needsAi.cli_missing");
+    expect(widgetFailureKey("missing_credential", "no_key")).toBe("widgets.failure.missing_credential");
+    expect(widgetFailureKey("no_update", "not_signed_in")).toBe("widgets.failure.no_update");
   });
 
   test("a widget whose agent has no AI waits for one, and may build once the AI status says it has one", () => {
@@ -246,6 +251,14 @@ describe("words", () => {
     expect(widgetAiReady(waiting, undefined)).toBe(false);
     expect(widgetAiReady({ ...waiting, agentId: "ada" }, status("ready"))).toBe(false);
     expect(widgetAiReady(failed, status("ready"))).toBe(false);
+    // What a build thinks with decides: ready for chat through the fallback is no AI for it, and the right hand
+    // shown on someone's own AI may still build on the workspace's.
+    const apart = (state: "ready" | "no_ai", background: "ready" | "no_ai") => ({
+      any: true,
+      agents: [{ agentId: "theo", state, background }],
+    });
+    expect(widgetAiReady(waiting, apart("ready", "no_ai"))).toBe(false);
+    expect(widgetAiReady(waiting, apart("no_ai", "ready"))).toBe(true);
   });
 
   test("the cost line follows the schedule and who pays", () => {

@@ -448,8 +448,8 @@ export function createFakeDashboards(
         d.widgets = d.widgets.filter((x) => x.id !== widgetId);
         touch(d);
       },
-      refreshWidget: async (orgId, widgetId) => {
-        log("dashboards.refreshWidget", orgId, widgetId);
+      refreshWidget: async (orgId, widgetId, auto) => {
+        log("dashboards.refreshWidget", orgId, widgetId, ...(auto ? [auto] : []));
         const { w } = find(widgetId);
         w.status = w.spec ? "updating" : "building";
         w.failure = null;

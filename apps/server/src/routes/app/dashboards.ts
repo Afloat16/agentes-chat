@@ -59,6 +59,7 @@ import {
   WidgetCostQuery,
   WidgetDetail,
   WidgetParams,
+  WidgetRefreshBody,
   WidgetSuggestions,
 } from "./dashboard-schemas";
 
@@ -392,13 +393,14 @@ export function dashboardRoutes(deps: AppDeps) {
       security,
       summary: "Update now, or Resolve a failed widget: its agent redoes it",
       description:
-        "Its agent with no AI starts no run: 409 `widget.needs_ai` (`params.agentName`), and the widget says it waits for one (`failed`, `missing_credential`).",
-      request: { params: WidgetParams },
+        "Its agent with no AI starts no run: 409 `widget.needs_ai` (`params.agentName`), and the widget says it waits for one (`failed`, `missing_credential`, the reason in `failure.detail`: `no_key`, `not_signed_in`, `no_computer` or `cli_missing`).",
+      request: { params: WidgetParams, body: body(WidgetRefreshBody) },
       responses: { 200: json(Widget), ...errors },
     }),
     async (c) => {
       const { orgId, widgetId } = c.req.valid("param");
-      const widget = await refreshWidgetNow(boards, c.get("user").id, orgId, widgetId);
+      const { auto } = c.req.valid("json");
+      const widget = await refreshWidgetNow(boards, c.get("user").id, orgId, widgetId, { auto: auto === true });
       wake();
       return c.json(widget, 200);
     },

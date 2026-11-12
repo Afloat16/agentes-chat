@@ -182,8 +182,9 @@ test("the workspace's plan serves only its owner until they open it; the AI stat
   const status = { db: fx.db, gateway: fx.gateway, machines };
   const of = async (viewer: string) =>
     (await orgAiStatus(status, fx.org.id, viewer)).agents.find((a) => a.agentId === lodi.id);
-  expect(await of(bia.id)).toMatchObject({ state: "no_ai", reason: "plan_not_shared" });
-  expect(await of(fx.owner.id)).toMatchObject({ state: "ready" });
+  // Background work (a widget's build) thinks with the workspace's plan, whoever looks.
+  expect(await of(bia.id)).toMatchObject({ state: "no_ai", reason: "plan_not_shared", background: "ready" });
+  expect(await of(fx.owner.id)).toEqual({ agentId: lodi.id, state: "ready" });
   // Her own plan answers her whatever the workspace's does.
   await setAgentBrain(deps, bia.id, fx.org.id, lodi.id, { scope: "mine", brain: "claude_code", account: BIAS });
   expect(await of(bia.id)).toMatchObject({ state: "ready" });

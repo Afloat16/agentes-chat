@@ -108,7 +108,7 @@ export const DASHBOARD_ERRORS = {
   promptRequired: "widget.prompt_required",
   /** 409: a draft is confirmed only once its test build worked (`ok`, ADR 0135 §16). */
   notTested: "widget.not_tested",
-  /** 409: its agent has no AI to build it with (`params.agentName`); the widget waits for one (ADR 0135 §6). */
+  /** 409: its agent has no AI to build it with (`params.agentName`); the widget waits for one (ADR 0135 §20). */
   needsAi: "widget.needs_ai",
 } as const;
 

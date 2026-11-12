@@ -209,17 +209,18 @@ export async function failWidget(
   return row;
 }
 
-/** The widget waits for its agent to have an AI to think with: its build doesn't start until then (ADR 0135 §6). */
+/** The widget waits for its agent to have an AI to think with: its build doesn't start until then (ADR 0135 §20). */
 export const widgetNeedsAi = (w: Pick<WidgetRow, "status" | "failureCode">) =>
   w.status === "failed" && w.failureCode === NEEDS_AI;
 
 /**
- * Its agent has no AI, so no build starts (it would only fail): the widget says so once while it waits, quietly while
- * it never had data (whoever made it sees it right there), with the one `widget_failed` of a streak once it had.
+ * Its agent has no AI, so no build starts (it would only fail): the widget says so once while it waits (again when
+ * `reason` changes, its failure's detail: `AgentAi.reason`, the apps' words for it), quietly while it never had data
+ * (whoever made it sees it right there), with the one `widget_failed` of a streak once it had.
  */
-export async function holdWidgetForAi(deps: LedgerDeps, widget: WidgetRow, board: DashboardRow) {
-  if (widgetNeedsAi(widget)) return;
-  await failWidget(deps, widget, board, { code: NEEDS_AI, quiet: !widget.spec });
+export async function holdWidgetForAi(deps: LedgerDeps, widget: WidgetRow, board: DashboardRow, reason: string | null) {
+  if (widgetNeedsAi(widget) && widget.failureDetail === reason) return;
+  await failWidget(deps, widget, board, { code: NEEDS_AI, detail: reason, quiet: !widget.spec });
 }
 
 /**

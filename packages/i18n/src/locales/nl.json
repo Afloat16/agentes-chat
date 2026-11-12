@@ -17341,7 +17341,10 @@
     },
     "needsAi": {
       "body": "{{name}} bouwt hem zodra er een AI gekoppeld is.",
-      "short": "Heeft een AI nodig"
+      "short": "Heeft een AI nodig",
+      "not_signed_in": "Het abonnement van {{name}} is uitgelogd.",
+      "no_computer": "De AI van {{name}} heeft een computer nodig en die is er niet.",
+      "cli_missing": "Het AI-programma van {{name}} is niet op de computer geïnstalleerd."
     },
     "menu": {
       "label": "Meer",

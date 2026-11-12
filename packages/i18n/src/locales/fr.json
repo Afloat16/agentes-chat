@@ -17799,7 +17799,10 @@
     },
     "needsAi": {
       "body": "{{name}} le crée dès qu'une IA est connectée.",
-      "short": "Besoin d'une IA"
+      "short": "Besoin d'une IA",
+      "not_signed_in": "L'abonnement de {{name}} est déconnecté.",
+      "no_computer": "L'IA de {{name}} a besoin d'un ordinateur et il n'y en a aucun.",
+      "cli_missing": "Le programme de l'IA de {{name}} n'est pas installé sur l'ordinateur."
     },
     "menu": {
       "label": "Plus",

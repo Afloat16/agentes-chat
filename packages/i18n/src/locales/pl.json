@@ -18272,7 +18272,10 @@
     },
     "needsAi": {
       "body": "{{name}} utworzy go, gdy tylko zostanie podłączona AI.",
-      "short": "Potrzebuje AI"
+      "short": "Potrzebuje AI",
+      "not_signed_in": "Plan agenta {{name}} jest wylogowany.",
+      "no_computer": "AI agenta {{name}} potrzebuje komputera, a nie ma żadnego.",
+      "cli_missing": "Program AI agenta {{name}} nie jest zainstalowany na komputerze."
     },
     "menu": {
       "label": "Więcej",

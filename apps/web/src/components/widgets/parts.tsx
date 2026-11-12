@@ -1,7 +1,7 @@
 import type { Widget, WidgetFailure, WidgetKind } from "@agenteschat/client";
 import { widgetFailureKey, widgetNeedsAi } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
-import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
+import { maySetAgentAi, noAiLockedLine } from "@agenteschat/client/lib/no-ai";
 import { type AgentColor, Icon, PixelSpinner } from "@agenteschat/ui";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -46,7 +46,7 @@ export function widgetTitle(t: TFunction, w: Pick<Widget, "title" | "prompt" | "
 export function failureText(t: TFunction, failure: WidgetFailure | null, name: string): string {
   if (!failure) return t("widgets.failure.error");
   if (failure.code === "agent_reported" && failure.detail) return failure.detail;
-  const key = widgetFailureKey(failure.code === "agent_reported" ? "error" : failure.code);
+  const key = widgetFailureKey(failure.code === "agent_reported" ? "error" : failure.code, failure.detail);
   return t(key, { name, detail: failure.detail ?? "" });
 }
 
@@ -55,30 +55,38 @@ export const widgetBodyText = (t: TFunction, widget: Pick<Widget, "status" | "fa
   widgetNeedsAi(widget) ? t("widgets.needsAi.body", { name }) : t("widgets.status.building", { name });
 
 /**
- * Connect for a widget waiting for an AI (the board, its panel, its notice, New widget's test), when the viewer may
- * connect its agent's (the dialog says what each may); null otherwise.
+ * What a widget waiting for an AI offers the viewer (the board, its panel, its notice, New widget's test): Connect to
+ * whoever may set its agent's AI (for the right hand the workspace's, since a build thinks with nobody's own), else
+ * who can. Nothing on a billing hold (an AI comes after the plan, which the hold's own banner says).
  */
-export function useConnectForWidget(agentId: string | null | undefined): (() => void) | null {
+export function useWidgetAiWay(
+  agentId: string | null | undefined,
+): { connect: () => void } | { locked: string } | null {
+  const { t } = useTranslation();
   const { org, me } = useOrg();
   const dir = useDirectory(org.id);
   const connect = useConnectAi();
-  // On a billing hold an AI comes after the plan, which the hold's own banner says.
   const held = usePlanHold() !== null;
-  if (!agentId || !connect || held || !mayConnectAi(dir.anyAgent(agentId), me.user.id, org)) return null;
-  return () => connect.open({ agentId });
+  const agent = agentId ? dir.agentById.get(agentId) : undefined;
+  if (!agent || !connect || held) return null;
+  if (maySetAgentAi(agent, me.user.id, org)) return { connect: () => connect.open({ agentId: agent.id }) };
+  const owner = agent.ownerUserId ? dir.memberById.get(agent.ownerUserId)?.name : null;
+  return { locked: noAiLockedLine(t, agent.name, owner) };
 }
 
-function ConnectForWidget({ agentId }: { agentId: string }) {
+/** After the reason of a widget waiting for an AI: Connect, or who can connect it (`useWidgetAiWay`). */
+function NeedsAiWay({ agentId }: { agentId: string }) {
   const { t } = useTranslation();
-  const open = useConnectForWidget(agentId);
-  if (!open) return null;
+  const way = useWidgetAiWay(agentId);
+  if (!way) return null;
+  if (!("connect" in way)) return way.locked;
   return (
     <button
       type="button"
       className="wg__resolve"
       onClick={(e) => {
         e.stopPropagation();
-        open();
+        way.connect();
       }}
     >
       {t("noAi.action")}
@@ -89,7 +97,7 @@ function ConnectForWidget({ agentId }: { agentId: string }) {
 /**
  * A widget's footer on a board (ADR 0135): who looks after it, when it last updated and how often; while it is built
  * or updated, the agent at it; failed, why, with Resolve (an update asked now); waiting for an AI, why, with Connect
- * (it builds by itself once one is there, `useBuildOnceAi`).
+ * or who can connect it (it builds by itself once one is there, `useBuildOnceAi`).
  */
 export function WidgetFoot({
   widget,
@@ -133,7 +141,7 @@ export function WidgetFoot({
         <span>
           {failureText(t, widget.failure, name)}{" "}
           {needsAi ? (
-            <ConnectForWidget agentId={widget.agentId} />
+            <NeedsAiWay agentId={widget.agentId} />
           ) : (
             onResolve && (
               <button

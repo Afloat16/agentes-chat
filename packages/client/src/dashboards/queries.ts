@@ -401,18 +401,23 @@ export function useRefreshWidget(orgId: string) {
 const builtOnceAi = new Set<string>();
 
 /**
- * A widget waiting for an AI (`widgetNeedsAi`) starts building once its agent has one, connected from wherever, on any
- * screen showing it to someone who may update it (ADR 0135 §6). The server checks again: still none, nothing starts.
+ * A widget waiting for an AI (`widgetNeedsAi`) starts building once its agent has one for background work, connected
+ * from wherever, on any screen showing it to someone who may update it (ADR 0135 §20). Nobody pressed for it (`auto`):
+ * it only queues, and the server checks again (still no AI, nothing starts).
  */
 export function useBuildOnceAi(orgId: string, widget: Widget | null | undefined, canEdit: boolean) {
+  const api = useApi();
+  const qc = useQueryClient();
   const status = useAiStatus(orgId, Boolean(canEdit && widget && widgetNeedsAi(widget)));
-  const refresh = useRefreshWidget(orgId).mutate;
   const id = canEdit && widget && widgetAiReady(widget, status.data) ? widget.id : null;
   useEffect(() => {
     if (!id || builtOnceAi.has(id)) return;
     builtOnceAi.add(id);
-    refresh(id);
-  }, [id, refresh]);
+    api.dashboards.refreshWidget(orgId, id, true).then(
+      (built) => cacheWidget(qc, orgId, built),
+      () => {},
+    );
+  }, [id, api, qc, orgId]);
 }
 
 /** "Ask for a change" (the widget panel's composer). */

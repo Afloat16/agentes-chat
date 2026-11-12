@@ -38,7 +38,7 @@ import { Line } from "../chat/ChartCard";
 import { AgentFace } from "../shared/Face";
 import { useSurface } from "../shared/parts";
 import { DitherShape } from "./Dither";
-import { useAgentLook, useWidgetWords } from "./hooks";
+import { useAgentLook, useWidgetAiWay, useWidgetWords } from "./hooks";
 import {
   barValueText,
   barWords,
@@ -775,9 +775,16 @@ export function WidgetCard({
   );
 }
 
+/** "Needs an AI · Connect", Connect only for whoever may connect it (`useWidgetAiWay`): its screen has both. */
+function NeedsAiFootWords({ agentId }: { agentId: string }) {
+  const { t } = useTranslation();
+  const way = useWidgetAiWay(agentId);
+  return way && "connect" in way ? `${t("widgets.needsAi.short")} · ${t("noAi.action")}` : t("widgets.needsAi.short");
+}
+
 /**
  * "12 min ago · every hour" (how often only when there's room), "Theo updating…", "Didn't update · Resolve", or
- * "Needs an AI · Connect" (its screen has both).
+ * "Needs an AI · Connect" (`NeedsAiFootWords`).
  */
 function WidgetFoot({ widget: w }: { widget: WidgetCardData }) {
   const { t } = useTranslation();
@@ -799,9 +806,11 @@ function WidgetFoot({ widget: w }: { widget: WidgetCardData }) {
       <View style={styles.foot}>
         <Icon name={w.needsAi ? "bolt" : "info"} size={13} color={c.warn} />
         <Text variant="caption" numberOfLines={1} style={[styles.grow, { color: c.warn }]}>
-          {w.needsAi
-            ? `${t("widgets.needsAi.short")} · ${t("noAi.action")}`
-            : `${t("widgets.status.failed")} · ${t("widgets.failure.resolve")}`}
+          {w.needsAi ? (
+            <NeedsAiFootWords agentId={w.agentId} />
+          ) : (
+            `${t("widgets.status.failed")} · ${t("widgets.failure.resolve")}`
+          )}
         </Text>
       </View>
     );

@@ -16616,7 +16616,10 @@
     },
     "needsAi": {
       "body": "AIが接続されると、{{name}}がすぐに作成します。",
-      "short": "AIが必要です"
+      "short": "AIが必要です",
+      "not_signed_in": "{{name}}のプランがログアウトしています。",
+      "no_computer": "{{name}}のAIにはコンピューターが必要ですが、ありません。",
+      "cli_missing": "{{name}}のAIのプログラムがコンピューターにインストールされていません。"
     },
     "menu": {
       "label": "その他",

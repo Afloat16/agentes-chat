@@ -12,7 +12,6 @@ import {
 } from "@agenteschat/client";
 import { upcomingAt, whenAt } from "@agenteschat/client/lib/format";
 import { plainInline } from "@agenteschat/client/lib/markdown";
-import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { WIDGET_LIMITS, WIDGET_SCHEDULES } from "@agenteschat/ui/widgets/spec";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
@@ -20,7 +19,6 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, RefreshControl, StyleSheet, TextInput, View } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useOrg } from "@/providers/org";
 import {
   Button,
   GroupedHeader,
@@ -37,14 +35,13 @@ import {
   useToast,
 } from "@/ui";
 import { router } from "@/ui/navigation";
-import { openConnectAi } from "../ai/NoAiCard";
 import { boardHref, routineHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
-import { useDirectory, useMeId, useOrgId, usePullRefresh } from "../shared/hooks";
+import { useOrgId, usePullRefresh } from "../shared/hooks";
 import { PushedLargeTitle } from "../shared/PushedLargeTitle";
 import { goBack, PushedHeader, successHaptic } from "../shared/parts";
 import { TextArea } from "../shared/TextArea";
-import { useAgentLook, useWidgetWords } from "./hooks";
+import { useAgentLook, useWidgetAiWay, useWidgetWords } from "./hooks";
 import { HOME, shownWidgetTitle } from "./logic";
 import { WidgetCard } from "./WidgetView";
 
@@ -97,10 +94,8 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
   const update = useUpdateWidget(orgId);
   const remove = useRemoveWidget(orgId);
   useBuildOnceAi(orgId, w, w.canEdit);
-  const { org } = useOrg();
-  const dir = useDirectory();
-  const meId = useMeId();
   const needsAi = widgetNeedsAi(w);
+  const aiWay = useWidgetAiWay(needsAi ? w.agentId : null);
   const [open, setOpen] = useState<"title" | "schedule" | "alert" | null>(null);
   const [alertOn, setAlertOn] = useState(w.alert.enabled);
   const [condition, setCondition] = useState(w.alert.condition);
@@ -245,19 +240,21 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
           <View style={styles.failure}>
             <View style={styles.failureLine}>
               <LineIcon name={needsAi ? "bolt" : "info"} size={13} color={c.warn} variant="footnote" />
-              <Text variant="footnote" style={[styles.grow, { color: c.warn }]}>
-                {words.failure(w)}
-              </Text>
+              <View style={styles.grow}>
+                <Text variant="footnote" style={{ color: c.warn }}>
+                  {words.failure(w)}
+                </Text>
+                {aiWay && "locked" in aiWay ? (
+                  <Text variant="footnote" tone="muted">
+                    {aiWay.locked}
+                  </Text>
+                ) : null}
+              </View>
             </View>
-            {/* Waiting for an AI: Connect, never Resolve (it builds by itself once one is there). */}
+            {/* Waiting for an AI: Connect (or who can), never Resolve (it builds by itself once one is there). */}
             {needsAi ? (
-              mayConnectAi(dir.agentById.get(w.agentId), meId, org) ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  label={t("noAi.action")}
-                  onPress={() => openConnectAi({ agentId: w.agentId })}
-                />
+              aiWay && "connect" in aiWay ? (
+                <Button size="sm" variant="secondary" label={t("noAi.action")} onPress={aiWay.connect} />
               ) : null
             ) : w.canEdit ? (
               <Button

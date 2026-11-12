@@ -177,14 +177,21 @@ people than asked.
     and the connected apps' reads (60 at most) to be listed from the first round (`widgetUpFront`), and its prompt
     forbids arithmetic and waiting in a shell.
 20. **No build starts that is sure to fail.** A widget whose agent has no AI to think with for background work (no
-    key for its model, a computer brain signed out, missing or with no computer: `agentAiState`, never standing in on
-    the model brain, as its run would) gets no run: on create, a test, Update now, Resolve, a change request or a
-    scheduled slot, it waits for one instead, `failed` with `missing_credential`, said once while it waits (quietly
-    while it never had data, with the one `widget_failed` of a streak once it had). A person who asked hears why
-    (`widget.needs_ai`, 409); a slot is `skipped` (`no_ai`), never a failure, so the routine doesn't tire and pause.
-    The apps show it as waiting for an AI, with Connect in place of Resolve, and start the build by themselves once
-    the AI status says the agent has one (each widget once per app session; the server checks again). New widget's
-    test does the same and tests again by itself once.
+    key for its model, a computer brain signed out, missing or with no computer: `backgroundAiState`, never standing
+    in on the model brain, and for the right hand the workspace's own AI, as its run would) gets no run: on create, a
+    test, Update now, Resolve, a change request or a scheduled slot, it waits for one instead, `failed` with
+    `missing_credential` and the reason as its detail (`no_key`, `not_signed_in`, `no_computer`, `cli_missing`), said
+    once while it waits and again when the reason changes (quietly while it never had data, with the one
+    `widget_failed` of a streak once it had). A person who asked hears why (`widget.needs_ai`, 409); a slot is
+    `skipped` (`no_ai`), never a failure, so the routine doesn't tire and pause. The AI status says, per agent, what
+    its background work thinks with where that differs from what it shows (`background`: a computer brain ready only
+    through the fallback, the right hand shown with the viewer's own AI), and the apps read that. They show the
+    widget as waiting for an AI with its real cause, and Connect in place of Resolve for whoever may set the agent's
+    AI (the workspace's, for the right hand); anyone else reads who can. They start the build by themselves once the
+    agent has one (each widget once per app session), as nobody's ask (`auto`): it only queues, never taking the
+    routine over or resuming it, so a routine paused (by itself: its reason; by a person: `stopped`) or whose creator
+    no longer fits makes the widget say that instead, for a person's Resolve. New widget's test does the same and
+    tests again by itself once.
     A widget's run that reaches its end without `update_widget` taking its data is told once, in the same run, that
     only that call reaches the widget (ADR 0097's one extra turn of a routine); still without it, it fails as
     `no_update`.

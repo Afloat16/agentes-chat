@@ -17320,11 +17320,17 @@ export const en = {
       timeout: "The update took too long.",
       invalid_data: "{{name}} couldn't put the data in this format.",
     },
-    /** Its agent has no AI to build it with (ADR 0135 §6): no build starts, and it builds by itself once one is connected. */
+    /** Its agent has no AI to build it with (ADR 0135 §20): no build starts, and it builds by itself once one is connected. */
     needsAi: {
       body: "{{name}} builds it as soon as an AI is connected.",
       /** The phone's one-line footer, before "Connect". */
       short: "Needs an AI",
+      /** Why, in place of `failure.missing_credential` (no key or plan): the sign-in of the plan it thinks with ended. */
+      not_signed_in: "{{name}}'s plan is signed out.",
+      /** Its AI thinks on a computer, and it has none. */
+      no_computer: "{{name}}'s AI needs a computer and there is none.",
+      /** The program of its AI isn't installed on its computer. */
+      cli_missing: "{{name}}'s AI program isn't installed on the computer.",
     },
     menu: {
       label: "More",

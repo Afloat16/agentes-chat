@@ -16792,7 +16792,10 @@
     },
     "needsAi": {
       "body": "连接 AI 后，{{name}} 会马上创建它。",
-      "short": "需要 AI"
+      "short": "需要 AI",
+      "not_signed_in": "{{name}} 的套餐已退出登录。",
+      "no_computer": "{{name}} 的 AI 需要一台电脑，但现在没有。",
+      "cli_missing": "{{name}} 的电脑上没有安装 AI 的程序。"
     },
     "menu": {
       "label": "更多",

@@ -17165,7 +17165,10 @@
     },
     "needsAi": {
       "body": "{{name}} baut es, sobald eine KI verbunden ist.",
-      "short": "Braucht eine KI"
+      "short": "Braucht eine KI",
+      "not_signed_in": "Das Abo von {{name}} ist abgemeldet.",
+      "no_computer": "Die KI von {{name}} braucht einen Computer, und es gibt keinen.",
+      "cli_missing": "Das KI-Programm von {{name}} ist auf dem Computer nicht installiert."
     },
     "menu": {
       "label": "Mehr",

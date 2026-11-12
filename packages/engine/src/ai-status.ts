@@ -132,6 +132,13 @@ export async function agentAiState(deps: AiStatusDeps, given: AiAgent, run?: AiR
     : { state: "waiting" };
 }
 
+/**
+ * What an agent's background work (a routine, a widget's build) thinks with: never the model brain standing in for its
+ * computer brain (ADR 0053 §6.4), and for the right hand the workspace's own AI, nobody's (ADR 0137 §11).
+ */
+export const backgroundAiState = (deps: AiStatusDeps, agent: AiAgent) =>
+  agentAiState(deps, { ...agent, brainFallback: false });
+
 const agentFields = {
   id: schema.agents.id,
   orgId: schema.agents.orgId,
@@ -153,13 +160,20 @@ const activeAgents = (db: Executor, orgId: string) =>
     .where(and(eq(schema.agents.orgId, orgId), isNull(schema.agents.archivedAt)))
     .orderBy(asc(schema.agents.createdAt));
 
-/** Every agent that isn't archived, and `any`: at least one of them is ready or waiting for its computer. */
+/**
+ * Every agent that isn't archived, and `any`: at least one of them is ready or waiting for its computer. `background`:
+ * its state for background work (`backgroundAiState`) where that differs from the one shown: a computer brain ready
+ * only through the model brain's fallback, or the right hand, shown with `viewer`'s own AI.
+ */
 export async function orgAiStatus(deps: AiStatusDeps, orgId: string, viewer?: string) {
   const states = await Promise.all(
-    (await activeAgents(deps.db, orgId)).map(async (a) => ({
-      agentId: a.id,
-      ...(await agentAiState(deps, a, undefined, viewer)),
-    })),
+    (await activeAgents(deps.db, orgId)).map(async (a) => {
+      const shown = await agentAiState(deps, a, undefined, viewer);
+      const mayDiffer =
+        isRightHand(a) || (shown.state === "ready" && brainOf(a.brain) !== "model" && a.brainFallback !== false);
+      const background = mayDiffer ? (await backgroundAiState(deps, a)).state : shown.state;
+      return { agentId: a.id, ...shown, ...(background === shown.state ? {} : { background }) };
+    }),
   );
   return { any: states.some((s) => s.state !== "no_ai"), agents: states };
 }

@@ -164,12 +164,19 @@ export const noAiLineKey = (card: Pick<NoAiCard, "own" | "signedOut" | "missing"
 
 type ConnectingAgent = { ownerUserId?: string | null; builtin?: "right_hand" | null };
 
-/** Who can set an agent's own AI: its owner (a plan), who manages agents (a workspace key) or keys. */
-const maySetAgentAi = (
+/**
+ * Who can set an agent's own AI: its owner (a plan), who manages agents (a workspace key) or keys. On the right hand
+ * that is the workspace's AI, the one its background work (a widget's build) thinks with.
+ */
+export const maySetAgentAi = (
   agent: ConnectingAgent | null | undefined,
   meId: string | null | undefined,
   org: Parameters<typeof can>[0],
 ) => (!!meId && agent?.ownerUserId === meId) || can(org, "manage_agents") || can(org, "manage_credentials");
+
+/** Who connects an agent's AI, for a person who may not: its owner (`owner`, by first name) or an admin. */
+export const noAiLockedLine = (t: TFunction, name: string, owner: string | null | undefined) =>
+  owner ? t("noAi.locked", { name, owner: owner.split(" ")[0] }) : t("noAi.lockedAdmins");
 
 /**
  * Who can do something about an agent with no AI: who sets its AI, and on the right hand any member, for their own

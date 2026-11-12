@@ -157,8 +157,8 @@ describe("My Home as a mural (ADR 0135)", () => {
     expect(widget("Vendas hoje").querySelector(".wk-num")?.textContent).toBe("R$18.420");
   });
 
-  test("a widget whose agent has no AI says why with Conectar, and builds with no click once the agent has one", async () => {
-    const waitingFor = (ai: "ready" | "no_ai") => {
+  test("a widget whose agent has no AI says why with Conectar (or who can), and builds with no click once it has one", async () => {
+    const waitingFor = (ai: "ready" | "no_ai", detail: string | null = null) => {
       const s = setup();
       const visits = s.fake.addWidget(s.home.id, {
         agentId: ADA_ID,
@@ -167,7 +167,7 @@ describe("My Home as a mural (ADR 0135)", () => {
         schedule: "manual",
         layout: { position: 5, w: 1, h: 1 },
       });
-      Object.assign(visits, { status: "failed", failure: { code: "missing_credential", detail: null } });
+      Object.assign(visits, { status: "failed", failure: { code: "missing_credential", detail } });
       s.state.aiStatus = {
         any: ai === "ready",
         agents: s.state.agents.map((a) => ({
@@ -190,9 +190,23 @@ describe("My Home as a mural (ADR 0135)", () => {
     expect(screen().getByRole("dialog", { name: /Conectar uma IA/ })).toBeTruthy();
     cleanup();
 
+    // Someone who may not connect Ada's AI reads the real cause and who can, in place of a Conectar.
+    const member = waitingFor("no_ai", "not_signed_in");
+    const mine = member.s.state.me?.organizations[0];
+    if (mine) mine.role = "member";
+    await open(`/org/${ORG_ID}/home`, member.s);
+    const locked = widget("Visitas");
+    expect(locked.textContent).toContain("O plano de Ada foi desconectado.");
+    expect(locked.textContent).toContain(
+      "Quem conecta a IA de Ada: um admin, com uma chave de API, ou João, com o próprio plano.",
+    );
+    expect(within(locked).queryByRole("button", { name: "Conectar" })).toBeNull();
+    cleanup();
+
+    // The build nobody pressed for (`auto`): the server only queues it.
     const back = waitingFor("ready");
     const again = await open(`/org/${ORG_ID}/home`, back.s);
-    expect(last(again.state, "dashboards.refreshWidget")).toEqual([ORG_ID, back.visits.id]);
+    expect(last(again.state, "dashboards.refreshWidget")).toEqual([ORG_ID, back.visits.id, true]);
     expect(calls(again.state, "dashboards.refreshWidget")).toHaveLength(1);
     expect(widget("Visitas").getAttribute("data-state")).toBe("building");
   });

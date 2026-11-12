@@ -210,6 +210,16 @@ const SCHEDULE_WORDS: Record<WidgetSchedule, string> = {
   manual: "only when someone asks",
 };
 
+/** Why the agent can't build its widget (the hold's reason, `holdWidgetForAi`) and who fixes it, in its own words. */
+const noAiForBuild = (reason: string | null, person: string) =>
+  reason === "not_signed_in"
+    ? `your plan is signed out. Tell ${person} to sign it in again on your page`
+    : reason === "no_computer"
+      ? `your AI needs a computer and you have none. Tell ${person} to give you one on your page`
+      : reason === "cli_missing"
+        ? `your AI's program isn't installed on your computer. Tell ${person} to install it there`
+        : `you have no AI to think with. Tell ${person} to connect one on your page`;
+
 export function createDashboardToolSource(deps: DashboardDeps): ToolSource {
   const depsOf = (ctx: ToolContext): DashboardDeps => ({ ...deps, db: ctx.db });
   const dataSchema = {
@@ -442,7 +452,7 @@ export function createDashboardToolSource(deps: DashboardDeps): ToolSource {
         const shows = spec
           ? "It shows your data now."
           : widgetNeedsAi(row)
-            ? `It can't be built yet: its updates are background work, and there you have no AI to think with. Tell ${person.name} to connect one on your page, and it builds by itself then.`
+            ? `It can't be built yet: its updates are background work, and there ${noAiForBuild(row.failureDetail, person.name)}, and it builds by itself then.`
             : "Your first update builds it in the background shortly: don't build it here, and don't post its numbers in the chat.";
         const alertText = alertOn
           ? ` On each update you judge its alert (${str(input.alert).trim() || "when something is off"}); ${person.name} hears it in Waiting on you.`

@@ -16718,7 +16718,10 @@
     },
     "needsAi": {
       "body": "{{name}} membuatnya begitu AI terhubung.",
-      "short": "Butuh AI"
+      "short": "Butuh AI",
+      "not_signed_in": "Paket {{name}} sudah keluar dari akun.",
+      "no_computer": "AI {{name}} butuh komputer dan tidak ada satu pun.",
+      "cli_missing": "Program AI {{name}} tidak terpasang di komputer."
     },
     "menu": {
       "label": "Lainnya",

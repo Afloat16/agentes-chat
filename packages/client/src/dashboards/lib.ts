@@ -2,7 +2,6 @@ import type { TFunction } from "i18next";
 import type { AiStatus } from "../api/types";
 import { activityVerb, toolActivity } from "../lib/activity";
 import { capitalize } from "../lib/format";
-import { aiStateOf } from "../lib/no-ai";
 import type {
   DashboardAudience,
   DashboardEditPolicy,
@@ -220,22 +219,34 @@ export const WIDGET_FAILURE_CODES = [
 ] as const;
 export type WidgetFailureCode = (typeof WIDGET_FAILURE_CODES)[number];
 
-/** The `widgets.failure.*` key of a failure code. `agent_reported` shows the agent's own words instead. */
-export function widgetFailureKey(code: string): `widgets.failure.${WidgetFailureCode}` {
+/** Why a widget's agent has no AI for its build (`missing_credential`'s detail) with words of its own; `no_key` has none. */
+const NEEDS_AI_REASONS = ["not_signed_in", "no_computer", "cli_missing"] as const;
+
+/**
+ * The key of a failure's words: `widgets.failure.*` by its code, or `widgets.needsAi.*` for the reason a widget waits
+ * for an AI (`detail`). `agent_reported` shows the agent's own words instead.
+ */
+export function widgetFailureKey(code: string, detail?: string | null) {
+  const reason = NEEDS_AI_REASONS.find((r) => r === detail);
+  if (code === "missing_credential" && reason) return `widgets.needsAi.${reason}` as const;
   const known = (WIDGET_FAILURE_CODES as readonly string[]).includes(code) ? (code as WidgetFailureCode) : "error";
-  return `widgets.failure.${known}`;
+  return `widgets.failure.${known}` as const;
 }
 
 /**
- * The widget waits for its agent to have an AI (ADR 0135 §6): no build starts until then, so its way out is
+ * The widget waits for its agent to have an AI (ADR 0135 §20): no build starts until then, so its way out is
  * connecting one (it builds by itself after), never Resolve. The server's `widgetNeedsAi`.
  */
 export const widgetNeedsAi = (w: Pick<Widget, "status" | "failure">) =>
   w.status === "failed" && w.failure?.code === "missing_credential";
 
-/** A widget waiting for an AI whose agent has one now, as the AI status says: its build can start. */
+/**
+ * A widget waiting for an AI whose agent has one for background work now (the AI status's `background`, else its
+ * `state`): its build can start. Its computer away is no missing AI: the build waits for it as any run does.
+ */
 export function widgetAiReady(w: Pick<Widget, "status" | "failure" | "agentId">, status: AiStatus | undefined) {
-  const state = aiStateOf(status, w.agentId);
+  const agent = status?.agents.find((a) => a.agentId === w.agentId);
+  const state = agent?.background ?? agent?.state;
   return widgetNeedsAi(w) && state !== undefined && state !== "no_ai";
 }
 

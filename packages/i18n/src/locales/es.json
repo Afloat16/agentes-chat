@@ -17656,7 +17656,10 @@
     },
     "needsAi": {
       "body": "{{name}} lo crea en cuanto se conecte una IA.",
-      "short": "Necesita una IA"
+      "short": "Necesita una IA",
+      "not_signed_in": "Se cerró la sesión del plan de {{name}}.",
+      "no_computer": "La IA de {{name}} necesita una computadora y no hay ninguna.",
+      "cli_missing": "El programa de la IA de {{name}} no está instalado en la computadora."
     },
     "menu": {
       "label": "Más",

@@ -17094,7 +17094,10 @@
     },
     "needsAi": {
       "body": "Bir yapay zeka bağlanır bağlanmaz {{name}} onu oluşturur.",
-      "short": "Yapay zeka gerekiyor"
+      "short": "Yapay zeka gerekiyor",
+      "not_signed_in": "{{name}} adlı ajanın planının oturumu kapandı.",
+      "no_computer": "{{name}} adlı ajanın yapay zekasının bir bilgisayara ihtiyacı var ama hiç yok.",
+      "cli_missing": "{{name}} adlı ajanın yapay zeka programı bilgisayarda kurulu değil."
     },
     "menu": {
       "label": "Daha fazla",

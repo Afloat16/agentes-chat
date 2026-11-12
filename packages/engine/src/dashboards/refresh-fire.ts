@@ -1,7 +1,7 @@
 import type { PubSub } from "@agenteschat/adapters";
 import { and, type Database, eq, schema, sql } from "@agenteschat/db";
 import { getAgent } from "../agents";
-import { type AiStatusDeps, agentAiState } from "../ai-status";
+import { type AiStatusDeps, backgroundAiState } from "../ai-status";
 import type { Membership } from "../organizations";
 import { dashboardRights, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
@@ -30,15 +30,15 @@ export function isWidgetChangeRun(run: { event?: Record<string, unknown> | null 
 type FiringDeps = { db: Database; pubsub?: PubSub; ai?: Omit<AiStatusDeps, "db"> };
 
 /**
- * The widget's agent when it has no AI to think with for its build, else null (also when nothing can tell: no `ai`).
- * A build is background work, which never stands in on the model brain, as the run's own check reads it.
+ * The widget's agent and why (`AgentAi.reason`) when it has no AI to think with for its build, else null (also when
+ * nothing can tell: no `ai`). A build is background work (`backgroundAiState`), as the run's own check reads it.
  */
 export async function widgetAgentWithoutAi(deps: FiringDeps, orgId: string, agentId: string) {
   if (!deps.ai) return null;
   const agent = await getAgent(deps.db, orgId, agentId);
   if (!agent || agent.archivedAt) return null;
-  const ai = await agentAiState({ ...deps.ai, db: deps.db }, { ...agent, brainFallback: false });
-  return ai.state === "no_ai" ? agent : null;
+  const ai = await backgroundAiState({ ...deps.ai, db: deps.db }, agent);
+  return ai.state === "no_ai" ? { agent, reason: ai.reason ?? null } : null;
 }
 
 export type WidgetFiring =
@@ -63,8 +63,9 @@ export async function widgetFiring(
     .where(and(eq(dashboardWidgets.orgId, orgId), eq(dashboardWidgets.id, target.widgetId)));
   if (!row || row.board.deletedAt) return { skip: "deleted" };
   if (!dashboardRights(row.board, viewerOf(membership, creatorId)).see) return { pause: "creator_no_access" };
-  if (await widgetAgentWithoutAi(deps, orgId, row.widget.agentId)) {
-    await holdWidgetForAi(deps, row.widget, row.board);
+  const without = await widgetAgentWithoutAi(deps, orgId, row.widget.agentId);
+  if (without) {
+    await holdWidgetForAi(deps, row.widget, row.board, without.reason);
     return { skip: "no_ai" };
   }
   return { widget: { widgetId: row.widget.id, dashboardId: row.widget.dashboardId } };
