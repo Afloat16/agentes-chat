@@ -195,7 +195,7 @@ export function AccessTab({ part = "all" }: { part?: "all" | "basic" | "advanced
                   )}
                   {viewer === "admin" && !needle && !noConnectors && (
                     <Link
-                      className="newag__addrow"
+                      className="newag__addrow ac-iconline"
                       to="/org/$orgId/settings/$section"
                       params={{ orgId: org.id, section: "connectors" }}
                     >

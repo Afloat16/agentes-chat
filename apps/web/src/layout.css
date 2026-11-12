@@ -9477,9 +9477,10 @@ html:not([data-pointer]) .newag__addrow:focus-visible {
   color: var(--ink-muted);
   font-size: 12.5px;
 }
+/* Its words wrap on a phone: the icon stays on their first line (`.ac-iconline` on the row). */
 .newag__addrow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   width: 100%;
   padding: var(--space-3) var(--space-4);
