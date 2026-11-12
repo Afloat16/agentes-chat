@@ -133,10 +133,12 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
   // iPhones on this Mac's Wi-Fi that trust it, under the step that waits for a cable.
   const wifiOffer = near.available.map((p) => (
     <span key={p.serial} className="dk-ip__act ac-iconline">
-      <span>{t("devices.iphone.wifi.also", { name: p.name ?? p.model })}</span>
-      <InfoHint name={hintFor(t, t("devices.iphone.wifi.use"), t("devices.iphone.wifi.hint")).name}>
-        {t("devices.iphone.wifi.hint")}
-      </InfoHint>
+      <span className="ac-hintline">
+        <span>{t("devices.iphone.wifi.also", { name: p.name ?? p.model })}</span>
+        <InfoHint name={hintFor(t, t("devices.iphone.wifi.use"), t("devices.iphone.wifi.hint")).name}>
+          {t("devices.iphone.wifi.hint")}
+        </InfoHint>
+      </span>
       <Button
         size="sm"
         loading={near.using === p.serial}

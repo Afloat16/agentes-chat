@@ -82,10 +82,12 @@ export function WifiIphoneOffer({ host, card = false }: { host: ComputerDevice; 
         <li key={p.serial} className="dv-wifi__row">
           <span className="dv-wifi__name ac-iconline small">
             <Icon name="phone" size={14} />
-            <span>{t("devices.iphone.wifi.also", { name: p.name ?? p.model })}</span>
-            <InfoHint name={t("common.about", { label: t("devices.iphone.wifi.use") })}>
-              {t("devices.iphone.wifi.hint")}
-            </InfoHint>
+            <span className="ac-hintline">
+              <span>{t("devices.iphone.wifi.also", { name: p.name ?? p.model })}</span>
+              <InfoHint name={t("common.about", { label: t("devices.iphone.wifi.use") })}>
+                {t("devices.iphone.wifi.hint")}
+              </InfoHint>
+            </span>
           </span>
           <Button
             size="sm"
