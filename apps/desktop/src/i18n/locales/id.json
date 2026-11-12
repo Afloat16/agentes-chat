@@ -557,7 +557,7 @@
       "plug": "Colokkan ponsel ke {{device}} ini untuk menambahkannya.",
       "androidSteps": "Langkah Android",
       "iphoneSteps": "Langkah iPhone",
-      "wider": "Agen milik orang lain berjalan di sini sebagai {{user}} dan bisa membaca file kamu.",
+      "wider": "Hanya saya berarti kamu, dan agen yang bekerja untukmu. Agen milik orang lain berjalan di sini sebagai {{user}} dan bisa membaca file kamu.",
       "phoneWho": "{{who}} bisa memakainya",
       "signedOut": "Masuk ke {{server}} di aplikasi untuk melihat siapa yang bisa memakai {{device}} ini.",
       "unreachable": "Tidak bisa terhubung ke {{server}}. Periksa koneksi lalu coba lagi.",

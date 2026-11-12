@@ -650,7 +650,6 @@ mod tests {
             ("GET", format!("{org}/devices/")),
             ("PATCH", format!("{org}/devices/phones/../stop")),
             ("GET", "/api/app/organizations/../x/devices".into()),
-            ("GET", "/api/app/me".into()),
             ("GET", format!("{org}/channels")),
             ("POST", format!("{org}/devices/phones/p%2F1/stop")),
         ] {

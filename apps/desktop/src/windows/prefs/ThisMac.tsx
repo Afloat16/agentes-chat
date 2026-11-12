@@ -501,9 +501,7 @@ function WhoRow({
         hint={hintFor(
           t,
           title,
-          wider
-            ? `${t("desktop.prefs.thisMac.whoDesc")} ${t("desktop.prefs.thisMac.wider", { user })}`
-            : t("desktop.prefs.thisMac.whoDesc"),
+          wider ? t("desktop.prefs.thisMac.wider", { user }) : t("desktop.prefs.thisMac.whoDesc"),
         )}
         desc={
           audience.mode === "people" ? (

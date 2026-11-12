@@ -572,7 +572,7 @@
       "plug": "Podłącz telefon do tego urządzenia ({{device}}), żeby go dodać.",
       "androidSteps": "Kroki dla Androida",
       "iphoneSteps": "Kroki dla iPhone'a",
-      "wider": "Agenci innych osób działają tu jako {{user}} i mogą czytać twoje pliki.",
+      "wider": "Tylko ja oznacza ciebie i agentów, którzy dla ciebie pracują. Agenci innych osób działają tu jako {{user}} i mogą czytać twoje pliki.",
       "phoneWho": "Może używać: {{who}}",
       "signedOut": "Zaloguj się w aplikacji do {{server}}, żeby zobaczyć, kto może używać tego urządzenia ({{device}}).",
       "unreachable": "Nie udało się połączyć z {{server}}. Sprawdź połączenie i spróbuj ponownie.",

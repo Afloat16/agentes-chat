@@ -562,7 +562,7 @@
       "plug": "Sluit een telefoon aan op deze {{device}} om hem toe te voegen.",
       "androidSteps": "Stappen voor Android",
       "iphoneSteps": "Stappen voor iPhone",
-      "wider": "Agents van anderen draaien hier als {{user}} en kunnen jouw bestanden lezen.",
+      "wider": "Alleen ik betekent jij, en de agents die voor jou werken. Agents van anderen draaien hier als {{user}} en kunnen jouw bestanden lezen.",
       "phoneWho": "{{who}} mag hem gebruiken",
       "signedOut": "Log in de app in op {{server}} om te zien wie deze {{device}} mag gebruiken.",
       "unreachable": "{{server}} was niet bereikbaar. Controleer de verbinding en probeer het opnieuw.",

@@ -557,7 +557,7 @@
       "plug": "把手机接到这台 {{device}} 上即可添加。",
       "androidSteps": "Android 步骤",
       "iphoneSteps": "iPhone 步骤",
-      "wider": "其他人的智能体在这里以 {{user}} 的身份运行，可以读取你的文件。",
+      "wider": "“仅我”指你，以及为你工作的智能体。其他人的智能体在这里以 {{user}} 的身份运行，可以读取你的文件。",
       "phoneWho": "{{who}}可以使用",
       "signedOut": "在应用中登录 {{server}}，即可查看谁可以使用这台 {{device}}。",
       "unreachable": "无法连接 {{server}}。请检查网络后重试。",

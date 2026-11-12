@@ -567,7 +567,7 @@
       "plug": "Collega un telefono a questo {{device}} per aggiungerlo.",
       "androidSteps": "Passaggi per Android",
       "iphoneSteps": "Passaggi per iPhone",
-      "wider": "Gli agenti delle altre persone girano qui come {{user}} e possono leggere i tuoi file.",
+      "wider": "Solo io significa tu, e gli agenti che lavorano per te. Gli agenti delle altre persone girano qui come {{user}} e possono leggere i tuoi file.",
       "phoneWho": "{{who}} può usarlo",
       "signedOut": "Accedi a {{server}} nell'app per vedere chi può usare questo {{device}}.",
       "unreachable": "Impossibile raggiungere {{server}}. Controlla la connessione e riprova.",

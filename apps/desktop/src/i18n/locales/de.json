@@ -562,7 +562,7 @@
       "plug": "Schließ ein Telefon an diesen {{device}} an, um es hinzuzufügen.",
       "androidSteps": "Schritte für Android",
       "iphoneSteps": "Schritte für iPhone",
-      "wider": "Agenten anderer Personen laufen hier als {{user}} und können deine Dateien lesen.",
+      "wider": "Nur ich heißt du und die Agenten, die für dich arbeiten. Agenten anderer Personen laufen hier als {{user}} und können deine Dateien lesen.",
       "phoneWho": "{{who}} darf es nutzen",
       "signedOut": "Melde dich in der App bei {{server}} an, um zu sehen, wer diesen {{device}} nutzen darf.",
       "unreachable": "{{server}} war nicht erreichbar. Prüf die Verbindung und versuch es erneut.",

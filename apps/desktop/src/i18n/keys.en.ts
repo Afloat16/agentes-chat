@@ -621,7 +621,8 @@ export const desktopEn = {
       plug: "Plug a phone into this {{device}} to add it.",
       androidSteps: "Android steps",
       iphoneSteps: "iPhone steps",
-      wider: "Other people's agents run as {{user}} here and can read your files.",
+      wider:
+        "Only me means you, and agents working for you. Other people's agents run as {{user}} here and can read your files.",
       phoneWho: "{{who}} can use it",
       signedOut: "Sign in to {{server}} in the app to see who can use this {{device}}.",
       unreachable: "Couldn't reach {{server}}. Check the connection and try again.",

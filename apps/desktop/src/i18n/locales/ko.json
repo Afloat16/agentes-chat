@@ -557,7 +557,7 @@
       "plug": "휴대폰을 이 {{device}}에 연결하면 추가돼요.",
       "androidSteps": "Android 단계",
       "iphoneSteps": "iPhone 단계",
-      "wider": "다른 사람의 에이전트는 여기서 {{user}}(으)로 실행되고 내 파일을 읽을 수 있어요.",
+      "wider": "나만은 나와 나를 위해 일하는 에이전트를 뜻해요. 다른 사람의 에이전트는 여기서 {{user}}(으)로 실행되고 내 파일을 읽을 수 있어요.",
       "phoneWho": "{{who}} 사용할 수 있어요",
       "signedOut": "이 {{device}}를 사용할 수 있는 사람을 보려면 앱에서 {{server}}에 로그인하세요.",
       "unreachable": "{{server}}에 연결하지 못했어요. 연결을 확인하고 다시 시도하세요.",

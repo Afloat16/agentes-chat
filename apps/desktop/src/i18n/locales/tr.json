@@ -562,7 +562,7 @@
       "plug": "Eklemek için bir telefonu bu {{device}} cihazına takın.",
       "androidSteps": "Android adımları",
       "iphoneSteps": "iPhone adımları",
-      "wider": "Başkalarının ajanları burada {{user}} olarak çalışır ve dosyalarınızı okuyabilir.",
+      "wider": "Yalnızca ben, siz ve sizin için çalışan ajanlar demektir. Başkalarının ajanları burada {{user}} olarak çalışır ve dosyalarınızı okuyabilir.",
       "phoneWho": "{{who}} kullanabilir",
       "signedOut": "Bu {{device}} cihazını kimlerin kullanabileceğini görmek için uygulamada {{server}} sunucusunda oturum açın.",
       "unreachable": "{{server}} sunucusuna ulaşılamadı. Bağlantıyı kontrol edip tekrar deneyin.",

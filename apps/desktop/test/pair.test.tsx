@@ -423,49 +423,55 @@ describe("pairing from the app", () => {
     );
   });
 
-  test("Preferences: a switch for every workspace here, Allow for one not here yet, which pairs it", () =>
-    mount("prefs", <General />, async (el, host, store) => {
-      const norte = "Estúdio Norte";
-      await until(() => rowOf(el, norte) && rowOf(el, "Acme")?.querySelector(".ac-chip"));
-      const on = (title: string) => rowOf(el, title)?.querySelector('[role="switch"]')?.getAttribute("aria-checked");
-      expect(on("Acme")).toBe("true");
-      expect(on("Horizonte")).toBe("true");
-      // Where the workspace is, then its agents.
-      expect(rowOf(el, "Acme")?.querySelector("small")?.textContent).toMatch(/^agentes\.tail1234\.ts\.net · /);
-      // One not here yet: Allow, never a switch.
-      expect(rowOf(el, norte)?.querySelector('[role="switch"]')).toBeNull();
-      expect(rowOf(el, norte)?.querySelector("small")?.textContent).toBe(
-        "agentes.tail1234.ts.net · Its agents don't use this Mac",
-      );
-      // agentes.chat's workspace too.
-      expect(button(rowOf(el, "Oficina"), "Allow")).toBeTruthy();
-      expect(rowOf(el, "Oficina")?.querySelector("small")?.textContent).toBe(
-        "agentes.chat Cloud · Its agents don't use this Mac",
-      );
-      // Open at login, then Another workspace, close the card.
-      const card = rowOf(el, norte)?.closest(".dk-card");
-      expect([...(card?.querySelectorAll(".dk-crow__title") ?? [])].slice(-2).map((n) => n.textContent)).toEqual([
-        "Open at login",
-        "Another workspace",
-      ]);
-      await act(async () => button(rowOf(el, "Another workspace"), "Add a workspace…")?.click());
-      expect(host.window).toBe("welcome");
+  test(
+    "Preferences: a switch for every workspace here, Allow for one not here yet, which pairs it",
+    () =>
+      mount("prefs", <General />, async (el, host, store) => {
+        const norte = "Estúdio Norte";
+        await until(() => rowOf(el, norte) && rowOf(el, "Acme")?.querySelector(".ac-chip"));
+        const on = (title: string) => rowOf(el, title)?.querySelector('[role="switch"]')?.getAttribute("aria-checked");
+        expect(on("Acme")).toBe("true");
+        expect(on("Horizonte")).toBe("true");
+        // Where the workspace is, then its agents.
+        expect(rowOf(el, "Acme")?.querySelector("small")?.textContent).toMatch(/^agentes\.tail1234\.ts\.net · /);
+        // One not here yet: Allow, never a switch.
+        expect(rowOf(el, norte)?.querySelector('[role="switch"]')).toBeNull();
+        expect(rowOf(el, norte)?.querySelector("small")?.textContent).toBe(
+          "agentes.tail1234.ts.net · Its agents don't use this Mac",
+        );
+        // agentes.chat's workspace too.
+        expect(button(rowOf(el, "Oficina"), "Allow")).toBeTruthy();
+        expect(rowOf(el, "Oficina")?.querySelector("small")?.textContent).toBe(
+          "agentes.chat Cloud · Its agents don't use this Mac",
+        );
+        // Open at login, then Another workspace, close the card.
+        const card = rowOf(el, norte)?.closest(".dk-card");
+        expect([...(card?.querySelectorAll(".dk-crow__title") ?? [])].slice(-2).map((n) => n.textContent)).toEqual([
+          "Open at login",
+          "Another workspace",
+        ]);
+        await act(async () => button(rowOf(el, "Another workspace"), "Add a workspace…")?.click());
+        expect(host.window).toBe("welcome");
 
-      // Pausing one workspace pauses only its own agents.
-      await act(async () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]')?.click());
-      await until(() => on("Horizonte") === "false");
-      expect(on("Acme")).toBe("true");
+        // Pausing one workspace pauses only its own agents.
+        await act(async () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]')?.click());
+        await until(() => on("Horizonte") === "false");
+        expect(on("Acme")).toBe("true");
 
-      // One at a time: the others wait for the pause to answer.
-      await until(() => !button(rowOf(el, norte), "Allow")?.hasAttribute("disabled"));
-      let asked = "";
-      host.askToPair = async (_server, org) => {
-        asked = org;
-        return true;
-      };
-      await act(async () => button(rowOf(el, norte), "Allow")?.click());
-      await until(() => pairedWith(store, "o-norte") && on(norte) === "true");
-      expect(asked).toBe("Estúdio Norte");
-      expect(await host.autostart()).toBe(true);
-    }));
+        // One at a time: the others wait for the pause to answer.
+        await until(() => !button(rowOf(el, norte), "Allow")?.hasAttribute("disabled"));
+        let asked = "";
+        host.askToPair = async (_server, org) => {
+          asked = org;
+          return true;
+        };
+        await act(async () => button(rowOf(el, norte), "Allow")?.click());
+        await until(() => pairedWith(store, "o-norte") && on(norte) === "true");
+        expect(asked).toBe("Estúdio Norte");
+        expect(await host.autostart()).toBe(true);
+      }),
+    // Four waits of up to 5 s each, past the 5 s a test gets on a slow runner. Cut short, it went on running under
+    // the files after it (its window still mounted) and failed their tests.
+    20_000,
+  );
 });

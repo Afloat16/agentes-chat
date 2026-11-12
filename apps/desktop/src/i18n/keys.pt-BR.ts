@@ -605,7 +605,8 @@ export const desktopPtBR = {
       plug: "Conecte um celular neste {{device}} para adicionar.",
       androidSteps: "Passos no Android",
       iphoneSteps: "Passos no iPhone",
-      wider: "Os agentes de outras pessoas rodam como {{user}} aqui e podem ler os seus arquivos.",
+      wider:
+        "Só eu quer dizer você, e os agentes que trabalham para você. Os agentes de outras pessoas rodam como {{user}} aqui e podem ler os seus arquivos.",
       phoneWho: "{{who}} pode usar",
       signedOut: "Entre em {{server}} no app para ver quem pode usar este {{device}}.",
       unreachable: "Não deu para falar com {{server}}. Confira a conexão e tente de novo.",

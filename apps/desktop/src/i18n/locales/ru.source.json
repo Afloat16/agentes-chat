@@ -1419,7 +1419,7 @@
     "value": "iPhone steps"
   },
   "prefs.thisMac.wider": {
-    "value": "Other people's agents run as {{user}} here and can read your files."
+    "value": "Only me means you, and agents working for you. Other people's agents run as {{user}} here and can read your files."
   },
   "prefs.thisMac.phoneWho": {
     "value": "{{who}} can use it"
