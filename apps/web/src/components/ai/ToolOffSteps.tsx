@@ -59,7 +59,7 @@ export function ToolOffSteps({
                   i18nKey="connectAi.toolOff.one"
                   components={{
                     mark: (
-                      <span className="tool-off__mark" aria-hidden="true">
+                      <span className="tool-off__app" aria-hidden="true">
                         <LogoMark size={12} />
                       </span>
                     ),

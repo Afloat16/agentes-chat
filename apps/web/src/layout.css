@@ -13460,15 +13460,16 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   font-size: 12.5px;
   line-height: 18px;
 }
-.tool-off__mark {
+/* The app's icon inside the sentence, as a word of it: on the line's middle, never a lead. */
+.tool-off__app {
   display: inline-grid;
   place-items: center;
   width: 20px;
   height: 18px;
-  margin: 0 2px;
+  margin-inline: 2px;
   border-radius: 5px;
   background: color-mix(in srgb, var(--ink) 10%, transparent);
-  vertical-align: -4px;
+  vertical-align: middle;
 }
 /* The kit's switch, drawn (`.ac-switch`), turning on over and over. */
 .tool-off__switch {
@@ -13479,7 +13480,6 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   margin-top: 2px;
   border-radius: var(--radius-full);
   background: var(--line-strong);
-  animation: tool-off-track 3s infinite;
 }
 .tool-off__switch::after {
   content: "";
@@ -13490,7 +13490,6 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   height: 12px;
   border-radius: 50%;
   background: var(--surface-raised);
-  animation: tool-off-thumb 3s infinite;
 }
 @keyframes tool-off-track {
   0%,
@@ -13518,10 +13517,12 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   font-size: 13px;
   line-height: 20px;
 }
-@media (prefers-reduced-motion: reduce) {
-  .tool-off__switch,
+@media (prefers-reduced-motion: no-preference) {
+  .tool-off__switch {
+    animation: tool-off-track 3s infinite;
+  }
   .tool-off__switch::after {
-    animation: none;
+    animation: tool-off-thumb 3s infinite;
   }
 }
 /* A step's title, an option's and the foot's line break into lines of a length, never onto a word or two alone. */

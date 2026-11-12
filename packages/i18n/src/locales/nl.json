@@ -2696,6 +2696,17 @@
       "zen": "Koppel OpenCode",
       "api_key": "Een API-sleutel toevoegen"
     },
+    "toolOff": {
+      "text": "{{computer}} is verbonden, maar {{program}} staat daar uit. Voor de veiligheid kan het alleen op de computer zelf worden aangezet.",
+      "where": "Op {{computer}}",
+      "one": "Klik op het agentes.chat-icoon <mark/> bij de klok",
+      "oneWindows": "In Windows kan het achter de pijl ^ van de taakbalk zitten.",
+      "two": "Open <b>Voorkeuren</b>",
+      "three": "Zet onder <b>Tools</b> <b>{{program}}</b> aan",
+      "terminal": "Voer in de terminal van de computer uit:",
+      "here": "Zet <b>{{program}}</b> aan onder <b>Tools</b>.",
+      "waiting": "Wachten tot je het aanzet. Dit scherm verandert vanzelf."
+    },
     "titleFor": "Een AI koppelen voor {{name}}",
     "titleFor_female": "Een AI koppelen voor {{name}}",
     "have": {

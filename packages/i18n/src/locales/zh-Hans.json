@@ -2595,6 +2595,17 @@
       "zen": "连接 OpenCode",
       "api_key": "添加 API 密钥"
     },
+    "toolOff": {
+      "text": "{{computer}} 已连接，但其中的 {{program}} 处于关闭状态。出于安全考虑，只能在这台电脑上开启。",
+      "where": "在 {{computer}} 上",
+      "one": "点击时钟旁的 agentes.chat 图标 <mark/>",
+      "oneWindows": "在 Windows 上，它可能藏在任务栏的箭头 ^ 里。",
+      "two": "打开<b>偏好设置</b>",
+      "three": "在<b>工具</b>中开启 <b>{{program}}</b>",
+      "terminal": "在这台电脑的终端中运行：",
+      "here": "在<b>工具</b>中开启 <b>{{program}}</b>。",
+      "waiting": "正在等待你开启。此界面会自动更新。"
+    },
     "titleFor": "为 {{name}} 连接 AI",
     "titleFor_female": "为 {{name}} 连接 AI",
     "have": {

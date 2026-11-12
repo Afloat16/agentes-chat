@@ -2791,6 +2791,17 @@
       "zen": "Collega OpenCode",
       "api_key": "Aggiungi una chiave API"
     },
+    "toolOff": {
+      "text": "{{computer}} è connesso, ma {{program}} lì è spento. Per sicurezza, si può accendere solo dal computer stesso.",
+      "where": "Su {{computer}}",
+      "one": "Fai clic sull'icona di agentes.chat <mark/> vicino all'orologio",
+      "oneWindows": "Su Windows può trovarsi dietro la freccia ^ della barra delle applicazioni.",
+      "two": "Apri <b>Preferenze</b>",
+      "three": "In <b>Strumenti</b>, accendi <b>{{program}}</b>",
+      "terminal": "Nel terminale del computer, esegui:",
+      "here": "Accendi <b>{{program}}</b> in <b>Strumenti</b>.",
+      "waiting": "In attesa che tu lo accenda. Questa schermata cambia da sola."
+    },
     "titleFor": "Collega un'IA per {{name}}",
     "titleFor_female": "Collega un'IA per {{name}}",
     "have": {

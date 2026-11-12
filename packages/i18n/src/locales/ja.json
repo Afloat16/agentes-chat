@@ -2596,6 +2596,17 @@
       "zen": "OpenCodeを接続",
       "api_key": "APIキーを追加"
     },
+    "toolOff": {
+      "text": "{{computer}}は接続されていますが、{{program}}がオフになっています。安全のため、オンにできるのはそのコンピューター上だけです。",
+      "where": "{{computer}}で",
+      "one": "時計の横にあるagentes.chatのアイコン<mark/>をクリック",
+      "oneWindows": "Windowsでは、タスクバーの矢印 ^ の中にあることがあります。",
+      "two": "<b>環境設定</b>を開く",
+      "three": "<b>ツール</b>で<b>{{program}}</b>をオンにする",
+      "terminal": "コンピューターのターミナルで実行:",
+      "here": "<b>ツール</b>で<b>{{program}}</b>をオンにしてください。",
+      "waiting": "オンになるのを待っています。この画面は自動で切り替わります。"
+    },
     "titleFor": "{{name}}のAIを接続",
     "have": {
       "title": "接続済み",

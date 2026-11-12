@@ -118,7 +118,8 @@ describe("Connect an AI, the rail's last step", () => {
     await renderApp("/onboarding", { api: createFakeApi(state) });
     await settle(16);
     await click(within(body()).getByRole("button", { name: /^Chave de API/ }), 12);
-    expect(screen().getByRole("dialog", { name: /^Conectar uma IA/ })).toBeTruthy();
+    // For the right hand alone, on the card's own steps.
+    expect(screen().getByRole("dialog", { name: "Adicionar uma chave de API" })).toBeTruthy();
     expect(heading()).toBe(CONNECT);
   });
 

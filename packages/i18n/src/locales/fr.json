@@ -2790,6 +2790,17 @@
       "zen": "Connecter OpenCode",
       "api_key": "Ajouter une clé API"
     },
+    "toolOff": {
+      "text": "{{computer}} est connecté, mais {{program}} y est désactivé. Par sécurité, il ne s'active que sur l'ordinateur lui-même.",
+      "where": "Sur {{computer}}",
+      "one": "Cliquez sur l'icône agentes.chat <mark/> près de l'horloge",
+      "oneWindows": "Sous Windows, elle peut se trouver derrière la flèche ^ de la barre des tâches.",
+      "two": "Ouvrez <b>Préférences</b>",
+      "three": "Dans <b>Outils</b>, activez <b>{{program}}</b>",
+      "terminal": "Dans le terminal de l'ordinateur, lancez :",
+      "here": "Activez <b>{{program}}</b> dans <b>Outils</b>.",
+      "waiting": "En attente de l'activation. Cet écran change tout seul."
+    },
     "titleFor": "Connecter une IA pour {{name}}",
     "titleFor_female": "Connecter une IA pour {{name}}",
     "have": {

@@ -2885,6 +2885,17 @@
       "zen": "Połącz OpenCode",
       "api_key": "Dodaj klucz API"
     },
+    "toolOff": {
+      "text": "{{computer}} jest połączony, ale {{program}} jest na nim wyłączony. Ze względów bezpieczeństwa można go włączyć tylko na samym komputerze.",
+      "where": "Na {{computer}}",
+      "one": "Kliknij ikonę agentes.chat <mark/> obok zegara",
+      "oneWindows": "W systemie Windows może być ukryta pod strzałką ^ na pasku zadań.",
+      "two": "Otwórz <b>Preferencje</b>",
+      "three": "W <b>Narzędziach</b> włącz <b>{{program}}</b>",
+      "terminal": "W terminalu komputera uruchom:",
+      "here": "Włącz <b>{{program}}</b> w <b>Narzędziach</b>.",
+      "waiting": "Czekam, aż to włączysz. Ten ekran zmieni się sam."
+    },
     "titleFor": "Połącz AI dla: {{name}}",
     "have": {
       "title": "Już połączone",

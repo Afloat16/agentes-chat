@@ -6670,6 +6670,33 @@
   "connectAi.title.api_key": {
     "value": "Add an API key"
   },
+  "connectAi.toolOff.text": {
+    "value": "{{computer}} is connected, but {{program}} is switched off on it. For safety, it can only be turned on at the computer itself."
+  },
+  "connectAi.toolOff.where": {
+    "value": "On {{computer}}"
+  },
+  "connectAi.toolOff.one": {
+    "value": "Click the agentes.chat icon <mark/> by the clock"
+  },
+  "connectAi.toolOff.oneWindows": {
+    "value": "On Windows, it may be behind the taskbar's ^ arrow."
+  },
+  "connectAi.toolOff.two": {
+    "value": "Open <b>Preferences</b>"
+  },
+  "connectAi.toolOff.three": {
+    "value": "Under <b>Tools</b>, turn on <b>{{program}}</b>"
+  },
+  "connectAi.toolOff.terminal": {
+    "value": "In the computer's terminal, run:"
+  },
+  "connectAi.toolOff.here": {
+    "value": "Turn on <b>{{program}}</b> under <b>Tools</b>."
+  },
+  "connectAi.toolOff.waiting": {
+    "value": "Waiting for you to turn it on. This screen changes by itself."
+  },
   "connectAi.titleFor": {
     "value": "Connect an AI for {{name}}"
   },

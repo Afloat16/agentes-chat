@@ -2785,6 +2785,17 @@
       "zen": "Conectar OpenCode",
       "api_key": "Agrega una clave de API"
     },
+    "toolOff": {
+      "text": "{{computer}} está conectada, pero {{program}} está apagado en ella. Por seguridad, solo se puede encender en la propia computadora.",
+      "where": "En {{computer}}",
+      "one": "Haz clic en el ícono de agentes.chat <mark/> junto al reloj",
+      "oneWindows": "En Windows, puede estar detrás de la flecha ^ de la barra de tareas.",
+      "two": "Abre <b>Preferencias</b>",
+      "three": "En <b>Herramientas</b>, enciende <b>{{program}}</b>",
+      "terminal": "En la terminal de la computadora, ejecuta:",
+      "here": "Enciende <b>{{program}}</b> en <b>Herramientas</b>.",
+      "waiting": "Esperando a que lo enciendas. Esta pantalla cambia sola."
+    },
     "titleFor": "Conecta una IA para {{name}}",
     "titleFor_female": "Conecta una IA para {{name}}",
     "have": {

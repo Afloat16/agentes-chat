@@ -2687,6 +2687,17 @@
       "zen": "OpenCode'u bağlayın",
       "api_key": "API anahtarı ekleyin"
     },
+    "toolOff": {
+      "text": "{{computer}} bağlı, ancak {{program}} orada kapalı. Güvenlik nedeniyle yalnızca bilgisayarın kendisinden açılabilir.",
+      "where": "{{computer}} üzerinde",
+      "one": "Saatin yanındaki agentes.chat simgesine <mark/> tıklayın",
+      "oneWindows": "Windows'ta görev çubuğundaki ^ okunun arkasında olabilir.",
+      "two": "<b>Tercihler</b>'i açın",
+      "three": "<b>Araçlar</b> altında <b>{{program}}</b> seçeneğini açın",
+      "terminal": "Bilgisayarın terminalinde çalıştırın:",
+      "here": "<b>Araçlar</b> altında <b>{{program}}</b> seçeneğini açın.",
+      "waiting": "Açmanız bekleniyor. Bu ekran kendiliğinden değişir."
+    },
     "titleFor": "{{name}} için bir yapay zeka bağlayın",
     "have": {
       "title": "Zaten bağlı",
