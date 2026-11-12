@@ -16,6 +16,7 @@ import {
   type ModelRequest,
   type ModelResult,
   type PartialUsage,
+  PDF_MEDIA_TYPE,
   ProviderError,
   type StopReason,
   shortSaid,
@@ -142,7 +143,7 @@ export function createAnthropicProvider(
           system: toSystem(request, compat ? undefined : room(request)),
           // Another company's endpoint (DeepSeek, Kimi, Z.ai, MiniMax) isn't trusted to take images, unless it says it does.
           messages: toMessageParams(
-            compat && !compat.images ? withoutImages(request.messages) : request.messages,
+            compat && !compat.images ? withoutImages(request.messages, request.model) : request.messages,
             id,
             withThinking,
             cacheControl(request),
@@ -404,14 +405,22 @@ function toBlockParam(
           content: block.images?.length
             ? [
                 { type: "text", text: block.content },
-                ...block.images.map((i) => ({
-                  type: "image" as const,
-                  source: {
-                    type: "base64" as const,
-                    media_type: i.mediaType as "image/png" | "image/jpeg" | "image/gif" | "image/webp",
-                    data: i.data,
-                  },
-                })),
+                ...block.images.map((i) =>
+                  i.mediaType === PDF_MEDIA_TYPE
+                    ? {
+                        type: "document" as const,
+                        source: { type: "base64" as const, media_type: PDF_MEDIA_TYPE, data: i.data },
+                        ...(i.name ? { title: i.name } : {}),
+                      }
+                    : {
+                        type: "image" as const,
+                        source: {
+                          type: "base64" as const,
+                          media_type: i.mediaType as "image/png" | "image/jpeg" | "image/gif" | "image/webp",
+                          data: i.data,
+                        },
+                      },
+                ),
               ]
             : block.content,
           ...(block.isError ? { is_error: true } : {}),

@@ -288,7 +288,7 @@ describe("calls", () => {
     expect(await send("global.anthropic.claude-sonnet-5-5")).toContain('"type":"image"');
     const other = await send("moonshotai.kimi-k2.5");
     expect(other).not.toContain('"type":"image"');
-    expect(other).toContain("The image is not shown");
+    expect(other).toContain("The picture is not shown to you: this agent's AI (moonshotai.kimi-k2.5) reads text only");
   });
 
   test("tool calls without an index, or with object arguments, stay apart and readable", async () => {
