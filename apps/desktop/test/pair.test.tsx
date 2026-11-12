@@ -449,8 +449,11 @@ describe("pairing from the app", () => {
         await act(async () => button(rowOf(el, "Another workspace"), "Add a workspace…")?.click());
         expect(host.window).toBe("welcome");
 
-        // Pausing one workspace pauses only its own agents.
-        await act(async () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]')?.click());
+        // Pausing one workspace pauses only its own agents. Every switch waits while another request is pending, and
+        // a click on a disabled one does nothing, so wait for it to take clicks first.
+        const horizonte = () => rowOf(el, "Horizonte")?.querySelector<HTMLElement>('[role="switch"]');
+        await until(() => horizonte() && !horizonte()?.hasAttribute("disabled"));
+        await act(async () => horizonte()?.click());
         await until(() => on("Horizonte") === "false");
         expect(on("Acme")).toBe("true");
 
