@@ -101,6 +101,15 @@ describe("the iPhone setup's checklist", () => {
     expect(old.states.helper).toBe("todo");
   });
 
+  test("an iPhone over Wi-Fi that isn't reached, or doesn't trust the Mac, waits on being connected", () => {
+    for (const reason of ["wifi_away", "wifi_asleep", "tunnel_down", "wifi_untrusted"] as const) {
+      expect(at(READY, iphone({ state: "needs_you", reason, transport: "wifi" }))).toMatchObject({
+        current: "connected",
+        state: "needs",
+      });
+    }
+  });
+
   test("the download starts by itself only when Xcode is here and nothing downloads or failed", () => {
     expect(downloadDue({ ...READY, platform: { state: "missing" } })).toBe(true);
     expect(downloadDue({ ...READY, xcode: null, platform: { state: "missing" } })).toBe(false);

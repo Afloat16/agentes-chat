@@ -13652,6 +13652,10 @@
       "no_driverLinux": "Linux kan deze telefoon niet openen",
       "os_too_old": "Dit systeem is te oud voor de tools",
       "adb_offline": "De telefoon reageert niet",
+      "wifi_away": "De iPhone zit niet op de wifi van de Mac",
+      "wifi_asleep": "De iPhone gaf geen antwoord via wifi",
+      "tunnel_down": "De wifiverbinding met de iPhone is weggevallen",
+      "wifi_untrusted": "De iPhone vertrouwt deze Mac niet",
       "other": "Er is iets nodig op het apparaat",
       "iosTooOld": "Hij draait iOS {{version}}, agents hebben iOS 17 of nieuwer nodig"
     },
@@ -13676,6 +13680,10 @@
       "no_driverLinux": "Voeg udev-regels toe voor deze telefoon",
       "os_too_old": "Werk de telefoon bij",
       "adb_offline": "Sluit hem opnieuw aan",
+      "wifi_away": "Ga op de wifi van de Mac of sluit hem aan",
+      "wifi_asleep": "Maak de iPhone wakker en ontgrendel hem",
+      "tunnel_down": "Houd hem bij de Mac of sluit hem aan",
+      "wifi_untrusted": "Sluit hem één keer aan en tik op Vertrouw",
       "other": "Bekijk wat er nodig is"
     },
     "facts": {
@@ -13951,6 +13959,22 @@
         "helper": "{{mac}} bouwt de testhelper en start hem op de iPhone, wat de eerste keer een paar minuten duurt. Houd de iPhone ontgrendeld en aangesloten."
       },
       "ready": "{{name}} is klaar voor agents.",
+      "wifi": {
+        "list": "iPhones op de wifi van {{mac}}",
+        "also": "Ook op de wifi van deze Mac: {{name}}",
+        "use": "Via wifi gebruiken",
+        "hint": "Hier verschijnt alleen een iPhone die deze Mac al eens via een kabel heeft vertrouwd. De Mac bereikt hem via de eigen versleutelde verbinding van Apple, dezelfde die Xcode gebruikt.",
+        "stop": "Niet meer via wifi gebruiken",
+        "stopTitle": "{{name}} niet meer via wifi gebruiken?",
+        "stopText": "Agents kunnen hem niet meer bereiken. Kies hem opnieuw op zijn Mac om hem te gebruiken.",
+        "stopped": "{{name}} wordt niet meer via wifi gebruikt."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} zit nu niet op de wifi van de Mac. Zet de iPhone op hetzelfde netwerk of sluit hem aan.",
+        "wifi_asleep": "{{name}} gaf geen antwoord via wifi. Maak hem wakker, ontgrendel hem en houd hem bij de Mac.",
+        "tunnel_down": "De wifiverbinding met {{name}} is weggevallen. Houd hem ontgrendeld en bij de Mac, of sluit hem aan.",
+        "wifi_untrusted": "{{name}} vertrouwt deze Mac niet. Sluit hem één keer aan, tik op Vertrouw en voer de toegangscode in."
+      },
       "path": {
         "settings": "Instellingen",
         "privacy": "Privacy en beveiliging",

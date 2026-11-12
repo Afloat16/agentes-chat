@@ -33039,6 +33039,18 @@
   "devices.reason.adb_offline": {
     "value": "The phone isn't answering"
   },
+  "devices.reason.wifi_away": {
+    "value": "The iPhone isn't on the Mac's Wi-Fi"
+  },
+  "devices.reason.wifi_asleep": {
+    "value": "The iPhone didn't answer over Wi-Fi"
+  },
+  "devices.reason.tunnel_down": {
+    "value": "The Wi-Fi link to the iPhone dropped"
+  },
+  "devices.reason.wifi_untrusted": {
+    "value": "The iPhone doesn't trust this Mac"
+  },
   "devices.reason.other": {
     "value": "It needs something on the device"
   },
@@ -33104,6 +33116,18 @@
   },
   "devices.fix.adb_offline": {
     "value": "Plug it in again"
+  },
+  "devices.fix.wifi_away": {
+    "value": "Join the Mac's Wi-Fi, or plug it in"
+  },
+  "devices.fix.wifi_asleep": {
+    "value": "Wake and unlock the iPhone"
+  },
+  "devices.fix.tunnel_down": {
+    "value": "Keep it near the Mac, or plug it in"
+  },
+  "devices.fix.wifi_untrusted": {
+    "value": "Plug it in once and tap Trust"
   },
   "devices.fix.other": {
     "value": "See what it needs"
@@ -33809,6 +33833,42 @@
   },
   "devices.iphone.ready": {
     "value": "{{name}} is ready for agents."
+  },
+  "devices.iphone.wifi.list": {
+    "value": "iPhones on the Wi-Fi of {{mac}}"
+  },
+  "devices.iphone.wifi.also": {
+    "value": "Also on this Mac's Wi-Fi: {{name}}"
+  },
+  "devices.iphone.wifi.use": {
+    "value": "Use over Wi-Fi"
+  },
+  "devices.iphone.wifi.hint": {
+    "value": "Only an iPhone that trusted this Mac over a cable shows up here. The Mac reaches it through Apple's own encrypted link, the one Xcode uses."
+  },
+  "devices.iphone.wifi.stop": {
+    "value": "Stop using over Wi-Fi"
+  },
+  "devices.iphone.wifi.stopTitle": {
+    "value": "Stop using {{name}} over Wi-Fi?"
+  },
+  "devices.iphone.wifi.stopText": {
+    "value": "Agents can't reach it any more. Pick it again on its Mac to use it."
+  },
+  "devices.iphone.wifi.stopped": {
+    "value": "{{name}} isn't used over Wi-Fi any more."
+  },
+  "devices.iphone.wifiState.wifi_away": {
+    "value": "{{name}} isn't on the Mac's Wi-Fi now. Join the same network on the iPhone, or plug it in."
+  },
+  "devices.iphone.wifiState.wifi_asleep": {
+    "value": "{{name}} didn't answer over Wi-Fi. Wake and unlock it, and keep it near the Mac."
+  },
+  "devices.iphone.wifiState.tunnel_down": {
+    "value": "The Wi-Fi link to {{name}} dropped. Keep it unlocked and near the Mac, or plug it in."
+  },
+  "devices.iphone.wifiState.wifi_untrusted": {
+    "value": "{{name}} doesn't trust this Mac. Plug it in once, tap Trust and enter its passcode."
   },
   "devices.iphone.path.settings": {
     "value": "Settings"

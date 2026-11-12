@@ -13161,6 +13161,10 @@
       "no_driverLinux": "Linux 无法打开这台手机",
       "os_too_old": "这个系统太旧，无法使用这些工具",
       "adb_offline": "手机没有响应",
+      "wifi_away": "iPhone 不在 Mac 的 Wi-Fi 上",
+      "wifi_asleep": "iPhone 没有通过 Wi-Fi 响应",
+      "tunnel_down": "与 iPhone 的 Wi-Fi 连接断了",
+      "wifi_untrusted": "iPhone 不信任这台 Mac",
       "other": "设备上需要处理一些事",
       "iosTooOld": "它运行 iOS {{version}}，智能体需要 iOS 17 或更新版本"
     },
@@ -13185,6 +13189,10 @@
       "no_driverLinux": "为这台手机添加 udev 规则",
       "os_too_old": "更新手机系统",
       "adb_offline": "重新插上",
+      "wifi_away": "连接 Mac 的 Wi-Fi，或插上数据线",
+      "wifi_asleep": "唤醒并解锁 iPhone",
+      "tunnel_down": "放在 Mac 附近，或插上数据线",
+      "wifi_untrusted": "用数据线连接一次并点按“信任”",
       "other": "查看需要什么"
     },
     "facts": {
@@ -13458,6 +13466,22 @@
         "helper": "{{mac}} 会构建测试助手并在 iPhone 上启动它，第一次需要几分钟。请保持 iPhone 解锁并连接。"
       },
       "ready": "{{name}} 已可供智能体使用。",
+      "wifi": {
+        "list": "{{mac}} 的 Wi-Fi 上的 iPhone",
+        "also": "也在这台 Mac 的 Wi-Fi 上：{{name}}",
+        "use": "通过 Wi-Fi 使用",
+        "hint": "只有曾通过数据线信任过这台 Mac 的 iPhone 才会出现在这里。Mac 通过 Apple 自己的加密连接访问它，和 Xcode 用的是同一种。",
+        "stop": "停止通过 Wi-Fi 使用",
+        "stopTitle": "停止通过 Wi-Fi 使用“{{name}}”？",
+        "stopText": "智能体将无法再访问它。要使用它，请在它的 Mac 上重新选择。",
+        "stopped": "“{{name}}”不再通过 Wi-Fi 使用。"
+      },
+      "wifiState": {
+        "wifi_away": "“{{name}}”现在不在 Mac 的 Wi-Fi 上。请让 iPhone 连接同一网络，或插上数据线。",
+        "wifi_asleep": "“{{name}}”没有通过 Wi-Fi 响应。请唤醒并解锁它，并放在 Mac 附近。",
+        "tunnel_down": "与“{{name}}”的 Wi-Fi 连接断了。请保持解锁并放在 Mac 附近，或插上数据线。",
+        "wifi_untrusted": "“{{name}}”不信任这台 Mac。请用数据线连接一次，点按“信任”并输入密码。"
+      },
       "path": {
         "settings": "设置",
         "privacy": "隐私与安全性",

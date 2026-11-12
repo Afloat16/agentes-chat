@@ -13975,6 +13975,10 @@
       "no_driverLinux": "Linux no puede abrir este teléfono",
       "os_too_old": "Este sistema es demasiado antiguo para las herramientas",
       "adb_offline": "El teléfono no responde",
+      "wifi_away": "El iPhone no está en el Wi-Fi de la Mac",
+      "wifi_asleep": "El iPhone no respondió por Wi-Fi",
+      "tunnel_down": "Se cortó la conexión Wi-Fi con el iPhone",
+      "wifi_untrusted": "El iPhone no confía en esta Mac",
       "other": "Necesita algo en el dispositivo",
       "iosTooOld": "Usa iOS {{version}}, los agentes necesitan iOS 17 o posterior"
     },
@@ -13999,6 +14003,10 @@
       "no_driverLinux": "Agrega reglas udev para este teléfono",
       "os_too_old": "Actualiza el teléfono",
       "adb_offline": "Vuelve a conectarlo",
+      "wifi_away": "Únete al Wi-Fi de la Mac o conecta el cable",
+      "wifi_asleep": "Activa y desbloquea el iPhone",
+      "tunnel_down": "Déjalo cerca de la Mac o conecta el cable",
+      "wifi_untrusted": "Conéctalo una vez y toca Confiar",
       "other": "Mira qué necesita"
     },
     "facts": {
@@ -14276,6 +14284,22 @@
         "helper": "{{mac}} crea la app de pruebas y la abre en el iPhone, lo que tarda unos minutos la primera vez. Mantén el iPhone desbloqueado y conectado."
       },
       "ready": "{{name}} está listo para los agentes.",
+      "wifi": {
+        "list": "iPhones en el Wi-Fi de {{mac}}",
+        "also": "También en el Wi-Fi de esta Mac: {{name}}",
+        "use": "Usar por Wi-Fi",
+        "hint": "Aquí solo aparece un iPhone que ya confió en esta Mac por cable. La Mac llega a él por la conexión cifrada de la propia Apple, la misma que usa Xcode.",
+        "stop": "Dejar de usar por Wi-Fi",
+        "stopTitle": "¿Dejar de usar {{name}} por Wi-Fi?",
+        "stopText": "Los agentes ya no llegan a él. Elígelo de nuevo en su Mac para usarlo.",
+        "stopped": "{{name}} ya no se usa por Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} no está en el Wi-Fi de la Mac ahora. Conecta el iPhone a la misma red o usa el cable.",
+        "wifi_asleep": "{{name}} no respondió por Wi-Fi. Actívalo, desbloquéalo y déjalo cerca de la Mac.",
+        "tunnel_down": "Se cortó la conexión Wi-Fi con {{name}}. Déjalo desbloqueado y cerca de la Mac o conecta el cable.",
+        "wifi_untrusted": "{{name}} no confía en esta Mac. Conéctalo una vez por cable, toca Confiar y escribe su código."
+      },
       "path": {
         "settings": "Configuración",
         "privacy": "Privacidad y seguridad",

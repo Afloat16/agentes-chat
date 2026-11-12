@@ -14046,6 +14046,10 @@
       "no_driverLinux": "Linux ne peut pas ouvrir ce téléphone",
       "os_too_old": "Ce système est trop ancien pour les outils",
       "adb_offline": "Le téléphone ne répond pas",
+      "wifi_away": "L'iPhone n'est pas sur le Wi-Fi du Mac",
+      "wifi_asleep": "L'iPhone n'a pas répondu en Wi-Fi",
+      "tunnel_down": "La liaison Wi-Fi avec l'iPhone a été coupée",
+      "wifi_untrusted": "L'iPhone ne fait pas confiance à ce Mac",
       "other": "Il faut faire quelque chose sur l'appareil",
       "iosTooOld": "Il est sous iOS {{version}}, les agents ont besoin d'iOS 17 ou plus récent"
     },
@@ -14070,6 +14074,10 @@
       "no_driverLinux": "Ajoutez des règles udev pour ce téléphone",
       "os_too_old": "Mettez le téléphone à jour",
       "adb_offline": "Rebranchez-le",
+      "wifi_away": "Rejoignez le Wi-Fi du Mac ou branchez-le",
+      "wifi_asleep": "Réveillez et déverrouillez l'iPhone",
+      "tunnel_down": "Gardez-le près du Mac ou branchez-le",
+      "wifi_untrusted": "Branchez-le une fois et touchez Se fier",
       "other": "Voir ce qu'il faut faire"
     },
     "facts": {
@@ -14347,6 +14355,22 @@
         "helper": "{{mac}} crée l'app de test et la lance sur l'iPhone, ce qui prend quelques minutes la première fois. Gardez l'iPhone déverrouillé et branché."
       },
       "ready": "{{name}} est prêt pour les agents.",
+      "wifi": {
+        "list": "iPhone sur le Wi-Fi de {{mac}}",
+        "also": "Aussi sur le Wi-Fi de ce Mac : {{name}}",
+        "use": "Utiliser en Wi-Fi",
+        "hint": "Seul un iPhone qui a déjà fait confiance à ce Mac par câble apparaît ici. Le Mac le joint par la liaison chiffrée d'Apple, celle qu'utilise Xcode.",
+        "stop": "Ne plus utiliser en Wi-Fi",
+        "stopTitle": "Ne plus utiliser {{name}} en Wi-Fi ?",
+        "stopText": "Les agents ne peuvent plus l'atteindre. Choisissez-le à nouveau sur son Mac pour l'utiliser.",
+        "stopped": "{{name}} n'est plus utilisé en Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} n'est pas sur le Wi-Fi du Mac pour l'instant. Rejoignez le même réseau sur l'iPhone ou branchez-le.",
+        "wifi_asleep": "{{name}} n'a pas répondu en Wi-Fi. Réveillez-le, déverrouillez-le et gardez-le près du Mac.",
+        "tunnel_down": "La liaison Wi-Fi avec {{name}} a été coupée. Gardez-le déverrouillé et près du Mac, ou branchez-le.",
+        "wifi_untrusted": "{{name}} ne fait pas confiance à ce Mac. Branchez-le une fois, touchez Se fier et saisissez son code."
+      },
       "path": {
         "settings": "Réglages",
         "privacy": "Confidentialité et sécurité",

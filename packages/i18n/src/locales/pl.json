@@ -14507,6 +14507,10 @@
       "no_driverLinux": "Linux nie może otworzyć tego telefonu",
       "os_too_old": "Ten system jest za stary dla narzędzi",
       "adb_offline": "Telefon nie odpowiada",
+      "wifi_away": "iPhone nie jest w sieci Wi-Fi Maca",
+      "wifi_asleep": "iPhone nie odpowiedział przez Wi-Fi",
+      "tunnel_down": "Połączenie Wi-Fi z iPhone'em zostało przerwane",
+      "wifi_untrusted": "iPhone nie ufa temu Macowi",
       "other": "Coś trzeba zrobić na urządzeniu",
       "iosTooOld": "Ma iOS {{version}}, agenci potrzebują iOS 17 lub nowszego"
     },
@@ -14531,6 +14535,10 @@
       "no_driverLinux": "Dodaj reguły udev dla tego telefonu",
       "os_too_old": "Zaktualizuj telefon",
       "adb_offline": "Podłącz go ponownie",
+      "wifi_away": "Połącz się z Wi-Fi Maca albo podłącz kabel",
+      "wifi_asleep": "Wybudź i odblokuj iPhone'a",
+      "tunnel_down": "Trzymaj go blisko Maca albo podłącz kabel",
+      "wifi_untrusted": "Podłącz go raz i stuknij Zaufaj",
       "other": "Zobacz, czego potrzebuje"
     },
     "facts": {
@@ -14810,6 +14818,22 @@
         "helper": "{{mac}} tworzy pomocnika testowego i uruchamia go na iPhonie, co za pierwszym razem trwa kilka minut. Trzymaj iPhone'a odblokowanego i podłączonego."
       },
       "ready": "{{name}} jest gotowy dla agentów.",
+      "wifi": {
+        "list": "iPhone'y w sieci Wi-Fi komputera {{mac}}",
+        "also": "Też w sieci Wi-Fi tego Maca: {{name}}",
+        "use": "Używaj przez Wi-Fi",
+        "hint": "Pojawia się tu tylko iPhone, który już zaufał temu Macowi przez kabel. Mac łączy się z nim własnym szyfrowanym połączeniem Apple, tym samym, którego używa Xcode.",
+        "stop": "Przestań używać przez Wi-Fi",
+        "stopTitle": "Przestać używać {{name}} przez Wi-Fi?",
+        "stopText": "Agenci nie będą już mogli się z nim połączyć. Aby go używać, wybierz go znowu na jego Macu.",
+        "stopped": "{{name}} nie jest już używany przez Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} nie jest teraz w sieci Wi-Fi Maca. Połącz iPhone'a z tą samą siecią albo podłącz kabel.",
+        "wifi_asleep": "{{name}} nie odpowiedział przez Wi-Fi. Wybudź go, odblokuj i trzymaj blisko Maca.",
+        "tunnel_down": "Połączenie Wi-Fi z {{name}} zostało przerwane. Trzymaj go odblokowanego i blisko Maca albo podłącz kabel.",
+        "wifi_untrusted": "{{name}} nie ufa temu Macowi. Podłącz go raz kablem, stuknij Zaufaj i wpisz jego kod."
+      },
       "path": {
         "settings": "Ustawienia",
         "privacy": "Prywatność i ochrona",
