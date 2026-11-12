@@ -1779,6 +1779,13 @@
       "when": 1794675400000,
       "tag": "0255_right_hand_seats",
       "breakpoints": true
+    },
+    {
+      "idx": 256,
+      "version": "7",
+      "when": 1794675500000,
+      "tag": "0256_handoff_seat",
+      "breakpoints": true
     }
   ]
 }
