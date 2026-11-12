@@ -17,6 +17,7 @@ import type { BrainScreen } from "@agenteschat/client/lib/agent-edit";
 import { ownSignInName } from "@agenteschat/client/lib/ai-accounts";
 import { effortLevel } from "@agenteschat/client/lib/brain-advanced";
 import { computerNameOf, setupPortrait, WORKSPACE_COMPUTER_KIND } from "@agenteschat/client/lib/computer";
+import { firstName } from "@agenteschat/client/lib/format";
 import {
   allowsInApp,
   commandInReason,
@@ -60,6 +61,7 @@ import { useTranslation } from "react-i18next";
 import { NO_COMPUTER, useNoComputer } from "@/components/AgentComputer";
 import { usePlanHold } from "@/components/ai/ConnectAiSteps";
 import { useConnectAi } from "@/components/ConnectAi";
+import { MachineToolButton, useToolOneClick } from "@/components/devices/ToolOneClick";
 import { CommandBlock } from "@/components/machine-bits";
 import { useOrg } from "@/components/org-context";
 import {
@@ -409,7 +411,24 @@ export function BrowserSteps({ computer, machineId }: { computer: string; machin
   const { org } = useOrg();
   const here = useIsThisMac(org.id, machineId ?? "");
   const row = useMachines(org.id).data?.find((m) => m.id === machineId);
+  const oneClick = useToolOneClick(row);
   if (row?.kind === "managed" || row?.access?.tools.browser) return null;
+  // Whoever connected it turns it on right here; anyone else asks them. The app's steps stay for an app too old.
+  if (row && oneClick && oneClick.kind !== "outdated") {
+    return (
+      <section className="brw-steps" aria-label={t("agentPage.work.steps.title", { computer })}>
+        <StepsHead title={t("agentPage.work.steps.title", { computer })} />
+        <div className="row" style={{ gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="small muted" style={{ flex: 1, minWidth: 200 }}>
+            {oneClick.kind === "ask"
+              ? t("browser.profiles.toolOffOther", { name: firstName(oneClick.ownerName) })
+              : t("browser.profiles.toolOff")}
+          </span>
+          <MachineToolButton machine={row} tool="browser" />
+        </div>
+      </section>
+    );
+  }
   if (here) {
     return (
       <section className="brw-steps" aria-label={t("machines.thisMac.browserTitle")}>

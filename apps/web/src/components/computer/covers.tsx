@@ -7,6 +7,7 @@ import { Button } from "@agenteschat/ui";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Cover } from "../browser/Cover";
+import { MachineToolButton, useToolOneClick } from "../devices/ToolOneClick";
 import { CommandBlock } from "../machine-bits";
 import { Egress } from "./Egress";
 
@@ -66,6 +67,7 @@ export function CantShowCover({
 }) {
   const { t } = useTranslation();
   const g = agentGrammar(name);
+  const oneClick = useToolOneClick(machine);
   const again = (
     <Button size="sm" icon="refresh" onClick={onRetry}>
       {t("desktop.retry")}
@@ -77,6 +79,26 @@ export function CantShowCover({
     );
   }
   const fixer = edition === "selfhost" && machine?.canManage === true && machine.os !== "darwin";
+  // The screens' switches, one click each, for whoever connected it; anyone else asks them.
+  if (edition === "selfhost" && reason === "not_allowed" && machine && oneClick && oneClick.kind !== "outdated") {
+    return (
+      <Cover
+        color={color}
+        icon="dash"
+        text={t("agentComputer.state.screensOffOne", { computer })}
+        action={
+          <span className="ac-acts">
+            {(["desktop", "commands"] as const)
+              .filter((tool) => machine.access?.tools[tool] !== true)
+              .map((tool) => (
+                <MachineToolButton key={tool} machine={machine} tool={tool} onAllowed={onRetry} />
+              ))}
+            {again}
+          </span>
+        }
+      />
+    );
+  }
   const command =
     reason === "not_allowed" && machine
       ? toolOnCommand(machine, "desktop")

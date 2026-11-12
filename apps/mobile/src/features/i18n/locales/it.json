@@ -2077,6 +2077,7 @@
       "access_requestFor": "{{names}} chiede di usare {{device}} per {{person}}",
       "waiting": "{{names}} sta aspettando {{device}}",
       "waitingFor": "{{names}} sta aspettando {{device}} per {{person}}",
+      "tool_request": "{{names}} ti chiede di attivare {{tool}} sul tuo {{device}}",
       "allowOnce": "Consenti una volta",
       "always": "Consenti sempre a {{name}}",
       "no": "No",
@@ -2343,7 +2344,8 @@
       "tooBig": "L'immagine è troppo grande. Provane un'altra."
     },
     "machine": {
-      "toolsHow": "Tocca uno strumento attivo per disattivarlo. Si riattiva solo dal computer stesso."
+      "toolsHow": "Tocca uno strumento attivo per disattivarlo. Per riattivarlo: sul computer stesso, o qui da chi lo ha collegato.",
+      "toolsHowOwner": "Tocca uno strumento per attivarlo o disattivarlo."
     },
     "roles": {
       "onComputer": "L'ordine dei ruoli e l'icona di ciascuno si cambiano dal computer.",

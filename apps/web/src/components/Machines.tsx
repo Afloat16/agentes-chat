@@ -56,6 +56,7 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useOpenComputer } from "@/components/computer/open";
+import { MachineToolButton, useToolOneClick } from "@/components/devices/ToolOneClick";
 import { HelpLink } from "@/components/HelpLink";
 import { ErrorState, LoadingList } from "@/components/Loading";
 import { useOrg } from "@/components/org-context";
@@ -583,6 +584,7 @@ function ToolsCard({ machine: m, onReduce }: { machine: Machine; onReduce: (r: R
   const { t } = useTranslation();
   const { org } = useOrg();
   // The site only turns a tool off. Turning one on happens in this Mac's app (ADR 0036).
+  const oneClick = useToolOneClick(m);
   const here = useIsThisMac(org.id, m.id);
   const access = m.access;
   if (!access) return null;
@@ -620,6 +622,9 @@ function ToolsCard({ machine: m, onReduce }: { machine: Machine; onReduce: (r: R
               {warn && <span className="ac-mediarow__body small muted">{t("machines.access.commandsWarn")}</span>}
               <span className="machine-tool__tail ac-mediarow__end ac-mediarow__end--wrap">
                 <Chip icon={on ? "check" : "dash"}>{on ? t("machines.access.on") : t("machines.access.off")}</Chip>
+                {!on && oneClick?.kind === "allow" && (
+                  <MachineToolButton machine={m} tool={tool} variant="default" label={t("machines.access.enable")} />
+                )}
                 {on && canReduceAccess(m) && (
                   <Button
                     size="sm"
@@ -634,7 +639,7 @@ function ToolsCard({ machine: m, onReduce }: { machine: Machine; onReduce: (r: R
           );
         })}
       </List>
-      {here && !MACHINE_TOOLS.every(isOn) && <ToolsOffHereNote />}
+      {here && oneClick?.kind !== "allow" && !MACHINE_TOOLS.every(isOn) && <ToolsOffHereNote />}
     </Card>
   );
 }

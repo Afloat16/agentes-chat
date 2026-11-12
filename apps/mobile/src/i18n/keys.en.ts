@@ -9,6 +9,8 @@ export const mobileEn = {
     continue: "Continue",
     done: "Done",
     retry: "Try again",
+    /** Opens this app's page in the phone's Settings, where a permission it was refused is given. */
+    openSettings: "Open Settings",
     loading: "Loading",
     or: "or",
   },
@@ -128,7 +130,7 @@ export const mobileEn = {
       on: "Turn on notifications",
       later: "Not now",
       done: "Notifications on",
-      failed: "Couldn't turn on notifications. Try again in You\u00a0›\u00a0Notifications.",
+      failed: "Couldn't turn on notifications on this phone.",
       someone: "An agent",
       examples: "Examples of notifications",
       now: "now",

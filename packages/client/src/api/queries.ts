@@ -125,6 +125,7 @@ import type {
   JevKey,
   Machine,
   MachineAccessReduce,
+  MachineTool,
   MailAccountUpdate,
   MailImapInput,
   Me,
@@ -5004,6 +5005,31 @@ export function useReduceMachineAccess(orgId: string) {
       qc.setQueryData<Machine[]>(keys.machines(orgId), (list) =>
         list?.map((m) => (m.id === machineId ? { ...m, access } : m)),
       );
+    },
+  });
+}
+
+/**
+ * One click where a tool is off on a computer: its owner turns it on (`allow`), anyone else asks them (`ask`). The
+ * machines and devices lists refetch so every screen that waited on it moves on.
+ */
+export function useAllowMachineTool(orgId: string) {
+  const api = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ machineId, tool, ask }: { machineId: string; tool: MachineTool; ask?: boolean }) => {
+      if (!ask) return api.machines.allowTool(orgId, machineId, tool);
+      await api.machines.askTool(orgId, machineId, tool);
+      return null;
+    },
+    meta: { silent: true },
+    onSuccess: (access, { machineId }) => {
+      if (access)
+        qc.setQueryData<Machine[]>(keys.machines(orgId), (list) =>
+          list?.map((m) => (m.id === machineId ? { ...m, access } : m)),
+        );
+      void qc.invalidateQueries({ queryKey: keys.machines(orgId) });
+      void qc.invalidateQueries({ queryKey: keys.devices(orgId) });
     },
   });
 }

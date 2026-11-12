@@ -446,6 +446,21 @@ describe("in the chat and the inbox", () => {
       forName: "Rui",
     });
     expect(deviceNoticeOf({ kind: "mention", source: {}, latest: {} } as never)).toBeNull();
+    // Someone asks the computer's owner to turn a tool on: the tool, and who asked (a person, not an agent).
+    const ask = {
+      kind: "device.tool_request",
+      actors: [{ type: "user", id: "u-caio" }],
+      source: { machineId: "m1", label: "Bia's Mac" },
+      latest: { reason: "browser" },
+    } as never;
+    expect(deviceNoticeOf(ask)).toMatchObject({
+      kind: "device.tool_request",
+      machineId: "m1",
+      device: "Bia's Mac",
+      tool: "browser",
+      askerId: "u-caio",
+      agentId: null,
+    });
   });
 });
 

@@ -1888,6 +1888,7 @@
       "access_requestFor": "{{names}}이(가) {{person}} 님을 위해 {{device}} 사용을 요청해요",
       "waiting": "{{names}}이(가) {{device}}을(를) 기다리고 있어요",
       "waitingFor": "{{names}}이(가) {{person}} 님을 위해 {{device}}을(를) 기다리고 있어요",
+      "tool_request": "{{names}}님이 회원님의 {{device}}에서 {{tool}}을(를) 켜 달라고 요청합니다",
       "allowOnce": "한 번 허용",
       "always": "{{name}} 항상 허용",
       "no": "아니요",
@@ -2144,7 +2145,8 @@
       "tooBig": "이미지가 너무 커요. 다른 이미지를 골라 주세요."
     },
     "machine": {
-      "toolsHow": "켜진 도구를 탭하면 꺼져요. 다시 켜는 건 그 컴퓨터에서만 할 수 있어요."
+      "toolsHow": "켜져 있는 도구를 탭하면 꺼집니다. 다시 켜려면 그 컴퓨터에서, 또는 연결한 사람이 여기서 켜세요.",
+      "toolsHowOwner": "도구를 탭해서 켜거나 끄세요."
     },
     "roles": {
       "onComputer": "역할 순서와 각 역할의 아이콘은 컴퓨터에서 바꿔요.",

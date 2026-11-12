@@ -4883,6 +4883,9 @@
   "devices.notice.waitingFor": {
     "value": "{{names}} is waiting for {{device}} for {{person}}"
   },
+  "devices.notice.tool_request": {
+    "value": "{{names}} asks you to turn on {{tool}} on your {{device}}"
+  },
   "devices.notice.allowOnce": {
     "value": "Allow once"
   },
@@ -5514,7 +5517,10 @@
     "value": "That image is too big. Try another one."
   },
   "settings.machine.toolsHow": {
-    "value": "Tap a tool that's on to turn it off. Turning it back on happens only on the computer itself."
+    "value": "Tap a tool that's on to turn it off. To turn it back on: on the computer itself, or here by whoever connected it."
+  },
+  "settings.machine.toolsHowOwner": {
+    "value": "Tap a tool to turn it on or off."
   },
   "settings.roles.onComputer": {
     "value": "The roles' order and each role's icon change on the computer."

@@ -1888,6 +1888,7 @@
       "access_requestFor": "{{names}} minta izin memakai {{device}} untuk {{person}}",
       "waiting": "{{names}} sedang menunggu {{device}}",
       "waitingFor": "{{names}} sedang menunggu {{device}} untuk {{person}}",
+      "tool_request": "{{names}} memintamu menyalakan {{tool}} di {{device}} milikmu",
       "allowOnce": "Izinkan sekali",
       "always": "Selalu izinkan {{name}}",
       "no": "Tidak",
@@ -2144,7 +2145,8 @@
       "tooBig": "Gambar itu terlalu besar. Coba yang lain."
     },
     "machine": {
-      "toolsHow": "Ketuk alat yang menyala untuk mematikannya. Menyalakannya lagi hanya bisa di komputer itu sendiri."
+      "toolsHow": "Ketuk alat yang menyala untuk mematikannya. Untuk menyalakannya lagi: di komputer itu sendiri, atau di sini oleh orang yang menghubungkannya.",
+      "toolsHowOwner": "Ketuk alat untuk menyalakan atau mematikannya."
     },
     "roles": {
       "onComputer": "Urutan peran dan ikon tiap peran diubah di komputer.",

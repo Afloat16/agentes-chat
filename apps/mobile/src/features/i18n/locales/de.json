@@ -1985,6 +1985,7 @@
       "access_requestFor": "{{names}} möchte {{device}} für {{person}} nutzen",
       "waiting": "{{names}} wartet auf {{device}}",
       "waitingFor": "{{names}} wartet für {{person}} auf {{device}}",
+      "tool_request": "{{names}} bittet dich, {{tool}} auf deinem {{device}} einzuschalten",
       "allowOnce": "Einmal erlauben",
       "always": "{{name}} immer erlauben",
       "no": "Nein",
@@ -2247,7 +2248,8 @@
       "tooBig": "Das Bild ist zu groß. Versuch ein anderes."
     },
     "machine": {
-      "toolsHow": "Tippe auf ein eingeschaltetes Tool, um es auszuschalten. Wieder einschalten geht nur am Computer selbst."
+      "toolsHow": "Tippe auf ein eingeschaltetes Werkzeug, um es auszuschalten. Wieder einschalten: am Computer selbst, oder hier durch die Person, die ihn verbunden hat.",
+      "toolsHowOwner": "Tippe auf ein Werkzeug, um es ein- oder auszuschalten."
     },
     "roles": {
       "onComputer": "Die Reihenfolge der Rollen und das Symbol jeder Rolle änderst du am Computer.",

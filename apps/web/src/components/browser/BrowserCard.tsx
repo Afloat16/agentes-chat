@@ -6,6 +6,7 @@ import type {
   BrowserStep,
   DesktopViewState,
   LiveRun,
+  Machine,
   PageTarget,
   ScreenKind,
 } from "@agenteschat/client";
@@ -45,6 +46,7 @@ import {
 } from "@agenteschat/client";
 import { formatTime, lowerFirst } from "@agenteschat/client/lib/format";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
+import { browserOffMessage, profileRefusalLine } from "@agenteschat/client/lib/machines";
 import { can as canDo } from "@agenteschat/client/lib/permissions";
 import { isBlankPage } from "@agenteschat/client/lib/sites";
 import {
@@ -89,6 +91,7 @@ import { DialogHead, FullButton, FullScreenButton, useDialogHead, useSayFailed }
 import { useOpenComputer, useOpenedComputer } from "../computer/open";
 import { DesktopView } from "../desktop/DesktopView";
 import { PASTE_MAX_BYTES, pasteBytes } from "../desktop/paste";
+import { MachineToolButton } from "../devices/ToolOneClick";
 import { useOrg } from "../org-context";
 import { colorOf } from "../Sky";
 import { useComputerEdition } from "../WorkspaceComputer";
@@ -313,7 +316,7 @@ export function BrowserCard({
    * A shared browser profile (ADR 0110) instead of the agent's browser: its live view (`profile:<id>`), "Fazer
    * login" as the person's control of it, Devolver hands it back to its agents. `name` is the profile's.
    */
-  profile?: { id: string; name: string; agentIds: string[]; canDrive: boolean };
+  profile?: { id: string; name: string; agentIds: string[]; canDrive: boolean; machine?: Machine };
   /** Its run's browser command waits for a profile someone else has (the waiting box). */
   profileWait?: BrowserProfileWait | null;
   /** What the agent did in its browser in this run (the log); none outside a run. */
@@ -849,6 +852,10 @@ export function BrowserCard({
 
   const unavailable = shows ? null : live.unavailable;
   const reconnecting = unavailable?.reason === "reconnecting";
+  // A profile's Chrome the computer refused to start (`unavailable`) waits for nothing: said at once, with its way out
+  // (the switch when the browser is off there). An agent's own browser retries by itself, as before.
+  const refusedHere = unavailable?.reason === "unavailable" && Boolean(profile);
+  const offHere = refusedHere && Boolean(profile) && browserOffMessage(unavailable?.message);
   // What can't change by waiting is said plainly; everything else is "opening" while it retries.
   const blocker = shows
     ? null
@@ -860,7 +867,9 @@ export function BrowserCard({
           ? t(canDo(org, "own_browsers") ? "browser.inCard.forbidden" : "browser.inCard.noRole")
           : live.error === "too_many_browsers"
             ? t("browser.inCard.tooMany")
-            : null;
+            : refusedHere
+              ? t(offHere ? "browser.profiles.toolOff" : "browser.live.unavailable")
+              : null;
   const starting = !shows && !frame && !blocker && !reconnecting && !closed && !opening && !hidden;
   // Opening or reconnecting for too long says so, with Try again: who may drive it restarts the browser, the
   // others watch again. Only while this view watches on an open socket: off screen or offline no page can come.
@@ -872,6 +881,12 @@ export function BrowserCard({
     setAttempt((n) => n + 1);
     // Watching again after the restart too: this view's own watch may be what the server refused.
     if (mayDrive && !profile) actions.restart.mutate(agentId, { onError: didntWork, onSettled: () => live.retry() });
+    // A profile's Chrome starts again with control taken again (the server warms it, or says why it can't).
+    else if (profile && mayDrive)
+      profileActions.takeover.mutate(profile.id, {
+        onError: (err) => sayFailed(profileRefusalLine(t, err)),
+        onSettled: () => live.retry(),
+      });
     else live.retry();
   };
 
@@ -989,7 +1004,9 @@ export function BrowserCard({
   // On the screen (ADR 0058 §7) no frame says the page: what the agent does now, or watching.
   const sub = inControl
     ? profile
-      ? t("browser.profiles.controlSub")
+      ? profile.machine
+        ? t("browser.profiles.controlSubOn", { machine: profile.machine.name })
+        : t("browser.profiles.controlSub")
       : ask
         ? host
           ? t("browser.inCard.subControl", { site: host, ...g })
@@ -1135,6 +1152,26 @@ export function BrowserCard({
       />
     ) : profileWait ? (
       <ProfileWaitCover wait={profileWait} waiter={{ agentId, name }} />
+    ) : blocker && refusedHere ? (
+      <Cover
+        color={color}
+        icon="alert"
+        text={blocker}
+        action={
+          profile?.machine && offHere ? (
+            <MachineToolButton machine={profile.machine} tool="browser" onAllowed={retry} />
+          ) : (
+            <Button
+              size="sm"
+              icon="refresh"
+              loading={actions.restart.isPending || profileActions.takeover.isPending}
+              onClick={retry}
+            >
+              {t("common.retry")}
+            </Button>
+          )
+        }
+      />
     ) : blocker ? (
       <Cover color={color} text={blocker} />
     ) : hidden ? (
@@ -1165,7 +1202,12 @@ export function BrowserCard({
     ) : reconnecting ? (
       <Cover color={color} spinner text={t("browser.live.reconnecting")} help={t("browser.inCard.reconnectHelp", g)} />
     ) : starting ? (
-      <Cover color={color} spinner text={t("browser.inCard.openingLong", g)} help={t("browser.inCard.openingHelp")} />
+      <Cover
+        color={color}
+        spinner
+        text={profile ? t("browser.profiles.opening", { name: profile.name }) : t("browser.inCard.openingLong", g)}
+        help={t("browser.inCard.openingHelp")}
+      />
     ) : null;
 
   return (
@@ -1531,8 +1573,14 @@ export function BrowserCard({
         ) : null)}
       {inControl && !failing && (
         <HandBackFoot
-          title={profile ? t("browser.profiles.backTitle", { name: profile.name }) : t("browser.inCard.backTitle", g)}
-          label={handBackLabel}
+          title={
+            profile
+              ? profile.agentIds.length > 0
+                ? t("browser.profiles.backWhen", { count: profile.agentIds.length })
+                : t("browser.profiles.backWhenNone")
+              : t("browser.inCard.backTitle", g)
+          }
+          label={profile ? t("browser.profiles.handBack") : handBackLabel}
           grammar={g}
           {...(profile ? {} : { note: backNote, onNote: setBackNote })}
           noteFirst={handoffWantsWords(handoff)}

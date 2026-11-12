@@ -2,6 +2,7 @@ import type { Machine } from "@agenteschat/client";
 import { commandInReason, machineReasonText } from "@agenteschat/client/lib/machines";
 import { Card, CardHeader, Chip, Icon } from "@agenteschat/ui";
 import { useTranslation } from "react-i18next";
+import { MachineToolButton, useToolOneClick } from "../devices/ToolOneClick";
 import { CommandBlock } from "../machine-bits";
 import "../browser/browser.css";
 
@@ -16,6 +17,7 @@ const TURN_ON = "agentes-runner tools enable desktop && agentes-runner tools ena
  */
 export function MachineDesktopUseCard({ machine: m }: { machine: Machine }) {
   const { t } = useTranslation();
+  const oneClick = useToolOneClick(m);
   const use = m.desktopUse;
   if (!use) return null;
   const off = use.available && !(m.access?.tools.desktop && m.access.tools.commands);
@@ -46,14 +48,31 @@ export function MachineDesktopUseCard({ machine: m }: { machine: Machine }) {
           </Chip>
         )}
       </div>
-      {off && (
-        <div className="brw-note ac-iconline">
-          <Icon name="computer" size={16} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {t("desktop.use.offHelp")}
-            <CommandBlock command={TURN_ON} />
-          </div>
+      {off && oneClick && oneClick.kind !== "outdated" ? (
+        // Each switch it still needs, one click each, for whoever connected it (anyone else asks them).
+        <div className="brw-note brw-note--act">
+          <span className="brw-note__text ac-iconline">
+            <Icon name="computer" size={16} />
+            <span>{t("desktop.use.offOne")}</span>
+          </span>
+          <span className="ac-acts">
+            {(["desktop", "commands"] as const)
+              .filter((tool) => m.access?.tools[tool] !== true)
+              .map((tool) => (
+                <MachineToolButton key={tool} machine={m} tool={tool} />
+              ))}
+          </span>
         </div>
+      ) : (
+        off && (
+          <div className="brw-note ac-iconline">
+            <Icon name="computer" size={16} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {t("desktop.use.offHelp")}
+              <CommandBlock command={TURN_ON} />
+            </div>
+          </div>
+        )
       )}
       {reason && (
         <div className="brw-note ac-iconline">

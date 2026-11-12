@@ -6,6 +6,7 @@
     "continue": "Continuar",
     "done": "Listo",
     "retry": "Reintentar",
+    "openSettings": "Abrir Ajustes",
     "loading": "Cargando",
     "or": "o"
   },
@@ -112,7 +113,7 @@
       "on": "Activar notificaciones",
       "later": "Ahora no",
       "done": "Notificaciones activadas",
-      "failed": "No pudimos activar las notificaciones. Inténtalo de nuevo en Tú › Notificaciones.",
+      "failed": "No se pudieron activar los avisos en este teléfono.",
       "someone": "Un agente",
       "examples": "Ejemplos de notificaciones",
       "now": "ahora",

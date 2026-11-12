@@ -2179,6 +2179,7 @@
       "access_requestFor": "{{names}} prosi o dostęp do urządzenia {{device}} dla {{person}}",
       "waiting": "{{names}} czeka na urządzenie {{device}}",
       "waitingFor": "{{names}} czeka na urządzenie {{device}} dla {{person}}",
+      "tool_request": "{{names}} prosi Cię o włączenie: {{tool}} na {{device}}",
       "allowOnce": "Zezwól raz",
       "always": "Zawsze zezwalaj: {{name}}",
       "no": "Nie",
@@ -2453,7 +2454,8 @@
       "tooBig": "Ten obraz jest za duży. Spróbuj innego."
     },
     "machine": {
-      "toolsHow": "Stuknij włączone narzędzie, aby je wyłączyć. Ponowne włączenie jest możliwe tylko na samym komputerze."
+      "toolsHow": "Dotknij włączonego narzędzia, żeby je wyłączyć. Żeby włączyć ponownie: na samym komputerze albo tutaj przez osobę, która go podłączyła.",
+      "toolsHowOwner": "Dotknij narzędzia, żeby je włączyć lub wyłączyć."
     },
     "roles": {
       "onComputer": "Kolejność ról i ikonę każdej z nich zmienisz na komputerze.",

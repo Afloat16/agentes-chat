@@ -6,6 +6,7 @@
     "continue": "Lanjut",
     "done": "Selesai",
     "retry": "Coba lagi",
+    "openSettings": "Buka Pengaturan",
     "loading": "Memuat",
     "or": "atau"
   },
@@ -111,7 +112,7 @@
       "on": "Aktifkan notifikasi",
       "later": "Nanti saja",
       "done": "Notifikasi aktif",
-      "failed": "Belum bisa mengaktifkan notifikasi. Coba lagi di Kamu › Notifikasi.",
+      "failed": "Notifikasi tidak bisa dinyalakan di ponsel ini.",
       "someone": "Seorang agen",
       "examples": "Contoh notifikasi",
       "now": "sekarang",

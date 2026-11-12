@@ -1252,6 +1252,15 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         // The new access, bare or wrapped.
         return "access" in out ? out.access : out;
       },
+      allowTool: async (orgId, machineId, tool) =>
+        (
+          await request<{ access: MachineAccess }>(`${org(orgId)}/machines/${enc(machineId)}/access/allow`, {
+            json: { tool },
+          })
+        ).access,
+      askTool: async (orgId, machineId, tool) => {
+        await request<unknown>(`${org(orgId)}/machines/${enc(machineId)}/access/ask`, { json: { tool } });
+      },
       setPause: async (orgId, machineId, input) =>
         (
           await request<{ paused: MachinePause | null }>(

@@ -1,3 +1,5 @@
+import type { MachineTool } from "../api/types";
+
 /**
  * "Computador desconectado": when the computer that runs some agents' brain
  * (Claude Code / Codex) goes offline, the app says so once (a notice), each waiting agent says what it waits
@@ -244,6 +246,19 @@ export function brainUnavailableOf(meta: Record<string, unknown> | null | undefi
     agentId: str(x.agentId),
     resetsAt: str(x.resetsAt),
   };
+}
+
+/**
+ * The switch an agent's wait note needs turned on on its computer: its CLI off there (`tool_off`), or commands off
+ * (`exec_disabled`). The chat shows the one-click button under it; null for any other wait.
+ */
+export function waitToolOff(
+  info: { brain: ComputerBrain; code: string | null; machineId: string | null } | null,
+): { machineId: string; tool: MachineTool } | null {
+  if (!info?.machineId) return null;
+  if (info.code === "exec_disabled") return { machineId: info.machineId, tool: "commands" };
+  if (info.code !== "tool_off") return null;
+  return { machineId: info.machineId, tool: info.brain === "claude_code" ? "claude" : info.brain };
 }
 
 /**

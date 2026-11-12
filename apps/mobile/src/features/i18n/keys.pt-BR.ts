@@ -2018,6 +2018,7 @@ export const featureKeysPtBR = {
       access_requestFor: "{{names}} pede para usar o {{device}} para {{person}}",
       waiting: "{{names}} está esperando o {{device}}",
       waitingFor: "{{names}} está esperando o {{device}} para {{person}}",
+      tool_request: "{{names}} pede para ligar {{tool}} no seu {{device}}",
       allowOnce: "Permitir uma vez",
       always: "Sempre permitir {{name}}",
       no: "Não",
@@ -2292,7 +2293,10 @@ export const featureKeysPtBR = {
       tooBig: "Imagem grande demais. Tente outra.",
     },
     machine: {
-      toolsHow: "Toque numa ferramenta ligada para desligar. Para ligar de novo, só no próprio computador.",
+      toolsHow:
+        "Toque numa ferramenta ligada para desligar. Para ligar de novo: no próprio computador, ou aqui por quem o conectou.",
+      /** For whoever connected the computer: a tap turns an off tool on, and one that is on off. */
+      toolsHowOwner: "Toque numa ferramenta para ligar ou desligar.",
     },
     roles: {
       /** Under the roles and a role's name and color: what only the web changes. */

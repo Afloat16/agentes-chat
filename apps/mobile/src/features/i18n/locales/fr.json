@@ -2077,6 +2077,7 @@
       "access_requestFor": "{{names}} demande à utiliser {{device}} pour {{person}}",
       "waiting": "{{names}} attend {{device}}",
       "waitingFor": "{{names}} attend {{device}} pour {{person}}",
+      "tool_request": "{{names}} vous demande d'activer {{tool}} sur votre {{device}}",
       "allowOnce": "Autoriser une fois",
       "always": "Toujours autoriser {{name}}",
       "no": "Non",
@@ -2343,7 +2344,8 @@
       "tooBig": "Cette image est trop lourde. Essayez-en une autre."
     },
     "machine": {
-      "toolsHow": "Touchez un outil activé pour le désactiver. Le réactiver ne se fait que sur l'ordinateur lui-même."
+      "toolsHow": "Touchez un outil activé pour le désactiver. Pour le réactiver : sur l'ordinateur lui-même, ou ici par la personne qui l'a connecté.",
+      "toolsHowOwner": "Touchez un outil pour l'activer ou le désactiver."
     },
     "roles": {
       "onComputer": "L'ordre des rôles et l'icône de chacun se changent sur l'ordinateur.",

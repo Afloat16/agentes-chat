@@ -287,6 +287,7 @@ import { DatePill, type DatePillHandle } from "@/components/DatePill";
 import { DeleteChannelDialog } from "@/components/DeleteChannelDialog";
 import { MenuEntries } from "@/components/DesktopMenus";
 import { DeviceWaitCard } from "@/components/devices/DeviceWaitCard";
+import { WaitToolOffAction } from "@/components/devices/ToolOneClick";
 import { useArchiveChannelWithUndo } from "@/components/entity-menus";
 import { FeedbackOfferRow } from "@/components/FeedbackOffer";
 import { InPlaceProvider } from "@/components/InPlace";
@@ -380,7 +381,7 @@ import { TYPED_VALUES } from "@/i18n";
 import { onAgentPanel, takeAgentPanel } from "@/lib/agent-panel-ask";
 import { onChannelDetails, takeChannelDetails } from "@/lib/channel-details";
 import { selectingIn } from "@/lib/context-menu";
-import { desktopPlatform, useDocumentTitle } from "@/lib/desktop";
+import { desktopPlatform, thisMac, useDocumentTitle } from "@/lib/desktop";
 import { holdOnScreen } from "@/lib/island";
 import { typingInField } from "@/lib/keys";
 import { lookOf } from "@/lib/look";
@@ -2064,7 +2065,13 @@ function ChannelView({
           },
           onNotice: (notice: VoiceNotice) => {
             if (notice === "blocked") {
-              toast.show(t(desktopPlatform() === "mac" ? "voice.blockedMac" : "voice.blockedWeb"), "error");
+              // In the Mac app the way out opens right there: System Settings on the microphone's list.
+              if (desktopPlatform() === "mac")
+                toast.show(t("voice.blockedMac"), "error", {
+                  label: t("voice.openMacSettings"),
+                  run: () => void thisMac.openMicrophoneSettings().catch(() => {}),
+                });
+              else toast.show(t("voice.blockedWeb"), "error");
             } else {
               toast.show(t(`voice.${notice}`), notice === "deleted" ? undefined : "error");
             }
@@ -4716,6 +4723,7 @@ export const TimelineMessage = memo(function TimelineMessage({
                 .filter((u) => u.action === "proposed")
                 .map((u) => <MemoryChangeCard key={`${u.action}-${u.itemId}`} update={u} agentId={agent.id} />)}
             {waitNotice && <WaitingCard notice={waitNotice} agentId={m.author.id ?? null} />}
+            {brainNotice && <WaitToolOffAction notice={brainNotice} />}
             {deviceWait && <DeviceWaitCard wait={deviceWait} message={m} />}
             {noAi && <NoAiCard message={m} />}
             {actionCard && <ActionCard message={m} />}

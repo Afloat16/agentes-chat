@@ -8563,6 +8563,24 @@ html:not([data-pointer]) .machine-connect__toggle:focus-visible {
   gap: 2px;
   margin-right: 10px;
 }
+/* Why "Fazer login" didn't open, under the profile's row, with its one way out; the words wrap, the button follows. */
+.pf-line {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 0 14px 10px;
+  color: var(--muted);
+}
+.pf-line.is-refused > .ac-icon {
+  color: var(--warn);
+}
+.pf-line__text {
+  flex: 1 1 200px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 /* On a phone a profile's name and state take the row: beside the people, the count and the actions they were squeezed
    to a letter a line. Those go on the line under them, the actions at its end. */
 @media (max-width: 640px) {
@@ -8586,6 +8604,10 @@ html:not([data-pointer]) .machine-connect__toggle:focus-visible {
   }
   .pf-list .pf-acts {
     margin-left: auto;
+  }
+  .pf-list .pf-line {
+    flex: 1 0 100%;
+    padding: 6px 14px 0;
   }
 }
 .machine-page__agent {

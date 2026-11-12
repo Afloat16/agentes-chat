@@ -1985,6 +1985,7 @@
       "access_requestFor": "{{names}}, {{person}} için {{device}} cihazını kullanmak istiyor",
       "waiting": "{{names}}, {{device}} cihazını bekliyor",
       "waitingFor": "{{names}}, {{person}} için {{device}} cihazını bekliyor",
+      "tool_request": "{{names}}, {{device}} cihazınızda {{tool}} açmanızı istiyor",
       "allowOnce": "Bir kez izin ver",
       "always": "{{name}} için her zaman izin ver",
       "no": "Hayır",
@@ -2247,7 +2248,8 @@
       "tooBig": "Bu görsel çok büyük. Başka birini deneyin."
     },
     "machine": {
-      "toolsHow": "Kapatmak için açık bir araca dokunun. Yeniden açmak yalnızca bilgisayarın kendisinden yapılabilir."
+      "toolsHow": "Kapatmak için açık bir araca dokunun. Yeniden açmak için: bilgisayarın kendisinde, ya da burada onu bağlayan kişi tarafından.",
+      "toolsHowOwner": "Açmak ya da kapatmak için bir araca dokunun."
     },
     "roles": {
       "onComputer": "Rollerin sırası ve her rolün simgesi bilgisayardan değiştirilir.",

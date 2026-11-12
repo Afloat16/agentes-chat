@@ -187,6 +187,7 @@ import type {
   MachineOutages,
   MachinePause,
   MachineTask,
+  MachineTool,
   MailAccount,
   MailAccountUpdate,
   MailFolder,
@@ -1099,6 +1100,10 @@ export interface ApiClient {
     denyDevice(userCode: string): Promise<void>;
     /** ADR 0036 §8: the site only takes away (a folder, for everyone or one agent; a tool). The new access. */
     reduceAccess(orgId: string, machineId: string, input: MachineAccessReduce): Promise<MachineAccess>;
+    /** Only the person who paired it: turns `tool` on there (the computer says so, with Undo). The new access. */
+    allowTool(orgId: string, machineId: string, tool: MachineTool): Promise<MachineAccess>;
+    /** Anyone else: asks whoever paired it to turn `tool` on (an inbox row with the same button). */
+    askTool(orgId: string, machineId: string, tool: MachineTool): Promise<void>;
     /** Pauses it (`until` null: until resumed) or resumes it (`resume`); the pause as it stands then. */
     setPause(
       orgId: string,

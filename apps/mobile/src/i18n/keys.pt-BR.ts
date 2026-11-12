@@ -13,6 +13,8 @@ export const mobilePtBR = {
     continue: "Continuar",
     done: "Pronto",
     retry: "Tentar de novo",
+    /** Opens this app's page in the phone's Settings, where a permission it was refused is given. */
+    openSettings: "Abrir Ajustes",
     loading: "Carregando",
     or: "ou",
   },
@@ -133,7 +135,7 @@ export const mobilePtBR = {
       on: "Ativar avisos",
       later: "Agora não",
       done: "Avisos ativados",
-      failed: "Não deu para ativar os avisos. Tente de novo em Você\u00a0›\u00a0Notificações.",
+      failed: "Não deu para ativar os avisos neste celular.",
       someone: "Um agente",
       examples: "Exemplos de avisos",
       now: "agora",

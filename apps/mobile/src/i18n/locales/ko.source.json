@@ -17,6 +17,9 @@
   "common.retry": {
     "value": "Try again"
   },
+  "common.openSettings": {
+    "value": "Open Settings"
+  },
   "common.loading": {
     "value": "Loading"
   },
@@ -255,7 +258,7 @@
     "value": "Notifications on"
   },
   "push.ask.failed": {
-    "value": "Couldn't turn on notifications. Try again in You › Notifications."
+    "value": "Couldn't turn on notifications on this phone."
   },
   "push.ask.someone": {
     "value": "An agent"

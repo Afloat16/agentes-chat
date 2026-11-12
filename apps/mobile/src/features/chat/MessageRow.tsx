@@ -84,6 +84,7 @@ import { HandoffCard } from "../browser/HandoffCard";
 import { TrailCard } from "../browser/TrailCard";
 import { DeviceWait } from "../devices/DeviceWait";
 import { deviceWaitOf } from "../devices/logic";
+import { WaitToolOffAction } from "../devices/ToolOneClick";
 import { MessageFiles } from "../files/MessageFiles";
 import { chatHref, consultationHref, routineHref } from "../links/logic";
 import { DecisionCard, MissionCard, PlanCard, ReviewCard, SetupFailedCard } from "../missions/cards";
@@ -912,6 +913,7 @@ export const MessageRow = memo(function MessageRow({
             {isAgent ? <CostlyProposalCard message={m} /> : null}
             {isAgent ? <UsagePauseCard message={m} /> : null}
             {isAgent ? <UsageWaitCancel message={m} /> : null}
+            {isAgent ? <WaitToolOffAction message={m} /> : null}
             {isAgent ? <ProposalCard message={m} /> : null}
             {isAgent ? <TeamCard message={m} /> : null}
             {isAgent ? <ReplyChips message={m} /> : null}

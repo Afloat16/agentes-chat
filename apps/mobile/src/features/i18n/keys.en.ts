@@ -2079,6 +2079,7 @@ export const featureKeysEn = {
       access_requestFor: "{{names}} asks to use {{device}} for {{person}}",
       waiting: "{{names}} is waiting for {{device}}",
       waitingFor: "{{names}} is waiting for {{device}} for {{person}}",
+      tool_request: "{{names}} asks you to turn on {{tool}} on your {{device}}",
       allowOnce: "Allow once",
       always: "Always allow {{name}}",
       no: "No",
@@ -2368,7 +2369,10 @@ export const featureKeysEn = {
       tooBig: "That image is too big. Try another one.",
     },
     machine: {
-      toolsHow: "Tap a tool that's on to turn it off. Turning it back on happens only on the computer itself.",
+      toolsHow:
+        "Tap a tool that's on to turn it off. To turn it back on: on the computer itself, or here by whoever connected it.",
+      /** For whoever connected the computer: a tap turns an off tool on, and one that is on off. */
+      toolsHowOwner: "Tap a tool to turn it on or off.",
     },
     roles: {
       /** Under the roles and a role's name and color: what only the web changes. */

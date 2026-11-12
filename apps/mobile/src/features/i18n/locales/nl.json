@@ -1985,6 +1985,7 @@
       "access_requestFor": "{{names}} vraagt om {{device}} te gebruiken voor {{person}}",
       "waiting": "{{names}} wacht op {{device}}",
       "waitingFor": "{{names}} wacht op {{device}} voor {{person}}",
+      "tool_request": "{{names}} vraagt je {{tool}} aan te zetten op je {{device}}",
       "allowOnce": "Eén keer toestaan",
       "always": "{{name}} altijd toestaan",
       "no": "Nee",
@@ -2247,7 +2248,8 @@
       "tooBig": "Die afbeelding is te groot. Probeer een andere."
     },
     "machine": {
-      "toolsHow": "Tik op een tool die aan staat om hem uit te zetten. Weer aanzetten kan alleen op de computer zelf."
+      "toolsHow": "Tik op een tool die aan staat om hem uit te zetten. Weer aanzetten: op de computer zelf, of hier door wie hem heeft gekoppeld.",
+      "toolsHowOwner": "Tik op een tool om hem aan of uit te zetten."
     },
     "roles": {
       "onComputer": "De volgorde van de rollen en het pictogram van elke rol wijzig je op de computer.",
