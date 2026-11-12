@@ -2497,6 +2497,7 @@
       "groupWorkspace": "Pour tout le workspace",
       "groupAdmins": "admins uniquement"
     },
+    "computerYours": "Votre propre espace sur l'ordinateur du workspace. Ses fichiers, son navigateur et ses connexions sont à vous seul, et vous seul pouvez le regarder ou le contrôler.",
     "powers": {
       "title": "Pouvoirs dans le workspace",
       "help": "Seul votre bras droit fait cela.",

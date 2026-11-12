@@ -295,8 +295,8 @@ export function RightHandMineRow({ agent }: { agent: Agent }) {
 }
 
 /**
- * "Computador", once the right hand has one of its own: the row opens the computer every agent's page opens, for
- * whoever may watch it.
+ * "Computador", where the right hand has one: the row opens the computer every agent's page opens, which for it is
+ * the viewer's own seat on the workspace's computer and nobody else's.
  */
 function RightHandComputerRow({ agent }: { agent: Agent }) {
   const { t } = useTranslation();
@@ -308,6 +308,7 @@ function RightHandComputerRow({ agent }: { agent: Agent }) {
       id="rh-computer"
       icon="computer"
       label={t("agentComputer.button")}
+      hint={t("rightHand.computerYours")}
       status={view.machine?.name}
       onOpen={() => openComputer(agent.id)}
     />

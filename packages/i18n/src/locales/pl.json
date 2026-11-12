@@ -2580,6 +2580,7 @@
       "groupWorkspace": "Dla całej przestrzeni roboczej",
       "groupAdmins": "tylko admini"
     },
+    "computerYours": "Twoje własne miejsce na komputerze przestrzeni roboczej. Pliki, przeglądarka i logowania są tam tylko Twoje i tylko Ty możesz je oglądać lub nimi sterować.",
     "powers": {
       "title": "Uprawnienia w przestrzeni roboczej",
       "help": "To robi tylko Twoja prawa ręka.",

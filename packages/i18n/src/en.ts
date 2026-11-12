@@ -2558,6 +2558,9 @@ export const en = {
       groupWorkspace: "For the whole workspace",
       groupAdmins: "admins only",
     },
+    /** Under its "Computador" row: the computer is the viewer's own seat (ADR 0174). */
+    computerYours:
+      "Your own place on the workspace's computer. Its files, browser and sign-ins are yours alone, and only you can watch or control it.",
     /** "Workspace powers" on its page: what only the right hand does, one line each (`RIGHT_HAND_POWERS`). */
     powers: {
       title: "Workspace powers",

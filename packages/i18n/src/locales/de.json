@@ -2410,6 +2410,7 @@
       "groupWorkspace": "Für den ganzen Workspace",
       "groupAdmins": "nur Admins"
     },
+    "computerYours": "Dein eigener Platz auf dem Computer des Workspace. Dateien, Browser und Anmeldungen dort gehören nur dir, und nur du kannst zusehen oder steuern.",
     "powers": {
       "title": "Workspace-Befugnisse",
       "help": "Das kann nur deine rechte Hand.",

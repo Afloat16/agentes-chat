@@ -463,6 +463,18 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
         // The agents' order everywhere else (the sidebar, the team): who came first.
         .orderBy(agents.createdAt)
     : [];
+  // The right hand uses the workspace's own computer, as each person's own seat there (ADR 0174): listed on it where
+  // seats can be kept apart, so the apps show whoever looks their own.
+  const home = await workspaceHomeId(db, orgId);
+  const homeRow = rows.find((r) => r.machine.id === home)?.machine;
+  const [rightHand] =
+    homeRow?.executors?.mode === "system"
+      ? await db
+          .select({ id: agents.id, name: agents.name, handle: agents.handle })
+          .from(agents)
+          .where(and(eq(agents.orgId, orgId), eq(agents.builtin, RIGHT_HAND), isNull(agents.archivedAt)))
+      : [];
+  if (rightHand && homeRow) using.push({ ...rightHand, machineId: homeRow.id });
   return rows.map(({ machine: m, pairedByName }) => {
     const mine = m.pairedByUserId === actorId;
     const pause = machinePause(m, now);

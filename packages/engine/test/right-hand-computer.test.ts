@@ -7,6 +7,7 @@ import {
   desktopStatus,
   ensureRightHand,
   insertMessage,
+  listMachines,
   type MachineHub,
   MachineRequestError,
   machineAgents,
@@ -159,6 +160,9 @@ test("one seat per person, and two people's OS user names differ", async () => {
   });
   expect(listed.some((a) => a.id === first?.id)).toBe(true);
   expect(listed.some((a) => a.id === lodi.id)).toBe(false);
+  // The apps find its computer where any agent's is: on that computer's list.
+  const [server] = await listMachines(f.db, bia.id, f.org.id);
+  expect(server?.agents.map((a) => a.id)).toContain(lodi.id);
 });
 
 test("a person's own DM sends their own seat's id, never another's and never the agent's", async () => {
@@ -202,6 +206,8 @@ test("a computer that runs every agent as one user gives it no seat: refused, no
   expect(ran).toEqual([]);
   expect(requests().length).toBe(before);
   expect(await seatState(f.db, { ...ctx, id: ctx.runId })).toBe("none");
+  const [server] = await listMachines(f.db, f.owner.id, f.org.id);
+  expect(server?.agents.map((a) => a.id)).not.toContain(lodi.id);
 });
 
 test("the hub refuses the agent's own id for anything but its locked chat turn", async () => {

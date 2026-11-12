@@ -5996,6 +5996,9 @@
   "rightHand.settings.groupAdmins": {
     "value": "admins only"
   },
+  "rightHand.computerYours": {
+    "value": "Your own place on the workspace's computer. Its files, browser and sign-ins are yours alone, and only you can watch or control it."
+  },
   "rightHand.powers.title": {
     "value": "Workspace powers"
   },

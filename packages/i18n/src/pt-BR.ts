@@ -2469,6 +2469,9 @@ export const ptBR = {
       groupWorkspace: "Para todo o workspace",
       groupAdmins: "só admins",
     },
+    /** Under its "Computador" row: the computer is the viewer's own seat (ADR 0174). */
+    computerYours:
+      "Seu espaço próprio no computador do workspace. Os arquivos, o navegador e os logins de lá são só seus, e só você pode ver ou controlar.",
     powers: {
       title: "Poderes do workspace",
       help: "Só o seu braço direito faz isto.",

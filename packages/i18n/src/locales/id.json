@@ -2327,6 +2327,7 @@
       "groupWorkspace": "Untuk seluruh workspace",
       "groupAdmins": "khusus admin"
     },
+    "computerYours": "Tempat Anda sendiri di komputer workspace. File, browser, dan login di sana hanya milik Anda, dan hanya Anda yang bisa melihat atau mengendalikannya.",
     "powers": {
       "title": "Kemampuan di workspace",
       "help": "Hanya tangan kanan Anda yang melakukan ini.",

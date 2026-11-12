@@ -8,8 +8,11 @@ test("every power the page lists stands on a grant the server gives the right ha
   const given = new Set(list?.[1]?.match(/"[a-z]+:[a-z]+"/g)?.map((s) => s.slice(1, -1)));
   expect(given.size).toBeGreaterThan(0);
   for (const power of RIGHT_HAND_POWERS) for (const grant of power.grants) expect(given.has(grant)).toBe(true);
-  // The list is scopes it holds: nothing in it turns a tool off, and a computer's are not among them.
+  // The list is scopes it holds in code: nothing in it turns a tool off, and a computer's are not among them (they
+  // are grant rows it is made with, `RIGHT_HAND_COMPUTER_GRANTS`, so an admin turns them off).
   expect(list?.[1]).not.toContain("deny:");
   for (const scope of ["sandbox:run", "browser:use", "desktop:use"]) expect(given.has(scope)).toBe(false);
+  const rows = /RIGHT_HAND_COMPUTER_GRANTS = \[([^\]]*)\]/.exec(source)?.[1] ?? "";
+  for (const scope of ["sandbox:run", "browser:use", "desktop:use"]) expect(rows).toContain(`"${scope}"`);
   expect(source).toContain("export const rightHandReaches");
 });

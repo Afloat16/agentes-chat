@@ -2409,6 +2409,7 @@
       "groupWorkspace": "Voor de hele workspace",
       "groupAdmins": "alleen admins"
     },
+    "computerYours": "Je eigen plek op de computer van de workspace. De bestanden, browser en aanmeldingen daar zijn alleen van jou, en alleen jij kunt meekijken of de besturing overnemen.",
     "powers": {
       "title": "Bevoegdheden in de workspace",
       "help": "Alleen je rechterhand doet dit.",

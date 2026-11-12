@@ -2492,6 +2492,7 @@
       "groupWorkspace": "Per tutto il workspace",
       "groupAdmins": "solo admin"
     },
+    "computerYours": "Il tuo spazio sul computer del workspace. File, browser e accessi lì sono solo tuoi, e solo tu puoi guardarlo o controllarlo.",
     "powers": {
       "title": "Poteri nel workspace",
       "help": "Solo il tuo braccio destro fa queste cose.",

@@ -2406,6 +2406,7 @@
       "groupWorkspace": "Tüm çalışma alanı için",
       "groupAdmins": "yalnızca yöneticiler"
     },
+    "computerYours": "Çalışma alanının bilgisayarındaki sana ait yer. Oradaki dosyalar, tarayıcı ve oturumlar yalnızca senin ve yalnızca sen izleyebilir veya kontrol edebilirsin.",
     "powers": {
       "title": "Çalışma alanı yetkileri",
       "help": "Bunları yalnızca sağ kolun yapar.",

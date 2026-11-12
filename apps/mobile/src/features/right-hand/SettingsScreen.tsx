@@ -121,8 +121,8 @@ function GroupTitle({ children, note }: { children: string; note?: string }) {
 }
 
 /**
- * "Computador", once the right hand has one of its own: the row opens the computer every agent's profile opens, for
- * whoever may watch it.
+ * "Computador", where the right hand has one: the row opens the computer every agent's profile opens, which for it
+ * is the viewer's own seat on the workspace's computer and nobody else's.
  */
 function Computer({ agentId }: { agentId: string }) {
   const { t } = useTranslation();
@@ -140,6 +140,7 @@ function Computer({ agentId }: { agentId: string }) {
           onPress={() => openComputer(agentId)}
         />
       </GroupedList>
+      <GroupedFooter>{t("rightHand.computerYours")}</GroupedFooter>
     </>
   );
 }
