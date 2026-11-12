@@ -3858,13 +3858,13 @@
     "value": "Computer screen"
   },
   "intentAgents.uses.asksYou": {
-    "value": "Merging and publishing always ask for your approval, at any level."
+    "value": "Merging and publishing ask for your approval, unless the agent never asks."
   },
   "intentAgents.uses.asksOwner": {
-    "value": "Merging and publishing always ask for {{name}}'s approval, at any level."
+    "value": "Merging and publishing ask for {{name}}'s approval, unless the agent never asks."
   },
   "intentAgents.uses.asksAdmins": {
-    "value": "Merging and publishing always ask for an admin's approval, at any level."
+    "value": "Merging and publishing ask for an admin's approval, unless the agent never asks."
   },
   "intentAgents.uses.empty": {
     "value": "For now, only conversation."

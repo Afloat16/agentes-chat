@@ -514,7 +514,7 @@ async function ownActionsText(ctx: ToolContext, r: RoutineView) {
   }
   if (level === "always") return " Its agent is set to always ask: every change a run makes asks a person first.";
   return r.ownActions.length > 0
-    ? ` On its own, without asking, every run may: ${r.ownActions.join(", ")}. Any other action in a connected app asks a person first; merge, deploy and rollback always ask. Tell the person exactly this.`
+    ? ` On its own, without asking, every run may: ${r.ownActions.join(", ")}. Any other action in a connected app asks a person first, unless a person approved its kind for good. Tell the person exactly this.`
     : " Every action in a connected app asks a person first.";
 }
 
@@ -1027,7 +1027,7 @@ export function createScheduleToolSource(deps: Omit<RoutineDeps, "db">): ToolSou
     {
       name: "schedule_action",
       description:
-        "Prepare a connected app's action for later (a post at a set time, a message to send tomorrow): the person approves that exact action now, on a card that says when it runs, and at that time it goes out by itself without asking again. Use it instead of a reminder or routine that would ask at the time. Give the exact `tool` and its full `arguments` (the whole text, the account: nothing left to decide later), `when` (the person's words or ISO 8601) or `routine` (the next run of one of your routines), a short `title` in the person's language and `why`. Your turn waits for their decision. To change its content or time later, call it again with `replaces`: that needs a new approval. Never for merge, deploy, rollback and the like: those always ask at the time.",
+        "Prepare a connected app's action for later (a post at a set time, a message to send tomorrow): the person approves that exact action now, on a card that says when it runs, and at that time it goes out by itself without asking again. Use it instead of a reminder or routine that would ask at the time. Give the exact `tool` and its full `arguments` (the whole text, the account: nothing left to decide later), `when` (the person's words or ISO 8601) or `routine` (the next run of one of your routines), a short `title` in the person's language and `why`. Your turn waits for their decision. To change its content or time later, call it again with `replaces`: that needs a new approval. Never for merge, deploy, rollback and the like: those follow your approvals at the time.",
       scope: SCHEDULE_SCOPE,
       inputSchema: {
         type: "object",

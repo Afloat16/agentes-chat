@@ -9,7 +9,6 @@ import {
 import { and, eq, schema } from "@agenteschat/db";
 import {
   agentCommitEmail,
-  ConflictError,
   type ConnectorDeps,
   connectorGrantValidator,
   createApiKeyConnection,
@@ -793,7 +792,7 @@ describe("branches that aren't the agent's own", () => {
     expect(receivePacks(w)).toBe(1);
   });
 
-  test("delete_branches: one card for the whole batch, never Aprovar sempre; deleted only once a person approves", async () => {
+  test("delete_branches: one card for the whole batch, Aprovar sempre keeps the tool; deleted only once a person approves", async () => {
     const names = ["old-1", "old-2", "old-3", "old-4", "old-5", "old-6", "guarded"];
     const w = await world(
       undefined,
@@ -839,10 +838,9 @@ describe("branches that aren't the agent's own", () => {
       title: "Apagar 7 branches em acme/app",
       detail: names.join("\n"),
       scope: "github:git.write",
-      approveAlways: null,
+      approveAlways: { tool: "delete_branches", actions: [] },
     });
     expect(deletes(w)).toEqual([]);
-    await expect(t.decide(request.id, true)).rejects.toBeInstanceOf(ConflictError);
     await t.decide(request.id);
     const out = await t.runApproved(request.id);
     expect(out).toMatchObject({ content: `Deleted on GitHub: ${names.join(", ")}.` });
@@ -893,7 +891,7 @@ describe("branches that aren't the agent's own", () => {
     expect(last?.details.reason).toContain("Not deleted: c (GitHub answered 422)");
   });
 
-  test("request_branch_push: refused for its own, a missing, the default or a protected branch; a routine never remembers", async () => {
+  test("request_branch_push: refused for its own, a missing, the default or a protected branch; a routine's card offers the same branch", async () => {
     const w = await world(undefined, fakeGitHub({ branches: { main: {}, rel: { protected: true }, "ana/fix": {} } }));
     const t = await toolsOf(w);
     const refusal = async (branch: string) =>
@@ -922,7 +920,7 @@ describe("branches that aren't the agent's own", () => {
     const fromRoutine = asked(
       await routine.invoke("request_branch_push", { repo: "acme/app", branch: "ana/fix", why: WHY }),
     );
-    expect(fromRoutine.approveAlways).toBeNull();
+    expect(fromRoutine.approveAlways).toEqual({ tool: "request_branch_push", actions: ["acme/app:ana/fix"] });
   });
 });
 

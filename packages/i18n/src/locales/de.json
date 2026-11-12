@@ -6259,7 +6259,7 @@
     "connectorsLabel": "Konnektoren und Stufen",
     "connectOther": "Weitere App verbinden",
     "opensConnectors": "öffnet Konnektoren",
-    "approvalsNote": "Merge, Deploy und Rollback fragen im Chat immer nach Freigabe.",
+    "approvalsNote": "Merge, Deploy und Rollback fragen im Chat nach Freigabe, außer der Agent fragt nie.",
     "approverOwner": "{{name}} gibt frei.",
     "approverAdmins": "Ein Admin gibt frei.",
     "skillsTitle": "Skills des Workspace",
@@ -6531,8 +6531,8 @@
       "readDesc": "Sieht, was in {{app}} ist. Ändert nichts.",
       "write": "Lesen und schreiben",
       "writeDesc": "Erstellt und bearbeitet auch in {{app}}.",
-      "asks": "{{actions}} fragen immer nach deiner Freigabe, auf jeder Stufe.",
-      "asksAny": "Senden, Löschen und Bezahlen fragen immer nach deiner Freigabe, auf jeder Stufe.",
+      "asks": "{{actions}} fragen nach deiner Freigabe, außer der Agent fragt nie.",
+      "asksAny": "Senden, Löschen und Bezahlen fragen nach deiner Freigabe, außer der Agent fragt nie.",
       "remove": "{{app}} entfernen",
       "done": "Fertig"
     },
@@ -7728,7 +7728,7 @@
       "ownActions": "Macht selbst"
     },
     "ownActions": {
-      "hint": "Jeder Lauf erledigt das in deinen verbundenen Apps, ohne zu fragen. Jede andere Aktion dort fragt zuerst eine Person, und Merge, Deploy und Rollback fragen immer.",
+      "hint": "Jeder Lauf erledigt das in deinen verbundenen Apps, ohne zu fragen. Jede andere Aktion dort fragt zuerst eine Person, außer der Agent fragt nie.",
       "none": "In verbundenen Apps fragt sie vor jeder Aktion eine Person. Damit sie ihre Aufgabe selbst erledigt, sag dem Agenten im Chat, welche Aktionen sie ausführen darf.",
       "remove": "Wieder vorher fragen: {{action}}",
       "hintShort": "Jeder Lauf erledigt das, ohne zu fragen.",
@@ -8615,7 +8615,7 @@
       "offline": "{{name}} ist offline. Der Plan startet, sobald er wieder da ist.",
       "needsMachine": "Missionen laufen auf einem verbundenen Computer. Verbinde einen mit {{name}} unter Einstellungen › Geräte.",
       "commandHint": "Du kannst auch eine starten, indem du in einer beliebigen Unterhaltung im Eingabefeld tippst:",
-      "approvals": "Merge, Deploy und Rollback fragen immer nach Freigabe",
+      "approvals": "Standardmäßig fragen Merge, Deploy und Rollback nach Freigabe",
       "start": "Mission starten",
       "created": "Mission erstellt: {{name}} stellt den Plan zusammen.",
       "who": "Wer programmiert",
@@ -10986,7 +10986,7 @@
   },
   "access": {
     "matrixTitle": "Zugriff der Agenten",
-    "matrixHint": "Sensible Aktionen (Merge, Deploy, Teilen, Bezahlen) fragen immer nach einer Freigabe, auf jeder Stufe. Um es pro Tool festzulegen, öffne die Tools des Konnektors.",
+    "matrixHint": "Standardmäßig fragen sensible Aktionen (Merge, Deploy, Teilen, Bezahlen) nach einer Freigabe. Um es pro Tool festzulegen, öffne die Tools des Konnektors.",
     "matrixHow": "Klicke auf eine Zelle, um sie zu ändern:",
     "kindLabel": "Anzeigen",
     "kind": {
@@ -11499,7 +11499,7 @@
     "merge": {
       "label": "Darf ohne Nachfrage mergen",
       "none": "Keine Repositorys ausgewählt. Jeder Merge fragt nach Freigabe.",
-      "help": "In diesen Repositorys läuft ein Merge ohne Freigabekarte, steht im Audit und hinterlässt einen Beleg in der Unterhaltung. Alles andere Sensible fragt weiter nach.",
+      "help": "In diesen Repositorys läuft ein Merge ohne Freigabekarte, steht im Audit und hinterlässt einen Beleg in der Unterhaltung. Ein Agent, der immer fragt, fragt weiter nach.",
       "dialogTitle": "Wo {{name}} ohne Nachfrage mergt",
       "dialogDesc": "Nur Repositorys, die bereits genutzt werden. Ein Merge an jedem anderen Ort fragt nach Freigabe.",
       "short": "In diesen Repositorys läuft ein Merge ohne Freigabekarte."
@@ -11634,7 +11634,7 @@
       "github": {
         "1": "Code, Issues und Pull Requests lesen",
         "2": "Pull Requests öffnen und kommentieren",
-        "ask": "Merge und Deploy fragen immer nach deiner Freigabe"
+        "ask": "Standardmäßig fragen Merge und Deploy nach deiner Freigabe"
       },
       "sentry": {
         "1": "Fehler und Events ansehen",
@@ -11668,7 +11668,7 @@
       "cloudflare_bindings": {
         "1": "Workers, KV, R2 und D1 ansehen",
         "2": "Workers und Speicher ändern",
-        "ask": "Deploys fragen immer nach deiner Freigabe"
+        "ask": "Standardmäßig fragen Deploys nach deiner Freigabe"
       },
       "cloudflare_observability": {
         "1": "Logs und Metriken der Workers ansehen"
@@ -11676,7 +11676,7 @@
       "supabase": {
         "1": "Projekte und Funktionen ansehen",
         "2": "Datenbank abfragen und ändern",
-        "ask": "Deploys fragen immer nach deiner Freigabe"
+        "ask": "Standardmäßig fragen Deploys nach deiner Freigabe"
       },
       "supabase_readonly": {
         "1": "Datenbank abfragen (nur lesen)",
@@ -12391,7 +12391,7 @@
     "see": "Ansehen",
     "seeAsks": "Ansehen, was nach Freigabe fragt",
     "agentTitle": "Was {{name}} nutzen kann",
-    "agentSub": "Nach Konnektor und Thema. Sensible Aktionen fragen immer nach Freigabe."
+    "agentSub": "Nach Konnektor und Thema. Standardmäßig fragen sensible Aktionen nach Freigabe."
   },
   "connectFlow": {
     "steps": "Schritte",
@@ -12461,7 +12461,7 @@
     "noAgents": "Noch keine Agenten. Gib jederzeit Zugriff unter „Wer ihn nutzt“.",
     "asksCount_one": "{{count}} Aktion fragt im Chat immer nach Freigabe.",
     "asksCount_other": "{{count}} Aktionen fragen im Chat immer nach Freigabe.",
-    "asksDefault": "Sensible Aktionen fragen im Chat immer nach Freigabe.",
+    "asksDefault": "Standardmäßig fragen sensible Aktionen im Chat nach Freigabe.",
     "grant": "Zugriff geben",
     "saved_one": "{{name}}: {{count}} Agent kann ihn nutzen.",
     "saved_other": "{{name}}: {{count}} Agenten können ihn nutzen.",
