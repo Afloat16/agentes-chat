@@ -282,13 +282,13 @@ describe("Preferences: a setting's explanation behind its ⓘ", () => {
       (el) => el.querySelector("#tool-opencode"),
       async (el) => {
         const state = (id: string) => el.querySelector(`#tool-${id}`)?.getAttribute("aria-checked");
-        const programs = ["claude", "codex", "cursor", "opencode", "grok", "antigravity"];
-        // One with no switch stored follows Codex's, off here; none found here but Claude Code and Codex.
-        expect(programs.map(state)).toEqual(["true", "false", "false", "false", "false", "false"]);
+        const programs = ["codex", "cursor", "opencode", "grok", "antigravity"];
+        // One with no switch stored follows Codex's, off here; none of the four is found here.
+        expect(programs.map(state)).toEqual(["false", "false", "false", "false", "false"]);
         expect(programs.every((id) => !(el.querySelector(`#tool-${id}`) as HTMLButtonElement).disabled)).toBe(true);
         await act(async () => (el.querySelector("#tool-opencode") as HTMLElement).click());
         await until(() => state("opencode") === "true");
-        expect(programs.map(state)).toEqual(["true", "false", "false", "true", "false", "false"]);
+        expect(programs.map(state)).toEqual(["false", "false", "true", "false", "false"]);
       },
     ));
 

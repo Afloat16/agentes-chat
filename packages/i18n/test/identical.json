@@ -4124,8 +4124,12 @@
       "prefs.general.orgs",
       "server.jev",
       "servers.workspaces",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "es": [
       "common.hours",
@@ -4139,8 +4143,12 @@
       "prefs.general.title",
       "prefs.nav.general",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "fr": [
       "common.hours",
@@ -4157,8 +4165,12 @@
       "prefs.thisMac.agents",
       "prefs.tools.protection",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "de": [
       "device.mac",
@@ -4179,8 +4191,12 @@
       "server.jev",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "it": [
       "common.hours",
@@ -4197,8 +4213,12 @@
       "server.jev",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "nl": [
       "common.minutes",
@@ -4223,8 +4243,12 @@
       "servers.title",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "ja": [
       "connect.placeholder",
@@ -4234,8 +4258,12 @@
       "prefs.accounts.ok",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "ko": [
       "connect.placeholder",
@@ -4244,8 +4272,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "zh-Hans": [
       "connect.placeholder",
@@ -4254,8 +4286,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "id": [
       "device.mac",
@@ -4269,8 +4305,12 @@
       "server.jev",
       "status.offline",
       "tools.browserName",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "tr": [
       "device.mac",
@@ -4278,8 +4318,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "pl": [
       "common.minutes",
@@ -4290,8 +4334,12 @@
       "prefs.advanced.claude",
       "server.jev",
       "status.offline",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ],
     "ru": [
       "connect.placeholder",
@@ -4299,8 +4347,12 @@
       "link.chipTailnet",
       "prefs.advanced.claude",
       "server.jev",
+      "tools.antigravityName",
       "tools.claudeName",
-      "tools.codexName"
+      "tools.codexName",
+      "tools.cursorName",
+      "tools.grokName",
+      "tools.opencodeName"
     ]
   }
 }
