@@ -455,7 +455,8 @@ function useOneLinePlaceholder(ref: RefObject<HTMLTextAreaElement | null>, place
       if (!live || !el.clientWidth) return;
       const s = getComputedStyle(el);
       pen.font = `${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
-      const room = el.clientWidth - Number.parseFloat(s.paddingLeft) - Number.parseFloat(s.paddingRight);
+      // A style not computed yet gives "" (NaN), which would read as no room at all.
+      const room = el.clientWidth - (Number.parseFloat(s.paddingLeft) || 0) - (Number.parseFloat(s.paddingRight) || 0);
       setFits(pen.measureText(placeholder).width + 2 <= room);
     };
     measure();
