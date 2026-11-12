@@ -24,10 +24,23 @@ import { CardTitle, hintFor, PrefCard, PrefHead, PrefRow } from "../../ui/settin
 import { useToast } from "../../ui/Toast";
 import { ToolAccounts } from "./Accounts";
 
-type Cli = keyof typeof CLI_INSTALL;
+type Cli = "claude" | "codex" | "cursor" | "opencode" | "grok" | "antigravity";
+
+/** The coding programs agents think with, each with a switch of its own; the first two have a portrait. */
+const CLIS: { tool: Cli; kind: string; portrait?: "claude_code" | "codex" }[] = [
+  { tool: "claude", kind: "claude_code", portrait: "claude_code" },
+  { tool: "codex", kind: "codex", portrait: "codex" },
+  { tool: "cursor", kind: "cursor" },
+  { tool: "opencode", kind: "opencode" },
+  { tool: "grok", kind: "grok" },
+  { tool: "antigravity", kind: "antigravity" },
+];
+
+/** A program's switch; one a runner stored no switch for follows Codex's, as the runner and the server read it. */
+export const cliOn = (tools: RunnerTools, tool: Cli) => (tools[tool] ?? tools.codex) === true;
 
 /**
- * Claude Code, Codex and the browser are for the whole computer: every organization gets the same switch. Commands
+ * The coding programs and the browser are for the whole computer: every organization gets the same switch. Commands
  * are each organization's own, since they reach everything the person can on this computer.
  */
 export function Tools() {
@@ -96,34 +109,48 @@ export function Tools() {
     </span>
   );
 
-  const cliRow = (cli: Cli, kind: "claude_code" | "codex", name: string, desc: string) => {
+  const cliRow = ({ tool: cli, kind, portrait }: (typeof CLIS)[number]) => {
     const info = executors[cli];
+    const name = t(`desktop.tools.${cli}Name`);
+    const install = cli in CLI_INSTALL ? CLI_INSTALL[cli as keyof typeof CLI_INSTALL] : undefined;
     const checkLabel = t("desktop.tools.checkAgain");
     return (
       <PrefRow
-        lead={<BrainPortrait kind={kind} state={engineState(info)} />}
+        key={cli}
+        lead={
+          portrait ? (
+            <BrainPortrait kind={portrait} state={engineState(info)} />
+          ) : (
+            <ProviderLogo id={kind} off={!info} />
+          )
+        }
         htmlFor={`tool-${cli}`}
         title={
-          <>
-            <ProviderLogo id={kind} size="xs" />
-            {name}
-          </>
+          portrait ? (
+            <>
+              <ProviderLogo id={kind} size="xs" />
+              {name}
+            </>
+          ) : (
+            name
+          )
         }
-        hint={hintFor(t, name, desc)}
+        hint={hintFor(t, name, t(`desktop.tools.${cli}Desc`))}
         chip={exec(info)}
         end={
+          // On or off whether or not its program is here yet: one installed later then works (ADR 0165).
           <Switch
             id={`tool-${cli}`}
             aria-describedby={`tool-${cli}-hint`}
-            checked={tools[cli] && !!info}
-            disabled={!info || homes.length === 0 || pending !== null}
+            checked={cliOn(tools, cli)}
+            disabled={homes.length === 0 || pending !== null}
             onCheckedChange={(on) => void set(cli, on)}
           />
         }
         under={
           !info && (
             <>
-              <CommandCopy command={CLI_INSTALL[cli]} />
+              {install && <CommandCopy command={install} />}
               <div className="dk-ver__acts">
                 <Button
                   variant="ghost"
@@ -162,8 +189,7 @@ export function Tools() {
     <>
       <PrefHead title={t("desktop.prefs.tools.title")} lead={t("desktop.prefs.tools.lead")} />
       <PrefCard>
-        {cliRow("claude", "claude_code", t("desktop.tools.claudeName"), t("desktop.tools.claudeDesc"))}
-        {cliRow("codex", "codex", t("desktop.tools.codexName"), t("desktop.tools.codexDesc"))}
+        {CLIS.map(cliRow)}
         <PrefRow
           lead={logo("code")}
           htmlFor="tool-commands"

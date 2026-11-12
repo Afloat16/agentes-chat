@@ -2,6 +2,7 @@ import type { ComputerDevice, DeviceAudience, DevicesList, Member, OrgRole, Phon
 import {
   audienceWords,
   iosOf,
+  iphoneOverWifi,
   portraitOf,
   reasonText,
   sameAudience,
@@ -43,7 +44,7 @@ import { serverPlace } from "../../control/local-server";
 import { type PairTarget, pairWithSession, targetKey } from "../../control/pair";
 import { homeServer, serverName } from "../../control/server";
 import { type Home, orgName } from "../../control/store";
-import { agentOf, useLocalServer, usePending, writePref } from "../../hooks";
+import { agentOf, useLocalServer, usePending, useWifiIphones, writePref } from "../../hooks";
 import type { Host } from "../../host/types";
 import { AgentFace, ConnectionChip, OrgTile } from "../../ui/bits";
 import { MacPermissionCard, useMacGrants } from "../../ui/permissions";
@@ -330,6 +331,17 @@ export function ThisMacCards({
                 />
               )),
             )}
+            {host.platform === "mac" &&
+              phoneHomes.map(({ home, server, orgId, computer }) => (
+                <WifiIphones
+                  key={home.homeId}
+                  computer={computer}
+                  server={server}
+                  orgId={orgId}
+                  org={multi ? orgName(home) : undefined}
+                  onChanged={load}
+                />
+              ))}
             <PrefRow
               desc={
                 <span>
@@ -686,6 +698,52 @@ export function PeoplePicker({
   );
 }
 
+/** On a Mac, the iPhones on its Wi-Fi that trust it, each with Use over Wi-Fi (for who may manage it). */
+function WifiIphones({
+  computer,
+  server,
+  orgId,
+  org,
+  onChanged,
+}: {
+  computer: ComputerDevice;
+  server: string;
+  orgId: string;
+  org?: string;
+  onChanged: () => Promise<void>;
+}) {
+  const { t, i18n } = useTranslation();
+  const toast = useToast();
+  const near = useWifiIphones({ server, orgId, machineId: computer.id }, computer.mayManage);
+  const pickIt = async (serial: string) => {
+    try {
+      await near.pick(serial);
+      await onChanged();
+    } catch (err) {
+      toast(errorText(t, err, i18n.language), "alert");
+    }
+  };
+  return near.available.map((p) => (
+    <PrefRow
+      key={p.serial}
+      lead={<ComputerPortrait kind="iphone" state="paused" size={48} />}
+      title={t("devices.iphone.wifi.also", { name: p.name ?? p.model })}
+      desc={org}
+      hint={hintFor(t, t("devices.iphone.wifi.use"), t("devices.iphone.wifi.hint"))}
+      end={
+        <Button
+          size="sm"
+          loading={near.using === p.serial}
+          disabled={near.using !== null}
+          onClick={() => void pickIt(p.serial)}
+        >
+          {t("devices.iphone.wifi.use")}
+        </Button>
+      }
+    />
+  ));
+}
+
 /** One phone on this computer: its state, who can use it, and its one way out (Stop, Show me how). */
 function PhoneRow({
   phone,
@@ -745,6 +803,20 @@ function PhoneRow({
   ) : undefined;
   const howTo = phone.platform === "ios" ? look === "needs" || look === "preparing" : look === "needs";
 
+  // An iPhone over Wi-Fi is let go here, and comes back only if picked again.
+  const letGo = async () => {
+    setStopping(true);
+    try {
+      await siteApi(host, server).devices.forgetPhone(orgId, phone.id);
+      toast(t("devices.iphone.wifi.stopped", { name: phone.name }));
+      await onChanged();
+    } catch (err) {
+      toast(errorText(t, err, i18n.language), "alert");
+    } finally {
+      setStopping(false);
+    }
+  };
+
   const stop = async () => {
     setStopping(true);
     try {
@@ -789,6 +861,10 @@ function PhoneRow({
             }
           >
             {t("devices.showMe")}
+          </Button>
+        ) : iphoneOverWifi(phone) && computer.mayManage ? (
+          <Button size="sm" loading={stopping} onClick={() => void letGo()}>
+            {t("devices.iphone.wifi.stop")}
           </Button>
         ) : undefined
       }
