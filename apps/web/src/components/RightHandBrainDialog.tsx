@@ -62,7 +62,13 @@ export function RightHandBrainDialog({
   empty?: string;
   model?: RightHandModel | null;
   /** The other accounts it may think with, the one in use left out; `empty`: what to do when there is none. */
-  accounts?: { items: readonly HaveItem[]; onPick: (id: string) => void; empty?: string } | null;
+  accounts?: {
+    items: readonly HaveItem[];
+    onPick: (id: string) => void;
+    empty?: string;
+    /** Under the list: connecting another AI, which opens every provider to pick from. */
+    more?: RightHandLink;
+  } | null;
   links?: readonly RightHandLink[];
   busy: boolean;
   /** Nothing changes for now (a billing hold): the lines that change it don't open. */
@@ -179,6 +185,18 @@ export function RightHandBrainDialog({
                   label={shown}
                 />
                 {accounts.items.length === 0 && accounts.empty && <p className="small muted">{accounts.empty}</p>}
+                {accounts.more && (
+                  <button
+                    type="button"
+                    className="arrival-have__link arrival-have__link--other"
+                    disabled={busy}
+                    onClick={accounts.more.onClick}
+                  >
+                    <Icon name={accounts.more.icon} size={16} />
+                    <span>{accounts.more.label}</span>
+                    <Icon name="chevronRight" size={16} />
+                  </button>
+                )}
               </>
             )}
             {screen === "model" && model && (

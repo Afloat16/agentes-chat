@@ -365,6 +365,7 @@ function RightHandForm({ agent }: { agent: Agent }) {
   const qc = useQueryClient();
   const dir = useDirectory(org.id);
   const hold = usePlanHold();
+  const connect = useConnectAi();
   // The workspace's AI (ADR 0137 §11): what every DM thinks with while its person has no plan of their own.
   const kind = planKind(agent.brain?.kind);
   const view = useAgentBrain(org.id, agent.id, true, false, "workspace").data;
@@ -450,6 +451,19 @@ function RightHandForm({ agent }: { agent: Agent }) {
     const plan = listed.find((p) => p.id === id);
     if (plan && plan.id !== view?.account) setWorkspace({ brain: plan.kind, account: plan.id });
   };
+  // Another AI: the Connect dialog, with every provider to pick from, over this one. On a billing hold nothing connects
+  // before the plan (ADR 0162).
+  const connectOther: RightHandLink | null =
+    connect && !hold
+      ? {
+          icon: "plus",
+          label: t("connectAi.chat.other"),
+          onClick: () => {
+            setChoosing(false);
+            connect.open({ agentId: agent.id });
+          },
+        }
+      : null;
   // The key's model: every model the workspace's keys reach, Automático first, the one in use kept on the list.
   const keyModels = [
     { value: AUTO, label: t("brain.auto.label"), description: t("brain.auto.hint") },
@@ -616,7 +630,13 @@ function RightHandForm({ agent }: { agent: Agent }) {
         }
         current={current}
         model={model}
-        accounts={{ items: others, onPick: pick, empty: t("rightHand.settings.noPlans", g) }}
+        accounts={{
+          items: others,
+          onPick: pick,
+          empty: t("rightHand.settings.noPlans", g),
+          ...(connectOther ? { more: connectOther } : {}),
+        }}
+        links={connectOther ? [connectOther] : []}
         // On a billing hold nothing changes before the plan (ADR 0162).
         busy={busy || update.isPending}
         locked={!!hold}
