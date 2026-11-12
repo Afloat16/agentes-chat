@@ -1398,7 +1398,10 @@
       "why": "Ubuntu、Debianなどのシステム向け（x64）です。Linuxでは追加の確認はありません:",
       "apt": ".debをダブルクリックするか、ターミナルからインストールします。",
       "aptLong": "ダウンロードしたファイルをダブルクリックして「インストール」をクリックするか、これをターミナルに貼り付けます:",
-      "open": "アプリの一覧からagentes.chatを開きます。"
+      "open": "アプリの一覧からagentes.chatを開きます。",
+      "otherTitle": "Arch、Fedora など、.deb を使えないシステムですか？",
+      "otherText": "AppImage をダウンロードしてください。どのディストリビューションでも動作し、自動で更新されます。保存したフォルダーで、ターミナルに次を貼り付けてください:",
+      "appImage": "AppImage をダウンロード"
     },
     "page": {
       "docTitle": "アプリをダウンロード · agentes.chat",
@@ -1409,6 +1412,8 @@
       "version": "バージョン{{version}}",
       "versionSize": "バージョン{{version}} · {{size}}",
       "soon": "{{system}}版はまだありません。",
+      "useArm": "ARMチップのコンピューターですか？ARM版をダウンロード",
+      "useX64": "x64版をダウンロード",
       "unavailable": "現在ここからアプリをダウンロードできません。しばらくしてからもう一度お試しください。",
       "installOn": "{{system}}にインストール",
       "system": "システム",
@@ -13013,6 +13018,7 @@
     "downloadFor": "{{system}}版をダウンロード",
     "downloadApp": "アプリをダウンロード",
     "otherSystems": "ほかのシステム",
+    "armBuild": "{{system}} (ARM)",
     "onThePhone": "スマートフォンで",
     "onTheIphone": "iPhoneで",
     "screen": {

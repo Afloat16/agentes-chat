@@ -1536,6 +1536,11 @@ export const en = {
       apt: "Install the .deb with a double-click, or from the terminal.",
       aptLong: "Double-click the downloaded file and click Install, or paste this in the terminal:",
       open: "Open agentes.chat from your apps.",
+      /** Under the steps: the AppImage, for a distribution without .deb packages. */
+      otherTitle: "On Arch, Fedora or another system that doesn't take a .deb?",
+      otherText:
+        "Download the AppImage: it runs on any distribution and updates itself. Then paste this in the terminal, in the folder you saved it to:",
+      appImage: "Download the AppImage",
     },
     page: {
       docTitle: "Download the app · agentes.chat",
@@ -1546,6 +1551,8 @@ export const en = {
       version: "Version {{version}}",
       versionSize: "Version {{version}} · {{size}}",
       soon: "There's no version for {{system}} yet.",
+      useArm: "Computer with an ARM chip? Get the ARM version",
+      useX64: "Get the x64 version",
       unavailable: "The app can't be downloaded from here right now. Try again in a moment.",
       installOn: "Install on {{system}}",
       system: "System",
@@ -1844,7 +1851,7 @@ export const en = {
     drive: "Drive",
     members: "Members",
     channels: "Channels",
-    /** The channels' section in a personal workspace's sidebar (ADR 0159): only once there is one to show. */
+    /** The channels' section in a personal workspace's sidebar (ADR 0159). */
     channelsPersonal: "Group conversations",
     agents: "Agents",
     directMessages: "Direct messages",
@@ -13442,6 +13449,8 @@ export const en = {
     downloadFor: "Download for {{system}}",
     downloadApp: "Download the app",
     otherSystems: "Other systems",
+    /** A build for computers with an ARM chip: "Windows (ARM)". */
+    armBuild: "{{system}} (ARM)",
     onThePhone: "On the phone",
     onTheIphone: "On the iPhone",
     /** A phone's screen live on its page: watching it, taking control of it, and why it can't show. */
