@@ -868,7 +868,7 @@ const sharedSignInProtocol = (kind: string) =>
 /**
  * Whether a new sign-in of that kind on the computer thinks for all of its owner's agents there (protocol 29):
  * every one where the agents are the runner's own user; where each is its own OS user (system mode), as
- * `SHARED_SIGN_INS` says (ChatGPT's from protocol 38, Gemini's from 57, never Cursor's yet).
+ * `SHARED_SIGN_INS` says (ChatGPT's from protocol 38, Gemini's from 58, never Cursor's yet).
  */
 export function sharesSignIns(
   machine: Pick<MachineRow, "protocol" | "executors">,
@@ -1139,7 +1139,7 @@ export async function beginAccountLogin(
               ? PLAN_KEYS_PROTOCOL
               : ACCOUNTS_PROTOCOL,
   );
-  // Once for every agent of its owner there, where the runner can (protocol 29; ChatGPT's 38, Gemini's 57).
+  // Once for every agent of its owner there, where the runner can (protocol 29; ChatGPT's 38, Gemini's 58).
   const shared = protocol >= sharedSignInProtocol(kind) && sharedSignIn(kind, provider);
   const again = accountId !== undefined;
   // A Claude subscription sign-in for all agents (ADR 0150): a new one takes the policy's method once, kept on its

@@ -2343,6 +2343,7 @@
         "delete": "Hanya admin yang menghapus agen",
         "audience": "Hanya admin dan penanggung jawabnya yang mengubah siapa yang bicara dengannya",
         "channels": "Hanya admin dan penanggung jawabnya yang mengubah kanalnya",
+        "skill": "Hanya admin yang mengubah skill agen",
         "ai_account": "Hanya pemilik akun yang memberikannya",
         "name": "Hanya admin yang mengganti nama agen",
         "look": "Hanya admin dan penanggung jawabnya yang mengubah tampilannya",
@@ -2360,7 +2361,8 @@
       "channel": "Kanal",
       "name": "Nama",
       "look": "Tampilan",
-      "reports_to": "Melapor ke"
+      "reports_to": "Melapor ke",
+      "skill": "Skill {{name}}"
     },
     "value": {
       "lookDefault": "Tampilan bawaan",
@@ -2376,7 +2378,9 @@
       "deleted": "Dihapus",
       "notIn": "Tidak di kanal",
       "withoutMention": "Atas inisiatif sendiri",
-      "mentionOnly": "Hanya saat disebut"
+      "mentionOnly": "Hanya saat disebut",
+      "skillOn": "Aktif",
+      "skillOff": "Nonaktif"
     },
     "remove": {
       "archiveTitle_other": "Arsipkan {{count}} agen?",
@@ -2612,6 +2616,17 @@
       "gemini": "Hubungkan paket Gemini-mu",
       "zen": "Hubungkan OpenCode",
       "api_key": "Tambahkan kunci API"
+    },
+    "toolOff": {
+      "text": "{{computer}} sudah terhubung, tetapi {{program}} dimatikan di sana. Demi keamanan, hanya bisa dinyalakan di komputer itu sendiri.",
+      "where": "Di {{computer}}",
+      "one": "Klik ikon agentes.chat <mark/> di dekat jam",
+      "oneWindows": "Di Windows, ikonnya bisa berada di balik panah ^ pada bilah tugas.",
+      "two": "Buka <b>Preferensi</b>",
+      "three": "Di <b>Alat</b>, nyalakan <b>{{program}}</b>",
+      "terminal": "Di terminal komputer itu, jalankan:",
+      "here": "Nyalakan <b>{{program}}</b> di <b>Alat</b>.",
+      "waiting": "Menunggu Anda menyalakannya. Layar ini berubah sendiri."
     },
     "titleFor": "Hubungkan AI untuk {{name}}",
     "titleFor_female": "Hubungkan AI untuk {{name}}",
@@ -8901,6 +8916,9 @@
     "pickAll": "Semua",
     "pickMissing": "Pilih setidaknya satu skill.",
     "pickSkipped": "Tidak bisa dipasang. {{reason}}",
+    "pickReplaces": "Menggantikan skill {{name}} yang sudah terpasang",
+    "pickReplacesRemoved": "Menggantikan skill {{name}} yang sudah dihapus",
+    "forAgent_other": "Aktifkan untuk {{agent}}",
     "installedMany": "{{count}} skill terpasang.",
     "zipHelp": "File .zip dengan SKILL.md di folder utamanya.",
     "zipPick": "Pilih .zip",
@@ -12702,6 +12720,7 @@
       "targetNotFound": "Komputer itu sudah tidak ada. Pilih yang lain.",
       "targetSame": "Agen sudah ada di komputer itu.",
       "targetPaused": "Komputer itu sedang dijeda. Pilih yang lain.",
+      "pausePast": "Pilih waktu di masa depan.",
       "accountMethodUnsupported": "Komputer ini belum bisa menghubungkan Claude dengan cara ini. Perbarui program agentes.chat di komputer ini, atau pakai kunci API.",
       "offline": "{{name}} sedang offline. Coba lagi setelah ia kembali.",
       "paused": "{{name}} dijeda: tidak ada yang baru dimulai di sana sampai dilanjutkan.",
@@ -12743,7 +12762,8 @@
       "ownerOrAdmin": "Hanya pemilik agen atau Admin yang bisa melakukan ini.",
       "detailsHidden": "Hanya orang yang berbicara dengan {{agentName}} yang bisa melihat cara kerjanya.",
       "extraOwnerOnly": "Hanya pemilik agen yang bisa menyalakan atau mematikan penggunaan ekstra berbayar pada paket.",
-      "undoForbidden": "Hanya orang yang dibantu agen, pemiliknya, atau Admin yang bisa membatalkan ini."
+      "undoForbidden": "Hanya orang yang dibantu agen, pemiliknya, atau Admin yang bisa membatalkan ini.",
+      "undoSkillsAdmins": "Hanya Admin yang bisa membatalkan atau mengulang perubahan pada skill agen."
     },
     "account": {
       "notRestorable": "Akun ini sudah tidak bisa dipulihkan.",
@@ -12833,6 +12853,21 @@
     "paused": "Dijeda",
     "pausedUntil": "Dijeda sampai {{time}}",
     "pausedHint": "Dijeda di komputer itu sendiri oleh orang yang menghubungkannya.",
+    "remotePause": {
+      "button": "Jeda",
+      "menu": "Jeda {{name}}",
+      "oneHour": "Selama 1 jam",
+      "tomorrow": "Sampai besok pukul 09.00",
+      "manual": "Sampai aku melanjutkan",
+      "resume": "Lanjutkan",
+      "byYou": "Dijeda olehmu.",
+      "byYouUntil": "Dijeda olehmu sampai {{time}}.",
+      "byName": "Dijeda oleh {{name}}.",
+      "byNameUntil": "Dijeda oleh {{name}} sampai {{time}}.",
+      "outdated": "Perbarui aplikasi agentes.chat di komputer ini untuk menjedanya dari sini.",
+      "paused": "{{name}} dijeda",
+      "resumed": "{{name}} kembali bekerja"
+    },
     "seenNow": "terhubung sekarang",
     "seen": "terlihat {{when}}",
     "neverSeen": "belum pernah terhubung",
@@ -13244,6 +13279,8 @@
       "openApp": "Buka aplikasinya",
       "server": "Server atau VPS",
       "serverLine": "Satu baris untuk ditempel di terminalnya",
+      "httpLine": "Satu baris untuk ditempel di terminalnya. Aplikasi menghubungkannya dengan sekali klik di alamat https.",
+      "httpHow": "Caranya",
       "other": "Komputer lain",
       "otherLine": "Pasang aplikasinya di sana",
       "android": "Ponsel Android",
@@ -15257,6 +15294,7 @@
       "agent_proposal": "Mengusulkan agen baru: {{name}}",
       "team_proposal": "Mengusulkan tim: {{names}}",
       "settings_proposal": "Mengusulkan perubahan untuk {{names}}",
+      "settings_request": "Meminta perubahan pada pengaturannya sendiri",
       "approval_request": "Permintaan persetujuan: {{title}}",
       "secret_request": "{{agent}} meminta kunci: {{name}}",
       "secret_requestAnon": "Meminta kunci: {{name}}",

@@ -2513,6 +2513,7 @@
         "delete": "Seuls les admins suppriment un agent",
         "audience": "Seuls les admins et son responsable changent qui lui parle",
         "channels": "Seuls les admins et son responsable changent ses canaux",
+        "skill": "Seuls les admins changent les compétences d’un agent",
         "ai_account": "Seul le propriétaire du compte l’attribue",
         "name": "Seuls les admins renomment un agent",
         "look": "Seuls les admins et son responsable changent son apparence",
@@ -2530,7 +2531,8 @@
       "channel": "Canal",
       "name": "Nom",
       "look": "Apparence",
-      "reports_to": "Rend compte à"
+      "reports_to": "Rend compte à",
+      "skill": "Compétence {{name}}"
     },
     "value": {
       "lookDefault": "L'apparence par défaut",
@@ -2546,7 +2548,9 @@
       "deleted": "Supprimé",
       "notIn": "Pas dans le canal",
       "withoutMention": "De sa propre initiative",
-      "mentionOnly": "Seulement quand on le mentionne"
+      "mentionOnly": "Seulement quand on le mentionne",
+      "skillOn": "Activée",
+      "skillOff": "Désactivée"
     },
     "remove": {
       "archiveTitle_one": "Archiver {{count}} agent ?",
@@ -2802,6 +2806,17 @@
       "gemini": "Connecter votre abonnement Gemini",
       "zen": "Connecter OpenCode",
       "api_key": "Ajouter une clé API"
+    },
+    "toolOff": {
+      "text": "{{computer}} est connecté, mais {{program}} y est désactivé. Par sécurité, il ne s'active que sur l'ordinateur lui-même.",
+      "where": "Sur {{computer}}",
+      "one": "Cliquez sur l'icône agentes.chat <mark/> près de l'horloge",
+      "oneWindows": "Sous Windows, elle peut se trouver derrière la flèche ^ de la barre des tâches.",
+      "two": "Ouvrez <b>Préférences</b>",
+      "three": "Dans <b>Outils</b>, activez <b>{{program}}</b>",
+      "terminal": "Dans le terminal de l'ordinateur, lancez :",
+      "here": "Activez <b>{{program}}</b> dans <b>Outils</b>.",
+      "waiting": "En attente de l'activation. Cet écran change tout seul."
     },
     "titleFor": "Connecter une IA pour {{name}}",
     "titleFor_female": "Connecter une IA pour {{name}}",
@@ -9543,6 +9558,11 @@
     "pickAll": "Toutes",
     "pickMissing": "Choisissez au moins une compétence.",
     "pickSkipped": "Installation impossible. {{reason}}",
+    "pickReplaces": "Remplace la compétence {{name}} déjà installée",
+    "pickReplacesRemoved": "Remplace la compétence {{name}} supprimée",
+    "forAgent_one": "L’activer pour {{agent}}",
+    "forAgent_many": "Les activer pour {{agent}}",
+    "forAgent_other": "Les activer pour {{agent}}",
     "installedMany": "{{count}} compétences installées.",
     "zipHelp": "Un .zip avec SKILL.md à la racine.",
     "zipPick": "Choisir un .zip",
@@ -13587,6 +13607,7 @@
       "targetNotFound": "Cet ordinateur n'existe plus. Choisissez-en un autre.",
       "targetSame": "Les agents sont déjà sur cet ordinateur.",
       "targetPaused": "Cet ordinateur est en pause. Choisissez-en un autre.",
+      "pausePast": "Choisissez une heure dans le futur.",
       "accountMethodUnsupported": "Cet ordinateur ne peut pas encore connecter Claude de cette façon. Mettez à jour le programme agentes.chat dessus ou utilisez une clé API.",
       "offline": "{{name}} est hors ligne pour le moment. Réessayez quand il sera de retour.",
       "paused": "{{name}} est en pause : rien de nouveau n'y démarre tant qu'il n'a pas repris.",
@@ -13630,7 +13651,8 @@
       "ownerOrAdmin": "Seuls le responsable de l'agent ou un admin peuvent faire cela.",
       "detailsHidden": "Seules les personnes qui parlent à {{agentName}} voient comment cela fonctionne.",
       "extraOwnerOnly": "Seul le responsable de l'agent active ou désactive l'usage supplémentaire payant de l'abonnement.",
-      "undoForbidden": "Seuls la personne pour qui l'agent a travaillé, son responsable ou un admin peuvent annuler cela."
+      "undoForbidden": "Seuls la personne pour qui l'agent a travaillé, son responsable ou un admin peuvent annuler cela.",
+      "undoSkillsAdmins": "Seul un admin peut annuler ou rétablir une modification des compétences d’un agent."
     },
     "account": {
       "notRestorable": "Ce compte ne peut plus être restauré.",
@@ -13720,6 +13742,21 @@
     "paused": "En pause",
     "pausedUntil": "En pause jusqu'à {{time}}",
     "pausedHint": "Mis en pause sur l'ordinateur lui-même par la personne qui l'a connecté.",
+    "remotePause": {
+      "button": "Mettre en pause",
+      "menu": "Mettre {{name}} en pause",
+      "oneHour": "Pendant 1 heure",
+      "tomorrow": "Jusqu'à demain 9 h",
+      "manual": "Jusqu'à ce que je reprenne",
+      "resume": "Reprendre",
+      "byYou": "Mis en pause par toi.",
+      "byYouUntil": "Mis en pause par toi jusqu'à {{time}}.",
+      "byName": "Mis en pause par {{name}}.",
+      "byNameUntil": "Mis en pause par {{name}} jusqu'à {{time}}.",
+      "outdated": "Mets à jour l'app agentes.chat sur cet ordinateur pour le mettre en pause d'ici.",
+      "paused": "{{name}} est en pause",
+      "resumed": "{{name}} reprend le travail"
+    },
     "seenNow": "connecté en ce moment",
     "seen": "vu {{when}}",
     "neverSeen": "pas encore connecté",
@@ -14139,6 +14176,8 @@
       "openApp": "Ouvrir l'app",
       "server": "Un serveur ou un VPS",
       "serverLine": "Une ligne à coller dans son terminal",
+      "httpLine": "Une ligne à coller dans son terminal. L'app le connecte en un clic sur une adresse https.",
+      "httpHow": "Comment",
       "other": "Un autre ordinateur",
       "otherLine": "Installez l'app dessus",
       "android": "Téléphone Android",
@@ -16230,6 +16269,7 @@
       "agent_proposal": "A proposé un nouvel agent : {{name}}",
       "team_proposal": "A proposé une équipe : {{names}}",
       "settings_proposal": "A proposé un changement pour {{names}}",
+      "settings_request": "Demande une modification de ses propres réglages",
       "approval_request": "Demande d'approbation : {{title}}",
       "secret_request": "{{agent}} a demandé une clé : {{name}}",
       "secret_requestAnon": "A demandé une clé : {{name}}",

@@ -2343,6 +2343,7 @@
         "delete": "에이전트 삭제는 관리자만 할 수 있어요",
         "audience": "대화할 수 있는 사람은 관리자와 담당자만 바꿀 수 있어요",
         "channels": "채널은 관리자와 담당자만 바꿀 수 있어요",
+        "skill": "에이전트의 스킬은 관리자만 바꿀 수 있어요",
         "ai_account": "계정 주인만 줄 수 있어요",
         "name": "에이전트 이름은 관리자만 바꿀 수 있어요",
         "look": "모습은 관리자와 담당자만 바꿀 수 있어요",
@@ -2360,7 +2361,8 @@
       "channel": "채널",
       "name": "이름",
       "look": "모습",
-      "reports_to": "보고 대상"
+      "reports_to": "보고 대상",
+      "skill": "스킬 {{name}}"
     },
     "value": {
       "lookDefault": "기본 모습",
@@ -2376,7 +2378,9 @@
       "deleted": "삭제됨",
       "notIn": "채널에 없음",
       "withoutMention": "스스로",
-      "mentionOnly": "멘션될 때만"
+      "mentionOnly": "멘션될 때만",
+      "skillOn": "켜짐",
+      "skillOff": "꺼짐"
     },
     "remove": {
       "archiveTitle_other": "에이전트 {{count}}개를 보관할까요?",
@@ -2604,6 +2608,17 @@
       "gemini": "Gemini 요금제 연결",
       "zen": "OpenCode 연결",
       "api_key": "API 키 추가"
+    },
+    "toolOff": {
+      "text": "{{computer}}은(는) 연결되어 있지만 {{program}}이(가) 꺼져 있습니다. 보안을 위해 해당 컴퓨터에서만 켤 수 있습니다.",
+      "where": "{{computer}}에서",
+      "one": "시계 옆의 agentes.chat 아이콘 <mark/>을 클릭하세요",
+      "oneWindows": "Windows에서는 작업 표시줄의 화살표 ^ 안에 있을 수 있습니다.",
+      "two": "<b>환경설정</b>을 여세요",
+      "three": "<b>도구</b>에서 <b>{{program}}</b>을(를) 켜세요",
+      "terminal": "컴퓨터의 터미널에서 실행하세요:",
+      "here": "<b>도구</b>에서 <b>{{program}}</b>을(를) 켜세요.",
+      "waiting": "켜기를 기다리는 중입니다. 이 화면은 자동으로 바뀝니다."
     },
     "titleFor": "{{name}}의 AI 연결",
     "have": {
@@ -8846,6 +8861,9 @@
     "pickAll": "전체",
     "pickMissing": "스킬을 하나 이상 고르세요.",
     "pickSkipped": "설치할 수 없어요. {{reason}}",
+    "pickReplaces": "이미 설치된 {{name}} 스킬을 대체해요",
+    "pickReplacesRemoved": "삭제된 {{name}} 스킬을 대체해요",
+    "forAgent_other": "{{agent}}에게 켜기",
     "installedMany": "스킬 {{count}}개를 설치했어요.",
     "zipHelp": "최상위에 SKILL.md가 있는 .zip 파일이에요.",
     "zipPick": ".zip 선택",
@@ -12642,6 +12660,7 @@
       "targetNotFound": "그 컴퓨터는 더 이상 없어요. 다른 컴퓨터를 고르세요.",
       "targetSame": "에이전트가 이미 그 컴퓨터에 있어요.",
       "targetPaused": "그 컴퓨터는 일시 중지됐어요. 다른 컴퓨터를 고르세요.",
+      "pausePast": "앞으로의 시간을 고르세요.",
       "accountMethodUnsupported": "이 컴퓨터에서는 아직 이 방식으로 Claude를 연결할 수 없어요. 컴퓨터의 agentes.chat 프로그램을 업데이트하거나 API 키를 쓰세요.",
       "offline": "{{name}}은(는) 지금 오프라인이에요. 돌아오면 다시 시도해 주세요.",
       "paused": "{{name}}이(가) 일시 중지됐어요: 다시 시작될 때까지 새 작업이 시작되지 않아요.",
@@ -12683,7 +12702,8 @@
       "ownerOrAdmin": "에이전트 소유자나 관리자만 할 수 있어요.",
       "detailsHidden": "{{agentName}}에게 말할 수 있는 사람만 작동 방식을 볼 수 있어요.",
       "extraOwnerOnly": "에이전트 소유자만 요금제의 유료 추가 사용량을 켜거나 끌 수 있어요.",
-      "undoForbidden": "에이전트가 도와준 사람, 에이전트 소유자 또는 관리자만 되돌릴 수 있어요."
+      "undoForbidden": "에이전트가 도와준 사람, 에이전트 소유자 또는 관리자만 되돌릴 수 있어요.",
+      "undoSkillsAdmins": "에이전트의 스킬 변경은 관리자만 되돌리거나 다시 할 수 있어요."
     },
     "account": {
       "notRestorable": "이 계정은 더 이상 복원할 수 없어요.",
@@ -12773,6 +12793,21 @@
     "paused": "일시 중지됨",
     "pausedUntil": "{{time}}까지 일시 중지됨",
     "pausedHint": "연결한 사람이 컴퓨터에서 직접 일시 중지했어요.",
+    "remotePause": {
+      "button": "일시 중지",
+      "menu": "{{name}} 일시 중지",
+      "oneHour": "1시간 동안",
+      "tomorrow": "내일 오전 9시까지",
+      "manual": "내가 재개할 때까지",
+      "resume": "재개",
+      "byYou": "내가 일시 중지했어요.",
+      "byYouUntil": "내가 {{time}}까지 일시 중지했어요.",
+      "byName": "{{name}} 님이 일시 중지했어요.",
+      "byNameUntil": "{{name}} 님이 {{time}}까지 일시 중지했어요.",
+      "outdated": "여기서 일시 중지하려면 이 컴퓨터의 agentes.chat 앱을 업데이트하세요.",
+      "paused": "{{name}} 일시 중지됨",
+      "resumed": "{{name}} 다시 작업 중"
+    },
     "seenNow": "지금 연결됨",
     "seen": "{{when}} 확인됨",
     "neverSeen": "아직 연결된 적 없음",
@@ -13182,6 +13217,8 @@
       "openApp": "앱 열기",
       "server": "서버 또는 VPS",
       "serverLine": "터미널에 한 줄 붙여 넣기",
+      "httpLine": "터미널에 한 줄 붙여 넣기. https 주소에서는 앱이 클릭 한 번으로 연결해요.",
+      "httpHow": "방법",
       "other": "다른 컴퓨터",
       "otherLine": "그 컴퓨터에 앱 설치",
       "android": "Android 휴대폰",
@@ -15195,6 +15232,7 @@
       "agent_proposal": "새 에이전트를 제안했어요: {{name}}",
       "team_proposal": "팀을 제안했어요: {{names}}",
       "settings_proposal": "{{names}}에 대한 변경을 제안했어요",
+      "settings_request": "자기 설정의 변경을 요청해요",
       "approval_request": "승인 요청: {{title}}",
       "secret_request": "{{agent}}이(가) 키를 요청했어요: {{name}}",
       "secret_requestAnon": "키를 요청했어요: {{name}}",

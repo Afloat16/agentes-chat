@@ -121,7 +121,7 @@ import type { TaskSecrets } from "./tasks";
  *   Claude one is `claude setup-token`'s token (`token.json`, 600), signed in
  *   in a terminal of its own (`spawnInTerminal`), a coding plan's is its key, a
  *   ChatGPT or Gemini one is its CLI's own sign-in there, and `grant` hands what
- *   a turn needs to the agent's worker (protocol 57: a copy of Gemini's, tried
+ *   a turn needs to the agent's worker (protocol 58: a copy of Gemini's, tried
  *   once as the sign-in ends, `agyCopyFails`).
  * - Claude's own login for all agents (`sharedLogin`; `<id>.method` says
  *   `cli_shared`, read as `cli_login` by everything outside this file): the

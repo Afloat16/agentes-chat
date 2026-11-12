@@ -38,7 +38,7 @@ import { agentSecrets } from "./secrets";
  * - Always an account, on Linux: its folder is the CLI's whole `HOME` (`agy-home.ts`), prepared before every turn
  *   (settings, our MCP server alone, Lodi's agent; anything an earlier turn planted removed). The run and its token
  *   reach our server through the env it inherits, so the account's turns of several agents share one config. One
- *   root keeps for all agents (protocol 57) is the agent's own folder for it instead, with a copy of root's sign-in
+ *   root keeps for all agents (protocol 58) is the agent's own folder for it instead, with a copy of root's sign-in
  *   for as long as the agent's turns on it run (a worker killed mid-turn leaves it until the agent's next one starts).
  * - The chat: `init` names the conversation; our session → that conversation lives in
  *   `<runner home>/brain/antigravity-chats.json` (per account), resumed with `--conversation`. A new chat leads its
@@ -472,7 +472,7 @@ export interface AntigravityBrainContext {
   bin?: string;
   grants?: string[];
   accounts?: AccountFolders;
-  /** In a worker, a sign-in root keeps for all agents (protocol 57): the copy this turn gets (`AccountManager.grant`). */
+  /** In a worker, a sign-in root keeps for all agents (protocol 58): the copy this turn gets (`AccountManager.grant`). */
   grant?: AccountGrant;
   spawn?: Spawn;
   platform?: NodeJS.Platform;

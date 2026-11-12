@@ -141,7 +141,7 @@ test("Quem pensa: Gemini where its runner and CLI are, its models as the CLI lis
   ]);
 });
 
-test("a Gemini sign-in is made for all agents where each is its own OS user from protocol 57 on; Enterprise signs in again as Enterprise", () => {
+test("a Gemini sign-in is made for all agents where each is its own OS user from protocol 58 on; Enterprise signs in again as Enterprise", () => {
   const system = (protocol: number) => ({ protocol, executors: { mode: "system" as const } }) as never;
   expect(sharesSignIns(system(SHARED_GEMINI_PROTOCOL), "antigravity")).toBe(true);
   expect(sharesSignIns(system(SHARED_GEMINI_PROTOCOL - 1), "antigravity")).toBe(false);
