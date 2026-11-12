@@ -3268,6 +3268,8 @@
       "updated_priority": "Ho impostato la priorità di <b>#{{number}}</b> su {{priority}} · {{title}}",
       "assigned": "Ho assegnato <b>#{{number}}</b> a {{assignee}} · {{title}}",
       "assigned_self": "Ho preso <b>#{{number}}</b> io · {{title}}",
+      "assigned_you": "Ti ho assegnato <b>#{{number}}</b> · {{title}}",
+      "assigned_none": "Ho tolto il responsabile di <b>#{{number}}</b> · {{title}}",
       "files": "Ho allegato {{names}}"
     },
     "memory": {
@@ -3378,7 +3380,9 @@
         "created": "Ho creato le attività {{refs}}",
         "updated": "Ho cambiato {{fields}} delle attività {{refs}}",
         "assigned": "Ho assegnato a {{assignee}} le attività {{refs}}",
-        "assigned_self": "Ho preso io le attività {{refs}}"
+        "assigned_self": "Ho preso io le attività {{refs}}",
+        "assigned_you": "Ti ho assegnato le attività {{refs}}",
+        "assigned_none": "Ho tolto il responsabile delle attività {{refs}}"
       },
       "routine": {
         "created": "Ho creato le routine {{refs}}",

@@ -3058,6 +3058,8 @@
       "updated_priority": "Mengatur prioritas <b>#{{number}}</b> ke {{priority}} · {{title}}",
       "assigned": "Menugaskan <b>#{{number}}</b> ke {{assignee}} · {{title}}",
       "assigned_self": "Mengambil <b>#{{number}}</b> sendiri · {{title}}",
+      "assigned_you": "Menugaskan <b>#{{number}}</b> ke kamu · {{title}}",
+      "assigned_none": "Menghapus penanggung jawab <b>#{{number}}</b> · {{title}}",
       "files": "Melampirkan {{names}}"
     },
     "memory": {
@@ -3166,7 +3168,9 @@
         "created": "Membuat tugas {{refs}}",
         "updated": "Mengubah {{fields}} di tugas {{refs}}",
         "assigned": "Menugaskan ke {{assignee}}: tugas {{refs}}",
-        "assigned_self": "Mengambil sendiri tugas {{refs}}"
+        "assigned_self": "Mengambil sendiri tugas {{refs}}",
+        "assigned_you": "Menugaskan ke kamu: tugas {{refs}}",
+        "assigned_none": "Menghapus penanggung jawab tugas {{refs}}"
       },
       "routine": {
         "created": "Membuat rutinitas {{refs}}",

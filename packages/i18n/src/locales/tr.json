@@ -3147,6 +3147,8 @@
       "updated_priority": "<b>#{{number}}</b> görevinin önceliğini {{priority}} yaptım · {{title}}",
       "assigned": "<b>#{{number}}</b> görevini {{assignee}} kişisine atadım · {{title}}",
       "assigned_self": "<b>#{{number}}</b> görevini kendim üstlendim · {{title}}",
+      "assigned_you": "<b>#{{number}}</b> görevini size atadım · {{title}}",
+      "assigned_none": "<b>#{{number}}</b> görevinin atamasını kaldırdım · {{title}}",
       "files": "{{names}} ekledim"
     },
     "memory": {
@@ -3256,7 +3258,9 @@
         "created": "Görevleri oluşturdum: {{refs}}",
         "updated": "Görevlerde {{fields}} değiştirdim: {{refs}}",
         "assigned": "Görevleri {{assignee}} kişisine atadım: {{refs}}",
-        "assigned_self": "Görevleri kendim üstlendim: {{refs}}"
+        "assigned_self": "Görevleri kendim üstlendim: {{refs}}",
+        "assigned_you": "Görevleri size atadım: {{refs}}",
+        "assigned_none": "Görevlerin atamasını kaldırdım: {{refs}}"
       },
       "routine": {
         "created": "Rutinleri oluşturdum: {{refs}}",

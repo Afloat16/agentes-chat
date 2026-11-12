@@ -3348,6 +3348,10 @@ export const en = {
       updated_priority: "Set <b>#{{number}}</b> to {{priority}} priority · {{title}}",
       assigned: "Assigned <b>#{{number}}</b> to {{assignee}} · {{title}}",
       assigned_self: "Took <b>#{{number}}</b> myself · {{title}}",
+      /** Assigned to the person reading it: the language's own words for "to you" ("Te asigné"). */
+      assigned_you: "Assigned <b>#{{number}}</b> to you · {{title}}",
+      /** The task no longer has anyone on it. */
+      assigned_none: "Removed the assignee of <b>#{{number}}</b> · {{title}}",
       /** Under the line: the files that went with the task (their names). */
       files: "Attached {{names}}",
     },
@@ -3470,6 +3474,8 @@ export const en = {
         updated: "Changed {{fields}} of tasks {{refs}}",
         assigned: "Assigned {{assignee}} tasks {{refs}}",
         assigned_self: "Took on tasks {{refs}}",
+        assigned_you: "Assigned you tasks {{refs}}",
+        assigned_none: "Removed the assignee of tasks {{refs}}",
       },
       routine: {
         created: "Created the routines {{refs}}",

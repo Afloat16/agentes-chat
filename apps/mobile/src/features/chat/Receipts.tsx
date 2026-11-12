@@ -6,16 +6,13 @@ import {
   receiptLines,
   receiptPieces,
   receiptRows,
-  routineOwnActions,
-  rowFiles,
+  receiptUnder,
 } from "@agenteschat/client/lib/actions";
-import { ownActionName } from "@agenteschat/client/lib/approval-words";
-import { joinNames } from "@agenteschat/client/lib/format";
 import { handedTasksOf } from "@agenteschat/client/lib/issues";
 import { can } from "@agenteschat/client/lib/permissions";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, View } from "react-native";
+import { type GestureResponderEvent, Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, LayoutAnimationConfig } from "react-native-reanimated";
 import { useOrg } from "@/providers/org";
 import { CARD_PAD, Card, LineIcon, Text, useReducedMotion, useToast } from "@/ui";
@@ -27,6 +24,7 @@ import { SheetTitle } from "../shared/PromptForm";
 import { copyText, tapHaptic } from "../shared/parts";
 import { useSheetIfAny } from "../shared/SheetHost";
 import { groupStart, receiptIcon, receiptLayout, targetHref } from "./actions";
+import { DOUBLE_TAP_MS } from "./logic";
 import { useCardTop } from "./look";
 
 /**
@@ -36,7 +34,16 @@ import { useCardTop } from "./look";
  * bold part of a sentence opens the thing itself, where it is fixed or removed; a tap on the rest of its words lists
  * each change whole in a sheet. One undone elsewhere stays as history: struck through, with "Desfeito por …".
  */
-export function Receipts({ message: m }: { message: Message }) {
+export function Receipts({
+  message: m,
+  onTap,
+  onLongPress,
+}: {
+  message: Message;
+  /** The message's own: a double tap reacts and a long press opens its menu, on a receipt as on its words. */
+  onTap?: (e: GestureResponderEvent) => void;
+  onLongPress?: () => void;
+}) {
   const { t } = useTranslation();
   const c = useColors();
   const meId = useMeId();
@@ -55,25 +62,34 @@ export function Receipts({ message: m }: { message: Message }) {
   if (layout === "none") return null;
   const rows = receiptRows(list, t, meId ?? undefined);
   const title = t("agentActions.group", { name: dir.nameOf(m.author) });
+  const undoneName = (a: AgentAction) =>
+    a.undoneByUserId && a.undoneByUserId === meId
+      ? t("agentActions.you")
+      : dir.nameOf({ type: "user", id: a.undoneByUserId }) || t("mobile.chat.someone");
   const row = (r: ReceiptRow, size: "one" | "item") => {
     const a = r.actions[0] as AgentAction;
-    const files = rowFiles(r);
+    const lines = receiptUnder(r, t, a.undoneAt ? undoneName(a) : null);
+    const under = [lines.own, lines.undone].filter((line): line is string => line !== null);
     const whole = sheet
       ? () => {
           tapHaptic();
-          sheet.open(<ChangesSheet row={r} channelId={m.channelId} title={title} close={sheet.close} />);
+          sheet.open(<ChangesSheet row={r} channelId={m.channelId} title={title} under={under} close={sheet.close} />);
         }
       : undefined;
     return (
       <View style={styles.grow}>
-        <Sentence row={r} channelId={m.channelId} struck={Boolean(a.undoneAt)} size={size} whole={whole} />
-        {files.length > 0 ? (
-          <Text variant="caption" tone="faint" numberOfLines={1} style={styles.under}>
-            {t("agentActions.issue.files", { names: joinNames(files, t) })}
-          </Text>
-        ) : null}
-        <OwnActions action={a} />
-        {a.undoneAt ? <UndoneBy action={a} /> : r.refs ? null : <CopyHook action={a} />}
+        <Sentence
+          row={r}
+          channelId={m.channelId}
+          struck={Boolean(a.undoneAt)}
+          size={size}
+          whole={whole}
+          onTap={onTap}
+          onLongPress={onLongPress}
+        />
+        {lines.files ? <UnderLine text={lines.files} /> : null}
+        {lines.own ? <UnderLine text={lines.own} /> : null}
+        {lines.undone ? <UndoneLine text={lines.undone} /> : r.refs ? null : <CopyHook action={a} />}
       </View>
     );
   };
@@ -117,7 +133,8 @@ export function Receipts({ message: m }: { message: Message }) {
 
 /**
  * The sentence, one line ("Criei a tarefa **#23** · …"): its bold parts open their own thing when the phone has its
- * screen ("Criei as tarefas **#58**, **#59**"); a tap on the rest of its words lists each change whole (`whole`).
+ * screen ("Criei as tarefas **#58**, **#59**"), as do a memory's words; a tap on the rest of its words lists each change
+ * whole (`whole`), once the message's double tap can no longer be what it was.
  */
 function Sentence({
   row,
@@ -125,15 +142,41 @@ function Sentence({
   struck,
   size,
   whole,
+  onTap,
+  onLongPress,
 }: {
   row: ReceiptRow;
   channelId: string;
   struck: boolean;
   size: "one" | "item";
   whole?: () => void;
+  onTap?: (e: GestureResponderEvent) => void;
+  onLongPress?: () => void;
 }) {
   const { t } = useTranslation();
   const meId = useMeId();
+  const waiting = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (waiting.current) clearTimeout(waiting.current);
+    },
+    [],
+  );
+  const press = (e: GestureResponderEvent) => {
+    onTap?.(e);
+    if (!whole) return;
+    // A second tap in the window is the message's double tap: no list.
+    if (waiting.current) {
+      clearTimeout(waiting.current);
+      waiting.current = null;
+      return;
+    }
+    if (!onTap) return whole();
+    waiting.current = setTimeout(() => {
+      waiting.current = null;
+      whole();
+    }, DOUBLE_TAP_MS);
+  };
   const variant = size === "one" ? "small" : "footnote";
   return (
     <Text
@@ -141,20 +184,22 @@ function Sentence({
       tone={struck ? "faint" : "ink2"}
       style={struck && styles.struck}
       numberOfLines={1}
-      onPress={whole}
+      onPress={whole || onTap ? press : undefined}
+      onLongPress={onLongPress}
       accessibilityRole={whole ? "button" : undefined}
       suppressHighlighting
     >
       {receiptPieces(row, t, meId ?? undefined).map((p, i) => {
-        if (!p.bold) return p.text;
+        if (!p.bold && !p.opens) return p.text;
         const href = p.opens ? targetHref(p.opens.target, channelId) : null;
         return (
           <Text
             key={String(i)}
             variant={variant}
-            tone={struck ? "faint" : "ink"}
-            style={styles.bold}
+            tone={struck ? "faint" : p.bold ? "ink" : "ink2"}
+            style={p.bold && styles.bold}
             onPress={href ? () => router.push(href) : undefined}
+            onLongPress={onLongPress}
             accessibilityRole={href ? "link" : undefined}
             suppressHighlighting
           >
@@ -171,11 +216,14 @@ function ChangesSheet({
   row,
   channelId,
   title,
+  under,
   close,
 }: {
   row: ReceiptRow;
   channelId: string;
   title: string;
+  /** The row's own lines, whole here: what a routine does on its own, who undid it. */
+  under: string[];
   close: (then?: unknown) => void;
 }) {
   const { t } = useTranslation();
@@ -222,6 +270,11 @@ function ChangesSheet({
           );
         })}
       </Card>
+      {under.map((line) => (
+        <Text key={line} variant="small" tone="muted" style={styles.sheetUnder}>
+          {line}
+        </Text>
+      ))}
     </>
   );
 }
@@ -268,38 +321,19 @@ function CopyHook({ action: a }: { action: AgentAction }) {
   );
 }
 
-/** Under a created routine: what it does in connected apps without asking. */
-function OwnActions({ action: a }: { action: AgentAction }) {
-  const { t } = useTranslation();
-  const own = routineOwnActions(a);
-  if (own.length === 0) return null;
-  return (
-    <Text variant="caption" tone="faint" numberOfLines={1} style={styles.under}>
-      {t("agentActions.routine.ownActions", {
-        actions: joinNames(
-          own.map((name) => ownActionName(t, name)),
-          t,
-        ),
-      })}
-    </Text>
-  );
-}
+/** A line under the row ("Anexei …", "Faz sozinha, sem pedir: …"): one line, whole in the sheet. */
+const UnderLine = ({ text }: { text: string }) => (
+  <Text variant="caption" tone="faint" numberOfLines={1} style={styles.under}>
+    {text}
+  </Text>
+);
 
-/** "Desfeito por você" / "Desfeito por Ana". */
-function UndoneBy({ action: a }: { action: AgentAction }) {
-  const { t } = useTranslation();
-  const meId = useMeId();
-  const dir = useDirectory();
-  const name =
-    a.undoneByUserId && a.undoneByUserId === meId
-      ? t("agentActions.you")
-      : dir.nameOf({ type: "user", id: a.undoneByUserId }) || t("mobile.chat.someone");
+/** "Desfeito por você" / "Desfeito por Ana", fading in when it happens while the row shows. */
+function UndoneLine({ text }: { text: string }) {
   const reduced = useReducedMotion();
   return (
     <Animated.View entering={reduced ? undefined : FadeIn.duration(160)}>
-      <Text variant="caption" tone="faint" numberOfLines={1} style={styles.under}>
-        {t("agentActions.undoneBy", { name })}
-      </Text>
+      <UnderLine text={text} />
     </Animated.View>
   );
 }
@@ -322,6 +356,7 @@ const styles = StyleSheet.create({
   under: { marginTop: 2 },
   copyHook: { alignSelf: "flex-start", marginTop: 6, paddingVertical: 2 },
   group: { overflow: "hidden" },
+  sheetUnder: { paddingHorizontal: CARD_PAD, paddingTop: 10 },
   // A change in the sheet, a list row's room: its words wrap whole there.
   change: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: CARD_PAD, paddingVertical: 14 },
   hd: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 10, paddingHorizontal: 12 },

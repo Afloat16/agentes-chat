@@ -3048,6 +3048,8 @@
       "updated_priority": "将 <b>#{{number}}</b> 的优先级设为{{priority}} · {{title}}",
       "assigned": "将 <b>#{{number}}</b> 分配给 {{assignee}} · {{title}}",
       "assigned_self": "自己接手了 <b>#{{number}}</b> · {{title}}",
+      "assigned_you": "将 <b>#{{number}}</b> 分配给你 · {{title}}",
+      "assigned_none": "移除了 <b>#{{number}}</b> 的负责人 · {{title}}",
       "files": "附加了 {{names}}"
     },
     "memory": {
@@ -3156,7 +3158,9 @@
         "created": "创建了任务 {{refs}}",
         "updated": "修改了任务的{{fields}}：{{refs}}",
         "assigned": "将任务分配给 {{assignee}}：{{refs}}",
-        "assigned_self": "自己接手了任务 {{refs}}"
+        "assigned_self": "自己接手了任务 {{refs}}",
+        "assigned_you": "将任务分配给你：{{refs}}",
+        "assigned_none": "移除了任务的负责人：{{refs}}"
       },
       "routine": {
         "created": "创建了例行工作 {{refs}}",

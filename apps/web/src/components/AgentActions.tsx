@@ -9,18 +9,16 @@ import {
   receiptPieces,
   receiptRows,
   receiptTip,
-  routineOwnActions,
-  rowFiles,
+  receiptUnder,
 } from "@agenteschat/client/lib/actions";
-import { ownActionName } from "@agenteschat/client/lib/approval-words";
-import { joinNames, relativeTime, toYmd } from "@agenteschat/client/lib/format";
+import { relativeTime, toYmd } from "@agenteschat/client/lib/format";
 import { handedTasksOf } from "@agenteschat/client/lib/issues";
 import { can } from "@agenteschat/client/lib/permissions";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
-import { cx, Icon, type IconName, Popover, TOUCH, useMatchMedia } from "@agenteschat/ui";
+import { cx, HOVERLESS, Icon, type IconName, Popover, useMatchMedia } from "@agenteschat/ui";
 import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
-import { type ReactNode, useState } from "react";
+import { type KeyboardEvent, type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOpenAgentPanel } from "@/components/agent-panel-context";
 import { useChannelActions } from "@/components/channel-actions";
@@ -87,6 +85,9 @@ const iconOf = ({ actions: [a], refs }: ReceiptRow): IconName =>
     ? "flag"
     : ((a && RECEIPT_ICONS[a.kind]) ?? "check");
 
+/** A memory's words in its row, opening that memory: a link in the sentence's own weight. */
+const WORDS_LINK = { className: "ag-rc__target ag-rc__target--words", plain: true } as const;
+
 function errorMessage(t: TFunction, error: unknown) {
   const generic = t("agentActions.errors.generic");
   return error instanceof ApiError ? t(actionErrorKey(error.code), { defaultValue: generic }) : generic;
@@ -145,8 +146,8 @@ function Receipt({
 }) {
   const { t, i18n } = useTranslation();
   const { me } = useOrg();
-  // A touch screen shows no tip: a tap on the words lists each change whole instead.
-  const touch = useMatchMedia(TOUCH);
+  // A screen with no hover shows no tip: a tap on the words lists each change whole instead.
+  const touch = useMatchMedia(HOVERLESS);
   const [listed, setListed] = useState(false);
   const a = row.actions[0] as AgentAction;
   // A routine's schedule from its rule, in the person's language (the server's words are English).
@@ -154,25 +155,29 @@ function Receipt({
     schedule: (rule) => ruleSentence(t, i18n.language, fromApiRule(rule, toYmd(new Date())), new Date()),
   };
   const struck = Boolean(a.undoneAt);
-  const ownActions = routineOwnActions(a);
-  const files = rowFiles(row);
-  const under = [
-    files.length > 0 && t("agentActions.issue.files", { names: joinNames(files, t) }),
-    ownActions.length > 0 &&
-      t("agentActions.routine.ownActions", {
-        actions: joinNames(
-          ownActions.map((name) => ownActionName(t, name)),
-          t,
-        ),
-      }),
-    undoneBy && t("agentActions.undoneBy", { name: undoneBy }),
-  ].filter((line): line is string => Boolean(line));
+  const lines = receiptUnder(row, t, undoneBy);
+  const under = [lines.files, lines.own, lines.undone].filter((line): line is string => line !== null);
   const sentence = (
-    <span className="ag-rc__sentence ag-rc__line" title={touch ? undefined : receiptTip(row, t, me.user.id, words)}>
+    <span
+      className="ag-rc__sentence ag-rc__line"
+      title={touch ? undefined : receiptTip(row, t, me.user.id, words)}
+      // On a screen with no hover the words are the list's button: reached with Tab, opened with Enter or Space.
+      {...(touch
+        ? {
+            role: "button",
+            tabIndex: 0,
+            onKeyDown: (e: KeyboardEvent) => {
+              if (e.key !== "Enter" && e.key !== " ") return;
+              e.preventDefault();
+              setListed(true);
+            },
+          }
+        : {})}
+    >
       {receiptPieces(row, t, me.user.id, words).map((p, i) =>
         p.opens ? (
           // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one sentence, in order
-          <ReceiptTarget key={i} action={p.opens}>
+          <ReceiptTarget key={i} action={p.opens} {...(p.bold ? null : WORDS_LINK)}>
             {p.text}
           </ReceiptTarget>
         ) : p.bold ? (
@@ -195,24 +200,39 @@ function Receipt({
       )}
       <span className="ag-rc__tx">
         {touch ? (
-          <Popover label={label} trigger={sentence} side="top" align="start" open={listed} onOpenChange={setListed}>
+          <Popover
+            label={label}
+            trigger={sentence}
+            side="top"
+            align="start"
+            className="ag-rcpop-card"
+            open={listed}
+            onOpenChange={setListed}
+          >
             <div className="ac-popover__title">{label}</div>
             {receiptLines(row, t, me.user.id, words).map((l) => (
               // What a line opens (a task's dialog, the memory beside the conversation) takes the list's place.
               // biome-ignore lint/a11y/useKeyWithClickEvents: the link inside is the keyboard's way, this only closes the list
               // biome-ignore lint/a11y/noStaticElementInteractions: same
               <div key={l.action.id} className="ac-popover__row ag-rcpop" onClick={() => setListed(false)}>
-                <ReceiptTarget action={l.action} className="ag-rcpop__words" plain>
-                  {l.text}
+                <ReceiptTarget
+                  action={l.action}
+                  className="ag-rcpop__words"
+                  plain
+                  cue={<Icon name="chevronRight" size={14} className="ag-rcpop__cue" />}
+                >
+                  <span className="ag-rcpop__text">{l.text}</span>
                 </ReceiptTarget>
                 {l.files && <span className="ag-rcpop__by">{l.files}</span>}
               </div>
             ))}
-            {under.slice(files.length > 0 ? 1 : 0).map((line) => (
-              <div key={line} className="ac-popover__row ag-rcpop">
-                <span className="ag-rcpop__by">{line}</span>
-              </div>
-            ))}
+            {[lines.own, lines.undone]
+              .flatMap((line) => (line ? [line] : []))
+              .map((line) => (
+                <div key={line} className="ac-popover__row ag-rcpop">
+                  <span className="ag-rcpop__by">{line}</span>
+                </div>
+              ))}
           </Popover>
         ) : (
           sentence
@@ -272,12 +292,15 @@ function ReceiptTarget({
   children,
   className = "ag-rc__target",
   plain = false,
+  cue,
 }: {
   action: AgentAction;
   children?: ReactNode;
   className?: string;
   /** With nothing to open, the words as they are (a change's whole sentence), not in bold. */
   plain?: boolean;
+  /** After the words, only when they open something (the list's chevron). */
+  cue?: ReactNode;
 }) {
   const { org } = useOrg();
   const orgId = org.id;
@@ -298,6 +321,7 @@ function ReceiptTarget({
         onClick={inPlace ? (e) => inPlaceClick(e, () => inPlace.issue(number)) : undefined}
       >
         {children}
+        {cue}
       </Link>
     );
   }
@@ -305,6 +329,7 @@ function ReceiptTarget({
     return (
       <DetailsLink item={{ kind: "routine", id: tg.id }} className={className}>
         {children}
+        {cue}
       </DetailsLink>
     );
   if (tg.type === "wiki_page" && (tg.slug || typeof a.params.slug === "string"))
@@ -315,12 +340,14 @@ function ReceiptTarget({
         className={className}
       >
         {children}
+        {cue}
       </Link>
     );
   if (tg.type === "channel")
     return (
       <Link to="/org/$orgId/c/$channelId" params={{ orgId, channelId: tg.id }} className={className}>
         {children}
+        {cue}
       </Link>
     );
   if (tg.type === "thread")
@@ -332,6 +359,7 @@ function ReceiptTarget({
         onClick={openThread ? (e) => inPlaceClick(e, () => openThread(tg.id)) : undefined}
       >
         {children}
+        {cue}
       </Link>
     );
   // A skill has its own view in Skills, for who manages agents; anyone else finds it in the agent's Memória.
@@ -344,6 +372,7 @@ function ReceiptTarget({
         className={className}
       >
         {children}
+        {cue}
       </Link>
     );
   if (tg.type === "memory" || tg.type === "skill")
@@ -358,6 +387,7 @@ function ReceiptTarget({
         }
       >
         {children}
+        {cue}
       </Link>
     );
   return plain ? <span className={className}>{children}</span> : <b>{children}</b>;

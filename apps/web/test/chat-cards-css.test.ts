@@ -108,6 +108,9 @@ test("a row's sentence and a tool's line wrap, whole; what an agent changed is o
   expect(value(".ag-rc__line", "overflow")).toBe("clip");
   expect(value(".ag-rc__line", "padding")).toBe("var(--space-1)");
   expect(value(".ag-rc__line", "margin")).toBe("calc(-1 * var(--space-1))");
+  // A link the keys reach is never past the cut: its line says everything while it has the focus.
+  expect(value(".ag-rc__line:has(:focus-visible)", "overflow")).toBe("visible");
+  expect(value(".ag-rc__line:has(:focus-visible)", "white-space")).toBe("normal");
 });
 
 test("a card's rows start under its title: a row's hover never covers it", () => {

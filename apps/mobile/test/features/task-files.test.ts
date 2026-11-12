@@ -57,6 +57,6 @@ describe("the receipt of a task an agent made with a file, on the phone", () => 
     const files = receiptFiles({ kind: "issue.created", params: { number: 13, files: ["print.png", "log.txt"] } });
     expect(t("agentActions.issue.files", { names: joinNames(files, t) })).toBe("Anexei print.png e log.txt");
     expect(receiptFiles({ kind: "routine.created", params: { files: ["x"] } })).toEqual([]);
-    expect(source("Receipts.tsx")).toContain("const files = rowFiles(r);");
+    expect(source("Receipts.tsx")).toContain("{lines.files ? <UnderLine text={lines.files} /> : null}");
   });
 });

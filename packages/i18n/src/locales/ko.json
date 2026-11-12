@@ -3045,6 +3045,8 @@
       "updated_priority": "<b>#{{number}}</b>의 우선순위를 {{priority}}(으)로 설정했어요 · {{title}}",
       "assigned": "<b>#{{number}}</b>을(를) {{assignee}}에게 배정했어요 · {{title}}",
       "assigned_self": "<b>#{{number}}</b>을(를) 직접 맡았어요 · {{title}}",
+      "assigned_you": "<b>#{{number}}</b>을(를) 당신에게 배정했어요 · {{title}}",
+      "assigned_none": "<b>#{{number}}</b>의 담당자를 지웠어요 · {{title}}",
       "files": "{{names}}을(를) 첨부했어요"
     },
     "memory": {
@@ -3153,7 +3155,9 @@
         "created": "작업을 만들었어요: {{refs}}",
         "updated": "작업의 {{fields}}을(를) 변경했어요: {{refs}}",
         "assigned": "작업을 {{assignee}}에게 배정했어요: {{refs}}",
-        "assigned_self": "작업을 직접 맡았어요: {{refs}}"
+        "assigned_self": "작업을 직접 맡았어요: {{refs}}",
+        "assigned_you": "작업을 당신에게 배정했어요: {{refs}}",
+        "assigned_none": "작업의 담당자를 지웠어요: {{refs}}"
       },
       "routine": {
         "created": "루틴을 만들었어요: {{refs}}",

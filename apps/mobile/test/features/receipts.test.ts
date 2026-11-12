@@ -2,7 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { AGENT_ACTION_KINDS, type AgentAction, type AgentActionKind } from "@agenteschat/client";
-import { type ReceiptRow, receiptLines, receiptPieces, receiptRows, rowFiles } from "@agenteschat/client/lib/actions";
+import {
+  type ReceiptRow,
+  receiptLines,
+  receiptPieces,
+  receiptRows,
+  receiptUnder,
+  rowFiles,
+} from "@agenteschat/client/lib/actions";
 import {
   boldRuns,
   groupStart,
@@ -138,13 +145,33 @@ describe("receipts on one line, as on the web", () => {
     expect(rowFiles(tasks as ReceiptRow)).toEqual(["print.png"]);
   });
 
-  test("a row is one line and opens its sheet; the sheet's lines go where the phone has their screen", () => {
+  test("a row is one line and opens its sheet; the message's double tap and long press still work on it", () => {
     // No renderer for the phone's components in these tests: what only the source can say is read from it.
     const src = readFileSync(join(import.meta.dir, "../../src/features/chat/Receipts.tsx"), "utf8");
     const sentence = src.slice(src.indexOf("function Sentence("), src.indexOf("function ChangesSheet("));
     expect(sentence).toContain("numberOfLines={1}");
-    expect(sentence).toContain("onPress={whole}");
+    // A second tap in the message's window is its double tap, so the sheet waits for that window first.
+    expect(sentence).toContain("onPress={whole || onTap ? press : undefined}");
+    expect(sentence).toContain("}, DOUBLE_TAP_MS);");
+    expect(sentence.match(/onLongPress=\{onLongPress\}/g)).toHaveLength(2);
     expect(src).toContain("onPress={() => close(() => router.push(href))}");
     expect(src).not.toContain("WhoSeesLine");
+    const row = readFileSync(join(import.meta.dir, "../../src/features/chat/MessageRow.tsx"), "utf8");
+    expect(row).toContain("<Receipts message={m} onTap={onTap} onLongPress={press} />");
+  });
+
+  test("the sheet ends with the row's own lines whole: what a routine does alone, who undid it", async () => {
+    const t = await translator("pt-BR");
+    const made = action({
+      id: "rt",
+      kind: "routine.created",
+      target: { type: "routine", id: "rt" },
+      params: { name: "Resumo semanal", ownActions: ["GMAIL_SEND_EMAIL"] },
+      undoneAt: "2026-10-18T12:00:00Z",
+      undoneByUserId: "u2",
+    });
+    const [row] = receiptRows([made], t);
+    const lines = receiptUnder(row as ReceiptRow, t, "Marina");
+    expect([lines.own, lines.undone]).toEqual(["Faz sozinha, sem pedir: Enviar e-mail (Gmail)", "Desfeito por Marina"]);
   });
 });

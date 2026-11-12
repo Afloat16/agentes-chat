@@ -1,8 +1,11 @@
 import { useArtifact, usePoll, useVote } from "@agenteschat/client";
 import { pollAnswered, pollIsOpen, pollTally, pollToggle } from "@agenteschat/client/lib/blocks";
 import { joinNames } from "@agenteschat/client/lib/format";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { photoSource } from "@/lib/photo";
+import { serverUrl } from "@/lib/server";
 import { Icon, Sky, Text, textLineOf, useToast } from "@/ui";
 import { useFontScale } from "@/ui/text-scale";
 import { leadBox } from "@/ui/type-scale";
@@ -29,6 +32,8 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
   const query = usePoll(orgId, id);
   const vote = useVote(orgId, id);
   const fontScale = useFontScale();
+  // Every option keeps the widest faces' room: the bars share one scale, each its share of one track.
+  const [facesWidth, setFacesWidth] = useState(0);
   const a = artifact.data;
   const poll = query.data;
   if (a?.content.kind !== "poll" || !poll) {
@@ -46,9 +51,10 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
   const tally = pollTally(options, poll);
   const top = Math.max(...tally.map((o) => o.voters.length));
   const nameOf = (userId: string) => dir.memberById.get(userId)?.name ?? t("mobile.blocks.someone");
+  // As the face draws it: a photo it can load, else the initials.
   const hasPhoto = (userId: string | undefined) => {
     const member = userId ? dir.memberById.get(userId) : undefined;
-    return Boolean(member?.avatarUrl ?? member?.image);
+    return photoSource(member?.avatarUrl ?? member?.image, serverUrl(), {}) !== null;
   };
   // An option's label wraps: its box, mark and faces sit on its first line, not centred on the whole option.
   const line = textLineOf("body", fontScale);
@@ -115,7 +121,13 @@ export function PollCard({ id, version }: { id: string; version?: number }) {
                   </View>
                 ) : null}
               </View>
-              <View style={[styles.faces, { minHeight: line.height }]}>
+              <View
+                style={[styles.faces, { minHeight: line.height, minWidth: facesWidth }]}
+                onLayout={(e) => {
+                  const width = e.nativeEvent.layout.width;
+                  setFacesWidth((w) => Math.max(w, width));
+                }}
+              >
                 {/* Each voter's face as the conversation shows it (the photo, else the initials), ringed in the
                     option's face. */}
                 {o.voters.slice(0, FACES).map((v, i, shown) => (
@@ -190,12 +202,14 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 2,
   },
   label: { flex: 1, minWidth: 0 },
-  faces: { flexDirection: "row", alignItems: "center" },
+  // At the end of the room every option keeps for its faces.
+  faces: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end" },
   // A 20 face in a 2-point ring: 24 in all, the ring's corner the face's 30% plus the 2 between them.
   ring: { padding: 2, borderRadius: 8 },
   // The box, the label and the share's fill behind them, out to the option's left edge, top to bottom.
   track: {
     flex: 1,
+    alignSelf: "stretch",
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 10,

@@ -20,7 +20,7 @@ async function voting(count: number) {
   const state = seedState();
   const [walter, joao] = state.members as [Member, Member];
   walter.image = photo("#c9a27e");
-  const others = ["Bruna Teixeira", "Caio Prado", "Dalva Nunes", "Edu Ramos", "Flávia Serra", "Gil Rocha"];
+  const others = ["Ana Souza", "Bruno", "Iara", "Lia", "Marina", "Otto"];
   state.members.push(
     ...others.map((name, i) => ({
       ...joao,
@@ -71,6 +71,6 @@ test("seven voters: five faces, then how many more, those named in its tip", asy
   expect(faces.querySelectorAll(".ac-avatar")).toHaveLength(5);
   const more = faces.querySelector(".poll__more") as HTMLElement;
   expect(more.textContent).toBe("+2");
-  expect(more.title).toBe("Edu Ramos, Flávia Serra");
+  expect(more.title).toBe("Lia, Marina");
   expect(faces.getAttribute("aria-label")?.split(", ")).toHaveLength(7);
 });

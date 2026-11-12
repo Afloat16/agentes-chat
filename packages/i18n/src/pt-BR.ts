@@ -3276,6 +3276,10 @@ export const ptBR = {
       updated_priority: "Prioridade {{priority}} na <b>#{{number}}</b> · {{title}}",
       assigned: "Passei a <b>#{{number}}</b> para {{assignee}} · {{title}}",
       assigned_self: "Peguei a <b>#{{number}}</b> para mim · {{title}}",
+      /** Para quem lê: as palavras da língua para "para você" ("Te asigné"). */
+      assigned_you: "Passei a <b>#{{number}}</b> para você · {{title}}",
+      /** A tarefa ficou sem ninguém. */
+      assigned_none: "Tirei o responsável da <b>#{{number}}</b> · {{title}}",
       /** Under the line: the files that went with the task (their names). */
       files: "Anexei {{names}}",
     },
@@ -3394,6 +3398,8 @@ export const ptBR = {
         updated: "Mudei {{fields}} das tarefas {{refs}}",
         assigned: "Passei para {{assignee}} as tarefas {{refs}}",
         assigned_self: "Peguei para mim as tarefas {{refs}}",
+        assigned_you: "Passei para você as tarefas {{refs}}",
+        assigned_none: "Tirei o responsável das tarefas {{refs}}",
       },
       routine: {
         created: "Criei as rotinas {{refs}}",

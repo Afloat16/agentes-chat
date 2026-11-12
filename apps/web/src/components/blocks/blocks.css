@@ -141,17 +141,20 @@
   font-size: 12.5px;
   color: var(--muted);
 }
+/* One column of faces for every option, as wide as the widest: the bars share one scale, each its share of one track. */
 .poll__options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
   padding: 6px 16px 16px;
 }
 .poll__option {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-column: 1 / -1;
+  /* Without subgrid, each option keeps its own two columns. */
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
   width: 100%;
   min-height: 44px;
   padding: 6px 10px 6px 12px;
@@ -164,6 +167,11 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+@supports (grid-template-columns: subgrid) {
+  .poll__option {
+    grid-template-columns: subgrid;
+  }
 }
 .poll__option:hover:not(:disabled) {
   box-shadow: inset 0 0 0 1px var(--faint);
@@ -232,6 +240,7 @@
   --stack-ring: var(--raised);
   display: inline-flex;
   flex: none;
+  justify-self: end;
   align-items: center;
   gap: var(--space-1);
 }

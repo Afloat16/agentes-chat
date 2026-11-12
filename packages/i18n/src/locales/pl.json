@@ -3368,6 +3368,8 @@
       "updated_priority": "Ustawiono priorytet <b>#{{number}}</b> na {{priority}} · {{title}}",
       "assigned": "Przypisano <b>#{{number}}</b> do: {{assignee}} · {{title}}",
       "assigned_self": "Biorę <b>#{{number}}</b> na siebie · {{title}}",
+      "assigned_you": "Przypisano ci <b>#{{number}}</b> · {{title}}",
+      "assigned_none": "Usunięto przypisanie <b>#{{number}}</b> · {{title}}",
       "files": "Załączono {{names}}"
     },
     "memory": {
@@ -3478,8 +3480,10 @@
       "issue": {
         "created": "Utworzono zadania {{refs}}",
         "updated": "Zmieniono {{fields}} w zadaniach {{refs}}",
-        "assigned": "Przypisano do: {{assignee}} zadania {{refs}}",
-        "assigned_self": "Biorę na siebie zadania {{refs}}"
+        "assigned": "Przypisano do: {{assignee}} – zadania {{refs}}",
+        "assigned_self": "Biorę na siebie zadania {{refs}}",
+        "assigned_you": "Przypisano ci zadania {{refs}}",
+        "assigned_none": "Usunięto przypisanie zadań {{refs}}"
       },
       "routine": {
         "created": "Utworzono rutyny {{refs}}",

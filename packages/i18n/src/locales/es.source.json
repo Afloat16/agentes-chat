@@ -7735,6 +7735,12 @@
   "agentActions.issue.assigned_self": {
     "value": "Took <b>#{{number}}</b> myself · {{title}}"
   },
+  "agentActions.issue.assigned_you": {
+    "value": "Assigned <b>#{{number}}</b> to you · {{title}}"
+  },
+  "agentActions.issue.assigned_none": {
+    "value": "Removed the assignee of <b>#{{number}}</b> · {{title}}"
+  },
   "agentActions.issue.files": {
     "value": "Attached {{names}}"
   },
@@ -7989,6 +7995,12 @@
   },
   "agentActions.several.issue.assigned_self": {
     "value": "Took on tasks {{refs}}"
+  },
+  "agentActions.several.issue.assigned_you": {
+    "value": "Assigned you tasks {{refs}}"
+  },
+  "agentActions.several.issue.assigned_none": {
+    "value": "Removed the assignee of tasks {{refs}}"
   },
   "agentActions.several.routine.created": {
     "value": "Created the routines {{refs}}"

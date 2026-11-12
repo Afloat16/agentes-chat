@@ -12,6 +12,7 @@ import {
   receiptPieces,
   receiptRows,
   receiptTip,
+  receiptUnder,
   rowFiles,
 } from "../src/lib/actions";
 
@@ -250,7 +251,10 @@ describe("receipts in rows, one line each", () => {
     const rule = (id: string) => action({ ...memory(id, id), params: { text: `regra ${id}`, rule: true } });
     const rules = receiptRows([rule("r1"), rule("r2")], pt)[0] as ReceiptRow;
     expect(words(rules)).toBe("Guardei nas [minhas regras]: regra r1 e regra r2");
-    expect(receiptPieces(rules, pt).flatMap((p) => (p.opens ? [p.opens.id] : []))).toEqual(["r1"]);
+    // Each memory's words open that memory, in the sentence's own weight; "minhas regras" opens the first.
+    expect(
+      receiptPieces(rules, pt).flatMap((p) => (p.opens ? [`${p.text}${p.bold ? "*" : ""}:${p.opens.id}`] : [])),
+    ).toEqual(["minhas regras*:r1", "regra r1:r1", "regra r2:r2"]);
   });
 
   test("a change that says what changed keeps its row; the same fields changed on several say them once", () => {
@@ -282,8 +286,18 @@ describe("receipts in rows, one line each", () => {
       routine("r2", { fields: ["active"], active: false }),
     ];
     expect(receiptRows(paused, pt).map((r) => words(r))).toEqual(["Pausei a rotina [r1]", "Pausei a rotina [r2]"]);
-    const access = [routine("r3", { fields: ["access"] }), routine("r4", { fields: ["access"] })];
-    expect(words(receiptRows(access, pt)[0])).toBe("Mudei o que pode fazer sozinha das rotinas [r3] e [r4]");
+    // What a routine may do alone and when it posts are one routine's words: each keeps its row.
+    for (const field of ["access", "report"]) {
+      const own = [routine("r3", { fields: [field] }), routine("r4", { fields: [field] })];
+      expect(receiptRows(own, pt).every((r) => r.refs === null)).toBe(true);
+    }
+    const renamed = [
+      routine("r5", { fields: ["name"], name: "Resumo" }),
+      routine("r5", { fields: ["name"], name: "Resumo semanal" }),
+      routine("r6", { fields: ["name"], name: "Backup" }),
+    ].map((r, i) => ({ ...r, id: `rn${i}` }));
+    // One routine renamed twice is still one: its newest name.
+    expect(words(receiptRows(renamed, pt)[0])).toBe("Mudei o nome das rotinas [Resumo semanal] e [Backup]");
     const settings = (id: string, field: string) =>
       action({
         id,
@@ -409,6 +423,54 @@ describe("receipts in rows, one line each", () => {
     expect(words(receiptRows(two("pr.merged"), pt)[0])).toBe("Fiz o merge em [acme/app] dos PRs [#1] e [#2]");
     for (const t of [pt, en])
       for (const kind of blended) expect(words(receiptRows(two(kind), t)[0], t)).not.toContain("agentActions");
+  });
+
+  test("assigned to the reader or to nobody: each language's own sentence, alone or several", () => {
+    const es = lang("es");
+    const toMe = (n: number) =>
+      task(n, {
+        kind: "issue.assigned",
+        params: { number: n, title: "T", assigneeType: "person", assigneeId: "u-me", assigneeName: "Eu" },
+      });
+    const said = (row: ReceiptRow | undefined, t = pt) =>
+      receiptPieces(row as ReceiptRow, t, "u-me")
+        .map((p) => (p.bold ? `[${p.text}]` : p.text))
+        .join("");
+    expect(said(receiptRows([toMe(1)], pt, "u-me")[0])).toBe("Passei a [#1] para você · T");
+    expect(said(receiptRows([toMe(1)], es, "u-me")[0], es)).toBe("Te asigné [#1] · T");
+    expect(said(receiptRows([toMe(1), toMe(2)], es, "u-me")[0], es)).toBe("Te asigné las tareas [#1] y [#2]");
+    const nobody = (n: number) =>
+      task(n, { kind: "issue.assigned", params: { number: n, title: "T", assigneeType: null, assigneeId: null } });
+    expect(words(receiptRows([nobody(7)], pt)[0])).toBe("Tirei o responsável da [#7] · T");
+    expect(words(receiptRows([nobody(7), nobody(8)], pt)[0])).toBe("Tirei o responsável das tarefas [#7] e [#8]");
+  });
+
+  test("a merged pull request is its number: the same one twice is one, two of one repository are two", () => {
+    const merge = (id: string, n: number) =>
+      action({
+        id,
+        kind: "pr.merged",
+        target: { type: "repository", id: "acme/app", title: "acme/app" },
+        params: { repo: "acme/app", number: n },
+      });
+    expect(receiptRows([merge("m1", 12), merge("m2", 12)], pt).every((r) => r.refs === null)).toBe(true);
+    expect(receiptRows([merge("m1", 12), merge("m2", 13)], pt)[0]?.refs?.map((r) => r.text)).toEqual(["#12", "#13"]);
+  });
+
+  test("the lines under a row: its files once, what a routine does alone, who undid it", () => {
+    const routine = action({
+      id: "rt",
+      kind: "routine.created",
+      target: { type: "routine", id: "rt" },
+      params: { name: "Resumo", ownActions: ["SLACK_SEND_MESSAGE"] },
+      undoneAt: "2026-10-18T12:00:00Z",
+      undoneByUserId: "u2",
+    });
+    expect(receiptUnder({ actions: [routine], refs: null }, pt, "Bia")).toEqual({
+      files: null,
+      own: "Faz sozinha, sem pedir: Enviar mensagem (Slack)",
+      undone: "Desfeito por Bia",
+    });
   });
 
   test("the line under a row names each file its changes brought, once", () => {

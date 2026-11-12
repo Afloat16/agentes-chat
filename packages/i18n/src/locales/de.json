@@ -3161,6 +3161,8 @@
       "updated_priority": "Priorität von <b>#{{number}}</b> auf {{priority}} gesetzt · {{title}}",
       "assigned": "<b>#{{number}}</b> {{assignee}} zugewiesen · {{title}}",
       "assigned_self": "<b>#{{number}}</b> selbst übernommen · {{title}}",
+      "assigned_you": "<b>#{{number}}</b> dir zugewiesen · {{title}}",
+      "assigned_none": "Zuständigkeit für <b>#{{number}}</b> entfernt · {{title}}",
       "files": "Angehängt: {{names}}"
     },
     "memory": {
@@ -3268,13 +3270,15 @@
     "several": {
       "issue": {
         "created": "Aufgaben erstellt: {{refs}}",
-        "updated": "{{fields}} der Aufgaben geändert: {{refs}}",
+        "updated": "Bei den Aufgaben {{fields}} geändert: {{refs}}",
         "assigned": "Aufgaben {{assignee}} zugewiesen: {{refs}}",
-        "assigned_self": "Aufgaben selbst übernommen: {{refs}}"
+        "assigned_self": "Aufgaben selbst übernommen: {{refs}}",
+        "assigned_you": "Aufgaben dir zugewiesen: {{refs}}",
+        "assigned_none": "Zuständigkeit für Aufgaben entfernt: {{refs}}"
       },
       "routine": {
         "created": "Routinen erstellt: {{refs}}",
-        "updated": "{{fields}} der Routinen geändert: {{refs}}",
+        "updated": "Bei den Routinen {{fields}} geändert: {{refs}}",
         "deleted": "Routinen gelöscht: {{refs}}"
       },
       "channel": {

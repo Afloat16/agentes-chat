@@ -18,15 +18,23 @@ afterEach(() => {
   untouch = undefined;
 });
 
-/** A touch screen until the test ends: `(pointer: coarse)` matches. */
+/** A phone until the test ends: a finger, no hover, touch points (the message's own touch menu is on). */
 const onTouch = () => {
-  const real = window.matchMedia.bind(window);
-  const media = spyOn(window, "matchMedia").mockImplementation((query: string) =>
-    query === "(pointer: coarse)"
-      ? ({ matches: true, addEventListener: () => {}, removeEventListener: () => {} } as unknown as MediaQueryList)
-      : real(query),
+  const media = spyOn(window, "matchMedia").mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes("pointer: coarse") || query.includes("hover: none"),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList,
   );
-  untouch = () => media.mockRestore();
+  const points = Object.getOwnPropertyDescriptor(navigator, "maxTouchPoints");
+  Object.defineProperty(navigator, "maxTouchPoints", { configurable: true, value: 5 });
+  untouch = () => {
+    media.mockRestore();
+    if (points) Object.defineProperty(navigator, "maxTouchPoints", points);
+    else delete (navigator as { maxTouchPoints?: number }).maxTouchPoints;
+  };
 };
 
 const BODY = "Olhei o código: o prompt dispara em ReviewPrompt.swift:41.";
@@ -248,13 +256,14 @@ describe("receipts under the agent's reply", () => {
     expect(files.className).toContain("ag-rc__line");
   });
 
-  test("on a touch screen, a tap on a row's words lists each change whole, each opening its own; a number opens its task", async () => {
+  test("on a phone, a tap on a row's words lists each change whole, each opening its own; the message's menu stays shut", async () => {
     onTouch();
-    const made = (n: number) =>
+    const issues = (await createFakeApi(seedState()).issues.list(ORG_ID)).slice(0, 2);
+    const made = (i: { id: string; number: number; title: string }) =>
       action({
-        id: `act-${n}`,
-        target: { type: "issue", id: `iss-${n}`, number: n, title: `Página de preços ${n}` },
-        params: { number: n, title: `Página de preços ${n}` },
+        id: `act-${i.number}`,
+        target: { type: "issue", id: i.id, number: i.number, title: i.title },
+        params: { number: i.number, title: i.title },
       });
     const merged = action({
       id: "act-pr",
@@ -262,18 +271,30 @@ describe("receipts under the agent's reply", () => {
       target: { type: "repository", id: "acme/loja", title: "acme/loja" },
       params: { repo: "acme/loja", number: 12 },
     });
-    await open(withActions([made(58), made(59), merged]));
+    await open(withActions([...issues.map(made), merged]));
     const rows = [...receipts().querySelectorAll<HTMLElement>(".ag-rcg__it")];
     const words = rows[0]?.querySelector(".ag-rc__sentence") as HTMLElement;
-    // No tip on a touch screen: nothing would show it.
+    // No tip with no hover: the words are the list's button instead.
     expect(words.title).toBe("");
+    expect(words.getAttribute("role")).toBe("button");
+    expect(words.tabIndex).toBe(0);
     await click(words);
     const list = screen().getByRole("dialog", { name: "Mudanças de Ada" });
     expect(
       within(list)
         .getAllByRole("link")
         .map((l) => [l.textContent, l.getAttribute("href")]),
-    ).toEqual([58, 59].map((n) => [`Criei a tarefa #${n} · Página de preços ${n}`, `/org/${ORG_ID}/issues/${n}`]));
+    ).toEqual(issues.map((i) => [`Criei a tarefa #${i.number} · ${i.title}`, `/org/${ORG_ID}/issues/${i.number}`]));
+    expect(screen().queryAllByRole("menu")).toHaveLength(0);
+    await act(async () => fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" }));
+    await settle(3);
+    expect(screen().queryByRole("dialog", { name: "Mudanças de Ada" })).toBeNull();
+    // Closed, the focus is back on the words that opened it.
+    expect(document.activeElement).toBe(words);
+    // Enter opens it from the keys too.
+    await act(async () => fireEvent.keyDown(words, { key: "Enter" }));
+    await settle(3);
+    expect(screen().getByRole("dialog", { name: "Mudanças de Ada" })).toBeTruthy();
     await act(async () => fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" }));
     await settle(3);
     // A change with nothing to open is said whole there too, as words.
@@ -283,12 +304,47 @@ describe("receipts under the agent's reply", () => {
     expect(merge.textContent).toContain("Fiz o merge do PR #12 em acme/loja");
     await act(async () => fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" }));
     await settle(3);
-    // A number still opens its own task, never the list.
+  });
+
+  test("on a phone, a tap on a number opens its task: neither the list nor the message's menu", async () => {
+    onTouch();
+    const issues = (await createFakeApi(seedState()).issues.list(ORG_ID)).slice(0, 2);
+    await open(
+      withActions(
+        issues.map((i) =>
+          action({
+            id: `act-${i.number}`,
+            target: { type: "issue", id: i.id, number: i.number, title: i.title },
+            params: { number: i.number, title: i.title },
+          }),
+        ),
+      ),
+    );
+    const second = issues[1] as { number: number; title: string };
+    await click(within(receipts()).getByRole("link", { name: `#${second.number}` }));
+    expect(screen().queryByRole("dialog", { name: "Mudanças de Ada" })).toBeNull();
+    expect(screen().queryAllByRole("menu")).toHaveLength(0);
+    expect(screen().getByRole("dialog", { name: second.title })).toBeTruthy();
+  });
+
+  test("several memories saved: each one's words open that memory", async () => {
+    await open(
+      withActions([
+        memory({ id: "m-a", target: { type: "memory", id: "mem-a" }, params: { text: "a regra do deploy" } }),
+        memory({ id: "m-b", target: { type: "memory", id: "mem-b" }, params: { text: "o prazo do relatório" } }),
+      ]),
+    );
+    const row = receipts().querySelector(".ag-rcg__it") as HTMLElement;
+    expect(row.textContent).toBe("Guardei na memória: a regra do deploy e o prazo do relatório");
     expect(
-      within(rows[0] as HTMLElement)
-        .getByRole("link", { name: "#59" })
-        .getAttribute("href"),
-    ).toBe(`/org/${ORG_ID}/issues/59`);
+      within(row)
+        .getAllByRole("link")
+        .map((l) => [l.textContent, l.getAttribute("href")]),
+    ).toEqual([
+      ["memória", `/org/${ORG_ID}/agents/${ADA_ID}/memory?item=mem-a`],
+      ["a regra do deploy", `/org/${ORG_ID}/agents/${ADA_ID}/memory?item=mem-a`],
+      ["o prazo do relatório", `/org/${ORG_ID}/agents/${ADA_ID}/memory?item=mem-b`],
+    ]);
   });
 
   test("live: message.actions replaces the receipts for everyone", async () => {

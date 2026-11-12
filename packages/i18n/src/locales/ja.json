@@ -3047,6 +3047,8 @@
       "updated_priority": "<b>#{{number}}</b>の優先度を{{priority}}にしました · {{title}}",
       "assigned": "<b>#{{number}}</b>を{{assignee}}に割り当てました · {{title}}",
       "assigned_self": "<b>#{{number}}</b>を自分で引き受けました · {{title}}",
+      "assigned_you": "<b>#{{number}}</b>をあなたに割り当てました · {{title}}",
+      "assigned_none": "<b>#{{number}}</b>の担当者を外しました · {{title}}",
       "files": "{{names}}を添付しました"
     },
     "memory": {
@@ -3155,7 +3157,9 @@
         "created": "タスクを作成しました: {{refs}}",
         "updated": "タスクの{{fields}}を変更しました: {{refs}}",
         "assigned": "タスクを{{assignee}}に割り当てました: {{refs}}",
-        "assigned_self": "タスクを自分で引き受けました: {{refs}}"
+        "assigned_self": "タスクを自分で引き受けました: {{refs}}",
+        "assigned_you": "タスクをあなたに割り当てました: {{refs}}",
+        "assigned_none": "タスクの担当者を外しました: {{refs}}"
       },
       "routine": {
         "created": "ルーティンを作成しました: {{refs}}",

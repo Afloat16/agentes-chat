@@ -65,6 +65,11 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* A link the keys reach is never past the cut: while it has the focus, its line says everything. */
+.ag-rc__line:has(:focus-visible) {
+  overflow: visible;
+  white-space: normal;
+}
 .ag-rc__target {
   color: var(--ink);
   font-weight: 600;
@@ -74,6 +79,11 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+/* A memory's words opening that memory: the sentence's own weight and colour, underlined under the pointer. */
+.ag-rc__target--words {
+  color: inherit;
+  font-weight: inherit;
+}
 .ag-rc__sentence b {
   color: var(--ink);
   font-weight: 600;
@@ -82,7 +92,11 @@
   font-size: 12.5px;
   color: var(--faint);
 }
-/* On a touch screen, a row's changes listed whole in a popover (the kit's rows): each sentence opens its own thing. */
+/* On a screen with no hover, a row's changes listed whole in a popover (the kit's rows), each sentence opening its own
+   thing, with a chevron where it does. As wide as its words want, up to what the window leaves. */
+.ac-popover.ag-rcpop-card {
+  max-width: min(420px, calc(100vw - 24px));
+}
 .ag-rcpop {
   flex-direction: column;
   align-items: stretch;
@@ -94,7 +108,25 @@
   text-decoration: none;
 }
 a.ag-rcpop__words {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   color: var(--ink);
+}
+.ag-rcpop__text {
+  flex: 1;
+  min-width: 0;
+}
+/* On the first line's capitals, as the kit's leading icons (`.ac-iconline`); the row's 20px line where lh is unknown. */
+.ag-rcpop__cue {
+  flex: none;
+  color: var(--faint);
+  translate: 0 calc(10px - var(--cap-mid) - 50%);
+}
+@supports (height: 1lh) {
+  .ag-rcpop__cue {
+    translate: 0 calc(0.5lh - var(--cap-mid) - 50%);
+  }
 }
 a.ag-rcpop__words:hover {
   text-decoration: underline;

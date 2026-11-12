@@ -3262,6 +3262,8 @@
       "updated_priority": "Puse <b>#{{number}}</b> en prioridad {{priority}} · {{title}}",
       "assigned": "Asigné <b>#{{number}}</b> a {{assignee}} · {{title}}",
       "assigned_self": "Me asigné <b>#{{number}}</b> · {{title}}",
+      "assigned_you": "Te asigné <b>#{{number}}</b> · {{title}}",
+      "assigned_none": "Quité el responsable de <b>#{{number}}</b> · {{title}}",
       "files": "Adjunté {{names}}"
     },
     "memory": {
@@ -3372,7 +3374,9 @@
         "created": "Creé las tareas {{refs}}",
         "updated": "Cambié {{fields}} de las tareas {{refs}}",
         "assigned": "Asigné a {{assignee}} las tareas {{refs}}",
-        "assigned_self": "Me asigné las tareas {{refs}}"
+        "assigned_self": "Me asigné las tareas {{refs}}",
+        "assigned_you": "Te asigné las tareas {{refs}}",
+        "assigned_none": "Quité el responsable de las tareas {{refs}}"
       },
       "routine": {
         "created": "Creé las rutinas {{refs}}",

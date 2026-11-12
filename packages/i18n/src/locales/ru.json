@@ -3368,6 +3368,8 @@
       "updated_priority": "Для <b>#{{number}}</b> задан приоритет {{priority}} · {{title}}",
       "assigned": "<b>#{{number}}</b> назначена на {{assignee}} · {{title}}",
       "assigned_self": "Беру <b>#{{number}}</b> на себя · {{title}}",
+      "assigned_you": "<b>#{{number}}</b> назначена на вас · {{title}}",
+      "assigned_none": "С <b>#{{number}}</b> снят исполнитель · {{title}}",
       "files": "Прикреплено: {{names}}"
     },
     "memory": {
@@ -3479,7 +3481,9 @@
         "created": "Созданы задачи {{refs}}",
         "updated": "Изменено в задачах ({{fields}}): {{refs}}",
         "assigned": "Назначены на {{assignee}} задачи {{refs}}",
-        "assigned_self": "Беру на себя задачи {{refs}}"
+        "assigned_self": "Беру на себя задачи {{refs}}",
+        "assigned_you": "Назначены на вас задачи {{refs}}",
+        "assigned_none": "С задач снят исполнитель: {{refs}}"
       },
       "routine": {
         "created": "Созданы регулярные задачи {{refs}}",

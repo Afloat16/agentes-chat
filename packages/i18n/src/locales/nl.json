@@ -3162,6 +3162,8 @@
       "updated_priority": "Prioriteit van <b>#{{number}}</b> op {{priority}} gezet · {{title}}",
       "assigned": "<b>#{{number}}</b> toegewezen aan {{assignee}} · {{title}}",
       "assigned_self": "<b>#{{number}}</b> zelf opgepakt · {{title}}",
+      "assigned_you": "<b>#{{number}}</b> aan jou toegewezen · {{title}}",
+      "assigned_none": "Toewijzing van <b>#{{number}}</b> verwijderd · {{title}}",
       "files": "Bijgevoegd: {{names}}"
     },
     "memory": {
@@ -3269,13 +3271,15 @@
     "several": {
       "issue": {
         "created": "Taken aangemaakt: {{refs}}",
-        "updated": "{{fields}} van taken gewijzigd: {{refs}}",
+        "updated": "Bij taken {{fields}} gewijzigd: {{refs}}",
         "assigned": "Taken toegewezen aan {{assignee}}: {{refs}}",
-        "assigned_self": "Taken zelf opgepakt: {{refs}}"
+        "assigned_self": "Taken zelf opgepakt: {{refs}}",
+        "assigned_you": "Taken aan jou toegewezen: {{refs}}",
+        "assigned_none": "Toewijzing van taken verwijderd: {{refs}}"
       },
       "routine": {
         "created": "Routines aangemaakt: {{refs}}",
-        "updated": "{{fields}} van routines gewijzigd: {{refs}}",
+        "updated": "Bij routines {{fields}} gewijzigd: {{refs}}",
         "deleted": "Routines verwijderd: {{refs}}"
       },
       "channel": {
