@@ -438,14 +438,20 @@ function ConnectAiDialog({
   const machines = useMachines(org.id, true, poll);
   const loaded = !(dir.loading || status.isPending || machines.isPending);
   const machineOf = (id: string) => machines.data?.find((m) => m.agents.some((a) => a.id === id))?.id;
-  // Any way in that names one agent and no step (a key, a plan to sign in to again) is that agent's dialog.
+  // A list that names one agent alone and no step (the first-run list with nobody but the right hand, an agent just
+  // made) asks for that agent, as `agentId` does. A card that asks for a step (`intent`) keeps the plain dialog, which
+  // opens on it.
+  const sole = named?.length === 1 && request.intent === undefined ? named[0] : undefined;
+  // Any way in that names several agents to choose from, or a step (a key, a plan to sign in to again), keeps the
+  // plain dialog.
   const plain =
-    request.agentIds !== undefined ||
+    (request.agentIds !== undefined && sole === undefined) ||
     request.plan !== undefined ||
     request.apiKey !== undefined ||
     request.forNewAgent === true ||
     request.intent === "api_key";
-  const askedFor = request.agentId && (request.chat || !plain) ? dir.agentById.get(request.agentId) : undefined;
+  const askedId = request.agentId ?? sole;
+  const askedFor = askedId && (request.chat || !plain) ? dir.agentById.get(askedId) : undefined;
   const asleep = (id: string) => (aiStateOf(status.data, id) ?? "no_ai") === "no_ai";
   // Opened for several agents or none (the channel's notice, Settings › AI accounts, the first-run list, a team just
   // made, a receipt or a card for several agents, the onboarding's AI step): the narrow dialog under the sky, for every
