@@ -122,7 +122,7 @@ import { assessThread } from "./thread-assess";
 import { runVaultSync, VAULT_SYNC_JOB, type VaultDeps } from "./vault";
 import { transcribeVoiceClip, VOICE_JOB, type VoiceDeps } from "./voice";
 import { saveWaitlistContact } from "./waitlist";
-import { checkInWork, WORK_CHECK_IN_JOB } from "./works";
+import { checkInWork, followUpWork, WORK_CHECK_IN_JOB, WORK_FOLLOW_UP_JOB } from "./works";
 import {
   ACCOUNT_DELETE_JOB,
   type DeletionDeps,
@@ -830,6 +830,14 @@ export function createJobHandlers(deps: JobDeps): JobHandlers {
         seq: Number(job.payload.seq),
         phase: job.payload.phase === "fallback" ? "fallback" : job.payload.phase === "card" ? "card" : "nudge",
         ...(typeof job.payload.due === "number" ? { due: job.payload.due } : {}),
+      });
+    },
+    // A long work ended after reading what people passed on to it: its agent sees it was done, once (ADR 0121).
+    [WORK_FOLLOW_UP_JOB]: async (job) => {
+      const ids = Array.isArray(job.payload.messageIds) ? job.payload.messageIds : [];
+      await followUpWork(deps, orgOf(job), {
+        workId: String(job.payload.workId),
+        messageIds: ids.filter((id): id is string => typeof id === "string"),
       });
     },
     "secret.activate": async (job) => {

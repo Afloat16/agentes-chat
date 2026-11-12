@@ -5,6 +5,7 @@ import { type ModelRequest, systemText } from "@agenteschat/providers";
 import {
   type AgentRun,
   addChannelMember,
+  addRunStep,
   answerQuestion,
   cancelRun,
   checkInWork,
@@ -13,8 +14,11 @@ import {
   createChannel,
   createIssue,
   createJobHandlers,
+  createPassToolSource,
   drainOutbox,
   endWork,
+  enqueue,
+  followUpWork,
   invokeToolForRun,
   listIssues,
   loadAgentStatuses,
@@ -24,17 +28,22 @@ import {
   postPersonMessage,
   postWorkUpdate,
   reconcileWorks,
+  reopenWork,
+  runAuthority,
   STEER_WORK_TOOL,
   STOP_WORK_TOOL,
+  steerWork,
   type ToolSource,
   taskManager,
   WORK_CHECK_IN_JOB,
+  WORK_FOLLOW_UP_JOB,
   WORK_IN_BACKGROUND_TOOL,
   WORK_LIMITS,
   workBrief,
   workView,
 } from "../src";
-import { addMember, type Fixture, setup } from "./fixtures";
+import { PASSED_ON_NOTE } from "../src/live-steer";
+import { addMember, answerSteering, type Fixture, setup } from "./fixtures";
 
 setDefaultTimeout(30_000);
 
@@ -1021,4 +1030,144 @@ test("one answer of several: the run stays parked and the work's line goes on to
   expect((await runs()).find((r) => r.id === run.id)?.status).toBe("waiting_input");
   expect(seen.find((e) => e.type === "agent.work")?.work?.question?.text).toBe("E a janela?");
   expect((await workView(f.db, f.org.id, work.id))?.question?.text).toBe("E a janela?");
+});
+
+const followUpJobs = () => f.db.select().from(schema.outbox).where(eq(schema.outbox.kind, WORK_FOLLOW_UP_JOB));
+const followUpNotices = async () =>
+  (await messages()).filter((m) => (m.meta.notice as { kind?: string } | undefined)?.kind === "work_follow_up");
+/** What the work's executor does when it reads its inbox between steps: the message leaves it, a step records it. */
+async function readByWork(run: AgentRun, messageId: string) {
+  await f.db.update(schema.agentRuns).set({ pendingMessageIds: [] }).where(eq(schema.agentRuns.id, run.id));
+  await addRunStep(f.db, run, "context", { steeredMessageIds: [messageId] });
+}
+
+test("a work that read what a person passed on to it gets one run where it reports, for that person, that may pass", async () => {
+  const workIdOf = (req: ModelRequest) => /work_id ([0-9a-f-]{36})/.exec(JSON.stringify(req.system))?.[1] ?? "";
+  f = await setup({
+    workTools: true,
+    toolSources: [createPassToolSource()],
+    reply: (req) => {
+      const said = lastText(req);
+      if (said.includes("While it ran, these messages were passed on to it"))
+        return { chunks: [], toolUses: [{ name: "pass", input: { reason: "a work já fez" } }] };
+      if (said.includes("passed on to your background work"))
+        return { chunks: ["Migração feita, notas escritas e resumo postado no #time."] };
+      if (said.includes("posta o resumo"))
+        return { chunks: [], toolUses: [{ name: STEER_WORK_TOOL, input: { work_id: workIdOf(req) } }] };
+      if (said.includes("Passed on")) return { chunks: ["Passei para o trabalho: ele faz isso ao terminar."] };
+      return { chunks: ["Não sei."] };
+    },
+  });
+  const bia = await addMember(f.db, f.org.id, "member", "bia");
+  await addChannelMember(f.db, f.owner.id, f.org.id, f.general.id, { userId: bia.id });
+  const run = await working("@dev roda a migração da cobrança");
+  // Some steps into it: what it reads from now on comes while it works, not with its ask.
+  await f.db.update(schema.agentRuns).set({ turns: 1 }).where(eq(schema.agentRuns.id, run.id));
+  const { work, anchor } = await moved(run, { title: "Migração da cobrança" });
+  // The work's own job is driven by the test: the reply turn runs first.
+  await f.db.delete(schema.outbox).where(eq(schema.outbox.kind, "agent_run.execute"));
+  const steering = answerSteering(f, run);
+  const asked = await ask("depois escreve as notas da versão e posta o resumo no #time", anchor.id, bia.id);
+  await drainOutbox(f.db, f.handlers);
+  steering.close();
+  const [passed] = await f.db.select().from(schema.agentRuns).where(eq(schema.agentRuns.id, run.id));
+  expect(passed?.pendingMessageIds).toEqual([asked.id]);
+  expect((await messages()).find((m) => m.id === asked.id)?.meta.steeredWorkIds).toEqual([work.id]);
+
+  // The work reads it as part of its job, reports home, and the end follows it up once.
+  await enqueue(f.db, {
+    orgId: f.org.id,
+    kind: "agent_run.execute",
+    payload: { runId: run.id },
+    dedupeKey: `agent_run.execute:${run.id}:again`,
+  });
+  await drainOutbox(f.db, f.handlers);
+  const requests = f.provider.calls.map((c) => lastText(c.request));
+  const workRead = requests.find((r) => r.includes("passed on to your background work")) ?? "";
+  expect(workRead).toContain("depois escreve as notas da versão");
+  expect(workRead).toContain(PASSED_ON_NOTE);
+  expect((await works())[0]).toMatchObject({ status: "done" });
+  const jobs = await followUpJobs();
+  expect(jobs.map((j) => j.payload)).toEqual([{ workId: work.id, messageIds: [asked.id] }]);
+
+  // Where the work reported, for the person who passed it on: it read her words and its report, and passed.
+  const [notice] = await followUpNotices();
+  expect(notice).toMatchObject({ channelId: f.general.id, threadId: null, authorAgentId: f.agent.id });
+  expect(notice?.meta.notice).toMatchObject({
+    refs: { workId: work.id, personId: bia.id, title: "Migração da cobrança" },
+  });
+  const followUp = (await runs()).find((r) => r.triggerMessageId === notice?.id);
+  if (!followUp) throw new Error("no follow-up run");
+  expect(await runAuthority(f.db, followUp)).toEqual({ kind: "person", personId: bia.id });
+  const read = requests.find((r) => r.includes("While it ran, these messages were passed on to it")) ?? "";
+  expect(read).toContain("Migração da cobrança");
+  expect(read).toContain("[bia]: depois escreve as notas da versão");
+  expect(read).toContain("Do now what they asked that the work didn't do");
+  expect(followUp).toMatchObject({ status: "done", replyMessageId: null });
+  const said = (await messages()).filter((m) => m.authorAgentId === f.agent.id && m.agentRunId === followUp.id);
+  expect(said).toEqual([]);
+
+  // Once: the end again, the sweep and the job again bring no second one.
+  const [ended] = await f.db.select().from(schema.agentRuns).where(eq(schema.agentRuns.id, run.id));
+  expect(await endWork(deps(), ended as AgentRun, "done")).toBeNull();
+  expect(await reconcileWorks(deps())).toBe(0);
+  expect(await followUpWork(deps(), f.org.id, { workId: work.id, messageIds: [asked.id] })).toBeNull();
+  expect(await followUpJobs()).toHaveLength(1);
+  expect(await followUpNotices()).toHaveLength(1);
+});
+
+test("no follow-up for a work nobody passed anything on to, nor for one a person stopped", async () => {
+  f = await setup({ workTools: true });
+  const quiet = await working("@dev gera o relatório");
+  await moved(quiet, { title: "Relatório" });
+  const [done] = await f.db
+    .update(schema.agentRuns)
+    .set({ status: "done" })
+    .where(eq(schema.agentRuns.id, quiet.id))
+    .returning();
+  expect(await endWork(deps(), done as AgentRun, "done")).not.toBeNull();
+
+  const run = await working("@dev roda a migração da cobrança");
+  const { work, anchor } = await moved(run, { title: "Migração da cobrança" });
+  const reply = await working("depois posta o resumo no #time", anchor.id);
+  expect(await steerWork({ db: f.db }, reply, work.id)).toEqual({ ok: true });
+  await readByWork(run, reply.triggerMessageId);
+  const [stopped] = await f.db
+    .update(schema.agentRuns)
+    .set({ status: "canceled", error: `canceled_by:${f.owner.id}` })
+    .where(eq(schema.agentRuns.id, run.id))
+    .returning();
+  expect((await endWork(deps(), stopped as AgentRun, "canceled"))?.status).toBe("canceled");
+  expect(await followUpJobs()).toEqual([]);
+});
+
+test("one follow-up per work: two ends at once, its job twice, an end after Continuar", async () => {
+  f = await setup({ workTools: true });
+  const run = await working("@dev roda a migração da cobrança");
+  const { work, anchor } = await moved(run, { title: "Migração da cobrança" });
+  const reply = await working("depois posta o resumo no #time", anchor.id);
+  expect(await steerWork({ db: f.db }, reply, work.id)).toEqual({ ok: true });
+  await readByWork(run, reply.triggerMessageId);
+  const [ended] = await f.db
+    .update(schema.agentRuns)
+    .set({ status: "done" })
+    .where(eq(schema.agentRuns.id, run.id))
+    .returning();
+  const closes = await Promise.all([
+    endWork(deps(), ended as AgentRun, "done"),
+    endWork(deps(), ended as AgentRun, "done"),
+  ]);
+  expect(closes.filter(Boolean)).toHaveLength(1);
+  const input = { workId: work.id, messageIds: [reply.triggerMessageId] };
+  expect((await followUpJobs()).map((j) => j.payload)).toEqual([input]);
+
+  const woke = await Promise.all([followUpWork(deps(), f.org.id, input), followUpWork(deps(), f.org.id, input)]);
+  expect(woke.filter(Boolean)).toHaveLength(1);
+  const notices = await followUpNotices();
+  expect(notices).toHaveLength(1);
+  expect((await runs()).filter((r) => r.triggerMessageId === notices[0]?.id)).toHaveLength(1);
+
+  await reopenWork(f.db, work.id);
+  expect(await endWork(deps(), ended as AgentRun, "done")).not.toBeNull();
+  expect(await followUpJobs()).toHaveLength(1);
 });

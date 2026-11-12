@@ -100,6 +100,10 @@ export interface SteeredText {
   text: string;
 }
 
+/** What a background work reads under a message passed on to it with `steer_work` (`meta.steeredWorkIds`). */
+export const PASSED_ON_NOTE =
+  "This is now part of your work: do what it asks before you finish, or say in your report why not.";
+
 /**
  * Messages people (or events) sent while the run worked, oldest first, as the
  * agent reads them: "[New message from Ada, while you were working]: …", or
@@ -128,17 +132,21 @@ export async function renderSteered(
     .where(and(eq(messages.orgId, orgId), inArray(messages.id, ids), isNull(messages.deletedAt)));
   // Messages written in one transaction share its time (a report's notices): their ids keep the order.
   rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : 1));
-  return rows.map((m) => ({
-    id: m.id,
-    // A background task that ended while it worked: the notice with its result.
-    text:
-      taskNotice({ body: m.body, meta: m.meta }, true) ??
-      `${
-        options.beforeStart
-          ? `[${m.name ?? "someone"}]: ${m.body}`
-          : `[New message from ${m.name ?? "someone"}, while you were working]: ${m.body}`
-      }${attachedLine(m)}`,
-  }));
+  return rows.map((m) => {
+    const name = m.name ?? "someone";
+    const passedOn = !options.beforeStart && Array.isArray(m.meta.steeredWorkIds);
+    return {
+      id: m.id,
+      // A background task that ended while it worked: the notice with its result.
+      text:
+        taskNotice({ body: m.body, meta: m.meta }, true) ??
+        `${
+          options.beforeStart
+            ? `[${name}]: ${m.body}`
+            : `[New message from ${name}${passedOn ? ", passed on to your background work" : ""}, while you were working]: ${m.body}`
+        }${attachedLine(m)}${passedOn ? `\n${PASSED_ON_NOTE}` : ""}`,
+    };
+  });
 }
 
 /** The run fields `releaseInbox` needs. */

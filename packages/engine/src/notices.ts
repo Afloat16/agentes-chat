@@ -10,7 +10,8 @@ import { untrustedBlock } from "./untrusted";
  * (`talker_reply`), what people decided on its proposal of a new agent or of
  * a change (`proposal_result`), how a vote it started came out (`poll_result`), its own follow-up (`follow_up`: the line it set, and at
  * its time the notice that wakes it, `refs.wake`), agents its @mention couldn't wake (`wake_skipped`, ADR 0097), a person stopping one of its tasks (`run_stopped`, ADR 0128),
- * something that happened on GitHub to an item it worked on or that names the app (`github_event`, `git/github-events.ts`). Stored on the notice
+ * something that happened on GitHub to an item it worked on or that names the app (`github_event`, `git/github-events.ts`), its background
+ * work ending after people's messages were passed on to it (`work_follow_up`, `works.ts`). Stored on the notice
  * message as `meta.notice`; the agent's context reads it as an event, never
  * as a person's words.
  *
@@ -31,7 +32,8 @@ export type NoticeKind =
   | "wake_skipped"
   | "work_check_in"
   | "run_stopped"
-  | "github_event";
+  | "github_event"
+  | "work_follow_up";
 
 /**
  * Notices only for the agent they are for: another agent's note, the late result of a wait it stopped waiting on, what
@@ -45,6 +47,7 @@ export const AGENT_ONLY_NOTICES: readonly NoticeKind[] = [
   "proposal_result",
   "poll_result",
   "work_check_in",
+  "work_follow_up",
 ];
 
 /** Whether a message is a notice only its agent reads (`AGENT_ONLY_NOTICES`). */
@@ -190,6 +193,13 @@ export function noticeText(
       return `[Not woken]: ${n.text}`;
     case "work_check_in":
       return `[Your background work]: ${n.text}`;
+    // Not enveloped: the text is the people's own requests (`followUpWork`), and the run acts for who wrote the last.
+    case "work_follow_up":
+      return `[Your background work${n.refs?.title ? ` "${n.refs.title}"` : ""} ended. While it ran, these messages were passed on to it]:\n${n.text}${
+        current
+          ? "\nIts report is above. Do now what they asked that the work didn't do, with your tools, and tell them what came of it. If nothing is left, pass: nothing is posted."
+          : ""
+      }`;
     // A person stopped one of its tasks (ADR 0128); the reason is that person's words.
     case "run_stopped":
       return `[A person stopped your task]: ${n.text}`;
