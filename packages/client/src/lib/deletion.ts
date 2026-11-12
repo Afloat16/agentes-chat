@@ -33,6 +33,29 @@ export function deletedByText(t: TFunction, locale: string, deletion: OrgDeletio
   return t("deleting.by", { by: deletion.requestedBy?.name || t("deleting.someone"), date });
 }
 
+/**
+ * The settings sections (the web's ids, which the phone's share) that stay as ever while the workspace is being
+ * deleted (ADR 0088 §7): the person's own, what only reads, what is mostly read through rows and tabs (the Vault,
+ * roles, skills: their writes are refused in words), taking its data out (import and export) and its billing.
+ */
+export const SETTINGS_OPEN_WHILE_DELETING: ReadonlySet<string> = new Set([
+  "account",
+  "notifications",
+  "approvals",
+  "usage",
+  "audit",
+  "import",
+  "billing",
+  "about",
+  "vault",
+  "roles",
+  "skills",
+]);
+
+/** A settings section greyed out: the workspace is being deleted and the section would change it. */
+export const settingsFrozen = (org: { deletion?: unknown } | null | undefined, section: string) =>
+  !!org?.deletion && !SETTINGS_OPEN_WHILE_DELETING.has(section);
+
 /** What `settingUp` and the standing read of a workspace, and no more: the phone's lists carry narrower rows. */
 interface WorkspaceState {
   id: string;

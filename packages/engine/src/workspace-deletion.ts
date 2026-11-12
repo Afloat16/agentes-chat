@@ -137,8 +137,8 @@ export type DeletionVia = "owner" | "account";
 
 /**
  * A deletion past its date still waits while the workspace is suspended, on a hold that isn't billing's, or under the
- * operator's deletion hold (a legal hold), so evidence outlives a deletion. It never refuses one: the workspace closes
- * at once either way.
+ * operator's deletion hold (a legal hold), so evidence outlives a deletion. It never refuses one: the workspace turns
+ * read-only at once either way.
  */
 export const keptFromDeletion = (
   org: Pick<OrgStanding, "state" | "reason" | "notice"> & { deletionHoldAt: Date | null },
@@ -1219,8 +1219,8 @@ export async function scheduleAccountDeletion(deps: DeletionDeps, userId: string
  * Brings back an account waiting for its deletion: only before its date (`account.not_restorable` after), by the same
  * clock and under the same lock as `deleteAccount`, so neither can undo the other. No proof: it destroys nothing, and
  * only its own session gets here. Workspaces that closed with it (same date, asked by them) come back; one that can't
- * yet (suspended, or waiting for a plan another of theirs waits for) stays on its closing screen, where its Restaurar
- * says why. Plans that stopped renewing stay stopped: nothing charges until the person turns one on.
+ * yet stays as it was: suspended, on its screen, or waiting for a plan another of theirs waits for, read-only under its
+ * line, where its Restaurar says why. Plans that stopped renewing stay stopped: nothing charges until the person turns one on.
  */
 export async function restoreAccount(deps: DeletionDeps, userId: string) {
   const { closed, mine } = await deps.db.transaction(async (tx) => {

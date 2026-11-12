@@ -8,6 +8,7 @@ import {
   nextLevel,
   resourcesOf,
 } from "@agenteschat/client/lib/access-levels";
+import { settingsFrozen } from "@agenteschat/client/lib/deletion";
 import { can } from "@agenteschat/client/lib/permissions";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -82,7 +83,7 @@ export function AccessScreen() {
     );
   }
   return (
-    <SettingsPage title={t("settings.section.access")}>
+    <SettingsPage title={t("settings.section.access")} frozen={settingsFrozen(org, "access")}>
       <GroupedFooter>{t("settings.sectionText.access")}</GroupedFooter>
       <View style={styles.head}>
         <InfoHint

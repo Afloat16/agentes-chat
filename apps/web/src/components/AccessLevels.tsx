@@ -13,7 +13,7 @@ import {
 } from "@agenteschat/client/lib/access-levels";
 import { type ConnectedItem, connectedItems, itemName } from "@agenteschat/client/lib/connected";
 import type { agentGrammar } from "@agenteschat/client/lib/grammar";
-import { can } from "@agenteschat/client/lib/permissions";
+import { can, makesAgents } from "@agenteschat/client/lib/permissions";
 import { builtinToolText } from "@agenteschat/client/lib/scopes";
 import { labelIsName } from "@agenteschat/client/lib/tool-labels";
 import { partsOf, toolName } from "@agenteschat/client/lib/tool-review";
@@ -312,7 +312,7 @@ export function AccessMatrixSection() {
           size="panel"
           agent={look}
           title={t(can(org, "create_agents") ? "access.noAgentsTitle" : "team.emptyViewerTitle")}
-          actions={can(org, "create_agents") && <CreateAgentButton />}
+          actions={makesAgents(org) && <CreateAgentButton />}
         >
           {t(can(org, "create_agents") ? "access.noAgents" : "team.emptyViewer")}
         </EmptyState>

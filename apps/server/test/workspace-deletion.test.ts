@@ -124,6 +124,32 @@ test("a workspace being deleted reads as ever, its sockets open; any other chang
   expect((await meOf(ana)).organizations).toEqual([]);
 });
 
+test("being deleted, a DM it has opens as it is and none starts; its payer still opens billing", async () => {
+  await t.close();
+  t = await createTestServer({
+    env: { BILLING_URL: "https://billing.example.com", BILLING_LINK_SECRET: "b".repeat(32) },
+  });
+  const owner = browser(t);
+  await signUp(owner, "owner@example.com");
+  const { orgId, agentId } = await seedOrg(owner);
+  const ana = await joinByInvitation(t, owner, orgId, "ana@example.com");
+  const anaId = (await meOf(ana)).user.id;
+  const app = `/api/app/organizations/${orgId}`;
+  const opened = await owner(`${app}/dms`, { json: { agentId } });
+  expect(opened.status).toBe(200);
+  const { channelId } = (await opened.json()) as { channelId: string };
+  await t.db
+    .update(schema.organizations)
+    .set({ deletionDueAt: new Date(Date.now() + 7 * 86_400_000) })
+    .where(eq(schema.organizations.id, orgId));
+
+  const again = await owner(`${app}/dms`, { json: { agentId } });
+  expect(again.status).toBe(200);
+  expect(await again.json()).toMatchObject({ channelId, dm: { channelId } });
+  expect(await answer(await owner(`${app}/dms`, { json: { userId: anaId } }))).toEqual([403, "org.deleting"]);
+  expect((await owner(`${app}/billing-link`, { json: { from: "settings" } })).status).toBe(200);
+});
+
 describe("proof that it's you: a code emailed to you", () => {
   test("it goes to your address for that deletion only, and works once; no code, a wrong one or a password won't do", async () => {
     const owner = browser(t);

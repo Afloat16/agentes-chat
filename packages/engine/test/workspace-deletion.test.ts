@@ -19,6 +19,7 @@ import {
   assertInviting,
   authorizeStream,
   type ConnectorDeps,
+  calendarRange,
   canViewCost,
   completeOAuth,
   composioToolkitUrl,
@@ -327,12 +328,22 @@ describe("a workspace being deleted is read-only", () => {
     f = await setup();
     const routine = await channelRoutine(f);
     expect(routine.nextRunAt).not.toBeNull();
+    const calendar = () =>
+      calendarRange(
+        { db: f.db },
+        f.owner.id,
+        f.org.id,
+        new Date().toISOString(),
+        new Date(Date.now() + 2 * DAY).toISOString(),
+      );
+    expect((await calendar()).routines.length).toBeGreaterThan(0);
     await postPersonMessage({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, f.general.id, {
       body: "@dev check the build",
     });
     await closing(f.org.id);
-    // Its slots pass: nothing says when it runs next.
+    // Its slots pass: nothing says when it runs next, nor shows a time on the calendar.
     expect(await listRoutines(f.db, f.owner.id, f.org.id)).toMatchObject([{ id: routine.id, nextRunAt: null }]);
+    expect((await calendar()).routines).toEqual([]);
     await drainOutbox(f.db, f.handlers);
     expect(f.provider.calls).toHaveLength(0);
     const [run] = await runs();

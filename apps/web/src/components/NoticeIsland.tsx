@@ -296,9 +296,12 @@ function NoticeRow({ n, dir, channelName }: { n: AppNotification; dir: Dir; chan
     if (typing) input.current?.focus();
   }, [typing]);
 
-  const target = replyTarget(n);
+  // Being deleted, the workspace takes no answer (ADR 0088 §7): the quick reply's place says why.
+  const deleting = Boolean(org.deletion);
+  const answerable = replyTarget(n);
+  const target = deleting ? null : answerable;
   const waiting = n.waiting ? waitingCardOf(n) : null;
-  const suggestions = n.kind === "agent_question" ? (n.latest.suggestions ?? []) : [];
+  const suggestions = !deleting && n.kind === "agent_question" ? (n.latest.suggestions ?? []) : [];
   const canOpen = opener.canOpen(n);
 
   const read = () => {
@@ -341,6 +344,12 @@ function NoticeRow({ n, dir, channelName }: { n: AppNotification; dir: Dir; chan
           </p>
         ) : (
           <>
+            {deleting && answerable && (
+              <p className="ni__readonly ac-iconline" role="status">
+                <Icon name="lock" size={16} />
+                <span>{t("deleting.composer")}</span>
+              </p>
+            )}
             {typing && target ? (
               <form className="ni__reply" onSubmit={submit}>
                 <Locked when={reply.isPending}>

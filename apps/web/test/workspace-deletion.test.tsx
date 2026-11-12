@@ -252,6 +252,10 @@ describe("a workspace being deleted opens as ever, read-only, under a line on to
     cleanup();
     await open(`/org/${ORG_ID}/settings/account`, { deletion: deletion(soon(6)) });
     expect(frozen()).toBeNull();
+    // What is read through its rows and tabs stays as ever (the Vault, roles, skills): the server refuses its writes.
+    cleanup();
+    await open(`/org/${ORG_ID}/settings/roles`, { deletion: deletion(soon(6)) });
+    expect(frozen()).toBeNull();
 
     cleanup();
     await open(`/org/${ORG_ID}/agents/new`, { deletion: deletion(soon(6)) });

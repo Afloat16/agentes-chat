@@ -1,4 +1,5 @@
 import { keys, useApi } from "@agenteschat/client";
+import { makesAgents } from "@agenteschat/client/lib/permissions";
 import { useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { type NativeStackNavigationOptions, useNavigation } from "expo-router";
@@ -14,6 +15,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useOrg } from "@/providers/org";
 import {
   Button,
   EmptyState,
@@ -68,6 +70,7 @@ export function ShareScreen() {
   const { colors } = useTheme();
   const api = useApi();
   const orgId = useOrgId();
+  const creates = makesAgents(useOrg().org);
   const qc = useQueryClient();
   const toast = useToast();
   const dir = useDirectory();
@@ -219,12 +222,14 @@ export function ShareScreen() {
                     title={t("mobile.share.noAgents")}
                     subtitle={t("mobile.share.noAgentsHint")}
                     action={
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        label={t("mobile.share.createAgent")}
-                        onPress={() => router.replace("/new-agent")}
-                      />
+                      creates ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          label={t("mobile.share.createAgent")}
+                          onPress={() => router.replace("/new-agent")}
+                        />
+                      ) : undefined
                     }
                   />
                 ) : null}

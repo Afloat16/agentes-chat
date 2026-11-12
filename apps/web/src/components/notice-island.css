@@ -337,6 +337,13 @@ html:not([data-pointer]) .ni__choice:focus-visible {
   font-size: 13px;
   color: var(--danger);
 }
+/* Why it takes no answer (the workspace is being deleted), where the answer would go. */
+.ni__readonly {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.42;
+  color: var(--ink2);
+}
 .ni__x {
   position: absolute;
   top: 6px;

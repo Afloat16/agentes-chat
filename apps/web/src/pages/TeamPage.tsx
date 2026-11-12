@@ -9,7 +9,7 @@ import {
 } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
-import { can } from "@agenteschat/client/lib/permissions";
+import { can, makesAgents } from "@agenteschat/client/lib/permissions";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import { Button, Card, EmptyState, Icon, PageHeader, Segmented } from "@agenteschat/ui";
 import { Link } from "@tanstack/react-router";
@@ -79,9 +79,8 @@ export function TeamPage() {
   const noAgents = view !== "usage" && !!data && agents.length === 0;
   const look = useRightHandLook();
   const maker = can(org, "create_agents");
-  // The empty state takes over the head's buttons: one way in, in the middle of the page. None while the workspace is
-  // being deleted (ADR 0088 §7).
-  const makes = maker && !org.deletion && (
+  // The empty state takes over the head's buttons: one way in, in the middle of the page.
+  const makes = makesAgents(org) && (
     <>
       <Button asChild icon="archiveBox">
         <Link to="/org/$orgId/settings/$section" params={{ orgId: org.id, section: "import" }}>

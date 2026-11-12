@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { accountOutOfReach, deletedByText, deletingText, restorable } from "@agenteschat/client/lib/deletion";
+import {
+  accountOutOfReach,
+  deletedByText,
+  deletingText,
+  restorable,
+  settingsFrozen,
+} from "@agenteschat/client/lib/deletion";
 import { suspendedText } from "@agenteschat/client/lib/errors";
 import { type OutageTargetLike, targetOptions } from "@agenteschat/client/lib/machine-outages";
 import { computerIcon, type MachineOutage, targetText } from "../../src/features/outages/logic";
@@ -59,6 +65,16 @@ describe("an organization being deleted on the phone", () => {
     const home = read("features/chats/ChatsScreen.tsx");
     expect(home.indexOf("<DeletingNotice />")).toBeLessThan(home.indexOf("<SetupNotice />"));
     expect(read("features/chat/ChatScreen.tsx")).toContain('{t("deleting.composer")}');
+    expect(read("features/island/NoticeIsland.tsx")).toContain('{t("deleting.composer")}');
+  });
+
+  test("Settings greys out what would change it, as the web does; the person's own and what reads stay", () => {
+    for (const section of ["general", "media", "members", "access", "connectors", "apps", "devices", "storage"])
+      expect(settingsFrozen(orgs[0], section)).toBe(true);
+    for (const section of ["usage", "audit", "import", "vault", "roles", "skills"])
+      expect(settingsFrozen(orgs[0], section)).toBe(false);
+    expect(settingsFrozen({ deletion: undefined }, "general")).toBe(false);
+    expect(read("features/settings/GeneralScreen.tsx")).toContain('frozen={settingsFrozen(org, "general")}');
   });
 
   test("when it goes and who deleted it; only owners restore it, and only before that", async () => {
