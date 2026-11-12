@@ -13250,6 +13250,9 @@
   "agentPage.memory.fromTeam": {
     "value": "learned from the team"
   },
+  "agentPage.memory.fromTeamRightHand": {
+    "value": "learned from you"
+  },
   "agentPage.memory.proposals": {
     "value": "Proposals"
   },
@@ -13318,6 +13321,9 @@
   },
   "agentPage.memory.rulesNote": {
     "value": "Followed in all its work for whoever gave each one, wherever the work comes from. Rules from its owner or an admin hold for everyone."
+  },
+  "agentPage.memory.rulesNoteRightHand": {
+    "value": "Rules you give in your DM hold only for you. Only you see them."
   },
   "agentPage.memory.ruleBy": {
     "value": "From {{name}} · {{date}}"

@@ -699,7 +699,7 @@ function Profile({ id }: { id: string }) {
     <>
       {knows.data ? memoryKnows : null}
       {/* What people told it to always do, under what it learned, as the web's Memória. */}
-      <GivenRules agentId={id} name={name} />
+      <GivenRules agentId={id} name={name} rightHand={rightHand} />
     </>
   );
 
@@ -981,7 +981,7 @@ function ButtonRow({
  * giver, the agent's owner and admins take one back with a swipe, confirmed by a system alert (never a bare × that
  * deletes on the tap). Shown only when there is something.
  */
-function GivenRules({ agentId, name }: { agentId: string; name: string }) {
+function GivenRules({ agentId, name, rightHand }: { agentId: string; name: string; rightHand: boolean }) {
   const { t } = useTranslation();
   const c = useColors();
   const orgId = useOrgId();
@@ -1041,7 +1041,9 @@ function GivenRules({ agentId, name }: { agentId: string; name: string }) {
           );
         })}
       </GroupedList>
-      <GroupedFooter>{t("agentPage.memory.rulesNote")}</GroupedFooter>
+      <GroupedFooter>
+        {t(rightHand ? "agentPage.memory.rulesNoteRightHand" : "agentPage.memory.rulesNote")}
+      </GroupedFooter>
     </>
   );
 }

@@ -5715,6 +5715,8 @@ export const en = {
       verified_other: "{{count}} verified",
       lessons: "Lessons",
       fromTeam: "learned from the team",
+      /** The right hand keeps what it learns per person: only that person's runs read it. */
+      fromTeamRightHand: "learned from you",
       proposals: "Proposals",
       waiting: "waiting for a decision",
       noneWaiting: "none waiting",
@@ -5740,6 +5742,7 @@ export const en = {
       rules: "Rules people gave",
       rulesNote:
         "Followed in all its work for whoever gave each one, wherever the work comes from. Rules from its owner or an admin hold for everyone.",
+      rulesNoteRightHand: "Rules you give in your DM hold only for you. Only you see them.",
       /** Who gave the rule and when ("From Ana · Nov 4"). */
       ruleBy: "From {{name}} · {{date}}",
       removeRule: "Remove",

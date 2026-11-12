@@ -5673,6 +5673,7 @@ export const ptBR = {
       verified_other: "{{count}} verificados",
       lessons: "Lições",
       fromTeam: "aprendidas com o time",
+      fromTeamRightHand: "aprendidas com você",
       proposals: "Propostas",
       waiting: "esperando decisão",
       noneWaiting: "nenhuma esperando",
@@ -5697,6 +5698,7 @@ export const ptBR = {
       rules: "Regras que as pessoas deram",
       rulesNote:
         "Valem em todo o trabalho para quem deu cada uma, venha o pedido de onde vier. As do responsável ou de um admin valem para todos.",
+      rulesNoteRightHand: "As regras que você dá na sua DM valem só para você. Só você vê.",
       ruleBy: "De {{name}} · {{date}}",
       removeRule: "Remover",
       ruleRemoved: "Regra removida. Fica em Arquivadas se quiser de volta.",
