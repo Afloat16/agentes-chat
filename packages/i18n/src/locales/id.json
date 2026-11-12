@@ -2823,6 +2823,22 @@
       "never": "{{name}} bilang tidak pernah untuk ini"
     }
   },
+  "approvalsLevel": {
+    "title": "Persetujuan",
+    "lead": "Kapan {{name}} bertanya kepada seseorang sebelum bertindak.",
+    "always": {
+      "title": "Selalu tanya",
+      "text": "Bertanya sebelum mengubah apa pun di aplikasi."
+    },
+    "risky": {
+      "title": "Hanya yang berisiko",
+      "text": "Bertanya sebelum menghapus, mengirim, atau membayar."
+    },
+    "never": {
+      "title": "Jangan pernah tanya",
+      "text": "Tetap bertanya untuk merge, deploy, dan rollback."
+    }
+  },
   "brakes": {
     "title": "Pekerjaan yang tidak diminta siapa pun",
     "subtitle": "Apa yang dimulainya sendiri, dari rutinitas, peringatan, atau agen lain. Yang diminta seseorang tidak pernah ditahan.",
@@ -14024,6 +14040,7 @@
       "where": "Di mana",
       "via": "Lewat",
       "approval": "Persetujuan",
+      "unasked": "Tidak ditanyakan ({{level}})",
       "approvalWaiting": "Belum ada yang menjawab",
       "approvalApproved": "Disetujui oleh {{name}}",
       "approvalRefused": "Ditolak oleh {{name}}",

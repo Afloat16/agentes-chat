@@ -2816,6 +2816,22 @@
       "never": "{{name}} 说这类永远不要"
     }
   },
+  "approvalsLevel": {
+    "title": "审批",
+    "lead": "{{name}} 在行动前何时询问人。",
+    "always": {
+      "title": "始终询问",
+      "text": "在应用中更改任何内容前先询问。"
+    },
+    "risky": {
+      "title": "仅有风险的操作",
+      "text": "删除、发送或付款前先询问。"
+    },
+    "never": {
+      "title": "从不询问",
+      "text": "合并、部署和回滚仍会询问。"
+    }
+  },
   "brakes": {
     "title": "没人要求的工作",
     "subtitle": "它因为例程、警报或其他智能体而自己开始的工作。人要求的事从不会被拦下。",
@@ -14032,6 +14048,7 @@
       "where": "位置",
       "via": "途径",
       "approval": "审批",
+      "unasked": "未询问（{{level}}）",
       "approvalWaiting": "还没有人回应",
       "approvalApproved": "由 {{name}} 批准",
       "approvalRefused": "由 {{name}} 拒绝",

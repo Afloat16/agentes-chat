@@ -2921,6 +2921,22 @@
       "never": "{{name}} zei nooit hiervoor"
     }
   },
+  "approvalsLevel": {
+    "title": "Goedkeuringen",
+    "lead": "Wanneer {{name}} iemand vraagt voordat er iets gebeurt.",
+    "always": {
+      "title": "Altijd vragen",
+      "text": "Vraagt voordat er iets in een app verandert."
+    },
+    "risky": {
+      "title": "Alleen wat riskant is",
+      "text": "Vraagt voor verwijderen, verzenden of betalen."
+    },
+    "never": {
+      "title": "Nooit vragen",
+      "text": "Vraagt nog wel bij merge, deploy en rollback."
+    }
+  },
   "brakes": {
     "title": "Werk waar niemand om vroeg",
     "subtitle": "Wat hij zelf begint, na een routine, een melding of een andere agent. Waar een persoon om vraagt, wordt nooit tegengehouden.",
@@ -14539,6 +14555,7 @@
       "where": "Waar",
       "via": "Via",
       "approval": "Goedkeuring",
+      "unasked": "Niet gevraagd ({{level}})",
       "approvalWaiting": "Nog niemand heeft geantwoord",
       "approvalApproved": "Goedgekeurd door {{name}}",
       "approvalRefused": "Geweigerd door {{name}}",

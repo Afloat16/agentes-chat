@@ -3012,6 +3012,22 @@
       "never": "{{name}} dijo nunca para esto"
     }
   },
+  "approvalsLevel": {
+    "title": "Aprobaciones",
+    "lead": "Cuándo {{name}} pregunta a una persona antes de actuar.",
+    "always": {
+      "title": "Preguntar siempre",
+      "text": "Pregunta antes de cambiar algo en una app."
+    },
+    "risky": {
+      "title": "Solo lo arriesgado",
+      "text": "Pregunta antes de borrar, enviar o pagar."
+    },
+    "never": {
+      "title": "No preguntar nunca",
+      "text": "Sigue preguntando en merge, deploy y rollback."
+    }
+  },
   "brakes": {
     "title": "Trabajo que nadie pidió",
     "subtitle": "Lo que empieza por su cuenta, a partir de una rutina, una alerta u otro agente. Lo que pide una persona nunca se detiene.",
@@ -14878,6 +14894,7 @@
       "where": "Dónde",
       "via": "A través de",
       "approval": "Aprobación",
+      "unasked": "No preguntó ({{level}})",
       "approvalWaiting": "Nadie respondió todavía",
       "approvalApproved": "Aprobado por {{name}}",
       "approvalRefused": "Rechazado por {{name}}",

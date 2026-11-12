@@ -3084,6 +3084,23 @@ export const en = {
     },
   },
   /** Agent settings: what it may start that nobody asked for directly, and which agents it may call (ADR 0131). */
+  /** How much an agent asks before acting (ADR 0173): the row on its page and the three choices behind it. */
+  approvalsLevel: {
+    title: "Approvals",
+    lead: "When {{name}} asks a person before acting.",
+    always: {
+      title: "Always ask",
+      text: "Asks before changing anything in an app.",
+    },
+    risky: {
+      title: "Only what is risky",
+      text: "Asks before deleting, sending or paying.",
+    },
+    never: {
+      title: "Never ask",
+      text: "Still asks for merge, deploy and rollback.",
+    },
+  },
   brakes: {
     title: "Work nobody asked for",
     subtitle: "What it starts on its own, from a routine, an alert or another agent. What a person asks is never held.",
@@ -14474,6 +14491,8 @@ export const en = {
       where: "Where",
       via: "Through",
       approval: "Approval",
+      /** In place of an approval: it ran without one because its agent never asks. `level`: that choice's name. */
+      unasked: "Not asked ({{level}})",
       approvalWaiting: "Nobody has answered yet",
       approvalApproved: "Approved by {{name}}",
       approvalRefused: "Refused by {{name}}",

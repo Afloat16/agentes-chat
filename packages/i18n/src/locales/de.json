@@ -2918,6 +2918,22 @@
       "never": "{{name}} hat dafür nie gesagt"
     }
   },
+  "approvalsLevel": {
+    "title": "Freigaben",
+    "lead": "Wann {{name}} vor dem Handeln eine Person fragt.",
+    "always": {
+      "title": "Immer fragen",
+      "text": "Fragt, bevor in einer App etwas geändert wird."
+    },
+    "risky": {
+      "title": "Nur Riskantes",
+      "text": "Fragt vor dem Löschen, Senden oder Bezahlen."
+    },
+    "never": {
+      "title": "Nie fragen",
+      "text": "Fragt weiterhin bei Merge, Deploy und Rollback."
+    }
+  },
   "brakes": {
     "title": "Arbeit, um die niemand gebeten hat",
     "subtitle": "Was der Agent selbst beginnt, nach einer Routine, einem Alarm oder einem anderen Agenten. Was eine Person verlangt, wird nie aufgehalten.",
@@ -14477,6 +14493,7 @@
       "where": "Wo",
       "via": "Über",
       "approval": "Freigabe",
+      "unasked": "Nicht gefragt ({{level}})",
       "approvalWaiting": "Noch hat niemand geantwortet",
       "approvalApproved": "Freigegeben von {{name}}",
       "approvalRefused": "Abgelehnt von {{name}}",
