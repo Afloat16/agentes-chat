@@ -567,15 +567,21 @@ describe("Connect a device", () => {
     // The Terminal way: one paste for both causes, and the window goes on by itself.
     await click(terminal);
     expect(step()?.querySelector(".machine-command__code")?.textContent).toBe(
-      "sudo xcode-select -s /Applications/Xcode.app\nsudo xcodebuild -license accept\nsudo xcodebuild -runFirstLaunch",
+      "sudo xcode-select -s /Applications/Xcode.app &&\nsudo xcodebuild -license accept &&\nsudo xcodebuild -runFirstLaunch",
     );
     expect(step()?.textContent).toContain("This window moves on by itself once the Mac is done.");
+    // The command leads there: the button stays, second.
+    expect(inStep().getByRole("button", { name: "Fix it for me" }).className).not.toContain("ac-btn--primary");
 
     // Fix it: the password window on the Mac, then the three commands, then done.
     await click(inStep().getByRole("button", { name: "Fix it for me" }));
     expect(calls(app.state, "devices.startXcodeFix").at(-1)?.args).toEqual([ORG_ID, MAC, "select"]);
     expect(step()?.textContent).toContain(
       "Type the password on Sam's MacBook Pro. macOS opened its window on that Mac's screen.",
+    );
+    // A picture of that window, with the words macOS shows, so it's no surprise on the Mac.
+    expect(step()?.querySelector(".dv-mac-ask")?.textContent).toContain(
+      "agentes.chat wants to put Xcode in use to connect iPhones.",
     );
     await click(inStep().getByRole("button", { name: "Cancel" }));
     expect(calls(app.state, "devices.cancelXcodeFix")).toHaveLength(1);

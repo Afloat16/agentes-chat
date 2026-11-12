@@ -13687,7 +13687,9 @@
         "failed": "Tidak bisa memperbaiki di {{mac}}: {{message}}",
         "failedAny": "Tidak bisa memperbaiki di {{mac}}.",
         "outdated": "Perbarui aplikasi agentes.chat di {{mac}} agar bisa diperbaiki dengan satu klik. Atau jalankan ini di Terminal-nya, ia meminta kata sandi Mac.",
-        "follows": "Jendela ini lanjut sendiri setelah Mac selesai."
+        "follows": "Jendela ini lanjut sendiri setelah Mac selesai.",
+        "window": "agentes.chat ingin memakai Xcode untuk menghubungkan iPhone.",
+        "ok": "OK"
       },
       "getXcode": "Dapatkan Xcode",
       "toolsDone": "Diunduh oleh Mac",

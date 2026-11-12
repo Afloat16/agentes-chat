@@ -14521,7 +14521,9 @@
         "failed": "No se pudo arreglar en {{mac}}: {{message}}",
         "failedAny": "No se pudo arreglar en {{mac}}.",
         "outdated": "Actualiza la app agentes.chat en {{mac}} para arreglarlo con un clic. O ejecuta esto en su Terminal, pide la contraseña del Mac.",
-        "follows": "Esta ventana sigue sola cuando el Mac termine."
+        "follows": "Esta ventana sigue sola cuando el Mac termine.",
+        "window": "agentes.chat quiere poner Xcode en uso para conectar iPhones.",
+        "ok": "Aceptar"
       },
       "getXcode": "Obtener Xcode",
       "toolsDone": "Descargadas por la Mac",

@@ -320,8 +320,8 @@ describe("connecting a phone", () => {
     expect(iphoneSteps(cli, null)).toMatchObject({ xcode: "needs", tools: "waiting" });
     // One paste for either cause, with the first-launch packages the iPhone's build needs.
     expect(XCODE_FIX_COMMAND.split("\n")).toEqual([
-      "sudo xcode-select -s /Applications/Xcode.app",
-      "sudo xcodebuild -license accept",
+      "sudo xcode-select -s /Applications/Xcode.app &&",
+      "sudo xcodebuild -license accept &&",
       "sudo xcodebuild -runFirstLaunch",
     ]);
     expect(xcodeBlockedOf(computer({ toolchains: { xcodeBlocked: "license" } }))).toBe("license");

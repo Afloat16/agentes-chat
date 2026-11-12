@@ -15059,7 +15059,9 @@
         "failed": "Nie udało się naprawić na {{mac}}: {{message}}",
         "failedAny": "Nie udało się naprawić na {{mac}}.",
         "outdated": "Zaktualizuj aplikację agentes.chat na {{mac}}, by naprawić to jednym kliknięciem. Albo uruchom to w jego Terminalu, poprosi o hasło Maca.",
-        "follows": "To okno samo przejdzie dalej, gdy Mac skończy."
+        "follows": "To okno samo przejdzie dalej, gdy Mac skończy.",
+        "window": "agentes.chat chce użyć Xcode, aby połączyć iPhone'y.",
+        "ok": "OK"
       },
       "getXcode": "Pobierz Xcode",
       "toolsDone": "Pobrane przez Maca",

@@ -14192,7 +14192,9 @@
         "failed": "Herstellen lukte niet op {{mac}}: {{message}}",
         "failedAny": "Herstellen lukte niet op {{mac}}.",
         "outdated": "Werk de agentes.chat-app op {{mac}} bij om het met één klik te herstellen. Of voer dit uit in de Terminal ervan, die vraagt het wachtwoord van de Mac.",
-        "follows": "Dit venster gaat vanzelf verder zodra de Mac klaar is."
+        "follows": "Dit venster gaat vanzelf verder zodra de Mac klaar is.",
+        "window": "agentes.chat wil Xcode in gebruik nemen om iPhones te verbinden.",
+        "ok": "OK"
       },
       "getXcode": "Xcode downloaden",
       "toolsDone": "Gedownload door de Mac",

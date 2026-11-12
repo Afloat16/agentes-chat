@@ -14175,6 +14175,8 @@ export const ptBR = {
         outdated:
           "Atualize o app agentes.chat em {{mac}} para corrigir com um clique. Ou rode isto no Terminal dele, ele pede a senha do Mac.",
         follows: "Esta janela segue sozinha quando o Mac terminar.",
+        window: "O agentes.chat quer colocar o Xcode em uso para conectar iPhones.",
+        ok: "OK",
       },
       getXcode: "Baixar o Xcode",
       toolsDone: "Baixadas pelo Mac",

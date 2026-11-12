@@ -13625,7 +13625,9 @@
         "failed": "{{mac}}에서 고치지 못했어요: {{message}}",
         "failedAny": "{{mac}}에서 고치지 못했어요.",
         "outdated": "{{mac}}의 agentes.chat 앱을 업데이트하면 클릭 한 번으로 고칠 수 있어요. 또는 그 Mac의 터미널에서 이것을 실행하세요. Mac 암호를 물어봐요.",
-        "follows": "Mac이 끝나면 이 창은 알아서 다음으로 넘어가요."
+        "follows": "Mac이 끝나면 이 창은 알아서 다음으로 넘어가요.",
+        "window": "agentes.chat이 iPhone을 연결하려고 Xcode를 사용하려고 합니다.",
+        "ok": "확인"
       },
       "getXcode": "Xcode 받기",
       "toolsDone": "Mac이 다운로드함",

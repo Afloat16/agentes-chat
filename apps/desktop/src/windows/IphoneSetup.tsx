@@ -215,7 +215,7 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
           })}
           <pre className="dk-ip__cmd">{XCODE_FIX_COMMAND}</pre>
           <span className="dk-ip__act">
-            <Button size="sm" variant="primary" onClick={() => fixXcode("start", "select")}>
+            <Button size="sm" onClick={() => fixXcode("start", "select")}>
               {t("devices.iphone.xcodeFix.fix")}
             </Button>
           </span>

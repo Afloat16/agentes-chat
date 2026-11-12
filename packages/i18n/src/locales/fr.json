@@ -14592,7 +14592,9 @@
         "failed": "Impossible de corriger sur {{mac}} : {{message}}",
         "failedAny": "Impossible de corriger sur {{mac}}.",
         "outdated": "Mettez à jour l'app agentes.chat sur {{mac}} pour corriger en un clic. Ou lancez ceci dans son Terminal, il demande le mot de passe du Mac.",
-        "follows": "Cette fenêtre continue toute seule quand le Mac a fini."
+        "follows": "Cette fenêtre continue toute seule quand le Mac a fini.",
+        "window": "agentes.chat veut mettre Xcode en service pour connecter des iPhone.",
+        "ok": "OK"
       },
       "getXcode": "Obtenir Xcode",
       "toolsDone": "Téléchargés par le Mac",

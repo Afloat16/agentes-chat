@@ -14130,7 +14130,9 @@
         "failed": "Konnte auf {{mac}} nicht behoben werden: {{message}}",
         "failedAny": "Konnte auf {{mac}} nicht behoben werden.",
         "outdated": "Aktualisiere die agentes.chat-App auf {{mac}}, um es mit einem Klick zu beheben. Oder führe das hier in seinem Terminal aus, es fragt nach dem Passwort des Macs.",
-        "follows": "Dieses Fenster geht von selbst weiter, sobald der Mac fertig ist."
+        "follows": "Dieses Fenster geht von selbst weiter, sobald der Mac fertig ist.",
+        "window": "agentes.chat möchte Xcode in Gebrauch nehmen, um iPhones zu verbinden.",
+        "ok": "OK"
       },
       "getXcode": "Xcode holen",
       "toolsDone": "Vom Mac geladen",

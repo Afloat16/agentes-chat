@@ -575,10 +575,12 @@ export const DDIS_UPDATE = "xcrun devicectl manage ddis update";
  * What the Mac runs in Terminal for Xcode installed but blocked (the runner's `toolchains.xcodeBlocked`): the developer
  * folder left on the Command Line Tools, or the license not agreed to. One paste, one password, both causes, and the
  * first-launch packages an iPhone's build needs: the same commands the Mac's own fix runs (`xcode.fix` `select`).
+ * Each line ends in `&&` so a paste is read whole before sudo asks: sudo flushes typed-ahead input, which would drop
+ * the lines after the first in a shell without bracketed paste.
  */
 export const XCODE_FIX_COMMAND = [
-  "sudo xcode-select -s /Applications/Xcode.app",
-  "sudo xcodebuild -license accept",
+  "sudo xcode-select -s /Applications/Xcode.app &&",
+  "sudo xcodebuild -license accept &&",
   "sudo xcodebuild -runFirstLaunch",
 ].join("\n");
 export const XCODE_BLOCKED = ["command_line_tools", "license"] as const;

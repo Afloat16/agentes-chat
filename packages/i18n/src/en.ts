@@ -14169,6 +14169,10 @@ export const en = {
         outdated:
           "Update the agentes.chat app on {{mac}} to fix it with one click. Or run this in its Terminal, it asks for the Mac's password.",
         follows: "This window moves on by itself once the Mac is done.",
+        /** The line macOS's password window shows on the Mac (the runner's own prompt), in its picture here. */
+        window: "agentes.chat wants to put Xcode in use to connect iPhones.",
+        /** macOS's default button in that window. */
+        ok: "OK",
       },
       getXcode: "Get Xcode",
       toolsDone: "Downloaded by the Mac",

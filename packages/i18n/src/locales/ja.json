@@ -13633,7 +13633,9 @@
         "failed": "{{mac}}で修正できませんでした: {{message}}",
         "failedAny": "{{mac}}で修正できませんでした。",
         "outdated": "{{mac}}のagentes.chatアプリをアップデートすると、ワンクリックで修正できます。またはそのMacのターミナルでこれを実行してください。Macのパスワードを求められます。",
-        "follows": "Macが終わると、このウインドウは自動で次に進みます。"
+        "follows": "Macが終わると、このウインドウは自動で次に進みます。",
+        "window": "agentes.chatがiPhoneを接続するためにXcodeを使用しようとしています。",
+        "ok": "OK"
       },
       "getXcode": "Xcodeを入手",
       "toolsDone": "Macがダウンロード済み",

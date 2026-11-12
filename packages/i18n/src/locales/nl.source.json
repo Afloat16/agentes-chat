@@ -34347,6 +34347,12 @@
   "devices.iphone.xcodeFix.follows": {
     "value": "This window moves on by itself once the Mac is done."
   },
+  "devices.iphone.xcodeFix.window": {
+    "value": "agentes.chat wants to put Xcode in use to connect iPhones."
+  },
+  "devices.iphone.xcodeFix.ok": {
+    "value": "OK"
+  },
   "devices.iphone.getXcode": {
     "value": "Get Xcode"
   },

@@ -777,8 +777,8 @@ function XcodeFixActs({
   onTerminal: () => void;
 }) {
   const { t } = useTranslation();
-  const fixButton = (label: string) => (
-    <Button size="sm" variant="primary" loading={busy} disabled={busy} onClick={onFix}>
+  const fixButton = (label: string, variant: "primary" | "default" = "primary") => (
+    <Button size="sm" variant={variant} loading={busy} disabled={busy} onClick={onFix}>
       {label}
     </Button>
   );
@@ -790,16 +790,30 @@ function XcodeFixActs({
           <Icon name="info" size={14} />
           <span>{t("devices.iphone.xcodeFix.follows")}</span>
         </span>
-        {canFix && <span className="dv-step__acts">{fixButton(t("devices.iphone.xcodeFix.fix"))}</span>}
+        {canFix && <span className="dv-step__acts">{fixButton(t("devices.iphone.xcodeFix.fix"), "default")}</span>}
       </>
     );
   if (stage === "asking")
     return (
-      <span className="dv-step__acts">
-        <Button size="sm" onClick={onCancel}>
-          {t("common.cancel")}
-        </Button>
-      </span>
+      <>
+        {/* What macOS shows on the Mac, so the password window isn't a surprise there. */}
+        <div className="dv-mac-ask" aria-hidden="true">
+          <span className="dv-mac-ask__lock">
+            <Icon name="lock" size={16} />
+          </span>
+          <b>{t("devices.iphone.xcodeFix.window")}</b>
+          <span className="dv-mac-ask__field">{t("auth.password")}</span>
+          <span className="dv-mac-ask__buttons">
+            <span>{t("common.cancel")}</span>
+            <span data-default="">{t("devices.iphone.xcodeFix.ok")}</span>
+          </span>
+        </div>
+        <span className="dv-step__acts">
+          <Button size="sm" onClick={onCancel}>
+            {t("common.cancel")}
+          </Button>
+        </span>
+      </>
     );
   if (stage === "running" || stage === "done") {
     const step = stage === "done" ? FIX_PHASES.length : (fix?.step ?? 0);

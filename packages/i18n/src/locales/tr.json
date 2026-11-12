@@ -14065,7 +14065,9 @@
         "failed": "{{mac}} üzerinde düzeltilemedi: {{message}}",
         "failedAny": "{{mac}} üzerinde düzeltilemedi.",
         "outdated": "Tek tıkla düzeltmek için {{mac}} üzerindeki agentes.chat uygulamasını güncelleyin. Ya da bunu onun Terminal'inde çalıştırın, Mac'in parolasını ister.",
-        "follows": "Mac bitirdiğinde bu pencere kendiliğinden devam eder."
+        "follows": "Mac bitirdiğinde bu pencere kendiliğinden devam eder.",
+        "window": "agentes.chat, iPhone'ları bağlamak için Xcode'u kullanıma almak istiyor.",
+        "ok": "Tamam"
       },
       "getXcode": "Xcode'u edinin",
       "toolsDone": "Mac tarafından indirildi",
