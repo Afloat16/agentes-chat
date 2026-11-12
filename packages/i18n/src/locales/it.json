@@ -17214,6 +17214,7 @@
     "row": "Non disponibile",
     "screen": {
       "title": "Questo spazio di lavoro non è disponibile",
+      "titleNamed": "{{name}} non è disponibile",
       "text": "Le sue conversazioni e i suoi agenti per ora sono chiusi.",
       "others": "I tuoi altri spazi di lavoro"
     },
@@ -17268,14 +17269,14 @@
   "deleteOrg": {
     "card": {
       "title": "Elimina spazio di lavoro",
-      "text": "Chiude {{name}} per tutti ora e lo elimina tra 7 giorni.",
+      "text": "{{name}} diventa di sola lettura per tutti adesso. Viene eliminato per sempre dopo 7 giorni.",
       "button": "Elimina spazio di lavoro…"
     },
     "title": "Eliminare {{name}}?",
     "goes": {
       "content": "Le sue conversazioni, i file, gli agenti e la loro memoria",
-      "people": "Tutti perdono l'accesso subito e ricevono un'email",
-      "peopleQuiet": "Tutti perdono l'accesso subito",
+      "people": "Da subito tutti possono solo leggerlo e ricevono un'email",
+      "peopleQuiet": "Da subito tutti possono solo leggerlo",
       "computer": "Il suo computer si ferma subito e viene cancellato",
       "computers": "I computer collegati vengono scollegati. Le cartelle degli agenti restano lì finché il runner non viene rimosso.",
       "connectors": "Connettori e caselle di posta vengono scollegati"
@@ -17301,15 +17302,16 @@
   },
   "deleting": {
     "title": "{{name}} è in eliminazione",
-    "text": "Questo spazio di lavoro è già in eliminazione. Non devi fare nulla, sparisce il {{date}}.",
-    "textLate": "Questo spazio di lavoro è già in eliminazione. Non devi fare nulla.",
+    "banner": "{{name}} verrà eliminato il {{date}}",
     "by": "{{by}} l'ha eliminato il {{date}}.",
+    "byYou": "L'hai eliminato il {{date}}.",
     "row": "In eliminazione, sparisce il {{date}}",
     "rowLate": "In eliminazione",
     "someone": "Qualcuno",
     "restore": "Ripristina spazio di lavoro",
     "membersOnly": "Solo un Proprietario può ripristinarlo.",
-    "restored": "{{name}} è tornato"
+    "restored": "{{name}} è tornato",
+    "composer": "Non puoi inviare messaggi mentre questo spazio di lavoro è in eliminazione"
   },
   "accountDeleting": {
     "title": "Il tuo account è in eliminazione",

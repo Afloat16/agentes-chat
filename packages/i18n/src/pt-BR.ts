@@ -16852,6 +16852,7 @@ export const ptBR = {
     row: "Indisponível",
     screen: {
       title: "Este workspace está indisponível",
+      titleNamed: "{{name}} está indisponível",
       text: "As conversas e os agentes dele estão fechados por enquanto.",
       others: "Seus outros workspaces",
     },
@@ -16918,18 +16919,18 @@ export const ptBR = {
     writeAfter: ".",
     ask: "Precisa de ajuda? Fale com quem cuida deste servidor.",
   },
-  /** Deleting a workspace (owners): it closes for everyone now and is deleted for good 7 days later. */
+  /** Deleting a workspace (owners): it turns read-only for everyone now and is deleted for good 7 days later. */
   deleteOrg: {
     card: {
       title: "Apagar workspace",
-      text: "Fecha {{name}} para todos agora e apaga em 7 dias.",
+      text: "{{name}} fica só para leitura para todos agora. Ele é apagado de vez depois de 7 dias.",
       button: "Apagar workspace…",
     },
     title: "Apagar {{name}}?",
     goes: {
       content: "As conversas, os arquivos, os agentes e a memória deles",
-      people: "Todos perdem o acesso agora e recebem um email",
-      peopleQuiet: "Todos perdem o acesso agora",
+      people: "Todos passam a só ler e recebem um email",
+      peopleQuiet: "Todos passam a só ler",
       computer: "O computador dele para agora e é apagado",
       computers:
         "Os computadores conectados são desconectados. As pastas dos agentes ficam neles até o runner ser removido.",
@@ -16960,12 +16961,14 @@ export const ptBR = {
     password: "Sua senha",
     signInButton: "Entrar de novo",
   },
-  /** A workspace being deleted: the screen in its place until it goes. */
+  /** A workspace being deleted: a line on top of it, read-only, until it goes. `title` once its date passed. */
   deleting: {
     title: "{{name}} está sendo apagado",
-    text: "Este workspace já está sendo apagado. Não precisa fazer nada, ele some em {{date}}.",
-    textLate: "Este workspace já está sendo apagado. Não precisa fazer nada.",
+    /** The line's title while its date is ahead. */
+    banner: "{{name}} vai ser apagado em {{date}}",
     by: "{{by}} apagou em {{date}}.",
+    /** `by`, for the person who deleted it. */
+    byYou: "Você apagou em {{date}}.",
     /** Beside its name in a list of workspaces. */
     row: "Sendo apagado, some em {{date}}",
     rowLate: "Sendo apagado",
@@ -16974,6 +16977,8 @@ export const ptBR = {
     restore: "Restaurar workspace",
     membersOnly: "Só um dono pode restaurar.",
     restored: "{{name}} voltou",
+    /** In place of the message box. */
+    composer: "Você não pode enviar mensagens enquanto este workspace está sendo apagado",
   },
   /** The screen an account waiting for its deletion sees in place of the app: `text` while its date is ahead. */
   accountDeleting: {

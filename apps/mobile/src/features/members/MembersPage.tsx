@@ -11,6 +11,7 @@ import {
   useRemoveMember,
   useRoles,
 } from "@agenteschat/client";
+import { settingsFrozen } from "@agenteschat/client/lib/deletion";
 import { knownErrorText } from "@agenteschat/client/lib/errors";
 import { namesText } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
@@ -22,7 +23,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
-import { GroupedFooter, GroupedHeader, GroupedList, GroupedRow, PersonAvatar, useToast } from "@/ui";
+import { GroupedFooter, GroupedHeader, GroupedList, GroupedRow, Locked, PersonAvatar, useToast } from "@/ui";
 import { router } from "@/ui/navigation";
 import { Page } from "../me/parts";
 import { useOpenDm } from "../new/useOpenDm";
@@ -70,9 +71,11 @@ function Members() {
   const remove = useRemoveFlow();
   const openDm = useOpenDm();
   const viewer = { role: org?.role ?? "member", rank: org?.rank, userId: meId ?? "", permissions: org?.permissions };
-  // In a row's menu: Remover do workspace for whoever may, Sair on one's own row (not the last owner). The server
-  // checks it again.
-  const removable = (m: Person) => (m.userId === meId ? leaves(viewer, list ?? []) : removes(viewer, m, roles));
+  // Being deleted, inviting and removing are greyed out, as on the web; leaving stays (the server takes it then too).
+  const frozen = settingsFrozen(org, "members");
+  // Remover do workspace for whoever may, Sair on one's own row (not the last owner); the server checks it again.
+  const removable = (m: Person) =>
+    m.userId === meId ? leaves(viewer, list ?? []) : !frozen && removes(viewer, m, roles);
 
   return (
     <Page
@@ -85,17 +88,19 @@ function Members() {
       }
     >
       <View style={styles.gap} />
-      {invites ? (
-        <>
-          <GroupedList>
-            <GroupedRow icon="plus" label={t("members.inviteTitle")} onPress={() => router.push("/invite-people")} />
-          </GroupedList>
-          <WaitingYou />
-          <SentInvitations />
-        </>
-      ) : (
-        <Suggestions />
-      )}
+      <Locked when={frozen} readable>
+        {invites ? (
+          <>
+            <GroupedList>
+              <GroupedRow icon="plus" label={t("members.inviteTitle")} onPress={() => router.push("/invite-people")} />
+            </GroupedList>
+            <WaitingYou />
+            <SentInvitations />
+          </>
+        ) : (
+          <Suggestions />
+        )}
+      </Locked>
 
       <GroupedHeader>{list ? `${t("members.people")} · ${list.length}` : t("members.people")}</GroupedHeader>
       {list ? (

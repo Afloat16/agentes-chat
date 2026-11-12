@@ -16175,6 +16175,7 @@
     "row": "Tidak tersedia",
     "screen": {
       "title": "Ruang kerja ini tidak tersedia",
+      "titleNamed": "{{name}} tidak tersedia",
       "text": "Percakapan dan agennya ditutup untuk sementara.",
       "others": "Ruang kerjamu yang lain"
     },
@@ -16229,14 +16230,14 @@
   "deleteOrg": {
     "card": {
       "title": "Hapus ruang kerja",
-      "text": "Menutup {{name}} untuk semua orang sekarang dan menghapusnya dalam 7 hari.",
+      "text": "{{name}} jadi hanya-baca untuk semua orang sekarang. Dihapus selamanya setelah 7 hari.",
       "button": "Hapus ruang kerja…"
     },
     "title": "Hapus {{name}}?",
     "goes": {
       "content": "Percakapan, file, agen, dan memori mereka",
-      "people": "Semua orang kehilangan akses sekarang dan menerima email",
-      "peopleQuiet": "Semua orang kehilangan akses sekarang",
+      "people": "Mulai sekarang semua orang hanya bisa membacanya dan menerima email",
+      "peopleQuiet": "Mulai sekarang semua orang hanya bisa membacanya",
       "computer": "Komputernya berhenti sekarang dan dibersihkan",
       "computers": "Komputer yang terhubung diputuskan. Folder agen tetap ada di sana sampai runner-nya dihapus.",
       "connectors": "Konektor dan kotak surat diputuskan"
@@ -16262,15 +16263,16 @@
   },
   "deleting": {
     "title": "{{name}} sedang dihapus",
-    "text": "Ruang kerja ini sudah sedang dihapus. Kamu tidak perlu melakukan apa-apa, ruang kerja ini hilang pada {{date}}.",
-    "textLate": "Ruang kerja ini sudah sedang dihapus. Kamu tidak perlu melakukan apa-apa.",
+    "banner": "{{name}} akan dihapus pada {{date}}",
     "by": "{{by}} menghapusnya pada {{date}}.",
+    "byYou": "Kamu menghapusnya pada {{date}}.",
     "row": "Sedang dihapus, hilang pada {{date}}",
     "rowLate": "Sedang dihapus",
     "someone": "Seseorang",
     "restore": "Pulihkan ruang kerja",
     "membersOnly": "Hanya Pemilik yang bisa memulihkannya.",
-    "restored": "{{name}} sudah kembali"
+    "restored": "{{name}} sudah kembali",
+    "composer": "Kamu tidak bisa mengirim pesan selama ruang kerja ini sedang dihapus"
   },
   "accountDeleting": {
     "title": "Akunmu sedang dihapus",

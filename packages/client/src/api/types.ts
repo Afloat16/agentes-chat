@@ -302,7 +302,7 @@ export interface OrgSummary {
    * which resumes it, instead of the workspace. Absent: finished, not theirs to set up, or an older server.
    */
   onboarding?: OrgOnboarding;
-  /** From `GET /me` while an owner's deletion is pending, set at once by `org.deleting`: the workspace is closed. */
+  /** From `GET /me` while an owner's deletion is pending, set at once by `org.deleting`: the workspace is read-only. */
   deletion?: OrgDeletion;
   /** From `GET /me`: what opens when the app starts here (ADR 0108). Absent from older servers: the home. */
   start?: StartChoice;
