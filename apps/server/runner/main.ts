@@ -748,7 +748,6 @@ function printed(
   return code;
 }
 
-/** Replaces this script with the server's latest bundle; the pairing and the workspace stay. */
 /** How long `standby` and `resume` wait for the running runner to answer. */
 const STANDBY_ANSWER_MS = 20_000;
 
@@ -784,6 +783,7 @@ async function standby(p: Parsed, on: boolean): Promise<number> {
   return 1;
 }
 
+/** Replaces this script with the server's latest bundle; the pairing and the workspace stay. */
 async function update(): Promise<number> {
   const term = createTerm();
   const refuse = (message: string) => {

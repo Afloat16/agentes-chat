@@ -581,14 +581,14 @@ export const PAUSED = "The owner paused this computer. Nothing new starts here u
 const workStream = (req: MachineRequest) =>
   req.op === "stream.open" && (req.kind === "terminal" || req.mode === "control");
 
-/**
- * Runs one request; throws RunnerError (or fs errors) on failure. An error's text leaves redacted like an answer
- * (ADR 0144): a page's error can quote what was just typed.
- */
 /** Where `keep_running` has no lock to take: anywhere but a Linux computer under systemd, each agent its own user. */
 export const KEEP_UNSUPPORTED =
   "This computer can't keep programs running for agents: that needs Linux with systemd, each agent as its own user.";
 
+/**
+ * Runs one request; throws RunnerError (or fs errors) on failure. An error's text leaves redacted like an answer
+ * (ADR 0144): a page's error can quote what was just typed.
+ */
 export async function handleRequest(ctx: HandlerContext, req: MachineRequest, scope: RequestScope): Promise<unknown> {
   try {
     return await routeRequest(ctx, req, scope);

@@ -23,7 +23,8 @@ closes the agents' Chrome, so a page that was live is gone when the computer com
 ### 1. `keep_running`
 
 A computer tool of the agent (scope `sandbox:run`, approvals as `start_task`'s: `sensitive` where the workspace asks
-for every command, and the agent's approvals level, ADR 0173). Arguments:
+for every command, and the agent's approvals level, ADR 0173). Listing its holds and ending one ask nobody there, as
+`list_tasks` and `cancel_task` don't (`asksNobody`). Arguments:
 
 - `what` (up to 80 characters, what people read), `why` (up to 200);
 - one of `pid` (one of the agent's own programs: the hold ends when it exits), `browser: true` (its browser, with the
@@ -33,9 +34,10 @@ for every command, and the agent's approvals level, ADR 0173). Arguments:
 - `end` (a hold's id) ends it; no arguments lists the agent's holds.
 
 The same pid, or the browser, again changes that hold instead of adding one. An agent has at most 10 live holds.
-The tool is offered on a Linux computer whose runner speaks `KEEP_RUNNING_PROTOCOL` (61); a computer whose agents
-aren't each their own OS user refuses with why. Its description lists the agent's holds now and those that ended in
-the last 7 days with why, so the next turn after a restart sees "the computer restarted".
+The tool is offered on a Linux computer whose agents are each their own OS user (`hello.mode`, ADR 0058 §10) and whose
+runner speaks `KEEP_RUNNING_PROTOCOL` (61): anywhere else every call would be refused. Its description lists the
+agent's holds now and those that ended in the last 7 days with why, so the next turn after a restart sees "the
+computer restarted".
 
 ### 2. The lock on the computer
 
@@ -54,15 +56,19 @@ systemd-run --scope --unit=agentes-keep-<hold id> --slice=agents-<uid>.slice -- 
   time than when it was held (as root, `kill -0` would go on holding a pid used again by another process), looked at
   once a second; its browser's slice (`agents-<uid>-browser.slice`) empty three looks in a row, two seconds apart (a
   Chrome moving to the desktop isn't a close); or `sleep` for the time. The runner also ends a hold at its `until`.
+  The program's name in its stat file is the agent's to choose, so root's shell cuts everything up to the last `) `,
+  globs nothing, and runs its tools by absolute path.
 - `idle` is the lock that says "don't do what you do when idle". It is also the one block lock an agent's own program
   may take without an admin (systemd's default polkit policy); a guard reads those the same way.
 - No words of the agent's go in the lock: every user may list them. The words stay on the server, and an operator's
   guard ties a lock to its hold by its scope.
 - A program's pid must be the agent's: its owner is the agent's uid and its cgroup is under the agent's slice
   (`not_allowed` otherwise). Its start time is kept, so a pid used again by another process is never signaled.
-- While its browser is held, the agent's worker never closes it as idle, restarts it for an update or moves it to or
-  from its desktop. So a browser's hold always ends (`until`, at most 7 days ahead): a newer Chrome waits for it, and
-  only as long as the agent keeps renewing it.
+- While its browser is held, the agent's worker never closes it as idle or moves it to or from its desktop, and a
+  browser's hold always ends (`until`, at most 7 days ahead). A newer Chrome on disk waits for the hold a day at most
+  from when the worker first saw it, renewed or not: then the browser restarts on it as an unheld one does (on its
+  page, with its profile, once nobody watches it and the agent ran no command for 10 minutes). Chrome's updates are its
+  security fixes, on a browser that is on the open web.
 - Changing a hold takes its lock again (the scope's name is the hold's): meanwhile the old lock going isn't the hold
   ending, and its browser stays kept.
 - The scopes outlive the runner. `<runner home>/holds.json` keeps what each one holds, so a runner that restarts goes on
@@ -74,8 +80,10 @@ systemd-run --scope --unit=agentes-keep-<hold id> --slice=agents-<uid>.slice -- 
 `machine_holds` (migration 0257): the hold's id (the runner's too), its organization, agent, computer and run, `what`,
 `why`, `pid`, `browser`, `until`, and how it ended (`exited`, `expired`, `stopped_by_person`, `ended_by_agent`,
 `restarted`) with who stopped it. The server asks the computer first and writes the row once it holds, so a hold
-people see is one the computer holds; a change the computer holds undoes an end it reported meanwhile. Audit:
-`machine.hold_started`, `machine.hold_changed`, `machine.hold_ended`.
+people see is one the computer holds; a change the computer holds undoes an end it reported meanwhile. A hold whose
+`until` passed with no word from the computer (away meanwhile) ends `expired` at that time once the server next reads
+it, as any end does. Audit: `machine.hold_started`, `machine.hold_changed`, `machine.hold_ended`; each also tells the
+apps (`machine.holds`).
 
 A live hold counts as use of the computer (`machineActivity`'s `busy`, which an operator reads to decide when it
 sleeps, ADR 0161), as a running task does, so the server never reports a computer idle under one.
