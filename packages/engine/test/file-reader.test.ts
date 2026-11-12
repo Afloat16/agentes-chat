@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { deflateSync } from "node:zlib";
 import { PDF_MEDIA_TYPE } from "@agenteschat/providers";
-import { markdownToDocx, markdownToPdf, readForModel, zip } from "../src";
+import { markdownToDocx, markdownToPdf, pdfPages, readForModel, zip } from "../src";
 import { decodeXmlEntities } from "../src/format";
 import { PNG, pptxFixture, xlsxFixture } from "./file-fixtures";
 
@@ -30,6 +31,14 @@ describe("readForModel", () => {
     expect(out.note).toBe("It is a PDF (1 page): shown to you with this result.");
     const many = bytesOf(`%PDF-1.7\n${"<< /Type /Page >>\n".repeat(120)}<< /Type /Pages >>`);
     expect(read("livro.pdf", many).note).toContain("and 120 pages, past the 4.8 MB and 100 pages");
+    // PDF 1.5+: the page objects and the page tree sit in compressed object streams.
+    const objects = deflateSync(bytesOf(`${"<< /Type /Page >> ".repeat(3)}<< /Type /Pages /Kids [] /Count 140 >>`));
+    const packed = Buffer.concat([
+      bytesOf(`%PDF-1.7\n1 0 obj\n<< /Type /ObjStm /N 4 /Filter /FlateDecode /Length ${objects.length} >>\nstream\n`),
+      objects,
+      bytesOf("\nendstream\nendobj\n"),
+    ]);
+    expect(pdfPages(packed)).toBe(140);
   });
 
   test("Word, PowerPoint and Excel come as their text; a zip as its listing", () => {
@@ -63,6 +72,9 @@ describe("readForModel", () => {
     const ts = read("app.ts", bytesOf("export const a: number = 1;\n"), "video/mp2t");
     expect(ts).toEqual({ text: "export const a: number = 1;\n", note: "" });
     expect(read("dados.weird", bytesOf("a;b\n1;2"), "application/x-weird").text).toBe("a;b\n1;2");
+    // A declared text type is read at any size; read_artifact pages it.
+    const big = bytesOf("a,b\n".repeat(1_500_000));
+    expect(read("grande.csv", big, "text/csv; charset=utf-8").text?.length).toBe(big.length);
   });
 
   test("audio is the caller's to transcribe; video, old Office, other pictures and binaries name the cause", () => {

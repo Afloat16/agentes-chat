@@ -434,7 +434,7 @@ export function mcpResultFrame(callId: string, out: McpOutcome, protocol: number
     images && protocol < MCP_IMAGES_PROTOCOL
       ? MCP_IMAGES_TOO_OLD
       : // A frame past the runner's limit is dropped there unread: the call would only time out.
-        images && images.reduce((n, i) => n + i.data.length, out.text.length) > MAX_FRAME_BYTES - 64 * 1024
+        images && images.reduce((n, i) => n + i.data.length, Buffer.byteLength(out.text)) > MAX_FRAME_BYTES - 64 * 1024
         ? MCP_IMAGES_TOO_BIG
         : null;
   if (note) return { type: "mcp.result" as const, callId, ok: true as const, text: `${out.text}\n${note}` };

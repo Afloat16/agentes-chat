@@ -1,3 +1,4 @@
+import { inflateSync } from "node:zlib";
 import { PDF_MEDIA_TYPE, type ToolImage } from "@agenteschat/providers";
 import { MODEL_IMAGE_BYTES, sniffModelImage } from "./avatars";
 import { decodeXmlEntities, formatBytes, tableToCsv, textOfBytes } from "./format";
@@ -17,6 +18,8 @@ export const MODEL_PDF_BYTES = 5_000_000;
 export const MODEL_PDF_PAGES = 100;
 /** Text decoded from a file of no known text type, at most (a log or code under an odd type). */
 const ANY_TEXT_BYTES = 5_000_000;
+/** A declared text type (`text/csv`, `application/json`, YAML, XML): decoded at any size, `read_artifact` pages it. */
+const TEXT_TYPE = /^text\/|json|xml|yaml/;
 /** One part of an Office file (a sheet, the document's XML) inflated, at most. */
 const OFFICE_PART_BYTES = 40_000_000;
 const ZIP_LIST_MAX = 300;
@@ -49,10 +52,33 @@ const isVideoFile = (name: string, contentType: string) =>
 const isZip = (b: Uint8Array) => b[0] === 0x50 && b[1] === 0x4b && (b[2] === 0x03 || b[2] === 0x05);
 const isPdf = (b: Uint8Array) => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
 
-/** A PDF's pages, counted by their page objects (at least one). */
+const PAGE_OBJECT = /\/Type\s*\/Page(?![a-zA-Z])/g;
+const PAGE_COUNT = /\/Type\s*\/Pages\b[^>]*?\/Count\s+(\d+)|\/Count\s+(\d+)[^>]*?\/Type\s*\/Pages\b/g;
+const OBJECT_STREAM = /\/Type\s*\/ObjStm[^>]*>>\s*stream\r?\n/g;
+
+/**
+ * A PDF's pages (at least one): its page objects or its page tree's `/Count`, whichever says more, read in the
+ * compressed object streams too (PDF 1.5+, where most generators keep them), so a long PDF never passes as short.
+ */
 export function pdfPages(bytes: Uint8Array): number {
-  const text = new TextDecoder("latin1").decode(bytes);
-  return Math.max(1, text.match(/\/Type\s*\/Page(?![a-zA-Z])/g)?.length ?? 0);
+  const latin1 = new TextDecoder("latin1").decode(bytes);
+  const parts = [latin1];
+  for (const m of latin1.matchAll(OBJECT_STREAM)) {
+    const start = (m.index ?? 0) + m[0].length;
+    const end = latin1.indexOf("endstream", start);
+    if (end < 0) continue;
+    try {
+      parts.push(inflateSync(bytes.subarray(start, end)).toString("latin1"));
+    } catch {
+      // Not Flate, or cut: its pages go uncounted.
+    }
+  }
+  let pages = 1;
+  for (const part of parts) {
+    pages = Math.max(pages, part.match(PAGE_OBJECT)?.length ?? 0);
+    for (const m of part.matchAll(PAGE_COUNT)) pages = Math.max(pages, Number(m[1] ?? m[2]));
+  }
+  return pages;
 }
 
 /** What the AI is told of a file past `MODEL_FILE_READ_BYTES`, read by its name and type alone. */
@@ -89,7 +115,7 @@ export function readForModel(file: { name: string; contentType: string; bytes: U
     };
   }
   if (isZip(bytes)) return zipForModel(ext, bytes, size);
-  if (bytes.byteLength <= ANY_TEXT_BYTES && !isAudioFile(name, contentType)) {
+  if ((bytes.byteLength <= ANY_TEXT_BYTES || TEXT_TYPE.test(contentType)) && !isAudioFile(name, contentType)) {
     const text = textOfBytes(bytes);
     if (text !== null) return { text, note: "" };
   }
