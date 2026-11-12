@@ -115,6 +115,9 @@ export async function continueRun(
   const transcript = continuedTranscript(carried, line);
   const request = carried.request ?? row.request;
   if (request) transcript.request = request;
+  // What people passed on to the work that it never read before it stopped (`endWork`): the next run reads it first.
+  const unread = stopped.workId ? stopped.transcript?.unreadAsks : undefined;
+  const unreadAsks = Array.isArray(unread) ? unread.filter((id): id is string => typeof id === "string") : [];
   // Asked for by name: it answers, never passes.
   if (skipped) transcript.answerOwed = true;
   const newRunId = Bun.randomUUIDv7();
@@ -138,6 +141,7 @@ export async function continueRun(
         // A computer brain resumes the session it was stopped in.
         brainSessionId: stopped.brainSessionId,
         workId: stopped.workId,
+        pendingMessageIds: unreadAsks,
       })
       .onConflictDoNothing()
       .returning({ id: agentRuns.id });

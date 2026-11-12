@@ -9,7 +9,7 @@ import { deliverNotice, publishDelivery } from "./delivery";
 import { eligibleChannelAgents } from "./dispatch";
 import { isAgentOnlyDm } from "./dms";
 import { publishChannelEvent, publishMessageCreated } from "./events";
-import { cutText } from "./format";
+import { cutMarked, cutText } from "./format";
 import { linkIssueToWork, setWorkIssueState } from "./issues";
 import { deliverLive, renderSteered } from "./live-steer";
 import { messageLink } from "./message-links";
@@ -900,8 +900,10 @@ export async function endWork(
       .set({ resultMessageId: resultId })
       .where(eq(agentWorks.id, work.id))
       .returning();
-    // A person who stopped it meant what they passed on to it too.
-    if (status !== "canceled") await queueWorkFollowUp(tx, work);
+    // What people passed on to it: a `done` end follows it up; a failed one goes on with Continuar, which carries its
+    // transcript (what it read) and what it never read. A person who stopped it meant that too.
+    if (status === "done") await queueWorkFollowUp(tx, work, run.id);
+    else if (status === "failed") await takeUnreadAsks(tx, work, run.id, { keep: true });
     const released = await releaseQueuedWorks(tx, work.orgId);
     return { work: closed ?? work, end, released, status };
   });
@@ -913,12 +915,53 @@ export async function endWork(
   return ended.work;
 }
 
+/** Of these messages, the ones passed on to the work with `steer_work` (`meta.steeredWorkIds`). */
+async function passedOnTo(tx: Executor, work: WorkRow, ids: string[]) {
+  if (ids.length === 0) return [];
+  const rows = await tx
+    .select({ id: messages.id })
+    .from(messages)
+    .where(
+      and(
+        eq(messages.orgId, work.orgId),
+        inArray(messages.id, ids),
+        sql`${messages.meta}->'steeredWorkIds' ? ${work.id}::text`,
+      ),
+    );
+  return rows.map((m) => m.id);
+}
+
 /**
- * People's messages passed on to the work with `steer_work` (`meta.steeredWorkIds`) that its runs read: reading one
- * doesn't mean the work did it, and nothing else brings the agent back to it, so the end queues one follow-up
- * (`followUpWork`), once per work. One never read went back out with its run's inbox.
+ * Asks passed on to the work still unread in its ending run's inbox leave it, so the inbox release doesn't hand them
+ * on too: a reply turn's own message can't start a second run, and would be lost. `keep`: written on the run
+ * (`unreadAsks`) for Continuar, which hands them to the run that goes on (`continueRun`).
  */
-async function queueWorkFollowUp(tx: Executor, work: WorkRow) {
+async function takeUnreadAsks(tx: Executor, work: WorkRow, runId: string, options: { keep?: boolean } = {}) {
+  const [row] = await tx
+    .select({ pending: agentRuns.pendingMessageIds })
+    .from(agentRuns)
+    .where(eq(agentRuns.id, runId))
+    .for("update");
+  const pending = row?.pending ?? [];
+  const asks = await passedOnTo(tx, work, pending);
+  if (asks.length === 0) return [];
+  await tx
+    .update(agentRuns)
+    .set({
+      pendingMessageIds: pending.filter((id) => !asks.includes(id)),
+      ...(options.keep
+        ? { transcript: sql`jsonb_set(${agentRuns.transcript}, '{unreadAsks}', ${JSON.stringify(asks)}::jsonb)` }
+        : {}),
+    })
+    .where(eq(agentRuns.id, runId));
+  return asks;
+}
+
+/**
+ * A work that ended `done`: what people passed on to it that its runs read (reading one doesn't mean the work did it)
+ * or never read is followed up once (`followUpWork`), since nothing else brings the agent back to it.
+ */
+async function queueWorkFollowUp(tx: Executor, work: WorkRow, runId: string) {
   const reads = await tx
     .select({ data: agentRunSteps.data })
     .from(agentRunSteps)
@@ -934,61 +977,47 @@ async function queueWorkFollowUp(tx: Executor, work: WorkRow) {
   const read = [
     ...new Set(reads.flatMap((r) => (Array.isArray(r.data.steeredMessageIds) ? r.data.steeredMessageIds : []))),
   ].filter((id): id is string => typeof id === "string");
-  if (read.length === 0) return;
-  const asks = await tx
-    .select({ id: messages.id })
-    .from(messages)
-    .where(
-      and(
-        eq(messages.orgId, work.orgId),
-        inArray(messages.id, read),
-        sql`${messages.meta}->'steeredWorkIds' ? ${work.id}::text`,
-      ),
-    );
+  const asks = [...new Set([...(await passedOnTo(tx, work, read)), ...(await takeUnreadAsks(tx, work, runId))])];
   if (asks.length === 0) return;
   await enqueue(tx, {
     orgId: work.orgId,
     kind: WORK_FOLLOW_UP_JOB,
-    payload: { workId: work.id, messageIds: asks.map((m) => m.id) },
-    // Per work, not per end: a work reopened by Continuar that ends again asks nothing twice.
+    payload: { workId: work.id, messageIds: asks },
+    // Only a failed or stopped work is continued: one that ended `done` never ends again.
     dedupeKey: `${WORK_FOLLOW_UP_JOB}:${work.id}`,
     maxAttempts: 4,
   });
 }
 
+/** What a follow-up's notice quotes of one message at most. */
+const ASK_QUOTE_MAX = 4000;
+
 /**
- * Job `agent_work.follow_up`: the work ended (done or failed) after people's messages passed on to it were read
- * there. Its agent gets one run where the work reports, woken by an agent-only notice that quotes them
- * (`work_follow_up`): it does what the work left undone, or passes. It acts for the person who wrote the last of
- * them (`authority.ts`), while they may still ask the agent there. A retry finds the notice it already wrote.
+ * Job `agent_work.follow_up`: a work ended `done` after people passed messages on to it. For each person who wrote
+ * them, while they may still ask the agent there, an agent-only notice where the work reports quotes theirs alone
+ * (`work_follow_up`) and starts or joins a run on their own authority (`authority.ts`): it does what the work left
+ * undone and didn't say why, or passes. A retry, or another replica, finds the notices already written, per person.
  */
 export async function followUpWork(
   deps: { db: Database; pubsub?: PubSub },
   orgId: string,
   input: { workId: string; messageIds: string[] },
-) {
-  if (input.messageIds.length === 0) return null;
+): Promise<Message[]> {
+  if (input.messageIds.length === 0) return [];
   const delivered = await deps.db.transaction(async (tx) => {
     const [work] = await tx
       .select()
       .from(agentWorks)
       .where(and(eq(agentWorks.orgId, orgId), eq(agentWorks.id, input.workId)))
       .for("update");
-    if (!work || (work.status !== "done" && work.status !== "failed")) return null;
-    const [sent] = await tx
-      .select({ id: messages.id })
-      .from(messages)
-      .where(
-        and(
-          eq(messages.orgId, orgId),
-          eq(messages.channelId, work.channelId),
-          gte(messages.createdAt, work.startedAt),
-          sql`${messages.meta}->'notice'->>'kind' = 'work_follow_up'`,
-          sql`${messages.meta}->'notice'->'refs'->>'workId' = ${work.id}`,
-        ),
-      )
+    if (work?.status !== "done") return [];
+    const [run] = await tx
+      .select()
+      .from(agentRuns)
+      .where(eq(agentRuns.workId, work.id))
+      .orderBy(desc(agentRuns.createdAt))
       .limit(1);
-    if (sent) return null;
+    if (!run) return [];
     const asks = await tx
       .select({ id: messages.id, userId: messages.authorUserId })
       .from(messages)
@@ -1000,43 +1029,57 @@ export async function followUpWork(
           isNull(messages.deletedAt),
         ),
       )
-      .orderBy(desc(messages.createdAt));
-    const personId = asks[0]?.userId;
-    const [run] = await tx
-      .select()
-      .from(agentRuns)
-      .where(eq(agentRuns.workId, work.id))
-      .orderBy(desc(agentRuns.createdAt))
-      .limit(1);
-    if (!personId || !run) return null;
-    const [here] = await eligibleChannelAgents(tx, orgId, work.channelId, [work.agentId], {
-      requesterUserId: personId,
-    });
-    if (!here || !(await personCanPost(tx, orgId, personId, work.channelId))) return null;
-    // Their words as conversation lines ("[Bia]: …"), each with what it attached.
-    const quoted = await renderSteered(
-      tx,
-      orgId,
-      asks.map((a) => a.id),
-      { beforeStart: true },
-    );
-    return deliverNotice(tx, {
-      orgId,
-      agentId: work.agentId,
-      channelId: work.channelId,
-      threadId: work.homeThreadId,
-      hop: run.hop,
-      stretchId: runStretchOf(run),
-      notice: {
-        kind: "work_follow_up",
-        text: quoted.map((q) => q.text).join("\n\n"),
-        refs: { workId: work.id, personId, ...(work.title ? { title: work.title } : {}) },
-      },
-      trigger: run.trigger === "dm" ? "dm" : "mention",
-    });
+      .orderBy(asc(messages.createdAt));
+    const sent = await tx
+      .select({ personId: sql<string | null>`${messages.meta}->'notice'->'refs'->>'personId'` })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.orgId, orgId),
+          eq(messages.channelId, work.channelId),
+          gte(messages.createdAt, work.startedAt),
+          sql`${messages.meta}->'notice'->>'kind' = 'work_follow_up'`,
+          sql`${messages.meta}->'notice'->'refs'->>'workId' = ${work.id}`,
+        ),
+      );
+    const followed = new Set(sent.map((s) => s.personId));
+    const out: { message: Message; runs: AgentRun[] }[] = [];
+    for (const personId of new Set(asks.flatMap((a) => (a.userId ? [a.userId] : [])))) {
+      if (followed.has(personId)) continue;
+      const [here] = await eligibleChannelAgents(tx, orgId, work.channelId, [work.agentId], {
+        requesterUserId: personId,
+      });
+      if (!here || !(await personCanPost(tx, orgId, personId, work.channelId))) continue;
+      // Their words as conversation lines ("[Bia]: …"), each with what it attached.
+      const quoted = await renderSteered(
+        tx,
+        orgId,
+        asks.filter((a) => a.userId === personId).map((a) => a.id),
+        { beforeStart: true },
+      );
+      out.push(
+        await deliverNotice(tx, {
+          orgId,
+          agentId: work.agentId,
+          channelId: work.channelId,
+          threadId: work.homeThreadId,
+          hop: run.hop,
+          stretchId: runStretchOf(run),
+          // Nobody reads the body: its agent reads `meta.notice`.
+          body: "Asks passed on to a background work that ended.",
+          notice: {
+            kind: "work_follow_up",
+            text: quoted.map((q) => cutMarked(q.text, ASK_QUOTE_MAX)).join("\n\n"),
+            refs: { workId: work.id, personId, ...(work.title ? { title: work.title } : {}) },
+          },
+          trigger: run.trigger === "dm" ? "dm" : "mention",
+        }),
+      );
+    }
+    return out;
   });
-  if (delivered) await publishDelivery(deps.pubsub, delivered).catch(() => {});
-  return delivered?.message ?? null;
+  for (const d of delivered) await publishDelivery(deps.pubsub, d).catch(() => {});
+  return delivered.map((d) => d.message);
 }
 
 /** The end's own words (`chat.body.work_end_*`, as the apps say them without a reason). */
@@ -1301,14 +1344,16 @@ export async function steerWork(
         })
         .where(and(eq(agentRuns.id, target.id), inArray(agentRuns.status, [...ACTIVE_RUN_STATUSES])))
         .returning({ id: agentRuns.id });
-      // The message keeps the works it was passed on to: the work reads it as part of its job (`renderSteered`), and
-      // its end follows it up (`queueWorkFollowUp`). Before the live delivery, which renders it.
+      // The message keeps where it went, before the live delivery renders it: the work (`steeredWorkIds`), which reads
+      // it as part of its job and whose end follows it up, and its run (`steeredRunIds`, as a message that joins a run
+      // gets), so another person's words in it count as theirs (`steeredByOthers`).
       if (row)
         await tx
           .update(messages)
           .set({
-            meta: sql`jsonb_set(${messages.meta}, '{steeredWorkIds}',
-              (coalesce(${messages.meta}->'steeredWorkIds', '[]'::jsonb) - ${work.id}::text) || jsonb_build_array(${work.id}::text))`,
+            meta: sql`${messages.meta} || jsonb_build_object(
+              'steeredWorkIds', (coalesce(${messages.meta}->'steeredWorkIds', '[]'::jsonb) - ${work.id}::text) || jsonb_build_array(${work.id}::text),
+              'steeredRunIds', (coalesce(${messages.meta}->'steeredRunIds', '[]'::jsonb) - ${target.id}::text) || jsonb_build_array(${target.id}::text))`,
           })
           .where(and(eq(messages.orgId, from.orgId), eq(messages.id, m.id)));
       return Boolean(row);

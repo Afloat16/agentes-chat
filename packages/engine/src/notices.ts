@@ -193,11 +193,11 @@ export function noticeText(
       return `[Not woken]: ${n.text}`;
     case "work_check_in":
       return `[Your background work]: ${n.text}`;
-    // Not enveloped: the text is the people's own requests (`followUpWork`), and the run acts for who wrote the last.
+    // Not enveloped: the text is the requests of the person the run acts for (`followUpWork`).
     case "work_follow_up":
       return `[Your background work${n.refs?.title ? ` "${n.refs.title}"` : ""} ended. While it ran, these messages were passed on to it]:\n${n.text}${
         current
-          ? "\nIts report is above. Do now what they asked that the work didn't do, with your tools, and tell them what came of it. If nothing is left, pass: nothing is posted."
+          ? "\nIts report is above. Do now what they asked that the work didn't do and didn't say why not, then tell them what came of it. If the report says it did, says why not, or says it waits on them, pass: nothing is posted."
           : ""
       }`;
     // A person stopped one of its tasks (ADR 0128); the reason is that person's words.

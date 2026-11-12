@@ -139,8 +139,8 @@ async function walkRoot(db: Executor, orgId: string, messageId: string, walked: 
       return { kind: "routine_report", backgroundRunId: typeof runId === "string" ? runId : null };
     }
     // What happened on GitHub (`git/github-events.ts`): the member whose linked account wrote it, or who asked the
-    // agent to answer it; nobody for anyone else. What people passed on to a work that ended (`followUpWork`): who
-    // wrote the last of it, not who asked for the work.
+    // agent to answer it; nobody for anyone else. What a person passed on to a work that ended (`followUpWork`): that
+    // person, not who asked for the work.
     if (notice?.kind === "github_event" || notice?.kind === "work_follow_up") {
       const personId = notice.refs?.personId;
       return typeof personId === "string" && personId ? { kind: "person", personId } : { kind: "agent" };
