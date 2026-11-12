@@ -451,7 +451,7 @@ describe("a plan answers its owner until it answers other people (Atende outras 
       .set({
         executors: {
           claude: { version: "2.1.304", loggedIn: true },
-          codex: { version: "0.170.0", loggedIn: true },
+          codex: { version: "0.170.0" },
           detectedAt: new Date().toISOString(),
         },
       })
