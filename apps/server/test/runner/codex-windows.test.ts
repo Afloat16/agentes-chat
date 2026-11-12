@@ -1,12 +1,14 @@
 import { afterEach, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   CODEX_WINDOWS_CONFIG,
   codexExeBehindShim,
+  codexHomeHasRules,
   codexLaunch,
   codexStdinPrompt,
-  probeWindowsSandbox,
+  MXC_CHECK_ARGS,
+  runMxcCheck,
   WINDOWS_MXC_RETRY_MS,
   windowsMxcReady,
 } from "../../runner/codex-windows";
@@ -25,10 +27,11 @@ afterEach(() => {
 
 const posix = process.platform !== "win32";
 const FAKE_CODEX = path.join(import.meta.dir, "fake-codex-app.mjs");
-const NPM = "C:\\Users\\Ana\\AppData\\Roaming\\npm";
+const NPM = "C:\\Users\\user\\AppData\\Roaming\\npm";
 const SHIM = `${NPM}\\codex.cmd`;
-const OPENAI = "C:\\Users\\Ana\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin";
+const OPENAI = "C:\\Users\\user\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin";
 const PATH_WIN = `${NPM};${OPENAI}`;
+const NO_CWD_LOOKUP = { NoDefaultCurrentDirectoryInExePath: "1" };
 const nested = (pkg: string, triple: string) =>
   `${NPM}\\node_modules\\@openai\\codex\\node_modules\\@openai\\${pkg}\\vendor\\${triple}\\bin\\codex.exe`;
 const NESTED = nested("codex-win32-x64", "x86_64-pc-windows-msvc");
@@ -62,23 +65,21 @@ test("starting Codex on Windows: codex.exe as it is, npm's launcher as the exe b
     "-",
   ];
   const win = { platform: "win32" as const, arch: "x64", pathList: PATH_WIN, pathExt: ".COM;.EXE;.BAT;.CMD" };
-  // OpenAI's installer, winget, Scoop: a codex.exe on the PATH, started as it is.
+  // OpenAI's installer, winget, Scoop: a codex.exe on the PATH, started as it is, nothing looked up in the folder.
   expect(codexLaunch(args, { ...win, exists: has(`${OPENAI}\\codex.exe`) })).toEqual({
     file: `${OPENAI}\\codex.exe`,
     args,
+    env: NO_CWD_LOOKUP,
   });
   // npm's launcher (first on the PATH): the codex.exe behind it, told how it was installed.
   expect(codexLaunch(args, { ...win, exists: has(SHIM, NESTED, `${OPENAI}\\codex.exe`) })).toEqual({
     file: NESTED,
     args,
-    env: { CODEX_MANAGED_BY_NPM: "1" },
+    env: { ...NO_CWD_LOOKUP, CODEX_MANAGED_BY_NPM: "1" },
   });
   // A launcher laid out some other way: through cmd.exe, by its full path, nothing looked up in the current folder.
   const shell = codexLaunch(args, { ...win, exists: has(SHIM) });
-  expect(shell).toMatchObject({
-    windowsVerbatimArguments: true,
-    env: { NoDefaultCurrentDirectoryInExePath: "1" },
-  });
+  expect(shell).toMatchObject({ windowsVerbatimArguments: true, env: NO_CWD_LOOKUP });
   expect("args" in shell && shell.args.slice(0, 4)).toEqual(["/d", "/v:off", "/s", "/c"]);
   expect("args" in shell && shell.args[4]?.startsWith(`""${SHIM}" "exec"`)).toBe(true);
   // ...and never with what cmd.exe would read, nor past its line.
@@ -98,60 +99,63 @@ test("starting Codex on Windows: codex.exe as it is, npm's launcher as the exe b
 });
 
 test("a plan or work turn's sandbox on Windows is MXC by name; a new thread's instructions lead its prompt on stdin", () => {
-  expect(CODEX_WINDOWS_CONFIG).toEqual(['windows.sandbox="mxc"', "features.unified_exec=false"]);
+  expect(CODEX_WINDOWS_CONFIG).toEqual(['windows.sandbox="mxc"']);
   expect(codexStdinPrompt("Be brief.", "Say pong")).toBe("Be brief.\n\nSay pong");
   expect(codexStdinPrompt("  ", "Say pong")).toBe("Say pong");
 });
 
-test("whether MXC holds Codex is asked once per Codex: a yes is kept, a no for a while, no answer never", async () => {
-  const home = tempDir("codex-windows-");
+test("a Codex home with the person's own rules: an allow there would run a command outside the sandbox", () => {
+  const home = tempDir("codex-home-");
   dirs.push(home);
-  const probeOf = (answers: Array<string | null>) => {
-    const homes: string[] = [];
-    const probe = async (p: { env: NodeJS.ProcessEnv }) => {
-      homes.push(String(p.env.CODEX_HOME));
-      return answers.length ? (answers.shift() ?? null) : null;
-    };
-    return { homes, probe };
-  };
-  const ask = (version: string, probe: (p: { env: NodeJS.ProcessEnv }) => Promise<string | null>, at = 0) =>
-    windowsMxcReady({ runnerHome: home, version, probe, now: () => at });
-
-  const yes = probeOf(["ready"]);
-  expect(await ask("codex-cli 0.170.0", yes.probe)).toBe(true);
-  expect(await ask("codex-cli 0.170.0", yes.probe, 99 * WINDOWS_MXC_RETRY_MS)).toBe(true);
-  // An empty Codex home of the runner's: none of the person's config answers for it.
-  expect(yes.homes).toEqual([path.join(home, "brain", "codex-windows-check")]);
-
-  const no = probeOf([null, "notConfigured", "ready"]);
-  expect(await ask("codex-cli 0.171.0", no.probe)).toBeNull();
-  expect(await ask("codex-cli 0.171.0", no.probe)).toBe(false);
-  expect(await ask("codex-cli 0.171.0", no.probe, WINDOWS_MXC_RETRY_MS - 1)).toBe(false);
-  // Windows may have been updated since.
-  expect(await ask("codex-cli 0.171.0", no.probe, WINDOWS_MXC_RETRY_MS)).toBe(true);
-  expect(no.homes).toHaveLength(3);
+  expect(codexHomeHasRules(home)).toBe(false);
+  mkdirSync(path.join(home, "rules"));
+  writeFileSync(path.join(home, "rules", "notes.txt"), "");
+  expect(codexHomeHasRules(home)).toBe(false);
+  writeFileSync(path.join(home, "rules", "default.rules"), 'prefix_rule(pattern=["git", "push"], decision="allow")\n');
+  expect(codexHomeHasRules(home)).toBe(true);
 });
 
-test.if(posix)("the check: windowsSandbox/readiness on a short-lived app-server that prefers MXC", async () => {
-  const home = tempDir("codex-windows-probe-");
+test("whether MXC holds Codex is Codex's own check, once per Codex: a yes kept, a no for a while, no answer never", async () => {
+  const home = tempDir("codex-windows-");
+  dirs.push(home);
+  type Check = (args: readonly string[], o: { cwd: string; env: NodeJS.ProcessEnv }) => Promise<boolean | null>;
+  const checkOf = (answers: Array<boolean | null>) => {
+    const calls: Array<{ args: readonly string[]; cwd: string; codexHome: string | undefined }> = [];
+    const check: Check = async (args, o) => {
+      calls.push({ args, cwd: o.cwd, codexHome: o.env.CODEX_HOME });
+      return answers.length ? (answers.shift() ?? null) : null;
+    };
+    return { calls, check };
+  };
+  const ask = (bin: string, check: Check, at = 0) =>
+    windowsMxcReady({ runnerHome: home, version: "codex-cli 0.170.0", bin, check, now: () => at });
+
+  const yes = checkOf([true]);
+  expect(await ask("codex-a", yes.check)).toBe(true);
+  expect(await ask("codex-a", yes.check, 99 * WINDOWS_MXC_RETRY_MS)).toBe(true);
+  // In an empty Codex home of the runner's: none of a person's config in it.
+  const checkHome = path.join(home, "brain", "codex-windows-check");
+  expect(yes.calls).toEqual([{ args: MXC_CHECK_ARGS, cwd: checkHome, codexHome: checkHome }]);
+
+  const no = checkOf([null, false, true]);
+  expect(await ask("codex-b", no.check)).toBeNull();
+  expect(await ask("codex-b", no.check)).toBe(false);
+  expect(await ask("codex-b", no.check, WINDOWS_MXC_RETRY_MS - 1)).toBe(false);
+  // Windows may have been updated since.
+  expect(await ask("codex-b", no.check, WINDOWS_MXC_RETRY_MS)).toBe(true);
+  expect(no.calls).toHaveLength(3);
+});
+
+test.if(posix)("Codex's MXC check: MXC_OK and a good end is a yes, its own failure a no", async () => {
+  const home = tempDir("codex-windows-check-");
   dirs.push(home);
   const log = path.join(home, "cli.log");
   process.env.FAKE_CODEX_LOG = log;
-  const command = [process.execPath, FAKE_CODEX];
-  const ready = await probeWindowsSandbox({
-    command,
-    cwd: home,
-    env: { ...process.env, FAKE_CODEX_WINDOWS_SANDBOX: "ready" },
-  });
-  expect(ready).toBe("ready");
-  const lines = readFileSync(log, "utf8")
-    .trim()
-    .split("\n")
-    .map((l) => JSON.parse(l) as Record<string, unknown>);
-  expect(lines[0]?.args).toEqual(["app-server", "-c", "features.prefer_mxc=true"]);
-  expect(lines.flatMap((l) => (typeof l.rpc === "string" ? [l.rpc] : []))).toEqual([
-    "initialize",
-    "windowsSandbox/readiness",
-  ]);
-  expect(await probeWindowsSandbox({ command, cwd: home, env: process.env })).toBe("notConfigured");
+  const run = { file: process.execPath, args: [FAKE_CODEX, ...MXC_CHECK_ARGS] };
+  expect(await runMxcCheck(run, { cwd: home, env: { ...process.env, FAKE_CODEX_MXC: "1" } })).toBe(true);
+  const started = JSON.parse(readFileSync(log, "utf8").trim().split("\n")[0] ?? "{}") as { args?: unknown };
+  expect(started.args).toEqual(MXC_CHECK_ARGS);
+  expect(await runMxcCheck(run, { cwd: home, env: process.env })).toBe(false);
+  // It didn't start: nobody knows yet.
+  expect(await runMxcCheck({ file: path.join(home, "nowhere"), args: [] }, { cwd: home, env: process.env })).toBeNull();
 });

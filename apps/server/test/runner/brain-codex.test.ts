@@ -83,8 +83,9 @@ test("command line: first turn with instructions, resume by id without them, opt
     "--sandbox",
     "workspace-write",
   ]);
-  // ADR 0053 §3: never the network (exec can't ask, so the sandbox is the limit).
-  expect(first.join(" ")).not.toContain("network_access");
+  // ADR 0053 §3: never the network (exec can't ask, so the sandbox is the limit), whatever the Codex home's config says.
+  expect(first[first.indexOf("sandbox_workspace_write.network_access=false") - 1]).toBe("-c");
+  expect(first.join(" ")).not.toContain("network_access=true");
   expect(first).toContain(`developer_instructions=${JSON.stringify('Be "brief".\nUse tools.')}`);
   expect(first.slice(-5)).toEqual(["-m", "gpt-5.5", "-o", "/r/last.txt", "-"]);
   expect(first).not.toContain("resume");
@@ -114,14 +115,19 @@ test("a command's script is read the way its shell reads it, newlines kept; a tr
   expect(shellScript("/bin/zsh -lc 'ls\nrm -rf ~/x'")).toBe("ls\nrm -rf ~/x");
   expect(shellScript("/bin/bash -lc 'echo it'\"'\"'s'")).toBe("echo it's");
   expect(shellScript('/bin/zsh -lc "npm test"')).toBe("npm test");
-  // Windows: PowerShell (its path quoted, backslashes kept) and cmd.exe.
-  expect(shellScript("'C:\\Program Files\\PowerShell\\7\\pwsh.exe' -NoProfile -Command 'npm test'")).toBe("npm test");
+  // PowerShell and cmd.exe (Codex's Windows shells, or one a model names on a Mac): the policy reads POSIX shells, so
+  // their line stays whole; a transcript shows their script (the path quoted, backslashes kept).
+  const pwsh = "'C:\\Program Files\\PowerShell\\7\\pwsh.exe' -NoProfile -Command 'npm test'";
+  expect(shellScript(pwsh)).toBe(pwsh);
+  expect(unwrapShell(pwsh)).toBe("npm test");
   expect(
-    shellScript(
+    unwrapShell(
       "'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe' -Command 'Get-ChildItem\nRemove-Item x'",
     ),
-  ).toBe("Get-ChildItem\nRemove-Item x");
-  expect(shellScript("'C:\\Windows\\system32\\cmd.exe' /d /c 'dir'")).toBe("dir");
+  ).toBe("Get-ChildItem Remove-Item x");
+  const cmd = "'C:\\Windows\\system32\\cmd.exe' /d /c 'dir'";
+  expect(shellScript(cmd)).toBe(cmd);
+  expect(unwrapShell(cmd)).toBe("dir");
   // What it can't read word by word, or more than the shell's script: the line as given.
   expect(shellScript('/bin/zsh -lc "echo $HOME"')).toBe('/bin/zsh -lc "echo $HOME"');
   expect(shellScript("/bin/zsh -lc 'ls' && rm -rf ~/x")).toBe("/bin/zsh -lc 'ls' && rm -rf ~/x");
@@ -130,7 +136,6 @@ test("a command's script is read the way its shell reads it, newlines kept; a tr
   // The transcript's line.
   expect(unwrapShell("/bin/zsh -lc 'ls\nrm -rf ~/x'")).toBe("ls rm -rf ~/x");
   expect(unwrapShell('/bin/zsh -lc "echo $HOME"')).toBe("echo $HOME");
-  expect(unwrapShell("'C:\\Program Files\\PowerShell\\7\\pwsh.exe' -NoProfile -Command 'npm test'")).toBe("npm test");
 });
 
 test("Windows: the instructions never go on the command line; a plan or work turn names MXC, a chat turn no sandbox", () => {
@@ -139,6 +144,9 @@ test("Windows: the instructions never go on the command line; a plan or work tur
   expect(work.join(" ")).not.toContain("developer_instructions");
   expect(work.join(" ")).not.toContain("Be brief");
   for (const c of CODEX_WINDOWS_CONFIG) expect(work).toContain(c);
+  // The person's own rules left out: an allow there would run a command outside MXC, unasked.
+  expect(work).toContain("--ignore-rules");
+  expect(work).toContain("sandbox_workspace_write.network_access=false");
   expect(codexTurnArgs({ ...base, windows: true, profile: "plan" })).toContain('windows.sandbox="mxc"');
   const chat = codexTurnArgs({ ...base, windows: true, chat: true }).join(" ");
   expect(chat).not.toContain("windows.sandbox");
@@ -146,6 +154,7 @@ test("Windows: the instructions never go on the command line; a plan or work tur
   // Elsewhere, as before.
   expect(codexTurnArgs(base).join(" ")).toContain("developer_instructions");
   expect(codexTurnArgs(base).join(" ")).not.toContain("windows.sandbox");
+  expect(codexTurnArgs(base)).not.toContain("--ignore-rules");
 });
 
 test("Windows: a plan or work turn runs only where MXC holds Codex's commands; a chat turn never asks", async () => {

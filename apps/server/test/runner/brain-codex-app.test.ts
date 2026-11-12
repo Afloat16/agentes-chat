@@ -139,7 +139,9 @@ test("version gate and the app-server command line: our overrides, our bridge pe
     writableRoots: ["/w/shared"],
   });
   expect(args[0]).toBe("app-server");
-  expect(args.join(" ")).not.toContain("network_access");
+  // Never the network, whatever the Codex home's own config says.
+  expect(args[args.indexOf("sandbox_workspace_write.network_access=false") - 1]).toBe("-c");
+  expect(args.join(" ")).not.toContain("network_access=true");
   expect(args).toContain('sandbox_workspace_write.writable_roots=["/w/shared"]');
   expect(args).toContain(`mcp_servers.${CODEX_MCP_SERVER}.args=["/r/runner.js","mcp","--run","proc-0001"]`);
   expect(args).toContain(`mcp_servers.${CODEX_MCP_SERVER}.default_tools_approval_mode="approve"`);
@@ -612,6 +614,23 @@ test("profiles: plan is a read-only sandbox, work a workspace one; neither has t
   expect(approvalCalls("turn/started", {}, undefined, "/w")).toBeNull();
 });
 
+test("an approval's line the policy can't read as its shell does stays whole: a comment, a PowerShell line", async () => {
+  const ask = async (): Promise<IpcReply> => ({ ok: true, text: JSON.stringify({ behavior: "allow" }) });
+  const plan = (command: string) =>
+    decideApproval(approvalCalls("item/commandExecution/requestApproval", { command }, undefined, "/w") ?? [], ask, {
+      scope: { cwd: "/w", folders: ["/w"] },
+      profile: "plan",
+    });
+  // `#` opens a comment to the line's end: the quote after it hides nothing from the shell, which runs the next line.
+  expect(await plan("/bin/zsh -lc \"ls #'\nrm -rf /tmp/elsewhere\n#'\"")).toBe("decline");
+  // A PowerShell line on a Mac: judged whole (the policy never reads PowerShell as a POSIX shell's script).
+  const pwsh = '/opt/homebrew/bin/pwsh -Command \'echo "a\\" ; Remove-Item -Recurse ~/x ; echo \\"b"\'';
+  expect(approvalCalls("item/commandExecution/requestApproval", { command: pwsh }, undefined, "/w")).toEqual([
+    { tool_name: "Bash", input: { command: pwsh } },
+  ]);
+  expect(await plan(pwsh)).toBe("decline");
+});
+
 test("Windows: the app-server names MXC and nothing asks (the command policy doesn't read PowerShell)", () => {
   expect(codexThreadPolicy("work", true)).toEqual({ sandbox: "workspace-write", approvalPolicy: "never" });
   expect(codexThreadPolicy("plan", true)).toEqual({ sandbox: "read-only", approvalPolicy: "never" });
@@ -650,7 +669,7 @@ test.skipIf(!posix)(
     await first.done;
     expect(answerOf(first.events)).toBe("pong");
     expect(t.rpcs("thread/start")[0]).toMatchObject({ sandbox: "read-only", approvalPolicy: "untrusted" });
-    for (const s of t.starts()) expect(String(s.args)).not.toContain("network_access");
+    for (const s of t.starts()) expect(String(s.args)).not.toContain("network_access=true");
     // Background: the process closed with the turn.
     expect(t.app.process(AGENT.id, SESSION)).toBeUndefined();
     expect(t.app.size).toBe(0);

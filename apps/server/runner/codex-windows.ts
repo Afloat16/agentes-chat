@@ -1,12 +1,21 @@
-import { mkdirSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { mkdirSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
 import path from "node:path";
 import { accountEnv } from "./accounts";
-import { type CliRun, envValue, findOnWindowsPath, isFile, resolveCommand, windowsShellLine } from "./executors";
-import { jsonLines, type UsageProbe } from "./plan-usage";
+import {
+  type CliRun,
+  envValue,
+  findOnWindowsPath,
+  isFile,
+  NO_CWD_LOOKUP,
+  resolveCommand,
+  windowsShellLine,
+} from "./executors";
 
 /**
- * Codex on Windows (ADR 0032 "Codex", ADR 0053 §3): how it starts there, and the sandbox a `plan` or `work` turn runs
- * in.
+ * Codex on Windows (ADR 0032 "Codex", ADR 0053's addendum of 2026-11-12): how it starts there, and the sandbox a
+ * `plan` or `work` turn runs in.
  *
  * - It starts as the native `codex.exe`, found on the PATH, never in the current folder (`findOnWindowsPath`); npm's
  *   `codex.cmd` as the `codex.exe` behind it. Nothing goes through cmd.exe then: its line stops at 8,191 characters
@@ -14,11 +23,14 @@ import { jsonLines, type UsageProbe } from "./plan-usage";
  * - The sandbox is MXC (Microsoft Execution Containers, Windows 11 24H2 and later): Windows' own isolation, no setup,
  *   no network, writes in the agent's folders. Codex picks no sandbox on Windows by itself, and its other two hold
  *   less (`unelevated` keeps the network out only through proxy variables) or need an administrator's setup that
- *   several Codex homes (each AI account's folder, ADR 0041) can't share (`elevated`). A computer without MXC
- *   doesn't run `plan` or `work` turns: they fail with `windows_sandbox`. A `chat` turn needs none: with no sandbox,
- *   Codex refuses every command of its own there, and the turn stops at the first one anyway.
+ *   several Codex homes (each AI account's folder, ADR 0041) can't share (`elevated`). A computer where Codex's own
+ *   MXC check fails runs no `plan` or `work` turn: it fails with `windows_sandbox`. A `chat` turn needs none: with no
+ *   sandbox, Codex refuses every command of its own there, and the turn stops at the first one anyway.
  * - Nothing asks on Windows (`approvalPolicy: never`): the command policy reads POSIX shells, not the PowerShell Codex
- *   runs its commands in, so the sandbox is the whole limit, as for `codex exec` everywhere.
+ *   runs its commands in, so the sandbox is the whole limit, as for `codex exec` everywhere. So nothing may lift it
+ *   either: the person's own rules (`<Codex home>/rules`, where an allow runs a command outside the sandbox, unasked)
+ *   are left out (`--ignore-rules`; the app-server can't, so a home with rules runs its turns on exec), and the network
+ *   stays off whatever that home's config says.
  */
 
 /** Where npm puts the native Codex for each Windows CPU (`@openai/codex`'s platform packages). */
@@ -57,6 +69,7 @@ export type CodexLaunch = CliRun | { error: string; missing?: true };
  * the current folder; a `codex.exe` as it is; npm's `codex.cmd` as the `codex.exe` behind it (with what npm's
  * launcher tells it, how it was installed). A launcher laid out some other way goes through cmd.exe, only with our own
  * words in it (paths, ids and settings: nothing cmd.exe would read, `%`, `!` or a line break) and within its line.
+ * Every Windows start carries `NO_CWD_LOOKUP` (an `.exe` may be a launcher too, as Bun's are).
  */
 export function codexLaunch(
   args: readonly string[],
@@ -80,14 +93,14 @@ export function codexLaunch(
     exists,
   );
   if (!found) return { error: "Codex is not installed on this computer.", missing: true };
-  if (/\.(?:exe|com)$/i.test(found)) return { file: found, args: [...args] };
+  if (/\.(?:exe|com)$/i.test(found)) return { file: found, args: [...args], env: { ...NO_CWD_LOOKUP } };
   if (!/\.(?:cmd|bat)$/i.test(found)) {
     return {
       error: `Codex here starts through ${path.win32.basename(found)}, which agents can't run. Install it with npm or OpenAI's installer.`,
     };
   }
   const exe = codexExeBehindShim(found, opts.arch ?? process.arch, exists);
-  if (exe) return { file: exe, args: [...args], env: { CODEX_MANAGED_BY_NPM: "1" } };
+  if (exe) return { file: exe, args: [...args], env: { ...NO_CWD_LOOKUP, CODEX_MANAGED_BY_NPM: "1" } };
   const launcher = "Codex here starts through a launcher agents can't hand this turn to";
   if (args.some((a) => /[%!\r\n]/.test(a))) {
     return { error: `${launcher} (its settings have a % or ! in them). Install Codex with npm or OpenAI's installer.` };
@@ -100,12 +113,11 @@ export function codexLaunch(
 }
 
 /**
- * A `plan` or `work` turn's `-c` overrides on Windows: MXC, explicitly, so a sandbox the computer's own Codex config
- * names (`unelevated`) never stands in for it, and a computer where it stopped working fails closed. Unified exec off:
- * multi-line commands through it were reported writing outside the folders on Windows while the same command in the
- * sandbox was refused, and the plain shell tool covers what a turn runs.
+ * A `plan` or `work` turn's sandbox on Windows, named in `-c`: MXC, explicitly, so a sandbox the computer's own Codex
+ * config names (`unelevated`) never stands in for it, and a computer where it stopped working fails closed (Codex
+ * refuses to run a command there rather than run it elsewhere).
  */
-export const CODEX_WINDOWS_CONFIG = ['windows.sandbox="mxc"', "features.unified_exec=false"];
+export const CODEX_WINDOWS_CONFIG = ['windows.sandbox="mxc"'];
 
 /** What a `plan` or `work` turn says where Windows can't hold Codex's commands. */
 export const WINDOWS_SANDBOX_MESSAGE =
@@ -118,27 +130,73 @@ export const WINDOWS_SANDBOX_MESSAGE =
 export const codexStdinPrompt = (instructions: string, prompt: string) =>
   instructions.trim() ? `${instructions.trim()}\n\n${prompt}` : prompt;
 
+/** The Codex home a turn runs in: its account's folder (ADR 0041), else the computer's own. */
+export const codexHomeOf = (account?: { home: string }) =>
+  account?.home ?? (envValue(process.env, "CODEX_HOME") || path.join(homedir(), ".codex"));
+
+/** The home has rules of its person's (`rules/*.rules`, which Codex adds when someone picks "don't ask again"). */
+export function codexHomeHasRules(home: string): boolean {
+  try {
+    return readdirSync(path.join(home, "rules")).some((name) => name.endsWith(".rules"));
+  } catch {
+    return false;
+  }
+}
+
 /**
- * `windowsSandbox/readiness` on a short-lived `codex app-server` that prefers MXC: `ready`, another state, `unknown`
- * (the request failed: an older Codex), or null (no answer).
+ * Codex's own check of MXC (Codex 0.162.0 and later): `echo MXC_OK` run inside MXC, with the workspace's permissions
+ * and any managed requirements.
  */
-export function probeWindowsSandbox(p: UsageProbe): Promise<string | null> {
-  return jsonLines(
-    p,
-    ["app-server", "-c", "features.prefer_mxc=true"],
-    (send) => send({ id: 1, method: "initialize", params: { clientInfo: { name: "agentes_runner", version: "1" } } }),
-    (msg, send) => {
-      if (msg.id === 1) {
-        if (!msg.result || typeof msg.result !== "object") return null;
-        send({ method: "initialized" });
-        send({ id: 2, method: "windowsSandbox/readiness" });
-      } else if (msg.id === 2) {
-        const status = (msg.result as { status?: unknown } | undefined)?.status;
-        return typeof status === "string" ? status : "unknown";
-      }
-      return undefined;
-    },
-  );
+export const MXC_CHECK_ARGS = [
+  "-c",
+  'windows.sandbox="mxc"',
+  "sandbox",
+  "--include-managed-config",
+  "--permission-profile",
+  ":workspace",
+  "--",
+  "cmd.exe",
+  "/d",
+  "/c",
+  "echo",
+  "MXC_OK",
+];
+
+const MXC_CHECK_TIMEOUT_MS = 60_000;
+
+/**
+ * Runs Codex's MXC check: true when it printed `MXC_OK` and ended well (MXC ran a command here), false when it ran and
+ * didn't (no MXC, or a policy that forbids it), null when it couldn't tell (it didn't start, or didn't end in time).
+ */
+export function runMxcCheck(
+  run: CliRun,
+  opts: { cwd: string; env: NodeJS.ProcessEnv; timeoutMs?: number },
+): Promise<boolean | null> {
+  return new Promise((resolve) => {
+    try {
+      execFile(
+        run.file,
+        run.args,
+        {
+          cwd: opts.cwd,
+          env: run.env ? { ...opts.env, ...run.env } : opts.env,
+          encoding: "utf8",
+          timeout: opts.timeoutMs ?? MXC_CHECK_TIMEOUT_MS,
+          maxBuffer: 256 * 1024,
+          windowsHide: true,
+          ...(run.windowsVerbatimArguments ? { windowsVerbatimArguments: true } : {}),
+        },
+        (err, stdout) => {
+          if (!err) return resolve(/\bMXC_OK\b/.test(stdout));
+          const failed = err as { code?: unknown; killed?: boolean };
+          // It ran and said no (its exit code), against it not starting or not ending in time.
+          resolve(typeof failed.code === "number" && !failed.killed ? false : null);
+        },
+      );
+    } catch {
+      resolve(null);
+    }
+  });
 }
 
 /** How long a "no MXC here" is kept before asking again (Windows may have been updated meanwhile). */
@@ -147,28 +205,35 @@ export const WINDOWS_MXC_RETRY_MS = 10 * 60_000;
 const mxcChecks = new Map<string, { ok: boolean; at: number }>();
 
 /**
- * Whether MXC holds Codex's commands on this computer: `probeWindowsSandbox` in an empty Codex home of the runner's,
- * so none of the person's config answers for it (a sandbox it names reads `ready` too). Codex prefers MXC there only
- * where Windows has it and nothing forbids it (a managed `allow_mxc = false`), so `ready` is MXC. Kept per Codex
- * version: a yes for as long as the runner runs, a no for `WINDOWS_MXC_RETRY_MS`. Null: Codex didn't answer.
+ * Whether MXC holds Codex's commands on this computer: Codex's own check (`MXC_CHECK_ARGS`), in an empty Codex home of
+ * the runner's (none of a person's config in it), which runs a command inside MXC. Kept per Codex version: a yes for as
+ * long as the runner runs, a no for `WINDOWS_MXC_RETRY_MS`. Null: it couldn't tell (not kept).
  */
 export async function windowsMxcReady(input: {
   runnerHome: string;
   version: string;
-  command?: string[];
-  probe?: (p: UsageProbe) => Promise<string | null>;
+  bin?: string;
+  check?: (args: readonly string[], opts: { cwd: string; env: NodeJS.ProcessEnv }) => Promise<boolean | null>;
   now?: () => number;
 }): Promise<boolean | null> {
   const now = input.now ?? Date.now;
-  const command = input.command ?? ["codex"];
-  const key = `${command.join(" ")}@${input.version}`;
+  const key = `${input.bin ?? "codex"}@${input.version}`;
   const kept = mxcChecks.get(key);
   if (kept && (kept.ok || now() - kept.at < WINDOWS_MXC_RETRY_MS)) return kept.ok;
   const home = path.join(input.runnerHome, "brain", "codex-windows-check");
   mkdirSync(home, { recursive: true, mode: 0o700 });
-  const status = await (input.probe ?? probeWindowsSandbox)({ command, cwd: home, env: accountEnv("codex", home) });
-  if (status === null) return null;
-  const ok = status === "ready";
+  const env = accountEnv("codex", home);
+  const check =
+    input.check ??
+    ((args: readonly string[], o: { cwd: string; env: NodeJS.ProcessEnv }) => {
+      const launch = codexLaunch(args, {
+        ...(input.bin ? { bin: input.bin } : {}),
+        pathList: envValue(o.env, "PATH") ?? "",
+      });
+      return "error" in launch ? Promise.resolve(null) : runMxcCheck(launch, o);
+    });
+  const ok = await check(MXC_CHECK_ARGS, { cwd: home, env });
+  if (ok === null) return null;
   mxcChecks.set(key, { ok, at: now() });
   return ok;
 }

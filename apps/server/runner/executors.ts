@@ -132,6 +132,12 @@ export function findOnWindowsPath(
   return null;
 }
 
+/**
+ * In a Windows program's env: neither cmd.exe nor CreateProcess looks for a program in the current folder (a launcher's
+ * bare `node`, npm's and Bun's alike), which they search before the PATH otherwise.
+ */
+export const NO_CWD_LOOKUP: Readonly<Record<string, string>> = { NoDefaultCurrentDirectoryInExePath: "1" };
+
 /** cmd.exe by its full path (`ComSpec`, else System32's): a bare `cmd.exe` would be looked for in the current folder first. */
 export function windowsShell(env: Record<string, string | undefined> = process.env): string {
   const spec = envValue(env, "ComSpec", "win32");
@@ -141,9 +147,8 @@ export function windowsShell(env: Record<string, string | undefined> = process.e
 
 /**
  * `program` and `args` as one cmd.exe line (a `.cmd` or `.bat` launcher runs only there): every argument quoted
- * (`winQuote`), delayed expansion off (`/v:off`, whatever the registry says), no AutoRun (`/d`). Its env says
- * `NoDefaultCurrentDirectoryInExePath`, so neither cmd.exe nor the launcher (npm's runs a bare `node`) looks for a
- * program in the current folder.
+ * (`winQuote`), delayed expansion off (`/v:off`, whatever the registry says), no AutoRun (`/d`), and `NO_CWD_LOOKUP`
+ * in its env.
  */
 export function windowsShellLine(
   program: string,
@@ -154,7 +159,7 @@ export function windowsShellLine(
     file: windowsShell(),
     args: ["/d", "/v:off", "/s", "/c", `"${line}"`],
     windowsVerbatimArguments: true,
-    env: { NoDefaultCurrentDirectoryInExePath: "1" },
+    env: { ...NO_CWD_LOOKUP },
   };
 }
 
@@ -168,7 +173,8 @@ export interface CliRun {
 
 /**
  * How a CLI (`command`: a bare name, or a launcher and what it runs) starts with `args`. On Windows a bare name is
- * found on the PATH (`findOnWindowsPath`, never the current folder): an `.exe` starts as it is, with its argv; a
+ * found on the PATH (`findOnWindowsPath`, never the current folder): an `.exe` starts as it is, with its argv (and
+ * `NO_CWD_LOOKUP`: it may be a launcher too, as Bun's are); a
  * `.cmd` launcher (npm's `claude.cmd`) through cmd.exe with every argument quoted (`windowsShellLine`), since Node's own
  * `shell: true` joins them as they are, so an empty one (`--setting-sources ""`) vanished and the next flag became its
  * value, and a path with a space split in two. One not found still goes to cmd.exe, which says it isn't there (exit
@@ -189,7 +195,7 @@ export function cliSpawn(
       lookup.pathExt ?? envValue(process.env, "PATHEXT", platform),
       lookup.exists,
     );
-    if (found && /\.(?:exe|com)$/i.test(found)) return { file: found, args: [...args] };
+    if (found && /\.(?:exe|com)$/i.test(found)) return { file: found, args: [...args], env: { ...NO_CWD_LOOKUP } };
     return windowsShellLine(found ?? file, args);
   }
   return { file: resolveCommand(file, pathList), args: [...pre, ...args] };

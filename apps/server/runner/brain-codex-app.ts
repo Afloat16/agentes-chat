@@ -8,6 +8,7 @@ import type { CommandProfile, CommandScope } from "@agenteschat/adapters/command
 import { type BrainSteerReply, type BrainSteerRequest, isBrainEffort } from "@agenteschat/adapters/machine-protocol";
 import { accountEnv, withoutContainers, yieldRoute } from "./accounts";
 import {
+  CODEX_NO_NETWORK,
   type CodexAppRunner,
   type CodexBrainEvent,
   type CodexTurnInput,
@@ -90,7 +91,8 @@ import type { Spawn } from "./scope-gate";
  * - Windows (`codex-windows.ts`): MXC named in `-c`, `approvalPolicy: "never"`
  *   (nothing asks: the command policy doesn't read PowerShell, so the sandbox
  *   is the limit, as for exec), and any approval Codex asks all the same is
- *   declined.
+ *   declined. A Codex home with the person's own rules runs on exec instead,
+ *   which leaves them out (`runCodexTurn`).
  *
  * The protocol shapes below are the minimum this file reads, copied from
  * `codex app-server generate-ts` of codex-cli 0.163.0 (`ClientRequest`,
@@ -184,6 +186,8 @@ export function codexAppServerArgs(input: {
     "app-server",
     "-c",
     "features.fast_mode=true",
+    "-c",
+    CODEX_NO_NETWORK,
     ...(input.writableRoots?.length ? ["-c", codexWritableRoots(input.writableRoots)] : []),
     ...(input.windows ? CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c]) : []),
     ...codexContextOverride(input.contextTokens),

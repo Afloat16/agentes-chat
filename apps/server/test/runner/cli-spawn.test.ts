@@ -53,7 +53,7 @@ test("each argument on cmd.exe's line comes back as it was: empty, with spaces, 
     "",
     "--tools",
     "Bash,Read,Edit",
-    "C:\\Users\\Ana Silva\\.agentes\\system.md",
+    "C:\\Users\\Some User\\.agentes\\system.md",
     "C:\\work\\project\\",
     'say "hi"',
     'a\\"b',
@@ -66,15 +66,15 @@ test("each argument on cmd.exe's line comes back as it was: empty, with spaces, 
 
 /** A Windows PATH as the runner reads it: npm's folder, a relative entry, a quoted one, System32. */
 const PATH_WIN =
-  'C:\\Users\\Ana\\AppData\\Roaming\\npm;relative\\bin;"C:\\Program Files\\nodejs";C:\\Windows\\System32';
-const NPM_SHIM = "C:\\Users\\Ana\\AppData\\Roaming\\npm\\claude.cmd";
+  'C:\\Users\\user\\AppData\\Roaming\\npm;relative\\bin;"C:\\Program Files\\nodejs";C:\\Windows\\System32';
+const NPM_SHIM = "C:\\Users\\user\\AppData\\Roaming\\npm\\claude.cmd";
 const has =
   (...files: string[]) =>
   (file: string) =>
     files.includes(file);
 
 test("on Windows a CLI is found on the PATH, never in the current folder; a .cmd runs through cmd.exe, every argument quoted", () => {
-  const args = ["-p", "--setting-sources", "", "--tools", "Bash,Read", "--add-dir", "C:\\Users\\Ana Silva\\work"];
+  const args = ["-p", "--setting-sources", "", "--tools", "Bash,Read", "--add-dir", "C:\\Users\\Some User\\work"];
   const win = cliSpawn(["claude"], args, PATH_WIN, "win32", { exists: has(NPM_SHIM) });
   expect(win.file).toBe(windowsShell());
   expect(win.windowsVerbatimArguments).toBe(true);
@@ -87,12 +87,14 @@ test("on Windows a CLI is found on the PATH, never in the current folder; a .cmd
   expect(splitWindows(line.slice(1, -1))).toEqual([NPM_SHIM, ...args]);
 
   // An .exe starts as it is, no shell: the first PATH folder that has the name wins, .exe before .cmd in one folder.
+  // It may be a launcher too (Bun's run a bare `node`): nothing looked up in the current folder either.
   const exe = "C:\\Program Files\\nodejs\\claude.exe";
   expect(
     cliSpawn(["claude"], args, PATH_WIN, "win32", { exists: has(exe, "C:\\Windows\\System32\\claude.cmd") }),
   ).toEqual({
     file: exe,
     args,
+    env: { NoDefaultCurrentDirectoryInExePath: "1" },
   });
   const sameFolder = NPM_SHIM.replace(/\.cmd$/, ".exe");
   expect(cliSpawn(["claude"], args, PATH_WIN, "win32", { exists: has(NPM_SHIM, sameFolder) }).file).toBe(sameFolder);

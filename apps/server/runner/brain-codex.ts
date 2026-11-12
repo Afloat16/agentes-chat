@@ -25,6 +25,8 @@ import {
 import { CODEX_ROUTE_OFF } from "./brain-route";
 import {
   CODEX_WINDOWS_CONFIG,
+  codexHomeHasRules,
+  codexHomeOf,
   codexLaunch,
   codexStdinPrompt,
   WINDOWS_SANDBOX_MESSAGE,
@@ -74,8 +76,9 @@ import { agentSecrets } from "./secrets";
  *   (`xhigh` and `max` are `high`).
  * - Windows (`codex-windows.ts`): the native `codex.exe`, started directly; a
  *   `plan` or `work` turn only where MXC holds its commands (else
- *   `windows_sandbox`), with it named in `-c` and nothing asked; a thread's
- *   instructions lead its first prompt on stdin, never the command line.
+ *   `windows_sandbox`), with it named in `-c`, nothing asked and the person's
+ *   own rules left out; a thread's instructions lead its first prompt on
+ *   stdin, never the command line.
  */
 
 /** Same as the engine's `CODEX_MIN_VERSION` (`packages/engine/src/missions.ts`): the release verified on a real machine. */
@@ -219,6 +222,12 @@ export const codexProfileOf = (req: { permissions?: { mode?: unknown } }): Comma
 
 /** The Codex sandbox of a profile (`--sandbox`, the app-server's `sandbox`): never with the network. */
 export const codexSandbox = (profile: CommandProfile) => (profile === "plan" ? "read-only" : "workspace-write");
+
+/**
+ * The workspace sandbox without the network, whatever the Codex home's own config says (a person's `network_access =
+ * true` there would reach agents' turns on the computer's own sign-in).
+ */
+export const CODEX_NO_NETWORK = "sandbox_workspace_write.network_access=false";
 
 /**
  * Fast mode on a `codex exec` turn. `fast` reaches the provider as `service_tier: "priority"` (codex-cli 0.166.0), and
@@ -422,7 +431,8 @@ export function codexTurnArgs(input: {
   chat?: boolean;
   /**
    * Windows: the instructions go on stdin (`codexStdinPrompt`), never here; a `plan` or `work` turn names its
-   * sandbox (`CODEX_WINDOWS_CONFIG`).
+   * sandbox (`CODEX_WINDOWS_CONFIG`) and leaves the person's own rules out (an allow there would run a command
+   * outside it, unasked).
    */
   windows?: boolean;
 }): string[] {
@@ -444,10 +454,11 @@ export function codexTurnArgs(input: {
     input.cwd,
     "--sandbox",
     sandbox,
+    ...(sandbox === "workspace-write" ? ["-c", CODEX_NO_NETWORK] : []),
     ...(sandbox === "workspace-write" && input.writableRoots?.length
       ? ["-c", codexWritableRoots(input.writableRoots)]
       : []),
-    ...(input.windows && !input.chat ? CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c]) : []),
+    ...(input.windows && !input.chat ? ["--ignore-rules", ...CODEX_WINDOWS_CONFIG.flatMap((c) => ["-c", c])] : []),
     ...(instructions && !input.thread ? ["-c", `developer_instructions=${JSON.stringify(instructions)}`] : []),
     ...(input.mcp ? codexBridgeOverrides({ runId: input.runId, ...input.mcp }).flatMap((o) => ["-c", o]) : []),
     ...(isBrainEffort(input.effort)
@@ -463,49 +474,67 @@ export function codexTurnArgs(input: {
   ];
 }
 
-/**
- * The script of the shell Codex runs a command in, exactly as that shell reads it: `/bin/zsh -lc 'ls\nrm x'` →
- * `ls\nrm x`, where the newline ends a command as it does there. What the command policy judges: on one line it read
- * as `ls rm x`, a plain read, while the shell ran both. On Windows Codex's shell is PowerShell
- * (`'C:\…\pwsh.exe' -NoProfile -Command '…'`) or cmd.exe (`cmd.exe /c …`). Anything else, or a line this can't read
- * word by word: the line as given (a shell running inline code, which the policy never allows by itself).
- */
-export function shellScript(command: string): string {
-  const line = command.trim();
+/** A line's words as its shell reads them (`shellWords`), or null: an operator, or anything it can't follow. */
+const argvOf = (line: string) => {
   const words = shellWords(line);
-  if (!words || words.some((w) => w.op)) return line;
-  const argv = words.map((w) => w.text);
-  const name = (argv[0] ?? "")
+  return words && !words.some((w) => w.op) ? words.map((w) => w.text) : null;
+};
+/** `/bin/zsh`, `'C:\…\pwsh.exe'` → `zsh`, `pwsh`. */
+const programName = (word: string | undefined) =>
+  (word ?? "")
     .split(/[\\/]/)
     .at(-1)
     ?.toLowerCase()
-    .replace(/\.exe$/, "");
-  const flags = (from: number, flag: RegExp) => {
-    let i = from;
+    .replace(/\.exe$/, "") ?? "";
+
+/**
+ * The script of the POSIX shell Codex runs a command in, exactly as that shell reads it: `/bin/zsh -lc 'ls\nrm x'` →
+ * `ls\nrm x`, where the newline ends a command as it does there. What the command policy judges: on one line it read
+ * as `ls rm x`, a plain read, while the shell ran both. Only sh, bash, zsh and dash, the shells the policy reads: a
+ * PowerShell or cmd.exe line, or one this can't read word by word, stays whole (a shell running inline code, which the
+ * policy never allows by itself).
+ */
+export function shellScript(command: string): string {
+  const line = command.trim();
+  const argv = argvOf(line);
+  if (argv?.length === 3 && /^(?:ba|z|da)?sh$/.test(programName(argv[0])) && /^-l?c$/.test(argv[1] ?? "")) {
+    return (argv[2] ?? "").trim();
+  }
+  return line;
+}
+
+/** The script of Codex's Windows shells, for a transcript: PowerShell's `-Command`, cmd.exe's `/c`. */
+function windowsScript(line: string): string | null {
+  const argv = argvOf(line);
+  if (!argv) return null;
+  const name = programName(argv[0]);
+  const after = (flag: RegExp) => {
+    let i = 1;
     while (i < argv.length && flag.test(argv[i] ?? "")) i++;
     return i;
   };
-  if (argv.length === 3 && /^(?:ba|z|da)?sh$/.test(name ?? "") && /^-l?c$/.test(argv[1] ?? "")) {
-    return (argv[2] ?? "").trim();
-  }
   if (name === "pwsh" || name === "powershell") {
-    const i = flags(1, /^-(?:noprofile|nologo|noninteractive)$/i);
-    if (argv.length === i + 2 && /^-(?:command|c)$/i.test(argv[i] ?? "")) return (argv[i + 1] ?? "").trim();
+    const i = after(/^-(?:noprofile|nologo|noninteractive)$/i);
+    if (argv.length === i + 2 && /^-(?:command|c)$/i.test(argv[i] ?? "")) return argv[i + 1] ?? "";
   }
   if (name === "cmd") {
-    const i = flags(1, /^\/[dsq]$/i);
-    if (argv.length === i + 2 && /^\/c$/i.test(argv[i] ?? "")) return (argv[i + 1] ?? "").trim();
+    const i = after(/^\/[dsq]$/i);
+    if (argv.length === i + 2 && /^\/c$/i.test(argv[i] ?? "")) return argv[i + 1] ?? "";
   }
-  return line;
+  return null;
 }
 
 /** `/bin/zsh -lc "npm test"` → `npm test`, on one line: a command Codex ran, as a transcript shows it. */
 export function unwrapShell(command: string) {
   const line = command.trim();
   const script = shellScript(line);
-  // A script with what `shellScript` doesn't read (`$HOME` in double quotes): shown without its shell all the same.
-  const m = script === line ? /^\S*(?:sh|bash|zsh)\s+-l?c\s+(["'])([\s\S]*)\1$/.exec(line) : null;
-  return (m ? (m[2] ?? "") : script).replace(/\s+/g, " ").trim();
+  const shown =
+    script !== line
+      ? script
+      : // PowerShell or cmd.exe (Windows), or a script `shellScript` doesn't read (`$HOME` in double quotes): shown
+        // without its shell all the same.
+        (windowsScript(line) ?? /^\S*(?:sh|bash|zsh)\s+-l?c\s+(["'])([\s\S]*)\1$/.exec(line)?.[2] ?? line);
+  return shown.replace(/\s+/g, " ").trim();
 }
 
 const USAGE_LIMIT = /hit your usage limit|usage limit reached|usage_limit|workspace is out of credits|spend cap/i;
@@ -782,12 +811,13 @@ export async function runCodexTurn(input: CodexTurnInput, opts: CodexTurnOptions
     return fail("codex_too_old", `Codex here is ${version}. Agents need ${CODEX_MIN_VERSION} or newer.`);
   }
   // ADR 0053 §3 on Windows: a plan or work turn runs only inside MXC, Windows' own isolation (`codex-windows.ts`).
-  if ((opts.platform ?? process.platform) === "win32" && !input.chat) {
+  const windows = (opts.platform ?? process.platform) === "win32";
+  if (windows && !input.chat) {
     const check =
       opts.windowsSandbox ??
       ((v: string) =>
         opts.runnerHome
-          ? windowsMxcReady({ runnerHome: opts.runnerHome, version: v, ...(opts.bin ? { command: [opts.bin] } : {}) })
+          ? windowsMxcReady({ runnerHome: opts.runnerHome, version: v, ...(opts.bin ? { bin: opts.bin } : {}) })
           : Promise.resolve(null));
     const mxc = await check(version).catch(() => null);
     if (mxc === null) {
@@ -800,9 +830,11 @@ export async function runCodexTurn(input: CodexTurnInput, opts: CodexTurnOptions
     if (!mxc) return fail("windows_sandbox", WINDOWS_SANDBOX_MESSAGE);
   }
   // A long-lived app-server takes messages mid-turn; exec runs the turns it can't (an older CLI, a failed handshake…).
-  // A `chat` turn's flags exist only for `exec`.
+  // A `chat` turn's flags exist only for `exec`, and so does leaving the person's own rules out, which a Windows turn
+  // needs when its Codex home has some (an allow there would run a command outside MXC, unasked).
+  const appServer = !windows || !codexHomeHasRules(codexHomeOf(input.account));
   const run = (turn: CodexTurnInput, turnOpts: CodexTurnOptions) =>
-    turnOpts.app && !turn.chat
+    turnOpts.app && !turn.chat && appServer
       ? turnOpts.app.turn({ ...turn, version }, turnOpts, () => runCodexExec(turn, turnOpts))
       : runCodexExec(turn, turnOpts);
   const { speed: _speed, ...standard } = input;

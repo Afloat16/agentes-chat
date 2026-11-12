@@ -57,6 +57,7 @@ import { codexThreadKey, unwrapShell } from "./brain-codex";
 import { commandApproval, ownBranches } from "./command-gate";
 import { RunnerError } from "./errors";
 import { shellCommand, windowsTaskkill } from "./exec";
+import { envValue, findOnWindowsPath, NO_CWD_LOOKUP, winQuote } from "./executors";
 import { readJson, writeJson } from "./json-file";
 import {
   CODEX_MCP_ENV,
@@ -494,6 +495,8 @@ export function executorCommand(
     extra?: string[];
     /** Claude Code's permission mode (default `acceptEdits`; a mission's plan turn runs `dontAsk`). */
     permissionMode?: "acceptEdits" | "dontAsk";
+    /** Claude Code as the line starts it (default `claude`; on Windows its full path, quoted). */
+    program?: string;
     /** Codex: where it works (`-C`), its sandbox, the file for its last message, the thread to resume. */
     codex?: { cwd: string; sandbox: "read-only" | "workspace-write"; lastFile: string; thread?: string };
     /**
@@ -532,7 +535,7 @@ export function executorCommand(
     ].join(" ");
   }
   const parts = [
-    "claude",
+    options.program ?? "claude",
     "-p",
     "--output-format",
     "stream-json",
@@ -1005,9 +1008,11 @@ export class TaskManager {
     }
     const [file, ...args] = command;
     const start = (executor !== "shell" && this.opts.spawnCli) || spawn;
+    // On Windows nothing a CLI task starts is looked for in its folder: cmd.exe's lookups, npm's launcher's bare `node`.
+    const taskEnv = process.platform === "win32" && executor !== "shell" ? { ...env, ...NO_CWD_LOOKUP } : env;
     const child = start(file as string, [...args, dir], {
       cwd: dir,
-      env,
+      env: taskEnv,
       stdio: token ? ["ignore", "ignore", "ignore", "pipe"] : "ignore",
       detached: true,
       windowsHide: true,
@@ -1067,6 +1072,14 @@ export class TaskManager {
     if (executor !== "shell" && !prompt.trim())
       throw new RunnerError("bad_request", `A ${executor} task needs a prompt`);
     const hosted = executor === "claude" && grant?.kind === "hosted";
+    // On Windows Claude Code by its full path: cmd.exe looks for a bare name in the task's folder first (the agent's,
+    // where it writes), so a `claude.cmd` left there would run as the person.
+    let program: string | undefined;
+    if (executor === "claude" && !hosted && process.platform === "win32") {
+      const found = findOnWindowsPath("claude", envValue(process.env, "PATH") ?? "", envValue(process.env, "PATHEXT"));
+      if (!found) throw new RunnerError("not_found", "Claude Code is not installed on this computer.");
+      program = winQuote(found);
+    }
     const signIn = executor === "shell" || hosted ? null : await this.signIn(executor, req.account, grant);
     if (signIn?.release) this.releases.set(taskId, signIn.release);
     const keyPlan = executor === "claude" && signIn?.planKey ? planOf(signIn.planKey.provider) : undefined;
@@ -1266,6 +1279,7 @@ export class TaskManager {
       : executorCommand(executor, {
           command: req.command,
           ...(readOnly && executor === "claude" ? { permissionMode: "dontAsk" as const } : {}),
+          ...(program ? { program } : {}),
           session,
           resume,
           extra,
