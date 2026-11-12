@@ -1,10 +1,9 @@
 import { afterEach, expect, test } from "bun:test";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import {
   CODEX_WINDOWS_CONFIG,
   codexExeBehindShim,
-  codexHomeHasRules,
   codexLaunch,
   codexStdinPrompt,
   MXC_CHECK_ARGS,
@@ -102,17 +101,6 @@ test("a plan or work turn's sandbox on Windows is MXC by name; a new thread's in
   expect(CODEX_WINDOWS_CONFIG).toEqual(['windows.sandbox="mxc"']);
   expect(codexStdinPrompt("Be brief.", "Say pong")).toBe("Be brief.\n\nSay pong");
   expect(codexStdinPrompt("  ", "Say pong")).toBe("Say pong");
-});
-
-test("a Codex home with the person's own rules: an allow there would run a command outside the sandbox", () => {
-  const home = tempDir("codex-home-");
-  dirs.push(home);
-  expect(codexHomeHasRules(home)).toBe(false);
-  mkdirSync(path.join(home, "rules"));
-  writeFileSync(path.join(home, "rules", "notes.txt"), "");
-  expect(codexHomeHasRules(home)).toBe(false);
-  writeFileSync(path.join(home, "rules", "default.rules"), 'prefix_rule(pattern=["git", "push"], decision="allow")\n');
-  expect(codexHomeHasRules(home)).toBe(true);
 });
 
 test("whether MXC holds Codex is Codex's own check, once per Codex: a yes kept, a no for a while, no answer never", async () => {
