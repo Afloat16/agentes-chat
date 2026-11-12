@@ -17338,6 +17338,12 @@ export const en = {
       timeout: "The update took too long.",
       invalid_data: "{{name}} couldn't put the data in this format.",
     },
+    /** Its agent has no AI to build it with (ADR 0135 §6): no build starts, and it builds by itself once one is connected. */
+    needsAi: {
+      body: "{{name}} builds it as soon as an AI is connected.",
+      /** The phone's one-line footer, before "Connect". */
+      short: "Needs an AI",
+    },
     menu: {
       label: "More",
       open: "Open",
@@ -17706,6 +17712,7 @@ export const en = {
       notAgentMessage: "Only an agent's chart can be pinned.",
       promptRequired: "Say what the widget should show.",
       notTested: "Test it first: the widget is created once its test works.",
+      needsAi: "{{agentName}} has no AI connected yet. Connect one and the widget builds by itself.",
     },
     // end of dashboards
   },

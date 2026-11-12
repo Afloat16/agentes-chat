@@ -41665,6 +41665,12 @@
   "widgets.failure.invalid_data": {
     "value": "{{name}} couldn't put the data in this format."
   },
+  "widgets.needsAi.body": {
+    "value": "{{name}} builds it as soon as an AI is connected."
+  },
+  "widgets.needsAi.short": {
+    "value": "Needs an AI"
+  },
   "widgets.menu.label": {
     "value": "More"
   },
@@ -42573,6 +42579,9 @@
   },
   "dashboards.errors.notTested": {
     "value": "Test it first: the widget is created once its test works."
+  },
+  "dashboards.errors.needsAi": {
+    "value": "{{agentName}} has no AI connected yet. Connect one and the widget builds by itself."
   },
   "teamPlan.start.templates": {
     "value": "See team templates"

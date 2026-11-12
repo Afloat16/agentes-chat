@@ -23,6 +23,7 @@ import { dashboardRights, dashboardSeerSql, viewerOf } from "./access";
 import { proposeDashboardAudience } from "./proposals";
 import { applyWidgetUpdate, UPDATE_WIDGET_TOOL } from "./refresh";
 import { WIDGET_KIND_MANUAL } from "./refresh-context";
+import { widgetNeedsAi } from "./refresh-ledger";
 import {
   ensureHomeBoard,
   insertDashboard,
@@ -440,7 +441,9 @@ export function createDashboardToolSource(deps: DashboardDeps): ToolSource {
         const where = board.kind === "home" ? `${person.name}'s Home` : `the dashboard «${board.title}»`;
         const shows = spec
           ? "It shows your data now."
-          : "Your first update builds it in the background shortly: don't build it here, and don't post its numbers in the chat.";
+          : widgetNeedsAi(row)
+            ? `It can't be built yet: its updates are background work, and there you have no AI to think with. Tell ${person.name} to connect one on your page, and it builds by itself then.`
+            : "Your first update builds it in the background shortly: don't build it here, and don't post its numbers in the chat.";
         const alertText = alertOn
           ? ` On each update you judge its alert (${str(input.alert).trim() || "when something is off"}); ${person.name} hears it in Waiting on you.`
           : "";

@@ -17183,6 +17183,10 @@
       "timeout": "Die Aktualisierung hat zu lange gedauert.",
       "invalid_data": "{{name}} konnte die Daten nicht in dieses Format bringen."
     },
+    "needsAi": {
+      "body": "{{name}} baut es, sobald eine KI verbunden ist.",
+      "short": "Braucht eine KI"
+    },
     "menu": {
       "label": "Mehr",
       "open": "Öffnen",
@@ -17544,7 +17548,8 @@
       "blockNotFound": "Dieses Diagramm ist nicht mehr in der Nachricht.",
       "notAgentMessage": "Nur das Diagramm eines Agenten kann angeheftet werden.",
       "promptRequired": "Sag, was das Widget zeigen soll.",
-      "notTested": "Teste es zuerst: Das Widget wird erstellt, sobald sein Test klappt."
+      "notTested": "Teste es zuerst: Das Widget wird erstellt, sobald sein Test klappt.",
+      "needsAi": "{{agentName}} hat noch keine KI verbunden. Verbinde eine, dann wird das Widget von selbst gebaut."
     }
   },
   "teamPlan": {

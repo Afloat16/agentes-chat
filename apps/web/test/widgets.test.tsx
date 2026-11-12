@@ -157,6 +157,46 @@ describe("My Home as a mural (ADR 0135)", () => {
     expect(widget("Vendas hoje").querySelector(".wk-num")?.textContent).toBe("R$18.420");
   });
 
+  test("a widget whose agent has no AI says why with Conectar, and builds with no click once the agent has one", async () => {
+    const waitingFor = (ai: "ready" | "no_ai") => {
+      const s = setup();
+      const visits = s.fake.addWidget(s.home.id, {
+        agentId: ADA_ID,
+        title: "Visitas",
+        spec: null,
+        schedule: "manual",
+        layout: { position: 5, w: 1, h: 1 },
+      });
+      Object.assign(visits, { status: "failed", failure: { code: "missing_credential", detail: null } });
+      s.state.aiStatus = {
+        any: ai === "ready",
+        agents: s.state.agents.map((a) => ({
+          agentId: a.id,
+          state: ai,
+          ...(ai === "no_ai" ? { reason: "no_key" as const } : {}),
+        })),
+      };
+      return { s, visits };
+    };
+    const none = waitingFor("no_ai");
+    const { state } = await open(`/org/${ORG_ID}/home`, none.s);
+    const card = widget("Visitas");
+    expect(card.textContent).toContain("Ada está sem chave ou plano de IA para trabalhar.");
+    expect(card.textContent).toContain("Ada monta o widget assim que uma IA for conectada.");
+    expect(within(card).queryByRole("button", { name: "Resolver" })).toBeNull();
+    // Nothing is asked of the server while there's no AI: a build would only fail.
+    expect(calls(state, "dashboards.refreshWidget")).toEqual([]);
+    await click(within(card).getByRole("button", { name: "Conectar" }));
+    expect(screen().getByRole("dialog", { name: /Conectar uma IA/ })).toBeTruthy();
+    cleanup();
+
+    const back = waitingFor("ready");
+    const again = await open(`/org/${ORG_ID}/home`, back.s);
+    expect(last(again.state, "dashboards.refreshWidget")).toEqual([ORG_ID, back.visits.id]);
+    expect(calls(again.state, "dashboards.refreshWidget")).toHaveLength(1);
+    expect(widget("Visitas").getAttribute("data-state")).toBe("building");
+  });
+
   test("Organize: size, grip arrows and drag, each saved at once; Remove takes it off", async () => {
     const { state, home, sales, orders, builds } = await open(`/org/${ORG_ID}/home`);
     await click(within(mural()).getByRole("button", { name: "Organizar" }));

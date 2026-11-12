@@ -702,6 +702,25 @@ test("a widget's page: its board, whether the person edits it, and its latest up
   expect(await codeOf(hidden)).toBe("widget.not_found");
 });
 
+test("an agent with no AI builds nothing: the widget waits for one, and Update now says why", async () => {
+  const s = await start();
+  const sales = await s.newBoard(s.owner, { title: "Sales" });
+  await t.db.update(schema.providerCredentials).set({ revokedAt: new Date() });
+  const widget = await s.newWidget(s.owner, sales.id);
+  expect(widget).toMatchObject({ status: "failed", failure: { code: "missing_credential", detail: null } });
+  const refused = await s.api(s.owner, `/widgets/${widget.id}/refresh`, { json: {} });
+  expect(refused.status).toBe(409);
+  expect(((await refused.json()) as { error: { code: string; params: unknown } }).error).toMatchObject({
+    code: "widget.needs_ai",
+    params: { agentName: "Dev" },
+  });
+  expect(await t.db.select().from(schema.routineRuns)).toEqual([]);
+  // With its key back, Update now builds it.
+  await t.db.update(schema.providerCredentials).set({ revokedAt: null });
+  const building = await read<Widget>(await s.api(s.owner, `/widgets/${widget.id}/refresh`, { json: {} }));
+  expect(building.status).toBe("building");
+});
+
 test("Update now, Ask for a change, change, move and remove a widget: its board's editors only", async () => {
   const s = await start();
   const sales = await s.newBoard(s.owner, { title: "Sales" });

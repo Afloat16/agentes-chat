@@ -17,8 +17,8 @@ import { haltRoutineRuns } from "../routine-firing";
 import { queueRoutineRun } from "../routines";
 import { dashboardRights, requireWidget, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
-import { WIDGET_CHANGE_EVENT } from "./refresh-fire";
-import { failWidget, trimWidgetHistory, widgetChangeOf, widgetNoticesDone } from "./refresh-ledger";
+import { WIDGET_CHANGE_EVENT, widgetAgentWithoutAi } from "./refresh-fire";
+import { failWidget, holdWidgetForAi, trimWidgetHistory, widgetChangeOf, widgetNoticesDone } from "./refresh-ledger";
 import { widgetView } from "./service";
 import {
   DASHBOARD_ERRORS,
@@ -326,11 +326,26 @@ async function markBusy(deps: DashboardDeps, widget: WidgetRow, board: Dashboard
 }
 
 /**
+ * Its agent has no AI, so no run starts (it would only fail, ADR 0135 §6): the widget says it waits for one
+ * (`holdWidgetForAi`), and a person who asked hears why (`widget.needs_ai`, 409). Nothing when the agent can think.
+ */
+async function holdUnlessAi(deps: DashboardDeps, actorId: string | null, widget: WidgetRow, board: DashboardRow) {
+  const agent = await widgetAgentWithoutAi(deps, widget.orgId, widget.agentId);
+  if (!agent) return false;
+  await holdWidgetForAi(deps, widget, board);
+  if (actorId) {
+    throw new ConflictError(`${agent.name} has no AI connected`, DASHBOARD_ERRORS.needsAi, { agentName: agent.name });
+  }
+  return true;
+}
+
+/**
  * "Update now" and "Resolve": queues a manual run of the widget's routine (made first when missing; one whose creator
  * left or can no longer talk to the agent is taken over by `actorId`, a routine that paused itself is resumed, and one
  * a person paused on purpose runs once and stays paused).
  * The widget turns `updating` (`building` while it has no data) and its event goes out. A run already queued or
- * working answers with the widget as it is. `actorId` null: a first build queued by the server (no checks).
+ * working answers with the widget as it is. `actorId` null: a first build queued by the server (no checks). An agent
+ * with no AI gets no run: the widget waits for one (`holdUnlessAi`).
  */
 export async function refreshWidgetNow(
   deps: DashboardDeps,
@@ -341,6 +356,7 @@ export async function refreshWidgetNow(
   const { widget, board } = actorId
     ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit")
     : await loadWidget(deps.db, orgId, widgetId);
+  if (await holdUnlessAi(deps, actorId, widget, board)) return widgetView(deps.db, await widgetRow(deps.db, widget.id));
   const routine = await readyRoutine(deps, orgId, widget, board, actorId);
   if (await routineInFlight(deps.db, routine.id)) return widgetView(deps.db, await widgetRow(deps.db, widget.id));
   await queueRoutineRun({ db: deps.db }, routine, nowOf(deps), "manual");
@@ -375,6 +391,7 @@ export async function askWidgetChange(
   const words = text.trim().slice(0, WIDGET_CHANGE_MAX);
   if (!words) throw new ValidationError("Say what to change", DASHBOARD_ERRORS.promptRequired);
   await requireTalksTo(deps.db, orgId, actorId, widget.agentId);
+  await holdUnlessAi(deps, actorId, widget, board);
   const routine = await readyRoutine(deps, orgId, widget, board, actorId);
   const event = { type: WIDGET_CHANGE_EVENT, summary: words, text: words, byUserId: actorId };
   await queueEventRun({ db: deps.db }, routine, { event, merge: mergeChanges });

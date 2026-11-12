@@ -42,11 +42,14 @@ const WIDGET_CODES = new Set<string>([
   "invalid_data",
 ]);
 
+/** Its agent has no AI or key to think with. */
+const NEEDS_AI = "missing_credential";
+
 /** Run codes said in a widget's words: no AI or key to think with, too slow, came back too late. */
 const FOLDED: Readonly<Record<string, string>> = {
-  no_ai: "missing_credential",
-  credential_revoked: "missing_credential",
-  credential_wrong_provider: "missing_credential",
+  no_ai: NEEDS_AI,
+  credential_revoked: NEEDS_AI,
+  credential_wrong_provider: NEEDS_AI,
   computer_timeout: "timeout",
   stale: "waiting_computer",
   waiting_plan_late: "waiting_plan",
@@ -150,6 +153,7 @@ async function failureRecipient(db: Executor, widget: WidgetRow, board: Dashboar
  * Fails a widget (ADR 0135 §6): `failed` with its reason, a failed row in its history, and, on the first failure of a
  * streak (it had no failure since its last good update), one `widget_failed` to its creator. `fatigued`: this failure
  * pauses its routine (the fifth in a row), so the widget says it stopped (`failing`) and its history keeps why.
+ * `quiet`: nobody is told, the widget alone says it.
  */
 export async function failWidget(
   deps: LedgerDeps,
@@ -162,6 +166,7 @@ export async function failWidget(
     agentRunId?: string | null;
     change?: string | null;
     fatigued?: boolean;
+    quiet?: boolean;
   },
 ) {
   const { db } = deps;
@@ -187,7 +192,7 @@ export async function failWidget(
   });
   await trimWidgetHistory(db, widget.orgId, widget.id);
   // A draft's failure shows in the test's preview only: nobody is told (ADR 0135 §16).
-  if (firstOfStreak && !widget.draft) {
+  if (firstOfStreak && !widget.draft && !failure.quiet) {
     await notifyWidgetFailed(deps, {
       orgId: widget.orgId,
       userId: await failureRecipient(db, widget, board),
@@ -202,6 +207,19 @@ export async function failWidget(
   }
   await publishWidgetChanged(deps.pubsub, board, widgetEvent(widget, "failed")).catch(() => {});
   return row;
+}
+
+/** The widget waits for its agent to have an AI to think with: its build doesn't start until then (ADR 0135 §6). */
+export const widgetNeedsAi = (w: Pick<WidgetRow, "status" | "failureCode">) =>
+  w.status === "failed" && w.failureCode === NEEDS_AI;
+
+/**
+ * Its agent has no AI, so no build starts (it would only fail): the widget says so once while it waits, quietly while
+ * it never had data (whoever made it sees it right there), with the one `widget_failed` of a streak once it had.
+ */
+export async function holdWidgetForAi(deps: LedgerDeps, widget: WidgetRow, board: DashboardRow) {
+  if (widgetNeedsAi(widget)) return;
+  await failWidget(deps, widget, board, { code: NEEDS_AI, quiet: !widget.spec });
 }
 
 /**

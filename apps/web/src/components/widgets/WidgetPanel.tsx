@@ -1,5 +1,5 @@
 import type { WidgetDetail, WidgetSchedule, WidgetUpdate } from "@agenteschat/client";
-import { useAskWidgetChange, useRefreshWidget, useUpdateWidget, useWidget } from "@agenteschat/client";
+import { useAskWidgetChange, useBuildOnceAi, useRefreshWidget, useUpdateWidget, useWidget } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { upcomingAt, whenAt } from "@agenteschat/client/lib/format";
 import { plainInline } from "@agenteschat/client/lib/markdown";
@@ -24,7 +24,7 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { useFocusAtEnd, useSent } from "@/components/EditInPlace";
 import { useNow } from "@/hooks/useNow";
 import { useToast } from "@/lib/toast";
-import { failureText, useWidgetAgent, WidgetFace, WidgetFoot, widgetTitle } from "./parts";
+import { failureText, useWidgetAgent, WidgetFace, WidgetFoot, widgetBodyText, widgetTitle } from "./parts";
 import { RemoveWidgetDialog } from "./RemoveWidgetDialog";
 import "./widgets.css";
 
@@ -176,6 +176,7 @@ function PanelBody({ orgId, widget, onClose }: { orgId: string; widget: WidgetDe
   const now = useNow(60_000);
   const { name, color } = useWidgetAgent(widget.agentId);
   const refresh = useRefreshWidget(orgId);
+  useBuildOnceAi(orgId, widget, widget.canEdit);
   const [removing, setRemoving] = useState(false);
   const say = (e: unknown) => toast.show(errorText(t, e, i18n.language), "error");
   const removeLabel = t(widget.dashboard.kind === "home" ? "widgets.menu.removeHome" : "widgets.menu.removeBoard");
@@ -189,7 +190,7 @@ function PanelBody({ orgId, widget, onClose }: { orgId: string; widget: WidgetDe
         color={color}
         size={{ w: 2, h: 2 }}
         locale={i18n.language}
-        buildingText={t("widgets.status.building", { name })}
+        buildingText={widgetBodyText(t, widget, name)}
         face={<WidgetFace agentId={widget.agentId} name={name} />}
         footer={
           <WidgetFoot

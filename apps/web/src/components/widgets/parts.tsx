@@ -1,10 +1,13 @@
 import type { Widget, WidgetFailure, WidgetKind } from "@agenteschat/client";
-import { widgetFailureKey } from "@agenteschat/client";
+import { widgetFailureKey, widgetNeedsAi } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
+import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { type AgentColor, Icon, PixelSpinner } from "@agenteschat/ui";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
+import { usePlanHold } from "@/components/ai/ConnectAiSteps";
+import { useConnectAi } from "@/components/ConnectAi";
 import { useOrg } from "@/components/org-context";
 import { colorOf } from "@/components/Sky";
 import { useDirectory } from "@/hooks/useDirectory";
@@ -47,9 +50,46 @@ export function failureText(t: TFunction, failure: WidgetFailure | null, name: s
   return t(key, { name, detail: failure.detail ?? "" });
 }
 
+/** The words over a widget with no data yet: its agent building it, or waiting for an AI to build it with. */
+export const widgetBodyText = (t: TFunction, widget: Pick<Widget, "status" | "failure">, name: string) =>
+  widgetNeedsAi(widget) ? t("widgets.needsAi.body", { name }) : t("widgets.status.building", { name });
+
+/**
+ * Connect for a widget waiting for an AI (the board, its panel, its notice, New widget's test), when the viewer may
+ * connect its agent's (the dialog says what each may); null otherwise.
+ */
+export function useConnectForWidget(agentId: string | null | undefined): (() => void) | null {
+  const { org, me } = useOrg();
+  const dir = useDirectory(org.id);
+  const connect = useConnectAi();
+  // On a billing hold an AI comes after the plan, which the hold's own banner says.
+  const held = usePlanHold() !== null;
+  if (!agentId || !connect || held || !mayConnectAi(dir.anyAgent(agentId), me.user.id, org)) return null;
+  return () => connect.open({ agentId });
+}
+
+function ConnectForWidget({ agentId }: { agentId: string }) {
+  const { t } = useTranslation();
+  const open = useConnectForWidget(agentId);
+  if (!open) return null;
+  return (
+    <button
+      type="button"
+      className="wg__resolve"
+      onClick={(e) => {
+        e.stopPropagation();
+        open();
+      }}
+    >
+      {t("noAi.action")}
+    </button>
+  );
+}
+
 /**
  * A widget's footer on a board (ADR 0135): who looks after it, when it last updated and how often; while it is built
- * or updated, the agent at it; failed, why, with Resolve (an update asked now).
+ * or updated, the agent at it; failed, why, with Resolve (an update asked now); waiting for an AI, why, with Connect
+ * (it builds by itself once one is there, `useBuildOnceAi`).
  */
 export function WidgetFoot({
   widget,
@@ -85,27 +125,33 @@ export function WidgetFoot({
         <span className="wg__when">{t("widgets.status.updating", { name })}</span>
       </>
     );
-  if (widget.status === "failed")
+  if (widget.status === "failed") {
+    const needsAi = widgetNeedsAi(widget);
     return (
       <span className="wg__warn ac-iconline" role="status">
-        <Icon name="alert" size={14} />
+        <Icon name={needsAi ? "plug" : "alert"} size={14} />
         <span>
           {failureText(t, widget.failure, name)}{" "}
-          {onResolve && (
-            <button
-              type="button"
-              className="wg__resolve"
-              onClick={(e) => {
-                e.stopPropagation();
-                onResolve();
-              }}
-            >
-              {t("widgets.failure.resolve")}
-            </button>
+          {needsAi ? (
+            <ConnectForWidget agentId={widget.agentId} />
+          ) : (
+            onResolve && (
+              <button
+                type="button"
+                className="wg__resolve"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onResolve();
+                }}
+              >
+                {t("widgets.failure.resolve")}
+              </button>
+            )
           )}
         </span>
       </span>
     );
+  }
   // The agent's face leads the card's title (`WidgetCard`'s `face`): the footer only says who and when.
   return (
     <span className="wg__when">

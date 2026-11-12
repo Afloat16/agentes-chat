@@ -1,5 +1,13 @@
 import type { Dashboard, HomeTile, Widget } from "@agenteschat/client";
-import { type BoardItem, boardItems, layoutOf, resizeItem, useRefreshWidget, useSaveLayout } from "@agenteschat/client";
+import {
+  type BoardItem,
+  boardItems,
+  layoutOf,
+  resizeItem,
+  useBuildOnceAi,
+  useRefreshWidget,
+  useSaveLayout,
+} from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import {
   Button,
@@ -22,7 +30,7 @@ import { useTranslation } from "react-i18next";
 import { useNow } from "@/hooks/useNow";
 import { type GridMove, useGridDrag } from "@/lib/grid-drag";
 import { useToast } from "@/lib/toast";
-import { useWidgetAgent, WidgetFace, WidgetFoot, widgetTitle } from "./parts";
+import { useWidgetAgent, WidgetFace, WidgetFoot, widgetBodyText, widgetTitle } from "./parts";
 import { RemoveWidgetDialog } from "./RemoveWidgetDialog";
 import "./widgets.css";
 
@@ -252,6 +260,7 @@ function BoardWidget({
   const toast = useToast();
   const { name, color } = useWidgetAgent(widget.agentId);
   const refresh = useRefreshWidget(orgId);
+  useBuildOnceAi(orgId, widget, editable);
   const busy = widget.status === "building" || widget.status === "updating" || refresh.isPending;
   const update = () =>
     refresh.mutate(widget.id, { onError: (e) => toast.show(errorText(t, e, i18n.language), "error") });
@@ -268,7 +277,7 @@ function BoardWidget({
       color={color}
       size={{ w: widget.layout.w, h: widget.layout.h }}
       locale={i18n.language}
-      buildingText={t("widgets.status.building", { name })}
+      buildingText={widgetBodyText(t, widget, name)}
       face={<WidgetFace agentId={widget.agentId} name={name} />}
       onOpen={onOpen}
       board={board}

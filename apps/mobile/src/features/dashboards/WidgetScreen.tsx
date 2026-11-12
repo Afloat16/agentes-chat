@@ -1,5 +1,6 @@
 import {
   useAskWidgetChange,
+  useBuildOnceAi,
   useRefreshWidget,
   useRemoveWidget,
   useUpdateWidget,
@@ -7,9 +8,11 @@ import {
   type WidgetDetail,
   type WidgetSchedule,
   type WidgetUpdate,
+  widgetNeedsAi,
 } from "@agenteschat/client";
 import { upcomingAt, whenAt } from "@agenteschat/client/lib/format";
 import { plainInline } from "@agenteschat/client/lib/markdown";
+import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { WIDGET_LIMITS, WIDGET_SCHEDULES } from "@agenteschat/ui/widgets/spec";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
@@ -17,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, RefreshControl, StyleSheet, TextInput, View } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useOrg } from "@/providers/org";
 import {
   Button,
   GroupedHeader,
@@ -33,9 +37,10 @@ import {
   useToast,
 } from "@/ui";
 import { router } from "@/ui/navigation";
+import { openConnectAi } from "../ai/NoAiCard";
 import { boardHref, routineHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
-import { useOrgId, usePullRefresh } from "../shared/hooks";
+import { useDirectory, useMeId, useOrgId, usePullRefresh } from "../shared/hooks";
 import { PushedLargeTitle } from "../shared/PushedLargeTitle";
 import { goBack, PushedHeader, successHaptic } from "../shared/parts";
 import { TextArea } from "../shared/TextArea";
@@ -91,6 +96,11 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
   const refresh = useRefreshWidget(orgId);
   const update = useUpdateWidget(orgId);
   const remove = useRemoveWidget(orgId);
+  useBuildOnceAi(orgId, w, w.canEdit);
+  const { org } = useOrg();
+  const dir = useDirectory();
+  const meId = useMeId();
+  const needsAi = widgetNeedsAi(w);
   const [open, setOpen] = useState<"title" | "schedule" | "alert" | null>(null);
   const [alertOn, setAlertOn] = useState(w.alert.enabled);
   const [condition, setCondition] = useState(w.alert.condition);
@@ -228,17 +238,28 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
             refreshedAt: w.refreshedAt,
             schedule: w.schedule,
             w: 2,
+            needsAi,
           }}
         />
         {w.status === "failed" && w.failure ? (
           <View style={styles.failure}>
             <View style={styles.failureLine}>
-              <LineIcon name="info" size={13} color={c.warn} variant="footnote" />
+              <LineIcon name={needsAi ? "bolt" : "info"} size={13} color={c.warn} variant="footnote" />
               <Text variant="footnote" style={[styles.grow, { color: c.warn }]}>
                 {words.failure(w)}
               </Text>
             </View>
-            {w.canEdit ? (
+            {/* Waiting for an AI: Connect, never Resolve (it builds by itself once one is there). */}
+            {needsAi ? (
+              mayConnectAi(dir.agentById.get(w.agentId), meId, org) ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  label={t("noAi.action")}
+                  onPress={() => openConnectAi({ agentId: w.agentId })}
+                />
+              ) : null
+            ) : w.canEdit ? (
               <Button
                 size="sm"
                 variant="secondary"

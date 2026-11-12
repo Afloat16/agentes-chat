@@ -17112,6 +17112,10 @@
       "timeout": "Güncelleme çok uzun sürdü.",
       "invalid_data": "{{name}} verileri bu biçime getiremedi."
     },
+    "needsAi": {
+      "body": "Bir yapay zeka bağlanır bağlanmaz {{name}} onu oluşturur.",
+      "short": "Yapay zeka gerekiyor"
+    },
     "menu": {
       "label": "Daha fazla",
       "open": "Aç",
@@ -17473,7 +17477,8 @@
       "blockNotFound": "O grafik artık mesajda yok.",
       "notAgentMessage": "Yalnızca bir ajanın grafiği sabitlenebilir.",
       "promptRequired": "Widget'ın ne göstermesi gerektiğini yazın.",
-      "notTested": "Önce test edin: widget, testi başarılı olunca oluşturulur."
+      "notTested": "Önce test edin: widget, testi başarılı olunca oluşturulur.",
+      "needsAi": "{{agentName}} için henüz bağlı bir yapay zeka yok. Bir tane bağlayın, widget kendiliğinden oluşturulur."
     }
   },
   "teamPlan": {

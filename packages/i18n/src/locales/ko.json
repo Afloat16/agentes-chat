@@ -16624,6 +16624,10 @@
       "timeout": "업데이트가 너무 오래 걸렸어요.",
       "invalid_data": "{{name}}이(가) 데이터를 이 형식으로 만들지 못했어요."
     },
+    "needsAi": {
+      "body": "AI가 연결되면 {{name}}이(가) 바로 만들어요.",
+      "short": "AI가 필요해요"
+    },
     "menu": {
       "label": "더 보기",
       "open": "열기",
@@ -16980,7 +16984,8 @@
       "blockNotFound": "그 차트가 더 이상 메시지에 없어요.",
       "notAgentMessage": "에이전트의 차트만 고정할 수 있어요.",
       "promptRequired": "위젯에 무엇을 보여 줄지 말해 주세요.",
-      "notTested": "먼저 테스트하세요. 테스트가 성공하면 위젯이 만들어져요."
+      "notTested": "먼저 테스트하세요. 테스트가 성공하면 위젯이 만들어져요.",
+      "needsAi": "{{agentName}}에게 아직 연결된 AI가 없어요. AI를 연결하면 위젯이 저절로 만들어져요."
     }
   },
   "teamPlan": {

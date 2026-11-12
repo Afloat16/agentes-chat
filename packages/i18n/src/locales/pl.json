@@ -18294,6 +18294,10 @@
       "timeout": "Aktualizacja trwała za długo.",
       "invalid_data": "Agentowi {{name}} nie udało się ułożyć danych w tym formacie."
     },
+    "needsAi": {
+      "body": "{{name}} utworzy go, gdy tylko zostanie podłączona AI.",
+      "short": "Potrzebuje AI"
+    },
     "menu": {
       "label": "Więcej",
       "open": "Otwórz",
@@ -18665,7 +18669,8 @@
       "blockNotFound": "Tego wykresu nie ma już w wiadomości.",
       "notAgentMessage": "Przypiąć można tylko wykres agenta.",
       "promptRequired": "Napisz, co ma pokazywać widżet.",
-      "notTested": "Najpierw przetestuj: widżet powstaje, gdy test się uda."
+      "notTested": "Najpierw przetestuj: widżet powstaje, gdy test się uda.",
+      "needsAi": "{{agentName}} nie ma jeszcze podłączonej AI. Podłącz ją, a widżet utworzy się sam."
     }
   },
   "teamPlan": {

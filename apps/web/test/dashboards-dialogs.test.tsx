@@ -251,8 +251,11 @@ describe("New widget (ADR 0135 §3)", () => {
       ],
     });
   };
-  const start = async (prepare: (fake: FakeDashboards) => void = withSuggestions) => {
-    const opened = await open(`/org/${ORG_ID}/dashboards/dash-m`, prepare);
+  const start = async (
+    prepare: (fake: FakeDashboards) => void = withSuggestions,
+    prepareState?: (state: FakeState) => void,
+  ) => {
+    const opened = await open(`/org/${ORG_ID}/dashboards/dash-m`, prepare, prepareState);
     await click(screen().getAllByRole("button", { name: "Adicionar widget" })[0] as Element);
     await settle(6);
     return { ...opened, dialog: screen().getByRole("dialog", { name: "Novo widget" }) };
@@ -655,6 +658,43 @@ describe("New widget (ADR 0135 §3)", () => {
       [ORG_ID, second],
     ]);
     expect(fake.drafts).toHaveLength(0);
+  });
+
+  test("a test for an agent with no AI waits for one, with Conectar, and runs again once the agent has one", async () => {
+    const aiOf = (state: FakeState, ai: "ready" | "no_ai") => {
+      state.aiStatus = {
+        any: ai === "ready",
+        agents: state.agents.map((a) => ({
+          agentId: a.id,
+          state: ai,
+          ...(ai === "no_ai" ? { reason: "no_key" as const } : {}),
+        })),
+      };
+    };
+    const { state, fake, dialog, services } = await start(
+      (f) => {
+        withSuggestions(f);
+        f.agentsWithoutAi.add(ADA_ID);
+      },
+      (s) => aiOf(s, "no_ai"),
+    );
+    await type(ask(dialog), "visitas do site");
+    await click(button(dialog, "Testar") as HTMLElement);
+    await settle(6);
+    const waiting = card(dialog);
+    expect(waiting.textContent).toContain("Ada está sem chave ou plano de IA para trabalhar.");
+    expect(waiting.textContent).toContain("Ada monta o widget assim que uma IA for conectada.");
+    expect(within(waiting).queryByRole("button", { name: "Tentar de novo" })).toBeNull();
+    expect((button(dialog, "Criar widget") as HTMLButtonElement).disabled).toBe(true);
+    await click(within(waiting).getByRole("button", { name: "Conectar" }));
+    expect(screen().getByRole("dialog", { name: /Conectar uma IA/ })).toBeTruthy();
+    // Connected, there or anywhere else: once the AI status says so, the ask is tested again by itself, once.
+    fake.agentsWithoutAi.clear();
+    aiOf(state, "ready");
+    await act(() => services.queryClient.invalidateQueries({ queryKey: ["org", ORG_ID, "credentials", "ai-status"] }));
+    await settle(8);
+    expect(callsOf(state, "dashboards.testWidget")).toHaveLength(2);
+    expect(card(dialog).textContent).not.toContain("sem chave");
   });
 
   test("pinning a chart from the chat: pick it in the card, keep it updated or not, Pin", async () => {

@@ -1,6 +1,9 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useApi } from "../api/context";
 import { keys } from "../api/keys";
+import { useAiStatus } from "../api/queries";
+import { widgetAiReady, widgetNeedsAi } from "./lib";
 import type {
   ConfirmWidgetInput,
   CreateDashboardInput,
@@ -392,6 +395,24 @@ export function useRefreshWidget(orgId: string) {
     mutationFn: (widgetId: string) => api.dashboards.refreshWidget(orgId, widgetId),
     onSuccess: (widget) => cacheWidget(qc, orgId, widget),
   });
+}
+
+/** Widgets this app started once their agent had an AI: each only once, so a status the server disagrees with can't loop. */
+const builtOnceAi = new Set<string>();
+
+/**
+ * A widget waiting for an AI (`widgetNeedsAi`) starts building once its agent has one, connected from wherever, on any
+ * screen showing it to someone who may update it (ADR 0135 §6). The server checks again: still none, nothing starts.
+ */
+export function useBuildOnceAi(orgId: string, widget: Widget | null | undefined, canEdit: boolean) {
+  const status = useAiStatus(orgId, Boolean(canEdit && widget && widgetNeedsAi(widget)));
+  const refresh = useRefreshWidget(orgId).mutate;
+  const id = canEdit && widget && widgetAiReady(widget, status.data) ? widget.id : null;
+  useEffect(() => {
+    if (!id || builtOnceAi.has(id)) return;
+    builtOnceAi.add(id);
+    refresh(id);
+  }, [id, refresh]);
 }
 
 /** "Ask for a change" (the widget panel's composer). */

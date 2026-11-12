@@ -20,8 +20,10 @@ import {
   roleSeesBoard,
   toggleEditRole,
   type Widget,
+  widgetAiReady,
   widgetCostLine,
   widgetFailureKey,
+  widgetNeedsAi,
   widgetStepWords,
   withEditRoles,
 } from "../src/index";
@@ -223,6 +225,27 @@ describe("words", () => {
     expect(widgetFailureKey("no_update")).toBe("widgets.failure.no_update");
     expect(widgetFailureKey("budget_exceeded")).toBe("widgets.failure.budget_exceeded");
     expect(widgetFailureKey("something_new")).toBe("widgets.failure.error");
+  });
+
+  test("a widget whose agent has no AI waits for one, and may build once the AI status says it has one", () => {
+    const waiting: Widget = {
+      ...widget("w", 0),
+      status: "failed",
+      failure: { code: "missing_credential", detail: null },
+    };
+    const failed: Widget = { ...waiting, failure: { code: "no_update", detail: null } };
+    expect(widgetNeedsAi(waiting)).toBe(true);
+    expect(widgetNeedsAi(failed)).toBe(false);
+    expect(widgetNeedsAi({ ...waiting, status: "building" })).toBe(false);
+    const status = (state: "ready" | "no_ai" | "waiting") => ({ any: true, agents: [{ agentId: "theo", state }] });
+    expect(widgetAiReady(waiting, status("ready"))).toBe(true);
+    // Its computer away is no missing AI: the build waits for it as any run does.
+    expect(widgetAiReady(waiting, status("waiting"))).toBe(true);
+    expect(widgetAiReady(waiting, status("no_ai"))).toBe(false);
+    // Not known yet, or another agent's: nothing starts.
+    expect(widgetAiReady(waiting, undefined)).toBe(false);
+    expect(widgetAiReady({ ...waiting, agentId: "ada" }, status("ready"))).toBe(false);
+    expect(widgetAiReady(failed, status("ready"))).toBe(false);
   });
 
   test("the cost line follows the schedule and who pays", () => {

@@ -94,6 +94,7 @@ export const WidgetBody = memo(function WidgetBody({
   spec,
   status,
   agentId,
+  needsAi = false,
   big = false,
   bleed = false,
   compact = false,
@@ -102,6 +103,8 @@ export const WidgetBody = memo(function WidgetBody({
   spec: WidgetSpec | null;
   status: WidgetStatus;
   agentId: string;
+  /** Its agent has no AI to build it with (`widgetNeedsAi`): with no data yet, the line says it builds once one is there. */
+  needsAi?: boolean;
   /** The widget's own screen and the previews: bigger numbers and charts. */
   big?: boolean;
   /** The card draws the trend (or the bare line) along its bottom (`bleedSeries`): not here. */
@@ -114,6 +117,12 @@ export const WidgetBody = memo(function WidgetBody({
   const { t } = useTranslation();
   const look = useAgentLook(agentId);
   if (!spec) {
+    if (needsAi)
+      return (
+        <Text variant="footnote" tone="muted">
+          {t("widgets.needsAi.body", { name: look.name })}
+        </Text>
+      );
     if (status === "failed")
       return (
         <Text variant="footnote" tone="faint">
@@ -609,6 +618,8 @@ export interface WidgetCardData {
   w: 1 | 2;
   /** Its height on the board: 2 (L) stands taller on the phone. */
   h?: 1 | 2;
+  /** Its agent has no AI to build it with (`widgetNeedsAi`): it says so, and builds once one is connected. */
+  needsAi?: boolean;
 }
 
 /** The card's soft surface (no border, no shadow): its background, by theme. */
@@ -713,7 +724,9 @@ export function WidgetCard({
           </Text>
           {/* The strip has no footer: updating is its orbit, a failure its mark, on the title line. */}
           {compact && w.status === "updating" ? <PixelOrbit color={look.color} size={16} /> : null}
-          {compact && w.status === "failed" ? <Icon name="info" size={13} color={c.warn} /> : null}
+          {compact && w.status === "failed" ? (
+            <Icon name={w.needsAi ? "bolt" : "info"} size={13} color={c.warn} />
+          ) : null}
         </View>
       ) : (
         head
@@ -728,6 +741,7 @@ export function WidgetCard({
             spec={w.spec}
             status={w.status}
             agentId={w.agentId}
+            needsAi={w.needsAi}
             big={large}
             bleed={Boolean(bleed)}
             compact={compact}
@@ -761,7 +775,10 @@ export function WidgetCard({
   );
 }
 
-/** "12 min ago · every hour" (how often only when there's room), "Theo updating…", or "Didn't update · Resolve". */
+/**
+ * "12 min ago · every hour" (how often only when there's room), "Theo updating…", "Didn't update · Resolve", or
+ * "Needs an AI · Connect" (its screen has both).
+ */
 function WidgetFoot({ widget: w }: { widget: WidgetCardData }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
@@ -780,9 +797,11 @@ function WidgetFoot({ widget: w }: { widget: WidgetCardData }) {
   if (w.status === "failed")
     return (
       <View style={styles.foot}>
-        <Icon name="info" size={13} color={c.warn} />
+        <Icon name={w.needsAi ? "bolt" : "info"} size={13} color={c.warn} />
         <Text variant="caption" numberOfLines={1} style={[styles.grow, { color: c.warn }]}>
-          {`${t("widgets.status.failed")} · ${t("widgets.failure.resolve")}`}
+          {w.needsAi
+            ? `${t("widgets.needsAi.short")} · ${t("noAi.action")}`
+            : `${t("widgets.status.failed")} · ${t("widgets.failure.resolve")}`}
         </Text>
       </View>
     );

@@ -17456,6 +17456,10 @@ export const ptBR = {
       timeout: "A atualização demorou demais.",
       invalid_data: "{{name}} não conseguiu montar os dados neste formato.",
     },
+    needsAi: {
+      body: "{{name}} monta o widget assim que uma IA for conectada.",
+      short: "Precisa de uma IA",
+    },
     menu: {
       label: "Mais",
       open: "Abrir",
@@ -17811,6 +17815,7 @@ export const ptBR = {
       notAgentMessage: "Só dá para fixar o gráfico de um agente.",
       promptRequired: "Diga o que o widget deve mostrar.",
       notTested: "Teste antes: o widget é criado quando o teste dá certo.",
+      needsAi: "{{agentName}} ainda não tem uma IA conectada. Conecte uma e o widget é montado sozinho.",
     },
     // end of dashboards
   },

@@ -17676,6 +17676,10 @@
       "timeout": "La actualización tardó demasiado.",
       "invalid_data": "{{name}} no pudo poner los datos en este formato."
     },
+    "needsAi": {
+      "body": "{{name}} lo crea en cuanto se conecte una IA.",
+      "short": "Necesita una IA"
+    },
     "menu": {
       "label": "Más",
       "open": "Abrir",
@@ -18042,7 +18046,8 @@
       "blockNotFound": "Ese gráfico ya no está en el mensaje.",
       "notAgentMessage": "Solo se puede fijar el gráfico de un agente.",
       "promptRequired": "Di qué debe mostrar el widget.",
-      "notTested": "Pruébalo antes: el widget se crea cuando la prueba funciona."
+      "notTested": "Pruébalo antes: el widget se crea cuando la prueba funciona.",
+      "needsAi": "{{agentName}} todavía no tiene una IA conectada. Conecta una y el widget se crea solo."
     }
   },
   "teamPlan": {

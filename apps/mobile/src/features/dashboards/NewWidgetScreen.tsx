@@ -1,4 +1,5 @@
 import {
+  useAiStatus,
   useConfirmWidget,
   useDashboards,
   useHomeDashboard,
@@ -11,9 +12,12 @@ import {
   type WidgetFormat,
   type WidgetSchedule,
   type WidgetSuggestion,
+  widgetAiReady,
+  widgetNeedsAi,
   widgetStepWords,
 } from "@agenteschat/client";
 import { canTalk } from "@agenteschat/client/lib/audience";
+import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { taskClock } from "@agenteschat/client/lib/task-manager";
 import {
   sizeToLayout,
@@ -28,6 +32,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useOrg } from "@/providers/org";
 import {
   Button,
   fieldText,
@@ -45,10 +50,11 @@ import {
   useToast,
 } from "@/ui";
 import { router } from "@/ui/navigation";
+import { openConnectAi } from "../ai/NoAiCard";
 import { boardHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
 import { AgentFace } from "../shared/Face";
-import { useDirectory, useNow, useOrgId } from "../shared/hooks";
+import { useDirectory, useMeId, useNow, useOrgId } from "../shared/hooks";
 import { goBack, PushedHeader, successHaptic, tapHaptic } from "../shared/parts";
 import { SheetHostProvider } from "../shared/SheetHost";
 import { closeAgentPick, openAgentPick } from "./agent-pick";
@@ -164,6 +170,13 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
   const draftQ = useWidgetDraft(orgId, tested?.widget.id ?? null);
   // A draft that is gone (swept, or removed elsewhere) is no test any more.
   const draft: Widget | null = tested && !draftQ.isError ? (draftQ.data ?? tested.widget) : null;
+  // Its agent has no AI: the test waits for one (no build started), and runs again once one is connected.
+  const { org } = useOrg();
+  const meId = useMeId();
+  const needsAi = Boolean(draft && widgetNeedsAi(draft));
+  const aiStatus = useAiStatus(orgId, needsAi).data;
+  const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
+  const retested = useRef(false);
   const currentKey = testKeyOf(text, agentId, format);
   const phase = testPhase({ pending: sending, draft, testedKey: tested?.key ?? null, currentKey });
   const barLabel = newWidgetBarLabel(phase);
@@ -240,6 +253,14 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
         failed(error);
       });
   };
+
+  // Once per screen: a status the server still disagrees with can't test again and again.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runTest` changes each render; once its agent has an AI
+  useEffect(() => {
+    if (!aiBack || retested.current) return;
+    retested.current = true;
+    runTest();
+  }, [aiBack]);
 
   /** Stop: the build ends (its draft goes, and its run with it) and the ask is back as it was typed. */
   const stop = () => {
@@ -490,6 +511,28 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
       <View style={styles.gap10}>
         <BuildingSweep color={look.color} text={widgetStepWords(t, draftQ.data?.step)} height={44} />
         <BuildClock since={since} onStop={stop} />
+      </View>
+    );
+  } else if (phase === "failed" && draft && needsAi) {
+    body = (
+      <View style={styles.failed}>
+        <View style={styles.failedLine}>
+          <LineIcon variant="footnote" name="bolt" size={16} color={c.warn} />
+          <Text variant="footnote" style={[styles.grow, { color: c.warn }]}>
+            {widgetWords.failure(draft)}
+          </Text>
+        </View>
+        <Text variant="footnote" tone="muted">
+          {t("widgets.needsAi.body", { name: look.name })}
+        </Text>
+        {mayConnectAi(dir.agentById.get(draft.agentId), meId, org) ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            label={t("noAi.action")}
+            onPress={() => openConnectAi({ agentId: draft.agentId })}
+          />
+        ) : null}
       </View>
     );
   } else if (phase === "failed" && draft) {

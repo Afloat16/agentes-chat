@@ -1,6 +1,8 @@
 import type { TFunction } from "i18next";
+import type { AiStatus } from "../api/types";
 import { activityVerb, toolActivity } from "../lib/activity";
 import { capitalize } from "../lib/format";
+import { aiStateOf } from "../lib/no-ai";
 import type {
   DashboardAudience,
   DashboardEditPolicy,
@@ -222,6 +224,19 @@ export type WidgetFailureCode = (typeof WIDGET_FAILURE_CODES)[number];
 export function widgetFailureKey(code: string): `widgets.failure.${WidgetFailureCode}` {
   const known = (WIDGET_FAILURE_CODES as readonly string[]).includes(code) ? (code as WidgetFailureCode) : "error";
   return `widgets.failure.${known}`;
+}
+
+/**
+ * The widget waits for its agent to have an AI (ADR 0135 §6): no build starts until then, so its way out is
+ * connecting one (it builds by itself after), never Resolve. The server's `widgetNeedsAi`.
+ */
+export const widgetNeedsAi = (w: Pick<Widget, "status" | "failure">) =>
+  w.status === "failed" && w.failure?.code === "missing_credential";
+
+/** A widget waiting for an AI whose agent has one now, as the AI status says: its build can start. */
+export function widgetAiReady(w: Pick<Widget, "status" | "failure" | "agentId">, status: AiStatus | undefined) {
+  const state = aiStateOf(status, w.agentId);
+  return widgetNeedsAi(w) && state !== undefined && state !== "no_ai";
 }
 
 /** The cost line of "New widget": a day, a week, only when asked, on a plan, or nothing known. */

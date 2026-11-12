@@ -16808,6 +16808,10 @@
       "timeout": "更新耗时太长。",
       "invalid_data": "{{name}} 无法把数据做成这种形式。"
     },
+    "needsAi": {
+      "body": "连接 AI 后，{{name}} 会马上创建它。",
+      "short": "需要 AI"
+    },
     "menu": {
       "label": "更多",
       "open": "打开",
@@ -17164,7 +17168,8 @@
       "blockNotFound": "那个图表已不在消息中。",
       "notAgentMessage": "只能固定智能体的图表。",
       "promptRequired": "说说小组件应该显示什么。",
-      "notTested": "请先测试：测试成功后才会创建小组件。"
+      "notTested": "请先测试：测试成功后才会创建小组件。",
+      "needsAi": "{{agentName}} 还没有连接 AI。连接后，小组件会自动创建。"
     }
   },
   "teamPlan": {

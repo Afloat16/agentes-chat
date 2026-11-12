@@ -176,6 +176,7 @@ import {
 } from "./continuation";
 import { modelInfoFor } from "./credentials";
 import { sha256 } from "./crypto";
+import { WIDGET_FAILURES } from "./dashboards/types";
 import { publishDelivery } from "./delivery";
 import { isAgentOnlyDm } from "./dms";
 import {
@@ -4841,7 +4842,7 @@ async function executeRunInner(
         const routineRunId = routineRunIdOf(triggerMessage?.meta);
         const [routineRun] = routineRunId
           ? await db
-              .select({ status: routineRuns.status })
+              .select({ status: routineRuns.status, code: routineRuns.code })
               .from(routineRuns)
               .where(and(eq(routineRuns.id, routineRunId), eq(routineRuns.orgId, run.orgId)))
           : [];
@@ -4851,6 +4852,11 @@ async function executeRunInner(
           kind: "routine",
           executed: transcript.executedCalls ?? 0,
           bound: run.turns + 1 >= maxTurns ? "turn_cap" : routineRun?.status === "reported" ? "reported" : null,
+          // A good update made the run `reported`; one with `failed` left its code (ADR 0135 §5).
+          widgetOwed:
+            Boolean(routineBriefOf(triggerMessage?.meta)?.widget) &&
+            (routineRun?.status === "starting" || routineRun?.status === "started") &&
+            routineRun.code !== WIDGET_FAILURES.agentReported,
           quiet: !record,
           decided: null,
           unanswered: false,
@@ -4883,7 +4889,12 @@ async function executeRunInner(
           addRunStep(db, run, "context", {
             continuation: recorded,
             ...(decision.outcome === "continue"
-              ? { nudged: decision.rule === "untried" || decision.rule === "unbacked" ? decision.rule : "promise" }
+              ? {
+                  nudged:
+                    decision.rule === "untried" || decision.rule === "unbacked" || decision.rule === "widget"
+                      ? decision.rule
+                      : "promise",
+                }
               : {}),
           }),
         );

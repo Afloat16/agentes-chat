@@ -413,6 +413,52 @@ describe("the refresh run", () => {
     expect((await routineRow(f, routineId)).failuresInRow).toBe(1);
   });
 
+  test("a run that ends without update_widget is told once that only update_widget answers, then builds", async () => {
+    const nudged: boolean[] = [];
+    await setupWidgets((req, call) => {
+      if (seen(req).includes("Updated:")) return { chunks: ["Ok."] };
+      // Its numbers in its words, never through the tool: nobody would get them.
+      if (call === 0) return { chunks: ["As vendas de hoje somam R$ 18.420."] };
+      nudged.push(seen(req).includes("this run ends only through update_widget"));
+      return {
+        chunks: [],
+        toolUses: [{ name: "update_widget", input: { data: KPI, summary: "R$ 18.420", title: "Vendas" } }],
+      };
+    });
+    const b = await board();
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, {
+      agentId: f.agent.id,
+      prompt: "Vendas de hoje",
+      format: "auto",
+      schedule: "manual",
+    });
+    await drainOutbox(f.db, f.handlers);
+    expect(nudged).toEqual([true]);
+    expect(await widgetOf(w.id)).toMatchObject({ status: "ok", title: "Vendas", failureCode: null });
+    // Its step says it was the widget's nudge, never an unkept promise.
+    const steps = await f.db.select().from(schema.agentRunSteps).where(eq(schema.agentRunSteps.kind, "context"));
+    expect(steps.map((s) => s.data.nudged).filter(Boolean)).toEqual(["widget"]);
+  });
+
+  test("one that still sends nothing after that one nudge fails as no_update", async () => {
+    let calls = 0;
+    await setupWidgets(() => {
+      calls++;
+      return { chunks: ["Nada mudou."] };
+    });
+    const b = await board();
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, {
+      agentId: f.agent.id,
+      prompt: "Vendas de hoje",
+      format: "auto",
+      schedule: "manual",
+    });
+    await drainOutbox(f.db, f.handlers);
+    expect(calls).toBe(2);
+    expect(await widgetOf(w.id)).toMatchObject({ status: "failed", failureCode: "no_update" });
+    expect((await f.db.select().from(schema.routineRuns))[0]).toMatchObject({ status: "failed", code: "no_update" });
+  });
+
   test("update_widget is applied once per run and only by its own run", async () => {
     await setupWidgets(() => ({ chunks: ["Ok."] }));
     const b = await board();
@@ -441,6 +487,87 @@ describe("the refresh run", () => {
         update: { spec: { kind: "bars", labels: ["a"], values: [1] }, summary: "x" },
       }),
     ).rejects.toMatchObject({ code: "widget.invalid_data" });
+  });
+});
+
+describe("an agent with no AI", () => {
+  const revokeKeys = (revokedAt: Date | null) => f.db.update(schema.providerCredentials).set({ revokedAt });
+  const checked = (): DashboardDeps => ({ ...dash(), ai: { gateway: f.gateway } });
+
+  test("gets no build run: the widget waits for an AI, quietly, and builds once it has one", async () => {
+    await setupWidgets((req) => {
+      if (seen(req).includes("Updated:")) return { chunks: ["Ok."] };
+      return {
+        chunks: [],
+        toolUses: [{ name: "update_widget", input: { data: KPI, summary: "R$ 18.420", title: "Vendas" } }],
+      };
+    });
+    const b = await board();
+    await revokeKeys(new Date());
+    const w = await createWidget(checked(), f.owner.id, f.org.id, b.id, {
+      agentId: f.agent.id,
+      prompt: "Vendas de hoje",
+      format: "auto",
+      schedule: "manual",
+    });
+    expect(w).toMatchObject({ status: "failed", failure: { code: "missing_credential" } });
+    // No run that could only fail, and nobody told: the widget says it where it was just made.
+    expect(await f.db.select().from(schema.routineRuns)).toEqual([]);
+    expect(await f.db.select().from(schema.agentRuns)).toEqual([]);
+    expect(await notificationsOf(f, "widget_failed")).toEqual([]);
+    // Asked again, a person hears why; the widget says it once.
+    await expect(refreshWidgetNow(checked(), f.owner.id, f.org.id, w.id)).rejects.toMatchObject({
+      code: "widget.needs_ai",
+      params: { agentName: "Dev" },
+    });
+    await expect(askWidgetChange(checked(), f.owner.id, f.org.id, w.id, "Por semana")).rejects.toMatchObject({
+      code: "widget.needs_ai",
+    });
+    expect((await historyOf(w.id)).map((h) => h.failureCode)).toEqual(["missing_credential"]);
+    expect(await f.db.select().from(schema.routineRuns)).toEqual([]);
+
+    // With a key again, the next ask builds it.
+    await revokeKeys(null);
+    expect((await refreshWidgetNow(checked(), f.owner.id, f.org.id, w.id)).status).toBe("building");
+    await drainOutbox(f.db, f.handlers);
+    expect(await widgetOf(w.id)).toMatchObject({ status: "ok", title: "Vendas", failureCode: null });
+  });
+
+  test("a test of a widget (New widget's draft) waits the same way", async () => {
+    await setupWidgets(() => ({ chunks: ["Ok."] }));
+    const b = await board();
+    await revokeKeys(new Date());
+    const draft = await testWidget(checked(), f.owner.id, f.org.id, b.id, {
+      agentId: f.agent.id,
+      prompt: "MRR em real",
+      format: "auto",
+      schedule: "hour",
+    });
+    expect(draft).toMatchObject({ draft: true, status: "failed", failure: { code: "missing_credential" } });
+    expect(await f.db.select().from(schema.routineRuns)).toEqual([]);
+  });
+
+  test("a slot is skipped, never failed: the widget that had data says it once, and its creator hears it", async () => {
+    await setupWidgets(() => ({ chunks: ["Ok."] }));
+    const b = await board();
+    const w = await shownWidget(b.id, { schedule: "hour" });
+    const routineId = w.routineId ?? "";
+    await revokeKeys(new Date());
+    for (let i = 0; i < 2; i++) {
+      const queued = await queueRoutineRun({ db: f.db }, await routineRow(f, routineId), new Date(), "manual");
+      await drainOutbox(f.db, f.handlers);
+      expect(await routineRunRow(f, queued?.id ?? "")).toMatchObject({ status: "skipped", code: "no_ai" });
+    }
+    expect(await f.db.select().from(schema.agentRuns)).toEqual([]);
+    expect(await routineRow(f, routineId)).toMatchObject({ active: true, failuresInRow: 0, pausedReason: null });
+    // Its last data stays, under the reason.
+    const row = await widgetOf(w.id);
+    expect(row).toMatchObject({ status: "failed", failureCode: "missing_credential" });
+    expect(row.spec).toMatchObject({ kind: "kpi", value: 100 });
+    expect((await historyOf(w.id)).map((h) => h.failureCode)).toEqual(["missing_credential"]);
+    const told = await notificationsOf(f, "widget_failed");
+    expect(told).toHaveLength(1);
+    expect(told[0]?.latest).toMatchObject({ reason: "missing_credential" });
   });
 });
 

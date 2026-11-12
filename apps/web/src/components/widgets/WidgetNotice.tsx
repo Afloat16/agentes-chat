@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import type { Dir } from "@/components/NotificationParts";
 import { useOrg } from "@/components/org-context";
 import { useToast } from "@/lib/toast";
-import { failureText } from "./parts";
+import { failureText, useConnectForWidget } from "./parts";
 import "./widgets.css";
 
 /**
@@ -29,7 +29,8 @@ export function widgetNoticeLine(t: TFunction, n: AppNotification, dir: Dir): st
 
 /**
  * What a board's notice lets the person do where it shows (Home, the inbox): open the widget, Resolve a failure
- * (run it again), or decide a request to publish (Publish, Keep only for me). `onOpen` opens it as the inbox would.
+ * (run it again), Connect for one waiting for an AI, or decide a request to publish (Publish, Keep only for me).
+ * `onOpen` opens it as the inbox would.
  */
 export function WidgetNoticeActions({
   n,
@@ -50,6 +51,9 @@ export function WidgetNoticeActions({
   const refresh = useRefreshWidget(org.id);
   const decide = useDecideDashboardProposal(org.id);
   const notice = widgetNoticeOf(n);
+  // Waiting for an AI: Connect, never Resolve (it builds by itself once one is there).
+  const needsAi = notice?.kind === "failed" && notice.reason === "missing_credential";
+  const connectAi = useConnectForWidget(needsAi ? notice.agentId : null);
   if (!notice) return null;
   const say = (e: unknown) => toast.show(errorText(t, e, i18n.language), "error");
   const stop = (run: () => void) => (e: { stopPropagation: () => void }) => {
@@ -104,7 +108,12 @@ export function WidgetNoticeActions({
   const widgetId = notice.widgetId;
   return (
     <span className="wn-acts">
-      {notice.kind === "failed" && widgetId && (
+      {connectAi && (
+        <Button size="sm" variant={quiet ? undefined : "primary"} onClick={stop(connectAi)}>
+          {t("noAi.action")}
+        </Button>
+      )}
+      {notice.kind === "failed" && widgetId && !needsAi && (
         <Button
           size="sm"
           variant={quiet ? undefined : "primary"}

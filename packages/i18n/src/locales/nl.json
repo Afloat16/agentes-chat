@@ -17359,6 +17359,10 @@
       "timeout": "De update duurde te lang.",
       "invalid_data": "{{name}} kon de gegevens niet in deze vorm zetten."
     },
+    "needsAi": {
+      "body": "{{name}} bouwt hem zodra er een AI gekoppeld is.",
+      "short": "Heeft een AI nodig"
+    },
     "menu": {
       "label": "Meer",
       "open": "Openen",
@@ -17720,7 +17724,8 @@
       "blockNotFound": "Die grafiek staat niet meer in het bericht.",
       "notAgentMessage": "Alleen de grafiek van een agent kan worden vastgezet.",
       "promptRequired": "Zeg wat de widget moet tonen.",
-      "notTested": "Test hem eerst: de widget wordt gemaakt zodra de test lukt."
+      "notTested": "Test hem eerst: de widget wordt gemaakt zodra de test lukt.",
+      "needsAi": "{{agentName}} heeft nog geen AI gekoppeld. Koppel er een en de widget wordt vanzelf gebouwd."
     }
   },
   "teamPlan": {
