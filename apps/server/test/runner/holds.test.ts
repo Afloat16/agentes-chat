@@ -264,9 +264,12 @@ test("statStart reads the start time past a name with spaces and parentheses; a 
 });
 
 // The lock's own commands, run for real (systemd-inhibit and the scope left out): each ends when what it holds does.
-/** A `/proc/<pid>/stat` line: a name with spaces and parentheses, its state, and field 22 its start time. */
+/**
+ * A `/proc/<pid>/stat` line: a name its program chose to mislead a line-based reader (parentheses, a new line, a
+ * false state, a glob), its state, and field 22 its start time.
+ */
 const stat = (state: string, started: string) =>
-  `4242 (my (odd) bot) ${state} ${Array.from({ length: 18 }, (_, i) => i + 4).join(" ")} ${started} 23 24 25\n`;
+  `4242 (a (b)\n) Z * c) ${state} ${Array.from({ length: 18 }, (_, i) => i + 4).join(" ")} ${started} 23 24 25\n`;
 
 /** Starts the program's wait on a stat file of the test's; `done()` says whether it ended. */
 function programWait(file: string, started: string) {

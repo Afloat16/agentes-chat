@@ -47,11 +47,13 @@ const BROWSER_GONE_LOOKS = 3;
 export const keepScope = (id: string) => `agentes-keep-${id}.scope`;
 /**
  * Waits while the held program lives: its `/proc/<pid>/stat` ($0) is there, not a zombie, and has the start time it
- * had when held ($1, the 22nd field; the name before it may hold spaces and parentheses). Root may signal any process,
- * so `kill -0` would go on holding a pid used again by another one.
+ * had when held ($1, the 22nd field). The name before the fields is the program's own choice (spaces, parentheses,
+ * new lines, `*`): everything up to the last `) ` goes, and nothing is globbed. Root may signal any process, so
+ * `kill -0` would go on holding a pid used again by another one. Absolute paths: root never looks these up on a PATH.
  */
 const PROGRAM_WAIT =
-  't=$1; while s=$(sed "s/.*) //" "$0" 2>/dev/null); do set -- $s; [ "$1" != Z ] || exit 0; shift 19; [ "$1" = "$t" ] || exit 0; sleep 1; done';
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: the shell's own expansion, not JavaScript's.
+  'set -f; t=$1; while s=$(/bin/cat "$0" 2>/dev/null); do set -- ${s##*) }; [ "$1" != Z ] || exit 0; shift 19; [ "$1" = "$t" ] || exit 0; /bin/sleep 1; done';
 const browserCgroup = (uid: number) => `/agents.slice/${agentSlice(uid)}/${agentCategorySlice(uid, "browser")}`;
 
 interface Running {
@@ -174,7 +176,7 @@ export function lockCommand(
       ? [
           "/bin/sh",
           "-c",
-          `n=0; while [ "$n" -lt ${BROWSER_GONE_LOOKS} ]; do if grep -qs '^populated 1' "$0"; then n=0; else n=$((n+1)); fi; sleep 2; done`,
+          `n=0; while [ "$n" -lt ${BROWSER_GONE_LOOKS} ]; do if /usr/bin/grep -qs '^populated 1' "$0"; then n=0; else n=$((n+1)); fi; /bin/sleep 2; done`,
           `/sys/fs/cgroup${browserCgroup(hold.uid)}/cgroup.events`,
         ]
       : ["/bin/sleep", String(Math.max(1, Math.ceil((Date.parse(hold.until ?? "") - now) / 1000)))];
