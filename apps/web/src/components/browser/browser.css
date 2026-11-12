@@ -1181,6 +1181,7 @@ html:not([data-pointer]) .brw-kc:focus-visible {
   overflow: hidden;
   padding: 2px 7px;
   border-radius: 4px;
+  line-height: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1215,8 +1216,9 @@ html:not([data-pointer]) .brw-kc:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 10px;
+  padding: 3px 10px;
   border-top: 1px solid var(--line);
+  line-height: 16px;
 }
 .brw-mwin__row[data-hl] {
   background: color-mix(in srgb, var(--mac-accent) 10%, transparent);
