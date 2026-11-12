@@ -173,8 +173,9 @@ const styles = StyleSheet.create({
   // The deadline at the foot's end, right-aligned under the decision (as the chat's card).
   expiry: { flexDirection: "row", justifyContent: "flex-end", marginTop: 10 },
   when: { fontVariant: ["tabular-nums"] },
-  // Where and when never take the name's room: at most half the line.
-  where: { flexShrink: 1, maxWidth: "50%" },
+  // Where and when never take the name's room: at most half the line. On the name's line, not between it and the
+  // kind under it.
+  where: { flexShrink: 1, maxWidth: "50%", alignSelf: "flex-start", paddingTop: 1 },
   footer: { marginTop: 12, marginHorizontal: 16, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth },
   medium: { fontWeight: weights.medium },
   grow: { flex: 1, minWidth: 0 },
