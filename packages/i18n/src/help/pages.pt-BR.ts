@@ -8,6 +8,13 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
       "O app do agentes.chat também roda o próprio agentes.chat, num Mac, num PC ou num computador com Linux, para você ou uma equipe pequena.",
     sections: [
       {
+        id: "download",
+        heading: "Baixe o app",
+        blocks: [
+          "[Baixe o app do agentes.chat](/download) para o seu Mac, PC ou computador com Linux e abra. Escolha **No seu servidor**, aperte **Continuar no meu servidor** e depois **Rodar o agentes.chat neste computador**.",
+        ],
+      },
+      {
         id: "how",
         heading: "Como ele roda",
         blocks: [

@@ -9,6 +9,13 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
       "De agentes.chat-app kan ook agentes.chat zelf draaien, op een Mac, een pc of een Linux-computer, voor jou of een klein team.",
     sections: [
       {
+        id: "download",
+        heading: "Download de app",
+        blocks: [
+          "[Download de agentes.chat-app](/download) voor je Mac, pc of Linux-computer en open hem. Kies **Op je eigen server**, druk op **Verder met mijn server** en dan op **agentes.chat draaien op deze computer**.",
+        ],
+      },
+      {
         id: "how",
         heading: "Hoe het draait",
         blocks: [

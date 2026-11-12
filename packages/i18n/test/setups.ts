@@ -208,7 +208,7 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "help.any.computers.sections.0.blocks.0",
     "help.any.computers.sections.1.blocks.1.list.0",
     // The moving steps' command is the Mac's, said so in the step above it.
-    "help.selfhost.run-on-your-computer.sections.10.blocks.1.code",
+    "help.selfhost.run-on-your-computer.sections.11.blocks.1.code",
     "desktop.prefs.general.dockDesc",
     "desktop.prefs.general.menuBarTitle",
     "desktop.prefs.updates.",

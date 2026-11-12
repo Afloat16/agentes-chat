@@ -9,6 +9,13 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
       "Aplikacja agentes.chat może też uruchomić samo agentes.chat, na Macu, PC albo komputerze z Linuksem, dla ciebie lub małego zespołu.",
     sections: [
       {
+        id: "download",
+        heading: "Pobierz aplikację",
+        blocks: [
+          "[Pobierz aplikację agentes.chat](/download) na Maca, PC lub komputer z Linuksem i otwórz ją. Wybierz **Na własnym serwerze**, naciśnij **Kontynuuj na moim serwerze**, a potem **Uruchom agentes.chat na tym urządzeniu (komputer)**.",
+        ],
+      },
+      {
         id: "how",
         heading: "Jak to działa",
         blocks: [

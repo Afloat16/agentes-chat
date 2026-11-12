@@ -40,7 +40,7 @@
       "footChoose": "Сервер и язык",
       "footServer": "Другой сервер",
       "footLanguage": "Язык",
-      "footCloud": "вход в agentes.chat Cloud",
+      "footCloud": "Вход в agentes.chat Cloud",
       "footOn": "Вход на {{host}}",
       "footSwitch": "Сменить",
       "now": "Сейчас на {{host}}",

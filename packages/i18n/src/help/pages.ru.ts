@@ -9,6 +9,13 @@ export const helpRu: Partial<Record<HelpSlug, HelpDocument>> = {
       "Приложение agentes.chat может запускать и сам agentes.chat на Mac, ПК или компьютере с Linux, для вас или небольшой команды.",
     sections: [
       {
+        id: "download",
+        heading: "Скачайте приложение",
+        blocks: [
+          "[Скачайте приложение agentes.chat](/download) для Mac, ПК или компьютера с Linux и откройте его. Выберите **На своём сервере**, нажмите **Продолжить на моём сервере**, затем **Запустить agentes.chat на этом ПК**.",
+        ],
+      },
+      {
         id: "how",
         heading: "Как это работает",
         blocks: [

@@ -9,6 +9,13 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
       "Aplikasi agentes.chat juga bisa menjalankan agentes.chat sendiri, di Mac, PC, atau komputer Linux, untukmu atau tim kecil.",
     sections: [
       {
+        id: "download",
+        heading: "Unduh aplikasinya",
+        blocks: [
+          "[Unduh aplikasi agentes.chat](/download) untuk Mac, PC, atau komputer Linux-mu, lalu buka. Pilih **Di server sendiri**, tekan **Lanjut di server saya**, lalu **Jalankan agentes.chat di komputer ini**.",
+        ],
+      },
+      {
         id: "how",
         heading: "Cara kerjanya",
         blocks: [

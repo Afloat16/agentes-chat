@@ -9,6 +9,13 @@ export const helpKo: Partial<Record<HelpSlug, HelpDocument>> = {
       "agentes.chat 앱은 Mac, PC, Linux 컴퓨터에서 agentes.chat 자체를 실행할 수도 있어요. 혼자 쓰거나 작은 팀에 알맞아요.",
     sections: [
       {
+        id: "download",
+        heading: "앱 다운로드",
+        blocks: [
+          "Mac, PC 또는 Linux 컴퓨터용 [agentes.chat 앱을 다운로드](/download)하고 여세요. **내 서버에서**를 고르고 **내 서버로 계속**을 누른 다음 **이 컴퓨터에서 agentes.chat 실행**을 누르세요.",
+        ],
+      },
+      {
         id: "how",
         heading: "실행 방식",
         blocks: [
