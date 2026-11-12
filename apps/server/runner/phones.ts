@@ -357,9 +357,19 @@ export interface PhoneManagerOptions {
   usbmuxSocket?: string;
   /** Windows: `PNP_SHELL`'s output (default: PowerShell runs it); null when it couldn't. */
   pnp?: () => Promise<string | null>;
+  /** Where the iPhones picked to use over Wi-Fi are kept (`iphonesWifiFileOf`); null, or left out: none is used. */
+  iphonesWifiFile?: () => string | null;
 }
 
 const keyOf = (p: { platform: string; serial: string }) => `${p.platform}:${p.serial}`;
+
+/**
+ * The iPhones a workspace picked to use over Wi-Fi: in its runner's own home, one file per machine that home is paired
+ * as. Never shared by the runners of one OS user (one per workspace): a pick is consent in one workspace only.
+ */
+export const iphonesWifiFileOf = (home: string, machineId: string | undefined) =>
+  machineId ? path.join(home, `iphones-wifi-${machineId.replace(/[^\w-]/g, "_")}.json`) : null;
+
 const lockFileOf = (key: string) => `${key.replace(/[^\w.-]/g, "_")}.lock`;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const clampInt = (n: unknown, min: number, max: number, fallback: number) => {
@@ -458,11 +468,11 @@ export class PhoneManager {
   private readonly pairer: WifiPairer;
   private appleSeen: Phone[] | null = null;
   private appleMisses = 0;
-  /** iPhones this Mac's owner picked to use over Wi-Fi, by UDID (`udidKey`, kept in `iphonesWifiFile`). */
-  private readonly wifiAllowed: Set<string>;
   /** iPhones on this Mac's Wi-Fi that trust it and aren't picked, from the last Apple look. */
   private nearby: WifiIphone[] = [];
   private readonly tunnels: AppleTunnels;
+  /** Each phone's open screens, closed when it may no longer be used (a watcher's takes no hold). */
+  private readonly views = new Map<string, Set<() => void>>();
   /** Until when a phone guide asked to look for phones Windows has no driver for (`phone.look`). */
   private lookUntil = 0;
   private driverless: { at: number; phones: Phone[] } | null = null;
@@ -500,7 +510,7 @@ export class PhoneManager {
               now: this.now,
               phoneLocks: opts.lockDir,
               tunnels: this.tunnels,
-              wifi: (udid) => this.seen.get(`ios:${udid}`)?.transport === "wifi",
+              wifi: (udid) => this.seen.get(`ios:${udid}`)?.transport === "wifi" && this.wifiPicks().has(udidKey(udid)),
             })
           : null;
     const ios = this.ios;
@@ -513,10 +523,6 @@ export class PhoneManager {
           : null;
     const known = readJson<unknown>(this.wifiFile());
     this.wifiKnown = new Set(Array.isArray(known) ? known.filter((s): s is string => typeof s === "string") : []);
-    const picked = readJson<unknown>(this.iphonesWifiFile());
-    this.wifiAllowed = new Set(
-      Array.isArray(picked) ? picked.filter((s): s is string => typeof s === "string").map(udidKey) : [],
-    );
     this.pairer = new WifiPairer({
       adb: async () => (await this.tools()).adb,
       run: runTool,
@@ -610,8 +616,11 @@ export class PhoneManager {
     }
   }
 
-  private iphonesWifiFile() {
-    return path.join(path.dirname(this.lockDir), "iphones-wifi.json");
+  /** The iPhones picked to use over Wi-Fi (`udidKey`), read each time: the file is the one record of the pick. */
+  private wifiPicks(): Set<string> {
+    const file = this.opts.iphonesWifiFile?.();
+    const picked = file ? readJson<unknown>(file) : null;
+    return new Set(Array.isArray(picked) ? picked.filter((s): s is string => typeof s === "string").map(udidKey) : []);
   }
 
   /**
@@ -627,6 +636,11 @@ export class PhoneManager {
     if (action !== "list" && !serial) throw new RunnerError("bad_request", "phone.wifi names its iPhone (serial)");
     this.first ??= this.poll();
     await this.first;
+    if (action === "list") return { available: this.nearby };
+    const file = this.opts.iphonesWifiFile?.();
+    if (!file)
+      throw new RunnerError("internal", "This computer isn't connected to a workspace, so it can't keep the pick.");
+    const picks = this.wifiPicks();
     if (action === "allow") {
       if (!this.nearby.some((p) => udidKey(p.serial) === udidKey(serial))) {
         throw new RunnerError(
@@ -634,22 +648,27 @@ export class PhoneManager {
           "That iPhone isn't on this Mac's Wi-Fi now, or it doesn't trust this Mac. Plug it in once and tap Trust, then try again.",
         );
       }
-      this.wifiAllowed.add(udidKey(serial));
-    } else if (action === "forget") {
-      this.wifiAllowed.delete(udidKey(serial));
-      if (this.seen.get(`ios:${serial}`)?.transport === "wifi") await this.drop(`ios:${serial}`, true);
+      picks.add(udidKey(serial));
+    } else picks.delete(udidKey(serial));
+    try {
+      mkdirSync(path.dirname(file), { recursive: true });
+      writeJson(file, [...picks]);
+    } catch (err) {
+      throw new RunnerError(
+        "internal",
+        `This Mac couldn't keep the pick: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
-    if (action !== "list") {
-      try {
-        mkdirSync(path.dirname(this.iphonesWifiFile()), { recursive: true });
-        writeJson(this.iphonesWifiFile(), [...this.wifiAllowed]);
-      } catch {
-        // kept in memory only: an unwritable home
-      }
-      // The next look reads the Apple devices again: the phone shows up (or goes) at once.
-      await this.polling;
-      this.appleSeen = null;
-      await this.poll();
+    // The next look reads the Apple devices again: the phone shows up (or goes) at once.
+    await this.polling;
+    this.appleSeen = null;
+    await this.poll();
+    const key = `ios:${serial}`;
+    // No longer used over Wi-Fi (a cable keeps it): let go at once, a watcher's screen and a helper still starting too.
+    if (action === "forget" && this.seen.get(key)?.transport !== "usb") {
+      await this.drop(key, true);
+      for (const close of [...(this.views.get(key) ?? [])]) close();
+      this.ios?.stop(serial);
     }
     return { available: this.nearby };
   }
@@ -901,8 +920,9 @@ export class PhoneManager {
     const usb = needsUsbList(devices)
       ? new Set((await usbmuxPlugged(this.opts.usbmuxSocket ?? USBMUXD_SOCKET).catch(() => new Map())).keys())
       : undefined;
-    this.nearby = wifiNearby(devices, this.wifiAllowed);
-    for (const phone of parseDevicectl(devices, usb, this.wifiAllowed)) {
+    const picks = this.wifiPicks();
+    this.nearby = wifiNearby(devices, picks);
+    for (const phone of parseDevicectl(devices, usb, picks)) {
       const key = keyOf(phone);
       if (phone.state === "ready" && this.locked.has(key)) {
         const lock = parseLockState(
@@ -1233,7 +1253,16 @@ export class PhoneManager {
           resolve();
         };
       });
+    const views = this.views.get(key) ?? new Set<() => void>();
+    this.views.set(key, views);
+    const shut = () => end(STREAM_CLOSE.notFound, "phone_missing");
+    views.add(shut);
+    const unlist = () => {
+      views.delete(shut);
+      if (views.size === 0 && this.views.get(key) === views) this.views.delete(key);
+    };
     const end = (code: number, reason: string) => {
+      unlist();
       if (closed) return;
       closed = true;
       stop.abort();
@@ -1279,6 +1308,7 @@ export class PhoneManager {
       },
       closed: () => {
         closed = true;
+        unlist();
         stop.abort();
         nudge();
         if (control) void this.endControl(key, control);

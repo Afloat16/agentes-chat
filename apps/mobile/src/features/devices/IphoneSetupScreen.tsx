@@ -1,6 +1,6 @@
 import { type ComputerDevice, type PhoneDevice, useWifiIphones } from "@agenteschat/client";
 import { computerName } from "@agenteschat/client/lib/computer";
-import { iosMajor, tooOldVersion, useStalled } from "@agenteschat/client/lib/devices";
+import { iosMajor, iphoneOverWifi, tooOldVersion, useStalled } from "@agenteschat/client/lib/devices";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import * as Device from "expo-device";
@@ -49,8 +49,9 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
   const step = iphoneStep(phone);
   const reason = phone && phone.status.kind !== "offline" && "reason" in phone.status ? phone.status.reason : null;
   const tooOld = phone?.status.kind === "unsupported";
-  // A step that sits unchanged gets what most likely holds it.
-  const stalled = useStalled(host && !tooOld ? [host.id, step, phone?.id, reason].join(":") : null);
+  // A step that sits unchanged gets what most likely holds it, except over Wi-Fi: those lines are about the cable.
+  const overWifi = phone ? iphoneOverWifi(phone) : false;
+  const stalled = useStalled(host && !tooOld && !overWifi ? [host.id, step, phone?.id, reason].join(":") : null);
   const [plugged, setPlugged] = useState(false);
   if (host && phone && step === IPHONE_STEPS.length)
     return <IphoneDone phone={phone} host={host} hostName={hostName} />;
@@ -143,7 +144,12 @@ export function IphoneSetupScreen({ machineId }: { machineId?: string }) {
                 ) : null}
               </Step>
               <Step n={2} divider title={t("mobile.devices.iphone.step2")} state={state(1)}>
-                {step === 1 ? <StepText>{t("mobile.devices.iphone.step2Text")}</StepText> : null}
+                {step === 1 ? (
+                  <>
+                    {reason === "wifi_untrusted" ? <Note icon="info">{reasonText(t, reason)}</Note> : null}
+                    <StepText>{t("mobile.devices.iphone.step2Text")}</StepText>
+                  </>
+                ) : null}
               </Step>
               <Step
                 n={3}

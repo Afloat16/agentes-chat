@@ -655,6 +655,14 @@ describe("iPhones over Wi-Fi", () => {
     expect(step()?.textContent).toContain(
       "Sam's iPhone 16 isn't on the Mac's Wi-Fi now. Join the same network on the iPhone, or plug it in.",
     );
+    // A while on, no advice about the cable joins it.
+    try {
+      setSystemTime(new Date(Date.now() + 46_000));
+      await refetch(app.services);
+      expect(step()?.querySelector(".dv-step__stall")).toBeNull();
+    } finally {
+      setSystemTime();
+    }
     await show({ kind: "needs_you", reason: "wifi_asleep" });
     expect(step()?.textContent).toContain("Sam's iPhone 16 didn't answer over Wi-Fi. Wake and unlock it");
     await show({ kind: "needs_you", reason: "tunnel_down" });

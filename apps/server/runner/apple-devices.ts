@@ -119,9 +119,12 @@ UNIQUE_LOCAL.addSubnet("fd00::", 8, "ipv6");
  * The phone's end of CoreDevice's tunnel (`devicectl device info details --json-output`), checked: the tunnel is up,
  * and its address is unique local and on a `/64` this Mac has on one of its own `utun` interfaces
  * (`os.networkInterfaces()`), so only this Mac reaches it. Anything less is a reason, never another address. A phone
- * that didn't answer reads `tunnelState: "unavailable"` with no transport at all.
+ * that didn't answer reads `tunnelState: "unavailable"` with no transport at all. `local`: this Mac's own end.
  */
-export function tunnelOf(json: unknown, interfaces: Interfaces): { address: string } | { reason: PhoneReason } {
+export function tunnelOf(
+  json: unknown,
+  interfaces: Interfaces,
+): { address: string; local: string } | { reason: PhoneReason } {
   const d = rec(rec(json).result);
   const conn = rec(d.connectionProperties);
   if (str(conn.pairingState) !== "paired") return { reason: "wifi_untrusted" };
@@ -135,12 +138,14 @@ export function tunnelOf(json: unknown, interfaces: Interfaces): { address: stri
       ? (list ?? []).filter((a) => (a.family === "IPv6" || a.family === 6) && a.address !== address)
       : [],
   );
-  const onOurTunnel = ours.some((a) => {
-    const subnet = new net.BlockList();
-    subnet.addSubnet(a.address.split("%")[0] as string, 64, "ipv6");
-    return subnet.check(address, "ipv6");
-  });
-  return onOurTunnel ? { address } : { reason: "tunnel_down" };
+  const local = ours
+    .map((a) => a.address.split("%")[0] as string)
+    .find((a) => {
+      const subnet = new net.BlockList();
+      subnet.addSubnet(a, 64, "ipv6");
+      return subnet.check(address, "ipv6");
+    });
+  return local ? { address, local } : { reason: "tunnel_down" };
 }
 
 /** `com.apple.CoreSimulator.SimRuntime.iOS-26-2` → `26.2`; null for watchOS, tvOS and visionOS. */

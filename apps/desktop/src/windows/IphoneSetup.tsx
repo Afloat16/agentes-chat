@@ -114,9 +114,11 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
   const phoneName = phone ? (phone.name ?? phone.model) : "";
   const tooOld = phone?.state === "unsupported";
   // A step that sits unchanged gets what most likely holds it. A download that moves is no stall, and an iPhone below
-  // iOS 17 gets nothing, nor a step whose own text already says what to do (a helper the person must act on, no team).
+  // iOS 17 gets nothing, nor a step whose own text already says what to do (a helper the person must act on, no team),
+  // nor one over Wi-Fi: those lines are about the cable.
   const progress = platform?.state === "downloading" ? `${platform.percent ?? ""}/${platform.done ?? ""}` : "";
   const quiet =
+    phone?.transport === "wifi" ||
     (tooOld && current === "connected") ||
     (current === "helper" && states.helper === "needs") ||
     (current === "account" && (!!setup?.noTeam || reason === "apple_team_missing"));

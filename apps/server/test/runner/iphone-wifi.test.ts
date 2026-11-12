@@ -7,9 +7,10 @@ import type { RunnerPhone } from "@agenteschat/adapters/machine-protocol";
 import { en } from "@agenteschat/i18n";
 import { featureKeysEn } from "../../../mobile/src/features/i18n/keys.en";
 import { parseDevicectl, tunnelOf, wifiNearby } from "../../runner/apple-devices";
-import { AppleTunnels, KEEP_NOTIFICATION, TunnelMissing } from "../../runner/apple-tunnel";
+import { AppleTunnels, KEEP_NOTIFICATION, TunnelMissing, tunnelForward } from "../../runner/apple-tunnel";
 import { type HandlerContext, handleRequest, OP_ROUTES, type RequestScope } from "../../runner/handlers";
-import { PhoneManager, REASON_WORDS } from "../../runner/phones";
+import { type IosScreenDriverFactory, PhoneManager, REASON_WORDS } from "../../runner/phones";
+import type { DataListener, DataSocket } from "../../runner/streams";
 import { helperEnv, IosHelper, WDA_VERSION } from "../../runner/wda";
 import { freePort } from "./fake-usbmuxd";
 import { errorCode, removeDirs, tempDir } from "./helpers";
@@ -77,11 +78,11 @@ test("an iPhone on the Mac's network is offered, never used until picked, then u
 });
 
 test("the tunnel's address only when it's certain: up, unique local, on one of this Mac's own utun", () => {
-  expect(tunnelOf(TUNNEL, UTUN)).toEqual({ address: "fd12:3456:789a::1" });
+  expect(tunnelOf(TUNNEL, UTUN)).toEqual({ address: "fd12:3456:789a::1", local: "fd12:3456:789a::2" });
   // Spelled out in full or in capitals, it's the same address, written the way WDA and a URL take it.
   const spelled = structuredClone(TUNNEL);
   spelled.result.connectionProperties.tunnelIPAddress = "FD12:3456:789A:0:0:0:0:1";
-  expect(tunnelOf(spelled, UTUN)).toEqual({ address: "fd12:3456:789a::1" });
+  expect(tunnelOf(spelled, UTUN)).toEqual({ address: "fd12:3456:789a::1", local: "fd12:3456:789a::2" });
   // The phone didn't answer (asleep or locked): devicectl says unavailable and names no transport.
   expect(tunnelOf(NO_TUNNEL, UTUN)).toEqual({ reason: "wifi_asleep" });
   // No utun of this Mac on its /64, the prefix only on Wi-Fi, a link-local or global address: never used.
@@ -132,8 +133,12 @@ test("every Wi-Fi state has words and a way out on every surface, without semico
   }
 });
 
-/** A Mac with fake Xcode tools, and a manager watching it. */
-function rig(state: Record<string, unknown>, ios?: (env: NodeJS.ProcessEnv, root: string) => IosHelper) {
+/** A Mac with fake Xcode tools, and a manager watching it (its workspace's picks in `iphones-wifi.json`). */
+function rig(
+  state: Record<string, unknown>,
+  ios?: (env: NodeJS.ProcessEnv, root: string) => IosHelper,
+  iosScreen?: IosScreenDriverFactory,
+) {
   const root = tempDir("iphone-wifi-");
   dirs.push(root);
   const bin = path.join(root, "bin");
@@ -155,6 +160,8 @@ function rig(state: Record<string, unknown>, ios?: (env: NodeJS.ProcessEnv, root
     lockDir: path.join(root, "locks"),
     env,
     ios: ios ? ios(env, root) : null,
+    ...(iosScreen ? { iosScreen } : {}),
+    iphonesWifiFile: () => path.join(root, "iphones-wifi.json"),
     platform: "darwin",
     home: root,
     dirs: [],
@@ -172,8 +179,33 @@ function rig(state: Record<string, unknown>, ios?: (env: NodeJS.ProcessEnv, root
   return { root, bin, env, manager, sent, calls, setState };
 }
 
-test("phone.wifi: lists what's on offer, a pick is kept on the Mac, and forgetting it lets it go", async () => {
-  const r = rig({ devicectl: LISTED });
+/** A viewer's data socket in memory: how it closed. */
+function viewerSocket() {
+  let listener: DataListener | null = null;
+  const closed: { code?: number; reason?: string }[] = [];
+  const socket: DataSocket = {
+    send: () => {},
+    close: (code, reason) => {
+      closed.push({ code, reason });
+      listener?.closed();
+    },
+    bufferedAmount: 0,
+    listen: (on) => {
+      listener = on;
+    },
+  };
+  return { socket, closed };
+}
+
+test("phone.wifi: lists what's on offer, a pick is its workspace's, and forgetting it lets it go", async () => {
+  const screen = {
+    frame: async () => ({ jpeg: new Uint8Array([0xff, 0xd8, 1]), width: 402, height: 874 }),
+    tap: async () => {},
+    swipe: async () => {},
+    text: async () => {},
+    key: async () => {},
+  };
+  const r = rig({ devicectl: LISTED }, undefined, () => screen);
   const offer = [{ serial: UDID, model: "iPhone 14", name: "Sam's iPhone", osVersion: "27.0" }];
   expect(await r.manager.wifi({ action: "list" })).toEqual({ available: offer });
   expect(r.manager.list()).toEqual([]);
@@ -188,13 +220,14 @@ test("phone.wifi: lists what's on offer, a pick is kept on the Mac, and forgetti
   expect(JSON.parse(readFileSync(path.join(r.root, "iphones-wifi.json"), "utf8"))).toEqual([
     "00008120000A1B2C3D4E5F60",
   ]);
-  // Another runner of this Mac's user reads the same pick.
+  // Another workspace's runner on this Mac keeps its own picks: nobody there picked it.
   const again = new PhoneManager({
     log: () => {},
     onChange: () => {},
     lockDir: path.join(r.root, "locks"),
     env: r.env,
     ios: null,
+    iphonesWifiFile: () => path.join(r.root, "other-workspace", "iphones-wifi.json"),
     platform: "darwin",
     home: r.root,
     dirs: [],
@@ -202,7 +235,8 @@ test("phone.wifi: lists what's on offer, a pick is kept on the Mac, and forgetti
     caffeinate: false,
   });
   await again.poll();
-  expect(again.list().map((p) => p.transport)).toEqual(["wifi"]);
+  expect(again.list()).toEqual([]);
+  expect(await again.wifi({ action: "list" })).toEqual({ available: offer });
   // Held, it keeps its tunnel up; let go, the keeper stops.
   const holder = { runId: "run-1", agentId: "agent-lia", userId: "user-rui", since: "" };
   const io = { folder: r.root, resolve: async (p: string) => p, signal: new AbortController().signal };
@@ -216,9 +250,13 @@ test("phone.wifi: lists what's on offer, a pick is kept on the Mac, and forgetti
   expect(
     await errorCode(() => r.manager.handle({ op: "phone.logs", platform: "ios", serial: UDID, holder, lines: 10 }, io)),
   ).toBe("unsupported");
-  // Forgotten: let go at once, back on offer, and the pick is gone.
+  // Someone watching its screen takes no hold.
+  const watcher = viewerSocket();
+  await r.manager.view({ platform: "ios", serial: UDID, holder }, "watch", async () => watcher.socket);
+  // Forgotten: let go at once, the watcher's screen closed, back on offer, and the pick is gone.
   expect(await r.manager.wifi({ action: "forget", serial: UDID })).toEqual({ available: offer });
   expect(r.manager.list()).toEqual([]);
+  expect(watcher.closed).toEqual([{ code: 4404, reason: "phone_missing" }]);
   expect(JSON.parse(readFileSync(path.join(r.root, "iphones-wifi.json"), "utf8"))).toEqual([]);
   await r.manager.stop();
   await again.stop();
@@ -249,7 +287,7 @@ test("the tunnel's address is read from devicectl and checked; a phone that does
   const r = rig({ details: TUNNEL });
   const xcrun = path.join(r.bin, "xcrun");
   const tunnels = new AppleTunnels({ env: r.env, log: () => {}, interfaces: () => UTUN });
-  expect(await tunnels.address(xcrun, UDID)).toBe("fd12:3456:789a::1");
+  expect(await tunnels.address(xcrun, UDID)).toEqual({ address: "fd12:3456:789a::1", local: "fd12:3456:789a::2" });
   r.setState({ details: NO_TUNNEL });
   const asleep = await tunnels.address(xcrun, UDID).catch((e: unknown) => e);
   expect(asleep).toBeInstanceOf(TunnelMissing);
@@ -275,6 +313,30 @@ const ipv6 = await new Promise<boolean>((resolve) => {
 });
 const AT = ipv6 ? "::1" : "127.0.0.1";
 
+test("the tunnel is reached from this Mac's own end of it: gone, a connection fails instead of going elsewhere", async () => {
+  const phone = net.createServer((s) => s.end("wda"));
+  await new Promise<void>((resolve) => phone.listen(0, AT, () => resolve()));
+  const port = (phone.address() as net.AddressInfo).port;
+  const ask = (at: number) =>
+    new Promise<string>((resolve) => {
+      let got = "";
+      const s = net.connect(at, "127.0.0.1");
+      s.on("data", (d) => {
+        got += d.toString();
+      });
+      s.on("close", () => resolve(got));
+      s.on("error", () => resolve(got));
+    });
+  const up = await tunnelForward({ address: AT, local: AT }, port);
+  expect(await ask(up.port)).toBe("wda");
+  up.close();
+  // This Mac's end isn't one of its addresses any more (the tunnel dropped): nothing gets through.
+  const dropped = await tunnelForward({ address: AT, local: ipv6 ? "fd12:3456:789a::2" : "192.0.2.2" }, port);
+  expect(await ask(dropped.port)).toBe("");
+  dropped.close();
+  phone.close();
+});
+
 test("over Wi-Fi the helper runs on the tunnel address and is reached there; without one it doesn't start", async () => {
   const [http, mjpeg] = [await freePort(), await freePort()];
   let address: string | null = AT;
@@ -288,7 +350,7 @@ test("over Wi-Fi the helper runs on the tunnel address and is reached there; wit
     },
     address: async () => {
       if (address === null) throw new TunnelMissing("wifi_asleep");
-      return address;
+      return { address, local: address };
     },
     stopAll: () => {},
   } as unknown as AppleTunnels;
@@ -314,14 +376,30 @@ test("over Wi-Fi the helper runs on the tunnel address and is reached there; wit
   });
   const xcrun = path.join(r.bin, "xcrun");
   const ios = helper as unknown as IosHelper;
-  // Built for the phone first (the fake's xcodebuild), then run: listening on the tunnel address alone.
+  // Built for the phone first (the fake's xcodebuild), then run: listening on the tunnel address alone, reached from
+  // this Mac's own end of the tunnel.
   const run = await ios.run("device", UDID, xcrun);
   expect(r.calls().find((c) => c[0] === "wda-listen")).toEqual(["wda-listen", AT, String(http)]);
-  expect(run.client.base).toBe(ipv6 ? `http://[::1]:${http}` : `http://127.0.0.1:${http}`);
-  expect(run.mjpegHost).toBe(AT);
+  expect(run.client.base).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
   expect(await run.client.ready()).toBe(true);
   expect(held).toBe(1);
   ios.stop(UDID);
+  expect(held).toBe(0);
+  // Let go while it starts: stopped as soon as it's up, its tunnel let go.
+  const answers = () =>
+    new Promise<boolean>((resolve) => {
+      const s = net.connect(http, AT);
+      s.once("connect", () => {
+        s.destroy();
+        resolve(true);
+      });
+      s.once("error", () => resolve(false));
+    });
+  for (let i = 0; i < 100 && (await answers()); i++) await Bun.sleep(20);
+  const starting = ios.run("device", UDID, xcrun);
+  ios.stop(UDID);
+  await starting;
+  await Bun.sleep(0);
   expect(held).toBe(0);
   // No tunnel address for certain: it refuses in words, says why on the phone, and keeps no tunnel.
   address = null;

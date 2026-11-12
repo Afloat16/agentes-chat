@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
 import type { PhoneKind, PhoneReason, RunnerToolchains } from "@agenteschat/adapters/machine-protocol";
-import { type AppleTunnels, TunnelMissing } from "./apple-tunnel";
+import { type AppleTunnels, type Tunnel, TunnelMissing, tunnelForward } from "./apple-tunnel";
 import { jpegSize } from "./browser";
 import { RunnerError } from "./errors";
 import { killTree } from "./exec";
@@ -676,8 +676,8 @@ export function recoveringScreen(get: () => Promise<IosScreen>): IosScreen {
  * WDA's MJPEG stream (multipart, each part with its `Content-Length`): `onFrame` gets every JPEG. Its server answers
  * only once the client has sent something, so it's asked like a web page.
  */
-export function mjpegStream(port: number, onFrame: (jpeg: Buffer) => void, host = "127.0.0.1") {
-  const socket = net.connect(port, host);
+export function mjpegStream(port: number, onFrame: (jpeg: Buffer) => void) {
+  const socket = net.connect(port, "127.0.0.1");
   let buf = Buffer.alloc(0);
   let headerDone = false;
   socket.on("connect", () => socket.write("GET / HTTP/1.0\r\n\r\n"));
@@ -741,8 +741,6 @@ export interface WdaRun {
   child: ChildProcess;
   client: WdaClient;
   mjpegPort: number;
-  /** Where the MJPEG stream is: this Mac's loopback, or an iPhone's tunnel address over Wi-Fi. */
-  mjpegHost: string;
   forwards: { close(): void }[];
   lastUsed: number;
   /** An op or a viewer uses it: a setup check leaves it running. */
@@ -1127,7 +1125,7 @@ export class IosHelper {
     const [port, mjpeg] = sim ? await Promise.all([freePort(), freePort()]) : [devicePorts.http, devicePorts.mjpeg];
     const forwards: { close(): void }[] = [];
     // Over Wi-Fi: the tunnel stays up while the helper runs, and the helper listens on the phone's end of it alone.
-    let tunnel: string | null = null;
+    let tunnel: Tunnel | null = null;
     if (!sim && this.opts.wifi?.(udid)) {
       if (!this.opts.tunnels) throw new RunnerError("internal", "This runner can't reach iPhones over Wi-Fi.");
       forwards.push({ close: this.opts.tunnels.hold(xcrun, udid) });
@@ -1141,7 +1139,11 @@ export class IosHelper {
         throw err;
       }
     }
-    const env = helperEnv(this.opts.env, { http: port, mjpeg }, tunnel ? { tunnel } : { loopback: true });
+    const env = helperEnv(
+      this.opts.env,
+      { http: port, mjpeg },
+      tunnel ? { tunnel: tunnel.address } : { loopback: true },
+    );
     const args = ["xcodebuild", "test-without-building", "-xctestrun", xctestrun, "-destination", `id=${udid}`];
     const started = startTool(xcrun, args, { env });
     const child = started.child;
@@ -1165,16 +1167,15 @@ export class IosHelper {
       for (const f of forwards) f.close();
       return err;
     };
-    let host = "127.0.0.1";
     let http = port;
     let frames = mjpeg;
-    if (tunnel) host = tunnel;
-    else if (!sim) {
+    if (!sim) {
       try {
         const socket = this.opts.usbmuxSocket ?? USBMUXD_SOCKET;
-        const a = await usbmuxForward(udid, port, socket);
+        const to = (p: number) => (tunnel ? tunnelForward(tunnel, p) : usbmuxForward(udid, p, socket));
+        const a = await to(port);
         forwards.push(a);
-        const b = await usbmuxForward(udid, mjpeg, socket);
+        const b = await to(mjpeg);
         forwards.push(b);
         http = a.port;
         frames = b.port;
@@ -1183,7 +1184,7 @@ export class IosHelper {
       }
     }
     let run: WdaRun | null = null;
-    const client = new WdaClient(`http://${host.includes(":") ? `[${host}]` : host}:${http}`, this.opts.fetch, {
+    const client = new WdaClient(`http://127.0.0.1:${http}`, this.opts.fetch, {
       onGone: (reason) => {
         if (reason && !sim) this.fail(key, { reason, detail: reason, check: true, unknown: false });
         if (run && this.running.get(udid) === run) this.drop(udid, run);
@@ -1204,16 +1205,7 @@ export class IosHelper {
       await new Promise((r) => setTimeout(r, 500));
     }
     if (!sim) this.failed.delete(key);
-    const up: WdaRun = {
-      child,
-      client,
-      mjpegPort: frames,
-      mjpegHost: host,
-      forwards,
-      lastUsed: this.now(),
-      kept: false,
-      frames: null,
-    };
+    const up: WdaRun = { child, client, mjpegPort: frames, forwards, lastUsed: this.now(), kept: false, frames: null };
     run = up;
     this.running.set(udid, up);
     void started.done.then(() => {
@@ -1233,10 +1225,16 @@ export class IosHelper {
     for (const f of run.forwards) f.close();
   }
 
-  /** Stops the phone's helper (the phone was let go). */
+  /** Stops the phone's helper (the phone was let go), one still starting as soon as it's up. */
   stop(udid: string) {
     const run = this.running.get(udid);
     if (run) this.drop(udid, run);
+    this.starting.get(udid)?.then(
+      (up) => {
+        if (this.running.get(udid) === up) this.drop(udid, up);
+      },
+      () => undefined,
+    );
   }
 
   stopAll() {
@@ -1255,14 +1253,10 @@ export class IosHelper {
     run.lastUsed = this.now();
     if (!run.frames) {
       const frames: NonNullable<WdaRun["frames"]> = { latest: null, waiters: [], close: () => {}, idle: undefined };
-      const stream = mjpegStream(
-        run.mjpegPort,
-        (jpeg) => {
-          frames.latest = jpeg;
-          for (const w of frames.waiters.splice(0)) w(jpeg);
-        },
-        run.mjpegHost,
-      );
+      const stream = mjpegStream(run.mjpegPort, (jpeg) => {
+        frames.latest = jpeg;
+        for (const w of frames.waiters.splice(0)) w(jpeg);
+      });
       frames.close = stream.close;
       void stream.closed.then(() => {
         if (run.frames === frames) run.frames = null;
@@ -1316,14 +1310,10 @@ export class IosHelper {
     // stderr unread would fill its pipe and stall ffmpeg.
     const child = spawn(ffmpeg, ffmpegArgs(encoder, file), { stdio: ["pipe", "ignore", "ignore"], env: this.opts.env });
     (child.stdin as unknown as EventEmitter | null)?.on("error", () => {});
-    const stream = mjpegStream(
-      run.mjpegPort,
-      (jpeg) => {
-        run.lastUsed = this.now();
-        if (child.stdin?.writable) child.stdin.write(jpeg);
-      },
-      run.mjpegHost,
-    );
+    const stream = mjpegStream(run.mjpegPort, (jpeg) => {
+      run.lastUsed = this.now();
+      if (child.stdin?.writable) child.stdin.write(jpeg);
+    });
     const exited = new Promise<void>((resolve) => {
       (child as unknown as EventEmitter).on("close", () => resolve());
       (child as unknown as EventEmitter).on("error", () => resolve());

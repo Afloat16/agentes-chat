@@ -22,6 +22,7 @@ import {
   iosMajor,
   iphoneNoTeam,
   iphoneOf,
+  iphoneOverWifi,
   iphoneSteps,
   isIphoneWifiReason,
   PHONE_APP_IN_STORE,
@@ -772,11 +773,13 @@ export function IphoneFlow({
   const tooOld = phone?.status.kind === "unsupported";
   const at = IPHONE_STEPS.find((s) => states[s] === "current" || states[s] === "needs") ?? null;
   // The Mac reports by itself; a step that sits unchanged gets what most likely holds it. Nothing to add for an iPhone
-  // below iOS 17, nor where the step's own text already says what to do (a helper the person must act on, no team).
+  // below iOS 17, nor where the step's own text already says what to do (a helper the person must act on, no team),
+  // nor over Wi-Fi: those lines are about the cable.
   const stalled = useStalled(
     at &&
       mac &&
       !tooOld &&
+      !(phone && iphoneOverWifi(phone)) &&
       !(at === "helper" && states.helper === "needs") &&
       !(at === "account" && iphoneNoTeam(mac, phone))
       ? [mac.id, at, phone?.id, reason].join(":")

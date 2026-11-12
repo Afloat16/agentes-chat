@@ -1,4 +1,5 @@
 import {
+  IPHONE_WIFI_PROTOCOL,
   PHONE_SCREEN_PROTOCOL,
   type PhoneHolder,
   type PhonePlatform,
@@ -658,7 +659,8 @@ export async function updatePhoneDevice(
 
 /**
  * `DELETE …/devices/phones/{phoneId}` (its owner or an admin): gone from the list until its host reports it again. An
- * iPhone over Wi-Fi stops being used over Wi-Fi too (`phone.wifi` `forget`), so it comes back only if picked again.
+ * iPhone's Mac drops its pick to use it over Wi-Fi too (`phone.wifi` `forget`), so it comes back only if picked again
+ * or plugged in. One over Wi-Fi now is forgotten only once its Mac confirms: an offline Mac would go on using it.
  */
 export async function forgetPhone(
   deps: { db: Database; pubsub?: PubSub; hub?: Pick<MachineCaller, "call"> },
@@ -671,9 +673,10 @@ export async function forgetPhone(
   if (phone.ownerUserId !== actorId && !can(membership, "configure")) {
     throw new ForbiddenError("Only the phone's owner or an admin can forget it", "device.forbidden");
   }
-  if (phone.platform === "ios" && phone.facts?.transport === "wifi") {
-    // An offline Mac forgets nothing now: it reports the phone again when it's back, and the row returns with it.
-    await deps.hub?.call(host.id, { op: "phone.wifi", action: "forget", serial: phone.serial }).catch(() => undefined);
+  if (phone.platform === "ios" && deps.hub && host.protocol >= IPHONE_WIFI_PROTOCOL) {
+    const told = deps.hub.call(host.id, { op: "phone.wifi", action: "forget", serial: phone.serial });
+    if (phone.facts?.transport === "wifi") await told;
+    else await told.catch(() => undefined);
   }
   await deps.db
     .update(machinePhones)

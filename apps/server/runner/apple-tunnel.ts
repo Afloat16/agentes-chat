@@ -1,5 +1,6 @@
 import type { ChildProcess } from "node:child_process";
 import { readFile, rm } from "node:fs/promises";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import type { PhoneReason } from "@agenteschat/adapters/machine-protocol";
@@ -7,6 +8,7 @@ import { tunnelOf } from "./apple-devices";
 import { RunnerError } from "./errors";
 import { killTree } from "./exec";
 import { REASON_WORDS, runTool, startTool } from "./phones";
+import { loopbackForward } from "./usbmux";
 
 /**
  * CoreDevice's tunnel to an iPhone over Wi-Fi: the encrypted link Xcode itself uses, between this Mac's `utun`
@@ -21,6 +23,27 @@ export const KEEP_NOTIFICATION = "chat.agentes.runner.tunnel";
 /** A keeper ending sooner than this after it started lost the tunnel (the phone left the network or slept). */
 const KEPT_MS = 30_000;
 const RETRY_MS = 5_000;
+
+/** Both ends of an iPhone's tunnel: the phone's address, and this Mac's own on the same `utun`. */
+export interface Tunnel {
+  address: string;
+  local: string;
+}
+
+/**
+ * A port on this Mac's loopback that reaches `port` on the phone through its tunnel. Each connection leaves from this
+ * Mac's own end: once the tunnel is gone that address is too, so connecting fails instead of taking the default route
+ * out over Wi-Fi, where another host could answer as the phone's test helper.
+ */
+export function tunnelForward(tunnel: Tunnel, port: number) {
+  return loopbackForward(
+    () =>
+      new Promise<net.Socket>((resolve, reject) => {
+        const socket = net.connect({ host: tunnel.address, port, localAddress: tunnel.local });
+        socket.once("connect", () => resolve(socket)).once("error", reject);
+      }),
+  );
+}
 
 /** The tunnel isn't there to use: why, in words (`REASON_WORDS`), with its code for the phone's state. */
 export class TunnelMissing extends RunnerError {
@@ -109,10 +132,10 @@ export class AppleTunnels {
   }
 
   /**
-   * The phone's tunnel address, read now and checked (`tunnelOf`); the tunnel comes up for the read. Throws
+   * The phone's tunnel, read now and checked (`tunnelOf`); the tunnel comes up for the read. Throws
    * `TunnelMissing` when it can't be had for certain: never another address.
    */
-  async address(xcrun: string, udid: string): Promise<string> {
+  async address(xcrun: string, udid: string): Promise<Tunnel> {
     const file = path.join(os.tmpdir(), `agentes-tunnel-${process.pid}-${udid.replace(/[^\w-]/g, "_")}.json`);
     try {
       const r = await runTool(
@@ -145,7 +168,7 @@ export class AppleTunnels {
       const keep = this.keeps.get(udid);
       if ("address" in got) {
         if (keep) keep.lost = false;
-        return got.address;
+        return got;
       }
       throw new TunnelMissing(got.reason === "wifi_asleep" && keep?.lost ? "tunnel_down" : got.reason);
     } finally {
