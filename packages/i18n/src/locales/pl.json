@@ -2529,7 +2529,7 @@
     "profile": {
       "how": "Jak to działa",
       "permissions": "Działa z twoimi uprawnieniami",
-      "private": "Rozmawia tylko z tobą w twoim DM",
+      "private": "To, co twoje, zostaje w twoim DM",
       "channels": "Odpowiada na kanałach, gdy ktoś go wywoła",
       "model": "Model",
       "message": "Wiadomość",
@@ -5795,6 +5795,7 @@
       "verified_other": "{{count}} zweryfikowanego",
       "lessons": "Lekcje",
       "fromTeam": "od zespołu",
+      "fromTeamRightHand": "od ciebie",
       "proposals": "Propozycje",
       "waiting": "czekają na decyzję",
       "noneWaiting": "żadna nie czeka",
@@ -5821,6 +5822,7 @@
       "saved": "Zapisano. Teraz liczy się jako zweryfikowane.",
       "rules": "Zasady od ludzi",
       "rulesNote": "Obowiązują w całej pracy dla osoby, która dała każdą z nich, skądkolwiek przyjdzie prośba. Zasady opiekuna lub admina obowiązują wszystkich.",
+      "rulesNoteRightHand": "Zasady, które dajesz w swoim DM, obowiązują tylko ciebie. Tylko ty je widzisz.",
       "ruleBy": "Od {{name}} · {{date}}",
       "removeRule": "Usuń",
       "ruleRemoved": "Zasada usunięta. Jest w Archiwum, jeśli zechcesz ją przywrócić.",
@@ -13733,6 +13735,7 @@
       "needsReconnect": "Agenci nie mogą jej używać, dopóki nie zostanie ponownie połączona.",
       "ownerOnly": "Tylko {{name}} może nadać dostęp, bo to ta osoba podłączyła tę skrzynkę.",
       "ownerOnlyUnknown": "Tylko osoba, która podłączyła tę skrzynkę, może nadać dostęp.",
+      "onlyYou": "{{name}} używa tej skrzynki tylko dla ciebie, w twoim DM.",
       "remove": "Odbierz dostęp",
       "removed": "{{name}} nie ma już dostępu do {{address}}.",
       "saveError": {

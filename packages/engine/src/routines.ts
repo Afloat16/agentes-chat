@@ -1369,7 +1369,7 @@ export async function createRoutine(
   const trigger = await resolveTrigger(deps, actorId, orgId, input.trigger);
   checkFrequency(trigger, input.target);
   if (!input.paused && startsRuns(trigger.triggerType, input.target)) await checkRoutineCap(db, orgId, agent.id);
-  if (input.trigger.type === "email") await checkWatchable(db, orgId, agent.id, input.trigger.accountId);
+  if (input.trigger.type === "email") await checkWatchable(db, orgId, agent.id, input.trigger.accountId, actorId);
   if (input.trigger.type === "connector") await checkConnectorTrigger(db, orgId, agent.id, input.trigger);
   const hooks = input.trigger.type === "webhook" || input.trigger.type === "connector" ? hooksOf(deps) : null;
   const ownActions = ownActionsOf(input.ownActions ?? []);
@@ -1684,7 +1684,7 @@ export async function updateRoutine(
         ? (({ accountId, folder, filter }) => ({ accountId, folder, filter }))(watched.get(current.id) as MailWatchRow)
         : null;
   if (mailTrigger && (patch.trigger?.type === "email" || set.agentId)) {
-    await checkWatchable(db, orgId, agentId, mailTrigger.accountId);
+    await checkWatchable(db, orgId, agentId, mailTrigger.accountId, current.createdByUserId);
   }
   // A connector routine's agent must be able to read the connection it waits on (ADR 0130).
   const hadConnector = await connectorOf(db, current.id);

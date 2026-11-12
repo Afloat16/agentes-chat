@@ -2276,7 +2276,7 @@
     "profile": {
       "how": "Cara kerjanya",
       "permissions": "Bertindak dengan izin Anda",
-      "private": "Hanya bicara dengan Anda di DM Anda",
+      "private": "Yang milik Anda tetap di DM Anda",
       "channels": "Menjawab di kanal saat dipanggil",
       "model": "Model",
       "message": "Pesan",
@@ -5243,6 +5243,7 @@
       "verified_other": "{{count}} terverifikasi",
       "lessons": "Pelajaran",
       "fromTeam": "dipelajari dari tim",
+      "fromTeamRightHand": "dipelajari dari Anda",
       "proposals": "Usulan",
       "waiting": "menunggu keputusan",
       "noneWaiting": "tidak ada yang menunggu",
@@ -5265,6 +5266,7 @@
       "saved": "Tersimpan. Sekarang dihitung terverifikasi.",
       "rules": "Aturan dari orang-orang",
       "rulesNote": "Berlaku di semua pekerjaan untuk orang yang memberinya, dari mana pun permintaannya datang. Aturan dari penanggung jawab atau admin berlaku untuk semua.",
+      "rulesNoteRightHand": "Aturan yang Anda beri di DM Anda hanya berlaku untuk Anda. Hanya Anda yang melihatnya.",
       "ruleBy": "Dari {{name}} · {{date}}",
       "removeRule": "Hapus",
       "ruleRemoved": "Aturan dihapus. Ada di Arsip jika kamu ingin mengembalikannya.",
@@ -12403,6 +12405,7 @@
       "needsReconnect": "Agen tidak bisa memakainya sampai dihubungkan ulang.",
       "ownerOnly": "Hanya {{name}} yang bisa memberi akses: dia yang menghubungkan kotak surat ini.",
       "ownerOnlyUnknown": "Hanya orang yang menghubungkan kotak surat ini yang bisa memberi akses.",
+      "onlyYou": "{{name}} memakai kotak surat ini hanya untuk Anda, di DM Anda.",
       "remove": "Cabut akses",
       "removed": "{{name}} tidak lagi punya akses ke {{address}}.",
       "saveError": {

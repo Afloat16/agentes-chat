@@ -17,6 +17,7 @@ import { mailboxConnector } from "../connector-usage";
 import { cutText } from "../format";
 import { recordOperatorEvent } from "../operator-events";
 import { routineCreatorOf } from "../requester";
+import { isRightHandId, rightHandReader } from "../right-hand";
 import { replyThreadOf } from "../runs";
 import type { CallCheck, ToolContext, ToolDefinition, ToolOutput, ToolSource } from "../tools/types";
 import {
@@ -127,9 +128,15 @@ async function mailboxApprovers(db: Database, orgId: string, ownerId: string, re
 /**
  * Whether the person behind a run may use a person's own mailbox through this agent: its owner, or someone the agent
  * answers directly, as its owner gave it access for (a consultation by someone outside its audience doesn't count).
- * Nobody behind the run (an agent's own work, a watch): nobody's reach widens.
+ * Nobody behind the run (an agent's own work, a watch): nobody's reach widens. The team's right hand, which everyone
+ * talks to, uses a mailbox only for its owner.
  */
 async function mailboxUserCheck(ctx: ToolContext, authority: RunAuthority | null) {
+  // One right hand answers everyone (ADR 0137): a mailbox serves only its owner, in their own DM with it.
+  if (await isRightHandId(ctx.db, ctx.orgId, ctx.agentId)) {
+    const reader = await rightHandReader(ctx);
+    return (account: Pick<MailAccountRow, "createdByUserId">) => reader !== null && account.createdByUserId === reader;
+  }
   // A routine's run answers for its creator, as the gateway asks them (`routineCreatorOf`).
   const person = authority ? (accountablePerson(authority) ?? routineCreatorOf(authority)) : null;
   const agent = person ? await getAgent(ctx.db, ctx.orgId, ctx.agentId) : null;

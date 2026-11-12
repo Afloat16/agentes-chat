@@ -2276,7 +2276,7 @@
     "profile": {
       "how": "작동 방식",
       "permissions": "당신의 권한으로 일해요",
-      "private": "당신의 DM에서 당신하고만 이야기해요",
+      "private": "당신의 것은 당신의 DM 안에서만 다뤄요",
       "channels": "부르면 채널에서 답해요",
       "model": "모델",
       "message": "메시지",
@@ -5226,6 +5226,7 @@
       "verified_other": "{{count}}개 확인됨",
       "lessons": "교훈",
       "fromTeam": "팀에게서 배움",
+      "fromTeamRightHand": "당신에게서 배움",
       "proposals": "제안",
       "waiting": "결정 대기 중",
       "noneWaiting": "대기 중인 제안 없음",
@@ -5248,6 +5249,7 @@
       "saved": "저장했어요. 이제 확인된 항목이에요.",
       "rules": "사람들이 정한 규칙",
       "rulesNote": "규칙을 정한 사람을 위한 모든 작업에, 요청이 어디서 오든 적용돼요. 담당자나 관리자의 규칙은 모두에게 적용돼요.",
+      "rulesNoteRightHand": "당신의 DM에서 정한 규칙은 당신에게만 적용돼요. 당신만 볼 수 있어요.",
       "ruleBy": "{{name}} · {{date}}",
       "removeRule": "삭제",
       "ruleRemoved": "규칙을 삭제했어요. 되돌리고 싶다면 보관함에 있어요.",
@@ -12343,6 +12345,7 @@
       "needsReconnect": "다시 연결하기 전까지 에이전트가 사용할 수 없어요.",
       "ownerOnly": "접근 권한은 이 메일함을 연결한 {{name}} 님만 줄 수 있어요.",
       "ownerOnlyUnknown": "접근 권한은 이 메일함을 연결한 사람만 줄 수 있어요.",
+      "onlyYou": "{{name}}은(는) 이 메일함을 당신의 DM에서 당신을 위해서만 써요.",
       "remove": "접근 권한 삭제",
       "removed": "{{name}}은(는) 이제 {{address}}에 접근할 수 없어요.",
       "saveError": {

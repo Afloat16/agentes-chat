@@ -2406,7 +2406,7 @@ export const ptBR = {
     profile: {
       how: "Como funciona",
       permissions: "Age com as suas permissões",
-      private: "Conversa só com você na sua DM",
+      private: "Guarda o que é seu na sua DM",
       channels: "Responde nos canais quando chamado",
       model: "Modelo",
       message: "Mensagem",
@@ -5673,6 +5673,7 @@ export const ptBR = {
       verified_other: "{{count}} verificados",
       lessons: "Lições",
       fromTeam: "aprendidas com o time",
+      fromTeamRightHand: "aprendidas com você",
       proposals: "Propostas",
       waiting: "esperando decisão",
       noneWaiting: "nenhuma esperando",
@@ -5697,6 +5698,7 @@ export const ptBR = {
       rules: "Regras que as pessoas deram",
       rulesNote:
         "Valem em todo o trabalho para quem deu cada uma, venha o pedido de onde vier. As do responsável ou de um admin valem para todos.",
+      rulesNoteRightHand: "As regras que você dá na sua DM valem só para você. Só você vê.",
       ruleBy: "De {{name}} · {{date}}",
       removeRule: "Remover",
       ruleRemoved: "Regra removida. Fica em Arquivadas se quiser de volta.",
@@ -12872,6 +12874,7 @@ export const ptBR = {
       needsReconnect: "Os agentes só usam depois de reconectar.",
       ownerOnly: "Só {{name}} pode dar acesso: foi quem conectou esta caixa.",
       ownerOnlyUnknown: "Só quem conectou esta caixa pode dar acesso.",
+      onlyYou: "{{name}} só usa esta caixa para você, na sua DM.",
       remove: "Remover acesso",
       removed: "{{name}} não tem mais acesso a {{address}}.",
       saveError: {

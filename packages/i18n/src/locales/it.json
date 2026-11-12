@@ -2441,7 +2441,7 @@
     "profile": {
       "how": "Come funziona",
       "permissions": "Agisce con i tuoi permessi",
-      "private": "Parla solo con te nella tua DM",
+      "private": "Ciò che è tuo resta nella tua DM",
       "channels": "Risponde nei canali quando lo chiamano",
       "model": "Modello",
       "message": "Messaggio",
@@ -5609,6 +5609,7 @@
       "verified_other": "{{count}} verificati",
       "lessons": "Lezioni",
       "fromTeam": "imparate dal team",
+      "fromTeamRightHand": "imparate da te",
       "proposals": "Proposte",
       "waiting": "in attesa di una decisione",
       "noneWaiting": "nessuna in attesa",
@@ -5634,6 +5635,7 @@
       "saved": "Salvato. Ora conta come verificato.",
       "rules": "Regole date dalle persone",
       "rulesNote": "Valgono in tutto il lavoro per chi ha dato ciascuna, da dovunque arrivi la richiesta. Quelle del responsabile o di un admin valgono per tutti.",
+      "rulesNoteRightHand": "Le regole che dai nella tua DM valgono solo per te. Solo tu le vedi.",
       "ruleBy": "Da {{name}} · {{date}}",
       "removeRule": "Rimuovi",
       "ruleRemoved": "Regola rimossa. È in Archiviati se la rivuoi.",
@@ -13290,6 +13292,7 @@
       "needsReconnect": "Gli agenti non possono usarla finché non viene ricollegata.",
       "ownerOnly": "Solo {{name}} può dare l'accesso: ha collegato questa casella.",
       "ownerOnlyUnknown": "Solo la persona che ha collegato questa casella può dare l'accesso.",
+      "onlyYou": "{{name}} usa questa casella solo per te, nella tua DM.",
       "remove": "Rimuovi accesso",
       "removed": "{{name}} non ha più accesso a {{address}}.",
       "saveError": {

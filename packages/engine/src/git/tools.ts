@@ -5,6 +5,7 @@ import { activeConnections, type ConnectorDeps } from "../connectors/connections
 import { publishChannelEvent } from "../events";
 import { computerPreparing } from "../machine-provisioning";
 import { missionOfRun } from "../mission-context";
+import { isRightHandId, RIGHT_HAND_NO_COMPUTER } from "../right-hand";
 import { replyThreadOf } from "../runs";
 import { NO_COMPUTER_MESSAGE, PREPARING_COMPUTER_MESSAGE, type SandboxDeps } from "../sandbox";
 import { APPROVAL_DETAIL_CHARS } from "../tools/gateway";
@@ -179,7 +180,9 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
         }
         return { ok: true };
       };
-      return [
+      // Cloning takes a computer, which the right hand never has (ADR 0137): it isn't offered what can't run.
+      const rightHand = await isRightHandId(ctx.db, ctx.orgId, ctx.agentId);
+      const all: ToolDefinition[] = [
         {
           name: "git_clone",
           description:
@@ -260,6 +263,8 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
                   isError: true,
                 };
               }
+              if (await isRightHandId(c.db, c.orgId, c.agentId))
+                return { content: `Not cloned: ${RIGHT_HAND_NO_COMPUTER}.`, isError: true };
               const preparing = await computerPreparing({ ...deps.sandbox, db: c.db }, c.orgId);
               return { content: preparing ? PREPARING_COMPUTER_MESSAGE : NO_COMPUTER_MESSAGE, isError: true };
             } catch (error) {
@@ -428,6 +433,7 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
           }),
         },
       ];
+      return rightHand ? all.filter((t) => t.name !== "git_clone") : all;
     },
   };
 }

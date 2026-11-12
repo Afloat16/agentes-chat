@@ -2441,7 +2441,7 @@
     "profile": {
       "how": "Cómo funciona",
       "permissions": "Actúa con tus permisos",
-      "private": "Habla solo contigo en tu DM",
+      "private": "Lo que es tuyo se queda en tu DM",
       "channels": "Responde en los canales cuando lo llaman",
       "model": "Modelo",
       "message": "Mensaje",
@@ -5571,6 +5571,7 @@
       "verified_other": "{{count}} verificados",
       "lessons": "Lecciones",
       "fromTeam": "aprendidas del equipo",
+      "fromTeamRightHand": "aprendidas de ti",
       "proposals": "Propuestas",
       "waiting": "esperando una decisión",
       "noneWaiting": "ninguna pendiente",
@@ -5595,6 +5596,7 @@
       "saved": "Guardado. Ahora cuenta como verificado.",
       "rules": "Reglas que dio la gente",
       "rulesNote": "Valen en todo el trabajo para quien dio cada una, venga de donde venga el pedido. Las del responsable o de un admin valen para todos.",
+      "rulesNoteRightHand": "Las reglas que das en tu DM valen solo para ti. Solo tú las ves.",
       "ruleBy": "De {{name}} · {{date}}",
       "removeRule": "Quitar",
       "ruleRemoved": "Regla quitada. Está en Archivados si la quieres recuperar.",
@@ -13209,6 +13211,7 @@
       "needsReconnect": "Los agentes no pueden usarlo hasta que se reconecte.",
       "ownerOnly": "Solo {{name}} puede dar acceso: conectó este buzón.",
       "ownerOnlyUnknown": "Solo la persona que conectó este buzón puede dar acceso.",
+      "onlyYou": "{{name}} usa este buzón solo para ti, en tu DM.",
       "remove": "Quitar acceso",
       "removed": "{{name}} ya no tiene acceso a {{address}}.",
       "saveError": {
