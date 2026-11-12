@@ -720,8 +720,15 @@ test("an agent with no AI builds nothing: the widget waits for one, and Update n
   const auto = { json: { auto: true } };
   const building = await read<Widget>(await s.api(s.owner, `/widgets/${widget.id}/refresh`, auto));
   expect(building.status).toBe("building");
-  // Once it no longer waits for an AI, another one changes nothing.
-  expect((await read<Widget>(await s.api(s.owner, `/widgets/${widget.id}/refresh`, auto))).status).toBe("building");
+  // Its build ran to its end: it no longer waits for an AI, so another one changes nothing.
+  await t.drain();
+  const [built] = await t.db.select().from(schema.routineRuns);
+  expect(built?.finishedAt).not.toBeNull();
+  const [after] = await t.db.select().from(schema.dashboardWidgets).where(eq(schema.dashboardWidgets.id, widget.id));
+  expect(after?.failureCode).not.toBe("missing_credential");
+  expect((await read<Widget>(await s.api(s.owner, `/widgets/${widget.id}/refresh`, auto))).status).toBe(
+    after?.status ?? "",
+  );
   expect(await t.db.select().from(schema.routineRuns)).toHaveLength(1);
 });
 

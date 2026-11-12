@@ -30,6 +30,7 @@ import {
   gateDims,
   kindOf,
   mayConnectAi,
+  noAiLockedLine,
   type PlanChoice,
   type PlanGate,
   planLabel,
@@ -705,9 +706,7 @@ function ConnectAiDialog({
   // Someone else's agent, or no agent of theirs among those: who connects a plan instead.
   const owner = one?.ownerUserId ? dir.memberById.get(one.ownerUserId)?.name : undefined;
   const locked = theirs
-    ? owner
-      ? t("noAi.locked", { name: one.name, owner: owner.split(" ")[0] })
-      : t("noAi.lockedAdmins")
+    ? noAiLockedLine(t, one.name, owner)
     : named && agents.length === 0
       ? t("noAi.lockedAdmins")
       : undefined;

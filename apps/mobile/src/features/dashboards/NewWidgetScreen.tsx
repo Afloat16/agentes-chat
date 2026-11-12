@@ -1,5 +1,5 @@
 import {
-  useAiStatus,
+  useAiStatusSince,
   useConfirmWidget,
   useDashboards,
   useHomeDashboard,
@@ -169,8 +169,8 @@ function NewWidget({ dashboardId }: { dashboardId: string }) {
   const draft: Widget | null = tested && !draftQ.isError ? (draftQ.data ?? tested.widget) : null;
   // Its agent has no AI: the test waits for one (no build started), and runs again once one is connected.
   const needsAi = Boolean(draft && widgetNeedsAi(draft));
-  const aiWay = useWidgetAiWay(needsAi ? draft?.agentId : null);
-  const aiStatus = useAiStatus(orgId, needsAi).data;
+  const aiWay = useWidgetAiWay(needsAi ? draft?.agentId : null, draft?.failure?.detail);
+  const aiStatus = useAiStatusSince(orgId, needsAi);
   const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
   const retested = useRef(false);
   const currentKey = testKeyOf(text, agentId, format);

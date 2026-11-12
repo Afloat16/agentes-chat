@@ -21,7 +21,7 @@ export function widgetNoticeLine(t: TFunction, n: AppNotification, dir: Dir): st
   if (!notice) return null;
   const name = notice.agentId ? (dir.anyAgent(notice.agentId)?.name ?? t("channel.unknownAgent")) : "";
   if (notice.kind === "alert") return notice.text || null;
-  if (notice.kind === "failed") return failureText(t, { code: notice.reason, detail: notice.text }, name);
+  if (notice.kind === "failed") return failureText(t, { code: notice.reason, detail: notice.detail }, name);
   return notice.audience === "roles"
     ? t("widgets.notice.proposalRoles", { title: notice.title, roles: namesText(t, notice.roles) })
     : t("widgets.notice.proposalWorkspace", { title: notice.title });
@@ -53,7 +53,7 @@ export function WidgetNoticeActions({
   const notice = widgetNoticeOf(n);
   // Waiting for an AI: Connect, never Resolve (it builds by itself once one is there).
   const needsAi = notice?.kind === "failed" && notice.reason === "missing_credential";
-  const aiWay = useWidgetAiWay(needsAi ? notice.agentId : null);
+  const aiWay = useWidgetAiWay(needsAi ? notice.agentId : null, needsAi ? notice.detail : null);
   if (!notice) return null;
   const say = (e: unknown) => toast.show(errorText(t, e, i18n.language), "error");
   const stop = (run: () => void) => (e: { stopPropagation: () => void }) => {

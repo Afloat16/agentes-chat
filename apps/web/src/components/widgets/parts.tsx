@@ -1,7 +1,7 @@
 import type { Widget, WidgetFailure, WidgetKind } from "@agenteschat/client";
 import { widgetFailureKey, widgetNeedsAi } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
-import { maySetAgentAi, noAiLockedLine } from "@agenteschat/client/lib/no-ai";
+import { maySetAgentAi, noAiLockedLine, planKeyIntent } from "@agenteschat/client/lib/no-ai";
 import { type AgentColor, Icon, PixelSpinner } from "@agenteschat/ui";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -56,11 +56,13 @@ export const widgetBodyText = (t: TFunction, widget: Pick<Widget, "status" | "fa
 
 /**
  * What a widget waiting for an AI offers the viewer (the board, its panel, its notice, New widget's test): Connect to
- * whoever may set its agent's AI (for the right hand the workspace's, since a build thinks with nobody's own), else
- * who can. Nothing on a billing hold (an AI comes after the plan, which the hold's own banner says).
+ * whoever may set its agent's AI (for the right hand the workspace's, since a build thinks with nobody's own; on a
+ * plan that can't take it, `reason` a plan line, a key: `planKeyIntent`), else who can. Nothing on a billing hold (an
+ * AI comes after the plan, which the hold's own banner says).
  */
 export function useWidgetAiWay(
   agentId: string | null | undefined,
+  reason?: string | null,
 ): { connect: () => void } | { locked: string } | null {
   const { t } = useTranslation();
   const { org, me } = useOrg();
@@ -69,15 +71,16 @@ export function useWidgetAiWay(
   const held = usePlanHold() !== null;
   const agent = agentId ? dir.agentById.get(agentId) : undefined;
   if (!agent || !connect || held) return null;
-  if (maySetAgentAi(agent, me.user.id, org)) return { connect: () => connect.open({ agentId: agent.id }) };
+  if (maySetAgentAi(agent, me.user.id, org))
+    return { connect: () => connect.open({ agentId: agent.id, ...planKeyIntent(agent, reason) }) };
   const owner = agent.ownerUserId ? dir.memberById.get(agent.ownerUserId)?.name : null;
   return { locked: noAiLockedLine(t, agent.name, owner) };
 }
 
 /** After the reason of a widget waiting for an AI: Connect, or who can connect it (`useWidgetAiWay`). */
-function NeedsAiWay({ agentId }: { agentId: string }) {
+function NeedsAiWay({ agentId, reason }: { agentId: string; reason: string | null }) {
   const { t } = useTranslation();
-  const way = useWidgetAiWay(agentId);
+  const way = useWidgetAiWay(agentId, reason);
   if (!way) return null;
   if (!("connect" in way)) return way.locked;
   return (
@@ -141,7 +144,7 @@ export function WidgetFoot({
         <span>
           {failureText(t, widget.failure, name)}{" "}
           {needsAi ? (
-            <NeedsAiWay agentId={widget.agentId} />
+            <NeedsAiWay agentId={widget.agentId} reason={widget.failure?.detail ?? null} />
           ) : (
             onResolve && (
               <button

@@ -41728,6 +41728,9 @@
   "widgets.needsAi.cli_missing": {
     "value": "{{name}}'s AI program isn't installed on the computer."
   },
+  "widgets.needsAi.plan_not_shared": {
+    "value": "{{name}}'s plan serves only its owner, so it can't update widgets."
+  },
   "widgets.menu.label": {
     "value": "More"
   },
@@ -42638,7 +42641,7 @@
     "value": "Test it first: the widget is created once its test works."
   },
   "dashboards.errors.needsAi": {
-    "value": "{{agentName}} has no AI connected yet. Connect one and the widget builds by itself."
+    "value": "{{agentName}} can't update this widget yet. The widget says why."
   },
   "teamPlan.start.templates": {
     "value": "See team templates"

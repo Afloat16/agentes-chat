@@ -17208,7 +17208,8 @@
       "short": "Braucht eine KI",
       "not_signed_in": "Das Abo von {{name}} ist abgemeldet.",
       "no_computer": "Die KI von {{name}} braucht einen Computer, und es gibt keinen.",
-      "cli_missing": "Das KI-Programm von {{name}} ist auf dem Computer nicht installiert."
+      "cli_missing": "Das KI-Programm von {{name}} ist auf dem Computer nicht installiert.",
+      "plan_not_shared": "Das Abo von {{name}} antwortet nur der Person, der es gehört, deshalb kann es keine Widgets aktualisieren."
     },
     "menu": {
       "label": "Mehr",
@@ -17572,7 +17573,7 @@
       "notAgentMessage": "Nur das Diagramm eines Agenten kann angeheftet werden.",
       "promptRequired": "Sag, was das Widget zeigen soll.",
       "notTested": "Teste es zuerst: Das Widget wird erstellt, sobald sein Test klappt.",
-      "needsAi": "{{agentName}} hat noch keine KI verbunden. Verbinde eine, dann wird das Widget von selbst gebaut."
+      "needsAi": "{{agentName}} kann dieses Widget noch nicht aktualisieren. Das Widget sagt, warum."
     }
   },
   "teamPlan": {

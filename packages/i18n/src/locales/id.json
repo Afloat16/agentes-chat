@@ -16760,7 +16760,8 @@
       "short": "Butuh AI",
       "not_signed_in": "Paket {{name}} sudah keluar dari akun.",
       "no_computer": "AI {{name}} butuh komputer dan tidak ada satu pun.",
-      "cli_missing": "Program AI {{name}} tidak terpasang di komputer."
+      "cli_missing": "Program AI {{name}} tidak terpasang di komputer.",
+      "plan_not_shared": "Paket {{name}} hanya melayani pemiliknya, jadi tidak bisa memperbarui widget."
     },
     "menu": {
       "label": "Lainnya",
@@ -17119,7 +17120,7 @@
       "notAgentMessage": "Hanya grafik dari agen yang bisa disematkan.",
       "promptRequired": "Sebutkan apa yang harus ditampilkan widget.",
       "notTested": "Uji dulu: widget dibuat setelah ujinya berhasil.",
-      "needsAi": "{{agentName}} belum punya AI yang terhubung. Hubungkan satu, lalu widget dibuat dengan sendirinya."
+      "needsAi": "{{agentName}} belum bisa memperbarui widget ini. Widget-nya menjelaskan alasannya."
     }
   },
   "teamPlan": {

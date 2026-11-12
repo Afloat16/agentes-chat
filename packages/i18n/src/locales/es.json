@@ -17700,7 +17700,8 @@
       "short": "Necesita una IA",
       "not_signed_in": "Se cerró la sesión del plan de {{name}}.",
       "no_computer": "La IA de {{name}} necesita una computadora y no hay ninguna.",
-      "cli_missing": "El programa de la IA de {{name}} no está instalado en la computadora."
+      "cli_missing": "El programa de la IA de {{name}} no está instalado en la computadora.",
+      "plan_not_shared": "El plan de {{name}} solo atiende a su dueño, así que no puede actualizar widgets."
     },
     "menu": {
       "label": "Más",
@@ -18069,7 +18070,7 @@
       "notAgentMessage": "Solo se puede fijar el gráfico de un agente.",
       "promptRequired": "Di qué debe mostrar el widget.",
       "notTested": "Pruébalo antes: el widget se crea cuando la prueba funciona.",
-      "needsAi": "{{agentName}} todavía no tiene una IA conectada. Conecta una y el widget se crea solo."
+      "needsAi": "{{agentName}} todavía no puede actualizar este widget. El widget dice por qué."
     }
   },
   "teamPlan": {

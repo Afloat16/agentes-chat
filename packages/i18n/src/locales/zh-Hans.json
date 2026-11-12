@@ -16834,7 +16834,8 @@
       "short": "需要 AI",
       "not_signed_in": "{{name}} 的套餐已退出登录。",
       "no_computer": "{{name}} 的 AI 需要一台电脑，但现在没有。",
-      "cli_missing": "{{name}} 的电脑上没有安装 AI 的程序。"
+      "cli_missing": "{{name}} 的电脑上没有安装 AI 的程序。",
+      "plan_not_shared": "{{name}} 的套餐只回复其所有者，所以无法更新小组件。"
     },
     "menu": {
       "label": "更多",
@@ -17193,7 +17194,7 @@
       "notAgentMessage": "只能固定智能体的图表。",
       "promptRequired": "说说小组件应该显示什么。",
       "notTested": "请先测试：测试成功后才会创建小组件。",
-      "needsAi": "{{agentName}} 还没有连接 AI。连接后，小组件会自动创建。"
+      "needsAi": "{{agentName}} 还无法更新这个小组件。原因见小组件上的说明。"
     }
   },
   "teamPlan": {

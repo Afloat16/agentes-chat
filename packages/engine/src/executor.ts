@@ -1504,7 +1504,7 @@ async function executeRunInner(
   };
   /**
    * Nothing to think with (ADR 0061): the run fails with `no_ai`, and the conversation gets its agent's
-   * card with Connect. Background work only fails (its routine says why).
+   * card with Connect. Background work only fails, its routine run keeping why (a widget says it, ADR 0135 §20).
    */
   const failNoAi = async (why: NoAiCardReason, own?: AgentAi["own"], model?: string, said?: string) => {
     if (!run.background) {
@@ -1513,7 +1513,7 @@ async function executeRunInner(
         .catch((error) => addRunStep(db, run, "error", { reason: "no_ai_card", message: String(error) }))
         .catch(() => {});
     }
-    await fail(NO_AI);
+    await fail(NO_AI, { code: NO_AI, detail: why });
   };
 
   /**

@@ -1,7 +1,7 @@
 import type { Agent, PinnableBlock, Widget, WidgetFormat, WidgetSchedule, WidgetSize } from "@agenteschat/client";
 import {
   useAgents,
-  useAiStatus,
+  useAiStatusSince,
   useConfirmWidget,
   useDashboards,
   useHomeDashboard,
@@ -186,10 +186,10 @@ function NewWidgetBody({
   const draft = draftId && live?.id === draftId ? live : undefined;
   // Its agent has no AI: the test waits for one (no build started), and runs again once one is connected.
   const needsAi = Boolean(draft && widgetNeedsAi(draft));
-  const aiStatus = useAiStatus(orgId, needsAi).data;
+  const aiStatus = useAiStatusSince(orgId, needsAi);
   const aiBack = Boolean(draft && widgetAiReady(draft, aiStatus));
   const retested = useRef(false);
-  const aiWay = useWidgetAiWay(draft?.agentId);
+  const aiWay = useWidgetAiWay(draft?.agentId, draft?.failure?.detail);
 
   // A draft nobody created is deleted when the dialog closes or another test replaces it (the server sweeps any
   // left behind after a day). `pending` is the draft still to delete; one being created is kept.

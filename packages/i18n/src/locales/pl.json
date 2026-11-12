@@ -18317,7 +18317,8 @@
       "short": "Potrzebuje AI",
       "not_signed_in": "Plan agenta {{name}} jest wylogowany.",
       "no_computer": "AI agenta {{name}} potrzebuje komputera, a nie ma żadnego.",
-      "cli_missing": "Program AI agenta {{name}} nie jest zainstalowany na komputerze."
+      "cli_missing": "Program AI agenta {{name}} nie jest zainstalowany na komputerze.",
+      "plan_not_shared": "Plan agenta {{name}} odpowiada tylko swojemu właścicielowi, więc nie może aktualizować widżetów."
     },
     "menu": {
       "label": "Więcej",
@@ -18691,7 +18692,7 @@
       "notAgentMessage": "Przypiąć można tylko wykres agenta.",
       "promptRequired": "Napisz, co ma pokazywać widżet.",
       "notTested": "Najpierw przetestuj: widżet powstaje, gdy test się uda.",
-      "needsAi": "{{agentName}} nie ma jeszcze podłączonej AI. Podłącz ją, a widżet utworzy się sam."
+      "needsAi": "{{agentName}} nie może jeszcze zaktualizować tego widżetu. Widżet podaje powód."
     }
   },
   "teamPlan": {

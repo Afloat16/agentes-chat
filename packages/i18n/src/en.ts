@@ -17385,6 +17385,8 @@ export const en = {
       no_computer: "{{name}}'s AI needs a computer and there is none.",
       /** The program of its AI isn't installed on its computer. */
       cli_missing: "{{name}}'s AI program isn't installed on the computer.",
+      /** The right hand's workspace plan with "Atende outras pessoas" off: a widget's updates are nobody's request. */
+      plan_not_shared: "{{name}}'s plan serves only its owner, so it can't update widgets.",
     },
     menu: {
       label: "More",
@@ -17754,7 +17756,8 @@ export const en = {
       notAgentMessage: "Only an agent's chart can be pinned.",
       promptRequired: "Say what the widget should show.",
       notTested: "Test it first: the widget is created once its test works.",
-      needsAi: "{{agentName}} has no AI connected yet. Connect one and the widget builds by itself.",
+      /** Update now or Ask for a change on a widget waiting for an AI: the widget itself says the cause and the way out. */
+      needsAi: "{{agentName}} can't update this widget yet. The widget says why.",
     },
     // end of dashboards
   },

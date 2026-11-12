@@ -33,7 +33,7 @@ import {
   WIDGET_UP_FRONT_MAX,
   widgetUpFront,
 } from "../src";
-import { widgetFailureCode } from "../src/dashboards/refresh-ledger";
+import { holdWidgetForAi, widgetFailureCode } from "../src/dashboards/refresh-ledger";
 import { addMember, type Fixture, setup } from "./fixtures";
 import {
   agentRunRow,
@@ -568,7 +568,40 @@ describe("an agent with no AI", () => {
     expect((await historyOf(w.id)).map((h) => h.failureCode)).toEqual(["missing_credential"]);
     const told = await notificationsOf(f, "widget_failed");
     expect(told).toHaveLength(1);
-    expect(told[0]?.latest).toMatchObject({ reason: "missing_credential" });
+    // Why, for the apps' words, apart from the text the island and the push show as it is.
+    expect(told[0]?.latest).toMatchObject({ reason: "missing_credential", detail: "no_key" });
+    expect(told[0]?.latest.text).toBeUndefined();
+  });
+
+  test("it says so again only when why changes, in its history and on the widget", async () => {
+    await setupWidgets(() => ({ chunks: ["Ok."] }));
+    const b = await board();
+    const w = await shownWidget(b.id);
+    const [row] = await f.db.select().from(schema.dashboards).where(eq(schema.dashboards.id, b.id));
+    if (!row) throw new Error("no board");
+    const hold = async (reason: string) => holdWidgetForAi(dash(), await widgetOf(w.id), row, reason);
+    await hold("no_key");
+    await hold("no_key");
+    expect((await historyOf(w.id)).map((h) => h.summary)).toEqual(["no_key"]);
+    await hold("not_signed_in");
+    expect((await historyOf(w.id)).map((h) => h.summary)).toEqual(["no_key", "not_signed_in"]);
+    expect(await widgetOf(w.id)).toMatchObject({ failureCode: "missing_credential", failureDetail: "not_signed_in" });
+    // One notice for the streak, whatever the reason does after.
+    expect(await notificationsOf(f, "widget_failed")).toHaveLength(1);
+  });
+
+  test("a run that finds no AI after all keeps why, and the widget says it", async () => {
+    await setupWidgets(() => ({ chunks: ["Ok."] }));
+    const b = await board();
+    const w = await shownWidget(b.id, { schedule: "hour" });
+    // Its slot fired while the key was there; the key went before its run thought.
+    await fireWidget(w.routineId ?? "");
+    await revokeKeys(new Date());
+    await drainOutbox(f.db, f.handlers);
+    expect((await f.db.select().from(schema.routineRuns))[0]).toMatchObject({ status: "failed", code: "no_ai" });
+    expect(await widgetOf(w.id)).toMatchObject({ failureCode: "missing_credential", failureDetail: "no_key" });
+    const [told] = await notificationsOf(f, "widget_failed");
+    expect(told?.latest).toMatchObject({ reason: "missing_credential", detail: "no_key" });
   });
 
   test("the apps' own build once it has an AI only queues: it never takes the routine over or resumes it", async () => {

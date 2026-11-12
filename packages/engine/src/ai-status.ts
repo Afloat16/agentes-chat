@@ -8,7 +8,7 @@ import { type BrainKind, isComputerBrain } from "./brains/types";
 import type { ModelGateway } from "./gateway";
 import type { MachineStatus } from "./machine-hub";
 import { missionTurnFor } from "./missions-engine";
-import { isRightHand, rightHandPerson, thinkingAgent } from "./right-hand";
+import { isRightHand, rightHandNoAiReason, rightHandPerson, thinkingAgent } from "./right-hand";
 import { orgKeyProviders, orgModelProvider, type RoutingSetup } from "./router";
 import { planSignInsOf } from "./router-plan";
 import type { AgentRun } from "./runs";
@@ -101,14 +101,22 @@ export const ownNotSignedIn = (code: string, kind: BrainKind, account: unknown):
 
 /**
  * One agent (for one run, when given: right after its row is read, before any judge or model call). `viewer`: with no
- * run, whose DM with the right hand it is asked for (its AI is each person's own, §11).
+ * run, whose DM with the right hand it is asked for (its AI is each person's own, §11). `background`: for work no
+ * person is behind (`backgroundAiState`).
  */
-export async function agentAiState(deps: AiStatusDeps, given: AiAgent, run?: AiRun, viewer?: string): Promise<AgentAi> {
+export async function agentAiState(
+  deps: AiStatusDeps,
+  given: AiAgent,
+  run?: AiRun,
+  viewer?: string,
+  background = false,
+): Promise<AgentAi> {
   const person = run ? await rightHandPerson(deps.db, given, run) : (viewer ?? null);
   const agent = await thinkingAgent(deps.db, given, person);
-  // The workspace's plan while "Atende outras pessoas" is off: it thinks for nobody but its owner.
-  if (isRightHand(agent) && brainOf(agent.brain) !== "model" && !agent.planForOthers && person) {
-    if (person !== agent.ownerUserId) return { state: "no_ai", reason: "plan_not_shared" };
+  // The workspace's plan while "Atende outras pessoas" is off: it thinks for nobody but its owner, so for no work
+  // nobody is behind either (its run refuses that as `plan_unattended`).
+  if (isRightHand(agent) && brainOf(agent.brain) !== "model" && !agent.planForOthers) {
+    if (person ? person !== agent.ownerUserId : background) return { state: "no_ai", reason: "plan_not_shared" };
   }
   const mission = run ? await missionTurnFor(deps.db, run).catch(() => null) : null;
   const kind = mission?.brain ?? brainOf(agent.brain);
@@ -126,18 +134,29 @@ export async function agentAiState(deps: AiStatusDeps, given: AiAgent, run?: AiR
   const unavailable =
     machineId && !deps.machines ? null : computerBrainUnavailable(kind, machineId, status, Date.now(), account);
   if (!unavailable) return READY;
-  if (mayFallBack(agent, { background: run?.background ?? false }) && (await modelReady(deps, agent))) return READY;
-  return NO_AI_CODES.has(unavailable.code)
-    ? { state: "no_ai", reason: noAiReasonOf(unavailable.code), ...ownNotSignedIn(unavailable.code, kind, account) }
-    : { state: "waiting" };
+  if (mayFallBack(agent, { background: background || (run?.background ?? false) }) && (await modelReady(deps, agent)))
+    return READY;
+  if (NO_AI_CODES.has(unavailable.code))
+    return {
+      state: "no_ai",
+      reason: noAiReasonOf(unavailable.code),
+      ...ownNotSignedIn(unavailable.code, kind, account),
+    };
+  // The right hand never waits for its plan (ADR 0137 §7): its background work has no AI while that plan can't think,
+  // unless its run wakes the computer from standby first (`computerBackSoon`). The codes left here are never
+  // `plan_hold` or `plan_unattended`.
+  if (background && isRightHand(agent) && !status?.standby)
+    return { state: "no_ai", reason: rightHandNoAiReason(unavailable.code) as NoAiReason };
+  return { state: "waiting" };
 }
 
 /**
  * What an agent's background work (a routine, a widget's build) thinks with: never the model brain standing in for its
- * computer brain (ADR 0053 §6.4), and for the right hand the workspace's own AI, nobody's (ADR 0137 §11).
+ * computer brain (ADR 0053 §6.4), and for the right hand the workspace's own AI, nobody's (ADR 0137 §11), which
+ * neither answers work nobody asked for while it serves only its owner nor waits for its computer.
  */
 export const backgroundAiState = (deps: AiStatusDeps, agent: AiAgent) =>
-  agentAiState(deps, { ...agent, brainFallback: false });
+  agentAiState(deps, agent, undefined, undefined, true);
 
 const agentFields = {
   id: schema.agents.id,

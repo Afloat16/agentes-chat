@@ -95,7 +95,7 @@ function Detail({ widget: w, refetch }: { widget: WidgetDetail; refetch: () => P
   const remove = useRemoveWidget(orgId);
   useBuildOnceAi(orgId, w, w.canEdit);
   const needsAi = widgetNeedsAi(w);
-  const aiWay = useWidgetAiWay(needsAi ? w.agentId : null);
+  const aiWay = useWidgetAiWay(needsAi ? w.agentId : null, w.failure?.detail);
   const [open, setOpen] = useState<"title" | "schedule" | "alert" | null>(null);
   const [alertOn, setAlertOn] = useState(w.alert.enabled);
   const [condition, setCondition] = useState(w.alert.condition);

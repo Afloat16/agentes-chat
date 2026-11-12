@@ -219,16 +219,35 @@ export const WIDGET_FAILURE_CODES = [
 ] as const;
 export type WidgetFailureCode = (typeof WIDGET_FAILURE_CODES)[number];
 
-/** Why a widget's agent has no AI for its build (`missing_credential`'s detail) with words of its own; `no_key` has none. */
-const NEEDS_AI_REASONS = ["not_signed_in", "no_computer", "cli_missing"] as const;
+/**
+ * Why a widget's agent has no AI for its build (`missing_credential`'s detail, `AgentAi.reason`) in words: a widget's
+ * own, else the right hand's plan line (that plan never waits, so its computer away or its limit is no AI either,
+ * ADR 0137 §7). `no_key`, and any other, keep the code's words.
+ */
+const NEEDS_AI_WORDS = {
+  not_signed_in: "widgets.needsAi.not_signed_in",
+  no_computer: "widgets.needsAi.no_computer",
+  cli_missing: "widgets.needsAi.cli_missing",
+  plan_not_shared: "widgets.needsAi.plan_not_shared",
+  // Its run's word for the same: no person is behind a build.
+  plan_unattended: "widgets.needsAi.plan_not_shared",
+  computer_away: "widgets.failure.waiting_computer",
+  plan_limit: "widgets.failure.waiting_plan",
+  model_limit: "widgets.failure.waiting_plan",
+  commands_off: "noAi.rightHand.commands_off",
+  runner_outdated: "noAi.rightHand.runner_outdated",
+  computer_failed: "noAi.rightHand.computer_failed",
+  cli_failed: "noAi.rightHand.cli_failed",
+  plan_tools: "noAi.rightHand.plan_tools",
+} as const;
 
 /**
- * The key of a failure's words: `widgets.failure.*` by its code, or `widgets.needsAi.*` for the reason a widget waits
- * for an AI (`detail`). `agent_reported` shows the agent's own words instead.
+ * The key of a failure's words: `widgets.failure.*` by its code, or the reason a widget waits for an AI (`detail`,
+ * `NEEDS_AI_WORDS`). `agent_reported` shows the agent's own words instead.
  */
 export function widgetFailureKey(code: string, detail?: string | null) {
-  const reason = NEEDS_AI_REASONS.find((r) => r === detail);
-  if (code === "missing_credential" && reason) return `widgets.needsAi.${reason}` as const;
+  if (code === "missing_credential" && detail && Object.hasOwn(NEEDS_AI_WORDS, detail))
+    return NEEDS_AI_WORDS[detail as keyof typeof NEEDS_AI_WORDS];
   const known = (WIDGET_FAILURE_CODES as readonly string[]).includes(code) ? (code as WidgetFailureCode) : "error";
   return `widgets.failure.${known}` as const;
 }

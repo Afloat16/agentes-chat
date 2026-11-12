@@ -393,7 +393,7 @@ export function dashboardRoutes(deps: AppDeps) {
       security,
       summary: "Update now, or Resolve a failed widget: its agent redoes it",
       description:
-        "Its agent with no AI starts no run: 409 `widget.needs_ai` (`params.agentName`), and the widget says it waits for one (`failed`, `missing_credential`, the reason in `failure.detail`: `no_key`, `not_signed_in`, `no_computer` or `cli_missing`).",
+        "Its agent with no AI starts no run: 409 `widget.needs_ai` (`params.agentName`), and the widget says it waits for one (`failed`, `missing_credential`, the reason in `failure.detail`: `no_key`, `not_signed_in`, `no_computer`, `cli_missing`, or for the right hand `plan_not_shared` (a plan that serves only its owner takes no build) or its plan line, such as `computer_away`).",
       request: { params: WidgetParams, body: body(WidgetRefreshBody) },
       responses: { 200: json(Widget), ...errors },
     }),

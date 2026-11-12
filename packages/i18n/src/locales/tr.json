@@ -17137,7 +17137,8 @@
       "short": "Yapay zeka gerekiyor",
       "not_signed_in": "{{name}} adlı ajanın planının oturumu kapandı.",
       "no_computer": "{{name}} adlı ajanın yapay zekasının bir bilgisayara ihtiyacı var ama hiç yok.",
-      "cli_missing": "{{name}} adlı ajanın yapay zeka programı bilgisayarda kurulu değil."
+      "cli_missing": "{{name}} adlı ajanın yapay zeka programı bilgisayarda kurulu değil.",
+      "plan_not_shared": "{{name}} adlı ajanın planı yalnızca sahibine yanıt verir, bu yüzden widget'ları güncelleyemez."
     },
     "menu": {
       "label": "Daha fazla",
@@ -17501,7 +17502,7 @@
       "notAgentMessage": "Yalnızca bir ajanın grafiği sabitlenebilir.",
       "promptRequired": "Widget'ın ne göstermesi gerektiğini yazın.",
       "notTested": "Önce test edin: widget, testi başarılı olunca oluşturulur.",
-      "needsAi": "{{agentName}} için henüz bağlı bir yapay zeka yok. Bir tane bağlayın, widget kendiliğinden oluşturulur."
+      "needsAi": "{{agentName}} bu widget'ı henüz güncelleyemiyor. Nedeni widget'ta yazıyor."
     }
   },
   "teamPlan": {

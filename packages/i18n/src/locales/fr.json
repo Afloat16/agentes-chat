@@ -17843,7 +17843,8 @@
       "short": "Besoin d'une IA",
       "not_signed_in": "L'abonnement de {{name}} est déconnecté.",
       "no_computer": "L'IA de {{name}} a besoin d'un ordinateur et il n'y en a aucun.",
-      "cli_missing": "Le programme de l'IA de {{name}} n'est pas installé sur l'ordinateur."
+      "cli_missing": "Le programme de l'IA de {{name}} n'est pas installé sur l'ordinateur.",
+      "plan_not_shared": "L'abonnement de {{name}} ne répond qu'à son propriétaire, il ne peut donc pas mettre à jour les widgets."
     },
     "menu": {
       "label": "Plus",
@@ -18212,7 +18213,7 @@
       "notAgentMessage": "Seul le graphique d'un agent peut être épinglé.",
       "promptRequired": "Dites ce que le widget doit afficher.",
       "notTested": "Testez d'abord : le widget est créé une fois le test réussi.",
-      "needsAi": "{{agentName}} n'a pas encore d'IA connectée. Connectez-en une et le widget se crée tout seul."
+      "needsAi": "{{agentName}} ne peut pas encore mettre à jour ce widget. Le widget indique pourquoi."
     }
   },
   "teamPlan": {

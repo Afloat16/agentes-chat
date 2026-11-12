@@ -203,6 +203,7 @@ export async function failWidget(
       streakKey: failure.routineRunId ?? String(Date.now()),
       reason: shown,
       text: code === WIDGET_FAILURES.agentReported ? detail : null,
+      detail: shown === NEEDS_AI ? detail : null,
     }).catch(() => {});
   }
   await publishWidgetChanged(deps.pubsub, board, widgetEvent(widget, "failed")).catch(() => {});
@@ -294,7 +295,12 @@ export async function widgetRoutineEnded(
     // Deleted with its widget or board, or in Routines (`widgetRoutineGone` settles the widget): nothing to say.
     if (!widget || !board || board.deletedAt || routine.deletedAt) return end.status;
     const [rr] = await db
-      .select({ agentRunId: routineRuns.agentRunId, code: routineRuns.code, event: routineRuns.event })
+      .select({
+        agentRunId: routineRuns.agentRunId,
+        code: routineRuns.code,
+        event: routineRuns.event,
+        summary: routineRuns.summary,
+      })
       .from(routineRuns)
       .where(and(eq(routineRuns.id, end.routineRunId), eq(routineRuns.orgId, end.orgId)));
     const agentRunId = end.agentRunId ?? rr?.agentRunId ?? null;
@@ -357,6 +363,8 @@ export async function widgetRoutineEnded(
         if (applied) return "failed";
         await failWidget(deps, widget, board, {
           code: end.code ?? WIDGET_FAILURES.error,
+          // Its run found no AI after all: why, as the run kept it (`AgentAi.reason`), for the apps' words.
+          detail: end.code === "no_ai" ? rr?.summary : null,
           routineRunId: end.routineRunId,
           agentRunId,
           change,

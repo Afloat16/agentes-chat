@@ -22,7 +22,7 @@ import {
   sha256,
   takeBackPlan,
 } from "../src";
-import { agentAiState, orgAiStatus, orgHasAi } from "../src/ai-status";
+import { agentAiState, backgroundAiState, orgAiStatus, orgHasAi } from "../src/ai-status";
 import { addMember, type Fixture, setup } from "./fixtures";
 import { pairMachine } from "./machine-fixtures";
 
@@ -182,19 +182,35 @@ test("the workspace's plan serves only its owner until they open it; the AI stat
   const status = { db: fx.db, gateway: fx.gateway, machines };
   const of = async (viewer: string) =>
     (await orgAiStatus(status, fx.org.id, viewer)).agents.find((a) => a.agentId === lodi.id);
-  // Background work (a widget's build) thinks with the workspace's plan, whoever looks.
-  expect(await of(bia.id)).toMatchObject({ state: "no_ai", reason: "plan_not_shared", background: "ready" });
-  expect(await of(fx.owner.id)).toEqual({ agentId: lodi.id, state: "ready" });
-  // Her own plan answers her whatever the workspace's does.
+  // Background work (a widget's build) thinks with the workspace's plan, and no person is behind it: that plan takes
+  // none of it, whoever looks.
+  expect(await of(bia.id)).toEqual({ agentId: lodi.id, state: "no_ai", reason: "plan_not_shared" });
+  expect(await of(fx.owner.id)).toEqual({ agentId: lodi.id, state: "ready", background: "no_ai" });
+  // Her own plan answers her whatever the workspace's does, never a build.
   await setAgentBrain(deps, bia.id, fx.org.id, lodi.id, { scope: "mine", brain: "claude_code", account: BIAS });
-  expect(await of(bia.id)).toMatchObject({ state: "ready" });
+  expect(await of(bia.id)).toEqual({ agentId: lodi.id, state: "ready", background: "no_ai" });
   expect((await runIn(bia.id)).unavailable).toBeUndefined();
-  // Opened to everyone, the workspace's serves whoever has none.
+  // Opened to everyone, the workspace's serves whoever has none, and background work too.
   await setAgentBrain(deps, fx.owner.id, fx.org.id, lodi.id, { onlyOwner: false });
   const [agent] = await fx.db.select().from(schema.agents).where(eq(schema.agents.id, lodi.id));
   if (!agent) throw new Error("no right hand");
   const caio = await addMember(fx.db, fx.org.id, "member", "dani");
   expect(await agentAiState(status, agent, undefined, caio.id)).toMatchObject({ state: "ready" });
+  expect(await of(fx.owner.id)).toEqual({ agentId: lodi.id, state: "ready" });
+  expect(await backgroundAiState(status, agent)).toEqual({ state: "ready" });
+  // Its computer away, a chat shows it waiting, but its run never waits for it: a build has no AI meanwhile, unless
+  // that computer is only asleep (its run wakes it).
+  const away = (more: Partial<MachineStatus> = {}) => ({
+    ...status,
+    machines: { status: async (id: string) => ({ ...statusOf(id), online: false, ...more }) },
+  });
+  expect((await orgAiStatus(away(), fx.org.id, fx.owner.id)).agents.find((a) => a.agentId === lodi.id)).toEqual({
+    agentId: lodi.id,
+    state: "waiting",
+    background: "no_ai",
+  });
+  expect(await backgroundAiState(away(), agent)).toEqual({ state: "no_ai", reason: "computer_away" });
+  expect(await backgroundAiState(away({ standby: true }), agent)).toEqual({ state: "waiting" });
 });
 
 test("a decision on its card wakes it for the person behind the card's run, on that person's own plan", async () => {

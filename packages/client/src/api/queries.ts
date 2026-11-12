@@ -3026,6 +3026,25 @@ export const useAiStatus = (
   });
 };
 
+/**
+ * The AI status as read after `waiting` turned true (it is read again then), undefined until it is: one kept from
+ * before something started waiting for an AI may still call its agent ready, and a build asked on it is only refused.
+ */
+export function useAiStatusSince(orgId: string, waiting: boolean): AiStatus | undefined {
+  const status = useAiStatus(orgId, waiting);
+  const [since, setSince] = useState<number | null>(null);
+  const { refetch } = status;
+  useEffect(() => {
+    if (!waiting) {
+      setSince(null);
+      return;
+    }
+    setSince(Date.now());
+    void refetch({ cancelRefetch: false });
+  }, [waiting, refetch]);
+  return since !== null && status.dataUpdatedAt >= since ? status.data : undefined;
+}
+
 export function useRotateCredential(orgId: string, silent = false) {
   const api = useApi();
   const qc = useQueryClient();

@@ -17384,7 +17384,8 @@
       "short": "Heeft een AI nodig",
       "not_signed_in": "Het abonnement van {{name}} is uitgelogd.",
       "no_computer": "De AI van {{name}} heeft een computer nodig en die is er niet.",
-      "cli_missing": "Het AI-programma van {{name}} is niet op de computer geïnstalleerd."
+      "cli_missing": "Het AI-programma van {{name}} is niet op de computer geïnstalleerd.",
+      "plan_not_shared": "Het abonnement van {{name}} antwoordt alleen de eigenaar, dus het kan geen widgets bijwerken."
     },
     "menu": {
       "label": "Meer",
@@ -17748,7 +17749,7 @@
       "notAgentMessage": "Alleen de grafiek van een agent kan worden vastgezet.",
       "promptRequired": "Zeg wat de widget moet tonen.",
       "notTested": "Test hem eerst: de widget wordt gemaakt zodra de test lukt.",
-      "needsAi": "{{agentName}} heeft nog geen AI gekoppeld. Koppel er een en de widget wordt vanzelf gebouwd."
+      "needsAi": "{{agentName}} kan deze widget nog niet bijwerken. De widget zegt waarom."
     }
   },
   "teamPlan": {

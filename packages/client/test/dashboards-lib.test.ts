@@ -27,6 +27,7 @@ import {
   widgetStepWords,
   withEditRoles,
 } from "../src/index";
+import { planKeyIntent } from "../src/lib/no-ai";
 
 const summary = (over: Partial<DashboardSummary>): DashboardSummary => ({
   id: "d",
@@ -230,6 +231,25 @@ describe("words", () => {
     expect(widgetFailureKey("missing_credential", "cli_missing")).toBe("widgets.needsAi.cli_missing");
     expect(widgetFailureKey("missing_credential", "no_key")).toBe("widgets.failure.missing_credential");
     expect(widgetFailureKey("no_update", "not_signed_in")).toBe("widgets.failure.no_update");
+    // The right hand on a plan that serves only its owner, as the hold and as its run say it.
+    expect(widgetFailureKey("missing_credential", "plan_not_shared")).toBe("widgets.needsAi.plan_not_shared");
+    expect(widgetFailureKey("missing_credential", "plan_unattended")).toBe("widgets.needsAi.plan_not_shared");
+    // Its plan away or held: a widget's own words where it has them, else the plan's line.
+    expect(widgetFailureKey("missing_credential", "computer_away")).toBe("widgets.failure.waiting_computer");
+    expect(widgetFailureKey("missing_credential", "plan_limit")).toBe("widgets.failure.waiting_plan");
+    expect(widgetFailureKey("missing_credential", "commands_off")).toBe("noAi.rightHand.commands_off");
+    // Nothing a widget doesn't know, nor what any object has.
+    expect(widgetFailureKey("missing_credential", "toString")).toBe("widgets.failure.missing_credential");
+  });
+
+  test("Connect for a widget waiting on the right hand's plan opens on a key, the one AI its build can use", () => {
+    const hand = { builtin: "right_hand" as const, ownerUserId: "u-walter" };
+    expect(planKeyIntent(hand, "plan_not_shared")).toEqual({ intent: "api_key" });
+    expect(planKeyIntent(hand, "computer_away")).toEqual({ intent: "api_key" });
+    // No AI at all, or signed out: the plain dialog, whose plan or key fixes it.
+    expect(planKeyIntent(hand, "no_key")).toEqual({});
+    expect(planKeyIntent(hand, "not_signed_in")).toEqual({});
+    expect(planKeyIntent({ builtin: null, ownerUserId: "u-walter" }, "plan_not_shared")).toEqual({});
   });
 
   test("a widget whose agent has no AI waits for one, and may build once the AI status says it has one", () => {

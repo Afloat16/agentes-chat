@@ -1,8 +1,9 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useApi } from "../api/context";
+import { ApiError } from "../api/http";
 import { keys } from "../api/keys";
-import { useAiStatus } from "../api/queries";
+import { useAiStatusSince } from "../api/queries";
 import { widgetAiReady, widgetNeedsAi } from "./lib";
 import type {
   ConfirmWidgetInput,
@@ -402,20 +403,23 @@ const builtOnceAi = new Set<string>();
 
 /**
  * A widget waiting for an AI (`widgetNeedsAi`) starts building once its agent has one for background work, connected
- * from wherever, on any screen showing it to someone who may update it (ADR 0135 §20). Nobody pressed for it (`auto`):
- * it only queues, and the server checks again (still no AI, nothing starts).
+ * from wherever, on any screen showing it to someone who may update it (ADR 0135 §20), by a status read after it
+ * started waiting (`useAiStatusSince`). Nobody pressed for it (`auto`): it only queues, and the server checks again;
+ * still no AI there (`widget.needs_ai`), a later status may try once more.
  */
 export function useBuildOnceAi(orgId: string, widget: Widget | null | undefined, canEdit: boolean) {
   const api = useApi();
   const qc = useQueryClient();
-  const status = useAiStatus(orgId, Boolean(canEdit && widget && widgetNeedsAi(widget)));
-  const id = canEdit && widget && widgetAiReady(widget, status.data) ? widget.id : null;
+  const status = useAiStatusSince(orgId, Boolean(canEdit && widget && widgetNeedsAi(widget)));
+  const id = canEdit && widget && widgetAiReady(widget, status) ? widget.id : null;
   useEffect(() => {
     if (!id || builtOnceAi.has(id)) return;
     builtOnceAi.add(id);
     api.dashboards.refreshWidget(orgId, id, true).then(
       (built) => cacheWidget(qc, orgId, built),
-      () => {},
+      (e: unknown) => {
+        if (e instanceof ApiError && e.code === "widget.needs_ai") builtOnceAi.delete(id);
+      },
     );
   }, [id, api, qc, orgId]);
 }

@@ -7,7 +7,7 @@ import {
   widgetFailureKey,
 } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
-import { maySetAgentAi, noAiLockedLine } from "@agenteschat/client/lib/no-ai";
+import { maySetAgentAi, noAiLockedLine, planKeyIntent } from "@agenteschat/client/lib/no-ai";
 import { isEveryone, sortRoles } from "@agenteschat/client/lib/roles";
 import type { AgentColorName } from "@agenteschat/ui/agent/engine";
 import { useCallback, useMemo } from "react";
@@ -66,10 +66,12 @@ export function useWidgetWords() {
 /**
  * What a widget waiting for an AI offers this person (its screen, its card's footer, New widget's test), as the web's:
  * Connect to whoever may set its agent's AI (for the right hand the workspace's, since a build thinks with nobody's
- * own), else who can. Nothing on a billing hold: an AI comes after the plan.
+ * own; on a plan that can't take it, `reason` a plan line, a key: `planKeyIntent`), else who can. Nothing on a billing
+ * hold: an AI comes after the plan.
  */
 export function useWidgetAiWay(
   agentId: string | null | undefined,
+  reason?: string | null,
 ): { connect: () => void } | { locked: string } | null {
   const { t } = useTranslation();
   const { orgId, org } = useOrg();
@@ -78,7 +80,8 @@ export function useWidgetAiWay(
   const hold = usePlanHold(orgId, org);
   const agent = agentId ? dir.agentById.get(agentId) : undefined;
   if (!agent || hold) return null;
-  if (maySetAgentAi(agent, meId, org)) return { connect: () => openConnectAi({ agentId: agent.id }) };
+  if (maySetAgentAi(agent, meId, org))
+    return { connect: () => openConnectAi({ agentId: agent.id, ...planKeyIntent(agent, reason) }) };
   const owner = agent.ownerUserId ? dir.memberById.get(agent.ownerUserId)?.name : null;
   return { locked: noAiLockedLine(t, agent.name, owner) };
 }

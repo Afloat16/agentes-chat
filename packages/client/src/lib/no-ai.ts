@@ -205,6 +205,13 @@ export function planLineFix(
   return line === "plan_not_shared" || !maySetAgentAi(agent, meId, org) ? "connectMine" : "useKey";
 }
 
+/**
+ * Where Connect opens for a widget waiting on the right hand's plan (`reason` one of its plan lines): the key step,
+ * since a build is nobody's ask and that plan never waits, so only a key builds it (`planLineFix`'s `useKey`).
+ */
+export const planKeyIntent = (agent: ConnectingAgent | null | undefined, reason: string | null | undefined) =>
+  isRightHand(agent) && reason && RIGHT_HAND_PLAN_LINES.has(reason) ? { intent: "api_key" as const } : {};
+
 /** The key of an agent's line from its AI status, for a banner with no card (`noAiLineKey`). */
 export function noAiStatusKey(status: AiStatus | undefined, agentId: string) {
   const reason = status?.agents.find((a) => a.agentId === agentId)?.reason;
