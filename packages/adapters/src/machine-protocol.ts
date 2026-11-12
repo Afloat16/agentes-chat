@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 60;
+export const MACHINE_PROTOCOL_VERSION = 62;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -621,6 +621,12 @@ export const SHARED_GEMINI_PROTOCOL = 58;
  * A Windows runner before it refuses every Codex turn, so the server reads it as too old for Codex there.
  */
 export const CODEX_WINDOWS_PROTOCOL = 60;
+/**
+ * From this protocol on, `mcp.result` carries `images` (pictures and PDFs a tool returned, base64) and the runner hands
+ * them to the CLI as MCP `image` and embedded `resource` content. An older runner shows only the text: the server tells
+ * the agent there that the picture can't reach it until the app on that computer is updated.
+ */
+export const MCP_IMAGES_PROTOCOL = 62;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -2775,7 +2781,14 @@ export type ServerFrame =
   /** The server stored this task's `task.done`: the runner stops re-sending it. */
   | { type: "task.ack"; taskId: string }
   /** Protocol 5: the answer to an `mcp.call` (the text the executor's tool call returns). */
-  | { type: "mcp.result"; callId: string; ok: true; text: string }
+  | {
+      type: "mcp.result";
+      callId: string;
+      ok: true;
+      text: string;
+      /** `MCP_IMAGES_PROTOCOL`: pictures (PNG, JPEG, GIF, WebP) and PDFs the tool returned, base64. */
+      images?: { mediaType: string; data: string; name?: string }[];
+    }
   | { type: "mcp.result"; callId: string; ok: false; error: { code: string; message: string } }
   /** Protocol 8: the answer to an `mcp.list`: the tools this run may use (JSON Schemas simplified for the CLIs). */
   | { type: "mcp.tools"; callId: string; ok: true; tools: McpToolInfo[] }

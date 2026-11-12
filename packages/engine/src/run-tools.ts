@@ -677,7 +677,11 @@ export async function invokeToolForRun(
   if (outcome.type === "result") {
     const isError = outcome.output.isError === true;
     return {
-      result: { content: outcome.output.content, ...(isError ? { isError: true } : {}) },
+      result: {
+        content: outcome.output.content,
+        ...(isError ? { isError: true } : {}),
+        ...(outcome.output.images?.length ? { images: outcome.output.images } : {}),
+      },
       ...(isError ? { code: codeOf(outcome.output.content, outcome.output.data) } : {}),
     };
   }
