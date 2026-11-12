@@ -102,7 +102,11 @@ export async function approvalsLevelOf(db: Executor, orgId: string, agentId: str
   return row?.level ?? DEFAULT_APPROVALS_LEVEL;
 }
 
-export type PolicyTool = Pick<ToolDefinition, "name" | "scope" | "connectionId" | "sensitive">;
+/** A computer turn's `permissions.asks`: the level, when it isn't the default. */
+export const asksOf = (level: ApprovalsLevel): { asks?: "always" | "never" } =>
+  level === "risky" ? {} : { asks: level };
+
+export type PolicyTool = Pick<ToolDefinition, "name" | "scope" | "connectionId" | "sensitive" | "opensPullRequest">;
 
 const ALLOW: PolicyDecision = { action: "allow" };
 const APPROVE: PolicyDecision = { action: "approve" };
@@ -239,6 +243,9 @@ const LOOKS_ONLY = new Set([
   "team_status",
   "offer_approvals",
   "offer_open_page",
+  // Their card is the question: what the person may change applies from it, anything else waits on it.
+  "propose_member_changes",
+  "propose_instruction_change",
 ]);
 
 /** Internal changes outside their scope's own area, by name. */
@@ -270,11 +277,17 @@ const INTERNAL_BY_SCOPE: Readonly<Record<string, InternalArea>> = {
 const isReadScope = (scope: string) => /[:.]read$/.test(scope);
 
 /**
- * A connected app's tool that opens a pull request, whatever its server's prefix (`github_create_pull_request`,
- * `github_create_a_pull_request`). The name ends there: a review of one, or its merge, is another tool.
+ * A tool name or an action's slug that opens a pull request, whatever its prefix (`github_create_pull_request`,
+ * `GITHUB_CREATE_A_PULL_REQUEST`, GitLab's `create_merge_request`). The name ends there: a review of one, or its
+ * merge, is another tool.
  */
+export const opensPullRequestName = (name: string) => /(^|_)(create|open)_(a_)?(pull|merge)_request$/i.test(name);
+
+/** A connected app's tool that opens a pull request, by its name or by the actions this call runs (the gateway's mark). */
 export const opensPullRequest = (tool: PolicyTool) =>
-  Boolean(tool.connectionId) && !isReadScope(tool.scope) && /(^|_)(create|open)_(a_)?pull_request$/i.test(tool.name);
+  Boolean(tool.connectionId) &&
+  !isReadScope(tool.scope) &&
+  (tool.opensPullRequest === true || opensPullRequestName(tool.name));
 
 /** What a tool does (see `ToolKind`): provenance first, then built-in name and scope. */
 export function toolKind(tool: PolicyTool): ToolKind {
@@ -488,9 +501,12 @@ const WHY_PROPERTY: JsonSchema = {
 const ownsWhy = (schema: JsonSchema) =>
   typeof schema.properties === "object" && schema.properties !== null && "why" in schema.properties;
 
-/** A tool's input schema with the required `why` added (as is when the tool has its own). */
-export function withWhy(schema: JsonSchema): JsonSchema {
-  if (ownsWhy(schema)) return schema;
+/**
+ * A tool's input schema with the required `why` added (as is when the tool has its own). `replace`: the tool's own
+ * `why` is optional and every call asks, so the required one takes its place.
+ */
+export function withWhy(schema: JsonSchema, replace = false): JsonSchema {
+  if (ownsWhy(schema) && !replace) return schema;
   const properties = (schema.properties ?? {}) as Record<string, unknown>;
   const required = Array.isArray(schema.required) ? schema.required.filter((r) => r !== "why") : [];
   return {

@@ -28,7 +28,15 @@ import {
   steerOnMachine,
 } from "./claude-code";
 import { computerPrompt, systemWithConversation } from "./prompt";
-import type { Brain, BrainEvent, BrainIO, BrainTurn, SteerMessage, SteerReply } from "./types";
+import {
+  askingPermissions,
+  type Brain,
+  type BrainEvent,
+  type BrainIO,
+  type BrainTurn,
+  type SteerMessage,
+  type SteerReply,
+} from "./types";
 
 /**
  * The Codex brain (ADR 0032, ADR 0029 "Codex"): one agent turn runs on the
@@ -344,7 +352,8 @@ export class CodexBrain implements Brain {
       };
       return;
     }
-    const permissions = await this.deps.permissions?.(turn);
+    // No brain here sends each call of its own tools to our prompt: one that always asks reads only.
+    const permissions = askingPermissions(await this.deps.permissions?.(turn), false);
     // An older runner ignores the profile (no approvals, network on): never more power than asked for.
     if (permissions && status.protocol !== undefined && status.protocol < BRAIN_PROFILES_PROTOCOL) {
       yield {

@@ -2,6 +2,8 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { and, eq, schema } from "@agenteschat/db";
 import {
   type ApprovalsLevel,
+  askingPermissions,
+  asksOf,
   createAgent,
   ForbiddenError,
   grantScopes,
@@ -16,7 +18,7 @@ import {
   updateAgent,
   ValidationError,
 } from "../src";
-import { approvalsLine } from "../src/context";
+import { approvalsLine, HOW_YOU_WORK, howYouWork } from "../src/context";
 import { runPermissionPrompt } from "../src/mission-commands";
 import { addMember, type Fixture, setup } from "./fixtures";
 
@@ -96,17 +98,40 @@ const RUN_CODE = ours("run_code", "sandbox:run", {
     required: ["id"],
     additionalProperties: false,
   },
+  rememberCommand: () => "gh pr merge 12 --squash",
   execute: async (input, ctx) => {
     approved.push(ctx.approved === true);
-    if (ctx.approved) return { content: "merged" };
+    if (ctx.approved) return { content: "merged", data: { merge: { repo: "example/app", pr: 12, ref: null } } };
     const content = input.id === "secret" ? SECRET : HELD;
     return { content, isError: true, data: { code: "command.approval_needed" } };
   },
 });
 
+const GITLAB_MR = shopTool("gitlab_create_merge_request", `custom:${CONNECTION}:write`);
+/** Runs other actions by slug, as Composio's executor does. */
+const EXECUTOR: ToolDefinition = {
+  ...shopTool("shop_execute", `custom:${CONNECTION}:write`),
+  inputSchema: { type: "object", properties: { slugs: { type: "array" } }, required: ["slugs"] },
+  actions: (input) => (Array.isArray(input.slugs) ? input.slugs.map(String) : null),
+};
+/** One of our own tools that asks at every level but never. */
+const CLOSE_ISSUES = ours("close_issues", "issues:write", { sensitive: true });
+const PROPOSE_MEMBERS = ours("propose_member_changes", "setup:write");
+const PROPOSE_INSTRUCTIONS = ours("propose_instruction_change", "memory:write");
+const WORKSPACE_ACTION = ours("workspace_action", "setup:write", {
+  inputSchema: { type: "object", properties: { find: { type: "string" }, action: { type: "string" } } },
+  looksOnly: (input) => Boolean(input.find) && !input.action,
+});
+
 const shop: ToolSource = {
   name: "shop",
   tools: async () => [
+    GITLAB_MR,
+    EXECUTOR,
+    CLOSE_ISSUES,
+    PROPOSE_MEMBERS,
+    PROPOSE_INSTRUCTIONS,
+    WORKSPACE_ACTION,
     READ,
     WRITE,
     SENSITIVE,
@@ -484,6 +509,19 @@ describe("never", () => {
     expect(approved).toEqual([false]);
   });
 
+  test("a merge by command leaves the audit line and the receipt a connector's merge leaves", async () => {
+    await world("never");
+    const ctx = await runAs("person");
+    expect(await outcome(ctx, RUN_CODE, { id: "1" })).toBe("ran");
+    const merged = await f.db
+      .select({ target: schema.auditLog.targetId, details: schema.auditLog.details })
+      .from(schema.auditLog)
+      .where(eq(schema.auditLog.action, "agent.merged_without_asking"));
+    expect(merged).toEqual([{ target: "example/app", details: { pr: 12, ref: null, tool: RUN_CODE.name } }]);
+    const receipts = await f.db.select().from(schema.agentActions).where(eq(schema.agentActions.kind, "pr.merged"));
+    expect(receipts.map((r) => r.params)).toEqual([{ repo: "example/app", number: 12 }]);
+  });
+
   test("a tool whose job is asking still asks", async () => {
     await world("never");
     const ctx = await runAs("person");
@@ -506,6 +544,86 @@ describe("never", () => {
     expect(await outcome(ctx, SENSITIVE)).toBe("ran");
     await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { approvalsLevel: "risky" });
     expect(await outcome(ctx, SENSITIVE)).toBe("asked");
+  });
+});
+
+describe("Aprovar sempre on a command the computer holds", () => {
+  test("offers the command's kind, and once kept the same kind runs the approved way with its receipt", async () => {
+    await world("risky");
+    const ctx = await runAs("person");
+    const first = await tools().invoke(ctx, { toolUseId: "tu_held", name: RUN_CODE.name, input: { id: "1" } });
+    expect(first.type === "approval" && first.approval.approveAlways).toEqual({
+      tool: "command",
+      actions: ["gh pr merge"],
+    });
+    await f.db
+      .insert(schema.approvalRules)
+      .values({ orgId: f.org.id, agentId: f.agent.id, connectionId: null, tool: "command", action: "gh pr merge" });
+    approved.length = 0;
+    expect(await outcome(ctx, RUN_CODE, { id: "1" })).toBe("ran");
+    expect(await outcome(ctx, RUN_CODE, { id: "1", why: WHY })).toBe("ran");
+    expect(approved).toEqual([false, true, false, true]);
+    // A routine's run and one its reading feeds are covered by the same rule.
+    expect(await outcome(await runAs("routine"), RUN_CODE, { id: "1" })).toBe("ran");
+    expect(await outcome(await runAs("fed"), RUN_CODE, { id: "1" })).toBe("ran");
+    const merged = await f.db
+      .select()
+      .from(schema.auditLog)
+      .where(eq(schema.auditLog.action, "agent.merged_without_asking"));
+    expect(merged).toHaveLength(4);
+    // What the computer refuses stays refused.
+    expect(await outcome(ctx, RUN_CODE, { id: "secret" })).toBe(SECRET);
+  });
+
+  test("every card offers it at the default level, on every kind of run; never where the agent chose to ask", async () => {
+    for (const kind of ["person", "routine", "fed"] as const) {
+      await world("risky");
+      const ctx = await runAs(kind);
+      const offered = async (tool: ToolDefinition) => {
+        const result = await tools().invoke(ctx, {
+          toolUseId: `tu_${crypto.randomUUID()}`,
+          name: tool.name,
+          input: { id: "1", why: WHY },
+        });
+        return result.type === "approval" ? result.approval.approveAlways : "no card";
+      };
+      expect({
+        kind,
+        sensitive: await offered(SENSITIVE),
+        merge: await offered(MERGE_PR),
+        deploy: await offered(DEPLOY),
+      }).toEqual({
+        kind,
+        sensitive: { tool: SENSITIVE.name, actions: [] },
+        merge: { tool: MERGE_PR.name, actions: [] },
+        deploy: { tool: DEPLOY.name, actions: [] },
+      });
+      if (kind !== "person") expect(await offered(WRITE)).toEqual({ tool: WRITE.name, actions: [] });
+      if (kind === "person") expect(await offered(REQUEST_APPROVAL)).toBeNull();
+      // Kept, it holds on this run too.
+      expect(await offered(CLOSE_ISSUES)).toEqual({ tool: CLOSE_ISSUES.name, actions: [] });
+      await f.db
+        .insert(schema.approvalRules)
+        .values({ orgId: f.org.id, agentId: f.agent.id, connectionId: null, tool: CLOSE_ISSUES.name, action: "" });
+      expect(await outcome(ctx, CLOSE_ISSUES, { id: "1" })).toBe("ran");
+      await f.close();
+    }
+    f = undefined as unknown as Fixture;
+  });
+
+  test("an agent that always asks is offered none and no kept rule runs for it", async () => {
+    await world("always");
+    const ctx = await runAs("person");
+    await f.db
+      .insert(schema.approvalRules)
+      .values({ orgId: f.org.id, agentId: f.agent.id, connectionId: null, tool: CLOSE_ISSUES.name, action: "" });
+    const result = await tools().invoke(ctx, {
+      toolUseId: "tu_w",
+      name: CLOSE_ISSUES.name,
+      input: { id: "1", why: WHY },
+    });
+    expect(result.type === "approval" && result.approval.approveAlways).toBeNull();
+    expect(ran).toEqual([]);
   });
 });
 
@@ -566,6 +684,36 @@ describe("always", () => {
     expect(prompt("touch notes.txt", false).behavior).toBe("allow");
     expect(prompt("touch notes.txt", true)).toMatchObject({ behavior: "deny", code: "asks" });
     expect(prompt("touch notes.txt", true).message).toContain("run the same command with run_code");
+    // An edit of the brain's own is sent to the tool that makes it with a reason.
+    const edit = JSON.parse(
+      runPermissionPrompt(
+        { tool_name: "Edit", input: { file_path: "/work/notes.txt", old_string: "a", new_string: "b" }, scope },
+        { canRun: true, asksFirst: true },
+      ),
+    ) as { behavior: string; message?: string; code?: string };
+    expect(edit).toMatchObject({ behavior: "deny", code: "asks" });
+    expect(edit.message).toContain("with write_file");
+  });
+
+  test("a search and a card that is itself the question open no approval in front of them", async () => {
+    await world("always");
+    const ctx = await runAs("person");
+    expect({
+      find: await outcome(ctx, WORKSPACE_ACTION, { find: "rename a channel" }),
+      change: await outcome(ctx, WORKSPACE_ACTION, { action: "rename_channel", why: WHY }),
+      members: await outcome(ctx, PROPOSE_MEMBERS, { id: "1" }),
+      instructions: await outcome(ctx, PROPOSE_INSTRUCTIONS, { id: "1" }),
+    }).toEqual({ find: "ran", change: "asked", members: "ran", instructions: "ran" });
+  });
+
+  test("a command's tools list their reason as required, as the call needs it", async () => {
+    await world("always");
+    const always = new Map((await tools().list(await runAs("person"))).map((t) => [t.name, t]));
+    expect(requiresWhy(always.get(RUN_CODE.name))).toBe(true);
+    await f.close();
+    await world("risky");
+    const risky = new Map((await tools().list(await runAs("person"))).map((t) => [t.name, t]));
+    expect(requiresWhy(risky.get(RUN_CODE.name))).toBe(false);
   });
 });
 
@@ -584,6 +732,21 @@ describe("opening a pull request", () => {
       await f.close();
     }
     f = undefined as unknown as Fixture;
+  });
+
+  test("a merge request is a pull request, and a tool that runs other actions is judged by the ones it runs", async () => {
+    for (const authority of [routine, fed]) {
+      expect(toolPolicy(authority, GITLAB_MR)).toEqual({ action: "allow" });
+      expect(toolPolicy(authority, EXECUTOR)).toEqual({ action: "approve" });
+    }
+    await world("risky");
+    const ctx = await runAs("routine");
+    expect({
+      gitlab: await outcome(ctx, GITLAB_MR, { id: "1" }),
+      opens: await outcome(ctx, EXECUTOR, { slugs: ["GITHUB_CREATE_A_PULL_REQUEST", "GITLAB_CREATE_MERGE_REQUEST"] }),
+      mixed: await outcome(ctx, EXECUTOR, { slugs: ["GITHUB_CREATE_A_PULL_REQUEST", "SHOP_UPDATE_ORDER"], why: WHY }),
+      merge: await outcome(ctx, EXECUTOR, { slugs: ["GITHUB_MERGE_A_PULL_REQUEST"], why: WHY }),
+    }).toEqual({ gitlab: "ran", opens: "ran", mixed: "asked", merge: "asked" });
   });
 
   test("an agent that always asks asks for it like any other change", async () => {
@@ -607,10 +770,46 @@ describe("what the agent is told", () => {
     expect(approvalsLine("risky", false)).toContain("Actions marked sensitive (merge, deploy, rollback and similar)");
     const never = approvalsLine("never", false);
     expect(never).toContain("none of your tools waits for a person's approval");
+    expect(never).toContain("don't ask before acting either, in words or with ask_user");
     expect(never).not.toContain("Actions marked sensitive");
     const always = approvalsLine("always", false);
     expect(always).toContain("every call that changes something");
     expect(always).not.toContain("Actions marked sensitive");
+  });
+
+  test("an agent that never asks is not told to ask before a merge or a deploy by the rules every agent reads", () => {
+    expect(HOW_YOU_WORK).toContain("before actions that can't be undone or leave the organization: merge, deploy");
+    expect(howYouWork("risky", false)).toBe(HOW_YOU_WORK);
+    expect(howYouWork("always", false)).toBe(HOW_YOU_WORK);
+    for (const personal of [false, true]) {
+      const never = howYouWork("never", personal);
+      expect(never).not.toContain("before actions that can't be undone");
+      expect(never).not.toContain("is asked with the action itself");
+      expect(never).toContain("You are set to never ask before acting");
+      expect(never).toContain("Never ask for a go first, in text or with `ask_user`");
+      expect(never.split("\n")).toHaveLength(HOW_YOU_WORK.split("\n").length);
+    }
+  });
+});
+
+describe("a computer brain's turn", () => {
+  test("carries the level when it isn't the default", () => {
+    expect(LEVELS.map(asksOf)).toEqual([{ asks: "always" }, {}, { asks: "never" }]);
+  });
+
+  test("always: a brain whose own tools can't each reach our prompt, and an older runner, only read", () => {
+    const work = { mode: "work" as const, branchPrefix: "agentes/dev/", asks: "always" as const };
+    expect(askingPermissions(work, true)).toEqual(work);
+    expect(askingPermissions(work, false)).toEqual({ ...work, mode: "plan" });
+    // Never, the default level, and a turn that is already narrower stay as they are.
+    for (const turn of [
+      { mode: "work" as const, asks: "never" as const },
+      { mode: "work" as const },
+      { mode: "chat" as const, asks: "always" as const },
+      undefined,
+    ]) {
+      expect(askingPermissions(turn, false)).toEqual(turn);
+    }
   });
 });
 

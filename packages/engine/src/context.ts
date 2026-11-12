@@ -94,6 +94,17 @@ const {
  */
 export const ROUTINE_NO_REPLY = "NO_REPLY";
 
+/** The line of `HOW_YOU_WORK` on what is asked before acting: the one an agent that never asks reads differently. */
+const ASK_ONLY_LINE =
+  "- Ask only for decisions that are really the person's (product choices, priorities) or before actions that can't be undone or leave the organization: merge, deploy, rollback, sending for review, anything sent outside (email, messages, payments; a person's rule can allow a send), deleting what can't be restored. What your permissions allow and you can still undo, you just do (a form you fill and save before submitting). Never ask permission to look. An action that needs a person's approval (a change in a connected app, a merge, a deploy), even one nobody asked for, is asked with the action itself: write what and why, then call its tool, and its card is the question. Never ask for it first in text or with `ask_user`: a yes in the chat approves nothing, and they would be asked twice. For a product choice, lay out the data and the trade-off, then ask the one question that decides it.";
+
+/**
+ * `ASK_ONLY_LINE` for an agent that never asks (ADR 0173): only what is the person's to decide is asked, never a go
+ * for an action.
+ */
+const ASK_ONLY_LINE_NEVER =
+  "- Ask only for decisions that are really the person's (product choices, priorities). You are set to never ask before acting: what your permissions allow you just do, a merge, a deploy, a rollback, a send, a payment or a delete too, when it is what was asked or what your instructions say. Never ask for a go first, in text or with `ask_user`, and never ask permission to look. For a product choice, lay out the data and the trade-off, then ask the one question that decides it.";
+
 /**
  * Investigate first (ADR 0037): agents with tools look before answering, read
  * without asking, and ask only for decisions that are the person's. Going on with an assumption is only for work
@@ -107,7 +118,7 @@ export const HOW_YOU_WORK = [
   "- Read whole files, not just search snippets, and keep going in the same turn until you can answer. Never stop to ask whether to keep looking, and never end with something left to check ('I have not checked X yet', 'I will look for Y'): check it now, then answer.",
   "- Come back with what you found and one concrete next step: the exact change (file, line, what changes), or open it yourself (a draft PR, an issue). Choosing the fix is your job: recommend one instead of asking the person to pick among options, unless it is a product choice. A plan made without looking is not an answer.",
   "- Internal changes you can undo need no permission: do them and say what you did. That is creating or updating issues (status, priority, assignee, labels, due date), assigning work, saving what you learned (a correction, a preference or rule someone gave, a fact about the company, how you got something working), creating or changing routines, adding an agent to a channel, writing the wiki when asked, renaming or closing a thread. The person sees each change under your reply with an Undo button. If work you were asked about has no owner, don't just say someone must take it: assign it (to the agent or person whose role fits, or yourself) or do it.",
-  "- Ask only for decisions that are really the person's (product choices, priorities) or before actions that can't be undone or leave the organization: merge, deploy, rollback, sending for review, anything sent outside (email, messages, payments; a person's rule can allow a send), deleting what can't be restored. What your permissions allow and you can still undo, you just do (a form you fill and save before submitting). Never ask permission to look. An action that needs a person's approval (a change in a connected app, a merge, a deploy), even one nobody asked for, is asked with the action itself: write what and why, then call its tool, and its card is the question. Never ask for it first in text or with `ask_user`: a yes in the chat approves nothing, and they would be asked twice. For a product choice, lay out the data and the trade-off, then ask the one question that decides it.",
+  ASK_ONLY_LINE,
   "- State only what your tools or your context returned; when your searches find nothing, say so instead of filling the gap. Never claim you lack access to something a tool just returned or a key you hold.",
   "- Compute ratios, totals and comparisons with code, never in your head. Keep each number's unit and currency as its source has it, also when you relay it, and read the whole source before saying something isn't there.",
   "- An empty or blocked result is not a closed way: when a search, a page or a tool gives nothing, fails or is blocked, change the words, the source or the tool and try again. When a way is really closed (no access, a refusal), take another that still gets the people what they need: another tool, the colleague whose role covers it, a document or a copy instead of a move. A refusal for safety (a credential, private data in an address, secrets, sending data out) is final: never send that data another way. Say what was refused. When a tool or the platform fails, say plainly what failed and what the person can do, or that it's on our side and to try again later; never paste a raw error or send anyone to support.",
@@ -148,6 +159,12 @@ const inPersonalWords = (text: string) =>
 
 /** `HOW_YOU_WORK` for a personal workspace (ADR 0159). */
 export const HOW_YOU_WORK_PERSONAL = inPersonalWords(HOW_YOU_WORK);
+
+/** "# How you work" as this agent reads it: by its workspace's kind and how much it asks (ADR 0173). */
+export function howYouWork(level: ApprovalsLevel, personal: boolean): string {
+  const text = level === "never" ? HOW_YOU_WORK.replace(ASK_ONLY_LINE, ASK_ONLY_LINE_NEVER) : HOW_YOU_WORK;
+  return personal ? inPersonalWords(text) : text;
+}
 
 /**
  * Follow through (ADR 0037, round 3): the line of "How you work" about keeping promises, with
@@ -206,13 +223,18 @@ export const REQUEST_APPROVAL_LINE_PERSONAL = inPersonalWords(REQUEST_APPROVAL_L
 export function approvalsLine(level: ApprovalsLevel, personal: boolean): string {
   const request = personal ? REQUEST_APPROVAL_LINE_PERSONAL : REQUEST_APPROVAL_LINE;
   if (level === "never") {
-    return `- You are set to never ask: none of your tools waits for a person's approval, whatever its description or another line here says. A merge, a deploy, a rollback, a send, a delete, a payment and a command on your computer run the moment you call them, in a routine too, so call one only when it is what was asked or what your instructions say. Never tell anyone an action waits for their approval. Only the tools whose job is asking still open a card (request_approval, request_permission, ask_user). ${request}`;
+    return `- You are set to never ask: none of your tools waits for a person's approval, whatever its description or another line here says. A merge, a deploy, a rollback, a send, a delete, a payment and a command on your computer run the moment you call them, in a routine too, so call one only when it is what was asked or what your instructions say. Never tell anyone an action waits for their approval, and don't ask before acting either, in words or with ask_user, unless the decision is really the person's (a product choice, a priority). Only the tools whose job is asking still open a card (request_approval, request_permission, ask_user). ${request}`;
   }
   const waits =
     level === "always"
       ? "You are set to always ask: every call that changes something (a task, a file, a memory, a message in another conversation, a routine, a command on your computer, a click or typing in your browser, anything in a connected app) waits for a person's approval, whatever its description or another line here says, the internal changes you can undo included. Reading, and replying here, never do"
       : "Actions marked sensitive (merge, deploy, rollback and similar) wait for a person's approval";
-  return `- ${waits}; you will be told the outcome. Write your findings and why you ask as text in the same response as the call: only that text is posted with the request, and without it the person sees an empty request. ${ASK_APPROVALS_TOGETHER} ${request}`;
+  // What a computer brain's own tools do at this level: `askingPermissions` and the runner's prompt.
+  const computer =
+    level === "always"
+      ? " A coding CLI's own shell and edit tools on your computer only read for you: make each change with write_file or run_code and its `why`, and it waits like any other."
+      : "";
+  return `- ${waits}; you will be told the outcome.${computer} Write your findings and why you ask as text in the same response as the call: only that text is posted with the request, and without it the person sees an empty request. ${ASK_APPROVALS_TOGETHER} ${request}`;
 }
 
 /**
@@ -996,7 +1018,7 @@ export async function buildRunContext(
     {
       text: [
         options.toolsAvailable
-          ? `${personal ? HOW_YOU_WORK_PERSONAL : HOW_YOU_WORK}\n${finishWhatYouStart(Boolean(options.followUp))}${options.work ? `\n${WORK_IN_BACKGROUND_LINE}` : ""}`
+          ? `${howYouWork(agent.approvalsLevel, personal)}\n${finishWhatYouStart(Boolean(options.followUp))}${options.work ? `\n${WORK_IN_BACKGROUND_LINE}` : ""}`
           : "",
         [
           "# How to reply",

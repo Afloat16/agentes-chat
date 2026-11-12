@@ -1,5 +1,6 @@
 import {
   ASK_IN_CHAT,
+  ASK_WITH_WRITE_FILE,
   allowedBy,
   approvalMessage,
   type CommandScope,
@@ -623,7 +624,13 @@ export function runPermissionPrompt(
   const reason = forbiddenReason(tool, input, scope ?? NO_SCOPE);
   if (reason === null) {
     return opts.asksFirst
-      ? deny(approvalMessage("This agent is set to ask before every change", ASK_IN_CHAT), "asks")
+      ? deny(
+          approvalMessage(
+            "This agent is set to ask before every change",
+            tool === "Bash" ? ASK_IN_CHAT : ASK_WITH_WRITE_FILE,
+          ),
+          "asks",
+        )
       : allow();
   }
   const hint = forbiddenHint(reason);

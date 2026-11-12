@@ -1120,6 +1120,7 @@ export function createScheduleToolSource(deps: Omit<RoutineDeps, "db">): ToolSou
           if (!prepared.ok) return { content: prepared.message, isError: true };
           // Changed content or time: the earlier approval covers nothing any more.
           if (replaced) await cancelAheadApproval(routineDeps(ctx), requester, ctx.orgId, replaced.id);
+          if (prepared.scheduled) return { content: prepared.scheduled };
           return {
             content: `Waiting for a person to approve «${prepared.approval.title}» ahead.`,
             waitForApproval: prepared.approval,

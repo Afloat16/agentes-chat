@@ -1740,9 +1740,28 @@ export const ASK_AGAIN =
 /** Inside a background task nobody is there to approve anything. */
 export const ASK_AFTER_TASK = "Nobody can approve it inside a background task: stop and say so in your result.";
 
+/** The same for an edit of the brain's own, which `write_file` makes with a reason. */
+export const ASK_WITH_WRITE_FILE =
+  "To ask them, make the same change with write_file, with why set to your reason: it waits for their decision in the chat.";
+
+const WAITS_FOR_PERSON = ": a person approves it first. ";
+
 /** A refusal that names exactly why, what to do to ask a person, and what to do instead. */
 export const approvalMessage = (what: string, how: string, instead?: string) =>
-  `${what}: a person approves it first. ${how}${instead ? ` ${instead}` : ""}`;
+  `${what}${WAITS_FOR_PERSON}${how}${instead ? ` ${instead}` : ""}`;
+
+/** Whether a refusal is a command held for a person (`approvalMessage`), not a secret read nor one never run. */
+export const heldForPerson = (message: string) => message.includes(WAITS_FOR_PERSON);
+
+/**
+ * A held command's refusal as an agent that never asks reads it (ADR 0173): what it is and where it runs, with
+ * nobody to wait for. Any other refusal stays as it is.
+ */
+export const unaskedMessage = (message: string) => {
+  const at = message.indexOf(WAITS_FOR_PERSON);
+  if (at < 0) return message;
+  return `${message.slice(0, at)}: your own shell doesn't run it. Run the same command with run_code: it runs there without asking anyone.`;
+};
 
 /** Told to the agent when a call reads a secret. */
 export const SECRET_MESSAGE =
@@ -1981,12 +2000,13 @@ const KIND_WORDS = 3;
 /**
  * The kind "Aprovar sempre" keeps for one command on the agent's computer (ADR 0015, amended 2026-11-03): the program
  * and its subcommands, without arguments or values (`gh issue create --title x` → `gh issue create`, `npm test`), or
- * null when it is never offered: not exactly one plain command (a pipeline, a list, a redirection, a wrapper, a path to
- * the program, options before its subcommand), the deny list, a secret, inline code, a push, a script run by an
- * interpreter, anything that deletes, deploys, publishes, signs in or changes settings. gh's `-R`/`--repo` only pick a
- * repository and stay out of it.
+ * null when it has none: not exactly one plain command (a pipeline, a list, a redirection, a wrapper, a path to
+ * the program, options before its subcommand), a secret, inline code, a script run by an interpreter, and, unless
+ * `held`, the deny list, a push and anything that deletes, deploys, publishes, signs in or changes settings. gh's
+ * `-R`/`--repo` only pick a repository and stay out of it. `held`: the kind of a command the computer holds for a
+ * person (`gh pr merge`, `vercel deploy`), which a rule of the agent's own may still cover.
  */
-export function commandKind(command: string): string | null {
+export function commandKind(command: string, held = false): string | null {
   const cmds = simpleCommands(command);
   const s = cmds?.length === 1 ? cmds[0] : undefined;
   if (!s || s.writes.length > 0 || s.reads.length > 0) return null;
@@ -1995,8 +2015,9 @@ export function commandKind(command: string): string | null {
     return null;
   if (SYSTEM.has(program) || REMOTE.has(program) || INTERPRETERS.has(program) || WRITERS.has(program)) return null;
   const input = { command };
-  if (deniedMessage("Bash", input) || secretRead("Bash", input) || inlineCode(s.argv)) return null;
-  if (outboundCallProblem("Bash", input) || gitPushes(command)?.length !== 0) return null;
+  if (secretRead("Bash", input) || inlineCode(s.argv) || outboundCallProblem("Bash", input)) return null;
+  const denied = deniedMessage("Bash", input);
+  if (denied === SECRET_MESSAGE || (!held && (denied || gitPushes(command)?.length !== 0))) return null;
   // curl and wget only ask when they send or save: their kind would cover every upload.
   if (program === "curl" || program === "wget") return null;
   const args = program === "gh" ? ghWords(rest) : rest;
@@ -2008,7 +2029,9 @@ export function commandKind(command: string): string | null {
   }
   if (words.length === 1 && SCRIPT_RUNNERS.test(program)) return null;
   const kind = words.join(" ");
-  if (RUNS_ANY.test(kind) || NEVER_FOR_GOOD_KIND.test(kind)) return null;
+  if (RUNS_ANY.test(kind)) return null;
+  if (held) return kind;
+  if (NEVER_FOR_GOOD_KIND.test(kind)) return null;
   // Every plain word, not just the kind's: options in between still pick the subcommand (`make X=1 deploy`,
   // `cargo +nightly publish`), and a word that only names something loses the button, never a card.
   if (args.some((w) => NEVER_FOR_GOOD_WORD.test(w))) return null;

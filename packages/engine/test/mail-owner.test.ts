@@ -215,7 +215,7 @@ test("an email in someone's own mailbox: they approve their own; asked by anyone
     const r = await m.tools.invoke(await runFor(userId), {
       toolUseId: `tu_${userId}`,
       name: "mail_support_send",
-      input: { to: ["client@acme.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
+      input: { to: ["client@example.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
     });
     if (r.type !== "approval") throw new Error("expected an approval");
     return r.approval;
@@ -263,7 +263,7 @@ test("an agent that never asks sends from someone's own mailbox without a card; 
   const bia = await addMember(f.db, f.org.id, "member", "bia");
   const caio = await addMember(f.db, f.org.id, "member", "caio");
   const account = await imapAccount(m);
-  await giveMail(m, account.id, "read_write", { allowedRecipients: ["@acme.com"] });
+  await giveMail(m, account.id, "read_write", { allowedRecipients: ["@example.com"] });
   await f.db.update(schema.mailAccounts).set({ createdByUserId: bia.id }).where(eq(schema.mailAccounts.id, account.id));
   await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { approvalsLevel: "never" });
   const send = async (to: string) =>
@@ -272,7 +272,7 @@ test("an agent that never asks sends from someone's own mailbox without a card; 
       name: "mail_support_send",
       input: { to: [to], subject: "Proposta", body: "Segue a proposta." },
     });
-  const sent = await send("client@acme.com");
+  const sent = await send("client@example.com");
   expect(sent).toMatchObject({ type: "result" });
   expect(sent.type === "result" && sent.output.isError).toBeFalsy();
   const outside = await send("someone@example.org");
@@ -366,7 +366,7 @@ test("a new owner takes over a card-less mailbox approval without taking it from
   const r = await m.tools.invoke(await runFor(caio.id), {
     toolUseId: "tu_caio",
     name: "mail_support_send",
-    input: { to: ["client@acme.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
+    input: { to: ["client@example.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
   });
   if (r.type !== "approval") throw new Error("expected an approval");
   expect(r.approval.messageId).toBeNull();
@@ -394,7 +394,7 @@ async function biaAndOwnerMailboxes() {
   const r = await m.tools.invoke(await runFor(caio.id), {
     toolUseId: "tu_waiting",
     name: "mail_bia_send",
-    input: { to: ["client@acme.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
+    input: { to: ["client@example.com"], subject: "Proposta", body: "Segue a proposta.", why: WHY },
   });
   if (r.type !== "approval") throw new Error("expected an approval");
   const grantsOn = async (accountId: string) =>
@@ -423,7 +423,7 @@ test("a member who leaves the workspace takes their mailbox from every agent; th
   const refused = await m.tools.invoke(await runFor(caio.id), {
     toolUseId: "tu_after",
     name: "mail_bia_send",
-    input: { to: ["client@acme.com"], subject: "Proposta 2", body: "Segue a proposta.", why: WHY },
+    input: { to: ["client@example.com"], subject: "Proposta 2", body: "Segue a proposta.", why: WHY },
   });
   expect(refused.type === "result" && refused.output.isError).toBe(true);
   // The email waiting in her mailbox never goes, whoever would have decided it.
