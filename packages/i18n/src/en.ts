@@ -5289,6 +5289,9 @@ export const en = {
           reconnecting: "Reconnecting…",
           failed: "Couldn't sign in to that account. Try again.",
           expired: "The time to sign in ran out. Try again.",
+          /** Gemini signed in for all agents, but a copy of it doesn't work for each one: signing in again won't help. */
+          geminiNotShared:
+            "Gemini signed in, but {{computer}} can't share that sign-in with every agent. Use a Gemini API key instead.",
           duplicate: {
             claude_code:
               "Claude signed in as {{account}}, an account you already connected. To use another, sign out on Claude's page and try again.",

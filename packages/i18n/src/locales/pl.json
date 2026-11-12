@@ -5370,6 +5370,7 @@
           "reconnecting": "Ponowne łączenie…",
           "failed": "Nie udało się zalogować na to konto. Spróbuj ponownie.",
           "expired": "Czas na zalogowanie minął. Spróbuj ponownie.",
+          "geminiNotShared": "Gemini zalogował się, ale {{computer}} nie może udostępnić tego logowania wszystkim agentom. Użyj zamiast tego klucza API Gemini.",
           "duplicate": {
             "claude_code": "Claude zalogował się jako {{account}}, a to konto jest już połączone. Aby użyć innego, wyloguj się na stronie Claude i spróbuj ponownie.",
             "codex": "ChatGPT zalogował się jako {{account}}, a to konto jest już połączone. Aby użyć innego, wyloguj się na stronie ChatGPT i spróbuj ponownie.",

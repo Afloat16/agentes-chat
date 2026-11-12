@@ -5054,6 +5054,7 @@
           "reconnecting": "Opnieuw verbinden…",
           "failed": "Inloggen op dat account lukte niet. Probeer het opnieuw.",
           "expired": "De tijd om in te loggen is verlopen. Probeer het opnieuw.",
+          "geminiNotShared": "Gemini is ingelogd, maar {{computer}} kan die login niet met alle agents delen. Gebruik liever een Gemini-API-sleutel.",
           "duplicate": {
             "claude_code": "Claude is ingelogd als {{account}}, een account dat je al hebt gekoppeld. Wil je een ander gebruiken? Log uit op de pagina van Claude en probeer het opnieuw.",
             "codex": "ChatGPT is ingelogd als {{account}}, een account dat je al hebt gekoppeld. Wil je een ander gebruiken? Log uit op de pagina van ChatGPT en probeer het opnieuw.",

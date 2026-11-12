@@ -5171,6 +5171,7 @@
           "reconnecting": "Reconectando…",
           "failed": "No se pudo iniciar sesión en esa cuenta. Inténtalo de nuevo.",
           "expired": "Se acabó el tiempo para iniciar sesión. Inténtalo de nuevo.",
+          "geminiNotShared": "Gemini inició sesión, pero {{computer}} no puede compartir ese inicio de sesión con todos los agentes. Usa una clave de API de Gemini.",
           "duplicate": {
             "claude_code": "Claude inició sesión como {{account}}, una cuenta que ya conectaste. Para usar otra, cierra sesión en la página de Claude e inténtalo de nuevo.",
             "codex": "ChatGPT inició sesión como {{account}}, una cuenta que ya conectaste. Para usar otra, cierra sesión en la página de ChatGPT e inténtalo de nuevo.",

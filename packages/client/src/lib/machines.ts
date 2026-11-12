@@ -341,6 +341,13 @@ export function freeDuplicate(status: AccountLoginStatus | undefined): MachineAc
 }
 
 /**
+ * A Gemini sign-in for all agents the computer couldn't hand to each of them (`not_kept`: its copy didn't sign in, or
+ * the CLI kept it where no copy can be made). Signing in again ends the same way, so the way out is a Gemini API key.
+ */
+export const geminiNotShared = (kind: MachineAccountKind, status: AccountLoginStatus | undefined): boolean =>
+  kind === "antigravity" && status?.code === "not_kept";
+
+/**
  * A new sign-in came back as another account than its hint (Claude's login hint only steers Claude's page): the
  * person's to use or not, never thought with on its own.
  */

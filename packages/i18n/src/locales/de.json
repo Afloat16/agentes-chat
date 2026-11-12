@@ -5031,6 +5031,7 @@
           "reconnecting": "Verbindung wird wiederhergestellt…",
           "failed": "Anmeldung bei diesem Konto hat nicht geklappt. Versuch es noch einmal.",
           "expired": "Die Zeit für die Anmeldung ist abgelaufen. Versuch es noch einmal.",
+          "geminiNotShared": "Gemini hat sich angemeldet, aber auf {{computer}} lässt sich diese Anmeldung nicht mit allen Agenten teilen. Nutze stattdessen einen Gemini-API-Schlüssel.",
           "duplicate": {
             "claude_code": "Claude hat sich als {{account}} angemeldet, ein Konto, das du schon verbunden hast. Für ein anderes meldest du dich auf der Seite von Claude ab und versuchst es noch einmal.",
             "codex": "ChatGPT hat sich als {{account}} angemeldet, ein Konto, das du schon verbunden hast. Für ein anderes meldest du dich auf der Seite von ChatGPT ab und versuchst es noch einmal.",

@@ -4856,6 +4856,7 @@
           "reconnecting": "다시 연결하는 중…",
           "failed": "그 계정에 로그인하지 못했어요. 다시 시도해 주세요.",
           "expired": "로그인 시간이 만료됐어요. 다시 시도해 주세요.",
+          "geminiNotShared": "Gemini에 로그인했지만 {{computer}}에서는 이 로그인을 모든 에이전트와 공유할 수 없어요. 대신 Gemini API 키를 사용하세요.",
           "duplicate": {
             "claude_code": "Claude가 이미 연결한 계정인 {{account}}(으)로 로그인했어요. 다른 계정을 쓰려면 Claude 페이지에서 로그아웃하고 다시 시도하세요.",
             "codex": "ChatGPT가 이미 연결한 계정인 {{account}}(으)로 로그인했어요. 다른 계정을 쓰려면 ChatGPT 페이지에서 로그아웃하고 다시 시도하세요.",

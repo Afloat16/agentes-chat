@@ -4873,6 +4873,7 @@
           "reconnecting": "Menghubungkan ulang…",
           "failed": "Tidak bisa masuk ke akun itu. Coba lagi.",
           "expired": "Waktu untuk masuk sudah habis. Coba lagi.",
+          "geminiNotShared": "Gemini sudah masuk, tetapi sesi masuk itu tidak bisa dibagikan ke semua agen di {{computer}}. Pakai kunci API Gemini saja.",
           "duplicate": {
             "claude_code": "Claude masuk sebagai {{account}}, akun yang sudah kamu hubungkan. Untuk memakai akun lain, keluar di halaman Claude lalu coba lagi.",
             "codex": "ChatGPT masuk sebagai {{account}}, akun yang sudah kamu hubungkan. Untuk memakai akun lain, keluar di halaman ChatGPT lalu coba lagi.",
