@@ -157,7 +157,9 @@ export async function startOrJoinRun(
           inArray(agentRuns.status, [...ACTIVE_RUN_STATUSES]),
           eq(agentRuns.background, false),
           // A person's message never goes to background work at work: a reply turn answers it (agents' still join).
-          message.authorUserId ? workTakesPersonMessage(sql`${agentRuns}`) : workKeepsThread(sql`${agentRuns}`),
+          message.authorUserId
+            ? workTakesPersonMessage(sql`${agentRuns}`, message.authorUserId)
+            : workKeepsThread(sql`${agentRuns}`),
           // In a DM the main timeline is one conversation; each thread (a mission's) is its own.
           sql`(${agentRuns.threadRootId} = ${message.threadId ?? message.id}::uuid or ${
             message.threadId

@@ -832,11 +832,12 @@ export function createJobHandlers(deps: JobDeps): JobHandlers {
         ...(typeof job.payload.due === "number" ? { due: job.payload.due } : {}),
       });
     },
-    // A long work ended done after people passed messages on to it: its agent follows each one's up, once (ADR 0121).
+    // A long work ended after people passed messages on to it: its agent follows each one's up, once (ADR 0121).
     [WORK_FOLLOW_UP_JOB]: async (job) => {
       const ids = Array.isArray(job.payload.messageIds) ? job.payload.messageIds : [];
       await followUpWork(deps, orgOf(job), {
         workId: String(job.payload.workId),
+        runId: String(job.payload.runId),
         messageIds: ids.filter((id): id is string => typeof id === "string"),
       });
     },

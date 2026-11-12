@@ -7,7 +7,7 @@ import { publishChannelEvent } from "./events";
 import { ACTIVE_RUN_STATUSES, releaseInbox } from "./run-inbox";
 import type { AgentRun } from "./runs";
 
-const { agentRuns, agentWorks, messages, users, agents } = schema;
+const { agentRuns, messages, users, agents } = schema;
 
 /**
  * Live steering: a person's message reaches a computer brain's turn in
@@ -100,13 +100,12 @@ export interface SteeredText {
   text: string;
 }
 
-/** What a background work reads under a message its own asker passed on to it with `steer_work` (`meta.steeredWorkIds`). */
+/**
+ * What a background work reads under a message passed on to it with `steer_work` (`meta.steeredWorkIds`): only its
+ * asker's reach it (`steerWork`, `workTakesPersonMessage`).
+ */
 export const PASSED_ON_NOTE =
   "This is now part of your work: do what it asks before you finish, and say in your report what you did with it, or why not.";
-
-/** The same for anyone else's: the work keeps to its asker's reach, and what they ask is followed up as them. */
-export const passedOnByOther = (name: string) =>
-  `${name} didn't ask for this work: take in what this changes in the work itself, and leave the rest of what it asks. That is followed up for ${name} once the work ends, with ${name}'s own access.`;
 
 /**
  * Messages people (or events) sent while the run worked, oldest first, as the
@@ -129,7 +128,6 @@ export async function renderSteered(
       id: messages.id,
       body: messages.body,
       meta: messages.meta,
-      authorUserId: messages.authorUserId,
       name: sql<string | null>`coalesce(${users.name}, ${agents.name})`,
       createdAt: messages.createdAt,
     })
@@ -139,32 +137,21 @@ export async function renderSteered(
     .where(and(eq(messages.orgId, orgId), inArray(messages.id, ids), isNull(messages.deletedAt)));
   // Messages written in one transaction share its time (a report's notices): their ids keep the order.
   rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : 1));
-  const passedOn = (m: (typeof rows)[number]) =>
-    Boolean(options.workId) && Array.isArray(m.meta.steeredWorkIds) && m.meta.steeredWorkIds.includes(options.workId);
-  const [work] =
-    options.workId && rows.some(passedOn)
-      ? await db
-          .select({ asker: agentWorks.requestedByUserId })
-          .from(agentWorks)
-          .where(and(eq(agentWorks.orgId, orgId), eq(agentWorks.id, options.workId)))
-      : [];
   return rows.map((m) => {
     const name = m.name ?? "someone";
-    const passed = passedOn(m);
-    const line = passed
+    const works = m.meta.steeredWorkIds;
+    const passedOn = Boolean(options.workId) && Array.isArray(works) && works.includes(options.workId);
+    const line = passedOn
       ? `[New message from ${name}, passed on to your background work, while you were working]: ${m.body}`
       : options.beforeStart
         ? `[${name}]: ${m.body}`
         : `[New message from ${name}, while you were working]: ${m.body}`;
-    const note = !passed
-      ? ""
-      : m.authorUserId !== null && m.authorUserId === work?.asker
-        ? PASSED_ON_NOTE
-        : passedOnByOther(name);
     return {
       id: m.id,
       // A background task that ended while it worked: the notice with its result.
-      text: taskNotice({ body: m.body, meta: m.meta }, true) ?? `${line}${attachedLine(m)}${note ? `\n${note}` : ""}`,
+      text:
+        taskNotice({ body: m.body, meta: m.meta }, true) ??
+        `${line}${attachedLine(m)}${passedOn ? `\n${PASSED_ON_NOTE}` : ""}`,
     };
   });
 }

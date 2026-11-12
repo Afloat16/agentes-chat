@@ -11,7 +11,8 @@ import { holdsMessages } from "./run-hold";
 import { inChannelRun } from "./run-scope";
 import { type AgentRun, addRunStep, replyThreadOf } from "./runs";
 
-const { agentConsultations, agentRunSteps, agentRuns, agents, approvals, channels, messages, users } = schema;
+const { agentConsultations, agentRunSteps, agentRuns, agentWorks, agents, approvals, channels, messages, users } =
+  schema;
 
 /**
  * A run's inbox (`agent_runs.pending_message_ids`): messages sent to the agent's conversation while
@@ -219,7 +220,7 @@ export async function heldHere(
  */
 export async function whileHeld(
   db: Executor,
-  run: Pick<AgentRun, "id" | "orgId" | "agentId" | "channelId" | "threadRootId" | "triggerMessageId">,
+  run: Pick<AgentRun, "id" | "orgId" | "agentId" | "channelId" | "threadRootId" | "triggerMessageId" | "workId">,
 ): Promise<string | null> {
   // The pause: its last step of its own. Handing its inbox on (`handOn`) writes a step after the run it
   // started, which would hide that run and its trigger.
@@ -231,7 +232,7 @@ export async function whileHeld(
   const since = new Date(paused.at);
   const threadId = replyThreadOf(run);
   const rows = await db
-    .select({ body: messages.body, person: users.name, agent: agents.name })
+    .select({ body: messages.body, person: users.name, userId: messages.authorUserId, agent: agents.name })
     .from(messages)
     .leftJoin(users, eq(users.id, messages.authorUserId))
     .leftJoin(agents, eq(agents.id, messages.authorAgentId))
@@ -254,7 +255,12 @@ export async function whileHeld(
     )
     .orderBy(asc(messages.createdAt))
     .limit(10);
+  // Background work reads no one's words but its asker's: anyone else's ask runs after it, as them (`steerWork`).
+  const [work] = run.workId
+    ? await db.select({ asker: agentWorks.requestedByUserId }).from(agentWorks).where(eq(agentWorks.id, run.workId))
+    : [];
   const lines = rows.flatMap((m) => {
+    if (work && !m.agent && m.userId !== work.asker) return [];
     const text = cutText(stripSentinel(m.body), 1500);
     if (!text) return [];
     return [m.agent ? `[You, in another run]: ${text}` : `[${m.person ?? "Someone"}]: ${text}`];
