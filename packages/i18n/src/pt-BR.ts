@@ -5145,6 +5145,8 @@ export const ptBR = {
           reconnecting: "Reconectando…",
           failed: "Não deu para entrar nessa conta. Tente de novo.",
           expired: "O tempo para entrar acabou. Tente de novo.",
+          geminiNotShared:
+            "O Gemini entrou, mas o {{computer}} não consegue compartilhar esse login com todos os agentes. Use uma chave de API do Gemini.",
           duplicate: {
             claude_code:
               "O Claude entrou como {{account}}, uma conta que você já conectou. Para usar outra, saia na página do Claude e tente de novo.",

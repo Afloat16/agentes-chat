@@ -527,7 +527,7 @@ export const loginPerAgent = (kind: string, provider?: string | null) =>
  * owner on that computer (ADR 0059 §2, amended 2026-10-30, protocol 29): root keeps it and hands each turn what
  * its CLI needs. For Claude that is the token `claude setup-token` makes, which the runner then keeps; for ChatGPT
  * (protocol 38) a copy of the `auth.json` root signed in to, whose refreshed copies come back to root; for Gemini
- * (protocol 56) a copy of the Google sign-in root's Antigravity CLI keeps. Set a kind to false to go back to one
+ * (protocol 57) a copy of the Google sign-in root's Antigravity CLI keeps. Set a kind to false to go back to one
  * login per agent there. Where every agent is the runner's own user, any sign-in thinks for all of them, as the
  * computer's own always has. Accounts made for all agents keep thinking when a kind is switched off, until signed in
  * again or removed.

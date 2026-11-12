@@ -5131,6 +5131,7 @@
           "reconnecting": "Reconnexion…",
           "failed": "Impossible de se connecter à ce compte. Réessayez.",
           "expired": "Le délai de connexion est écoulé. Réessayez.",
+          "geminiNotShared": "Gemini s'est connecté, mais cette connexion ne peut pas être partagée avec tous les agents sur {{computer}}. Utilisez plutôt une clé API Gemini.",
           "duplicate": {
             "claude_code": "Claude s'est connecté en tant que {{account}}, un compte que vous avez déjà connecté. Pour en utiliser un autre, déconnectez-vous sur la page de Claude et réessayez.",
             "codex": "ChatGPT s'est connecté en tant que {{account}}, un compte que vous avez déjà connecté. Pour en utiliser un autre, déconnectez-vous sur la page de ChatGPT et réessayez.",

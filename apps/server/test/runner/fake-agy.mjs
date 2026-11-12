@@ -10,7 +10,8 @@
 // from its terminal (none: "no controlling terminal", exit 1), then exchanges it: a code with "bad" in it, or with paste
 // marks it never turned on, is refused by Google (`invalid_grant`), one with "offline" can't reach Google, one with
 // "ineligible" signs in an account `models` then refuses; else "Logged in as …", exit 0. `-p /usage` prints the
-// quotas, `-p /logout` signs out. `-p <prompt> --output-format stream-json` prints one turn: init (the conversation:
+// quotas ($FAKE_AGY_REFRESH_MS: it refreshes its sign-in in place first, the file empty for that long), `-p /logout`
+// signs out. `-p <prompt> --output-format stream-json` prints one turn: init (the conversation:
 // `--conversation`'s, or a new one when it doesn't know that one; its tools: our server's alone with `--agent`, else
 // the CLI's own and ours, or $FAKE_AGY_TOOLS), a text delta, a shell step (none with "BRIDGE_ONLY"), a call to our
 // server (a tool of the CLI's own with "OWN_TOOL"), the last delta with usage and the result. "LIMIT": an AGY_ERROR
@@ -108,6 +109,12 @@ if (args[0] === "acp" && args[1] === "--login") {
   process.exit(0);
 }
 if (args[0] === "-p" && args[1] === "/usage") {
+  if (env.FAKE_AGY_REFRESH_MS && existsSync(auth)) {
+    const whole = readFileSync(auth, "utf8");
+    writeFileSync(auth, "");
+    await new Promise((r) => setTimeout(r, Number(env.FAKE_AGY_REFRESH_MS)));
+    writeFileSync(auth, whole);
+  }
   process.stdout.write(
     "Model quotas\n\nGemini Models\nWeekly Limit Remaining\n75%\nFive Hour Limit Remaining\n40% · resets in 2h 30m\n\nClaude and GPT models\nWeekly Limit Remaining\n100%\n",
   );

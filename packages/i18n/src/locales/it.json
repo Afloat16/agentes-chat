@@ -5133,6 +5133,7 @@
           "reconnecting": "Riconnessione…",
           "failed": "Impossibile accedere a quell'account. Riprova.",
           "expired": "Il tempo per accedere è scaduto. Riprova.",
+          "geminiNotShared": "Gemini ha effettuato l'accesso, ma su {{computer}} questo accesso non si può condividere con tutti gli agenti. Usa invece una chiave API di Gemini.",
           "duplicate": {
             "claude_code": "Claude ha effettuato l'accesso come {{account}}, un account che hai già collegato. Per usarne un altro, esci sulla pagina di Claude e riprova.",
             "codex": "ChatGPT ha effettuato l'accesso come {{account}}, un account che hai già collegato. Per usarne un altro, esci sulla pagina di ChatGPT e riprova.",

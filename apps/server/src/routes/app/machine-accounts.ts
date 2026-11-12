@@ -273,7 +273,7 @@ export function machineAccountRoutes(deps: AppDeps) {
                     })
                     .openapi({
                       description:
-                        "A new sign-in there thinks for all of the caller's agents on it (protocol 29): Claude's, ChatGPT's, Gemini's (protocol 56), a coding plan's key.",
+                        "A new sign-in there thinks for all of the caller's agents on it (protocol 29): Claude's, ChatGPT's, Gemini's (protocol 57), a coding plan's key.",
                     }),
                   off: z
                     .record(z.string(), BrainUnavailable)

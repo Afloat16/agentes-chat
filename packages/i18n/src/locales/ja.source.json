@@ -12261,6 +12261,9 @@
   "agentPage.work.brain.add.expired": {
     "value": "The time to sign in ran out. Try again."
   },
+  "agentPage.work.brain.add.geminiNotShared": {
+    "value": "Gemini signed in, but {{computer}} can't share that sign-in with every agent. Use a Gemini API key instead."
+  },
   "agentPage.work.brain.add.duplicate.claude_code": {
     "value": "Claude signed in as {{account}}, an account you already connected. To use another, sign out on Claude's page and try again."
   },

@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { isObject } from "@agenteschat/adapters/machine-protocol";
 import { readSmallJson } from "./json-file";
@@ -138,6 +138,27 @@ export function holdAgySignIn(home: string, signIn: AgySignIn): () => void {
     holding.delete(home);
     rmSync(path.join(home, AGY_SIGN_IN_FILE), { force: true });
   };
+}
+
+/**
+ * A worker starting, before any turn of its own: the copies `holdAgySignIn` left in the agent's folders for Gemini
+ * accounts (`dir`, one folder per account) when its last worker was killed mid-turn go. One worker per agent runs at a
+ * time, so none of them is in use.
+ */
+export function dropAgySignIns(dir: string) {
+  let ids: string[] = [];
+  try {
+    ids = readdirSync(dir);
+  } catch {
+    // no Gemini account here yet
+  }
+  for (const id of ids) {
+    try {
+      rmSync(path.join(dir, id, AGY_SIGN_IN_FILE), { force: true });
+    } catch {
+      // not an account's folder: its own shell may have put anything there
+    }
+  }
 }
 
 /**

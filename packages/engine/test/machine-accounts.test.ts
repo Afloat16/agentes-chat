@@ -872,7 +872,7 @@ test("ChatGPT's sign-in is made for all of its owner's agents from runner protoc
   expect(await begun(SHARED_CODEX_PROTOCOL - 1)).toBeUndefined();
 });
 
-test("Gemini's sign-in is made for all of its owner's agents from runner protocol 56 on, never before", async () => {
+test("Gemini's sign-in is made for all of its owner's agents from runner protocol 57 on, never before", async () => {
   f = await setup();
   const { machineId } = await ownedMachine(SHARED_GEMINI_PROTOCOL);
   const begun = async (protocol: number, provider?: string) => {
@@ -1715,7 +1715,7 @@ test("where each agent is its own OS user, the switch decides: Claude's, ChatGPT
     antigravity: true,
     key: true,
   });
-  // A runner before protocol 56 shares Gemini's with no one.
+  // A runner before protocol 57 shares Gemini's with no one.
   await f.db
     .update(schema.machines)
     .set({ protocol: SHARED_GEMINI_PROTOCOL - 1 })

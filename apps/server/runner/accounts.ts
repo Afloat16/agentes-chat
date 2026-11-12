@@ -121,7 +121,7 @@ import type { TaskSecrets } from "./tasks";
  *   Claude one is `claude setup-token`'s token (`token.json`, 600), signed in
  *   in a terminal of its own (`spawnInTerminal`), a coding plan's is its key, a
  *   ChatGPT or Gemini one is its CLI's own sign-in there, and `grant` hands what
- *   a turn needs to the agent's worker (protocol 56: a copy of Gemini's, tried
+ *   a turn needs to the agent's worker (protocol 57: a copy of Gemini's, tried
  *   once as the sign-in ends, `agyCopyFails`).
  * - Claude's own login for all agents (`sharedLogin`; `<id>.method` says
  *   `cli_shared`, read as `cli_login` by everything outside this file): the
@@ -553,13 +553,16 @@ function saidIn(text: string): string | undefined {
   return line ? cutAtWord(line, SAID_CHARS) : undefined;
 }
 
+/** System mode, in an agent's worker: where its own folders for the accounts of that kind root keeps are. */
+export const agentAccountsDir = (home: string, kind: AccountKind) => path.join(home, "accounts", kind);
+
 /**
  * System mode, in an agent's worker: that agent's own folder for an account root keeps (`AccountGrant`), its
  * CLI's home for it there (sessions, settings), never a sign-in. Made on first use (700).
  */
 export function agentAccountHome(home: string, kind: AccountKind, id: string): string | null {
   if (!isAccountKind(kind) || !isAccountId(id)) return null;
-  const dir = path.join(home, "accounts", kind, id);
+  const dir = path.join(agentAccountsDir(home, kind), id);
   try {
     mkdirSync(dir, { recursive: true, mode: 0o700 });
     return dir;
@@ -1995,7 +1998,10 @@ export class AccountManager {
         const info = await this.lookUp(login.kind, login.id, status);
         if (login.state !== "waiting") return;
         if (info.loggedIn && !info.statusUnknown) {
-          const unshared = login.shared && login.kind === "antigravity" ? await this.agyCopyFails(login.dir) : null;
+          const unshared =
+            login.shared && login.kind === "antigravity" ? await this.agyCopyFails(login.id, login.dir) : null;
+          // Signed in again, the folder now holds that sign-in, which no agent can think with: signed out for all.
+          if (unshared && login.again) await this.refused(login.kind, login.id);
           if (login.state !== "waiting") return;
           if (!unshared) {
             await rm(path.join(login.dir, SIGNING_IN), { force: true }).catch(() => undefined);
@@ -2017,6 +2023,11 @@ export class AccountManager {
             `${LABEL[login.kind]} signed in, but ${unshared.why}, so it can't think for every agent here. Use a Gemini API key instead.`,
             unshared.said,
           );
+          // The server hears it now: the list it has may still say signed in.
+          if (login.again) {
+            this.invalidate();
+            void this.refresh(true).catch(() => undefined);
+          }
         } else if (info.statusUnknown) {
           this.failWith(
             login,
@@ -2057,8 +2068,8 @@ export class AccountManager {
    * A Gemini sign-in for all agents, tried the way each turn gets it: a copy in an empty home (`.check` in root's
    * folder) that the CLI lists models with. Null when it does; otherwise why not, and the CLI's words.
    */
-  private async agyCopyFails(dir: string): Promise<{ why: string; said?: string } | null> {
-    const signIn = agySignInOf(dir);
+  private async agyCopyFails(id: string, dir: string): Promise<{ why: string; said?: string } | null> {
+    const signIn = await this.agySignIn(id);
     if (!signIn) return { why: `kept that sign-in where this computer can't copy it (no ${AGY_SIGN_IN_FILE})` };
     const check = path.join(dir, ".check");
     try {
@@ -2451,13 +2462,21 @@ export class AccountManager {
     const dir = this.dirOf(kind, id);
     if (kind === "codex") return this.codexGrant(id, dir);
     if (kind === "antigravity") {
-      const signIn = agySignInOf(dir);
+      const signIn = await this.agySignIn(id);
       return signIn ? { kind: "agy_auth", ...signIn } : { kind: "none" };
     }
     const plan = await planKeyOf(dir);
     if (plan) return { kind: "key", provider: plan.provider, key: plan.key };
     const token = await tokenOf(dir);
     return token ? { kind: "token", token } : { kind: "none" };
+  }
+
+  /**
+   * Root's Gemini sign-in for all agents, read once root's own CLI is done in its folder (`cliOps`): the status look and
+   * `/usage` refresh the file in place, and a read meanwhile could find half of it.
+   */
+  private agySignIn(id: string): Promise<AgySignIn | null> {
+    return this.serial(id, async () => agySignInOf(this.dirOf("antigravity", id)), this.cliOps);
   }
 
   /**

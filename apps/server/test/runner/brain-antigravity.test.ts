@@ -12,6 +12,7 @@ import {
   accountEnv,
   accountSignIn,
   agentAccountHome,
+  agentAccountsDir,
   grantOf,
   loginFailureOf,
   parseAgyLoginUrl,
@@ -24,6 +25,7 @@ import {
   agyAuthOf,
   agyRuntimeDir,
   agySignInOf,
+  dropAgySignIns,
   prepareAgyHome,
   writeAgySettings,
 } from "../../runner/agy-home";
@@ -53,6 +55,7 @@ afterEach(async () => {
   delete process.env.FAKE_AGY_TOOLS;
   delete process.env.FAKE_AGY_BOUND;
   delete process.env.FAKE_AGY_KEYRING;
+  delete process.env.FAKE_AGY_REFRESH_MS;
   removeDirs(dirs);
 });
 
@@ -540,6 +543,15 @@ test("a Gemini sign-in for all agents as a turn gets it: root's file and seat, i
   two.release?.();
   expect(existsSync(file)).toBe(false);
   expect(await accountSignIn(folders, "antigravity", ACCOUNT, { kind: "none" })).toBe("signed_out");
+  // A worker killed mid-turn leaves its copy: the next one to start takes it away, whatever else is there.
+  const left = await accountSignIn(folders, "antigravity", ACCOUNT, grant);
+  if (typeof left === "string") throw new Error("no sign-in");
+  writeFileSync(path.join(agentAccountsDir(worker, "antigravity"), "stray"), "x");
+  dropAgySignIns(agentAccountsDir(worker, "antigravity"));
+  expect(existsSync(file)).toBe(false);
+  expect(agyAuthOf(own)).toBe("oauth-business");
+  left.release?.();
+  dropAgySignIns(path.join(root, "nothing"));
 });
 
 test.skipIf(!posix)(
@@ -580,12 +592,15 @@ test.skipIf(!posix)(
     expect(await m.lendTo("antigravity", ACCOUNT, 21001)).toBe(false);
     m.invalidate();
     expect(await m.list()).toEqual([account]);
-    // Its plan's usage, from its CLI in root's folder.
+    // Its plan's usage, from its CLI in root's folder, which refreshes the sign-in in place meanwhile: a turn's copy is
+    // read once the file is whole again, never as an empty one that would sign every agent out.
+    process.env.FAKE_AGY_REFRESH_MS = "500";
     m.probeUsage([ACCOUNT]);
-    await waitFor(() => m.snapshot()?.[0]?.usage !== undefined, 5000);
-
+    await waitFor(() => statSync(path.join(dir, AGY_SIGN_IN_FILE)).size === 0, 5000);
     const grant = (await m.grant("antigravity", ACCOUNT)) ?? undefined;
     expect(grant).toEqual({ kind: "agy_auth", auth: { ...TOKEN, home: dir }, type: "oauth-personal" });
+    await waitFor(() => m.snapshot()?.[0]?.usage !== undefined, 5000);
+    delete process.env.FAKE_AGY_REFRESH_MS;
     const worker = (n: number, given: typeof grant) => {
       const { ctx, home: runner } = turnContext(path.join(home, `agent-${n}`));
       const folders: AccountFolders = { accountDir: () => null, agentHome: (k, id) => agentAccountHome(runner, k, id) };
@@ -624,9 +639,9 @@ test.skipIf(!posix)(
       lending: { chown: async () => {} },
     });
     managers.push(m);
-    const signInAs = async (n: number, shared: boolean) => {
+    const signInAs = async (n: number, shared: boolean, again = false) => {
       const id = `0193eeee-0000-7000-8000-0000000000f${n}`;
-      const begun = await m.begin("antigravity", id, false, undefined, undefined, shared);
+      const begun = await m.begin("antigravity", id, again, undefined, undefined, shared);
       const aad = accountCodeAad(id, ORG);
       await m.code(id, aad, await sealSecret(begun.publicKey as string, "4/0AbCdEf-code", aad));
       await waitFor(() => m.status(id).state !== "waiting", 8000);
@@ -650,6 +665,16 @@ test.skipIf(!posix)(
     expect(elsewhere.status).toMatchObject({ state: "failed", code: "not_kept" });
     expect(elsewhere.status.error).toContain(`no ${AGY_SIGN_IN_FILE}`);
     expect(elsewhere.status.message).toBeUndefined();
+    // Signed in again, one whose copy doesn't sign in leaves the account signed out for every agent, never as signed in
+    // with a copy that fails each agent's next turn.
+    delete process.env.FAKE_AGY_KEYRING;
+    expect((await signInAs(4, true)).status).toMatchObject({ state: "done" });
+    process.env.FAKE_AGY_BOUND = "1";
+    const again = await signInAs(4, true, true);
+    expect(again.status).toMatchObject({ state: "failed", code: "not_kept" });
+    expect(await m.grant("antigravity", again.id)).toEqual({ kind: "none" });
+    m.invalidate();
+    expect((await m.list()).find((a) => a.id === again.id)).toMatchObject({ loggedIn: false, shared: true });
   },
-  30_000,
+  45_000,
 );
