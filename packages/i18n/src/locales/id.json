@@ -715,6 +715,7 @@
         "askPersonal": "Sudah memakai agen di tempat lain? Aku bawa semuanya ke sini.",
         "bring": "Salin permintaannya, tempel di {{app}}, lalu bawa jawabannya. Sisanya urusanku.",
         "bringFiles": "Taruh di sini apa yang diekspor aplikasinya. Sisanya urusanku.",
+        "bringMcp": "Ikuti langkahnya di aplikasi, lalu aplikasinya sendiri yang membuat agen di sini. Aku pantau kedatangannya.",
         "found": "Timmu sudah ketemu. Cek apakah semuanya ada.",
         "foundPersonal": "Agenmu sudah ketemu. Cek apakah semuanya ada.",
         "ai": "Langkah terakhir. Pilih AI yang sudah kamu pakai dan timmu bangun.",
@@ -927,18 +928,28 @@
       "title": "Sudah memakai agen di aplikasi lain?",
       "lead": "Agen datang bersama instruksi, skill, rutinitas, dan memorinya.",
       "sourcesLabel": "Asal agen",
+      "method": {
+        "label": "Cara membawanya",
+        "mcp": "Hubungkan dengan MCP",
+        "prompt": "Hanya permintaan",
+        "file": "Dari file"
+      },
       "aiApp": {
-        "title": "Dari aplikasi AI-mu (paling andal)",
-        "lead": "Aplikasi AI-mu membuat di sini setiap agen, instruksi, skill, dan rutinitas yang kamu punya di sana.",
-        "connect": "Hubungkan aplikasi ke alamat ini:",
+        "lead": "MCP memberi {{app}} akses ke ruang kerja ini, jadi ia membuat agen di sini sendiri.",
+        "leadAny": "MCP memberi aplikasi AI-mu akses ke ruang kerja ini, jadi ia membuat agen di sini sendiri.",
+        "leadDots": "MCP memberi dot-mu akses ke ruang kerja ini lewat plugin yang kamu tambahkan di ChatGPT, jadi ia membuat agen di sini sendiri.",
         "howTo": "Cara menghubungkan, per aplikasi",
-        "allow": "Di halaman izin, pilih Buat dan edit agen, rutinitas, dan skill.",
-        "paste": "Lalu tempel permintaan ini di aplikasi:",
-        "prompt": "Hubungkan {{url}} dan, untuk setiap agen, instruksi, skill, dan rutinitas yang kamu punya, buat padanannya di agentes.chat. Pertama, tampilkan daftar yang sudah ada di sana agar tidak ada yang terduplikasi.",
+        "paste": "Tempel permintaan ini di aplikasi:",
+        "prompt": "Gunakan server MCP agentes.chat yang baru kamu hubungkan ({{url}}) untuk memindahkan yang kamu punya ke agentes.chat. Pertama panggil import_summary untuk melihat apa yang sudah ada di sana, agar tidak ada yang ganda. Lalu, untuk setiap agen, instruksi, skill, dan rutinitas yang kamu punya, buat padanannya dengan create_agent, create_skill, dan create_routine, dan simpan apa yang harus diingat setiap agen dengan add_memory.",
         "promptLabel": "Permintaan untuk aplikasi AI-mu",
         "copy": "Salin permintaan",
         "copied": "Sekarang tempel di aplikasi AI-mu.",
-        "private": "Dari aplikasi AI-mu: tidak tersedia di server ini, karena aplikasi seperti Claude dan ChatGPT hanya terhubung ke alamat https publik."
+        "waiting": "Menunggu agen tiba…",
+        "arrived_other": "{{count}} agen tiba",
+        "stuck": "Belum ada apa-apa setelah beberapa menit? Hubungkan aplikasinya lagi, pilih {{access}}, lalu kirim permintaannya lagi.",
+        "private": "Hubungkan dengan MCP tidak tersedia di server ini, karena aplikasi di internet hanya bisa menjangkau alamat https publik.",
+        "held": "Hubungkan dengan MCP bisa dipakai setelah paket ruang kerja aktif. Untuk sekarang, bawa agen lewat cara ini.",
+        "paused": "Hubungkan dengan MCP nonaktif selama ruang kerja ini dijeda. Untuk sekarang, bawa agen lewat cara ini."
       },
       "otherName": "Aplikasi lain",
       "agenteschatName": "agentes.chat",
@@ -13135,6 +13146,10 @@
       "no_driverLinux": "Linux tidak bisa membuka ponsel ini",
       "os_too_old": "Sistem ini terlalu lama untuk alat-alatnya",
       "adb_offline": "Ponselnya tidak merespons",
+      "wifi_away": "iPhone tidak ada di Wi-Fi Mac",
+      "wifi_asleep": "iPhone tidak menjawab lewat Wi-Fi",
+      "tunnel_down": "Sambungan Wi-Fi ke iPhone terputus",
+      "wifi_untrusted": "iPhone tidak memercayai Mac ini",
       "other": "Ada yang perlu dilakukan di perangkat",
       "iosTooOld": "Ini memakai iOS {{version}}, agen butuh iOS 17 atau lebih baru"
     },
@@ -13159,6 +13174,10 @@
       "no_driverLinux": "Tambahkan aturan udev untuk ponsel ini",
       "os_too_old": "Perbarui ponsel",
       "adb_offline": "Colokkan lagi",
+      "wifi_away": "Gabung ke Wi-Fi Mac atau colokkan kabel",
+      "wifi_asleep": "Bangunkan dan buka kunci iPhone",
+      "tunnel_down": "Dekatkan ke Mac atau colokkan kabel",
+      "wifi_untrusted": "Colokkan sekali dan ketuk Percayai",
       "other": "Lihat apa yang dibutuhkan"
     },
     "facts": {
@@ -13432,6 +13451,22 @@
         "helper": "{{mac}} membuat helper pengujian dan menjalankannya di iPhone, yang butuh beberapa menit untuk pertama kali. Biarkan iPhone tidak terkunci dan tetap tercolok."
       },
       "ready": "{{name}} siap untuk agen.",
+      "wifi": {
+        "list": "iPhone di Wi-Fi {{mac}}",
+        "also": "Juga di Wi-Fi Mac ini: {{name}}",
+        "use": "Pakai lewat Wi-Fi",
+        "hint": "Hanya iPhone yang pernah memercayai Mac ini lewat kabel yang muncul di sini. Mac menjangkaunya lewat sambungan terenkripsi milik Apple sendiri, yang juga dipakai Xcode.",
+        "stop": "Berhenti memakai lewat Wi-Fi",
+        "stopTitle": "Berhenti memakai {{name}} lewat Wi-Fi?",
+        "stopText": "Agen tidak bisa menjangkaunya lagi. Pilih lagi di Mac-nya untuk memakainya.",
+        "stopped": "{{name}} tidak lagi dipakai lewat Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} sedang tidak ada di Wi-Fi Mac. Sambungkan iPhone ke jaringan yang sama atau colokkan kabel.",
+        "wifi_asleep": "{{name}} tidak menjawab lewat Wi-Fi. Bangunkan, buka kuncinya, dan dekatkan ke Mac.",
+        "tunnel_down": "Sambungan Wi-Fi ke {{name}} terputus. Biarkan tidak terkunci dan dekat Mac, atau colokkan kabel.",
+        "wifi_untrusted": "{{name}} tidak memercayai Mac ini. Colokkan sekali, ketuk Percayai, lalu masukkan kode sandinya."
+      },
       "path": {
         "settings": "Pengaturan",
         "privacy": "Privasi & Keamanan",
@@ -13753,9 +13788,13 @@
         "orFile": "Atau tempel di <code>{{file}}</code>:",
         "pasteConfig": "Tempel:",
         "mode": "Di chat, beralih ke mode {{mode}}.",
+        "sendInChat": "Di chat dengan bot-mu, kirim:",
+        "reload": "Lalu ketik <code>{{command}}</code> di chat.",
         "loginRun": "Untuk masuk, jalankan <code>{{command}}</code>.",
         "loginType": "Untuk masuk, ketik <code>{{command}}</code> di aplikasi.",
         "signIn": "Masuk dengan akun agentes.chat-mu di halaman yang terbuka.",
+        "signInManage": "Masuk dengan akun agentes.chat-mu di halaman yang terbuka, lalu pilih {{access}}.",
+        "mention": "Di chat, ketik <code>@</code> dan pilih <code>{{name}}</code>.",
         "signInFirst": "Aplikasi memintamu masuk saat pertama kali memakainya.",
         "token": "Buat token pribadi dan taruh di tempat {{placeholder}}.",
         "install": "Tambahkan ke {{app}}"

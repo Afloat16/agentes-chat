@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 55;
+export const MACHINE_PROTOCOL_VERSION = 56;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -600,6 +600,11 @@ export const PHONES_PROTOCOL = 54;
 export const PHONE_SCREEN_PROTOCOL = 55;
 /** Pairing an Android phone over Wi-Fi (`phone.pair.*`): the server asks no older runner. */
 export const PHONE_PAIRING_PROTOCOL = 55;
+/**
+ * iPhones over Wi-Fi (`phone.wifi`): a Mac lists the iPhones on its network that already trust it, and uses one only
+ * once its owner picks it (`allow`), through CoreDevice's own tunnel. The server asks no older runner.
+ */
+export const IPHONE_WIFI_PROTOCOL = 56;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -642,7 +647,24 @@ export type PhoneReason =
   /** Too old an OS for the tools (`unsupported`): Android before 5, iOS before 17. */
   | "os_too_old"
   /** adb reports the phone `offline` (replug it, or it is restarting). */
-  | "adb_offline";
+  | "adb_offline"
+  /** iPhone over Wi-Fi: not on the Mac's network now. */
+  | "wifi_away"
+  /** iPhone over Wi-Fi: on the network, but its tunnel didn't come up (locked or asleep). */
+  | "wifi_asleep"
+  /** iPhone over Wi-Fi: its tunnel dropped, or its address couldn't be read for certain. */
+  | "tunnel_down"
+  /** iPhone over Wi-Fi: it doesn't trust this Mac (it never did over a cable, or the pairing was removed). */
+  | "wifi_untrusted";
+
+/** `IPHONE_WIFI_PROTOCOL`: an iPhone on the Mac's network that trusts it, not used until its owner picks it. */
+export interface WifiIphone {
+  /** Its UDID, as `RunnerPhone.serial` once picked. */
+  serial: string;
+  model: string;
+  name?: string;
+  osVersion: string;
+}
 
 /** Who holds a phone: the run and agent, and the person it works for. */
 export interface PhoneHolder {
@@ -2366,6 +2388,11 @@ export type MachineRequest = (
    * `bad_request`, which the server ignores.
    */
   | { op: "phone.look" }
+  /**
+   * `IPHONE_WIFI_PROTOCOL`: the iPhones on this Mac's network that trust it and aren't used yet (`list`), or use one
+   * over Wi-Fi from now on (`allow`) or no longer (`forget`). Each answers the list as it is then.
+   */
+  | { op: "phone.wifi"; action: "list" | "allow" | "forget"; serial?: string }
 ) & {
   agent?: AgentScope;
   /** Protocol 34: a `browser.*` op in this browser profile's session instead of the agent's (ADR 0110). */
@@ -2437,6 +2464,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "phone.pair.status",
   "phone.pair.cancel",
   "phone.look",
+  "phone.wifi",
 ];
 
 /** What each op answers with `ok: true`. */
@@ -2596,6 +2624,7 @@ export interface MachineReplies {
   "phone.pair.status": PhonePairing;
   "phone.pair.cancel": { canceled: boolean };
   "phone.look": { looking: boolean };
+  "phone.wifi": { available: WifiIphone[] };
 }
 
 /** An element numbered on a `browser.capture` image: its ref and box (CSS pixels). */
