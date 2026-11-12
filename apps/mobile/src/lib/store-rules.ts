@@ -15,4 +15,5 @@ export const saysWhereToPay = (mayPay: boolean, os: string) => mayPay && os !== 
 export const signUpInApp = (os: string, cloud: boolean | undefined) => !(os === "ios" && cloud === true);
 
 /** The plan's page on the website (`/org/<id>/settings/billing`), the one page a tap never opens on iOS. */
-export const webPathOpens = (path: string, os: string) => !(os === "ios" && /\/settings\/billing(?:[/?#]|$)/.test(path));
+export const webPathOpens = (path: string, os: string) =>
+  !(os === "ios" && /\/settings\/billing(?:[/?#]|$)/.test(path));
