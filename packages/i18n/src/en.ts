@@ -13534,6 +13534,10 @@ export const en = {
       no_driverLinux: "Linux can't open this phone",
       os_too_old: "This system is too old for the tools",
       adb_offline: "The phone isn't answering",
+      wifi_away: "The iPhone isn't on the Mac's Wi-Fi",
+      wifi_asleep: "The iPhone didn't answer over Wi-Fi",
+      tunnel_down: "The Wi-Fi link to the iPhone dropped",
+      wifi_untrusted: "The iPhone doesn't trust this Mac",
       other: "It needs something on the device",
       /** An iPhone below iOS 17. */
       iosTooOld: "It runs iOS {{version}}, agents need iOS 17 or newer",
@@ -13560,6 +13564,10 @@ export const en = {
       no_driverLinux: "Add udev rules for this phone",
       os_too_old: "Update the phone",
       adb_offline: "Plug it in again",
+      wifi_away: "Join the Mac's Wi-Fi, or plug it in",
+      wifi_asleep: "Wake and unlock the iPhone",
+      tunnel_down: "Keep it near the Mac, or plug it in",
+      wifi_untrusted: "Plug it in once and tap Trust",
       other: "See what it needs",
     },
     facts: {
@@ -13877,6 +13885,25 @@ export const en = {
           "{{mac}} builds the test helper and starts it on the iPhone, which takes a few minutes the first time. Keep the iPhone unlocked and plugged in.",
       },
       ready: "{{name}} is ready for agents.",
+      /** iPhones on a Mac's network that already trust it (they did over a cable once), offered, never used until picked. */
+      wifi: {
+        /** A list's name for screen readers. */
+        list: "iPhones on the Wi-Fi of {{mac}}",
+        also: "Also on this Mac's Wi-Fi: {{name}}",
+        use: "Use over Wi-Fi",
+        hint: "Only an iPhone that trusted this Mac over a cable shows up here. The Mac reaches it through Apple's own encrypted link, the one Xcode uses.",
+        stop: "Stop using over Wi-Fi",
+        stopTitle: "Stop using {{name}} over Wi-Fi?",
+        stopText: "Agents can't reach it any more. Pick it again on its Mac to use it.",
+        stopped: "{{name}} isn't used over Wi-Fi any more.",
+      },
+      /** Why an iPhone used over Wi-Fi can't be reached now, and the way out, on the step that waits for it. */
+      wifiState: {
+        wifi_away: "{{name}} isn't on the Mac's Wi-Fi now. Join the same network on the iPhone, or plug it in.",
+        wifi_asleep: "{{name}} didn't answer over Wi-Fi. Wake and unlock it, and keep it near the Mac.",
+        tunnel_down: "The Wi-Fi link to {{name}} dropped. Keep it unlocked and near the Mac, or plug it in.",
+        wifi_untrusted: "{{name}} doesn't trust this Mac. Plug it in once, tap Trust and enter its passcode.",
+      },
       /** iOS's own names for these Settings screens, as the iPhone shows them in this language. */
       path: {
         settings: "Settings",

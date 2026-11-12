@@ -13092,6 +13092,10 @@
       "no_driverLinux": "Linuxでこのスマートフォンを開けません",
       "os_too_old": "このシステムはツールに対して古すぎます",
       "adb_offline": "スマートフォンが応答しません",
+      "wifi_away": "iPhoneがMacのWi-Fiにありません",
+      "wifi_asleep": "iPhoneがWi-Fiで応答しませんでした",
+      "tunnel_down": "iPhoneとのWi-Fi接続が切れました",
+      "wifi_untrusted": "iPhoneがこのMacを信頼していません",
       "other": "デバイスで対応が必要です",
       "iosTooOld": "iOS {{version}}です。エージェントにはiOS 17以降が必要です"
     },
@@ -13116,6 +13120,10 @@
       "no_driverLinux": "このスマートフォン用のudevルールを追加",
       "os_too_old": "スマートフォンをアップデート",
       "adb_offline": "接続し直す",
+      "wifi_away": "MacのWi-Fiにつなぐか、ケーブルで接続",
+      "wifi_asleep": "iPhoneのスリープとロックを解除",
+      "tunnel_down": "Macの近くに置くか、ケーブルで接続",
+      "wifi_untrusted": "一度ケーブルでつないで「信頼」をタップ",
       "other": "必要なことを確認"
     },
     "facts": {
@@ -13389,6 +13397,22 @@
         "helper": "{{mac}}がテストヘルパーを作成してiPhoneで起動します。初回は数分かかります。iPhoneはロックを解除し、つないだままにしてください。"
       },
       "ready": "{{name}}はエージェントが使える状態です。",
+      "wifi": {
+        "list": "{{mac}}のWi-Fi上のiPhone",
+        "also": "このMacのWi-Fiにもあります：{{name}}",
+        "use": "Wi-Fiで使う",
+        "hint": "以前にケーブルでこのMacを信頼したiPhoneだけがここに表示されます。MacはXcodeと同じ、Apple独自の暗号化された接続でiPhoneにつなぎます。",
+        "stop": "Wi-Fiでの利用をやめる",
+        "stopTitle": "{{name}}のWi-Fiでの利用をやめますか？",
+        "stopText": "エージェントはこのiPhoneにつなげなくなります。使うには、そのMacでもう一度選んでください。",
+        "stopped": "{{name}}はWi-Fiで使われなくなりました。"
+      },
+      "wifiState": {
+        "wifi_away": "{{name}}は今、MacのWi-Fiにありません。iPhoneを同じネットワークにつなぐか、ケーブルで接続してください。",
+        "wifi_asleep": "{{name}}がWi-Fiで応答しませんでした。スリープとロックを解除して、Macの近くに置いてください。",
+        "tunnel_down": "{{name}}とのWi-Fi接続が切れました。ロックを解除したままMacの近くに置くか、ケーブルで接続してください。",
+        "wifi_untrusted": "{{name}}がこのMacを信頼していません。一度ケーブルでつなぎ、「信頼」をタップしてパスコードを入力してください。"
+      },
       "path": {
         "settings": "設定",
         "privacy": "プライバシーとセキュリティ",

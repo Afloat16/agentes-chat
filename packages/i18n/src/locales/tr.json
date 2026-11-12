@@ -13517,6 +13517,10 @@
       "no_driverLinux": "Linux bu telefonu açamıyor",
       "os_too_old": "Bu sistem araçlar için çok eski",
       "adb_offline": "Telefon yanıt vermiyor",
+      "wifi_away": "iPhone, Mac'in Wi-Fi ağında değil",
+      "wifi_asleep": "iPhone Wi-Fi üzerinden yanıt vermedi",
+      "tunnel_down": "iPhone ile Wi-Fi bağlantısı koptu",
+      "wifi_untrusted": "iPhone bu Mac'e güvenmiyor",
       "other": "Cihazda bir şey yapılması gerekiyor",
       "iosTooOld": "iOS {{version}} kullanıyor, ajanlar iOS 17 veya daha yenisini gerektirir"
     },
@@ -13541,6 +13545,10 @@
       "no_driverLinux": "Bu telefon için udev kuralları ekleyin",
       "os_too_old": "Telefonu güncelleyin",
       "adb_offline": "Yeniden takın",
+      "wifi_away": "Mac'in Wi-Fi ağına katılın veya kabloyla bağlayın",
+      "wifi_asleep": "iPhone'u uyandırıp kilidini açın",
+      "tunnel_down": "Mac'in yakınında tutun veya kabloyla bağlayın",
+      "wifi_untrusted": "Bir kez kabloyla bağlayıp Güven'e dokunun",
       "other": "Neye ihtiyacı olduğuna bakın"
     },
     "facts": {
@@ -13816,6 +13824,22 @@
         "helper": "{{mac}} test yardımcısını oluşturup iPhone'da başlatır, ilk seferde bu birkaç dakika sürer. iPhone'un kilidini açık ve takılı tutun."
       },
       "ready": "{{name}} ajanlar için hazır.",
+      "wifi": {
+        "list": "{{mac}} Wi-Fi ağındaki iPhone'lar",
+        "also": "Bu Mac'in Wi-Fi ağında da var: {{name}}",
+        "use": "Wi-Fi üzerinden kullan",
+        "hint": "Burada yalnızca bu Mac'e daha önce kabloyla güvenmiş bir iPhone görünür. Mac ona Apple'ın kendi şifreli bağlantısıyla, Xcode'un kullandığı bağlantıyla ulaşır.",
+        "stop": "Wi-Fi üzerinden kullanmayı bırak",
+        "stopTitle": "{{name}} Wi-Fi üzerinden kullanılmasın mı?",
+        "stopText": "Ajanlar artık ona ulaşamaz. Kullanmak için Mac'inde yeniden seçin.",
+        "stopped": "{{name}} artık Wi-Fi üzerinden kullanılmıyor."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} şu an Mac'in Wi-Fi ağında değil. iPhone'u aynı ağa bağlayın veya kabloyla bağlayın.",
+        "wifi_asleep": "{{name}} Wi-Fi üzerinden yanıt vermedi. Uyandırıp kilidini açın ve Mac'in yakınında tutun.",
+        "tunnel_down": "{{name}} ile Wi-Fi bağlantısı koptu. Kilidi açık ve Mac'in yakınında tutun veya kabloyla bağlayın.",
+        "wifi_untrusted": "{{name}} bu Mac'e güvenmiyor. Bir kez kabloyla bağlayın, Güven'e dokunun ve parolasını girin."
+      },
       "path": {
         "settings": "Ayarlar",
         "privacy": "Gizlilik ve Güvenlik",

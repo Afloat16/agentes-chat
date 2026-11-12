@@ -13146,6 +13146,10 @@
       "no_driverLinux": "Linux tidak bisa membuka ponsel ini",
       "os_too_old": "Sistem ini terlalu lama untuk alat-alatnya",
       "adb_offline": "Ponselnya tidak merespons",
+      "wifi_away": "iPhone tidak ada di Wi-Fi Mac",
+      "wifi_asleep": "iPhone tidak menjawab lewat Wi-Fi",
+      "tunnel_down": "Sambungan Wi-Fi ke iPhone terputus",
+      "wifi_untrusted": "iPhone tidak memercayai Mac ini",
       "other": "Ada yang perlu dilakukan di perangkat",
       "iosTooOld": "Ini memakai iOS {{version}}, agen butuh iOS 17 atau lebih baru"
     },
@@ -13170,6 +13174,10 @@
       "no_driverLinux": "Tambahkan aturan udev untuk ponsel ini",
       "os_too_old": "Perbarui ponsel",
       "adb_offline": "Colokkan lagi",
+      "wifi_away": "Gabung ke Wi-Fi Mac atau colokkan kabel",
+      "wifi_asleep": "Bangunkan dan buka kunci iPhone",
+      "tunnel_down": "Dekatkan ke Mac atau colokkan kabel",
+      "wifi_untrusted": "Colokkan sekali dan ketuk Percayai",
       "other": "Lihat apa yang dibutuhkan"
     },
     "facts": {
@@ -13443,6 +13451,22 @@
         "helper": "{{mac}} membuat helper pengujian dan menjalankannya di iPhone, yang butuh beberapa menit untuk pertama kali. Biarkan iPhone tidak terkunci dan tetap tercolok."
       },
       "ready": "{{name}} siap untuk agen.",
+      "wifi": {
+        "list": "iPhone di Wi-Fi {{mac}}",
+        "also": "Juga di Wi-Fi Mac ini: {{name}}",
+        "use": "Pakai lewat Wi-Fi",
+        "hint": "Hanya iPhone yang pernah memercayai Mac ini lewat kabel yang muncul di sini. Mac menjangkaunya lewat sambungan terenkripsi milik Apple sendiri, yang juga dipakai Xcode.",
+        "stop": "Berhenti memakai lewat Wi-Fi",
+        "stopTitle": "Berhenti memakai {{name}} lewat Wi-Fi?",
+        "stopText": "Agen tidak bisa menjangkaunya lagi. Pilih lagi di Mac-nya untuk memakainya.",
+        "stopped": "{{name}} tidak lagi dipakai lewat Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} sedang tidak ada di Wi-Fi Mac. Sambungkan iPhone ke jaringan yang sama atau colokkan kabel.",
+        "wifi_asleep": "{{name}} tidak menjawab lewat Wi-Fi. Bangunkan, buka kuncinya, dan dekatkan ke Mac.",
+        "tunnel_down": "Sambungan Wi-Fi ke {{name}} terputus. Biarkan tidak terkunci dan dekat Mac, atau colokkan kabel.",
+        "wifi_untrusted": "{{name}} tidak memercayai Mac ini. Colokkan sekali, ketuk Percayai, lalu masukkan kode sandinya."
+      },
       "path": {
         "settings": "Pengaturan",
         "privacy": "Privasi & Keamanan",

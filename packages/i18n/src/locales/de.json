@@ -13582,6 +13582,10 @@
       "no_driverLinux": "Linux kann dieses Handy nicht öffnen",
       "os_too_old": "Dieses System ist zu alt für die Tools",
       "adb_offline": "Das Handy antwortet nicht",
+      "wifi_away": "Das iPhone ist nicht im WLAN des Macs",
+      "wifi_asleep": "Das iPhone hat über WLAN nicht geantwortet",
+      "tunnel_down": "Die WLAN-Verbindung zum iPhone ist abgebrochen",
+      "wifi_untrusted": "Das iPhone vertraut diesem Mac nicht",
       "other": "Auf dem Gerät fehlt noch etwas",
       "iosTooOld": "Es läuft mit iOS {{version}}, Agenten brauchen iOS 17 oder neuer"
     },
@@ -13606,6 +13610,10 @@
       "no_driverLinux": "Füge udev-Regeln für dieses Handy hinzu",
       "os_too_old": "Aktualisiere das Handy",
       "adb_offline": "Steck es neu ein",
+      "wifi_away": "Verbinde es mit dem WLAN des Macs oder schließ es an",
+      "wifi_asleep": "Weck das iPhone auf und entsperr es",
+      "tunnel_down": "Lass es nah am Mac oder schließ es an",
+      "wifi_untrusted": "Schließ es einmal an und tippe auf Vertrauen",
       "other": "Sieh nach, was fehlt"
     },
     "facts": {
@@ -13881,6 +13889,22 @@
         "helper": "{{mac}} erstellt die Test-App und startet sie auf dem iPhone, das dauert beim ersten Mal ein paar Minuten. Lass das iPhone entsperrt und angeschlossen."
       },
       "ready": "{{name}} ist bereit für Agenten.",
+      "wifi": {
+        "list": "iPhones im WLAN von {{mac}}",
+        "also": "Auch im WLAN dieses Macs: {{name}}",
+        "use": "Über WLAN nutzen",
+        "hint": "Hier erscheint nur ein iPhone, das diesem Mac schon einmal per Kabel vertraut hat. Der Mac erreicht es über Apples eigene verschlüsselte Verbindung, dieselbe, die Xcode nutzt.",
+        "stop": "Nicht mehr über WLAN nutzen",
+        "stopTitle": "{{name}} nicht mehr über WLAN nutzen?",
+        "stopText": "Agenten erreichen es nicht mehr. Wähl es auf seinem Mac wieder aus, um es zu nutzen.",
+        "stopped": "{{name}} wird nicht mehr über WLAN genutzt."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} ist gerade nicht im WLAN des Macs. Verbinde das iPhone mit demselben Netz oder schließ es an.",
+        "wifi_asleep": "{{name}} hat über WLAN nicht geantwortet. Weck es auf, entsperr es und lass es nah am Mac.",
+        "tunnel_down": "Die WLAN-Verbindung zu {{name}} ist abgebrochen. Lass es entsperrt und nah am Mac oder schließ es an.",
+        "wifi_untrusted": "{{name}} vertraut diesem Mac nicht. Schließ es einmal an, tippe auf Vertrauen und gib seinen Code ein."
+      },
       "path": {
         "settings": "Einstellungen",
         "privacy": "Datenschutz & Sicherheit",

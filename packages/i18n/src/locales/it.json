@@ -14047,6 +14047,10 @@
       "no_driverLinux": "Linux non riesce ad aprire questo telefono",
       "os_too_old": "Questo sistema è troppo vecchio per gli strumenti",
       "adb_offline": "Il telefono non risponde",
+      "wifi_away": "L'iPhone non è sul Wi-Fi del Mac",
+      "wifi_asleep": "L'iPhone non ha risposto via Wi-Fi",
+      "tunnel_down": "Il collegamento Wi-Fi con l'iPhone si è interrotto",
+      "wifi_untrusted": "L'iPhone non ha autorizzato questo Mac",
       "other": "Serve qualcosa sul dispositivo",
       "iosTooOld": "Usa iOS {{version}}, gli agenti hanno bisogno di iOS 17 o successivo"
     },
@@ -14071,6 +14075,10 @@
       "no_driverLinux": "Aggiungi le regole udev per questo telefono",
       "os_too_old": "Aggiorna il telefono",
       "adb_offline": "Ricollegalo",
+      "wifi_away": "Collegati al Wi-Fi del Mac o usa il cavo",
+      "wifi_asleep": "Riattiva e sblocca l'iPhone",
+      "tunnel_down": "Tienilo vicino al Mac o usa il cavo",
+      "wifi_untrusted": "Collegalo una volta e tocca Autorizza",
       "other": "Guarda cosa serve"
     },
     "facts": {
@@ -14348,6 +14356,22 @@
         "helper": "{{mac}} crea l'app di test e la avvia sull'iPhone, il che richiede qualche minuto la prima volta. Tieni l'iPhone sbloccato e collegato."
       },
       "ready": "{{name}} è pronto per gli agenti.",
+      "wifi": {
+        "list": "iPhone sul Wi-Fi di {{mac}}",
+        "also": "Anche sul Wi-Fi di questo Mac: {{name}}",
+        "use": "Usa via Wi-Fi",
+        "hint": "Qui compare solo un iPhone che ha già autorizzato questo Mac tramite cavo. Il Mac lo raggiunge con il collegamento cifrato di Apple, lo stesso che usa Xcode.",
+        "stop": "Smetti di usare via Wi-Fi",
+        "stopTitle": "Smettere di usare {{name}} via Wi-Fi?",
+        "stopText": "Gli agenti non lo raggiungono più. Sceglilo di nuovo sul suo Mac per usarlo.",
+        "stopped": "{{name}} non è più usato via Wi-Fi."
+      },
+      "wifiState": {
+        "wifi_away": "{{name}} ora non è sul Wi-Fi del Mac. Collega l'iPhone alla stessa rete o usa il cavo.",
+        "wifi_asleep": "{{name}} non ha risposto via Wi-Fi. Riattivalo, sbloccalo e tienilo vicino al Mac.",
+        "tunnel_down": "Il collegamento Wi-Fi con {{name}} si è interrotto. Tienilo sbloccato e vicino al Mac, o usa il cavo.",
+        "wifi_untrusted": "{{name}} non ha autorizzato questo Mac. Collegalo una volta con il cavo, tocca Autorizza e inserisci il suo codice."
+      },
       "path": {
         "settings": "Impostazioni",
         "privacy": "Privacy e sicurezza",
