@@ -19,7 +19,7 @@ import {
   codexProblem,
   codexSandbox,
   codexThreadKey,
-  unwrapShell,
+  shellScript,
 } from "./brain-codex";
 import { killTree } from "./exec";
 import { resolveCommand } from "./executors";
@@ -538,9 +538,9 @@ export class CodexAppMapper {
 /** A call as the command policy reads it (Claude Code's permission prompt arguments). */
 export type PolicyCall = { tool_name: string; input: Record<string, unknown> };
 
-/** A command as Codex gives it: a line (`/bin/zsh -lc "npm test"`) or an argv. */
+/** A command as Codex gives it: a line (`/bin/zsh -lc "npm test"`) or an argv. Its script exactly (`shellScript`). */
 function commandText(raw: unknown): string {
-  if (typeof raw === "string") return unwrapShell(raw);
+  if (typeof raw === "string") return shellScript(raw);
   if (!Array.isArray(raw)) return "";
   const argv = raw.filter((a): a is string => typeof a === "string");
   // `["/bin/zsh", "-lc", "npm test"]`: the shell's line.

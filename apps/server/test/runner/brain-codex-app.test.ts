@@ -19,6 +19,7 @@ import {
   codexAppServerArgs,
   codexAtLeast,
   codexThreadPolicy,
+  decideApproval,
 } from "../../runner/brain-codex-app";
 import { handleRequest } from "../../runner/handlers";
 import { CODEX_MCP_SERVER, type IpcReply, type McpTaskInfo } from "../../runner/mcp";
@@ -608,6 +609,28 @@ test("profiles: plan is a read-only sandbox, work a workspace one; neither has t
   // Nothing to judge it by: declined.
   expect(approvalCalls("item/fileChange/requestApproval", {}, undefined, "/w")).toEqual([]);
   expect(approvalCalls("turn/started", {}, undefined, "/w")).toBeNull();
+});
+
+test("an approval is judged on its script exactly: a second line is a second command", async () => {
+  const calls = approvalCalls(
+    "item/commandExecution/requestApproval",
+    { command: "/bin/zsh -lc 'ls\nrm -rf /tmp/elsewhere'" },
+    undefined,
+    "/w",
+  );
+  expect(calls).toEqual([{ tool_name: "Bash", input: { command: "ls\nrm -rf /tmp/elsewhere" } }]);
+  const asked: string[] = [];
+  const ask = async (tool: string): Promise<IpcReply> => {
+    asked.push(tool);
+    return { ok: true, text: JSON.stringify({ behavior: "allow" }) };
+  };
+  const scope = { cwd: "/w", folders: ["/w"] };
+  // A plan turn refuses the write on the computer (joined on one line it read as `ls` with arguments, a plain read).
+  expect(await decideApproval(calls ?? [], ask, { scope, profile: "plan" })).toBe("decline");
+  expect(await decideApproval([{ tool_name: "Bash", input: { command: "ls" } }], ask, { scope, profile: "plan" })).toBe(
+    "accept",
+  );
+  expect(asked).toEqual([]);
 });
 
 test.skipIf(!posix)(

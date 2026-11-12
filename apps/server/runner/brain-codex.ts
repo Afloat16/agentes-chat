@@ -3,7 +3,7 @@ import type { EventEmitter } from "node:events";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import type { CommandProfile } from "@agenteschat/adapters/command-policy";
+import { type CommandProfile, shellWords } from "@agenteschat/adapters/command-policy";
 import {
   type AgentScope,
   type BrainEffort,
@@ -423,10 +423,49 @@ export function codexTurnArgs(input: {
   ];
 }
 
-/** `/bin/zsh -lc "npm test"` → `npm test` (Codex wraps every command in the login shell). */
+/**
+ * The script of the shell Codex runs a command in, exactly as that shell reads it: `/bin/zsh -lc 'ls\nrm x'` →
+ * `ls\nrm x`, where the newline ends a command as it does there. What the command policy judges: on one line it read
+ * as `ls rm x`, a plain read, while the shell ran both. On Windows Codex's shell is PowerShell
+ * (`'C:\…\pwsh.exe' -NoProfile -Command '…'`) or cmd.exe (`cmd.exe /c …`). Anything else, or a line this can't read
+ * word by word: the line as given (a shell running inline code, which the policy never allows by itself).
+ */
+export function shellScript(command: string): string {
+  const line = command.trim();
+  const words = shellWords(line);
+  if (!words || words.some((w) => w.op)) return line;
+  const argv = words.map((w) => w.text);
+  const name = (argv[0] ?? "")
+    .split(/[\\/]/)
+    .at(-1)
+    ?.toLowerCase()
+    .replace(/\.exe$/, "");
+  const flags = (from: number, flag: RegExp) => {
+    let i = from;
+    while (i < argv.length && flag.test(argv[i] ?? "")) i++;
+    return i;
+  };
+  if (argv.length === 3 && /^(?:ba|z|da)?sh$/.test(name ?? "") && /^-l?c$/.test(argv[1] ?? "")) {
+    return (argv[2] ?? "").trim();
+  }
+  if (name === "pwsh" || name === "powershell") {
+    const i = flags(1, /^-(?:noprofile|nologo|noninteractive)$/i);
+    if (argv.length === i + 2 && /^-(?:command|c)$/i.test(argv[i] ?? "")) return (argv[i + 1] ?? "").trim();
+  }
+  if (name === "cmd") {
+    const i = flags(1, /^\/[dsq]$/i);
+    if (argv.length === i + 2 && /^\/c$/i.test(argv[i] ?? "")) return (argv[i + 1] ?? "").trim();
+  }
+  return line;
+}
+
+/** `/bin/zsh -lc "npm test"` → `npm test`, on one line: a command Codex ran, as a transcript shows it. */
 export function unwrapShell(command: string) {
-  const m = /^\S*(?:sh|bash|zsh)\s+-l?c\s+(["'])([\s\S]*)\1$/.exec(command.trim());
-  return (m ? (m[2] ?? "") : command).replace(/\s+/g, " ").trim();
+  const line = command.trim();
+  const script = shellScript(line);
+  // A script with what `shellScript` doesn't read (`$HOME` in double quotes): shown without its shell all the same.
+  const m = script === line ? /^\S*(?:sh|bash|zsh)\s+-l?c\s+(["'])([\s\S]*)\1$/.exec(line) : null;
+  return (m ? (m[2] ?? "") : script).replace(/\s+/g, " ").trim();
 }
 
 const USAGE_LIMIT = /hit your usage limit|usage limit reached|usage_limit|workspace is out of credits|spend cap/i;

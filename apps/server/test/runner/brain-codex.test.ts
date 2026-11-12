@@ -21,6 +21,8 @@ import {
   codexVersionOk,
   handleCodexBrainTurn,
   runCodexTurn,
+  shellScript,
+  unwrapShell,
 } from "../../runner/brain-codex";
 import { handleRequest } from "../../runner/handlers";
 import { CODEX_MCP_SERVER } from "../../runner/mcp";
@@ -104,6 +106,30 @@ test("command line: first turn with instructions, resume by id without them, opt
   expect(plan.join(" ")).not.toContain("network_access");
   expect(codexProfileOf({ permissions: { mode: "plan" } })).toBe("plan");
   expect(codexProfileOf({})).toBe("work");
+});
+
+test("a command's script is read the way its shell reads it, newlines kept; a transcript shows it on one line", () => {
+  // POSIX: Codex's login shell, quoted as Codex joins its argv (a quote inside a quoted word too).
+  expect(shellScript("/bin/zsh -lc 'ls\nrm -rf ~/x'")).toBe("ls\nrm -rf ~/x");
+  expect(shellScript("/bin/bash -lc 'echo it'\"'\"'s'")).toBe("echo it's");
+  expect(shellScript('/bin/zsh -lc "npm test"')).toBe("npm test");
+  // Windows: PowerShell (its path quoted, backslashes kept) and cmd.exe.
+  expect(shellScript("'C:\\Program Files\\PowerShell\\7\\pwsh.exe' -NoProfile -Command 'npm test'")).toBe("npm test");
+  expect(
+    shellScript(
+      "'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe' -Command 'Get-ChildItem\nRemove-Item x'",
+    ),
+  ).toBe("Get-ChildItem\nRemove-Item x");
+  expect(shellScript("'C:\\Windows\\system32\\cmd.exe' /d /c 'dir'")).toBe("dir");
+  // What it can't read word by word, or more than the shell's script: the line as given.
+  expect(shellScript('/bin/zsh -lc "echo $HOME"')).toBe('/bin/zsh -lc "echo $HOME"');
+  expect(shellScript("/bin/zsh -lc 'ls' && rm -rf ~/x")).toBe("/bin/zsh -lc 'ls' && rm -rf ~/x");
+  expect(shellScript("/bin/zsh -lc 'ls' extra")).toBe("/bin/zsh -lc 'ls' extra");
+  expect(shellScript("npm test")).toBe("npm test");
+  // The transcript's line.
+  expect(unwrapShell("/bin/zsh -lc 'ls\nrm -rf ~/x'")).toBe("ls rm -rf ~/x");
+  expect(unwrapShell('/bin/zsh -lc "echo $HOME"')).toBe("echo $HOME");
+  expect(unwrapShell("'C:\\Program Files\\PowerShell\\7\\pwsh.exe' -NoProfile -Command 'npm test'")).toBe("npm test");
 });
 
 test("MCP bridge overrides: stdio by run with the token through env_vars, or HTTP with a bearer from the env", () => {

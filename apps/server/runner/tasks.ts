@@ -53,7 +53,7 @@ import {
   withSignIn,
   yieldRoute,
 } from "./accounts";
-import { codexThreadKey } from "./brain-codex";
+import { codexThreadKey, unwrapShell } from "./brain-codex";
 import { commandApproval, ownBranches } from "./command-gate";
 import { RunnerError } from "./errors";
 import { shellCommand } from "./exec";
@@ -762,12 +762,6 @@ export function parseCodexEvent(
     default:
       return {};
   }
-}
-
-/** `/bin/zsh -lc "npm test"` → `npm test` (Codex wraps every command in the login shell). */
-function unwrapShell(command: string) {
-  const m = /^\S*(?:sh|bash|zsh)\s+-l?c\s+(["'])([\s\S]*)\1$/.exec(command.trim());
-  return (m ? (m[2] ?? "") : command).replace(/\s+/g, " ").trim();
 }
 
 /** The end of a log (at most `max` bytes) and whether there was more before it. */
