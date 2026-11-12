@@ -2077,6 +2077,16 @@ function Chat({
       void listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0, viewOffset: readRoom });
     });
   }, [readRoom, composerHeight]);
+  // The box growing while the person is at the end (the working line coming in, a banner, an attachment) keeps the
+  // last message above it: the list's end inset moves with the box, but the list follows only its content, so the
+  // line would sit over the message's last lines.
+  const boxHeightRef = useRef(0);
+  useEffect(() => {
+    const before = boxHeightRef.current;
+    boxHeightRef.current = composerHeight;
+    if (before === 0 || composerHeight <= before || !atEndRef.current || readHold) return;
+    requestAnimationFrame(() => void listRef.current?.scrollToEnd({ animated: true }));
+  }, [composerHeight, readHold]);
   useEffect(() => {
     if (!showList) return;
     const state = listRef.current?.getState();
