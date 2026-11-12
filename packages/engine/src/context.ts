@@ -633,7 +633,7 @@ export async function buildRunContext(
   // theirs. Read where it could ask one, as its own open requests are.
   const waitingOnThem =
     openRequests && trigger.authorType === "person" && trigger.authorUserId
-      ? waitingOnPerson(db, run.orgId, trigger.authorUserId, agent.id).then(
+      ? waitingOnPerson(db, run.orgId, trigger.authorUserId, agent.id, run.channelId).then(
           (rows) => waitingOnPersonBlock(rows, run.channelId),
           () => null,
         )

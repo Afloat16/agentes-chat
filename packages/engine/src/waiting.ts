@@ -94,14 +94,15 @@ export interface WaitingOnPerson {
 const MAX_IN_PROMPT = 8;
 
 /**
- * What other agents asked this person and nobody answered yet, oldest first: one statement, read before a turn that
- * may ask them something more.
+ * What other agents asked this person and nobody answered yet: one statement, read before a turn that may ask them
+ * something more. This conversation's come first, then the oldest, so the cap never drops the ones the prompt quotes.
  */
 export async function waitingOnPerson(
   db: Executor,
   orgId: string,
   userId: string,
   exceptAgentId: string,
+  channelId: string,
 ): Promise<WaitingOnPerson[]> {
   const asker = sql`${notifications.actors}->0->>'id'`;
   const rows = await db
@@ -121,7 +122,11 @@ export async function waitingOnPerson(
         sql`${asker} <> ${exceptAgentId}`,
       ),
     )
-    .orderBy(asc(notifications.createdAt), asc(notifications.id))
+    .orderBy(
+      sql`(${notifications.source}->>'channelId' is distinct from ${channelId})`,
+      asc(notifications.createdAt),
+      asc(notifications.id),
+    )
     .limit(MAX_IN_PROMPT + 1);
   return rows.map((r) => ({
     agentName: r.agentName,

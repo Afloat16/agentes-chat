@@ -138,10 +138,25 @@ test("another agent reads what already waits on the person, only while something
   await post("@dev deploy it");
   await drainOutbox(f.db, f.handlers);
   // Dev's own question is under its "Your open requests": never said to it again here.
-  expect(await waitingOnPerson(f.db, f.org.id, f.owner.id, f.agent.id)).toEqual([]);
-  expect(await waitingOnPerson(f.db, f.org.id, f.owner.id, ops.id)).toEqual([
+  expect(await waitingOnPerson(f.db, f.org.id, f.owner.id, f.agent.id, f.general.id)).toEqual([]);
+  expect(await waitingOnPerson(f.db, f.org.id, f.owner.id, ops.id, f.general.id)).toEqual([
     { agentName: "Dev", channelId: f.general.id, question: "Qual ambiente?" },
   ]);
+  // Ten older ones asked elsewhere: this conversation's still leads, inside the cap.
+  for (let i = 0; i < 10; i++)
+    await f.db.insert(schema.notifications).values({
+      orgId: f.org.id,
+      userId: f.owner.id,
+      kind: "agent_question",
+      groupKey: `old:${i}`,
+      waiting: true,
+      actors: [{ type: "agent", id: f.agent.id }],
+      source: {},
+      latest: { text: `Antiga ${i}?` },
+      createdAt: new Date(2020, 0, 1 + i),
+      updatedAt: new Date(2020, 0, 1 + i),
+    });
+  expect((await waitingOnPerson(f.db, f.org.id, f.owner.id, ops.id, f.general.id))[0]?.question).toBe("Qual ambiente?");
   await post("@ops second hello");
   await drainOutbox(f.db, f.handlers);
   const system = systemOf("@ops second hello");
