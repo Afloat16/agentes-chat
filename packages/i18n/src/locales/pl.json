@@ -17576,6 +17576,7 @@
     "row": "Niedostępna",
     "screen": {
       "title": "Ta przestrzeń robocza jest niedostępna",
+      "titleNamed": "{{name}} jest niedostępna",
       "text": "Jej rozmowy i agenci są na razie zamknięci.",
       "others": "Twoje pozostałe przestrzenie robocze"
     },
@@ -17630,14 +17631,14 @@
   "deleteOrg": {
     "card": {
       "title": "Usuń przestrzeń roboczą",
-      "text": "Zamyka {{name}} dla wszystkich od razu. Po 7 dniach zostaje trwale usunięta.",
+      "text": "{{name}} od razu staje się dla wszystkich tylko do odczytu. Po 7 dniach zostaje trwale usunięta.",
       "button": "Usuń przestrzeń roboczą…"
     },
     "title": "Usunąć {{name}}?",
     "goes": {
       "content": "Jej rozmowy, pliki, agenci i ich pamięć",
-      "people": "Wszyscy od razu tracą dostęp i dostają e-mail",
-      "peopleQuiet": "Wszyscy od razu tracą dostęp",
+      "people": "Wszyscy od razu mogą już tylko czytać i dostają e-mail",
+      "peopleQuiet": "Wszyscy od razu mogą już tylko czytać",
       "computer": "Jej komputer zostaje od razu zatrzymany i wyczyszczony",
       "computers": "Podłączone komputery zostaną odłączone. Foldery agentów zostaną na nich, dopóki runner nie zostanie usunięty.",
       "connectors": "Konektory i skrzynki pocztowe zostaną odłączone"
@@ -17663,15 +17664,16 @@
   },
   "deleting": {
     "title": "{{name}} jest usuwana",
-    "text": "Ta przestrzeń robocza jest już usuwana. Nie musisz nic robić, zniknie {{date}}.",
-    "textLate": "Ta przestrzeń robocza jest już usuwana. Nie musisz nic robić.",
+    "banner": "{{name}} zostanie usunięta {{date}}",
     "by": "Usunięta {{date}} przez: {{by}}.",
+    "byYou": "Usunięta {{date}} przez Ciebie.",
     "row": "Usuwana, zniknie {{date}}",
     "rowLate": "Usuwana",
     "someone": "Ktoś",
     "restore": "Przywróć przestrzeń roboczą",
     "membersOnly": "Przywrócić ją może tylko właściciel.",
-    "restored": "{{name}} wróciła"
+    "restored": "{{name}} wróciła",
+    "composer": "Nie możesz wysyłać wiadomości, gdy ta przestrzeń robocza jest usuwana"
   },
   "accountDeleting": {
     "title": "Twoje konto jest usuwane",
