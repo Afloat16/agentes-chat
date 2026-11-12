@@ -4877,9 +4877,9 @@ export interface WikiPageSummary {
   audienceFolder?: string | null;
   /** The start of the text, plain, for cards. */
   excerpt?: string;
-  /** `obsidian` for an imported page. */
+  /** An imported page: `obsidian`, `github` or `files` (`WikiImportSource`). */
   sourceType?: string | null;
-  /** An imported page: the vault's name. */
+  /** An imported page: the name of what was imported (the vault, the repository, the folder). */
   sourceName?: string | null;
   /** The import that brought it (null for pages imported before imports had ids). */
   importId?: string | null;
@@ -4912,8 +4912,11 @@ export interface WikiImportNote {
   attachments?: Record<string, string>;
 }
 
+/** Where an import's notes came from: an Obsidian vault, a GitHub link, or Markdown files. */
+export type WikiImportSource = "obsidian" | "github" | "files";
+
 export interface WikiImportInput {
-  source: { type: "obsidian"; name: string };
+  source: { type: WikiImportSource; name: string };
   notes: WikiImportNote[];
   folder?: string;
   onConflict: "keep_both" | "skip";

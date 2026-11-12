@@ -18,6 +18,7 @@ import {
   todoLine,
 } from "@agenteschat/client/lib/import/flow";
 import { EXPORT_PROMPT } from "@agenteschat/client/lib/import/index";
+import { can } from "@agenteschat/client/lib/permissions";
 import { helpUrl } from "@agenteschat/client/lib/server";
 import * as Clipboard from "expo-clipboard";
 import * as DocumentPicker from "expo-document-picker";
@@ -99,7 +100,10 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
   const { t } = useTranslation();
   const { colors: c } = useTheme();
   const apps = useApps(orgId);
-  const standing = useMe().data?.organizations.find((o) => o.id === orgId)?.standing;
+  const mine = useMe().data?.organizations.find((o) => o.id === orgId);
+  const standing = mine?.standing;
+  // A private repository the workspace's GitHub can't read: connecting GitHub is in Connectors, for who may.
+  const mayConnect = Boolean(mine && can(mine, "manage_connectors"));
   const mcp = aiAppImport(t, apps.data, standing);
   // Prompt only for an app that takes no MCP, where MCP can't work now, or when this server's address couldn't be
   // read. Nothing to choose from while it loads, so the default never changes under the person.
@@ -251,7 +255,7 @@ function Picker({ imp, orgId }: { imp: AgentImport; orgId: string }) {
       {archive ? <ErrorText text={t("mobile.newAgent.import.archive")} /> : null}
       {imp.failure ? (
         <View style={styles.failure}>
-          <ErrorText text={importFailureText(t, imp.failure, phoneOffline)} />
+          <ErrorText text={importFailureText(t, imp.failure, phoneOffline, mayConnect)} />
           {retryable(imp.failure) ? (
             <Button variant="secondary" size="sm" label={t("common.retry")} onPress={() => void imp.retry()} />
           ) : null}

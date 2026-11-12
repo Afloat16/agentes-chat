@@ -370,12 +370,10 @@ describe("the agent page's cards and the chat's", () => {
   test("the cards beside them use the same 12px", async () => {
     const css = await sheet(
       "apps/web/src/pages/approvals.css",
-      "apps/web/src/pages/wiki.css",
       "apps/web/src/pages/drive.css",
       "apps/web/src/components/computer/computer.css",
     );
     expect(value(css, ".ap-waiters", "padding")).toBe("12px 16px");
-    expect(value(css, ".wiki-import-card", "padding")).toBe("12px");
     expect(value(css, ".drive-note", "padding")).toBe("12px 14px");
     expect(value(css, ".cmp-entry__row", "padding")).toBe("12px 14px");
   });

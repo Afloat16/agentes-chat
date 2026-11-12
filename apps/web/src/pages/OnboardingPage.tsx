@@ -1107,7 +1107,8 @@ export function OnboardingPage() {
 
 /**
  * The AI step and its stage inside the workspace's context and Connect an AI (ADR 0160), which the onboarding has
- * nowhere else; the people step inside the workspace's context, which the invite link's panel reads; any other step
+ * nowhere else; the people step inside the workspace's context, which the invite link's panel reads, and the team
+ * step, where a private repository to bring agents from offers to connect GitHub; any other step
  * as it is, so the earlier steps ask the server for nothing more.
  */
 function StepHost({
@@ -1127,7 +1128,7 @@ function StepHost({
         {children}
       </AiHost>
     );
-  if (org && step === "people")
+  if (org && (step === "people" || step === "team"))
     return (
       <OrgProvider org={org} me={me}>
         {children}
