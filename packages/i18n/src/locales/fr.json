@@ -3084,7 +3084,7 @@
     "lead": "Quand {{name}} demande à une personne avant d’agir.",
     "always": {
       "title": "Toujours demander",
-      "text": "Demande avant de modifier quoi que ce soit dans une app."
+      "text": "Demande avant de modifier quoi que ce soit, ici, sur son ordinateur ou dans une app."
     },
     "risky": {
       "title": "Seulement ce qui est risqué",
@@ -3092,7 +3092,7 @@
     },
     "never": {
       "title": "Ne jamais demander",
-      "text": "Demande toujours pour un merge, un deploy ou un rollback."
+      "text": "Ne demande rien, même pour un merge, un deploy, un paiement ou dans une routine."
     }
   },
   "brakes": {
@@ -6478,7 +6478,7 @@
     "connectorsLabel": "Connecteurs et niveaux",
     "connectOther": "Connecter une autre app",
     "opensConnectors": "ouvre Connecteurs",
-    "approvalsNote": "Le merge, le déploiement et le rollback demandent toujours une approbation dans la discussion.",
+    "approvalsNote": "Le merge, le déploiement et le rollback demandent une approbation dans la discussion, sauf si l'agent ne demande jamais.",
     "approverOwner": "{{name}} approuve.",
     "approverAdmins": "Un admin approuve.",
     "skillsTitle": "Compétences de l'espace de travail",
@@ -6750,8 +6750,8 @@
       "readDesc": "Voit ce qu'il y a dans {{app}}. Ne change rien.",
       "write": "Lire et écrire",
       "writeDesc": "Crée et modifie aussi dans {{app}}.",
-      "asks": "{{actions}} demandent toujours ton accord, à tout niveau.",
-      "asksAny": "Envoyer, supprimer et payer demandent toujours ton accord, à tout niveau.",
+      "asks": "{{actions}} demandent ton accord, sauf si l'agent ne demande jamais.",
+      "asksAny": "Envoyer, supprimer et payer demandent ton accord, sauf si l'agent ne demande jamais.",
       "remove": "Retirer {{app}}",
       "done": "Terminé"
     },
@@ -7985,7 +7985,7 @@
       "ownActions": "Fait seule"
     },
     "ownActions": {
-      "hint": "Chaque exécution fait cela dans tes apps connectées sans demander. Toute autre action dans ces apps demande d’abord l’accord d’une personne, et merge, deploy et rollback le demandent toujours.",
+      "hint": "Chaque exécution fait cela dans tes apps connectées sans demander. Toute autre action dans ces apps demande d’abord l’accord d’une personne, sauf si l’agent ne demande jamais.",
       "none": "Dans les apps connectées, elle demande l’accord d’une personne avant chaque action. Pour qu’elle fasse son travail seule, dis à l’agent dans le chat quelles actions elle peut faire.",
       "remove": "Redemander avant : {{action}}",
       "hintShort": "Chaque exécution fait cela sans demander.",
@@ -8917,7 +8917,7 @@
       "offline": "{{name}} est hors ligne. Le plan démarre à son retour.",
       "needsMachine": "Les missions tournent sur un ordinateur connecté. Connectez-en un à {{name}} dans Paramètres › Appareils.",
       "commandHint": "Vous pouvez aussi en lancer une en tapant dans la zone de saisie de n'importe quelle conversation :",
-      "approvals": "Le merge, le déploiement et le rollback demandent toujours une approbation",
+      "approvals": "Par défaut, le merge, le déploiement et le rollback demandent une approbation",
       "start": "Démarrer la mission",
       "created": "Mission créée : {{name}} prépare le plan.",
       "who": "Qui programme",
@@ -11384,7 +11384,7 @@
   },
   "access": {
     "matrixTitle": "Accès des agents",
-    "matrixHint": "Les actions sensibles (merge, déploiement, partage, paiement) demandent toujours une approbation, quel que soit le niveau. Pour régler outil par outil, ouvrez les Outils du connecteur.",
+    "matrixHint": "Par défaut, les actions sensibles (merge, déploiement, partage, paiement) demandent une approbation. Pour régler outil par outil, ouvrez les Outils du connecteur.",
     "matrixHow": "Cliquez sur une case pour la modifier :",
     "kindLabel": "Afficher",
     "kind": {
@@ -11864,6 +11864,7 @@
     "notVisible": "Votre compte GitHub ne voit pas cette installation. Installez-la avec un compte qui y a accès.",
     "otherWorkspace": "Ce compte GitHub est déjà lié à un autre espace de travail. Retirez l'app là-bas avant de l'installer ici.",
     "installedOutside": "L'app a été installée sur ce compte GitHub en dehors d'agentes.chat. Retirez-la sur GitHub, puis réinstallez-la depuis Connecteurs › GitHub.",
+    "ownerUnknown": "GitHub n'a pas indiqué qui est propriétaire de cette organisation. La personne qui gère le serveur doit ajouter l'autorisation d'organisation Members (lecture seule) à l'app GitHub, puis vous la réinstallez.",
     "misconfigured": "L'app GitHub a la mauvaise clé secrète sur le serveur, donc l'installation ne peut pas aboutir. La personne qui gère le serveur doit remplacer la clé dans les paramètres de l'app.",
     "connectAccount": "Connecter un compte GitHub",
     "ownerHint": "Le propriétaire de ce serveur peut créer l'app GitHub ici, dans Connecteurs.",
@@ -11914,7 +11915,7 @@
     "merge": {
       "label": "Peut merger sans demander",
       "none": "Aucun dépôt choisi. Chaque merge demande une approbation.",
-      "help": "Dans ces dépôts, le merge se fait sans carte d'approbation, figure dans l'audit et laisse un reçu dans la conversation. Tout le reste de sensible continue de demander.",
+      "help": "Dans ces dépôts, le merge se fait sans carte d'approbation, figure dans l'audit et laisse un reçu dans la conversation. Un agent qui demande toujours continue de demander.",
       "dialogTitle": "Où {{name}} merge sans demander",
       "dialogDesc": "Uniquement les dépôts déjà utilisés. Un merge ailleurs demande une approbation.",
       "short": "Dans ces dépôts, le merge se fait sans carte d'approbation."
@@ -12053,7 +12054,7 @@
       "github": {
         "1": "Lire le code, les issues et les pull requests",
         "2": "Ouvrir des pull requests et commenter",
-        "ask": "Le merge et le déploiement demandent toujours votre approbation"
+        "ask": "Par défaut, le merge et le déploiement demandent votre approbation"
       },
       "sentry": {
         "1": "Voir les erreurs et les événements",
@@ -12087,7 +12088,7 @@
       "cloudflare_bindings": {
         "1": "Voir Workers, KV, R2 et D1",
         "2": "Modifier les Workers et le stockage",
-        "ask": "Les déploiements demandent toujours votre approbation"
+        "ask": "Par défaut, les déploiements demandent votre approbation"
       },
       "cloudflare_observability": {
         "1": "Voir les logs et les métriques des Workers"
@@ -12095,7 +12096,7 @@
       "supabase": {
         "1": "Voir les projets et les fonctions",
         "2": "Interroger et modifier la base de données",
-        "ask": "Les déploiements demandent toujours votre approbation"
+        "ask": "Par défaut, les déploiements demandent votre approbation"
       },
       "supabase_readonly": {
         "1": "Interroger la base de données (lecture seule)",
@@ -12830,7 +12831,7 @@
     "see": "Voir",
     "seeAsks": "Voir ce qui demande une approbation",
     "agentTitle": "Ce que {{name}} peut utiliser",
-    "agentSub": "Par connecteur et par sujet. Les actions sensibles demandent toujours une approbation."
+    "agentSub": "Par connecteur et par sujet. Par défaut, les actions sensibles demandent une approbation."
   },
   "connectFlow": {
     "steps": "Étapes",
@@ -12902,7 +12903,7 @@
     "asksCount_one": "{{count}} action demande toujours une approbation dans le chat.",
     "asksCount_many": "{{count}} actions demandent toujours une approbation dans le chat.",
     "asksCount_other": "{{count}} actions demandent toujours une approbation dans le chat.",
-    "asksDefault": "Les actions sensibles demandent toujours une approbation dans le chat.",
+    "asksDefault": "Par défaut, les actions sensibles demandent une approbation dans le chat.",
     "grant": "Donner l'accès",
     "saved_one": "{{name}} : {{count}} agent peut l'utiliser.",
     "saved_many": "{{name}} : {{count}} agents peuvent l'utiliser.",
@@ -16056,6 +16057,7 @@
         "plan": "Le plan n'est pas encore approuvé",
         "tooMany": "Trop d'approbations à la suite",
         "off": "L'exécution de commandes est désactivée pour cet agent",
+        "asks": "Cet agent demande avant chaque modification",
         "team": "L'équipe l'a déjà fait",
         "teamPersonal": "Cela a déjà été fait",
         "unclear": "Impossible de la lire clairement",

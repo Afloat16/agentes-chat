@@ -13,6 +13,8 @@ import {
   APP_FAULT_HINT,
   type ArtifactDeps,
   agentScopeFromDb,
+  approvalsLevelOf,
+  asksOf,
   authorizeStream,
   type BrainTurn,
   blockSpecAt,
@@ -611,7 +613,8 @@ export function buildEngine(o: EngineOptions) {
    * A computer turn's permission profile (ADR 0053 §3), the same for Claude Code and Codex: a mission run
    * keeps its own (plan before Start and while a write item is live, work otherwise; ADR 0044); every other
    * run works, whoever woke it (ADR 0109: one permission model, the agent's own). Its own branches are
-   * agentes/<handle>/… (what the git proxy accepts).
+   * agentes/<handle>/… (what the git proxy accepts). It carries how much the agent asks when that isn't the default
+   * (ADR 0173); a mission's turn follows the mission's own setting.
    */
   const turnPermissions = async (turn: BrainTurn): Promise<BrainTurnRequest["permissions"]> =>
     // The team's right hand on a plan: our tools and nothing else (ADR 0137 §4).
@@ -620,6 +623,7 @@ export function buildEngine(o: EngineOptions) {
       : ((await missionTurnPermissions(db, turn)) ?? {
           mode: "work",
           branchPrefix: `agentes/${(await agentScope(turn)).handle}/`,
+          ...asksOf(await approvalsLevelOf(db, turn.orgId, turn.agentId)),
         });
   // Before a chat turn on a connected machine: the agent's checkouts updated through the git proxy, the turn
   // started in the repository it is about, and the "# Your code" block (ADR 0024 addendum).

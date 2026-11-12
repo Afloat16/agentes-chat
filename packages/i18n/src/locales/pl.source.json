@@ -7301,7 +7301,7 @@
     "value": "Always ask"
   },
   "approvalsLevel.always.text": {
-    "value": "Asks before changing anything in an app."
+    "value": "Asks before changing anything, here, on its computer or in an app."
   },
   "approvalsLevel.risky.title": {
     "value": "Only what is risky"
@@ -7313,7 +7313,7 @@
     "value": "Never ask"
   },
   "approvalsLevel.never.text": {
-    "value": "Still asks for merge, deploy and rollback."
+    "value": "Never asks, merge, deploy, payments and routines included."
   },
   "brakes.title": {
     "value": "Work nobody asked for"
@@ -15211,7 +15211,7 @@
     "value": "opens Connectors"
   },
   "newAgent.approvalsNote": {
-    "value": "Merge, deploy and rollback always ask for approval in chat."
+    "value": "Merge, deploy and rollback ask for approval in chat, unless the agent never asks."
   },
   "newAgent.approverOwner": {
     "value": "{{name}} approves."
@@ -15848,10 +15848,10 @@
     "value": "Also creates and edits in {{app}}."
   },
   "newAgentCard.app.asks": {
-    "value": "{{actions}} always ask for your approval, at any level."
+    "value": "{{actions}} ask for your approval, unless the agent never asks."
   },
   "newAgentCard.app.asksAny": {
-    "value": "Sending, deleting and paying always ask for your approval, at any level."
+    "value": "Sending, deleting and paying ask for your approval, unless the agent never asks."
   },
   "newAgentCard.app.remove": {
     "value": "Remove {{app}}"
@@ -18677,7 +18677,7 @@
     "value": "Does on its own"
   },
   "routines.ownActions.hint": {
-    "value": "Every run does these in your connected apps without asking. Any other action there asks a person first, and merge, deploy and rollback always ask."
+    "value": "Every run does these in your connected apps without asking. Any other action there asks a person first, unless the agent never asks."
   },
   "routines.ownActions.none": {
     "value": "In connected apps it asks a person before each action. To let it do its job on its own, tell the agent in the chat which actions it may do."
@@ -20789,7 +20789,7 @@
     "value": "You can also start one by typing in any conversation's composer:"
   },
   "missions.new.approvals": {
-    "value": "Merge, deploy and rollback always ask for approval"
+    "value": "By default, merge, deploy and rollback ask for approval"
   },
   "missions.new.start": {
     "value": "Start mission"
@@ -26683,7 +26683,7 @@
     "value": "Agent access"
   },
   "access.matrixHint": {
-    "value": "Sensitive actions (merge, deploy, share, pay) always ask for approval, at any level. To set it tool by tool, open the connector's Tools."
+    "value": "By default, sensitive actions (merge, deploy, share, pay) ask for approval. To set it tool by tool, open the connector's Tools."
   },
   "access.matrixHow": {
     "value": "Click a cell to change it:"
@@ -27879,6 +27879,9 @@
   "githubApp.installedOutside": {
     "value": "The app was installed on that GitHub account outside agentes.chat. Remove it on GitHub and install it again from Connectors › GitHub."
   },
+  "githubApp.ownerUnknown": {
+    "value": "GitHub didn't say who owns that organization. Whoever runs the server needs to add the organization permission Members (read-only) to the GitHub app, then you install it again."
+  },
   "githubApp.misconfigured": {
     "value": "The GitHub app has the wrong secret key on the server, so the install can't finish. Whoever runs the server needs to replace the key in the app's settings."
   },
@@ -27985,7 +27988,7 @@
     "value": "No repositories chosen. Every merge asks for approval."
   },
   "repos.merge.help": {
-    "value": "In these repositories a merge runs with no approval card, goes in the audit and leaves a receipt in the conversation. Everything else that's sensitive still asks."
+    "value": "In these repositories a merge runs with no approval card, goes in the audit and leaves a receipt in the conversation. An agent that always asks still asks."
   },
   "repos.merge.dialogTitle": {
     "value": "Where {{name}} merges without asking"
@@ -28328,7 +28331,7 @@
     "value": "Open pull requests and comment"
   },
   "connectors.can.github.ask": {
-    "value": "Merge and deploy always ask for your approval"
+    "value": "By default, merge and deploy ask for your approval"
   },
   "connectors.can.sentry.1": {
     "value": "See errors and events"
@@ -28382,7 +28385,7 @@
     "value": "Change Workers and storage"
   },
   "connectors.can.cloudflare_bindings.ask": {
-    "value": "Deploys always ask for your approval"
+    "value": "By default, deploys ask for your approval"
   },
   "connectors.can.cloudflare_observability.1": {
     "value": "See Workers logs and metrics"
@@ -28394,7 +28397,7 @@
     "value": "Query and change the database"
   },
   "connectors.can.supabase.ask": {
-    "value": "Deploys always ask for your approval"
+    "value": "By default, deploys ask for your approval"
   },
   "connectors.can.supabase_readonly.1": {
     "value": "Query the database (read only)"
@@ -29999,7 +30002,7 @@
     "value": "What {{name}} can use"
   },
   "toolReview.agentSub": {
-    "value": "By connector and subject. Sensitive actions always ask for approval."
+    "value": "By connector and subject. By default, sensitive actions ask for approval."
   },
   "connectFlow.steps": {
     "value": "Steps"
@@ -30182,7 +30185,7 @@
     }
   },
   "connectFlow.asksDefault": {
-    "value": "Sensitive actions always ask for approval in the chat."
+    "value": "By default, sensitive actions ask for approval in the chat."
   },
   "connectFlow.grant": {
     "value": "Grant"
@@ -37738,6 +37741,9 @@
   },
   "chat.work.refusal.off": {
     "value": "Running commands is off for this agent"
+  },
+  "chat.work.refusal.asks": {
+    "value": "This agent asks before every change"
   },
   "chat.work.refusal.team": {
     "value": "The team already did this"

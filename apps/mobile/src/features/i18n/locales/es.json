@@ -1657,9 +1657,9 @@
         "setup": "Configuración del espacio de trabajo",
         "desktop": "Pantalla de la computadora"
       },
-      "asksYou": "Hacer merge y publicar siempre piden tu aprobación, en cualquier nivel.",
-      "asksOwner": "Hacer merge y publicar siempre piden la aprobación de {{name}}, en cualquier nivel.",
-      "asksAdmins": "Hacer merge y publicar siempre piden la aprobación de un admin, en cualquier nivel.",
+      "asksYou": "Hacer merge y publicar piden tu aprobación, salvo que el agente no pregunte nunca.",
+      "asksOwner": "Hacer merge y publicar piden la aprobación de {{name}}, salvo que el agente no pregunte nunca.",
+      "asksAdmins": "Hacer merge y publicar piden la aprobación de un admin, salvo que el agente no pregunte nunca.",
       "empty": "Por ahora, solo conversación."
     }
   },

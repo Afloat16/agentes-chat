@@ -33,7 +33,7 @@ import { handleOpencodeBrainTurn, type OpencodeBrainTurnRequest } from "./brain-
 import { routeWithPlan } from "./brain-route";
 import { type BrowserManager, browserSetupText } from "./browser";
 import type { BrowserViews } from "./browser-views";
-import { allowedMerge, commandApproval, ownBranches } from "./command-gate";
+import { allowedMerge, commandApproval, mergeOf, ownBranches } from "./command-gate";
 import type { DesktopManager } from "./desktop";
 import { type DesktopSessions, hostMemAvailable, MIN_FREE_BYTES } from "./desktop-session";
 import { RunnerError, toMachineError } from "./errors";
@@ -412,8 +412,12 @@ async function doExec(
   // our git proxy would refuse it anyway (`never`).
   const held = await commandApproval(command, { cwd, own: ownBranches(req.agent), how: ASK_AGAIN, script: true });
   if (held?.never) throw new RunnerError("not_allowed", held.message);
-  const merge =
-    held && req.approved !== true ? await allowedMerge(command, { cwd, repos: req.mergeRepos ?? [] }) : null;
+  // An approved merge is named too: one a saved rule or an agent that never asks let through leaves the same receipt.
+  const merge = !held
+    ? null
+    : req.approved === true
+      ? await mergeOf(command, cwd)
+      : await allowedMerge(command, { cwd, repos: req.mergeRepos ?? [] });
   if (held && req.approved !== true && !merge) throw new RunnerError("approval_needed", held.message);
   let env = secrets?.env;
   let redact = secrets;

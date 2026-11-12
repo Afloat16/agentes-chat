@@ -3103,7 +3103,7 @@ export const ptBR = {
     lead: "Quando {{name}} pergunta a uma pessoa antes de agir.",
     always: {
       title: "Sempre perguntar",
-      text: "Pergunta antes de mudar algo em um app.",
+      text: "Pergunta antes de mudar qualquer coisa, aqui, no computador ou em um app.",
     },
     risky: {
       title: "Só o arriscado",
@@ -3111,7 +3111,7 @@ export const ptBR = {
     },
     never: {
       title: "Nunca perguntar",
-      text: "Ainda pergunta em merge, deploy e rollback.",
+      text: "Não pergunta nada, nem em merge, deploy, pagamentos e rotinas.",
     },
   },
   /** Configurações do agente: o que ele pode começar sem ninguém pedir diretamente, e quais agentes pode chamar (ADR 0131). */
@@ -6539,7 +6539,7 @@ export const ptBR = {
     connectorsLabel: "Conectores e níveis",
     connectOther: "Conectar outro app",
     opensConnectors: "abre Conectores",
-    approvalsNote: "Merge, deploy e rollback sempre pedem aprovação no chat.",
+    approvalsNote: "Merge, deploy e rollback pedem aprovação no chat, a não ser que o agente nunca pergunte.",
     approverOwner: "Quem aprova é {{name}}.",
     approverAdmins: "Quem aprova é um admin.",
     skillsTitle: "Skills do workspace",
@@ -6832,8 +6832,8 @@ export const ptBR = {
       readDesc: "Vê o que tem em {{app}}. Não muda nada.",
       write: "Ler e escrever",
       writeDesc: "Também cria e edita em {{app}}.",
-      asks: "{{actions}} sempre pedem a sua aprovação, em qualquer nível.",
-      asksAny: "Enviar, apagar e pagar sempre pedem a sua aprovação, em qualquer nível.",
+      asks: "{{actions}} pedem a sua aprovação, a não ser que o agente nunca pergunte.",
+      asksAny: "Enviar, apagar e pagar pedem a sua aprovação, a não ser que o agente nunca pergunte.",
       remove: "Tirar {{app}}",
       done: "Pronto",
     },
@@ -7996,7 +7996,7 @@ export const ptBR = {
       ownActions: "Faz sozinha",
     },
     ownActions: {
-      hint: "Cada execução faz isso nos seus apps conectados sem pedir. Qualquer outra ação neles pede aprovação antes, e merge, deploy e rollback sempre pedem.",
+      hint: "Cada execução faz isso nos seus apps conectados sem pedir. Qualquer outra ação neles pede aprovação antes, a não ser que o agente nunca pergunte.",
       none: "Nos apps conectados, ela pede aprovação antes de cada ação. Para ela fazer o trabalho sozinha, diga ao agente no chat quais ações pode fazer.",
       /** The one line a screen shows, with `hint` (or `none`) behind its ⓘ. */
       hintShort: "Cada execução faz isso sem pedir.",
@@ -8889,7 +8889,7 @@ export const ptBR = {
       needsMachine:
         "Missões rodam num computador conectado. Conecte um ao {{name}} em Configurações\u00a0›\u00a0Dispositivos.",
       commandHint: "Também dá para começar escrevendo no composer de qualquer conversa:",
-      approvals: "Merge, deploy e rollback sempre pedem aprovação",
+      approvals: "Por padrão, merge, deploy e rollback pedem aprovação",
       start: "Começar missão",
       created: "Missão criada: {{name}} está montando o plano.",
       who: "Quem programa",
@@ -11242,7 +11242,7 @@ export const ptBR = {
   access: {
     matrixTitle: "Acesso dos agentes",
     matrixHint:
-      "Ações sensíveis (merge, deploy, compartilhar, pagar) sempre pedem aprovação, em qualquer nível. Para ajustar ferramenta por ferramenta, abra Ferramentas no conector.",
+      "Por padrão, ações sensíveis (merge, deploy, compartilhar, pagar) pedem aprovação. Para ajustar ferramenta por ferramenta, abra Ferramentas no conector.",
     matrixHow: "Clique numa célula para trocar:",
     kindLabel: "Mostrar",
     kind: { connectors: "Conectores", builtin: "Nativos" },
@@ -11699,6 +11699,13 @@ export const ptBR = {
     installedOutside:
       "O app foi instalado nessa conta do GitHub fora do agentes.chat. Remova o app no GitHub e instale de novo em Conectores › GitHub.",
     /**
+     * O GitHub se recusou a dizer se a pessoa é dona da organização (`github_app_error=owner_unknown`, um 403): o mais
+     * provável é que o app do GitHub deste servidor tenha sido criado sem a permissão de organização Members, que só
+     * quem cuida dele adiciona.
+     */
+    ownerUnknown:
+      "O GitHub não disse quem é dono dessa organização. Quem cuida do servidor precisa adicionar a permissão de organização Members (somente leitura) ao app do GitHub, e depois você instala de novo.",
+    /**
      * O GitHub recusou o app do GitHub deste servidor, com a chave secreta (ou o ID) errada
      * (`github_app_error=misconfigured`): tentar de novo não resolve, só quem cuida do servidor conserta.
      */
@@ -11760,7 +11767,7 @@ export const ptBR = {
     merge: {
       label: "Pode fazer merge sem perguntar",
       none: "Nenhum repositório escolhido. Todo merge pede aprovação.",
-      help: "Nestes repositórios o merge roda sem cartão de aprovação, entra na auditoria e deixa um recibo na conversa. O resto que é sensível continua pedindo.",
+      help: "Nestes repositórios o merge roda sem cartão de aprovação, entra na auditoria e deixa um recibo na conversa. Um agente que sempre pergunta continua pedindo.",
       /** The one line a screen shows, with `help` behind its ⓘ. */
       short: "Nestes repositórios o merge roda sem cartão de aprovação.",
       dialogTitle: "Onde {{name}} faz merge sem perguntar",
@@ -11899,7 +11906,7 @@ export const ptBR = {
       github: {
         "1": "Ler código, issues e pull requests",
         "2": "Abrir pull requests e comentar",
-        ask: "Merge e deploy sempre pedem sua aprovação",
+        ask: "Por padrão, merge e deploy pedem sua aprovação",
       },
       sentry: { "1": "Ver erros e eventos", "2": "Ver releases" },
       linear: { "1": "Ler e criar issues", "2": "Mudar status, projetos e ciclos" },
@@ -11918,13 +11925,13 @@ export const ptBR = {
       cloudflare_bindings: {
         "1": "Ver Workers, KV, R2 e D1",
         "2": "Mudar Workers e armazenamento",
-        ask: "Deploys sempre pedem sua aprovação",
+        ask: "Por padrão, deploys pedem sua aprovação",
       },
       cloudflare_observability: { "1": "Ver logs e métricas dos Workers" },
       supabase: {
         "1": "Ver projetos e funções",
         "2": "Consultar e alterar o banco",
-        ask: "Deploys sempre pedem sua aprovação",
+        ask: "Por padrão, deploys pedem sua aprovação",
       },
       supabase_readonly: { "1": "Consultar o banco (só leitura)", "2": "Ler a documentação e depurar" },
       intercom: { "1": "Ler conversas e contatos", ask: "Respostas sempre pedem sua aprovação" },
@@ -12458,7 +12465,7 @@ export const ptBR = {
     see: "Ver",
     seeAsks: "Ver o que pede aprovação",
     agentTitle: "O que {{name}} pode usar",
-    agentSub: "Por conector e assunto. Ações sensíveis sempre pedem aprovação.",
+    agentSub: "Por conector e assunto. Por padrão, ações sensíveis pedem aprovação.",
   },
   connectFlow: {
     steps: "Passos",
@@ -12529,7 +12536,7 @@ export const ptBR = {
     noAgents: "Nenhum agente ainda. Libere quando quiser em “Quem usa”.",
     asksCount_one: "{{count}} ação sempre pede aprovação no chat.",
     asksCount_other: "{{count}} ações sempre pedem aprovação no chat.",
-    asksDefault: "Ações sensíveis sempre pedem aprovação no chat.",
+    asksDefault: "Por padrão, ações sensíveis pedem aprovação no chat.",
     grant: "Liberar",
     saved_one: "{{name}}: {{count}} agente pode usar.",
     saved_other: "{{name}}: {{count}} agentes podem usar.",
@@ -15657,6 +15664,8 @@ export const ptBR = {
         plan: "O plano ainda não foi aprovado",
         tooMany: "Pedidos demais seguidos para aprovar",
         off: "Rodar comandos está desligado para este agente",
+        /** O agente está em Sempre perguntar: o comando vai antes para uma pessoa. */
+        asks: "Este agente pergunta antes de cada mudança",
         team: "O time já fez isso",
         teamPersonal: "Isso já tinha sido feito",
         unclear: "Não dá para ler o comando com clareza",

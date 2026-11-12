@@ -1327,7 +1327,7 @@ export function ownActionsOf(list: readonly string[]): string[] {
     }
     if (alwaysAsks(action)) {
       throw new ValidationError(
-        `${action} always asks a person at the time (merge, deploy, rollback and the like): leave it out`,
+        `${action} can't be one of a routine's own actions (merge, deploy, rollback and the like): leave it out`,
         "routine.action_always_asks",
         { action },
       );
