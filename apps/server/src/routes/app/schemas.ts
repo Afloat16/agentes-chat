@@ -1041,6 +1041,13 @@ export const AgentBrain = z
       description:
         'Its Autonomia: the autonomy its new missions start with ("Usar como padrão"), copied with its setup.',
     }),
+    keys: z
+      .array(z.object({ id: z.string(), provider: z.string() }))
+      .optional()
+      .openapi({
+        description:
+          "The workspace's live API keys, id and provider only: the providers its owner may move it onto (only admins list the keys).",
+      }),
   })
   .openapi("AgentBrain");
 

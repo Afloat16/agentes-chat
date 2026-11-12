@@ -13,13 +13,26 @@ import {
   modelPickerModels,
   modelPickerSave,
   modelPickerTiles,
+  modelPickerUndo,
+  type PickerBefore,
   type PickerModel,
 } from "@agenteschat/client/lib/brain-picker";
 import { can } from "@agenteschat/client/lib/permissions";
 import { planMeterText } from "@agenteschat/client/lib/plan-usage";
 import { modelChoices } from "@agenteschat/client/lib/providers";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
-import { BrainIcon, Button, cx, EffortPixels, Icon, Input, Popover, ProviderLogo, planLine } from "@agenteschat/ui";
+import {
+  BrainIcon,
+  Button,
+  cx,
+  EffortPixels,
+  EventPill,
+  Icon,
+  Input,
+  Popover,
+  ProviderLogo,
+  planLine,
+} from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { type CSSProperties, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -96,19 +109,19 @@ export function ModelPickerButton({
   );
 }
 
+/** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
+export function ModelStandInLine({ text }: { text: string }) {
+  return (
+    <EventPill className="cn-pill cn-pill--part" mark={<Icon name="info" size={14} />}>
+      {text}
+    </EventPill>
+  );
+}
+
 function ModelPickerPanel({ agent, onClose }: { agent: Agent; onClose: () => void }) {
   const brain = useAgentBrain(useOrg().org.id, agent.id);
   if (!brain.data) return <div className="mp__loading" aria-busy="true" />;
   return <PickerBody agent={agent} view={brain.data} onClose={onClose} />;
-}
-
-/** What a pick changed, to put back with Desfazer. */
-interface Before {
-  brain: AgentBrain["brain"];
-  account: string | null;
-  model: string | null;
-  effort: AgentBrain["effort"];
-  apiModel: string;
 }
 
 function PickerBody({ agent, view, onClose }: { agent: Agent; view: AgentBrain; onClose: () => void }) {
@@ -124,7 +137,7 @@ function PickerBody({ agent, view, onClose }: { agent: Agent; view: AgentBrain; 
   const credentials = useCredentials(org.id, can(org, "manage_credentials"));
   const platform = usePlatformKey(org.id);
   const all = models.data?.models ?? [];
-  const choices = modelChoices(all, credentials.data ?? [], platform.data ?? false);
+  const choices = modelChoices(all, credentials.data ?? view.keys ?? [], platform.data ?? false);
   const tiles = modelPickerTiles(t, view, agent.ownerUserId, choices, agent.model, all);
   const [tileKey, setTileKey] = useState(() => (tiles.find((x) => x.current) ?? tiles[0])?.key);
   const tile = tiles.find((x) => x.key === tileKey) ?? tiles[0];
@@ -148,16 +161,9 @@ function PickerBody({ agent, view, onClose }: { agent: Agent; view: AgentBrain; 
     if (brainInput) await api.agents.setBrain(org.id, agent.id, brainInput);
     if (model !== undefined) await update.mutateAsync({ model });
   };
-  const putBack = async (b: Before) => {
+  const putBack = async (undo: ReturnType<typeof modelPickerUndo>) => {
     try {
-      await apply(
-        b.brain === "model"
-          ? view.brain === "model"
-            ? null
-            : { brain: "model" }
-          : { brain: b.brain, account: b.account, model: b.model, effort: b.effort },
-        b.apiModel !== agent.model ? b.apiModel : undefined,
-      );
+      await apply(undo.brain, undo.model);
     } catch {
       toast.show(t("agentPage.work.failed"), "error");
     } finally {
@@ -166,7 +172,7 @@ function PickerBody({ agent, view, onClose }: { agent: Agent; view: AgentBrain; 
   };
   const pick = async (row: PickerModel) => {
     if (!tile || busy || row.checked) return;
-    const before: Before = {
+    const before: PickerBefore = {
       brain: view.brain,
       account: view.account,
       model: view.model,
@@ -180,7 +186,7 @@ function PickerBody({ agent, view, onClose }: { agent: Agent; view: AgentBrain; 
       onClose();
       toast.show(t("brain.picker.saved", { agent: agent.name, model: row.label }), "success", {
         label: t("brain.picker.undo"),
-        run: () => void putBack(before),
+        run: () => void putBack(modelPickerUndo(before, saving)),
       });
     } catch {
       toast.show(t("agentPage.work.failed"), "error");

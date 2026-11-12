@@ -487,6 +487,11 @@ export interface AgentBrainView {
   ownUsage: OwnPlanUsage;
   /** Its Autonomia (the autonomy its missions start with): "Usar em outros agentes" takes it along (ADR 0094). */
   autonomy: CommandApproval;
+  /**
+   * The workspace's live API keys, their id and provider only (`GET …/brain`): which providers its owner may move it
+   * onto in the model picker, since only admins list the keys themselves.
+   */
+  keys?: { id: string; provider: string }[];
 }
 
 /** The account part of the brain view. */
@@ -908,13 +913,19 @@ export async function getAgentBrain(
   const { admin, others } = access;
   const agent = await settingsAgent(deps.db, access.agent, userId);
   const machineLook = agentMachine(deps.db, orgId, agent.machineId);
-  const [machine, machines, accounts] = await Promise.all([
+  const { providerCredentials } = schema;
+  const [machine, machines, accounts, keys] = await Promise.all([
     machineLook,
     candidateMachines(deps.db, userId, orgId, admin, agent.machineId),
     machineLook.then((m) => brainAccounts(deps.db, userId, orgId, agent, m, others)),
+    deps.db
+      .select({ id: providerCredentials.id, provider: providerCredentials.provider })
+      .from(providerCredentials)
+      .where(and(eq(providerCredentials.orgId, orgId), isNull(providerCredentials.revokedAt))),
   ]);
   return {
     ...view(agent, machine, machines, accounts, userId, others),
+    keys,
     ...(access.scope ? { workspaceAi: await workspaceAi(deps.db, access.agent, userId) } : {}),
   };
 }

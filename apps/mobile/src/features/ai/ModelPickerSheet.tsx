@@ -13,6 +13,7 @@ import {
   modelPickerModels,
   modelPickerSave,
   modelPickerTiles,
+  modelPickerUndo,
   type PickerModel,
 } from "@agenteschat/client/lib/brain-picker";
 import { can } from "@agenteschat/client/lib/permissions";
@@ -81,7 +82,7 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
   const credentials = useCredentials(orgId, can(org, "manage_credentials"));
   const platform = usePlatformKey(orgId);
   const all = models.data?.models ?? [];
-  const choices = modelChoices(all, credentials.data ?? [], platform.data ?? false);
+  const choices = modelChoices(all, credentials.data ?? view.keys ?? [], platform.data ?? false);
   const tiles = modelPickerTiles(t, view, agent.ownerUserId, choices, agent.model, all);
   const [tileKey, setTileKey] = useState(() => (tiles.find((x) => x.current) ?? tiles[0])?.key);
   const tile = tiles.find((x) => x.key === tileKey) ?? tiles[0];
@@ -107,8 +108,13 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
   };
   const pick = async (row: PickerModel) => {
     if (!tile || busy || row.checked) return;
-    const before = { brain: view.brain, account: view.account, model: view.model, effort: view.effort };
-    const apiModel = agent.model;
+    const before = {
+      brain: view.brain,
+      account: view.account,
+      model: view.model,
+      effort: view.effort,
+      apiModel: agent.model,
+    };
     const saving = modelPickerSave(view, tile, account, row.value);
     setBusy(true);
     try {
@@ -119,11 +125,12 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
         icon: "check",
         action: {
           label: t("brain.picker.undo"),
-          onPress: () =>
-            void apply(
-              before.brain === "model" ? (view.brain === "model" ? null : { brain: "model" }) : before,
-              saving.model !== undefined && apiModel !== saving.model ? apiModel : undefined,
-            ).finally(refresh),
+          onPress: () => {
+            const undo = modelPickerUndo(before, saving);
+            void apply(undo.brain, undo.model)
+              .catch(() => toast({ title: t("agentPage.work.failed"), icon: "x" }))
+              .finally(refresh);
+          },
         },
       });
     } catch {

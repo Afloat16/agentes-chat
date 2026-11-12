@@ -5650,6 +5650,8 @@ export interface AgentBrain {
   ownUsage: Partial<Record<MachineAccountKind, PlanUsage>>;
   /** Its Autonomia (its new missions' autonomy), copied with its setup (ADR 0094); absent on older servers. */
   autonomy?: CommandApproval;
+  /** The workspace's live API keys, id and provider only: what its owner may move it onto (absent: an older server). */
+  keys?: { id: string; provider: string }[];
 }
 
 /** The team's right hand's AIs: the viewer's own, or the workspace's (admins). */

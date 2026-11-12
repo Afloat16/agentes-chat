@@ -436,6 +436,18 @@ export async function updateAgent(
 ): Promise<Agent> {
   const membership = await updateAgentMembership(db, actorId, orgId, agentId, patch);
   await refuseRightHandFields(db, orgId, agentId, patch);
+  // A model of another provider than the agent's own key (the model picker sends only the model): the key would refuse
+  // every turn, so the agent goes on the workspace's default key for the new provider.
+  if (patch.credentialId === undefined && patch.model && !isAutoModel(patch.model) && !parseCustomModel(patch.model)) {
+    const current = await getAgent(db, orgId, agentId);
+    if (current?.credentialId) {
+      const [key, model] = await Promise.all([
+        usableCredentialRow(db, orgId, current.credentialId),
+        modelInfoFor(db, patch.model, orgId),
+      ]);
+      if (key && model && key.provider !== model.provider) patch = { ...patch, credentialId: null };
+    }
+  }
   // The connect flow may send only the key when the agent is already on Automatic.
   if (patch.credentialId !== undefined || isAutoModel(patch.model)) {
     const current = await getAgent(db, orgId, agentId);

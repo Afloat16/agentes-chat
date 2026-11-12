@@ -13,6 +13,7 @@ import {
   modelPickerModels,
   modelPickerSave,
   modelPickerTiles,
+  modelPickerUndo,
   needsOwnSignIn,
   newPlanAccountOption,
   pickGroups,
@@ -454,6 +455,27 @@ describe("the model picker: the agent's AI changed in place", () => {
     expect(modelPickerSave(view, keys, undefined, "claude-sonnet-5-5")).toEqual({
       brain: { brain: "model" },
       model: "claude-sonnet-5-5",
+    });
+  });
+
+  test("Desfazer puts back only what the pick saved, whatever the agent thinks with by then", () => {
+    const plan = { brain: "claude_code" as const, account: "acc-go", model: "auto", effort: "medium" as const };
+    const onPlan = { ...plan, apiModel: "auto" };
+    // From a plan onto the API: the plan comes back, and the API model it had.
+    expect(modelPickerUndo(onPlan, { brain: { brain: "model" }, model: "claude-sonnet-5-5" })).toEqual({
+      brain: plan,
+      model: "auto",
+    });
+    expect(modelPickerUndo(onPlan, { brain: { brain: "model" }, model: "auto" })).toEqual({ brain: plan });
+    // From the API onto a plan: back on the API.
+    const onApi = { brain: "model" as const, account: null, model: null, effort: null, apiModel: "gpt-6" };
+    expect(modelPickerUndo(onApi, { brain: { brain: "claude_code", model: "opus" } })).toEqual({
+      brain: { brain: "model" },
+    });
+    // Another model on the same key: only the model.
+    expect(modelPickerUndo(onApi, { brain: null, model: "claude-sonnet-5-5" })).toEqual({
+      brain: null,
+      model: "gpt-6",
     });
   });
 });

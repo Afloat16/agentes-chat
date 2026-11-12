@@ -708,3 +708,28 @@ export function modelPickerSave(
     },
   };
 }
+
+/** What a pick replaced, for its Desfazer: the brain's choice and the API model. */
+export interface PickerBefore {
+  brain: AgentBrain["brain"];
+  account: string | null;
+  model: string | null;
+  effort: AgentBrain["effort"];
+  apiModel: string;
+}
+
+/**
+ * Desfazer for a pick (`modelPickerSave`): puts back only what that pick saved. It goes by the pick, never by the
+ * view it was made from, which is stale by the time the toast's button is pressed.
+ */
+export function modelPickerUndo(
+  before: PickerBefore,
+  saved: ReturnType<typeof modelPickerSave>,
+): { brain: AgentBrainInput | null; model?: string } {
+  const brain: AgentBrainInput | null = !saved.brain
+    ? null
+    : before.brain === "model"
+      ? { brain: "model" }
+      : { brain: before.brain, account: before.account, model: before.model, effort: before.effort };
+  return saved.model !== undefined && saved.model !== before.apiModel ? { brain, model: before.apiModel } : { brain };
+}
