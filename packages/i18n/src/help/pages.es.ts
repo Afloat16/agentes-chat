@@ -395,7 +395,7 @@ export const helpEs: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Qué pide permiso antes",
         blocks: [
-          "Cuando un agente quiere hacer un merge, un deploy, revertir algo, enviar algo hacia afuera o borrar datos, primero pregunta, tenga el acceso que tenga. La solicitud aparece en **Aprobaciones** y en la conversación, con la acción exacta y el motivo.",
+          "Cuando un agente quiere hacer un merge, un deploy, revertir algo, enviar algo hacia afuera o borrar datos, primero pregunta, tenga el acceso que tenga. Ese es el nivel **Solo lo arriesgado**, con el que empieza todo agente. En la página del agente, en **Aprobaciones**, **Preguntar siempre** hace que pregunte antes de cambiar cualquier cosa, y **No preguntar nunca** hace que no pregunte nada, tampoco en merge, deploy, pagos y rutinas. La solicitud aparece en **Aprobaciones** y en la conversación, con la acción exacta y el motivo.",
         ],
       },
       {

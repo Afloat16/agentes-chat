@@ -3176,7 +3176,7 @@ export const en = {
     lead: "When {{name}} asks a person before acting.",
     always: {
       title: "Always ask",
-      text: "Asks before changing anything in an app.",
+      text: "Asks before changing anything, here, on its computer or in an app.",
     },
     risky: {
       title: "Only what is risky",
@@ -3184,7 +3184,7 @@ export const en = {
     },
     never: {
       title: "Never ask",
-      text: "Still asks for merge, deploy and rollback.",
+      text: "Never asks, merge, deploy, payments and routines included.",
     },
   },
   /** Agent settings: what it may start that nobody asked for directly, and which agents it may call (ADR 0131). */
@@ -15657,6 +15657,8 @@ export const en = {
         plan: "The plan isn't approved yet",
         tooMany: "Too many to approve in a row",
         off: "Running commands is off for this agent",
+        /** Its agent is set to always ask: the command goes to a person first. */
+        asks: "This agent asks before every change",
         team: "The team already did this",
         /** In a personal workspace (ADR 0159). */
         teamPersonal: "This was already done",

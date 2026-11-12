@@ -393,7 +393,7 @@ export const helpId: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Apa yang meminta izin dulu",
         blocks: [
-          "Saat agen ingin melakukan merge, deploy, rollback, mengirim sesuatu ke luar, atau menghapus data, agen meminta izin dulu, apa pun akses yang dimilikinya. Permintaannya muncul di **Persetujuan** dan di percakapan, dengan tindakan persisnya dan alasannya.",
+          "Saat agen ingin melakukan merge, deploy, rollback, mengirim sesuatu ke luar, atau menghapus data, agen meminta izin dulu, apa pun akses yang dimilikinya. Itulah tingkat **Hanya yang berisiko**, tingkat awal setiap agen. Di halaman agen, pada **Persetujuan**, **Selalu tanya** membuat agen bertanya sebelum mengubah apa pun, dan **Jangan pernah tanya** membuatnya tidak bertanya sama sekali, termasuk untuk merge, deploy, pembayaran, dan rutinitas. Permintaannya muncul di **Persetujuan** dan di percakapan, dengan tindakan persisnya dan alasannya.",
         ],
       },
       {

@@ -7301,7 +7301,7 @@
     "value": "Always ask"
   },
   "approvalsLevel.always.text": {
-    "value": "Asks before changing anything in an app."
+    "value": "Asks before changing anything, here, on its computer or in an app."
   },
   "approvalsLevel.risky.title": {
     "value": "Only what is risky"
@@ -7313,7 +7313,7 @@
     "value": "Never ask"
   },
   "approvalsLevel.never.text": {
-    "value": "Still asks for merge, deploy and rollback."
+    "value": "Never asks, merge, deploy, payments and routines included."
   },
   "brakes.title": {
     "value": "Work nobody asked for"
@@ -37729,6 +37729,9 @@
   },
   "chat.work.refusal.off": {
     "value": "Running commands is off for this agent"
+  },
+  "chat.work.refusal.asks": {
+    "value": "This agent asks before every change"
   },
   "chat.work.refusal.team": {
     "value": "The team already did this"

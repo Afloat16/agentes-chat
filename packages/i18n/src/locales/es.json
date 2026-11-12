@@ -3079,7 +3079,7 @@
     "lead": "Cuándo {{name}} pregunta a una persona antes de actuar.",
     "always": {
       "title": "Preguntar siempre",
-      "text": "Pregunta antes de cambiar algo en una app."
+      "text": "Pregunta antes de cambiar cualquier cosa, aquí, en su computadora o en una app."
     },
     "risky": {
       "title": "Solo lo arriesgado",
@@ -3087,7 +3087,7 @@
     },
     "never": {
       "title": "No preguntar nunca",
-      "text": "Sigue preguntando en merge, deploy y rollback."
+      "text": "No pregunta nada, tampoco en merge, deploy, pagos y rutinas."
     }
   },
   "brakes": {
@@ -15971,6 +15971,7 @@
         "plan": "El plan todavía no está aprobado",
         "tooMany": "Demasiados para aprobar seguidos",
         "off": "Ejecutar comandos está desactivado para este agente",
+        "asks": "Este agente pregunta antes de cada cambio",
         "team": "El equipo ya hizo esto",
         "teamPersonal": "Esto ya se hizo",
         "unclear": "No se puede leer con claridad",

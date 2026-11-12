@@ -395,7 +395,7 @@ export const helpNl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Wat eerst vraagt",
         blocks: [
-          "Als een agent wil mergen, deployen, terugdraaien, iets naar buiten sturen of gegevens verwijderen, vraagt hij het eerst, welke toegang hij ook heeft. Het verzoek verschijnt in **Goedkeuringen** en in het gesprek, met de precieze actie en de reden.",
+          "Als een agent wil mergen, deployen, terugdraaien, iets naar buiten sturen of gegevens verwijderen, vraagt hij het eerst, welke toegang hij ook heeft. Dat is het niveau **Alleen wat riskant is**, waarmee elke agent begint. Op de pagina van de agent, onder **Goedkeuringen**, laat **Altijd vragen** hem vragen voordat er iets verandert, en met **Nooit vragen** vraagt hij niets, ook niet bij merge, deploy, betalingen en routines. Het verzoek verschijnt in **Goedkeuringen** en in het gesprek, met de precieze actie en de reden.",
         ],
       },
       {

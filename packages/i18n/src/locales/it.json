@@ -3086,7 +3086,7 @@
     "lead": "Quando {{name}} chiede a una persona prima di agire.",
     "always": {
       "title": "Chiedere sempre",
-      "text": "Chiede prima di cambiare qualcosa in un’app."
+      "text": "Chiede prima di cambiare qualsiasi cosa, qui, sul suo computer o in un’app."
     },
     "risky": {
       "title": "Solo ciò che è rischioso",
@@ -3094,7 +3094,7 @@
     },
     "never": {
       "title": "Non chiedere mai",
-      "text": "Chiede comunque per merge, deploy e rollback."
+      "text": "Non chiede mai, nemmeno per merge, deploy, pagamenti e routine."
     }
   },
   "brakes": {
@@ -16057,6 +16057,7 @@
         "plan": "Il piano non è ancora approvato",
         "tooMany": "Troppi da approvare di fila",
         "off": "L'esecuzione di comandi è disattivata per questo agente",
+        "asks": "Questo agente chiede prima di ogni modifica",
         "team": "Il team l'ha già fatto",
         "teamPersonal": "È già stato fatto",
         "unclear": "Non si può leggere chiaramente",

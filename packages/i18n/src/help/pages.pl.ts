@@ -391,7 +391,7 @@ export const helpPl: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Co wymaga zatwierdzenia",
         blocks: [
-          "Gdy agent chce scalić zmiany, wdrożyć, wycofać wdrożenie, wysłać coś na zewnątrz albo usunąć dane, najpierw pyta, bez względu na to, jaki ma dostęp. Prośba pojawia się w **Zatwierdzenia** i w rozmowie, z dokładnym działaniem i powodem.",
+          "Gdy agent chce scalić zmiany, wdrożyć, wycofać wdrożenie, wysłać coś na zewnątrz albo usunąć dane, najpierw pyta, bez względu na to, jaki ma dostęp. To poziom **Tylko to, co ryzykowne**, od którego zaczyna każdy agent. Na stronie agenta, w sekcji **Zatwierdzenia**, **Zawsze pytaj** sprawia, że pyta przed każdą zmianą, a przy **Nigdy nie pytaj** nie pyta o nic, także przy scalaniu, wdrożeniach, płatnościach i rutynach. Prośba pojawia się w **Zatwierdzenia** i w rozmowie, z dokładnym działaniem i powodem.",
         ],
       },
       {

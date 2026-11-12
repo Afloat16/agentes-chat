@@ -395,7 +395,7 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Neler önce sorar",
         blocks: [
-          "Bir ajan merge, deploy ya da geri alma yapmak, dışarıya bir şey göndermek veya veri silmek istediğinde, erişimi ne olursa olsun önce sorar. İstek, tam işlem ve nedeniyle birlikte **Onaylar** bölümünde ve konuşmada görünür.",
+          "Bir ajan merge, deploy ya da geri alma yapmak, dışarıya bir şey göndermek veya veri silmek istediğinde, erişimi ne olursa olsun önce sorar. Bu, her ajanın başladığı **Yalnızca riskli olanlar** düzeyidir. Ajanın sayfasındaki **Onaylar** bölümünde **Her zaman sor** bir şeyi değiştirmeden önce sormasını sağlar, **Hiç sorma** ise merge, deploy, ödemeler ve rutinler dahil hiçbir şey sormamasını sağlar. İstek, tam işlem ve nedeniyle birlikte **Onaylar** bölümünde ve konuşmada görünür.",
         ],
       },
       {

@@ -395,7 +395,7 @@ export const helpFr: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Ce qui demande d’abord",
         blocks: [
-          "Quand un agent veut fusionner, déployer, revenir en arrière, envoyer quelque chose à l’extérieur ou supprimer des données, il demande d’abord, quels que soient ses accès. La demande apparaît dans **Approbations** et dans la conversation, avec l’action exacte et sa raison.",
+          "Quand un agent veut fusionner, déployer, revenir en arrière, envoyer quelque chose à l’extérieur ou supprimer des données, il demande d’abord, quels que soient ses accès. C’est le niveau **Seulement ce qui est risqué**, celui de tout nouvel agent. Sur la page de l’agent, dans **Approbations**, **Toujours demander** le fait demander avant de modifier quoi que ce soit, et avec **Ne jamais demander** il ne demande rien, même pour fusionner, déployer, payer ou dans une routine. La demande apparaît dans **Approbations** et dans la conversation, avec l’action exacte et sa raison.",
         ],
       },
       {

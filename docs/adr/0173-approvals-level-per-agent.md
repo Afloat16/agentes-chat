@@ -1,6 +1,7 @@
 # 0173. An approvals level per agent: always ask, only what is risky, never ask
 
-- Status: Accepted
+- Status: Accepted (amended 2026-11-12: `always` and `never` are absolute, see the last section, which replaces
+  items 2 to 5 and the Consequences where they differ)
 - Date: 2026-11-11
 - Extends: ADR 0015 (Tool Gateway and approvals, "Aprovar sempre"), ADR 0053 (who is behind a run, a routine's
   bounds), ADR 0131 (autonomy brakes)
@@ -73,3 +74,72 @@ for. A choice saves at once.
   its own switch (sandbox settings), which the level leaves alone.
 - An approval card doesn't yet say that its agent always asks. The level is on the agent's page, one tap from the
   card's agent.
+
+## Amended 2026-11-12: always and never are absolute
+
+People read "Sempre perguntar" and "Nunca perguntar" as always and never, and the exceptions above made both
+untrue: an agent set to never ask still asked for merge, deploy, rollback, tools that run whatever their arguments
+say, someone's mailbox and everything a routine wrote, and one set to always ask changed issues, files, messages
+and its computer without a word. The levels now mean what they say. This replaces items 2, 3, 4 and the last
+sentence of 5 above, and the Consequences where they differ.
+
+1. **`never`: no approval card for anything the agent may already use**, on every run that has one (a person's,
+   the agent's own, a routine's, one a routine's reading or outside text feeds). That covers merge, deploy and
+   rollback, what starts them under another name or runs whatever its arguments say (`customAlwaysAsks`), a call
+   whose actions can't be read, a tool with its own approvers (someone's mailbox), a connected app's write from a
+   routine, our own sensitive tools (`run_code`, `run_skill_script` and `start_task` where every command asks,
+   `desktop_do`), and a command the computer held: the computer ran nothing when it held it, so the gateway runs
+   the same call again the approved way instead of asking. "Pode fazer merge sem perguntar" is not needed: the
+   agent merges in any repository it may use, with the same audit line and receipt. The autonomy brakes' go-ahead
+   card for costly work the agent started is skipped too.
+2. **What `never` does not lift.** It lifts asking and nothing else. The policy's refusals (what a routine may
+   not use), scopes, a tool turned off, the budget, a mailbox's recipients and From address, the git proxy's
+   never-allowed operations, a secret read, an action a person refused ahead, a cost a person said never to and
+   the hourly cap on pull requests all hold: they are limits, not questions. A mission task's call has no run and
+   follows the mission's own setting, as before.
+3. **What still shows a card at `never`**: only the tools whose job is asking a person, because the agent chose
+   to ask: `request_approval`, `request_permission`, `send_feedback`, `request_branch_push`, the question and
+   proposal cards (`ask_user`, `ask_choices`, `propose_*`, `offer_*`, `request_secret`) and `schedule_action`'s
+   approval ahead.
+4. **One place decides it.** `unaskedAtNever(level, tool, authority)` is read by the call, the listing (the tool
+   lists without its `why` and is marked `unasked`, so no directory or prompt line says it asks), the held
+   command and the brakes. The policy table still answers `approve` for a routine's write, and the gateway lifts
+   the card, so a refusal in the table is never lifted with it.
+5. **`always`: every call that changes something asks first, on every kind of run.** `toolPolicy` answers
+   `approve` for the kinds `external`, `internal`, `elsewhere` and `unknown` (`asksAtAlways`), on a person's run,
+   the agent's own, a routine's and a fed one: issues, memory, Drive, wiki, Vault, dashboards, code on its
+   computer, posts and messages elsewhere, routines and reminders, tools the table doesn't know, and a click,
+   typing or `browser_do` in its browser (`desktop_do` on its desktop). The brain's own shell asks too: the
+   server's answer to a command that isn't a plain read is a refusal that sends it to `run_code` with its reason,
+   and that call asks (`runPermissionPrompt`, `asksFirst`).
+6. **What `always` leaves alone**, because asking there would be asking about asking, or would keep the run from
+   ending: `pass`, `hand_off`, the run's own bookkeeping (`set_status`, `withdraw_request`, long work's tools,
+   `request_approval`), what speaks in the run's own conversation (`ask_user`, `ask_choices`, the `propose_*` and
+   `offer_*` cards, reactions, polls), the tools whose own card is the question (`request_secret`,
+   `request_permission`, `request_settings_change`, `request_folder_access`, `send_feedback`, `propose_event`,
+   `schedule_action`), a mission's tools, `update_widget` on a widget's refresh, a directory's search and
+   `run_approved_action` (the tool behind them is judged), and every read: a connected app's, ours, and looking at
+   a page in the browser (`browser_open`, `browser_read`, `browser_screenshot` and the like), `git_clone`
+   included. `update_skill` and `update_skill_from_source` were filed as reads by their scope and are changes now.
+7. **Opening a pull request never asks at `risky`**, on any run. Our `open_pull_request` already didn't. The
+   GitHub connector's `create_pull_request` (the same tool when the GitHub App answers for the workspace, ADR
+   0156) and a connected server's tool whose name ends in `create_pull_request` or `open_pull_request` are filed
+   as the agent's own code work (`opensPullRequest`), so a routine's run and a fed one no longer get the card
+   that read "vai abrir PR". A merge is another tool and follows the level: it asks at `risky` and `always`, not
+   at `never`. At `always` opening a pull request asks like any other change.
+8. **The audit** marks a call with `details.approvalsLevel = "never"` only when it would have asked: the policy
+   said `approve`, the tool is marked sensitive, the call said why, or the computer held its command.
+9. **What the agent is told** follows the level: the prompt's line on approvals, a routine's brief and what a
+   routine's own actions cover say that nothing waits (`never`) or that every change does (`always`).
+
+Consequences of the amendment:
+
+- At `never` a routine acts on text nobody checked (inbound mail, a webhook, the web) without a person. That is
+  the choice the level's line states: "Never asks, merge, deploy, payments and routines included."
+- At `always` an agent that works on its computer opens a card per command that changes something. Plain reads
+  run. A workspace's "every command asks" switch (sandbox settings) is no longer the only way to get that.
+- Not covered at `always`, because the computer decides them before the server hears of them: an edit a computer
+  brain makes to a file inside its own folders, and a push alone to the agent's own branch. Making those ask
+  needs the level in what the runner is told for a turn.
+- Other screens still say that sensitive actions "always ask for approval". For an agent set to never ask that is
+  no longer so.

@@ -395,7 +395,7 @@ export const helpDe: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Was vorher fragt",
         blocks: [
-          "Wenn ein Agent mergen, deployen, zurückrollen, etwas nach außen senden oder Daten löschen will, fragt er vorher, egal welchen Zugriff er hat. Die Anfrage erscheint unter **Freigaben** und in der Unterhaltung, mit der genauen Aktion und dem Grund.",
+          "Wenn ein Agent mergen, deployen, zurückrollen, etwas nach außen senden oder Daten löschen will, fragt er vorher, egal welchen Zugriff er hat. Das ist die Stufe **Nur Riskantes**, mit der jeder Agent startet. Auf der Seite des Agenten, unter **Freigaben**, lässt **Immer fragen** ihn vor jeder Änderung fragen, und mit **Nie fragen** fragt er gar nicht, auch nicht bei Merge, Deploy, Zahlungen und Routinen. Die Anfrage erscheint unter **Freigaben** und in der Unterhaltung, mit der genauen Aktion und dem Grund.",
         ],
       },
       {

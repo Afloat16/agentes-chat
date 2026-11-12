@@ -2984,7 +2984,7 @@
     "lead": "Wann {{name}} vor dem Handeln eine Person fragt.",
     "always": {
       "title": "Immer fragen",
-      "text": "Fragt, bevor in einer App etwas geändert wird."
+      "text": "Fragt vor jeder Änderung, hier, auf seinem Computer oder in einer App."
     },
     "risky": {
       "title": "Nur Riskantes",
@@ -2992,7 +2992,7 @@
     },
     "never": {
       "title": "Nie fragen",
-      "text": "Fragt weiterhin bei Merge, Deploy und Rollback."
+      "text": "Fragt nie, auch nicht bei Merge, Deploy, Zahlungen und Routinen."
     }
   },
   "brakes": {
@@ -15551,6 +15551,7 @@
         "plan": "Der Plan ist noch nicht freigegeben",
         "tooMany": "Zu viele Freigaben hintereinander",
         "off": "Befehle ausführen ist für diesen Agenten aus",
+        "asks": "Dieser Agent fragt vor jeder Änderung",
         "team": "Das Team hat das schon gemacht",
         "teamPersonal": "Das wurde schon gemacht",
         "unclear": "Es lässt sich nicht eindeutig lesen",

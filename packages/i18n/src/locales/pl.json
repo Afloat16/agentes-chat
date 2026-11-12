@@ -3180,7 +3180,7 @@
     "lead": "Kiedy {{name}} pyta człowieka przed działaniem.",
     "always": {
       "title": "Zawsze pytaj",
-      "text": "Pyta przed każdą zmianą w aplikacji."
+      "text": "Pyta przed każdą zmianą, tutaj, na swoim komputerze i w aplikacji."
     },
     "risky": {
       "title": "Tylko to, co ryzykowne",
@@ -3188,7 +3188,7 @@
     },
     "never": {
       "title": "Nigdy nie pytaj",
-      "text": "Nadal pyta przy merge, deploy i rollback."
+      "text": "Nigdy nie pyta, także przy merge, deploy, płatnościach i rutynach."
     }
   },
   "brakes": {
@@ -16544,6 +16544,7 @@
         "plan": "Plan nie jest jeszcze zatwierdzony",
         "tooMany": "Za dużo do zatwierdzenia z rzędu",
         "off": "Uruchamianie poleceń jest wyłączone dla tego agenta",
+        "asks": "Ten agent pyta przed każdą zmianą",
         "team": "Zespół już to zrobił",
         "teamPersonal": "To już było zrobione",
         "unclear": "Nie da się tego jednoznacznie odczytać",

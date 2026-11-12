@@ -3103,7 +3103,7 @@ export const ptBR = {
     lead: "Quando {{name}} pergunta a uma pessoa antes de agir.",
     always: {
       title: "Sempre perguntar",
-      text: "Pergunta antes de mudar algo em um app.",
+      text: "Pergunta antes de mudar qualquer coisa, aqui, no computador ou em um app.",
     },
     risky: {
       title: "Só o arriscado",
@@ -3111,7 +3111,7 @@ export const ptBR = {
     },
     never: {
       title: "Nunca perguntar",
-      text: "Ainda pergunta em merge, deploy e rollback.",
+      text: "Não pergunta nada, nem em merge, deploy, pagamentos e rotinas.",
     },
   },
   /** Configurações do agente: o que ele pode começar sem ninguém pedir diretamente, e quais agentes pode chamar (ADR 0131). */
@@ -15654,6 +15654,8 @@ export const ptBR = {
         plan: "O plano ainda não foi aprovado",
         tooMany: "Pedidos demais seguidos para aprovar",
         off: "Rodar comandos está desligado para este agente",
+        /** O agente está em Sempre perguntar: o comando vai antes para uma pessoa. */
+        asks: "Este agente pergunta antes de cada mudança",
         team: "O time já fez isso",
         teamPersonal: "Isso já tinha sido feito",
         unclear: "Não dá para ler o comando com clareza",

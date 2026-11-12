@@ -2987,7 +2987,7 @@
     "lead": "Wanneer {{name}} iemand vraagt voordat er iets gebeurt.",
     "always": {
       "title": "Altijd vragen",
-      "text": "Vraagt voordat er iets in een app verandert."
+      "text": "Vraagt voordat er iets verandert, hier, op zijn computer of in een app."
     },
     "risky": {
       "title": "Alleen wat riskant is",
@@ -2995,7 +2995,7 @@
     },
     "never": {
       "title": "Nooit vragen",
-      "text": "Vraagt nog wel bij merge, deploy en rollback."
+      "text": "Vraagt nooit, ook niet bij merge, deploy, betalingen en routines."
     }
   },
   "brakes": {
@@ -15618,6 +15618,7 @@
         "plan": "Het plan is nog niet goedgekeurd",
         "tooMany": "Te veel om achter elkaar goed te keuren",
         "off": "Opdrachten uitvoeren staat uit voor deze agent",
+        "asks": "Deze agent vraagt voor elke wijziging",
         "team": "Het team heeft dit al gedaan",
         "teamPersonal": "Dit was al gedaan",
         "unclear": "Het is niet eenduidig te lezen",

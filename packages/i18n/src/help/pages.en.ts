@@ -390,7 +390,7 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
         id: "what",
         heading: "What asks first",
         blocks: [
-          "When an agent wants to merge, deploy, roll back, send something outside or delete data, it asks first, whatever access it has. The request shows up in **Approvals** and in the conversation, with the exact action and why.",
+          "When an agent wants to merge, deploy, roll back, send something outside or delete data, it asks first, whatever access it has. That is **Only what is risky**, the level every agent starts at. On the agent's page, under **Approvals**, **Always ask** makes it ask before changing anything, and **Never ask** makes it ask for nothing, merge, deploy, payments and routines included. The request shows up in **Approvals** and in the conversation, with the exact action and why.",
         ],
       },
       {

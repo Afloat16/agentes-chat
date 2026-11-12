@@ -2973,7 +2973,7 @@
     "lead": "{{name}} harekete geçmeden önce birine ne zaman sorar.",
     "always": {
       "title": "Her zaman sor",
-      "text": "Bir uygulamada bir şeyi değiştirmeden önce sorar."
+      "text": "Burada, bilgisayarında veya bir uygulamada bir şeyi değiştirmeden önce sorar."
     },
     "risky": {
       "title": "Yalnızca riskli olanlar",
@@ -2981,7 +2981,7 @@
     },
     "never": {
       "title": "Hiç sorma",
-      "text": "Merge, deploy ve rollback için yine sorar."
+      "text": "Hiç sormaz, merge, deploy, ödemeler ve rutinler dahil."
     }
   },
   "brakes": {
@@ -15480,6 +15480,7 @@
         "plan": "Plan henüz onaylanmadı",
         "tooMany": "Art arda onaylanacak çok fazla şey var",
         "off": "Bu ajan için komut çalıştırma kapalı",
+        "asks": "Bu ajan her değişiklikten önce sorar",
         "team": "Ekip bunu zaten yaptı",
         "teamPersonal": "Bu zaten yapılmıştı",
         "unclear": "Açıkça okunamıyor",

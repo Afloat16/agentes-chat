@@ -390,7 +390,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         id: "what",
         heading: "O que pede antes",
         blocks: [
-          "Quando um agente quiser fazer merge, deploy, rollback, mandar algo para fora ou apagar dados, ele pede antes, qualquer que seja o acesso dele. O pedido aparece em **Aprovações** e na conversa, com a ação exata e o porquê.",
+          "Quando um agente quiser fazer merge, deploy, rollback, mandar algo para fora ou apagar dados, ele pede antes, qualquer que seja o acesso dele. Esse é o nível **Só o arriscado**, em que todo agente começa. Na página do agente, em **Aprovações**, **Sempre perguntar** faz ele pedir antes de mudar qualquer coisa, e **Nunca perguntar** faz ele não pedir nada, nem em merge, deploy, pagamentos e rotinas. O pedido aparece em **Aprovações** e na conversa, com a ação exata e o porquê.",
         ],
       },
       {

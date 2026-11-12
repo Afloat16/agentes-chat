@@ -393,7 +393,7 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
         id: "what",
         heading: "Cosa chiede prima",
         blocks: [
-          "Quando un agente vuole fare un merge, un deploy, un rollback, mandare qualcosa all’esterno o eliminare dati, chiede prima, qualunque accesso abbia. La richiesta compare in **Approvazioni** e nella conversazione, con l’azione esatta e il motivo.",
+          "Quando un agente vuole fare un merge, un deploy, un rollback, mandare qualcosa all’esterno o eliminare dati, chiede prima, qualunque accesso abbia. È il livello **Solo ciò che è rischioso**, quello da cui parte ogni agente. Nella pagina dell’agente, in **Approvazioni**, **Chiedere sempre** gli fa chiedere prima di cambiare qualsiasi cosa, e con **Non chiedere mai** non chiede nulla, nemmeno per merge, deploy, pagamenti e routine. La richiesta compare in **Approvazioni** e nella conversazione, con l’azione esatta e il motivo.",
         ],
       },
       {

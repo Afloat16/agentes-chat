@@ -2888,7 +2888,7 @@
     "lead": "Kapan {{name}} bertanya kepada seseorang sebelum bertindak.",
     "always": {
       "title": "Selalu tanya",
-      "text": "Bertanya sebelum mengubah apa pun di aplikasi."
+      "text": "Bertanya sebelum mengubah apa pun, di sini, di komputernya, atau di aplikasi."
     },
     "risky": {
       "title": "Hanya yang berisiko",
@@ -2896,7 +2896,7 @@
     },
     "never": {
       "title": "Jangan pernah tanya",
-      "text": "Tetap bertanya untuk merge, deploy, dan rollback."
+      "text": "Tidak pernah bertanya, termasuk untuk merge, deploy, pembayaran, dan rutinitas."
     }
   },
   "brakes": {
@@ -15079,6 +15079,7 @@
         "plan": "Rencananya belum disetujui",
         "tooMany": "Terlalu banyak untuk disetujui berturut-turut",
         "off": "Menjalankan perintah dimatikan untuk agen ini",
+        "asks": "Agen ini bertanya sebelum setiap perubahan",
         "team": "Tim sudah melakukan ini",
         "teamPersonal": "Ini sudah dilakukan",
         "unclear": "Tidak bisa dibaca dengan jelas",
