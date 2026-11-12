@@ -28,6 +28,7 @@ export function ApprovalsLevelRow({ agent }: { agent: Agent }) {
         key: value,
         label: t(`approvalsLevel.${value}.title`),
         sub: t(`approvalsLevel.${value}.text`),
+        subLines: 3,
       })),
     });
     const next = APPROVALS_LEVELS.find((value) => value === picked);

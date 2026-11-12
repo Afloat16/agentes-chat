@@ -3025,7 +3025,6 @@ export const ptBR = {
       never: "{{name}} disse nunca para isso",
     },
   },
-  /** Configurações do agente: o que ele pode começar sem ninguém pedir diretamente, e quais agentes pode chamar (ADR 0131). */
   /** How much an agent asks before acting (ADR 0173): the row on its page and the three choices behind it. */
   approvalsLevel: {
     title: "Aprovações",
@@ -3043,6 +3042,7 @@ export const ptBR = {
       text: "Ainda pergunta em merge, deploy e rollback.",
     },
   },
+  /** Configurações do agente: o que ele pode começar sem ninguém pedir diretamente, e quais agentes pode chamar (ADR 0131). */
   brakes: {
     title: "Trabalho que ninguém pediu",
     subtitle:

@@ -37,7 +37,8 @@ did before) or `never`.
    (`unaskedAtNever`). It still asks for:
    - merge, deploy and rollback, and what starts them under another name or runs whatever its arguments say
      (`customAlwaysAsks`: a release, a build, a workflow, a trigger, a script, a raw request, GraphQL, SQL). This is
-     the list "Aprovar sempre" never covers, so the two can't disagree.
+     the list "Aprovar sempre" never covers, read on the tool's name, its scope and the actions it runs, so the two
+     can't disagree.
    - a call through a tool that runs other actions whose actions it can't read.
    - a tool with its own approvers (someone's mailbox: its owner answers for it, ADR 0038).
    - our own tools that ask (`request_approval`, `request_permission`, `send_feedback`, a workspace where every
@@ -46,9 +47,12 @@ did before) or `never`.
    report or work woke, ask for every write to a connected app at every level, `never` included. Text nobody checked
    (inbound mail, a webhook, the web) feeds those runs, and a level set once on the agent's page is not a person
    reading that text. A routine keeps its own ways to act alone: the actions its creator allowed for its job, "Sempre
-   nesta rotina" and an action approved ahead.
+   nesta rotina" and an action approved ahead. `unaskedAtNever` refuses such a run by itself, whatever the policy
+   answered for the tool.
 5. **It never widens what the agent may use.** Scopes are checked first, then the level. The budget, a connector's
-   tools turned off, a mailbox's rules, the team-action check and the autonomy brakes all apply as before.
+   tools turned off, a mailbox's recipients and From address, the team-action check and the autonomy brakes all apply
+   as before. What `never` does lift is asking itself: a tool an admin set to ask, and a shared mailbox set to ask
+   before a send or a delete, run without a card (a person's own mailbox still asks its owner).
 6. **Who sets it.** Whoever may edit any agent (`manage_agents`), through the agent's `PATCH`, and at creation only
    with that permission. A new agent starts at `risky`. The right hand's level can be changed too.
 7. **The audit says so.** A call that ran without its card because of `never` is recorded with

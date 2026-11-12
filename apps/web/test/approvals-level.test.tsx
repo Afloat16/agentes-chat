@@ -5,13 +5,15 @@ setupDom();
 
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import { ADA_ID, createFakeApi, ORG_ID, seedState } from "./fake-api";
-import { renderApp, screen, settle } from "./render";
+import { renderApp, screen, settle, showIn } from "./render";
 
 afterEach(() => cleanup());
 
-const go = async (state = seedState()) => {
-  await renderApp(`/org/${ORG_ID}/agents/${ADA_ID}?tab=access`, { api: createFakeApi(state) });
+let services: Parameters<typeof showIn>[0];
+const go = async (state = seedState(), api = createFakeApi(state)) => {
+  const rendered = await renderApp(`/org/${ORG_ID}/agents/${ADA_ID}?tab=access`, { api });
   await settle(8);
+  services = rendered.services;
   return state;
 };
 const click = async (el: Element) => {
@@ -70,5 +72,39 @@ describe("Aprovações on an agent's page", () => {
     await go(state);
     expect(within(section()).queryByRole("button")).toBeNull();
     expect(section().textContent).toBe("AprovaçõesSó o arriscado");
+  });
+
+  test("a save that fails says so, keeps the dialog open and the level as it was", async () => {
+    const state = seedState();
+    const api = createFakeApi(state);
+    api.agents.update = async () => {
+      throw new Error("offline");
+    };
+    await go(state, api);
+    await click(within(section()).getByRole("button", { name: /Aprovações/ }));
+    const dialog = screen().getByRole("dialog", { name: "Aprovações" });
+    await click(within(dialog).getByRole("radio", { name: /Nunca perguntar/ }));
+    // Every failed write says so once, from the app's own handler: the card adds no second toast.
+    expect(screen().getAllByText("Algo deu errado. Tente de novo.")).toHaveLength(1);
+    expect(
+      within(screen().getByRole("dialog", { name: "Aprovações" }))
+        .getByRole("radio", { name: /Só o arriscado/ })
+        .getAttribute("aria-checked"),
+    ).toBe("true");
+  });
+
+  test("worst case: a 60-character name, an agent that never asks, in German: every word is on the screen", async () => {
+    const state = seedState();
+    const ada = state.agents.find((a) => a.id === ADA_ID);
+    const name = "Ada Albuquerque de Vasconcelos e Figueiredo Montenegro Júnior";
+    if (ada) Object.assign(ada, { name, approvalsLevel: "never" });
+    await go(state);
+    await click(within(section()).getByRole("button", { name: /Aprovações/ }));
+    await showIn(services, "de");
+    const dialog = screen().getByRole("dialog");
+    expect(dialog.textContent).toContain(name);
+    const options = within(dialog).getAllByRole("radio");
+    expect(options.map((o) => o.getAttribute("aria-checked"))).toEqual(["false", "false", "true"]);
+    for (const option of options) expect(option.textContent?.length).toBeGreaterThan(20);
   });
 });

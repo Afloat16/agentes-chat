@@ -123,12 +123,18 @@ describe("what never stops asking for", () => {
     ];
     expect(names.filter((name) => covers({ ...SENSITIVE, name }))).toEqual([]);
     expect(covers({ ...SENSITIVE, scope: "shop:deploy" })).toBe(false);
+    // The scope alone may say it, as a noun too: what "Aprovar sempre" never covers, this doesn't either.
+    expect(covers({ ...SENSITIVE, name: "shop_create_site", scope: "shop:deployments.write" })).toBe(false);
   });
 
   test("never a run fed by a routine's reading, a routine's own, or a call outside a run", () => {
     expect(covers(SENSITIVE, fed)).toBe(false);
     expect(covers(SENSITIVE, routine)).toBe(false);
     expect(covers(SENSITIVE, null)).toBe(false);
+    // Whatever the policy answered for it: the run alone decides.
+    for (const authority of [fed, routine]) {
+      expect(unaskedAtNever("never", SENSITIVE, { id: "1" }, authority, allow)).toBe(false);
+    }
   });
 
   test("never a tool with its own approvers, nor one of ours", () => {

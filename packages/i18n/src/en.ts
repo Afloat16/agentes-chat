@@ -3085,7 +3085,6 @@ export const en = {
       never: "{{name}} said never for this",
     },
   },
-  /** Agent settings: what it may start that nobody asked for directly, and which agents it may call (ADR 0131). */
   /** How much an agent asks before acting (ADR 0173): the row on its page and the three choices behind it. */
   approvalsLevel: {
     title: "Approvals",
@@ -3103,6 +3102,7 @@ export const en = {
       text: "Still asks for merge, deploy and rollback.",
     },
   },
+  /** Agent settings: what it may start that nobody asked for directly, and which agents it may call (ADR 0131). */
   brakes: {
     title: "Work nobody asked for",
     subtitle: "What it starts on its own, from a routine, an alert or another agent. What a person asks is never held.",

@@ -189,9 +189,11 @@ export function unaskedAtNever(
   decision: PolicyDecision,
 ): boolean {
   if (level !== "never" || !authority || decision.action !== "allow") return false;
+  // Said here too, not only by the policy's answer: no reading of a tool's kind may let outside text act alone.
+  if (fedByRoutine(authority)) return false;
   if (!tool.connectionId || tool.sensitive !== true || tool.approvers) return false;
   const actions = tool.actions ? (input ? tool.actions(input) : null) : [];
-  if (!actions || ALWAYS_SENSITIVE.test(tool.scope)) return false;
+  if (!actions || alwaysAsks(tool.scope)) return false;
   return ![tool.name, tool.rememberAs ?? "", ...actions].some((name) => name && customAlwaysAsks(name));
 }
 
