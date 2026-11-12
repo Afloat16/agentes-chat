@@ -39,6 +39,7 @@ const KNOWN = {
   "agent.details_hidden": "errors.agent.detailsHidden",
   "brain.extra_owner_only": "errors.agent.extraOwnerOnly",
   "action.not_allowed": "errors.agent.undoForbidden",
+  "action.skills_admins": "errors.agent.undoSkillsAdmins",
   "account.not_owner": "errors.account.notOwner",
   "channel.members_forbidden": "errors.channel.membersForbidden",
   "agent_proposal.not_requester": "errors.agentProposal.notRequester",

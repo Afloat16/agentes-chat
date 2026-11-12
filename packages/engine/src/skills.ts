@@ -5,12 +5,14 @@ import { recordAudit } from "./audit";
 import { mapInBatches } from "./batches";
 import { activeConnections, type ConnectorDeps } from "./connectors/connections";
 import { type ErrorParams, ForbiddenError, NotFoundError, TooManyError, ValidationError } from "./errors";
+import { publishAgentsChanged } from "./events";
 import { formatBytes } from "./format";
 import { connectionToken } from "./git/branches";
 import { appTokenForRepo, boundInstallations, type GitHubAppConfig, type GitHubHttp } from "./git/github-app";
 import { assertStorageRoom } from "./limits";
 import { assertPublicHttpsUrl, type ResolveHost } from "./net-guard";
 import { can, requirePermission } from "./organizations";
+import { isRightHand } from "./right-hand";
 import { inflateZipEntry, listZip, type ZipListing } from "./zip";
 
 const { skills, skillFiles, agentSkills } = schema;
@@ -1099,7 +1101,7 @@ export async function importSkillFromUrl(
   const [only, ...more] = link.found.keys();
   if (!options.list && only !== undefined && more.length === 0) {
     const skill = await saveSkill(deps, actorId, orgId, link.skillAt(only));
-    await turnOnFor(deps.db, actorId, orgId, options.forAgentId, [skill.id]);
+    await turnOnFor(deps, actorId, orgId, options.forAgentId, [skill.id]);
     return skill;
   }
   const choices: SkillChoice[] = [];
@@ -1120,21 +1122,28 @@ export async function importSkillFromUrl(
 }
 
 /**
- * Skills installed from an agent's card (`offer_install_skill`) go on for that agent when the installer may change its
- * skills, as on its page. When they may not, or the agent is gone, the install still stands: the agent asks for them
- * on its own settings card (`request_settings_change`).
+ * Skills installed from an agent's card (`offer_install_skill`), the installer's box checked, go on for that agent when
+ * the installer may change its skills, as on its page. Not for an agent archived or gone, nor the right hand (it has
+ * no skill tools): the install still stands, and an agent asks for them on its own settings card.
  */
-async function turnOnFor(db: Database, actorId: string, orgId: string, agentId: string | undefined, ids: string[]) {
+async function turnOnFor(deps: SkillDeps, actorId: string, orgId: string, agentId: string | undefined, ids: string[]) {
   if (!agentId || ids.length === 0) return;
-  await setAgentSkills(
-    db,
-    actorId,
-    orgId,
-    agentId,
-    ids.map((skillId) => ({ skillId, enabled: true })),
-  ).catch((error: unknown) => {
-    if (!(error instanceof ForbiddenError || error instanceof NotFoundError)) throw error;
-  });
+  const agent = await getAgent(deps.db, orgId, agentId);
+  if (!agent || agent.archivedAt || isRightHand(agent)) return;
+  try {
+    await setAgentSkills(
+      deps.db,
+      actorId,
+      orgId,
+      agentId,
+      ids.map((skillId) => ({ skillId, enabled: true })),
+    );
+  } catch (error) {
+    if (error instanceof ForbiddenError) return;
+    throw error;
+  }
+  // An open agent page saves its whole list: it reads the new one first.
+  await publishAgentsChanged(deps.pubsub, orgId);
 }
 
 /** Installs the skills picked among a link's choices (`paths`, as `importSkillFromUrl` gave them). */
@@ -1178,7 +1187,7 @@ export async function importPickedSkills(
     );
   }
   await turnOnFor(
-    deps.db,
+    deps,
     actorId,
     orgId,
     options.forAgentId,

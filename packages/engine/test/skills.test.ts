@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { generateKeyPairSync } from "node:crypto";
-import { eq, schema } from "@agenteschat/db";
+import { orgTopic } from "@agenteschat/adapters";
+import { and, eq, schema } from "@agenteschat/db";
 import type { ModelRequest } from "@agenteschat/providers";
 import { systemText } from "@agenteschat/providers";
 import {
@@ -23,6 +24,7 @@ import {
   NotFoundError,
   parseSkillMarkdown,
   postPersonMessage,
+  RIGHT_HAND,
   reimportSkill,
   revokeConnection,
   SKILL_LIMITS,
@@ -347,25 +349,39 @@ describe("import", () => {
   });
 
   test("installed from an agent's card (offer_install_skill), what the link holds goes on for that agent", async () => {
-    f = await setup();
-    const deps = { ...skillDeps(), fetch: fakeGithub().fetch };
-    const on = async () => (await enabledSkills(f.db, f.org.id, f.agent.id)).map((k) => k.name);
+    f = await setup({ rightHand: true });
+    const deps = { ...skillDeps(), fetch: fakeGithub().fetch, pubsub: f.pubsub };
+    const told: string[] = [];
+    f.pubsub.subscribe(orgTopic(f.org.id), (e) => {
+      if (e.type === "org.broadcast") told.push((e.event as { type: string }).type);
+    });
+    const on = async (agentId = f.agent.id) => (await enabledSkills(f.db, f.org.id, agentId)).map((k) => k.name);
     const forAgentId = f.agent.id;
     await importSkillFromUrl(deps, f.owner.id, f.org.id, "https://github.com/acme/skills/tree/main/team/deploy", {
       forAgentId,
     });
     expect(await on()).toEqual(["deploy"]);
+    // An open agent page saves its whole list: it hears of the change and reads it again.
+    expect(told.filter((t) => t === "agents.changed")).toHaveLength(1);
     await importPickedSkills(deps, f.owner.id, f.org.id, "https://github.com/acme/skills", ["team/review"], {
       forAgentId,
     });
     expect(await on()).toEqual(["deploy", "review"]);
-    // An agent gone since the card: the install still stands, on for nobody.
+    // An agent gone, archived or the right hand: the install still stands, on for nobody, and nothing to hear.
     const url = "https://github.com/acme/skills/tree/main/relatorio-semanal";
-    const gone = crypto.randomUUID();
-    expect(await importSkillFromUrl(deps, f.owner.id, f.org.id, url, { forAgentId: gone })).toMatchObject({
-      name: "relatorio-semanal",
-    });
+    const [lodi] = await f.db
+      .select({ id: schema.agents.id })
+      .from(schema.agents)
+      .where(and(eq(schema.agents.orgId, f.org.id), eq(schema.agents.builtin, RIGHT_HAND)));
+    await f.db.update(schema.agents).set({ archivedAt: new Date() }).where(eq(schema.agents.id, f.agent.id));
+    told.length = 0;
+    for (const agentId of [crypto.randomUUID(), f.agent.id, lodi?.id ?? ""])
+      expect(await importSkillFromUrl(deps, f.owner.id, f.org.id, url, { forAgentId: agentId })).toMatchObject({
+        name: "relatorio-semanal",
+      });
     expect(await on()).toEqual(["deploy", "review"]);
+    expect(await on(lodi?.id)).toEqual([]);
+    expect(told).toEqual([]);
   });
 
   test("the skills a link holds that can't be installed are listed apart with why, never offered", async () => {

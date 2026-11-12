@@ -9247,6 +9247,9 @@
     "pickAll": "Alle",
     "pickMissing": "Kies minstens één skill.",
     "pickSkipped": "Kan niet worden geïnstalleerd. {{reason}}",
+    "pickReplaces": "Vervangt de geïnstalleerde skill {{name}}",
+    "forAgent_one": "Aanzetten voor {{agent}}",
+    "forAgent_other": "Aanzetten voor {{agent}}",
     "installedMany": "{{count}} skills geïnstalleerd.",
     "zipHelp": "Een .zip met SKILL.md in de hoofdmap.",
     "zipPick": ".zip kiezen",
@@ -13230,7 +13233,8 @@
       "ownerOrAdmin": "Alleen de eigenaar van de agent of een beheerder kan dit doen.",
       "detailsHidden": "Alleen wie met {{agentName}} praat, ziet hoe het werkt.",
       "extraOwnerOnly": "Alleen de eigenaar van de agent zet het betaalde extra gebruik van het abonnement aan of uit.",
-      "undoForbidden": "Alleen de persoon voor wie de agent werkte, zijn eigenaar of een beheerder kan dit ongedaan maken."
+      "undoForbidden": "Alleen de persoon voor wie de agent werkte, zijn eigenaar of een beheerder kan dit ongedaan maken.",
+      "undoSkillsAdmins": "Alleen een beheerder kan een wijziging in de skills van een agent ongedaan maken of opnieuw doen."
     },
     "account": {
       "notRestorable": "Dit account kan niet meer hersteld worden.",
@@ -15759,6 +15763,7 @@
       "agent_proposal": "Nieuwe agent voorgesteld: {{name}}",
       "team_proposal": "Stelde een team voor: {{names}}",
       "settings_proposal": "Stelde een wijziging voor {{names}} voor",
+      "settings_request": "Vraagt een wijziging in de eigen instellingen",
       "approval_request": "Goedkeuringsverzoek: {{title}}",
       "secret_request": "{{agent}} vroeg om een sleutel: {{name}}",
       "secret_requestAnon": "Vroeg om een sleutel: {{name}}",

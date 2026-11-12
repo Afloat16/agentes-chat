@@ -8838,6 +8838,8 @@
     "pickAll": "전체",
     "pickMissing": "스킬을 하나 이상 고르세요.",
     "pickSkipped": "설치할 수 없어요. {{reason}}",
+    "pickReplaces": "이미 설치된 {{name}} 스킬을 대체해요",
+    "forAgent_other": "{{agent}}에게 켜기",
     "installedMany": "스킬 {{count}}개를 설치했어요.",
     "zipHelp": "최상위에 SKILL.md가 있는 .zip 파일이에요.",
     "zipPick": ".zip 선택",
@@ -12675,7 +12677,8 @@
       "ownerOrAdmin": "에이전트 소유자나 관리자만 할 수 있어요.",
       "detailsHidden": "{{agentName}}에게 말할 수 있는 사람만 작동 방식을 볼 수 있어요.",
       "extraOwnerOnly": "에이전트 소유자만 요금제의 유료 추가 사용량을 켜거나 끌 수 있어요.",
-      "undoForbidden": "에이전트가 도와준 사람, 에이전트 소유자 또는 관리자만 되돌릴 수 있어요."
+      "undoForbidden": "에이전트가 도와준 사람, 에이전트 소유자 또는 관리자만 되돌릴 수 있어요.",
+      "undoSkillsAdmins": "에이전트의 스킬 변경은 관리자만 되돌리거나 다시 할 수 있어요."
     },
     "account": {
       "notRestorable": "이 계정은 더 이상 복원할 수 없어요.",
@@ -15159,6 +15162,7 @@
       "agent_proposal": "새 에이전트를 제안했어요: {{name}}",
       "team_proposal": "팀을 제안했어요: {{names}}",
       "settings_proposal": "{{names}}에 대한 변경을 제안했어요",
+      "settings_request": "자기 설정의 변경을 요청해요",
       "approval_request": "승인 요청: {{title}}",
       "secret_request": "{{agent}}이(가) 키를 요청했어요: {{name}}",
       "secret_requestAnon": "키를 요청했어요: {{name}}",

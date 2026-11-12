@@ -82,6 +82,7 @@ import { lookOf } from "@/lib/look";
 import { inlineWords } from "@/lib/markdown";
 import { inPlaceClick } from "@/lib/navigate";
 import { proposedRoutineWhen } from "@/lib/recurrence";
+import { STORAGE_KEYS, sessionStore } from "@/lib/storage";
 import { useToast } from "@/lib/toast";
 import { expiryText } from "@/pages/ApprovalsPage";
 
@@ -249,8 +250,8 @@ function ConnectAppCardView({ card }: { card: ConnectAppCard }) {
 
 /**
  * "Install a skill" (`offer_install_skill`) as a waiting pill, its why and link under it: "Install" opens Install
- * skill with the link read, its skills listed to pick; who manages agents installs there, and what installs goes on
- * for the agent that posted the card (`agentId`). Done once the library has a skill from that link.
+ * skill with the link read, its skills listed to pick; who manages agents installs there, and its box turns what
+ * installs on for the agent that posted the card (`agentId`). Done once the library has a skill from that link.
  */
 function InstallSkillCardView({ card, agentId }: { card: InstallSkillCard; agentId?: string | null }) {
   const { t } = useTranslation();
@@ -274,7 +275,14 @@ function InstallSkillCardView({ card, agentId }: { card: InstallSkillCard; agent
         label={title}
         action={
           may ? (
-            <EventPillAction primary onClick={() => setOpen(true)}>
+            <EventPillAction
+              primary
+              onClick={() => {
+                // Kept for the way back from connecting GitHub on its site (SkillsSection).
+                if (agentId) sessionStore.set(STORAGE_KEYS.skillInstallFor, JSON.stringify({ url: card.url, agentId }));
+                setOpen(true);
+              }}
+            >
               {t("actionCard.install_skill.open")}
             </EventPillAction>
           ) : undefined

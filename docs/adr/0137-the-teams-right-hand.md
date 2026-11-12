@@ -373,24 +373,35 @@ it off for that agent. The owner decided that agents edit their own settings whe
 
 ### Decision
 
-- **`request_settings_change`.** Every agent but the right hand has it in every run: no scope, like
-  `request_permission`, so a run in a channel's thread holds it without the setup tools. Its definition waits with the
+- **`request_settings_change`.** Every agent but the right hand has it in every run a person is behind: no scope, like
+  `request_permission`, so a run in a channel's thread holds it without the setup tools. Like `request_permission` it
+  speaks for the agent (`ELSEWHERE` in the run policy), so a routine's run, or one fed by what a routine read, never
+  asks for it. Its definition waits with the
   conversation's rarer tools (ADR 0043: up front, the whole card's schema would add about 3,800 characters to every
   run) and what the agent can do names it, so the agent calls it by that name (`use_tool`). It takes any line of the
   settings card (skills, channels and how it answers there, model, AI account, budget, owner, who talks to it, name,
   look, who it reports to, archiving) and has no `agent` field: its only target is the agent that calls it. It posts
-  the same card (`settings_proposal`), whose rows are decided as before (`SETTING_GROUP`, "Pedir a um admin" for whoever
-  can't). The right hand keeps `propose_settings_change`, its wider reach and its fixed list of its own settings.
+  the same card, read as the agent's own (`chat.body.settings_request`, "Pede uma mudança nas próprias configurações"),
+  whose rows are decided as before (`SETTING_GROUP`, "Pedir a um admin" for whoever can't). A skill on and off at once
+  is refused, and a refusal lists at most 20 names. The right hand keeps `propose_settings_change`, its wider reach and
+  its fixed list of its own settings.
 - **Always a click.** An agent's own row never applies at once, even when the person who asked could make the change
   and wrote it themselves: the agent may be acting on text from an email, an issue or a web page, so it never widens
   its own settings without a person's click. Its card gets no look from the right hand either (ADR 0139 §2 already keeps
-  an agent's own settings the person's).
+  an agent's own settings the person's). A receipt that changed skills, from this card or the right hand's, is undone
+  or redone only by who manages agents (`requireMayUndo`): never the agent's owner, as on its page.
 - **What it says.** The capabilities and the tool tell an agent that lacks a skill, a channel, a model or another
   setting of its own to offer the card, never to list manual steps or say it can't ask. `load_skill` on a skill
   installed here but off for the agent, and `offer_install_skill` on a link already installed, point to the card.
-- **An install from an agent's card turns the skill on for it.** The install dialog opened from `offer_install_skill`'s
-  card sends that agent (`forAgentId`), and what the link installs goes on for it when the installer may change its
-  skills. When not, the install still stands and the agent asks for it on its own card.
+- **An install from an agent's card can turn the skill on for it, in the open.** The install dialog opened from
+  `offer_install_skill`'s card shows a box, on by default, "Fica ligada para {{agent}}" (web and phone), and sends that
+  agent (`forAgentId`) only when it is checked and only on an install from the card's own link: a link typed over it, a
+  repository picked under "Escolher do GitHub conectado", or a link to the screen that merely names an agent turns
+  nothing on (`cardInstallAgent`: the card that opened it is kept in this tab's session on the web, through connecting
+  GitHub, and in memory on the phone). A pick named like an installed skill says it replaces it ("Substitui a skill X
+  já instalada"), since installing it makes a new version of that skill for every agent. The server turns it on when
+  the installer may change the agent's skills, never for an agent archived or gone nor the right hand, and announces
+  `agents.changed`. Otherwise the install still stands and the agent asks for it on its own card.
 
 ### Consequences
 

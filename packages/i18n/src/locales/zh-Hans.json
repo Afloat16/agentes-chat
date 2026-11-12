@@ -8889,6 +8889,8 @@
     "pickAll": "全部",
     "pickMissing": "请至少选择一个技能。",
     "pickSkipped": "无法安装。{{reason}}",
+    "pickReplaces": "将替换已安装的技能 {{name}}",
+    "forAgent_other": "为 {{agent}} 开启",
     "installedMany": "已安装 {{count}} 个技能。",
     "zipHelp": "根目录中包含 SKILL.md 的 .zip 文件。",
     "zipPick": "选择 .zip",
@@ -12743,7 +12745,8 @@
       "ownerOrAdmin": "只有智能体负责人或管理员可以执行此操作。",
       "detailsHidden": "只有与 {{agentName}} 对话的人可以看到它的工作方式。",
       "extraOwnerOnly": "只有智能体负责人可以开启或关闭套餐的付费额外用量。",
-      "undoForbidden": "只有智能体为其工作的人、智能体负责人或管理员可以撤销此操作。"
+      "undoForbidden": "只有智能体为其工作的人、智能体负责人或管理员可以撤销此操作。",
+      "undoSkillsAdmins": "只有管理员能撤销或重做对智能体技能的更改。"
     },
     "account": {
       "notRestorable": "这个账号已无法恢复。",
@@ -15235,6 +15238,7 @@
       "agent_proposal": "提议了一个新智能体：{{name}}",
       "team_proposal": "提议了一个团队：{{names}}",
       "settings_proposal": "提议更改 {{names}}",
+      "settings_request": "请求修改自己的设置",
       "approval_request": "审批请求：{{title}}",
       "secret_request": "{{agent}} 请求了一个密钥：{{name}}",
       "secret_requestAnon": "请求了一个密钥：{{name}}",

@@ -144,7 +144,8 @@ describe("the setup group", () => {
     expect(kind("propose_remove_agents")).toBe("here");
     expect(kind("offer_connect_app")).toBe("here");
     expect(kind("offer_invites")).toBe("here");
-    expect(kind("request_settings_change")).toBe("here");
+    // An agent's own settings, as its permissions: no routine asks for them.
+    expect(kind("request_settings_change")).toBe("elsewhere");
     expect(kind("create_channel")).toBe("elsewhere");
   });
 });

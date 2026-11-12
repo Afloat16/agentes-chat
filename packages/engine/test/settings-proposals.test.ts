@@ -24,9 +24,13 @@ import {
   presentTools,
   REQUEST_SETTINGS_TOOL,
   RIGHT_HAND,
+  RIGHT_HAND_DECIDE_JOB,
+  redoAgentAction,
+  SETTINGS_REQUEST_CARD,
   saveSkill,
   setAgentScopes,
   setAgentSkills,
+  setRightHandApprovals,
   type ToolContext,
   undoAgentAction,
   updateAgent,
@@ -516,11 +520,16 @@ describe("an agent's skills on the card, as on its page", () => {
 });
 
 describe("an agent asks for its own settings on the same card (request_settings_change)", () => {
-  /** A run of @dev on what `userId` wrote to it in #general, in their own words. */
-  async function devRun(fx: Fixture, userId: string, body: string): Promise<ToolContext> {
+  /** A run of @dev on what `userId` wrote to it in #general, in their own words unless it relays outside content. */
+  async function devRun(fx: Fixture, userId: string, body: string, outside = false): Promise<ToolContext> {
     const trigger = await postPersonMessage({ db: fx.db, pubsub: fx.pubsub }, userId, fx.org.id, fx.general.id, {
       body: `@dev ${body}`,
     });
+    if (outside)
+      await fx.db
+        .update(schema.messages)
+        .set({ meta: { readOutside: true } })
+        .where(eq(schema.messages.id, trigger.id));
     const [run] = await fx.db
       .select()
       .from(schema.agentRuns)
@@ -572,7 +581,8 @@ describe("an agent asks for its own settings on the same card (request_settings_
     expect(out.content).toContain("Posted the card for your settings; the person who asked applies it from the card.");
     expect(out.content).toContain("Your own settings wait for that click");
     expect(out.content).toContain("Nothing has changed yet");
-    const { rows } = await cardRows(f, f.owner.id);
+    const { card, rows } = await cardRows(f, f.owner.id);
+    expect(card.meta).toMatchObject({ bodyCode: SETTINGS_REQUEST_CARD, bodyParams: {} });
     expect(rows).toMatchObject([
       {
         status: "pending",
@@ -601,14 +611,24 @@ describe("an agent asks for its own settings on the same card (request_settings_
       agentId: f.agent.id,
       requestedByUserId: f.owner.id,
     });
-    await undoAgentAction({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, receipt?.id ?? "");
+    // Its owner may undo its other changes, never a skill's: skills are only admins' on its page.
+    const caio = await addMember(f.db, f.org.id, "member", "Caio Mendes");
+    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { ownerUserId: caio.id });
+    const undo = { db: f.db, pubsub: f.pubsub };
+    await expect(undoAgentAction(undo, caio.id, f.org.id, receipt?.id ?? "")).rejects.toThrow(/Only an admin/);
+    await undoAgentAction(undo, f.owner.id, f.org.id, receipt?.id ?? "");
+    expect(await skillsOf(f)).toEqual([]);
+    await expect(redoAgentAction(undo, caio.id, f.org.id, receipt?.id ?? "")).rejects.toThrow(/Only an admin/);
     expect(await skillsOf(f)).toEqual([]);
   });
 
-  test("a member who can't decide it sends it with Pedir a um admin; only who manages agents gets it", async () => {
+  test("a member who can't decide it sends it with Pedir a um admin; it reaches admins, not the agent's owner", async () => {
     f = await setup({ rightHand: true });
     await install(f, "excel");
     const bia = await addMember(f.db, f.org.id, "member", "Bia Rocha");
+    // Its owner decides its channels, never its skills: the card goes to admins alone.
+    const caio = await addMember(f.db, f.org.id, "member", "Caio Mendes");
+    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { ownerUserId: caio.id });
     await addChannelMember(f.db, f.owner.id, f.org.id, f.general.id, { userId: bia.id });
     const ctx = await devRun(f, bia.id, "liga a skill excel pra você");
     const out = await ask(f, ctx, { add_skills: ["excel"], reason: "pediu" });
@@ -616,9 +636,42 @@ describe("an agent asks for its own settings on the same card (request_settings_
     const [row] = (await cardRows(f, bia.id)).rows;
     expect(row).toMatchObject({ status: "pending", canDecide: false, askedAt: null, requestedByUserId: bia.id });
     await expect(decideProposal(f.db, bia.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow();
+    await expect(decideProposal(f.db, caio.id, f.org.id, row?.id ?? "", "accept")).rejects.toThrow();
     await askProposal({ db: f.db, pubsub: f.pubsub }, bia.id, f.org.id, row?.id ?? "");
     expect(await askedOf(f)).toEqual([f.owner.id]);
     await decideProposal(f.db, f.owner.id, f.org.id, row?.id ?? "", "accept", { pubsub: f.pubsub });
     expect(await skillsOf(f)).toEqual(["excel"]);
+  });
+
+  test("the right hand never looks at its card for the person, though it looks at the agent's card on a teammate", async () => {
+    f = await setup({ rightHand: true });
+    await install(f, "excel");
+    await setRightHandApprovals({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, { enabled: true });
+    const looks = async () =>
+      (
+        await f.db
+          .select({ id: schema.outbox.id })
+          .from(schema.outbox)
+          .where(and(eq(schema.outbox.orgId, f.org.id), eq(schema.outbox.kind, RIGHT_HAND_DECIDE_JOB)))
+      ).length;
+    const ctx = await devRun(f, f.owner.id, "liga a skill excel pra você e sobe o limite do lodi", true);
+    await ask(f, ctx, { add_skills: ["excel"], reason: "pediu" });
+    expect(await looks()).toBe(0);
+    await call(f, ctx, { changes: [{ agent: "@lodi", budget_usd: 20 }], reason: "pediu" });
+    expect(await looks()).toBe(1);
+  });
+
+  test("a skill on and off at once is refused, and a long list of skills is cut short", async () => {
+    f = await setup({ rightHand: true });
+    for (let i = 0; i < 25; i++) await install(f, `skill-${String(i).padStart(2, "0")}`);
+    const ctx = await devRun(f, f.owner.id, "liga e desliga a skill-00 pra você");
+    const both = await ask(f, ctx, { add_skills: ["skill-00"], remove_skills: ["skill-00"], reason: "pediu" });
+    expect(both).toMatchObject({
+      isError: true,
+      content: "Each skill goes on or off, not both: skill-00 is in add_skills and remove_skills.",
+    });
+    const unknown = await ask(f, ctx, { add_skills: ["planilhas"], reason: "pediu" });
+    expect(unknown.content).toContain("skill-19, +5 more.");
+    expect(unknown.content).not.toContain("skill-20");
   });
 });

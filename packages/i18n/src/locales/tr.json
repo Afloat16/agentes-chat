@@ -9146,6 +9146,9 @@
     "pickAll": "Tümü",
     "pickMissing": "En az bir beceri seçin.",
     "pickSkipped": "Yüklenemiyor. {{reason}}",
+    "pickReplaces": "Yüklü {{name}} becerisinin yerini alır",
+    "forAgent_one": "{{agent}} için aç",
+    "forAgent_other": "{{agent}} için aç",
     "installedMany": "{{count}} beceri yüklendi.",
     "zipHelp": "Kökünde SKILL.md bulunan bir .zip.",
     "zipPick": ".zip seç",
@@ -13103,7 +13106,8 @@
       "ownerOrAdmin": "Bunu yalnızca ajanın sahibi veya bir yönetici yapabilir.",
       "detailsHidden": "Nasıl çalıştığını yalnızca {{agentName}} ile konuşanlar görür.",
       "extraOwnerOnly": "Planın ücretli ek kullanımını yalnızca ajanın sahibi açıp kapatabilir.",
-      "undoForbidden": "Bunu yalnızca ajanın çalıştığı kişi, sahibi veya bir yönetici geri alabilir."
+      "undoForbidden": "Bunu yalnızca ajanın çalıştığı kişi, sahibi veya bir yönetici geri alabilir.",
+      "undoSkillsAdmins": "Bir ajanın becerilerindeki değişikliği yalnızca bir yönetici geri alabilir veya yineleyebilir."
     },
     "account": {
       "notRestorable": "Bu hesap artık geri yüklenemez.",
@@ -15620,6 +15624,7 @@
       "agent_proposal": "Yeni bir ajan önerdi: {{name}}",
       "team_proposal": "Bir ekip önerdi: {{names}}",
       "settings_proposal": "{{names}} için bir değişiklik önerdi",
+      "settings_request": "Kendi ayarlarında bir değişiklik istiyor",
       "approval_request": "Onay isteği: {{title}}",
       "secret_request": "{{agent}} bir anahtar istedi: {{name}}",
       "secret_requestAnon": "Bir anahtar istendi: {{name}}",

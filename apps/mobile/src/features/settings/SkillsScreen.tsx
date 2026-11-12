@@ -72,7 +72,7 @@ import { Note } from "../ai/parts";
 import { MessageText } from "../chat/MessageText";
 import { ConnectSheet } from "../connectors/ConnectSheet";
 import { FirstUse } from "../shared/FirstUse";
-import { useColors } from "../shared/hooks";
+import { useColors, useDirectory } from "../shared/hooks";
 import { goBack, successHaptic } from "../shared/parts";
 import { SheetHostProvider, useSheet } from "../shared/SheetHost";
 import { TextArea } from "../shared/TextArea";
@@ -631,7 +631,10 @@ export function InstallSkillScreen({ initialUrl, forAgentId }: { initialUrl?: st
   );
 }
 
-/** `forAgentId`: opened from that agent's card, what a link installs goes on for it. */
+/**
+ * `forAgentId`: opened from that agent's card, a row (on by default) turns what installs on for it, as on the web, only
+ * from the card's own link: one typed over it or a repository picked instead goes on for nobody.
+ */
 function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgentId?: string }) {
   const { t } = useTranslation();
   const c = useColors();
@@ -655,6 +658,16 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
   const [choices, setChoices] = useState<SkillChoice[] | null>(null);
   const [skipped, setSkipped] = useState<SkillSkipped[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [turnOn, setTurnOn] = useState(true);
+  const library = useSkills(orgId);
+  const dir = useDirectory();
+  const forName = forAgentId ? dir.anyAgent(forAgentId)?.name : undefined;
+  const cardLink = forAgentId && forName ? initialUrl?.trim() : undefined;
+  const forCard = cardLink !== undefined && url.trim() === cardLink;
+  /** The agent what installs from `link` goes on for, when the row shows it and is checked. */
+  const sendFor = (link: string) =>
+    turnOn && cardLink !== undefined && link.trim() === cardLink ? forAgentId : undefined;
+  const replaced = new Set((library.data ?? []).map((k) => k.name));
   const busy = action.isPending || reading;
   const step = useStepText(busy, [
     t("skills.installStep.fetching"),
@@ -674,9 +687,12 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
   const read = (link: string, list = false) => {
     setError(null);
     setHidden(null);
-    const forAgent = forAgentId ? { forAgentId } : {};
+    const forAgent = sendFor(link);
     action.mutate(
-      { type: "import", input: list ? { url: link, list, ...forAgent } : { url: link, ...forAgent } },
+      {
+        type: "import",
+        input: list ? { url: link, list } : { url: link, ...(forAgent ? { forAgentId: forAgent } : {}) },
+      },
       {
         onSuccess: (result) => {
           const found = skillPickOf(result);
@@ -758,7 +774,7 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
         toast({ title: t("skills.installedMany", { count: list.length }), icon: "check" });
         goBack();
       };
-      action.mutate({ type: "importPicked", url: url.trim(), paths, forAgentId }, { onSuccess, onError });
+      action.mutate({ type: "importPicked", url: url.trim(), paths, forAgentId: sendFor(url) }, { onSuccess, onError });
       return;
     }
     if (tab === "zip") {
@@ -873,8 +889,12 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
                 <GroupedRow
                   key={c.path}
                   label={c.name}
-                  sub={c.description}
-                  subLines={2}
+                  sub={
+                    replaced.has(c.name)
+                      ? `${t("skills.pickReplaces", { name: c.name })}\n${c.description}`
+                      : c.description
+                  }
+                  subLines={replaced.has(c.name) ? 3 : 2}
                   checked={picked.has(c.path)}
                   onPress={() => togglePick([c.path], !picked.has(c.path))}
                 />
@@ -915,6 +935,15 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
               )}
               {found.length > REPOS_SHOWN ? <GroupedFooter>{t("skills.reposMore")}</GroupedFooter> : null}
             </>
+          ) : null}
+          {forCard ? (
+            <GroupedList>
+              <GroupedRow
+                label={t("skills.forAgent", { agent: forName, count: Math.max(picked.size, 1) })}
+                checked={turnOn}
+                onPress={() => setTurnOn((on) => !on)}
+              />
+            </GroupedList>
           ) : null}
         </>
       ) : tab === "zip" ? (

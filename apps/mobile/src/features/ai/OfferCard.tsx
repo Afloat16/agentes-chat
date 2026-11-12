@@ -34,6 +34,7 @@ import { EventPillAction, EventPillText, type IconName, Text, useToast } from "@
 import { router } from "@/ui/navigation";
 import { AskDone, AskWaiting } from "../chat/asks";
 import { openWebPath } from "../links/open-web";
+import { openedFromCard } from "../settings/install-from-card";
 import { useDirectory, useMeId } from "../shared/hooks";
 import { PersonLimitNote } from "../usage/people";
 
@@ -113,7 +114,7 @@ function Invite({ card }: { card: Extract<Card, { kind: "invite_people" }> }) {
   );
 }
 
-/** What installs from the card goes on for the agent that posted it (`agentId`), as on the web. */
+/** Its screen's check row turns what installs on for the agent that posted the card (`agentId`), as on the web. */
 function InstallSkill({ card, agentId }: { card: Extract<Card, { kind: "install_skill" }>; agentId: string | null }) {
   const { t } = useTranslation();
   const { orgId, org } = useOrg();
@@ -127,11 +128,12 @@ function InstallSkill({ card, agentId }: { card: Extract<Card, { kind: "install_
       detail={card.url}
       done={installSkillDone(card, skills.data ?? []) ? `${t("actionCard.install_skill.done")}: ${card.url}` : null}
       action={may ? t("actionCard.install_skill.open") : null}
-      onAction={() =>
+      onAction={() => {
+        if (agentId) openedFromCard({ url: card.url, agentId });
         router.push(
           `/settings/skills/new?url=${encodeURIComponent(card.url)}${agentId ? `&agent=${encodeURIComponent(agentId)}` : ""}` as never,
-        )
-      }
+        );
+      }}
       blocked={t("actionCard.install_skill.adminOnly")}
     />
   );

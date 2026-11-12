@@ -9549,6 +9549,10 @@
     "pickAll": "Tutte",
     "pickMissing": "Scegli almeno una skill.",
     "pickSkipped": "Non si può installare. {{reason}}",
+    "pickReplaces": "Sostituisce la skill {{name}} già installata",
+    "forAgent_one": "Attivala per {{agent}}",
+    "forAgent_many": "Attivale per {{agent}}",
+    "forAgent_other": "Attivale per {{agent}}",
     "installedMany": "{{count}} skill installate.",
     "zipHelp": "Un .zip con SKILL.md nella cartella principale.",
     "zipPick": "Scegli .zip",
@@ -13630,7 +13634,8 @@
       "ownerOrAdmin": "Solo il responsabile dell'agente o un admin può farlo.",
       "detailsHidden": "Solo chi parla con {{agentName}} vede come funziona.",
       "extraOwnerOnly": "Solo il responsabile dell'agente attiva o disattiva l'utilizzo extra a pagamento del piano.",
-      "undoForbidden": "Solo la persona per cui l'agente ha lavorato, il suo responsabile o un admin può annullarlo."
+      "undoForbidden": "Solo la persona per cui l'agente ha lavorato, il suo responsabile o un admin può annullarlo.",
+      "undoSkillsAdmins": "Solo un admin può annullare o ripetere una modifica alle skill di un agente."
     },
     "account": {
       "notRestorable": "Questo account non si può più ripristinare.",
@@ -16196,6 +16201,7 @@
       "agent_proposal": "Ha proposto un nuovo agente: {{name}}",
       "team_proposal": "Ha proposto un team: {{names}}",
       "settings_proposal": "Ha proposto una modifica per {{names}}",
+      "settings_request": "Chiede una modifica alle proprie impostazioni",
       "approval_request": "Richiesta di approvazione: {{title}}",
       "secret_request": "{{agent}} ha chiesto una chiave: {{name}}",
       "secret_requestAnon": "Ha chiesto una chiave: {{name}}",

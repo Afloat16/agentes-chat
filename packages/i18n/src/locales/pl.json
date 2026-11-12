@@ -9842,6 +9842,11 @@
     "pickAll": "Wszystkie",
     "pickMissing": "Wybierz co najmniej jedną umiejętność.",
     "pickSkipped": "Nie można zainstalować. {{reason}}",
+    "pickReplaces": "Zastępuje zainstalowaną umiejętność {{name}}",
+    "forAgent_one": "Włącz ją dla {{agent}}",
+    "forAgent_few": "Włącz je dla {{agent}}",
+    "forAgent_many": "Włącz je dla {{agent}}",
+    "forAgent_other": "Włącz je dla {{agent}}",
     "installedMany": "Zainstalowane umiejętności: {{count}}.",
     "zipHelp": "Plik .zip z SKILL.md w katalogu głównym.",
     "zipPick": "Wybierz .zip",
@@ -14077,7 +14082,8 @@
       "ownerOrAdmin": "Może to zrobić tylko właściciel agenta albo administrator.",
       "detailsHidden": "Tylko osoby rozmawiające z {{agentName}} widzą, jak to działa.",
       "extraOwnerOnly": "Tylko właściciel agenta włącza lub wyłącza płatne dodatkowe użycie planu.",
-      "undoForbidden": "Cofnąć to może tylko osoba, dla której agent pracował, jego właściciel albo administrator."
+      "undoForbidden": "Cofnąć to może tylko osoba, dla której agent pracował, jego właściciel albo administrator.",
+      "undoSkillsAdmins": "Cofnąć lub ponowić zmianę umiejętności agenta może tylko administrator."
     },
     "account": {
       "notRestorable": "Tego konta nie da się już przywrócić.",
@@ -16681,6 +16687,7 @@
       "agent_proposal": "Propozycja nowego agenta: {{name}}",
       "team_proposal": "Zaproponował zespół: {{names}}",
       "settings_proposal": "Zaproponował zmianę dla: {{names}}",
+      "settings_request": "Prosi o zmianę własnych ustawień",
       "approval_request": "Prośba o zatwierdzenie: {{title}}",
       "secret_request": "{{agent}} prosi o klucz: {{name}}",
       "secret_requestAnon": "Prośba o klucz: {{name}}",

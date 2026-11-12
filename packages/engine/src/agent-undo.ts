@@ -579,12 +579,17 @@ async function loadAction(db: Database, orgId: string, id: string) {
   return row;
 }
 
-/** The person the agent worked for, an admin, or the agent's owner. */
+/** The person the agent worked for, an admin, or the agent's owner. A change to skills: only an admin. */
 async function requireMayUndo(db: Database, userId: string, a: Row) {
   const membership = await getMembership(db, userId, a.orgId);
   if (!membership) throw new NotFoundError("Action not found", "action.not_found");
   assertActiveMembership(membership);
-  if (a.requestedByUserId === userId || can(membership, "manage_agents")) return;
+  if (can(membership, "manage_agents")) return;
+  // Skills are who manages agents' on the agent's page (`SETTING_GROUP`), though `setAgentSkills` takes its owner too.
+  const fields = (a.params as { fields?: unknown }).fields;
+  if (a.kind === "agent.settings_changed" && Array.isArray(fields) && fields.includes("skill"))
+    throw new ForbiddenError("Only an admin can undo or redo a change to an agent's skills", "action.skills_admins");
+  if (a.requestedByUserId === userId) return;
   const agent = await getAgentCached(db, a.orgId, a.agentId);
   if (agent?.ownerUserId === userId) return;
   throw new ForbiddenError(

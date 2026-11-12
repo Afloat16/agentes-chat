@@ -8844,6 +8844,8 @@
     "pickAll": "すべて",
     "pickMissing": "スキルを1つ以上選んでください。",
     "pickSkipped": "インストールできません。{{reason}}",
+    "pickReplaces": "インストール済みのスキル {{name}} を置き換えます",
+    "forAgent_other": "{{agent}} でオンにする",
     "installedMany": "{{count}}件のスキルをインストールしました。",
     "zipHelp": "ルートにSKILL.mdがある.zip。",
     "zipPick": ".zipを選択",
@@ -12681,7 +12683,8 @@
       "ownerOrAdmin": "これができるのは、エージェントのオーナーか管理者だけです。",
       "detailsHidden": "仕組みを見られるのは、{{agentName}} と話す人だけです。",
       "extraOwnerOnly": "プランの有料の追加使用量をオンまたはオフにできるのは、エージェントのオーナーだけです。",
-      "undoForbidden": "元に戻せるのは、エージェントが作業した相手、そのオーナー、または管理者だけです。"
+      "undoForbidden": "元に戻せるのは、エージェントが作業した相手、そのオーナー、または管理者だけです。",
+      "undoSkillsAdmins": "エージェントのスキルの変更を元に戻したりやり直したりできるのは管理者だけです。"
     },
     "account": {
       "notRestorable": "このアカウントはもう復元できません。",
@@ -15167,6 +15170,7 @@
       "agent_proposal": "新しいエージェントを提案しました: {{name}}",
       "team_proposal": "チームを提案しました：{{names}}",
       "settings_proposal": "{{names}}への変更を提案しました",
+      "settings_request": "自分の設定の変更を依頼しています",
       "approval_request": "承認リクエスト: {{title}}",
       "secret_request": "{{agent}}がキーを求めました: {{name}}",
       "secret_requestAnon": "キーを求めました: {{name}}",

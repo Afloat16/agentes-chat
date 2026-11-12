@@ -28,6 +28,7 @@ import { ownWords } from "./context/learn";
 import { decideProposal, proposeSettings, type SettingsProposalCard } from "./context/proposals";
 import type { ContextDeps } from "./context/summaries";
 import { publishMessageCreated } from "./events";
+import { firstOf } from "./format";
 import { insertMessage, messageView } from "./messages";
 import { can, getMembership } from "./organizations";
 import type { RolePermission } from "./permissions";
@@ -142,6 +143,8 @@ export const MAX_CARDS_PER_RUN = 3;
 export const MAX_CARDS_PER_RUN_RIGHT_HAND = 10;
 /** A settings card's `bodyCode` (`chat.body.settings_proposal`, with `names`). */
 export const SETTINGS_PROPOSAL_CARD = "settings_proposal";
+/** An agent's own settings card's `bodyCode` (`chat.body.settings_request`): no names, it is the author's. */
+export const SETTINGS_REQUEST_CARD = "settings_request";
 export const MAX_CHANNELS_PER_RUN = 5;
 /** A Connect card's `bodyCode` (the apps say it with `chat.body.action_connect_ai`). */
 export const CONNECT_AI_CARD = "action_connect_ai";
@@ -1340,6 +1343,8 @@ interface SettingsChangeInput {
 }
 
 const NANO_PER_USD = 1_000_000_000;
+/** Names a refusal lists, at most: a workspace may have hundreds of skills. */
+const NAMES_SHOWN = 20;
 const names = (v: unknown) => (Array.isArray(v) ? v.map((x) => str(x).trim()).filter(Boolean) : []);
 
 /** Each change's names read as ids (people, channels, roles, AI accounts), or why one can't be. */
@@ -1449,10 +1454,15 @@ async function wantedLines(ctx: ToolContext, change: SettingsChangeInput): Promi
       const install = isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId))
         ? "someone who manages agents installs it on the Skills screen (offer_open_page, page skills)"
         : "offer to install it with offer_install_skill, by its GitHub link";
+      const here = installed.map((k) => k.name);
       return installed.length
-        ? `No skill ${unknown.join(", ")}. Skills here: ${installed.map((k) => k.name).join(", ")}. One not installed yet: ${install}.`
+        ? `No skill ${firstOf(unknown, NAMES_SHOWN)}. Skills here: ${firstOf(here, NAMES_SHOWN)}. One not installed yet: ${install}.`
         : `No skill is installed here yet: ${install}.`;
     }
+    const added = new Set(names(change.add_skills).map((n) => skillOf(n)?.id));
+    const both = names(change.remove_skills).filter((n) => added.has(skillOf(n)?.id));
+    if (both.length > 0)
+      return `Each skill goes on or off, not both: ${firstOf(both, NAMES_SHOWN)} is in add_skills and remove_skills.`;
     for (const [list, on] of [
       [names(change.add_skills), true],
       [names(change.remove_skills), false],
@@ -1656,8 +1666,13 @@ function settingsTool(deps: { pubsub?: PubSub }, own = false): ToolDefinition {
           orgId: ctx.orgId,
           ...at,
           author: { type: "agent", agentId: ctx.agentId, runId: ctx.runId, hop: await hopOf(ctx) },
-          body: `Proposed a change to ${who}: ${str(input.reason).trim()}`,
-          meta: { ...bodyCode(SETTINGS_PROPOSAL_CARD, { names: who }), actionCard: card },
+          body: own
+            ? `Asks for a change to its own settings: ${str(input.reason).trim()}`
+            : `Proposed a change to ${who}: ${str(input.reason).trim()}`,
+          meta: {
+            ...(own ? bodyCode(SETTINGS_REQUEST_CARD) : bodyCode(SETTINGS_PROPOSAL_CARD, { names: who })),
+            actionCard: card,
+          },
         });
         // Before the card is announced, so it reads as done from its first frame; its receipts need the message.
         const open: typeof proposals = [];
