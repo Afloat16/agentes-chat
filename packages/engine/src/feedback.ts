@@ -12,8 +12,8 @@ import { enqueue, PermanentJobError } from "./outbox";
  * files, which expire.
  *
  * A server whose operator set no address sends it to the agentes.chat team instead (ADR 0160 §13): the same job posts
- * it to that team's inbox (`FEEDBACK_URL`), pictures included, and the inbox (`FEEDBACK_INBOX`, on agentes.chat's own
- * servers) mails it to its own address without keeping anything.
+ * it to that team's inbox (`FEEDBACK_URL`), pictures included, and the inbox (on agentes.chat's own servers
+ * only) mails it to its own address without keeping anything.
  */
 
 export const FEEDBACK_JOB = "feedback.send";

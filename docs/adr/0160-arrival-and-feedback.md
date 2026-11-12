@@ -144,8 +144,8 @@ with Postgres alone, and must not need a third-party widget in the apps.
     - **Pictures only, inside the message.** A link to a file on a server in someone's private network opens for
       nobody outside it, so the pictures travel with the feedback, as many as fit an email together, and the form
       there offers no video. The sending server keeps them only while the job may run again (six hours).
-    - **The inbox** is a route of the same image, on only where `FEEDBACK_INBOX` is set with `FEEDBACK_EMAIL`:
-      agentes.chat's own servers. It needs no session, since its sender is a server it knows nothing of, so it
+    - **The inbox** is a route of the same image, on only on agentes.chat's own servers (the ones `isAgentesCloud`
+      names, which already read feedback at `FEEDBACK_EMAIL`). It needs no setting; `FEEDBACK_INBOX=false` turns it off. It needs no session, since its sender is a server it knows nothing of, so it
       counts requests by where they come from (thirty an hour) and in all (sixty), reads at most what the
       pictures of one email weigh, takes a picture by its own bytes as an upload is, and mails the feedback at
       once to its own address, never one it was sent. It stores nothing: no row, no file. The email says it came

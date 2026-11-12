@@ -984,7 +984,7 @@ export const envVars = {
   FEEDBACK_EMAIL: {
     schema: z.email().optional(),
     description:
-      "For agentes.chat Cloud. Unset by default. The address the agentes.chat team reads feedback at: what people write in the apps' feedback form there, and what other servers send to its inbox (`FEEDBACK_INBOX`), one email per message. A self-hosted server leaves it unset: its feedback goes to that team (`FEEDBACK_RELAY`).",
+      "For agentes.chat Cloud. Unset by default. The address the agentes.chat team reads feedback at: what people write in the apps' feedback form there, and what other servers send to its inbox (`POST /api/feedback/inbox`, there only), one email per message, nothing kept. A self-hosted server leaves it unset: its feedback goes to that team (`FEEDBACK_RELAY`).",
     section: "Operator",
     example: "feedback@example.com",
   },
@@ -994,15 +994,15 @@ export const envVars = {
       "What a person writes in the feedback form goes to the agentes.chat team, who make the app (`FEEDBACK_URL`), and the form says so. Only when someone presses Send, and only that message: their text, their name and address to answer them, the workspace's name, the app's version and the pictures they added, never a conversation (https://agentes.chat/docs/install-on-a-server#data). `false`: the apps show no form.",
     section: "Operator",
   },
+  FEEDBACK_INBOX: {
+    schema: z.stringbool().default(true),
+    description:
+      "For agentes.chat Cloud. On agentes.chat's own servers, takes the feedback other servers send (`POST /api/feedback/inbox`) and mails each one to `FEEDBACK_EMAIL`, keeping nothing. `false` stops taking it. No other server has the route.",
+    section: "Operator",
+  },
   FEEDBACK_URL: {
     schema: z.url().default("https://app.agentes.chat/api/feedback/inbox"),
     description: "Where `FEEDBACK_RELAY` sends a feedback (as JSON in a POST).",
-    section: "Operator",
-  },
-  FEEDBACK_INBOX: {
-    schema: z.stringbool().default(false),
-    description:
-      "For agentes.chat Cloud. Unset by default. Takes the feedback other servers send (`POST /api/feedback/inbox`) and mails each one to `FEEDBACK_EMAIL`, keeping nothing.",
     section: "Operator",
   },
   OPS_REPORT_EMAIL: {

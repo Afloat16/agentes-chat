@@ -27,7 +27,7 @@ test("feedback: one email to the server's address, through the outbox, answered 
   t = await createTestServer({ env: { FEEDBACK_EMAIL: "feedback@example.com" } });
   const ana = browser(t);
   expect(await (await ana("/api/app/auth-config")).json()).toMatchObject({ feedback: true, feedbackRelay: false });
-  // Only a server that says it is the inbox takes other servers' feedback.
+  // Only agentes.chat's own servers take other servers' feedback.
   expect((await browser(t)("/api/feedback/inbox", { json: {}, origin: null })).status).toBe(404);
   expect((await browser(t)("/api/app/feedback", { json: { id: ID, text: "hi" } })).status).toBe(401);
   await signUp(ana, "ana@example.com");
@@ -166,7 +166,9 @@ test("feedback files: the hour's limit and the size are answered before the file
 const INBOX_URL = "https://app.agentes.chat/api/feedback/inbox";
 /** A server with no address of its own, whose network reaches only the inbox: `inbox`'s own app. */
 async function relaying(down = false) {
-  inbox = await createTestServer({ env: { FEEDBACK_EMAIL: "team@example.com", FEEDBACK_INBOX: "true" } });
+  inbox = await createTestServer({
+    env: { FEEDBACK_EMAIL: "team@example.com", PUBLIC_URL: "https://app.agentes.chat" },
+  });
   const posted: string[] = [];
   const there = inbox;
   const http = (async (url: string | URL | Request, init?: RequestInit) => {
@@ -239,6 +241,20 @@ test("feedback relay: the inbox takes only a feedback, pictures by their bytes, 
   // Thirty an hour from one address, whatever they held.
   for (let n = 6; n < 30; n++) await post({ id: `n${n}`, feedback });
   expect((await post({ id: "last", feedback })).status).toBe(429);
+});
+
+test("feedback relay: the inbox can be turned off", async () => {
+  t = await createTestServer({
+    env: { FEEDBACK_EMAIL: "team@example.com", PUBLIC_URL: "https://app.agentes.chat", FEEDBACK_INBOX: "false" },
+  });
+  const feedback = { name: "Ana", email: "ana@example.com", text: "Hello", version: "1.0.0" };
+  const res = await t.app.request("/api/feedback/inbox", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id: "a", feedback }),
+  });
+  expect(res.status).toBe(404);
+  expect(t.email.sent).toEqual([]);
 });
 
 test("feedback relay: an inbox that is down is tried again, and nothing is mailed meanwhile", async () => {

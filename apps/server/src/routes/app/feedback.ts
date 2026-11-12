@@ -14,6 +14,7 @@ import {
   feedbackDestination,
   feedbackFileByToken,
   getMembership,
+  isAgentesCloud,
   isFeedbackRelay,
   NotFoundError,
   queueFeedback,
@@ -349,13 +350,13 @@ const Inbox = z.object({
 
 /**
  * `POST /api/feedback/inbox` (ADR 0160 §13): where servers other people run send the feedback their operator gave no
- * address for. Only on a server that says it is the inbox (`FEEDBACK_INBOX`, with `FEEDBACK_EMAIL`): agentes.chat's
- * own. No session: the sender is a server, known by nothing, so it is counted by where it comes from and in all, read
+ * address for. Only on agentes.chat's own servers (`isAgentesCloud`), which read feedback at `FEEDBACK_EMAIL`: no
+ * other server has the route, and it needs no setting (`FEEDBACK_INBOX=false` turns it off). No session: the sender is a server, known by nothing, so it is counted by where it comes from and in all, read
  * up to the size the global limit gives this path, mailed at once and never stored.
  */
 export function registerFeedbackInbox(api: OpenAPIHono, deps: AppDeps) {
   const { config, adapters } = deps;
-  const to = config.FEEDBACK_INBOX ? config.FEEDBACK_EMAIL : undefined;
+  const to = config.FEEDBACK_INBOX && isAgentesCloud(config.PUBLIC_URL) ? config.FEEDBACK_EMAIL : undefined;
   if (!to) return;
   api.post("/feedback/inbox", async (c) => {
     const from = requestLimitIp(c.req.raw.headers, config.TRUSTED_PROXIES);
