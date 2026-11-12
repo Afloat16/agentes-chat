@@ -91,7 +91,8 @@ function AppStack() {
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, gestureEnabled: true }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="chat/[channelId]" options={pushed} />
-      <Stack.Screen name="consultation/[id]" options={pushed} />
+      {/* Two agents' conversation, read only, over the one it was asked from (the web's dialog). */}
+      <Stack.Screen name="consultation/[id]" options={formSheet} />
       <Stack.Screen name="block/[id]" options={pushed} />
       <Stack.Screen name="conversations/[kind]" options={{ ...pushed, ...scrollUnder }} />
       <Stack.Screen name="channel-category" options={{ ...pushed, ...scrollUnder }} />
