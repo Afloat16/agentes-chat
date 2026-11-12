@@ -257,6 +257,29 @@ test("an email in someone's own mailbox: they approve their own; asked by anyone
   expect(decided.status).toBe("approved");
 });
 
+test("an agent that never asks sends from someone's own mailbox without a card; the mailbox's recipients still bind", async () => {
+  m = await mailSetup();
+  const { f } = m;
+  const bia = await addMember(f.db, f.org.id, "member", "bia");
+  const caio = await addMember(f.db, f.org.id, "member", "caio");
+  const account = await imapAccount(m);
+  await giveMail(m, account.id, "read_write", { allowedRecipients: ["@acme.com"] });
+  await f.db.update(schema.mailAccounts).set({ createdByUserId: bia.id }).where(eq(schema.mailAccounts.id, account.id));
+  await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { approvalsLevel: "never" });
+  const send = async (to: string) =>
+    m.tools.invoke(await runFor(caio.id), {
+      toolUseId: `tu_${to}`,
+      name: "mail_support_send",
+      input: { to: [to], subject: "Proposta", body: "Segue a proposta." },
+    });
+  const sent = await send("client@acme.com");
+  expect(sent).toMatchObject({ type: "result" });
+  expect(sent.type === "result" && sent.output.isError).toBeFalsy();
+  const outside = await send("someone@example.org");
+  expect(outside.type === "result" && outside.output.isError).toBe(true);
+  expect(await f.db.select().from(schema.approvals)).toEqual([]);
+});
+
 /** The agent answers its owner alone and holds the owner's mailbox; `carla` is an admin. */
 async function ownerOnlyWithMailbox(level: "read" | "read_write" = "read") {
   const { f } = m;
