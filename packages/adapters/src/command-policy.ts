@@ -167,6 +167,9 @@ export function shellWords(line: string): Word[] | null {
       } else out.push({ text: "<", op: "input" });
       continue;
     }
+    // A word the shell opens with `#` is a comment to the line's end, quotes and all: read as a word, `ls #'` would
+    // open a quote that hid the next lines, which the shell runs.
+    if (c === "#" && !has) return null;
     cur += c;
     has = true;
   }

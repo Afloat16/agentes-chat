@@ -67,6 +67,16 @@ describe("shell parsing", () => {
       expect(simpleCommands(line)).toBeNull();
     }
   });
+
+  test("a comment hides the rest of its line from the shell, quotes and all: never read plainly", () => {
+    // Read as a word, `#'` opened a quote that swallowed the next line, which the shell runs.
+    expect(shellWords("ls #'\nrm -rf x\n#'")).toBeNull();
+    expect(bash("ls #'\nrm -rf x\n#'")).toBe(false);
+    // `#12` is a comment to the shell: gh would view another issue.
+    expect(shellWords("gh issue view #12")).toBeNull();
+    // Inside a word or in quotes it's a character like any other.
+    expect(shellWords("echo 'a #b' c#d")?.map((w) => w.text)).toEqual(["echo", "a #b", "c#d"]);
+  });
 });
 
 describe("read-only calls (allowed at once, no card)", () => {
