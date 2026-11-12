@@ -17731,6 +17731,14 @@ export const ptBR = {
       timeout: "A atualização demorou demais.",
       invalid_data: "{{name}} não conseguiu montar os dados neste formato.",
     },
+    needsAi: {
+      body: "{{name}} monta o widget assim que uma IA for conectada.",
+      short: "Precisa de uma IA",
+      not_signed_in: "O plano de {{name}} foi desconectado.",
+      no_computer: "A IA de {{name}} precisa de um computador e não há nenhum.",
+      cli_missing: "O programa da IA de {{name}} não está instalado no computador.",
+      plan_not_shared: "O plano de {{name}} só atende o próprio dono, então não atualiza widgets.",
+    },
     wait: {
       plan: "Esperando o plano de {{name}} renovar {{when}}",
       planUnknown: "Esperando o plano de {{name}} renovar",
@@ -18097,6 +18105,7 @@ export const ptBR = {
       notAgentMessage: "Só dá para fixar o gráfico de um agente.",
       promptRequired: "Diga o que o widget deve mostrar.",
       notTested: "Teste antes: o widget é criado quando o teste dá certo.",
+      needsAi: "{{agentName}} ainda não consegue atualizar este widget. O widget diz por quê.",
     },
     // end of dashboards
   },

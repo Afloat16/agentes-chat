@@ -18053,6 +18053,14 @@
       "timeout": "L'aggiornamento ha richiesto troppo tempo.",
       "invalid_data": "{{name}} non è riuscito a mettere i dati in questo formato."
     },
+    "needsAi": {
+      "body": "{{name}} lo crea non appena viene collegata un'IA.",
+      "short": "Serve un'IA",
+      "not_signed_in": "Il piano di {{name}} è disconnesso.",
+      "no_computer": "L'IA di {{name}} ha bisogno di un computer e non ce n'è nessuno.",
+      "cli_missing": "Il programma dell'IA di {{name}} non è installato sul computer.",
+      "plan_not_shared": "Il piano di {{name}} risponde solo al suo proprietario, quindi non può aggiornare i widget."
+    },
     "wait": {
       "plan": "In attesa che il piano di {{name}} si rinnovi {{when}}",
       "planUnknown": "In attesa che il piano di {{name}} si rinnovi",
@@ -18429,7 +18437,8 @@
       "blockNotFound": "Quel grafico non è più nel messaggio.",
       "notAgentMessage": "Si può fissare solo il grafico di un agente.",
       "promptRequired": "Di' cosa deve mostrare il widget.",
-      "notTested": "Provalo prima: il widget viene creato quando la prova va a buon fine."
+      "notTested": "Provalo prima: il widget viene creato quando la prova va a buon fine.",
+      "needsAi": "{{agentName}} non può ancora aggiornare questo widget. Il widget dice perché."
     }
   },
   "teamPlan": {
