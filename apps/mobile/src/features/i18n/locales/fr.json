@@ -1769,13 +1769,7 @@
       "open": "Ouvrir",
       "expandHint": "Touchez pour agrandir",
       "stop": "Arrêter",
-      "giveUp": "Abandonner",
-      "done": "Fait : {{title}}",
-      "failed": "Pas réussi : {{title}}",
-      "failedNote": "Pas réussi : {{note}}",
-      "expired": "Personne ne l'a ouvert à temps : {{title}}",
-      "cancelled": "Annulé : {{title}}",
-      "withdrawn": "{{name}} n'en a plus besoin : {{title}}"
+      "giveUp": "Abandonner"
     },
     "live": {
       "inControl": "Vous avez la main",

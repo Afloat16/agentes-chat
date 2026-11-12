@@ -1678,13 +1678,7 @@
       "open": "Aç",
       "expandHint": "Genişletmek için dokunun",
       "stop": "Durdur",
-      "giveUp": "Vazgeç",
-      "done": "Tamamlandı: {{title}}",
-      "failed": "Yapılamadı: {{title}}",
-      "failedNote": "Yapılamadı: {{note}}",
-      "expired": "Kimse zamanında açmadı: {{title}}",
-      "cancelled": "İptal edildi: {{title}}",
-      "withdrawn": "{{name}} artık buna ihtiyaç duymuyor: {{title}}"
+      "giveUp": "Vazgeç"
     },
     "live": {
       "inControl": "Kontrol sizde",

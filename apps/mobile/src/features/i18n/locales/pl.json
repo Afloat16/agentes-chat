@@ -1870,13 +1870,7 @@
       "open": "Otwórz",
       "expandHint": "Stuknij, aby rozwinąć",
       "stop": "Zatrzymaj",
-      "giveUp": "Zrezygnuj",
-      "done": "Gotowe: {{title}}",
-      "failed": "Nie udało się: {{title}}",
-      "failedNote": "Nie udało się: {{note}}",
-      "expired": "Nikt nie otworzył tego na czas: {{title}}",
-      "cancelled": "Anulowano: {{title}}",
-      "withdrawn": "{{name}} już tego nie potrzebuje: {{title}}"
+      "giveUp": "Zrezygnuj"
     },
     "live": {
       "inControl": "Masz kontrolę",

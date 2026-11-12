@@ -1582,13 +1582,7 @@
       "open": "開く",
       "expandHint": "タップして展開",
       "stop": "停止",
-      "giveUp": "あきらめる",
-      "done": "完了: {{title}}",
-      "failed": "できませんでした: {{title}}",
-      "failedNote": "できませんでした: {{note}}",
-      "expired": "時間内に誰も開きませんでした: {{title}}",
-      "cancelled": "キャンセル済み: {{title}}",
-      "withdrawn": "{{name}}にはもう不要です: {{title}}"
+      "giveUp": "あきらめる"
     },
     "live": {
       "inControl": "あなたが操作中",
