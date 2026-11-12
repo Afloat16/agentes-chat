@@ -450,7 +450,9 @@ function useOneLinePlaceholder(ref: RefObject<HTMLTextAreaElement | null>, place
       if (!live || !el.clientWidth) return;
       const s = getComputedStyle(el);
       pen.font = `${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
-      const room = el.clientWidth - Number.parseFloat(s.paddingLeft) - Number.parseFloat(s.paddingRight);
+      // A padding with no number (a field not styled yet) is none: NaN would read as "doesn't fit".
+      const pad = (v: string) => Number.parseFloat(v) || 0;
+      const room = el.clientWidth - pad(s.paddingLeft) - pad(s.paddingRight);
       setFits(pen.measureText(placeholder).width + 2 <= room);
     };
     measure();
