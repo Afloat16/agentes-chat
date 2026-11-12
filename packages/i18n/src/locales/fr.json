@@ -17169,6 +17169,7 @@
     "row": "Indisponible",
     "screen": {
       "title": "Cet espace de travail est indisponible",
+      "titleNamed": "{{name}} est indisponible",
       "text": "Ses conversations et ses agents sont fermés pour le moment.",
       "others": "Vos autres espaces de travail"
     },
@@ -17223,14 +17224,14 @@
   "deleteOrg": {
     "card": {
       "title": "Supprimer l'espace de travail",
-      "text": "Ferme {{name}} pour tout le monde maintenant et le supprime dans 7 jours.",
+      "text": "{{name}} passe en lecture seule pour tout le monde dès maintenant. Il est supprimé définitivement après 7 jours.",
       "button": "Supprimer l'espace de travail…"
     },
     "title": "Supprimer {{name}} ?",
     "goes": {
       "content": "Ses conversations, fichiers, agents et leur mémoire",
-      "people": "Tout le monde perd l'accès dès maintenant et reçoit un e-mail",
-      "peopleQuiet": "Tout le monde perd l'accès dès maintenant",
+      "people": "Dès maintenant, tout le monde peut seulement le lire et reçoit un e-mail",
+      "peopleQuiet": "Dès maintenant, tout le monde peut seulement le lire",
       "computer": "Son ordinateur s'arrête dès maintenant et est effacé",
       "computers": "Les ordinateurs connectés sont déconnectés. Les dossiers des agents y restent jusqu'à la suppression du runner.",
       "connectors": "Les connecteurs et les boîtes mail sont déconnectés"
@@ -17256,15 +17257,16 @@
   },
   "deleting": {
     "title": "{{name}} est en cours de suppression",
-    "text": "Cet espace de travail est déjà en cours de suppression. Vous n'avez rien à faire, il disparaît le {{date}}.",
-    "textLate": "Cet espace de travail est déjà en cours de suppression. Vous n'avez rien à faire.",
+    "banner": "{{name}} sera supprimé le {{date}}",
     "by": "{{by}} l'a supprimé le {{date}}.",
+    "byYou": "Vous l'avez supprimé le {{date}}.",
     "row": "En cours de suppression, disparaît le {{date}}",
     "rowLate": "En cours de suppression",
     "someone": "Quelqu'un",
     "restore": "Restaurer l'espace de travail",
     "membersOnly": "Seul un propriétaire peut le restaurer.",
-    "restored": "{{name}} est de retour"
+    "restored": "{{name}} est de retour",
+    "composer": "Vous ne pouvez pas envoyer de messages pendant la suppression de cet espace de travail"
   },
   "accountDeleting": {
     "title": "Votre compte est en cours de suppression",

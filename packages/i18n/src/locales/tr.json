@@ -16543,6 +16543,7 @@
     "row": "Kullanılamıyor",
     "screen": {
       "title": "Bu çalışma alanı kullanılamıyor",
+      "titleNamed": "{{name}} kullanılamıyor",
       "text": "Konuşmaları ve ajanları şimdilik kapalı.",
       "others": "Diğer çalışma alanlarınız"
     },
@@ -16597,14 +16598,14 @@
   "deleteOrg": {
     "card": {
       "title": "Çalışma alanını sil",
-      "text": "{{name}} alanını şimdi herkese kapatır ve 7 gün sonra siler.",
+      "text": "{{name}} şimdi herkes için salt okunur olur. 7 gün sonra kalıcı olarak silinir.",
       "button": "Çalışma alanını sil…"
     },
     "title": "{{name}} silinsin mi?",
     "goes": {
       "content": "Konuşmaları, dosyaları, ajanları ve onların belleği",
-      "people": "Herkes erişimini hemen kaybeder ve bir e-posta alır",
-      "peopleQuiet": "Herkes erişimini hemen kaybeder",
+      "people": "Herkes artık yalnızca okuyabilir ve bir e-posta alır",
+      "peopleQuiet": "Herkes artık yalnızca okuyabilir",
       "computer": "Bilgisayarı hemen durur ve silinir",
       "computers": "Bağlı bilgisayarların bağlantısı kesilir. Ajanların klasörleri, çalıştırıcı kaldırılana kadar o bilgisayarlarda kalır.",
       "connectors": "Bağlayıcıların ve posta kutularının bağlantısı kesilir"
@@ -16630,15 +16631,16 @@
   },
   "deleting": {
     "title": "{{name}} siliniyor",
-    "text": "Bu çalışma alanı zaten siliniyor. Bir şey yapmanız gerekmiyor, {{date}} tarihinde gider.",
-    "textLate": "Bu çalışma alanı zaten siliniyor. Bir şey yapmanız gerekmiyor.",
+    "banner": "{{name}} {{date}} tarihinde silinecek",
     "by": "{{by}} onu {{date}} tarihinde sildi.",
+    "byYou": "Onu {{date}} tarihinde sildiniz.",
     "row": "Siliniyor, {{date}} tarihinde gider",
     "rowLate": "Siliniyor",
     "someone": "Biri",
     "restore": "Çalışma alanını geri yükle",
     "membersOnly": "Onu yalnızca bir sahip geri yükleyebilir.",
-    "restored": "{{name}} geri döndü"
+    "restored": "{{name}} geri döndü",
+    "composer": "Bu çalışma alanı silinirken mesaj gönderemezsiniz"
   },
   "accountDeleting": {
     "title": "Hesabınız siliniyor",
