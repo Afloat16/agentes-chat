@@ -1321,7 +1321,13 @@ describe("Onboarding: the workspace's name", () => {
       "padding: var(--space-1) var(--onb-gutter) calc(env(safe-area-inset-bottom, 0px) + var(--space-6))",
     );
     expect(rule("\n.onb__actions")).toContain("background: var(--pane)");
-    expect(rule("\nhtml:has(.onb)")).toContain("scroll-padding-bottom: 104px");
+    // The onboarding scrolls itself, never the document (the Linux app doesn't wheel-scroll the document there).
+    const layout = readFileSync(join(import.meta.dir, "../src/layout.css"), "utf8");
+    const onb = layout.slice(layout.indexOf("\n.onb {")).split("}")[0] ?? "";
+    expect(onb).toContain("height: var(--onb-h, 100dvh)");
+    expect(onb).toContain("overflow-y: auto");
+    expect(onb).toContain("scroll-padding-bottom: 104px");
+    expect(css).not.toContain("100vw - 100%");
   });
 
   test("Sair: the account signs out, to sign-in", async () => {
