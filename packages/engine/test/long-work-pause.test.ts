@@ -14,6 +14,7 @@ import {
   createDashboard,
   createJobHandlers,
   createRoutine,
+  createWidget,
   drainOutbox,
   enqueueRunJob,
   getRoutineView,
@@ -22,9 +23,11 @@ import {
   isLongWork,
   listMessages,
   type MachineStatus,
+  notifyRoutineStalled,
   postPersonMessage,
   RESUME_AFTER_MS,
   storeOwnUsage as reportOwnUsage,
+  routineRunRefreshesWidget,
   runRoutineNow,
   testWidget,
 } from "../src";
@@ -531,12 +534,88 @@ test("a widget's test parked on its plan raises no notice: it goes with its rout
   });
   await drainOutbox(f.db, handlersWith(f, brain));
   expect(seen).toHaveLength(0);
-  expect((await runs(f))[0]?.status).toBe("waiting_input");
+  const [run] = await runs(f);
+  expect(run?.status).toBe("waiting_input");
+  expect((run?.transcript as { waitingForBrain?: { code?: string } } | undefined)?.waitingForBrain?.code).toBe(
+    "plan_limit",
+  );
   const heard = await f.db
     .select()
     .from(schema.notifications)
     .where(eq(schema.notifications.kind, "routine_waiting_plan"));
   expect(heard).toEqual([]);
+});
+
+test("a widget's test raises no notice that its computer is away either, where a routine's run does", async () => {
+  f = await setup();
+  const deps = { db: f.db, pubsub: f.pubsub, context: f.context };
+  const board = await createDashboard(deps, f.owner.id, f.org.id, {
+    title: "Vendas",
+    audience: "private",
+    editPolicy: "owner",
+  });
+  const draft = await testWidget(deps, f.owner.id, f.org.id, board.id, {
+    agentId: f.agent.id,
+    prompt: "vendas de hoje",
+    format: "auto",
+    schedule: "manual",
+  });
+  const routine = await createRoutine(deps, f.owner.id, f.org.id, {
+    name: "Deploys",
+    agentId: f.agent.id,
+    prompt: "Check the deploys.",
+    target: { type: "channel", channelId: f.general.id },
+    trigger: { type: "schedule", phrase: "todo dia às 8h" },
+  });
+  const stalled = (routineId: string) =>
+    notifyRoutineStalled(
+      { db: f.db, pubsub: f.pubsub },
+      { orgId: f.org.id, routineId, machineId: crypto.randomUUID(), machineName: "MacBook", outageKey: "none" },
+    );
+  if (!draft.routineId) throw new Error("the test has no routine");
+  await stalled(draft.routineId);
+  await stalled(routine.id);
+  const heard = await f.db
+    .select({ groupKey: schema.notifications.groupKey })
+    .from(schema.notifications)
+    .where(eq(schema.notifications.kind, "routine_stalled"));
+  expect(heard.length).toBeGreaterThan(0);
+  expect(heard.every((n) => n.groupKey.startsWith(`routine_stalled:${routine.id}:`))).toBe(true);
+});
+
+test("a widget's refresh isn't long work by kind: at 96% of the plan its slot runs, where a routine's slot pauses", async () => {
+  f = await setup();
+  const machineId = await computerAgent(f);
+  await storeOwnUsage(f, machineId, reading([{ kind: "seven_day", usedPercent: 96, resetsAt: iso(26 * 3600_000) }]));
+  const { brain, seen } = scripted(() => [{ type: "done", text: "ok" }]);
+  const handlers = handlersWith(f, brain);
+  const deps = { db: f.db, pubsub: f.pubsub, context: f.context };
+  const board = await createDashboard(deps, f.owner.id, f.org.id, {
+    title: "Vendas",
+    audience: "private",
+    editPolicy: "owner",
+  });
+  await createWidget(deps, f.owner.id, f.org.id, board.id, {
+    agentId: f.agent.id,
+    prompt: "vendas de hoje",
+    format: "kpi",
+    schedule: "hour",
+  });
+  // Its first build, as its schedule's slot: by hand it wouldn't be long work anyway.
+  await f.db.update(schema.routineRuns).set({ trigger: "schedule" });
+  await drainOutbox(f.db, handlers);
+  expect(seen).toHaveLength(1);
+  const [refresh] = await runs(f);
+  expect(await routineRunRefreshesWidget(f.db, refresh?.id ?? "")).toBe(true);
+
+  await scheduledSlot(f);
+  await drainOutbox(f.db, handlers);
+  expect(seen).toHaveLength(1);
+  const slot = (await runs(f)).at(-1);
+  expect((slot?.transcript as { waitingForBrain?: { code?: string } } | undefined)?.waitingForBrain?.code).toBe(
+    "usage_pause",
+  );
+  expect(await routineRunRefreshesWidget(f.db, slot?.id ?? "")).toBe(false);
 });
 
 test("a run canceled while paused: its card says it won't run, and Continuar agora on it starts nothing", async () => {

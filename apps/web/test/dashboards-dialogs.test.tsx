@@ -476,6 +476,32 @@ describe("New widget (ADR 0135 §3)", () => {
     expect(button(dialog, "Criar widget")).toBeTruthy();
   });
 
+  test("while its run waits: what for and until when, the card still, Stop and Cancel as ever, nothing spins", async () => {
+    const { fake, services, dialog } = await start((fake) => {
+      withSuggestions(fake);
+      fake.holdDrafts = true;
+    });
+    await type(ask(dialog), "erros em produção hoje");
+    await click(button(dialog, "Testar") as HTMLElement);
+    await settle(6);
+    const resetsAt = new Date(Date.now() + 90 * 60_000).toISOString();
+    Object.assign(fake.drafts[0] ?? {}, { wait: { code: "plan_limit", source: "plan", resetsAt } });
+    await act(async () => services.queryClient.invalidateQueries());
+    await settle(6);
+    const waiting = card(dialog);
+    expect(within(waiting).getByRole("status").textContent).toContain("Esperando o plano de Ada renovar");
+    expect(waiting.getAttribute("data-state")).toBe("ok");
+    expect(waiting.getAttribute("aria-busy")).toBeNull();
+    expect(waiting.querySelector(".nw-build__still")?.getAttribute("data-on")).toBeNull();
+    // The ways out stay: Stop in the card, Cancel beside the main button, which no longer spins.
+    expect(within(waiting).getByRole("button", { name: "Parar" })).toBeTruthy();
+    expect(button(dialog, "Cancelar")).toBeTruthy();
+    expect(button(dialog, "Testando…")).toBeNull();
+    const create = button(dialog, "Criar widget") as HTMLButtonElement;
+    expect(create.disabled).toBe(true);
+    expect(create.getAttribute("aria-busy")).toBeNull();
+  });
+
   test("while it builds: the step its agent is in, in words, the time it takes, and one more line past 45 s", async () => {
     const began = Date.now();
     setSystemTime(new Date(began));

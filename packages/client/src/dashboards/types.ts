@@ -133,6 +133,17 @@ export interface WidgetFailure {
   detail: string | null;
 }
 
+/**
+ * What a widget's refresh run waits on: paused near its plan's or budget's limit (`usage_pause`: Update now lets it go
+ * on), at that limit (`plan_limit`, `budget`), or for its computer. `source`: whose limit (null for the computer).
+ * `resetsAt`: when it picks up by itself (null: not known).
+ */
+export interface WidgetWait {
+  code: "usage_pause" | "plan_limit" | "budget" | "computer";
+  source: "plan" | "budget" | null;
+  resetsAt: string | null;
+}
+
 export interface Widget {
   id: string;
   dashboardId: string;
@@ -148,6 +159,8 @@ export interface Widget {
   alert: { enabled: boolean; condition: string };
   status: WidgetStatus;
   failure: WidgetFailure | null;
+  /** While it is `building` or `updating`: what its run waits on (`widgetWaiting` reads it). */
+  wait: WidgetWait | null;
   refreshedAt: string | null;
   nextRunAt: string | null;
   routineId: string | null;

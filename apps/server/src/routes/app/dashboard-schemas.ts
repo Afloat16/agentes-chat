@@ -167,6 +167,17 @@ export const Widget = z
         detail: z.string().nullable(),
       })
       .nullable(),
+    wait: z
+      .object({
+        code: z.enum(["usage_pause", "plan_limit", "budget", "computer"]),
+        source: z.enum(["plan", "budget"]).nullable(),
+        resetsAt: z.string().nullable().openapi({ description: "When it picks up by itself. Null: not known." }),
+      })
+      .nullable()
+      .openapi({
+        description:
+          "While it is `building` or `updating`: what its run waits on (paused near its plan's or budget's limit, at that limit, or for its computer).",
+      }),
     refreshedAt: z.string().nullable(),
     nextRunAt: z.string().nullable(),
     routineId: z.uuid().nullable(),

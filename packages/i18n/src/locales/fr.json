@@ -17797,6 +17797,13 @@
       "timeout": "La mise à jour a pris trop de temps.",
       "invalid_data": "{{name}} n'a pas pu mettre les données dans ce format."
     },
+    "wait": {
+      "plan": "En attente du renouvellement de l'abonnement de {{name}} {{when}}",
+      "planUnknown": "En attente du renouvellement de l'abonnement de {{name}}",
+      "budget": "En attente du renouvellement du budget de {{name}} {{when}}",
+      "budgetUnknown": "En attente du renouvellement du budget de {{name}}",
+      "computer": "En attente de l'ordinateur de {{name}}"
+    },
     "menu": {
       "label": "Plus",
       "open": "Ouvrir",

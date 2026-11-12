@@ -34,7 +34,7 @@ import {
   textOf,
 } from "@agenteschat/providers";
 import { autoPlanModel, droppedPlanModel, ownLimitsModel, planModel, planOf } from "@agenteschat/providers/plans";
-import { extraUsageLeft, PLAN_NOTICE, PLAN_PAUSE, planBinding } from "@agenteschat/ui/plan-state";
+import { PLAN_NOTICE, PLAN_PAUSE } from "@agenteschat/ui/plan-state";
 import { pendingConnectors } from "./access";
 import { linkRunActions, publishMessageActions } from "./agent-actions";
 import { withTimeout } from "./agent-media";
@@ -176,6 +176,7 @@ import {
 } from "./continuation";
 import { modelInfoFor } from "./credentials";
 import { sha256 } from "./crypto";
+import { widgetRunWaitChanged } from "./dashboards/refresh-fire";
 import { publishDelivery } from "./delivery";
 import { isAgentOnlyDm } from "./dms";
 import {
@@ -347,15 +348,18 @@ import {
   LINE_SAFETY_MS,
   ladderDelay,
   lineHeadLooks,
+  longWorkHasRoom,
   nextMonthStart,
   overrideHolds,
   type PlanReadingRef,
   planName,
+  planReading,
   REPARK_STEADY_MS,
   RESUME_AFTER_MS,
   RESUME_GAP_MS,
   retimeLine,
   routineRunByHand,
+  routineRunRefreshesWidget,
   UNKNOWN_RESET_NOTICE_MS,
   USAGE_WAIT_CODES,
   USAGE_WINDOW_WORDS,
@@ -2415,6 +2419,7 @@ async function executeRunInner(
   if (backFromComputerWait) {
     delete transcript.waitingForBrain;
     await saveTranscript(db, transcript);
+    await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
   }
   // Resuming after approvals: run what was approved, report what was refused.
   if (transcript.pending) {
@@ -3255,8 +3260,10 @@ async function executeRunInner(
     if (!moved) throw new PermanentJobError("run changed state while executing");
     // A routine's run waits for its own computer, never the API (ADR 0053 §6.4): its people hear it once.
     // Waiting for room is no outage: it ends when a turn there does, and the routine's ledger tells.
-    if (run.background && !busy && quietUntil === null)
+    if (run.background && !busy && quietUntil === null) {
       await routineRunWaitingForComputer({ db, pubsub: deps.pubsub }, run, machineId).catch(() => {});
+      await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    }
     if (note) {
       const [view] = await withWikiLinks(db, run.orgId, [messageView(note)]);
       if (view) await publishMessageCreated(deps.pubsub, view);
@@ -3772,8 +3779,10 @@ async function executeRunInner(
       if (view) await publishMessageCreated(deps.pubsub, view);
     }
     if (joined) await publishMessageCreated(deps.pubsub, messageView(joined));
-    // A routine's run says nothing in the conversation: its people hear it once per outage instead.
+    // A routine's run says nothing in the conversation: its people hear it once per outage instead, and a widget's
+    // refresh says on its widget what it waits for.
     if (firstPark && !budget) await routineRunWaitingForPlan({ db, pubsub: deps.pubsub }, run).catch(() => {});
+    await widgetRunWaitChanged({ db, pubsub: deps.pubsub }, run).catch(() => {});
     if (tellOwner) {
       await notifyPlanResetUnknown(
         { db, pubsub: deps.pubsub },
@@ -3826,18 +3835,13 @@ async function executeRunInner(
         : machineId
           ? await storedPlanUsage(db, run.orgId, machineId, plan.kind, plan.account?.id).catch(() => null)
           : null;
-    const top = planBinding(usage, { model: plan.model ?? null });
-    if (!top) return null;
-    return {
-      source: "plan" as const,
-      used: top.used,
-      window: top.kind,
-      ...(top.resetsAt ? { resetsAt: top.resetsAt } : {}),
-      extra: agent.brainExtraUsage && extraUsageLeft(usage),
-    };
+    return planReading(usage, plan.model ?? null, agent.brainExtraUsage);
   };
-  /** A routine's run started by Rodar agora isn't long by kind (a person just asked for it): read once. */
-  let byHand: boolean | null = null;
+  /**
+   * A routine's run started by Rodar agora (a person just asked for it) or one that refreshes a widget isn't long by
+   * kind: read once.
+   */
+  let notLongByKind: boolean | null = null;
   /**
    * A mission's work is long by kind; a person's message in its thread starts a quick reply (it roots in that
    * person), not more of the mission's work: read once.
@@ -3895,11 +3899,15 @@ async function executeRunInner(
       const now = await usageReading();
       return now && continuesPastPlan(now) ? now : null;
     }
-    if (run.background && byHand === null) byHand = await routineRunByHand(db, run.id).catch(() => false);
+    if (run.background && notLongByKind === null) {
+      notLongByKind =
+        (await routineRunByHand(db, run.id).catch(() => false)) ||
+        (await routineRunRefreshesWidget(db, run.id).catch(() => false));
+    }
     if (plan.missionId && missionWork === null)
       missionWork = !(await personOfMessage(db, run.orgId, run.triggerMessageId).catch(() => null));
     const long = isLongWork({
-      routine: run.background && !byHand,
+      routine: run.background && !notLongByKind,
       // Background work (ADR 0121) is long work by kind.
       mission: Boolean(missionWork) || Boolean(run.workId),
       pausedBefore: Boolean(t.usagePause?.paused),
@@ -3909,8 +3917,7 @@ async function executeRunInner(
     });
     if (!long) return null;
     const now = await usageReading();
-    if (!now || now.used < PLAN_PAUSE || ("extra" in now && now.extra)) return null;
-    return now;
+    return longWorkHasRoom(now) ? null : now;
   };
   // From 90% the agent reads where its plan stands, every turn, so it can tell people a long task may pause.
   if (plan.kind !== "model") {

@@ -17092,6 +17092,13 @@
       "timeout": "Güncelleme çok uzun sürdü.",
       "invalid_data": "{{name}} verileri bu biçime getiremedi."
     },
+    "wait": {
+      "plan": "{{name}} adlı ajanın planının {{when}} sıfırlanması bekleniyor",
+      "planUnknown": "{{name}} adlı ajanın planının sıfırlanması bekleniyor",
+      "budget": "{{name}} adlı ajanın bütçesinin {{when}} yenilenmesi bekleniyor",
+      "budgetUnknown": "{{name}} adlı ajanın bütçesinin yenilenmesi bekleniyor",
+      "computer": "{{name}} adlı ajanın bilgisayarı bekleniyor"
+    },
     "menu": {
       "label": "Daha fazla",
       "open": "Aç",

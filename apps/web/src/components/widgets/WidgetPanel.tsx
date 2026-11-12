@@ -1,5 +1,11 @@
 import type { WidgetDetail, WidgetSchedule, WidgetUpdate } from "@agenteschat/client";
-import { useAskWidgetChange, useRefreshWidget, useUpdateWidget, useWidget } from "@agenteschat/client";
+import {
+  useAskWidgetChange,
+  useRefreshWidget,
+  useUpdateWidget,
+  useWidget,
+  widgetCardStatus,
+} from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { upcomingAt, whenAt } from "@agenteschat/client/lib/format";
 import { plainInline } from "@agenteschat/client/lib/markdown";
@@ -50,7 +56,8 @@ export function WidgetPanel({
   const refresh = useRefreshWidget(orgId);
   const toast = useToast();
   const update = useUpdateWidget(orgId);
-  const busy = widget?.status === "building" || widget?.status === "updating" || refresh.isPending;
+  const cardStatus = widget ? widgetCardStatus(widget) : null;
+  const busy = cardStatus === "building" || cardStatus === "updating" || refresh.isPending;
   const gone = query.isError && widgetId !== null;
   // Renaming: the field's text while it is open, then what was sent until the widget comes back with it.
   const [naming, setNaming] = useState<string | null>(null);
@@ -179,17 +186,18 @@ function PanelBody({ orgId, widget, onClose }: { orgId: string; widget: WidgetDe
   const [removing, setRemoving] = useState(false);
   const say = (e: unknown) => toast.show(errorText(t, e, i18n.language), "error");
   const removeLabel = t(widget.dashboard.kind === "home" ? "widgets.menu.removeHome" : "widgets.menu.removeBoard");
+  const status = widgetCardStatus(widget, now);
   return (
     <>
       <WidgetCard
         className="wd__big"
         title={widgetTitle(t, widget)}
         spec={widget.spec}
-        status={widget.status}
+        status={status}
         color={color}
         size={{ w: 2, h: 2 }}
         locale={i18n.language}
-        buildingText={t("widgets.status.building", { name })}
+        buildingText={status === widget.status ? t("widgets.status.building", { name }) : undefined}
         face={<WidgetFace agentId={widget.agentId} name={name} />}
         footer={
           <WidgetFoot
@@ -197,7 +205,7 @@ function PanelBody({ orgId, widget, onClose }: { orgId: string; widget: WidgetDe
             name={name}
             color={color}
             now={now}
-            resolving={refresh.isPending && widget.status === "failed"}
+            resolving={refresh.isPending}
             onResolve={widget.canEdit ? () => refresh.mutate(widget.id, { onError: say }) : undefined}
           />
         }

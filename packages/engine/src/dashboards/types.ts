@@ -107,6 +107,11 @@ export const DASHBOARD_ERRORS = {
   promptRequired: "widget.prompt_required",
   /** 409: a draft is confirmed only once its test build worked (`ok`, ADR 0135 §16). */
   notTested: "widget.not_tested",
+  /**
+   * 409: Update now or Resolve while its run waits at its plan's or budget's limit, or for its computer: nothing can run
+   * it sooner (`params`: the wait's `code`, `source` and `resetsAt`, and `agentName`).
+   */
+  waiting: "widget.waiting",
 } as const;
 
 /**
@@ -206,6 +211,8 @@ export interface WidgetView {
   alert: { enabled: boolean; condition: string };
   status: WidgetStatus;
   failure: { code: string; detail: string | null } | null;
+  /** While it is `building` or `updating`: what its run waits on, the apps say it in place of a spinner. */
+  wait: WidgetWaitView | null;
   refreshedAt: string | null;
   /** Its routine's next run; null for `manual`. */
   nextRunAt: string | null;
@@ -218,6 +225,18 @@ export interface WidgetView {
   lastCostUsd: number | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * What a widget's refresh run waits on (ADR 0118, ADR 0135 §6): paused near its plan's or budget's limit
+ * (`usage_pause`, so Update now lets it go on), at its plan's limit (`plan_limit`), at its agent's budget (`budget`),
+ * or for its computer (`computer`). `source`: whose limit (null for the computer). `resetsAt`: when it picks up by
+ * itself (null: not known). Waiting its turn on its computer is no wait here: it ends with the turns ahead of it.
+ */
+export interface WidgetWaitView {
+  code: "usage_pause" | "plan_limit" | "budget" | "computer";
+  source: "plan" | "budget" | null;
+  resetsAt: string | null;
 }
 
 export interface DashboardView extends DashboardSummaryView {

@@ -251,14 +251,21 @@ html:not([data-pointer]) button.wg__title:focus-visible {
 .wg__dot {
   color: var(--faint);
 }
-/* A failure's reason and Resolve, in the attention tone: an `.ac-iconline`, its icon on the first line. */
-.wg__warn {
+/*
+ * A failure's reason and Resolve, in the attention tone; what a refresh waits for (and Continue now on a pause), in
+ * the calm one: an `.ac-iconline`, its icon on the first line.
+ */
+.wg__warn,
+.wg__wait {
   display: flex;
   align-items: flex-start;
   gap: 6px;
   min-width: 0;
   color: var(--warn);
   line-height: 17px;
+}
+.wg__wait {
+  color: var(--muted);
 }
 .wg__resolve {
   padding: 0;

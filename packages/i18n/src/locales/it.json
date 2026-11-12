@@ -17801,6 +17801,13 @@
       "timeout": "L'aggiornamento ha richiesto troppo tempo.",
       "invalid_data": "{{name}} non è riuscito a mettere i dati in questo formato."
     },
+    "wait": {
+      "plan": "In attesa che il piano di {{name}} si rinnovi {{when}}",
+      "planUnknown": "In attesa che il piano di {{name}} si rinnovi",
+      "budget": "In attesa che il budget di {{name}} si rinnovi {{when}}",
+      "budgetUnknown": "In attesa che il budget di {{name}} si rinnovi",
+      "computer": "In attesa del computer di {{name}}"
+    },
     "menu": {
       "label": "Altro",
       "open": "Apri",

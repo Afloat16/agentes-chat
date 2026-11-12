@@ -41611,6 +41611,21 @@
   "widgets.failure.invalid_data": {
     "value": "{{name}} couldn't put the data in this format."
   },
+  "widgets.wait.plan": {
+    "value": "Waiting for {{name}}'s plan to reset {{when}}"
+  },
+  "widgets.wait.planUnknown": {
+    "value": "Waiting for {{name}}'s plan to reset"
+  },
+  "widgets.wait.budget": {
+    "value": "Waiting for {{name}}'s budget to renew {{when}}"
+  },
+  "widgets.wait.budgetUnknown": {
+    "value": "Waiting for {{name}}'s budget to renew"
+  },
+  "widgets.wait.computer": {
+    "value": "Waiting for {{name}}'s computer"
+  },
   "widgets.menu.label": {
     "value": "More"
   },

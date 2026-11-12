@@ -1,5 +1,5 @@
 import type { PlanUsage, PubSub } from "@agenteschat/adapters";
-import { and, type Database, desc, type Executor, eq, inArray, schema, sql } from "@agenteschat/db";
+import { and, type Database, desc, type Executor, eq, inArray, type SQL, schema, sql } from "@agenteschat/db";
 import { extraUsageLeft, PLAN_PAUSE, planBinding, planState } from "@agenteschat/ui/plan-state";
 import { recordAudit } from "./audit";
 import { forgetPlanLimit, storedPlanUsage } from "./brains/select";
@@ -206,44 +206,54 @@ export async function wakePlanWaits(
   room?: { at: number; usage?: PlanUsage },
 ): Promise<string[]> {
   const { agentRuns, agents } = schema;
-  const reading = room?.usage;
-  const rows = await db
-    .select({
-      id: agentRuns.id,
-      background: agentRuns.background,
-      workId: agentRuns.workId,
-      code: sql<string>`${agentRuns.transcript}->'waitingForBrain'->>'code'`,
-      waitModel: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'model'`,
-      extraUsage: agents.brainExtraUsage,
-      waitId: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'waitId'`,
-      until: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'until'`,
-      since: waitSinceSql,
-      parkedAt: sql<string | null>`${agentRuns.transcript}->'usageWait'->>'parkedAt'`,
-      createdAt: agentRuns.createdAt,
-    })
+  const fields = {
+    id: agentRuns.id,
+    background: agentRuns.background,
+    workId: agentRuns.workId,
+    waitId: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'waitId'`,
+    until: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'until'`,
+    since: waitSinceSql,
+    parkedAt: sql<string | null>`${agentRuns.transcript}->'usageWait'->>'parkedAt'`,
+    createdAt: agentRuns.createdAt,
+  };
+  const parked = (code: SQL) =>
+    and(
+      eq(agentRuns.orgId, orgId),
+      eq(agentRuns.status, "waiting_input"),
+      code,
+      sql`${agentRuns.transcript}->'waitingForBrain'->>'waitKey' = ${key}`,
+      sql`(not (${agentRuns.transcript}->'waitingForBrain' ? 'steady')
+        or coalesce((${agentRuns.transcript}->'usageWait'->>'parkedAt')::bigint, 0) < ${now - REPARK_STEADY_MS})`,
+      room
+        ? sql`not (${agentRuns.transcript}->'waitingForBrain' ? 'scope')`
+        : sql`(not (${agentRuns.transcript}->'waitingForBrain' ? 'model') or ${agentRuns.transcript}->'waitingForBrain'->>'model' is not distinct from ${model})`,
+    );
+  const limits = await db
+    .select(fields)
     .from(agentRuns)
-    .innerJoin(agents, eq(agents.id, agentRuns.agentId))
-    .where(
-      and(
-        eq(agentRuns.orgId, orgId),
-        eq(agentRuns.status, "waiting_input"),
-        reading
-          ? sql`${agentRuns.transcript}->'waitingForBrain'->>'code' in ('plan_limit', 'usage_pause')`
-          : sql`${agentRuns.transcript}->'waitingForBrain'->>'code' = 'plan_limit'`,
-        sql`${agentRuns.transcript}->'waitingForBrain'->>'waitKey' = ${key}`,
-        sql`(not (${agentRuns.transcript}->'waitingForBrain' ? 'steady')
-          or coalesce((${agentRuns.transcript}->'usageWait'->>'parkedAt')::bigint, 0) < ${now - REPARK_STEADY_MS})`,
-        room
-          ? sql`not (${agentRuns.transcript}->'waitingForBrain' ? 'scope')`
-          : sql`(not (${agentRuns.transcript}->'waitingForBrain' ? 'model') or ${agentRuns.transcript}->'waitingForBrain'->>'model' is not distinct from ${model})`,
-      ),
-    )
+    .where(parked(sql`${agentRuns.transcript}->'waitingForBrain'->>'code' = 'plan_limit'`))
     .orderBy(agentRuns.createdAt)
     .limit(100);
-  const due = rows
+  // Pauses have a query of their own, so the ones the reading leaves paused never take the limit waits' places.
+  const reading = room?.usage;
+  const pauses = reading
+    ? (
+        await db
+          .select({
+            ...fields,
+            waitModel: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'model'`,
+            extraUsage: agents.brainExtraUsage,
+          })
+          .from(agentRuns)
+          .innerJoin(agents, eq(agents.id, agentRuns.agentId))
+          .where(parked(sql`${agentRuns.transcript}->'waitingForBrain'->>'code' = 'usage_pause'`))
+          .orderBy(agentRuns.createdAt)
+          .limit(100)
+      ).filter((r) => longWorkHasRoom(planReading(reading, r.waitModel, r.extraUsage, now)))
+    : [];
+  const due = [...limits, ...pauses]
     .map((r) => ({ ...r, since: Number(r.since), parkedAt: Number(r.parkedAt ?? r.since) }))
     .filter((r) => r.waitId && !(Date.parse(r.until ?? "") <= now + RESUME_GAP_MS) && !(room && r.parkedAt >= room.at))
-    .filter((r) => r.code !== "usage_pause" || (reading && longWorkHasRoom(reading, r.waitModel, r.extraUsage, now)))
     .sort(inLineOrder);
   for (const [i, r] of due.entries()) {
     await enqueue(db, {
@@ -326,10 +336,11 @@ export async function resumeBudgetWaits(
 }
 
 /**
- * Long work (ADR 0118): what pauses near a limit, while replies to people go on. A routine's run (not Rodar agora)
- * and a mission's are long by kind; any other once it grew in this claim of the run (a person acting on it starts
- * a new claim, so a fresh allowance): `LONG_WORK.modelCalls` model calls, a computer brain's third turn, or
- * `LONG_WORK.ms` of work with a call made. A run paused once stays long; Continuar agora's override never pauses.
+ * Long work (ADR 0118): what pauses near a limit, while replies to people go on. A routine's run (not Rodar agora, nor
+ * a widget's refresh) and a mission's are long by kind; any other once it grew in this claim of the run (a person
+ * acting on it starts a new claim, so a fresh allowance): `LONG_WORK.modelCalls` model calls, a computer brain's third
+ * turn, or `LONG_WORK.ms` of work with a call made. A run paused once stays long; Continuar agora's override never
+ * pauses.
  */
 export const LONG_WORK = { modelCalls: 8, computerTurns: 2, ms: 10 * 60_000 } as const;
 
@@ -351,13 +362,33 @@ export const overrideHolds = (o: { until: string | null } | undefined, now = Dat
   o !== undefined && (o.until === null || Date.parse(o.until) > now);
 
 /**
- * Whether long work on `model` may go on under this reading of its plan, as the executor's gate reads it: nothing binds,
- * the binding window is under the pause line, or extra usage is left and the agent lets long work use it (`extraUsage`).
+ * Where long work on `model` stands under this reading of its plan (the executor's gate and the wakes read it alike):
+ * its binding window, and whether it may go on into the plan's paid extra usage (`extraUsage`: the agent's switch).
+ * Null: nothing binds.
  */
-export const longWorkHasRoom = (usage: PlanUsage, model: string | null, extraUsage: boolean, now = Date.now()) => {
+export function planReading(
+  usage: PlanUsage | null | undefined,
+  model: string | null,
+  extraUsage: boolean,
+  now = Date.now(),
+) {
   const top = planBinding(usage, { model, now });
-  return !top || top.used < PLAN_PAUSE || (extraUsage && extraUsageLeft(usage));
-};
+  if (!top) return null;
+  return {
+    source: "plan" as const,
+    used: top.used,
+    window: top.kind,
+    ...(top.resetsAt ? { resetsAt: top.resetsAt } : {}),
+    extra: extraUsage && extraUsageLeft(usage),
+  };
+}
+
+/**
+ * The gate's one rule (ADR 0118): long work goes on when nothing is known, its plan's or budget's reading is under the
+ * pause line, or it may go on into the plan's paid extra usage. The executor pauses by it; a reading wakes by it.
+ */
+export const longWorkHasRoom = (r: { used: number; extra?: boolean } | null) =>
+  !r || r.used < PLAN_PAUSE || r.extra === true;
 
 /** The plan's own allowance: past it, long work goes on only into paid extra usage. */
 export const PLAN_FULL = 100;
@@ -491,6 +522,21 @@ export async function routineRunByHand(db: Executor, runId: string) {
     .where(eq(routineRuns.agentRunId, runId))
     .limit(1);
   return row?.trigger === "manual";
+}
+
+/**
+ * Whether a routine's run refreshes a widget (ADR 0135 §4): it reads and writes only its widget (`update_widget`), so it
+ * isn't long work by kind and goes on until the plan's own limit, as a reply does.
+ */
+export async function routineRunRefreshesWidget(db: Executor, runId: string) {
+  const { routineRuns, routines } = schema;
+  const [row] = await db
+    .select({ target: sql<string | null>`${routines.target}->>'type'` })
+    .from(routineRuns)
+    .innerJoin(routines, eq(routines.id, routineRuns.routineId))
+    .where(eq(routineRuns.agentRunId, runId))
+    .limit(1);
+  return row?.target === "widget";
 }
 
 /** `meta.actionCard` of a long-work pause's card (ADR 0118). Only the executor and Continuar agora write it. */

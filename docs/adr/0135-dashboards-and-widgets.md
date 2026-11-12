@@ -67,11 +67,17 @@ people than asked.
    data stays on screen) or `failed` (a human reason and "Resolve", which runs it again, takes the routine over when its
    creator can no longer run it, and resumes it when it paused itself: failures, its creator gone or out of the board).
    A routine a person paused on purpose in Routines stays paused: "Update now", "Resolve" and "Ask for a change" run
-   once, and only Resume in Routines brings the schedule back. Each update or failure is kept with what it
-   showed (`dashboard_widget_updates`, the latest 20), shown in the widget's panel. When the alert is on and the agent
-   says its condition was met, the person who set the alert hears it in "Waiting on you" (`widget_alert`, waiting, one
-   row per widget merging while open); never in the chat. A widget that stops updating tells its creator once per
-   failure streak (`widget_failed`, inbox only), resolved by its next good update.
+   once, and only Resume in Routines brings the schedule back. While it is `building` or `updating`, a widget whose run
+   waits carries what for (`wait`: paused near its plan's or budget's limit, at that limit, or its computer away, with
+   when it picks up by itself), and the apps say it in place of the spinner ("Waiting for Theo's plan to reset at
+   13:00"), its data as it was. The run's event goes out when it parks and when it goes on. "Update now" and "Resolve"
+   on a waiting widget never do nothing: a pause near the limit goes on now (Continuar agora's rule, ADR 0118), and any
+   other wait is refused with its cause and when it picks up (`widget.waiting`, 409). A refresh isn't long work by
+   kind, so it pauses near the limit only once it grew long (ADR 0118, addendum of 2026-11-11). Each update or
+   failure is kept with what it showed (`dashboard_widget_updates`, the latest 20), shown in the widget's panel. When
+   the alert is on and the agent says its condition was met, the person who set the alert hears it in "Waiting on
+   you" (`widget_alert`, waiting, one row per widget merging while open); never in the chat. A widget that stops
+   updating tells its creator once per failure streak (`widget_failed`, inbox only), resolved by its next good update.
 7. **Schedules, the floor, the cap and the cost.** Every 30 minutes (`half`), every hour, every day at 08:00, every
    Monday at 08:00 (in the time zone of whoever set it up), or only when asked (`manual`): never more often than every
    30 minutes, so the 15-minute floor of routines never binds. A workspace keeps at most 60 widgets updating on a
@@ -143,8 +149,8 @@ people than asked.
 16. **Test before creating.** "+ Widget" asks the agent first and creates after: "Test" makes a draft
     (`dashboard_widgets.draft`) that its agent builds at once with real data, through the same refresh run as any
     widget (`update_widget`, a history row, failure reasons, its cost recorded); the card shows it building in place,
-    then the real result (the ask folds into one line that opens it again), or why it failed with "Try again". Only
-    when it worked
+    then the real result (the ask folds into one line that opens it again), or why it failed with "Try again". A test
+    whose run waits says what for and when it picks up, with Stop and the dialog's close (§6). Only when it worked
     does "Create widget" confirm it (`POST …/widgets/{id}/confirm`; `widget.not_tested`, 409, before that): it goes
     first on the board chosen then, with the size, schedule and alert chosen then, keeping the tested data and its
     history (no second build), and its routine gets its schedule. Changing the ask, the agent or the format makes the

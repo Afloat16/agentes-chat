@@ -5,6 +5,8 @@ import {
   useRoles,
   type Widget,
   widgetFailureKey,
+  widgetWaiting,
+  widgetWaitText,
 } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
 import { isEveryone, sortRoles } from "@agenteschat/client/lib/roles";
@@ -42,7 +44,10 @@ export function useCustomRoles() {
   return useMemo(() => sortRoles((roles.data?.roles ?? []).filter((r) => !isEveryone(r))), [roles.data]);
 }
 
-/** What a widget says about itself: why it didn't update, and when it last did ("12 min ago"). */
+/**
+ * What a widget says about itself: why it didn't update, what its refresh waits for ("Waiting for Theo's plan to reset
+ * at 13:00", "" when nothing does), and when it last updated ("12 min ago").
+ */
 export function useWidgetWords() {
   const { t, i18n } = useTranslation();
   const dir = useDirectory();
@@ -55,6 +60,13 @@ export function useWidgetWords() {
     },
     [t, dir],
   );
+  const wait = useCallback(
+    (w: Pick<Widget, "status" | "agentId"> & { wait?: Widget["wait"] }) => {
+      const waiting = widgetWaiting({ status: w.status, wait: w.wait ?? null });
+      return waiting ? widgetWaitText(t, i18n.language, waiting, dir.anyAgent(w.agentId)?.name ?? "") : "";
+    },
+    [t, i18n.language, dir],
+  );
   const ago = useCallback((iso: string) => relativeTime(t, i18n.language, iso), [t, i18n.language]);
-  return { failure, ago, locale: i18n.language };
+  return { failure, wait, ago, locale: i18n.language };
 }

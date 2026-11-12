@@ -16606,6 +16606,13 @@
       "timeout": "업데이트가 너무 오래 걸렸어요.",
       "invalid_data": "{{name}}이(가) 데이터를 이 형식으로 만들지 못했어요."
     },
+    "wait": {
+      "plan": "{{name}}의 요금제가 {{when}}에 초기화되기를 기다리고 있어요",
+      "planUnknown": "{{name}}의 요금제가 초기화되기를 기다리고 있어요",
+      "budget": "{{name}}의 예산이 {{when}}에 갱신되기를 기다리고 있어요",
+      "budgetUnknown": "{{name}}의 예산이 갱신되기를 기다리고 있어요",
+      "computer": "{{name}}의 컴퓨터를 기다리고 있어요"
+    },
     "menu": {
       "label": "더 보기",
       "open": "열기",

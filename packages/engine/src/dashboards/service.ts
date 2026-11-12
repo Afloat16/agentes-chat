@@ -34,6 +34,7 @@ import {
 } from "./access";
 import { publishDashboardChanged, publishWidgetChanged, widgetEvent } from "./events";
 import { dropWidgetRoutine, refreshWidgetNow, syncWidgetRoutine } from "./refresh";
+import { widgetRunWaits } from "./refresh-fire";
 import {
   type AgentMaker,
   type ConfirmWidgetInput,
@@ -74,6 +75,7 @@ import {
   type WidgetStepView,
   type WidgetUpdateView,
   type WidgetView,
+  type WidgetWaitView,
 } from "./types";
 
 const {
@@ -269,7 +271,12 @@ const span = (n: number): 1 | 2 => (n >= 2 ? 2 : 1);
 
 const isStatus = (v: string): v is WidgetStatus => (WIDGET_STATUSES as readonly string[]).includes(v);
 
-function toWidgetView(row: WidgetRow, nextRunAt: Date | null, lastCostNano: number | null): WidgetView {
+function toWidgetView(
+  row: WidgetRow,
+  nextRunAt: Date | null,
+  lastCostNano: number | null,
+  wait: WidgetWaitView | null,
+): WidgetView {
   const schedule: WidgetSchedule = isWidgetSchedule(row.schedule) ? row.schedule : "manual";
   const status: WidgetStatus = isStatus(row.status) ? row.status : "building";
   return {
@@ -290,6 +297,7 @@ function toWidgetView(row: WidgetRow, nextRunAt: Date | null, lastCostNano: numb
       status === "failed"
         ? { code: row.failureCode ?? WIDGET_FAILURES.error, detail: row.failureDetail ?? null }
         : null,
+    wait: status === "building" || status === "updating" ? wait : null,
     refreshedAt: row.refreshedAt?.toISOString() ?? null,
     nextRunAt: schedule !== "manual" && nextRunAt ? nextRunAt.toISOString() : null,
     routineId: row.routineId,
@@ -307,8 +315,8 @@ function toWidgetView(row: WidgetRow, nextRunAt: Date | null, lastCostNano: numb
 }
 
 /**
- * Widget rows as the apps see them, their routines' next runs and their latest updates' cost (`lastCostUsd`, "This
- * test cost …") read in one query each.
+ * Widget rows as the apps see them, their routines' next runs, their latest updates' cost (`lastCostUsd`, "This
+ * test cost …") and what the runs of those being redone wait on (`wait`), read in one query each.
  */
 export async function widgetViews(db: Executor, rows: readonly WidgetRow[]): Promise<WidgetView[]> {
   const routineIds = [...new Set(rows.flatMap((r) => (r.routineId && r.schedule !== "manual" ? [r.routineId] : [])))];
@@ -337,7 +345,19 @@ export async function widgetViews(db: Executor, rows: readonly WidgetRow[]): Pro
       );
     for (const u of latest) cost.set(u.widgetId, Number(u.costNanoUsd));
   }
-  return rows.map((r) => toWidgetView(r, r.routineId ? (next.get(r.routineId) ?? null) : null, cost.get(r.id) ?? null));
+  const busy = rows.flatMap((r) =>
+    r.routineId && (r.status === "building" || r.status === "updating") ? [r.routineId] : [],
+  );
+  const waits = await widgetRunWaits(db, busy);
+  return rows.map((r) => {
+    const wait = r.routineId ? waits.get(r.routineId) : undefined;
+    return toWidgetView(
+      r,
+      r.routineId ? (next.get(r.routineId) ?? null) : null,
+      cost.get(r.id) ?? null,
+      wait ? { code: wait.code, source: wait.source, resetsAt: wait.resetsAt } : null,
+    );
+  });
 }
 
 /** A widget row as the apps see it (its routine's next run read with it). */

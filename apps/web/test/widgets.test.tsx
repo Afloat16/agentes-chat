@@ -157,6 +157,37 @@ describe("My Home as a mural (ADR 0135)", () => {
     expect(widget("Vendas hoje").querySelector(".wk-num")?.textContent).toBe("R$18.420");
   });
 
+  test("a refresh that waits says what for and stands still; Update now on it says why it can't go sooner", async () => {
+    const s = setup();
+    Object.assign(s.sales, { status: "updating", wait: { code: "plan_limit", source: "plan", resetsAt: soon(90) } });
+    const { state } = await open(`/org/${ORG_ID}/home`, s);
+    const card = widget("Vendas hoje");
+    expect(card.getAttribute("data-state")).toBe("ok");
+    expect(card.getAttribute("aria-busy")).toBeNull();
+    expect(card.querySelector(".wg__wait")?.textContent).toContain("Esperando o plano de Ada renovar");
+    // Its data as it was, and no Continue now: only time ends a limit.
+    expect(card.querySelector(".wk-num")?.textContent).toBe("R$18.420");
+    expect(within(card).queryByRole("button", { name: "Continuar agora" })).toBeNull();
+    const update = within(card).getByRole("button", { name: "Atualizar agora" });
+    expect(update.hasAttribute("disabled")).toBe(false);
+    await click(update);
+    await settle(3);
+    expect(last(state, "dashboards.refreshWidget")).toEqual([ORG_ID, s.sales.id]);
+    const toasts = [...document.querySelectorAll(".ac-toast")].map((t) => t.textContent ?? "");
+    expect(toasts.some((t) => t.includes("Esperando o plano de Ada renovar"))).toBe(true);
+  });
+
+  test("a refresh paused near its plan's limit: Continue now lets it go on", async () => {
+    const s = setup();
+    Object.assign(s.sales, { status: "updating", wait: { code: "usage_pause", source: "plan", resetsAt: soon(90) } });
+    const { state } = await open(`/org/${ORG_ID}/home`, s);
+    await click(within(widget("Vendas hoje")).getByRole("button", { name: "Continuar agora" }));
+    await settle(3);
+    expect(last(state, "dashboards.refreshWidget")).toEqual([ORG_ID, s.sales.id]);
+    expect(widget("Vendas hoje").getAttribute("data-state")).toBe("updating");
+    expect(widget("Vendas hoje").querySelector(".wg__wait")).toBeNull();
+  });
+
   test("Organize: size, grip arrows and drag, each saved at once; Remove takes it off", async () => {
     const { state, home, sales, orders, builds } = await open(`/org/${ORG_ID}/home`);
     await click(within(mural()).getByRole("button", { name: "Organizar" }));

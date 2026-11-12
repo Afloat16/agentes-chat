@@ -3905,6 +3905,7 @@ export function createFakeApi(state: FakeState = seedState(), options: { seed?: 
     (method, ...args) => state.calls.push({ method, args }),
     ctx.now,
     () => state.me?.user.id ?? null,
+    (agentId) => state.agents.find((a) => a.id === agentId)?.name ?? "",
   );
   const browser = createFakeBrowser((method, ...args) => state.calls.push({ method, args }), ctx.now);
   const apps = createFakeApps((method, ...args) => state.calls.push({ method, args }), ctx.now);

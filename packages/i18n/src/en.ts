@@ -17320,6 +17320,17 @@ export const en = {
       timeout: "The update took too long.",
       invalid_data: "{{name}} couldn't put the data in this format.",
     },
+    /**
+     * What a widget's refresh waits on, said in place of its spinner, and when Update now can't go sooner ({{when}}:
+     * "at 13:00", "Friday at 10:00", "on December 1").
+     */
+    wait: {
+      plan: "Waiting for {{name}}'s plan to reset {{when}}",
+      planUnknown: "Waiting for {{name}}'s plan to reset",
+      budget: "Waiting for {{name}}'s budget to renew {{when}}",
+      budgetUnknown: "Waiting for {{name}}'s budget to renew",
+      computer: "Waiting for {{name}}'s computer",
+    },
     menu: {
       label: "More",
       open: "Open",

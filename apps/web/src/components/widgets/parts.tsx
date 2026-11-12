@@ -1,5 +1,5 @@
 import type { Widget, WidgetFailure, WidgetKind } from "@agenteschat/client";
-import { widgetFailureKey } from "@agenteschat/client";
+import { widgetFailureKey, widgetWaiting, widgetWaitText } from "@agenteschat/client";
 import { relativeTime } from "@agenteschat/client/lib/format";
 import { type AgentColor, Icon, PixelSpinner } from "@agenteschat/ui";
 import type { TFunction } from "i18next";
@@ -49,7 +49,8 @@ export function failureText(t: TFunction, failure: WidgetFailure | null, name: s
 
 /**
  * A widget's footer on a board (ADR 0135): who looks after it, when it last updated and how often; while it is built
- * or updated, the agent at it; failed, why, with Resolve (an update asked now).
+ * or updated, the agent at it, or what its run waits for (a pause near the limit with Continue now); failed, why, with
+ * Resolve (an update asked now).
  */
 export function WidgetFoot({
   widget,
@@ -63,12 +64,36 @@ export function WidgetFoot({
   name: string;
   color: AgentColor;
   now: number;
-  /** Resolve: run it again (only for whoever may). */
+  /** Resolve, or Continue now on a pause: an update asked now (only for whoever may). */
   onResolve?: () => void;
+  /** An update asked now is on its way. */
   resolving?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const schedule = t(`widgets.schedulesInline.${widget.schedule}`);
+  const waiting = resolving ? null : widgetWaiting(widget, now);
+  if (waiting)
+    return (
+      <span className="wg__wait ac-iconline" role="status">
+        <Icon name="pause" size={14} />
+        <span>
+          {widgetWaitText(t, i18n.language, waiting, name, new Date(now))}{" "}
+          {onResolve && waiting.code === "usage_pause" && (
+            <button
+              type="button"
+              className="wg__resolve"
+              title={t(waiting.source === "budget" ? "usageCard.hintBudget" : "usageCard.hint")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onResolve();
+              }}
+            >
+              {t("usageCard.continue")}
+            </button>
+          )}
+        </span>
+      </span>
+    );
   if (widget.status === "building")
     return (
       <>

@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 import { activityVerb, toolActivity } from "../lib/activity";
 import { capitalize } from "../lib/format";
+import { usageWhen } from "../lib/plan-usage";
 import type {
   DashboardAudience,
   DashboardEditPolicy,
@@ -11,12 +12,14 @@ import type {
   Widget,
   WidgetCostEstimate,
   WidgetSchedule,
+  WidgetStatus,
   WidgetStep,
+  WidgetWait,
 } from "./types";
 
 /**
  * What the web and the phone share about boards (ADR 0135), without React: the list's groups, who has access in
- * Share, a board's order of widgets and tiles, Organize's moves, a failure's words and the cost line.
+ * Share, a board's order of widgets and tiles, Organize's moves, a failure's and a wait's words and the cost line.
  */
 
 const byOrder = (a: DashboardSummary, b: DashboardSummary) =>
@@ -247,6 +250,43 @@ export function widgetCostLine(
 /** The widgets of a board that are updating or being built (a sweep on each). */
 export const busyWidgets = (widgets: readonly Widget[]) =>
   widgets.filter((w) => w.status === "updating" || w.status === "building");
+
+/**
+ * What holds a widget's refresh (`Widget.wait`) while it still does: its reset ahead, or not known. Past its reset it
+ * is about to go on, so the apps show it at work again. Null: nothing waits.
+ */
+export function widgetWaiting(w: Pick<Widget, "status" | "wait">, now = Date.now()): WidgetWait | null {
+  if (!w.wait || (w.status !== "building" && w.status !== "updating")) return null;
+  return w.wait.resetsAt && Date.parse(w.wait.resetsAt) <= now ? null : w.wait;
+}
+
+/** The status a widget's card draws: one whose refresh waits (`widgetWaiting`) stands still, its data as it was. */
+export const widgetCardStatus = (w: Pick<Widget, "status" | "wait">, now = Date.now()): WidgetStatus =>
+  widgetWaiting(w, now) ? "ok" : w.status;
+
+const WAIT_CODES: readonly string[] = ["usage_pause", "plan_limit", "budget", "computer"];
+
+/** A wait as the server sends it (`Widget.wait`, the params of a `widget.waiting` refusal); null when it isn't one. */
+export function widgetWaitOf(raw: unknown): WidgetWait | null {
+  const w = raw as Partial<Record<keyof WidgetWait, unknown>> | null | undefined;
+  if (!w || typeof w.code !== "string" || !WAIT_CODES.includes(w.code)) return null;
+  return {
+    code: w.code as WidgetWait["code"],
+    source: w.source === "plan" || w.source === "budget" ? w.source : null,
+    resetsAt: typeof w.resetsAt === "string" && w.resetsAt ? w.resetsAt : null,
+  };
+}
+
+/**
+ * A wait in the reader's words, on the widget and when Update now can't go sooner: "Waiting for Theo's plan to reset
+ * at 13:00", "Waiting for Theo's budget to renew on December 1", "Waiting for Theo's computer".
+ */
+export function widgetWaitText(t: TFunction, locale: string, wait: WidgetWait, name: string, now = new Date()) {
+  if (wait.code === "computer") return t("widgets.wait.computer", { name });
+  const on = wait.source === "budget" ? "budget" : "plan";
+  if (!wait.resetsAt) return t(`widgets.wait.${on}Unknown`, { name });
+  return t(`widgets.wait.${on}`, { name, when: usageWhen(t, locale, wait.resetsAt, now) });
+}
 
 /** A build that takes longer than this says it is still at it. */
 export const WIDGET_STILL_MS = 45_000;

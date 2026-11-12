@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { resources } from "@agenteschat/i18n";
 import { QueryClient } from "@tanstack/react-query";
+import i18next from "i18next";
 import {
   applyDashboardEvent,
   boardItems,
@@ -20,11 +22,16 @@ import {
   roleSeesBoard,
   toggleEditRole,
   type Widget,
+  widgetCardStatus,
   widgetCostLine,
   widgetFailureKey,
   widgetStepWords,
+  widgetWaiting,
+  widgetWaitOf,
+  widgetWaitText,
   withEditRoles,
 } from "../src/index";
+import { usageWhen } from "../src/lib/plan-usage";
 
 const summary = (over: Partial<DashboardSummary>): DashboardSummary => ({
   id: "d",
@@ -66,6 +73,7 @@ const widget = (id: string, position: number, w: 1 | 2 = 1): Widget => ({
   alert: { enabled: false, condition: "" },
   status: "ok",
   failure: null,
+  wait: null,
   refreshedAt: null,
   nextRunAt: null,
   routineId: null,
@@ -366,5 +374,55 @@ describe("a build's step line", () => {
     expect(widgetStepWords(t, step("web_search"))).toBe("Chat.activity.searchingWeb");
     expect(widgetStepWords(t, step("permission_prompt"))).toBe("Chat.activity.runningCommandAny");
     expect(widgetStepWords(t, step("update_widget"))).toBe("dashboards.newWidget.finishing");
+  });
+});
+
+describe("a refresh that waits (ADR 0135 §6)", () => {
+  const resetsAt = "2026-11-12T16:00:00.000Z";
+  const now = new Date("2026-11-12T12:00:00.000Z");
+  const plan = { code: "plan_limit", source: "plan", resetsAt } as const;
+  const busy = (wait: Widget["wait"]): Widget => ({ ...widget("w", 0), status: "updating", wait });
+
+  test("it holds while its reset is ahead or unknown, and its card stands still meanwhile", () => {
+    expect(widgetWaiting(busy(plan), now.getTime())).toEqual(plan);
+    expect(widgetCardStatus(busy(plan), now.getTime())).toBe("ok");
+    expect(widgetWaiting(busy({ ...plan, resetsAt: null }), now.getTime())?.code).toBe("plan_limit");
+    // Past its reset it is about to go on: at work again.
+    expect(widgetWaiting(busy(plan), Date.parse(resetsAt) + 1)).toBeNull();
+    expect(widgetCardStatus(busy(plan), Date.parse(resetsAt) + 1)).toBe("updating");
+    // Done, or nothing waits: no wait.
+    expect(widgetWaiting({ ...busy(plan), status: "ok" }, now.getTime())).toBeNull();
+    expect(widgetWaiting(busy(null), now.getTime())).toBeNull();
+    expect(widgetCardStatus(busy(null), now.getTime())).toBe("updating");
+  });
+
+  test("a wait as the server sends it, read safely", () => {
+    expect(widgetWaitOf({ code: "budget", source: "budget", resetsAt, agentName: "Theo" })).toEqual({
+      code: "budget",
+      source: "budget",
+      resetsAt,
+    });
+    expect(widgetWaitOf({ code: "computer", source: null, resetsAt: null })).toEqual({
+      code: "computer",
+      source: null,
+      resetsAt: null,
+    });
+    expect(widgetWaitOf({ code: "work_queue" })).toBeNull();
+    expect(widgetWaitOf(null)).toBeNull();
+  });
+
+  test("in the reader's words: what it waits for, and when it picks up", () => {
+    const instance = i18next.createInstance();
+    void instance.init({ lng: "en", fallbackLng: "en", resources, initAsync: false });
+    const t = instance.t;
+    const when = usageWhen(t, "en", resetsAt, now);
+    expect(widgetWaitText(t, "en", plan, "Theo", now)).toBe(`Waiting for Theo's plan to reset ${when}`);
+    expect(widgetWaitText(t, "en", { code: "usage_pause", source: "budget", resetsAt }, "Theo", now)).toBe(
+      `Waiting for Theo's budget to renew ${when}`,
+    );
+    expect(widgetWaitText(t, "en", { ...plan, resetsAt: null }, "Theo", now)).toBe("Waiting for Theo's plan to reset");
+    expect(widgetWaitText(t, "en", { code: "computer", source: null, resetsAt: null }, "Theo", now)).toBe(
+      "Waiting for Theo's computer",
+    );
   });
 });

@@ -1,17 +1,78 @@
 import type { PubSub } from "@agenteschat/adapters";
-import { and, type Database, eq, schema, sql } from "@agenteschat/db";
+import { and, type Database, type Executor, eq, inArray, isNull, schema, sql } from "@agenteschat/db";
 import type { Membership } from "../organizations";
 import { dashboardRights, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
-import type { WidgetStatus } from "./types";
+import type { WidgetStatus, WidgetWaitView } from "./types";
 
-const { dashboards, dashboardWidgets } = schema;
+const { agentRuns, dashboards, dashboardWidgets, routineRuns } = schema;
 
 /*
  * A widget routine as it fires (ADR 0135 §4, ADR 0053 §6): its widget and board must still be there, and its creator
- * must still see the board; then the widget shows it is being redone. Kept apart from `refresh.ts` so `routines.ts`
- * reads it without an import cycle.
+ * must still see the board; then the widget shows it is being redone, and what its run waits on, if anything. Kept
+ * apart from `refresh.ts` so `routines.ts` and the executor read it without an import cycle.
  */
+
+/** A widget's refresh run that waits, with what it waits on. */
+export interface WidgetRunWait extends WidgetWaitView {
+  runId: string;
+  waitId: string | null;
+}
+
+/** What the open refresh runs of these widget routines wait on, by routine (none: at work, or not open). One query. */
+export async function widgetRunWaits(db: Executor, routineIds: readonly string[]): Promise<Map<string, WidgetRunWait>> {
+  const out = new Map<string, WidgetRunWait>();
+  if (routineIds.length === 0) return out;
+  const rows = await db
+    .select({
+      routineId: routineRuns.routineId,
+      runId: agentRuns.id,
+      code: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'code'`,
+      source: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'source'`,
+      resetsAt: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'resetsAt'`,
+      waitId: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'waitId'`,
+      machineId: agentRuns.waitingMachineId,
+    })
+    .from(routineRuns)
+    .innerJoin(agentRuns, eq(agentRuns.id, routineRuns.agentRunId))
+    .where(
+      and(
+        inArray(routineRuns.routineId, [...routineIds]),
+        isNull(routineRuns.finishedAt),
+        eq(agentRuns.status, "waiting_input"),
+      ),
+    );
+  for (const r of rows) {
+    const budget = r.code === "budget" || (r.code === "usage_pause" && r.source === "budget");
+    const view: WidgetWaitView | null =
+      r.code === "plan_limit" || r.code === "budget" || r.code === "usage_pause"
+        ? { code: r.code, source: budget ? "budget" : "plan", resetsAt: r.resetsAt }
+        : r.machineId && r.code !== "busy"
+          ? { code: "computer", source: null, resetsAt: null }
+          : null;
+    if (view) out.set(r.routineId, { ...view, runId: r.runId, waitId: r.waitId });
+  }
+  return out;
+}
+
+/**
+ * A widget's refresh run started or stopped waiting (its plan, its budget, its computer): the widget's viewers read it
+ * again, so it says what holds it, or that it updates. Any other background run: nothing.
+ */
+export async function widgetRunWaitChanged(
+  deps: { db: Database; pubsub?: PubSub },
+  run: { id: string; orgId: string; background: boolean },
+) {
+  if (!run.background || !deps.pubsub) return;
+  const [row] = await deps.db
+    .select({ widget: dashboardWidgets, board: dashboards })
+    .from(routineRuns)
+    .innerJoin(dashboardWidgets, eq(dashboardWidgets.routineId, routineRuns.routineId))
+    .innerJoin(dashboards, eq(dashboards.id, dashboardWidgets.dashboardId))
+    .where(and(eq(routineRuns.orgId, run.orgId), eq(routineRuns.agentRunId, run.id)));
+  if (!row) return;
+  await publishWidgetChanged(deps.pubsub, row.board, widgetEvent(row.widget, row.widget.status as WidgetStatus));
+}
 
 /** A person's change request, as the routine run carries it (`routine_runs.event`). */
 export const WIDGET_CHANGE_EVENT = "widget.change";

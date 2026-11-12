@@ -34,6 +34,7 @@ import {
   widgetUpFront,
 } from "../src";
 import { widgetFailureCode } from "../src/dashboards/refresh-ledger";
+import { monthStartUtc } from "../src/usage";
 import { addMember, type Fixture, setup } from "./fixtures";
 import {
   agentRunRow,
@@ -59,10 +60,14 @@ function lazyDashboardTools() {
 }
 
 /** A fixture whose agent answers widget runs with `widgetReply` (and any other run with "Ok."). */
-async function setupWidgets(widgetReply: (req: ModelRequest, call: number) => FakeReply) {
+async function setupWidgets(
+  widgetReply: (req: ModelRequest, call: number) => FakeReply,
+  options: { budgetNanoUsd?: number; contextTools?: boolean } = {},
+) {
   const tools = lazyDashboardTools();
   let calls = 0;
   f = await setup({
+    ...options,
     toolSources: [tools.source],
     reply: (req) => {
       if (!(req.tools ?? []).some((t) => t.name === "update_widget")) return { chunks: ["Ok."] };
@@ -441,6 +446,74 @@ describe("the refresh run", () => {
         update: { spec: { kind: "bars", labels: ["a"], values: [1] }, summary: "x" },
       }),
     ).rejects.toMatchObject({ code: "widget.invalid_data" });
+  });
+});
+
+describe("a refresh that waits (ADR 0135 §6)", () => {
+  const BUDGET = 100_000_000_000;
+  /** The agent has spent `percent` of its monthly budget. */
+  const spend = (percent: number) => {
+    const spentNanoUsd = (BUDGET * percent) / 100;
+    return f.db
+      .insert(schema.agentBudgetPeriods)
+      .values({
+        orgId: f.org.id,
+        agentId: f.agent.id,
+        periodStart: monthStartUtc(new Date()).toISOString().slice(0, 10),
+        spentNanoUsd,
+      })
+      .onConflictDoUpdate({
+        target: [schema.agentBudgetPeriods.agentId, schema.agentBudgetPeriods.periodStart],
+        set: { spentNanoUsd },
+      });
+  };
+  const build = { name: "update_widget", input: { data: KPI, summary: "R$ 18.420 hoje", title: "Vendas de hoje" } };
+  const ask = () => ({
+    agentId: f.agent.id,
+    prompt: "Vendas de hoje",
+    format: "kpi" as const,
+    schedule: "manual" as const,
+  });
+
+  test("at its budget's limit it says what it waits for and when, and Update now says why it can't go sooner", async () => {
+    await setupWidgets(() => ({ chunks: [], toolUses: [build] }), { budgetNanoUsd: BUDGET });
+    await spend(100);
+    const b = await board();
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, ask());
+    await drainOutbox(f.db, f.handlers);
+    const waiting = await getWidget(dash(), f.owner.id, f.org.id, w.id);
+    expect(waiting.status).toBe("building");
+    expect(waiting.wait).toEqual({ code: "budget", source: "budget", resetsAt: expect.any(String) });
+    expect(Date.parse(waiting.wait?.resetsAt ?? "")).toBeGreaterThan(Date.now());
+    await expect(refreshWidgetNow(dash(), f.owner.id, f.org.id, w.id)).rejects.toMatchObject({
+      code: "widget.waiting",
+      params: { code: "budget", source: "budget", resetsAt: waiting.wait?.resetsAt, agentName: f.agent.name },
+    });
+  });
+
+  test("paused near its budget's limit, Update now lets it go on now, and it updates", async () => {
+    await setupWidgets(
+      (req, call) => {
+        if (seen(req).includes("Updated:")) return { chunks: ["Pronto."] };
+        // A refresh that grew long: eight reads before its data.
+        if (call < 8) return { chunks: [], toolUses: [{ name: "search_context", input: { query: `vendas ${call}` } }] };
+        return { chunks: [], toolUses: [build] };
+      },
+      { budgetNanoUsd: BUDGET, contextTools: true },
+    );
+    await spend(96);
+    const b = await board();
+    const w = await createWidget(dash(), f.owner.id, f.org.id, b.id, ask());
+    await drainOutbox(f.db, f.handlers);
+    const paused = await getWidget(dash(), f.owner.id, f.org.id, w.id);
+    expect(paused.wait).toMatchObject({ code: "usage_pause", source: "budget" });
+
+    const asked = await refreshWidgetNow(dash(), f.owner.id, f.org.id, w.id);
+    expect(asked.wait).toBeNull();
+    await drainOutbox(f.db, f.handlers);
+    expect(await widgetOf(w.id)).toMatchObject({ status: "ok", title: "Vendas de hoje" });
+    const continued = await f.db.select().from(schema.auditLog).where(eq(schema.auditLog.action, "usage.continued"));
+    expect(continued).toHaveLength(1);
   });
 });
 

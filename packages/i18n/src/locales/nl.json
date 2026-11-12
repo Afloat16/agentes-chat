@@ -17339,6 +17339,13 @@
       "timeout": "De update duurde te lang.",
       "invalid_data": "{{name}} kon de gegevens niet in deze vorm zetten."
     },
+    "wait": {
+      "plan": "Wacht tot het abonnement van {{name}} {{when}} wordt vernieuwd",
+      "planUnknown": "Wacht tot het abonnement van {{name}} wordt vernieuwd",
+      "budget": "Wacht tot het budget van {{name}} {{when}} wordt vernieuwd",
+      "budgetUnknown": "Wacht tot het budget van {{name}} wordt vernieuwd",
+      "computer": "Wacht op de computer van {{name}}"
+    },
     "menu": {
       "label": "Meer",
       "open": "Openen",

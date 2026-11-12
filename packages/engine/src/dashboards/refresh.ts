@@ -15,9 +15,10 @@ import { can, getMembership } from "../organizations";
 import { type EventMerge, queueEventRun, routineInFlight } from "../routine-events";
 import { haltRoutineRuns } from "../routine-firing";
 import { queueRoutineRun } from "../routines";
+import { assertMayContinuePause, overrideUsagePause } from "../usage-pause";
 import { dashboardRights, requireWidget, viewerOf } from "./access";
 import { publishWidgetChanged, widgetEvent } from "./events";
-import { WIDGET_CHANGE_EVENT } from "./refresh-fire";
+import { WIDGET_CHANGE_EVENT, type WidgetRunWait, widgetRunWaits } from "./refresh-fire";
 import { failWidget, trimWidgetHistory, widgetChangeOf, widgetNoticesDone } from "./refresh-ledger";
 import { widgetView } from "./service";
 import {
@@ -330,7 +331,8 @@ async function markBusy(deps: DashboardDeps, widget: WidgetRow, board: Dashboard
  * left or can no longer talk to the agent is taken over by `actorId`, a routine that paused itself is resumed, and one
  * a person paused on purpose runs once and stays paused).
  * The widget turns `updating` (`building` while it has no data) and its event goes out. A run already queued or
- * working answers with the widget as it is. `actorId` null: a first build queued by the server (no checks).
+ * working answers with the widget as it is; one that waits goes on now or says why it can't (`goOnNow`). `actorId`
+ * null: a first build queued by the server (no checks).
  */
 export async function refreshWidgetNow(
   deps: DashboardDeps,
@@ -342,11 +344,59 @@ export async function refreshWidgetNow(
     ? await requireWidget(deps.db, actorId, orgId, widgetId, "edit")
     : await loadWidget(deps.db, orgId, widgetId);
   const routine = await readyRoutine(deps, orgId, widget, board, actorId);
-  if (await routineInFlight(deps.db, routine.id)) return widgetView(deps.db, await widgetRow(deps.db, widget.id));
+  if (await routineInFlight(deps.db, routine.id)) {
+    const wait = actorId ? (await widgetRunWaits(deps.db, [routine.id])).get(routine.id) : undefined;
+    if (actorId && wait) await goOnNow(deps, actorId, orgId, routine.id, widget.agentId, wait);
+    const view = await widgetView(deps.db, await widgetRow(deps.db, widget.id));
+    return wait ? { ...view, wait: null } : view;
+  }
   await queueRoutineRun({ db: deps.db }, routine, nowOf(deps), "manual");
   const row = await markBusy(deps, await widgetRow(deps.db, widget.id), board);
   await publishRoutineRuns(deps.pubsub, orgId, routine.id).catch(() => {});
   return widgetView(deps.db, row);
+}
+
+/**
+ * "Update now" and "Resolve" while the widget's run waits (ADR 0118, ADR 0135 §6): one paused near its plan's or
+ * budget's limit goes on now, by Continuar agora's rule (`assertMayContinuePause`: never past the plan with extra usage
+ * off); one at the limit, or waiting for its computer, can't, and the person hears why and when it picks up
+ * (`widget.waiting`). One whose reset passed is about to go on by itself.
+ */
+async function goOnNow(
+  deps: DashboardDeps,
+  actorId: string,
+  orgId: string,
+  routineId: string,
+  agentId: string,
+  wait: WidgetRunWait,
+) {
+  if (wait.resetsAt && Date.parse(wait.resetsAt) <= nowOf(deps).getTime()) return;
+  const { runId, waitId } = wait;
+  if (wait.code === "usage_pause" && waitId) {
+    await assertMayContinuePause(deps.db, orgId, runId, "routine");
+    await deps.db.transaction((tx) =>
+      overrideUsagePause(tx, {
+        orgId,
+        runId,
+        waitId,
+        until: wait.resetsAt,
+        userId: actorId,
+        details: { routineId, source: wait.source ?? "plan" },
+      }),
+    );
+    return;
+  }
+  const agent = await getAgent(deps.db, orgId, agentId);
+  throw new ConflictError(
+    "Its run waits for its plan, budget or computer: it can't update sooner",
+    DASHBOARD_ERRORS.waiting,
+    {
+      code: wait.code,
+      source: wait.source,
+      resetsAt: wait.resetsAt,
+      agentName: agent?.name ?? "",
+    },
+  );
 }
 
 /** Change requests asked while one waits join it, in the order they came (the newest asker keeps it). */
