@@ -8894,6 +8894,7 @@
     "pickMissing": "Pilih setidaknya satu skill.",
     "pickSkipped": "Tidak bisa dipasang. {{reason}}",
     "pickReplaces": "Menggantikan skill {{name}} yang sudah terpasang",
+    "pickReplacesRemoved": "Menggantikan skill {{name}} yang sudah dihapus",
     "forAgent_other": "Aktifkan untuk {{agent}}",
     "installedMany": "{{count}} skill terpasang.",
     "zipHelp": "File .zip dengan SKILL.md di folder utamanya.",

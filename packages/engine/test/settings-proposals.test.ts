@@ -33,6 +33,7 @@ import {
   setRightHandApprovals,
   type ToolContext,
   undoAgentAction,
+  undoMessageActions,
   updateAgent,
 } from "../src";
 import { addMember, type Fixture, setup } from "./fixtures";
@@ -620,6 +621,35 @@ describe("an agent asks for its own settings on the same card (request_settings_
     expect(await skillsOf(f)).toEqual([]);
     await expect(redoAgentAction(undo, caio.id, f.org.id, receipt?.id ?? "")).rejects.toThrow(/Only an admin/);
     expect(await skillsOf(f)).toEqual([]);
+  });
+
+  test("Desfazer tudo by the agent's owner undoes nothing of a card with a skill on it, not even its own rows", async () => {
+    f = await setup({ rightHand: true });
+    await install(f, "excel");
+    const design = await createChannel(f.db, f.owner.id, f.org.id, { name: "design" });
+    const ctx = await devRun(f, f.owner.id, "liga a skill excel e entra no design");
+    await ask(f, ctx, { add_skills: ["excel"], join: ["design"], reason: "pediu" });
+    const { card, rows } = await cardRows(f, f.owner.id);
+    // The skill's row first: Desfazer tudo starts from the newest receipt, the channel's, which its owner may undo.
+    const skillRow = rows.find((r) => r.settings?.[0]?.field === "skill");
+    const seatRow = rows.find((r) => r.settings?.[0]?.field === "channel_add");
+    for (const r of [skillRow, seatRow]) await decideProposal(f.db, f.owner.id, f.org.id, r?.id ?? "", "accept");
+    // Its owner, in #design: alone, the channel's receipt is one he may undo.
+    const caio = await addMember(f.db, f.org.id, "member", "Caio Mendes");
+    await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { ownerUserId: caio.id });
+    await addChannelMember(f.db, f.owner.id, f.org.id, design.id, { userId: caio.id });
+    const seated = async () =>
+      (
+        await f.db
+          .select({ id: schema.channelMembers.id })
+          .from(schema.channelMembers)
+          .where(and(eq(schema.channelMembers.channelId, design.id), eq(schema.channelMembers.agentId, f.agent.id)))
+      ).length;
+    await expect(undoMessageActions({ db: f.db, pubsub: f.pubsub }, caio.id, f.org.id, card.id)).rejects.toThrow(
+      /Only an admin/,
+    );
+    expect(await seated()).toBe(1);
+    expect(await skillsOf(f)).toEqual(["excel"]);
   });
 
   test("a member who can't decide it sends it with Pedir a um admin; it reaches admins, not the agent's owner", async () => {

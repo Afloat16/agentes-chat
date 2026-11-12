@@ -9248,6 +9248,7 @@
     "pickMissing": "Kies minstens één skill.",
     "pickSkipped": "Kan niet worden geïnstalleerd. {{reason}}",
     "pickReplaces": "Vervangt de geïnstalleerde skill {{name}}",
+    "pickReplacesRemoved": "Vervangt de verwijderde skill {{name}}",
     "forAgent_one": "Aanzetten voor {{agent}}",
     "forAgent_other": "Aanzetten voor {{agent}}",
     "installedMany": "{{count}} skills geïnstalleerd.",

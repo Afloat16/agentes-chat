@@ -157,6 +157,10 @@ const SkillChoice = z
     path: z.string().openapi({ description: "The skill's folder from the repository's root: what `paths` sends." }),
     name: z.string(),
     description: z.string(),
+    replaces: z.enum(["installed", "removed"]).optional().openapi({
+      description:
+        "A skill of this name is installed (this becomes a new version of it, for every agent that has it) or was removed (it comes back on for none of its old agents).",
+    }),
   })
   .openapi("SkillChoice");
 const SkillSkipped = z

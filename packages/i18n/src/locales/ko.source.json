@@ -22347,6 +22347,9 @@
   "skills.pickReplaces": {
     "value": "Replaces the installed skill {{name}}"
   },
+  "skills.pickReplacesRemoved": {
+    "value": "Replaces the removed skill {{name}}"
+  },
   "skills.forAgent": {
     "value": {
       "one": "Turn it on for {{agent}}",

@@ -9534,6 +9534,7 @@
     "pickMissing": "Choisissez au moins une compétence.",
     "pickSkipped": "Installation impossible. {{reason}}",
     "pickReplaces": "Remplace la compétence {{name}} déjà installée",
+    "pickReplacesRemoved": "Remplace la compétence {{name}} supprimée",
     "forAgent_one": "L’activer pour {{agent}}",
     "forAgent_many": "Les activer pour {{agent}}",
     "forAgent_other": "Les activer pour {{agent}}",

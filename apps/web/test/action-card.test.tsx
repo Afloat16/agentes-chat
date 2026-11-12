@@ -6,7 +6,18 @@ setupDom();
 import type { Agent, Message } from "@agenteschat/client";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import { setNavigateAway } from "@/lib/navigate";
-import { ADA_ID, ATLAS_ID, createFakeApi, ENG_ID, meWithRole, NOW, ORG_ID, seedState } from "./fake-api";
+import {
+  ADA_ID,
+  ATLAS_ID,
+  createFakeApi,
+  ENG_ID,
+  LODI_ID,
+  meWithRole,
+  NOW,
+  ORG_ID,
+  seedState,
+  withRightHand,
+} from "./fake-api";
 import { renderApp, screen, settle } from "./render";
 
 afterEach(() => {
@@ -708,6 +719,118 @@ describe("an agent's card to install or update a skill", () => {
       { url: link, list: true },
       { url: link },
     ]);
+  });
+
+  test("reopened, the dialog reads the card's link again; a pick named like a removed skill says it replaces it", async () => {
+    const state = seedState();
+    const api = createFakeApi(state);
+    const old = await api.skills.create(ORG_ID, { name: "deploy", description: "O deploy antigo.", body: "# Deploy" });
+    await api.skills.remove(ORG_ID, old.id);
+    const link = "https://github.com/acme/skills/tree/main/deploy";
+    state.messages.push(offer("c-skill", "install_skill", { url: link, why: "Faz deploys." }));
+    await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api });
+    await settle(5);
+    const openIt = () => click(within(cardRow("Instalar uma skill")).getByRole("button", { name: "Instalar" }), 8);
+    await openIt();
+    expect(dialog("Instalar skill")?.textContent).toContain("Substitui a skill deploy removida");
+    await click(within(dialog("Instalar skill") as HTMLElement).getByRole("button", { name: "Cancelar" }), 4);
+    await openIt();
+    expect(dialog("Instalar skill")?.textContent).toContain("Substitui a skill deploy removida");
+    expect(state.calls.filter((c) => c.method === "skills.import").map((c) => c.args[1])).toEqual([
+      { url: link, list: true },
+      { url: link, list: true },
+    ]);
+  });
+
+  test("a card by an agent archived since, or by the right hand, shows no box and turns nothing on", async () => {
+    const link = "https://github.com/acme/skills/tree/main/deploy";
+    const installFrom = async (state: ReturnType<typeof seedState>, author: string) => {
+      state.messages.push({
+        ...offer("c-skill", "install_skill", { url: link, why: "Faz deploys." }),
+        author: { type: "agent", id: author },
+      });
+      await open(state);
+      await click(within(cardRow("Instalar uma skill")).getByRole("button", { name: "Instalar" }), 8);
+      const install = within(dialog("Instalar skill") as HTMLElement);
+      expect(install.queryByRole("checkbox", { name: /Fica ligada/ })).toBeNull();
+      await click(install.getByRole("checkbox", { name: /deploy/ }));
+      await click(install.getByRole("button", { name: "Instalar" }));
+      await settle(6);
+      expect(state.calls.find((c) => c.method === "skills.importPicked")?.args.slice(1)).toEqual([
+        link,
+        ["skills/deploy"],
+      ]);
+      cleanup();
+    };
+    const archived = seedState();
+    const atlas = archived.agents.find((a) => a.id === ATLAS_ID);
+    archived.agents = archived.agents.filter((a) => a.id !== ATLAS_ID);
+    archived.former = [
+      { id: ATLAS_ID, name: atlas?.name ?? "Atlas", role: atlas?.role ?? "", appearance: null, deleted: false },
+    ];
+    await installFrom(archived, ATLAS_ID);
+    const ownCard = seedState();
+    withRightHand(ownCard);
+    await installFrom(ownCard, LODI_ID);
+  });
+
+  test("a link typed over the card's, or a repository picked from the connected GitHub, installs for nobody", async () => {
+    const link = "https://github.com/acme/skills/tree/main/deploy";
+    const picked = (state: ReturnType<typeof seedState>) =>
+      state.calls.filter((c) => c.method === "skills.importPicked").map((c) => c.args.slice(1));
+    const typedOver = seedState();
+    typedOver.messages.push(offer("c-skill", "install_skill", { url: link, why: "Faz deploys." }));
+    await open(typedOver);
+    await click(within(cardRow("Instalar uma skill")).getByRole("button", { name: "Instalar" }), 8);
+    const install = () => within(dialog("Instalar skill") as HTMLElement);
+    const other = "https://github.com/acme/other";
+    await act(async () =>
+      fireEvent.change(install().getByRole("textbox", { name: "Link do GitHub" }), { target: { value: other } }),
+    );
+    await click(install().getByRole("button", { name: "Instalar" }), 8);
+    await click(install().getByRole("checkbox", { name: /deploy/ }));
+    await click(install().getByRole("button", { name: "Instalar" }));
+    await settle(6);
+    expect(typedOver.calls.filter((c) => c.method === "skills.import").map((c) => c.args[1])).toEqual([
+      { url: link, list: true },
+      { url: other },
+    ]);
+    expect(picked(typedOver)).toEqual([[other, ["skills/deploy"]]]);
+    cleanup();
+
+    const fromGithub = seedState();
+    const contoso = "https://github.com/contoso/skills";
+    fromGithub.githubRepos = {
+      connected: true,
+      accounts: [
+        {
+          login: "contoso",
+          type: "Organization",
+          repositories: [
+            { fullName: "contoso/skills", owner: "contoso", name: "skills", private: true, updatedAt: null },
+          ],
+        },
+      ],
+      truncated: false,
+    };
+    fromGithub.messages.push(offer("c-skill", "install_skill", { url: link, why: "Faz deploys." }));
+    await open(fromGithub);
+    await click(within(cardRow("Instalar uma skill")).getByRole("button", { name: "Instalar" }), 8);
+    // The card's link read lists its skill; cleared, the connected GitHub's repositories are offered.
+    await act(async () =>
+      fireEvent.change(install().getByRole("textbox", { name: "Link do GitHub" }), { target: { value: "" } }),
+    );
+    await settle(3);
+    await click(install().getByRole("button", { name: "Escolher do GitHub conectado" }), 4);
+    const repo = install()
+      .getAllByRole("button")
+      .find((b) => b.classList.contains("ac-row") && b.textContent?.startsWith("contoso/skills"));
+    await click(repo as HTMLElement);
+    expect(install().queryByRole("checkbox", { name: /Fica ligada/ })).toBeNull();
+    await click(install().getByRole("checkbox", { name: /deploy/ }));
+    await click(install().getByRole("button", { name: "Instalar" }));
+    await settle(6);
+    expect(picked(fromGithub)).toEqual([[contoso, ["skills/deploy"]]]);
   });
 
   test("connecting GitHub from the card's dialog comes back to Skills with the agent, for its box", async () => {

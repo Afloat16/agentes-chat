@@ -25,6 +25,7 @@ import { errorText } from "@agenteschat/client/lib/errors";
 import { SKILL_ASSET_MB } from "@agenteschat/client/lib/files";
 import { relativeTime } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
+import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import {
   changedByText,
   changesSinceLink,
@@ -390,7 +391,7 @@ const returnHere = (orgId: string, url: string, forAgentId?: string) => {
  * link again while the connect flow goes on to what GitHub does and who uses it, as from Conectores (`initialUrl`
  * and `connected` when signing in on GitHub left the page). `forAgentId`: opened from that agent's card, a box (on by
  * default) turns what installs on for it, and only from the card's own link (`initialUrl`): a link typed over it or a
- * repository picked instead goes on for nobody. A pick named like an installed skill says it replaces that one.
+ * repository picked instead goes on for nobody. A pick named like an installed or a removed skill says it replaces it.
  */
 export function InstallSkillDialog({
   open,
@@ -414,9 +415,10 @@ export function InstallSkillDialog({
   const repos = useGitHubRepos(org.id, open);
   const catalog = useCatalog();
   const connections = useConnections(org.id, open && connected);
-  const library = useSkills(org.id, open);
   const dir = useDirectory(org.id);
-  const forName = forAgentId ? dir.anyAgent(forAgentId)?.name : undefined;
+  // Only a live agent the server would turn it on for: not one archived or gone since its card, nor the right hand.
+  const forAgent = forAgentId ? dir.agentById.get(forAgentId) : undefined;
+  const forName = forAgent && !isRightHand(forAgent) ? forAgent.name : undefined;
   /** "Fica ligada para Ada": on by default, shown (and sent) only while the link is the card's own. */
   const [turnOn, setTurnOn] = useState(true);
   const installStep = useStepText(action.isPending, [
@@ -457,7 +459,6 @@ export function InstallSkillDialog({
   /** The agent what installs from `link` goes on for, when the box shows it and is checked. */
   const sendFor = (link: string) =>
     turnOn && cardLink !== undefined && link.trim() === cardLink ? forAgentId : undefined;
-  const replaced = new Set((library.data ?? []).map((s) => s.name));
   /** Reads a GitHub link: one skill installs at once, unless `list`; several (or `list`) are listed to pick. */
   const read = (link: string, list = false) => {
     setError(null);
@@ -486,11 +487,14 @@ export function InstallSkillDialog({
     );
   };
   // Opening starts afresh, on the link it couldn't read when back from connecting GitHub on its site, read once more
-  // to pick (once: development runs effects twice).
+  // to pick (once per opening: development runs effects twice).
   const readAgain = useRef<string | undefined>(undefined);
   // biome-ignore lint/correctness/useExhaustiveDependencies: on opening only
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      readAgain.current = undefined;
+      return;
+    }
     setUrl(initialUrl ?? "");
     setFile(null);
     setForm({ name: "", description: "", body: "" });
@@ -664,9 +668,11 @@ export function InstallSkillDialog({
                           />
                           <span className="scope-row__text">
                             <span className="skill-pick__name">{c.name}</span>
-                            {replaced.has(c.name) && (
+                            {c.replaces && (
                               <span className="small muted skill-pick__about">
-                                {t("skills.pickReplaces", { name: c.name })}
+                                {t(c.replaces === "removed" ? "skills.pickReplacesRemoved" : "skills.pickReplaces", {
+                                  name: c.name,
+                                })}
                               </span>
                             )}
                             <span className="small muted skill-pick__about">{c.description}</span>

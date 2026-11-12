@@ -23,6 +23,7 @@ import { errorText } from "@agenteschat/client/lib/errors";
 import { SKILL_ASSET_MB } from "@agenteschat/client/lib/files";
 import { relativeTime } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
+import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import {
   changedByText,
   changesSinceLink,
@@ -659,15 +660,15 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
   const [skipped, setSkipped] = useState<SkillSkipped[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [turnOn, setTurnOn] = useState(true);
-  const library = useSkills(orgId);
   const dir = useDirectory();
-  const forName = forAgentId ? dir.anyAgent(forAgentId)?.name : undefined;
+  // Only a live agent the server would turn it on for: not one archived or gone since its card, nor the right hand.
+  const forAgent = forAgentId ? dir.agentById.get(forAgentId) : undefined;
+  const forName = forAgent && !isRightHand(forAgent) ? forAgent.name : undefined;
   const cardLink = forAgentId && forName ? initialUrl?.trim() : undefined;
   const forCard = cardLink !== undefined && url.trim() === cardLink;
   /** The agent what installs from `link` goes on for, when the row shows it and is checked. */
   const sendFor = (link: string) =>
     turnOn && cardLink !== undefined && link.trim() === cardLink ? forAgentId : undefined;
-  const replaced = new Set((library.data ?? []).map((k) => k.name));
   const busy = action.isPending || reading;
   const step = useStepText(busy, [
     t("skills.installStep.fetching"),
@@ -890,11 +891,11 @@ function InstallSkill({ initialUrl, forAgentId }: { initialUrl?: string; forAgen
                   key={c.path}
                   label={c.name}
                   sub={
-                    replaced.has(c.name)
-                      ? `${t("skills.pickReplaces", { name: c.name })}\n${c.description}`
+                    c.replaces
+                      ? `${t(c.replaces === "removed" ? "skills.pickReplacesRemoved" : "skills.pickReplaces", { name: c.name })}\n${c.description}`
                       : c.description
                   }
-                  subLines={replaced.has(c.name) ? 3 : 2}
+                  subLines={c.replaces ? 3 : 2}
                   checked={picked.has(c.path)}
                   onPress={() => togglePick([c.path], !picked.has(c.path))}
                 />

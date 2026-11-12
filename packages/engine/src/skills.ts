@@ -554,7 +554,8 @@ export async function saveSkill(
     .where(and(eq(skills.orgId, orgId), eq(skills.slug, input.name)));
   let row: SkillRow;
   if (existing) {
-    // Same name: a new version of that skill. A deleted one comes back (with its agents' assignments).
+    // Same name: a new version of that skill. A deleted one comes back with its agents' assignments, except from a link
+    // (a pick of one too): it may hold anything under that name, so it comes back on for none of its old agents.
     const [updated] = await deps.db
       .update(skills)
       .set({
@@ -578,6 +579,8 @@ export async function saveSkill(
       .returning();
     if (!updated) throw new Error("skill update returned nothing");
     row = updated;
+    if (existing.deletedAt && input.source === "url")
+      await deps.db.update(agentSkills).set({ enabled: false }).where(eq(agentSkills.skillId, existing.id));
   } else {
     const [created] = await deps.db
       .insert(skills)
@@ -999,11 +1002,16 @@ function repositorySkill(zip: Uint8Array, dir: string, inside: [string, ZipListi
   return { ...parseSkillMarkdown(skillMd), files };
 }
 
-/** A skill a GitHub link holds, offered to pick when it holds several. `path`: its folder from the repository's root. */
+/**
+ * A skill a GitHub link holds, offered to pick when it holds several. `path`: its folder from the repository's root.
+ * `replaces`: a skill of this name is installed (it becomes a new version of it, for every agent that has it) or was
+ * removed (it comes back on for none of its old agents).
+ */
 export interface SkillChoice {
   path: string;
   name: string;
   description: string;
+  replaces?: "installed" | "removed";
 }
 
 /** A skill a GitHub link holds that can't be installed, with the refusal: its code, English text and params. */
@@ -1118,6 +1126,22 @@ export async function importSkillFromUrl(
     }
   }
   if (choices.length === 0) throw refused;
+  const same = await deps.db
+    .select({ slug: skills.slug, deletedAt: skills.deletedAt })
+    .from(skills)
+    .where(
+      and(
+        eq(skills.orgId, orgId),
+        inArray(
+          skills.slug,
+          choices.map((c) => c.name),
+        ),
+      ),
+    );
+  for (const c of choices) {
+    const hit = same.find((k) => k.slug === c.name);
+    if (hit) c.replaces = hit.deletedAt ? "removed" : "installed";
+  }
   return { choices, ...(skipped.length > 0 ? { skipped } : {}), ...(link.via ? { via: link.via } : {}) };
 }
 
@@ -1309,7 +1333,8 @@ export async function updateSkill(
 export async function deleteSkill(db: Database, actorId: string, orgId: string, id: string) {
   await requirePermission(db, actorId, orgId, "manage_agents");
   const s = await loadSkill(db, orgId, id);
-  // Soft delete: agents stop seeing it at once; their assignments come back if the skill is installed again.
+  // Soft delete: agents stop seeing it at once. Their assignments come back when it is restored or saved again under
+  // its name, except by an install from a link (`saveSkill`).
   await db.update(skills).set({ deletedAt: new Date() }).where(eq(skills.id, s.id));
   await recordAudit(db, {
     orgId,

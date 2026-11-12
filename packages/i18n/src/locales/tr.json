@@ -9147,6 +9147,7 @@
     "pickMissing": "En az bir beceri seçin.",
     "pickSkipped": "Yüklenemiyor. {{reason}}",
     "pickReplaces": "Yüklü {{name}} becerisinin yerini alır",
+    "pickReplacesRemoved": "Kaldırılan {{name}} becerisinin yerini alır",
     "forAgent_one": "{{agent}} için aç",
     "forAgent_other": "{{agent}} için aç",
     "installedMany": "{{count}} beceri yüklendi.",

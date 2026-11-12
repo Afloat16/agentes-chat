@@ -9810,6 +9810,7 @@
     "pickMissing": "Выберите хотя бы один навык.",
     "pickSkipped": "Нельзя установить. {{reason}}",
     "pickReplaces": "Заменяет уже установленный навык {{name}}",
+    "pickReplacesRemoved": "Заменяет удалённый навык {{name}}",
     "forAgent_one": "Включить его для {{agent}}",
     "forAgent_few": "Включить их для {{agent}}",
     "forAgent_many": "Включить их для {{agent}}",

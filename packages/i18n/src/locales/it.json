@@ -9550,6 +9550,7 @@
     "pickMissing": "Scegli almeno una skill.",
     "pickSkipped": "Non si può installare. {{reason}}",
     "pickReplaces": "Sostituisce la skill {{name}} già installata",
+    "pickReplacesRemoved": "Sostituisce la skill {{name}} rimossa",
     "forAgent_one": "Attivala per {{agent}}",
     "forAgent_many": "Attivale per {{agent}}",
     "forAgent_other": "Attivale per {{agent}}",

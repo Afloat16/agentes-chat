@@ -384,6 +384,40 @@ describe("import", () => {
     expect(told).toEqual([]);
   });
 
+  test("from a link or a pick, a removed skill's name comes back on for none of its old agents; the list says so", async () => {
+    f = await setup();
+    const deps = { ...skillDeps(), fetch: fakeGithub().fetch };
+    const on = async () => (await enabledSkills(f.db, f.org.id, f.agent.id)).map((k) => k.name);
+    const mine = (name: string) =>
+      saveSkill(deps, f.owner.id, f.org.id, {
+        name,
+        description: "Do time.",
+        body: "1. old",
+        metadata: {},
+        source: "manual",
+      });
+    const deploy = await mine("deploy");
+    await mine("review");
+    await setAgentSkills(f.db, f.owner.id, f.org.id, f.agent.id, [{ skillId: deploy.id, enabled: true }]);
+    await deleteSkill(f.db, f.owner.id, f.org.id, deploy.id);
+    const team = "https://github.com/acme/skills/tree/main/team";
+    const listed = await importSkillFromUrl(deps, f.owner.id, f.org.id, team);
+    expect("choices" in listed && listed.choices.map((c) => [c.name, c.replaces])).toEqual([
+      ["deploy", "removed"],
+      ["review", "installed"],
+    ]);
+    // Picked with its box unchecked: back under its name, on for nobody.
+    await importPickedSkills(deps, f.owner.id, f.org.id, team, ["team/deploy"]);
+    expect(await on()).toEqual([]);
+    // The same from the link alone, then with the box: on for the card's agent only.
+    await deleteSkill(f.db, f.owner.id, f.org.id, deploy.id);
+    await importSkillFromUrl(deps, f.owner.id, f.org.id, `${team}/deploy`);
+    expect(await on()).toEqual([]);
+    await deleteSkill(f.db, f.owner.id, f.org.id, deploy.id);
+    await importSkillFromUrl(deps, f.owner.id, f.org.id, `${team}/deploy`, { forAgentId: f.agent.id });
+    expect(await on()).toEqual(["deploy"]);
+  });
+
   test("the skills a link holds that can't be installed are listed apart with why, never offered", async () => {
     f = await setup();
     const md = (name: string, description: string) => `---\nname: ${name}\ndescription: ${description}\n---\n# ${name}`;
@@ -737,9 +771,9 @@ describe("private repositories", () => {
       auth: `Bearer ${APP_TOKEN}`,
     });
 
-    // `list`: the one skill a folder holds, to pick, nothing installed again.
+    // `list`: the one skill a folder holds, to pick, nothing installed again; it says it replaces the one installed.
     expect(await importSkillFromUrl(deps, f.owner.id, f.org.id, folder, { list: true })).toEqual({
-      choices: [{ path: "team/review", name: "review", description: "Revisa um pull request." }],
+      choices: [{ path: "team/review", name: "review", description: "Revisa um pull request.", replaces: "installed" }],
       via: "github_app",
     });
     expect(await listSkills(f.db, f.owner.id, f.org.id)).toMatchObject([{ name: "review", version: 1 }]);

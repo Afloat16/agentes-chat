@@ -698,9 +698,11 @@ export async function undoMessageActions(deps: AgentUndoDeps, userId: string, or
     .where(and(eq(agentActions.orgId, orgId), eq(agentActions.messageId, messageId)))
     .orderBy(desc(agentActions.createdAt));
   if (rows.length === 0) throw new NotFoundError("This message has no changes to undo", "action.not_found");
+  const open = rows.filter((a) => !a.undoneAt && a.undoableUntil.getTime() > now.getTime());
+  // A card's receipts can differ in who may undo them (a skill's is only an admin's): refused before any is undone.
+  for (const a of open) await requireMayUndo(deps.db, userId, a);
   const failed: { id: string; code: string; message: string }[] = [];
-  for (const a of rows) {
-    if (a.undoneAt || a.undoableUntil.getTime() <= now.getTime()) continue;
+  for (const a of open) {
     try {
       await toggle(deps, userId, orgId, a.id, "undo");
     } catch (error) {

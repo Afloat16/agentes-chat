@@ -4285,6 +4285,8 @@ export interface SkillChoice {
   path: string;
   name: string;
   description: string;
+  /** A skill of this name is installed (it becomes a new version of it) or was removed (it comes back, on for nobody). */
+  replaces?: "installed" | "removed";
 }
 
 /** A skill a GitHub link holds that can't be installed: its folder and the server's refusal. */

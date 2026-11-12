@@ -9343,6 +9343,8 @@ export const en = {
     pickSkipped: "Can't be installed. {{reason}}",
     /** A pick named like a skill already installed: installing it makes a new version of that one, for every agent. */
     pickReplaces: "Replaces the installed skill {{name}}",
+    /** A pick named like a removed skill: it comes back under that name, on for none of its old agents. */
+    pickReplacesRemoved: "Replaces the removed skill {{name}}",
     /** Opened from an agent's card (`offer_install_skill`): what installs goes on for that agent, unless unchecked. */
     forAgent_one: "Turn it on for {{agent}}",
     forAgent_other: "Turn them on for {{agent}}",

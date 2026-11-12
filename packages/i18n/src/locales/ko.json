@@ -8839,6 +8839,7 @@
     "pickMissing": "스킬을 하나 이상 고르세요.",
     "pickSkipped": "설치할 수 없어요. {{reason}}",
     "pickReplaces": "이미 설치된 {{name}} 스킬을 대체해요",
+    "pickReplacesRemoved": "삭제된 {{name}} 스킬을 대체해요",
     "forAgent_other": "{{agent}}에게 켜기",
     "installedMany": "스킬 {{count}}개를 설치했어요.",
     "zipHelp": "최상위에 SKILL.md가 있는 .zip 파일이에요.",

@@ -8890,6 +8890,7 @@
     "pickMissing": "请至少选择一个技能。",
     "pickSkipped": "无法安装。{{reason}}",
     "pickReplaces": "将替换已安装的技能 {{name}}",
+    "pickReplacesRemoved": "将替换已移除的技能 {{name}}",
     "forAgent_other": "为 {{agent}} 开启",
     "installedMany": "已安装 {{count}} 个技能。",
     "zipHelp": "根目录中包含 SKILL.md 的 .zip 文件。",

@@ -9202,6 +9202,7 @@
     "pickMissing": "Wähle mindestens einen Skill.",
     "pickSkipped": "Kann nicht installiert werden. {{reason}}",
     "pickReplaces": "Ersetzt den installierten Skill {{name}}",
+    "pickReplacesRemoved": "Ersetzt den entfernten Skill {{name}}",
     "forAgent_one": "Für {{agent}} einschalten",
     "forAgent_other": "Für {{agent}} einschalten",
     "installedMany": "{{count}} Skills installiert.",

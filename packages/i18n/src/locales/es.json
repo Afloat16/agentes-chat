@@ -9482,6 +9482,7 @@
     "pickMissing": "Elige al menos una habilidad.",
     "pickSkipped": "No se puede instalar. {{reason}}",
     "pickReplaces": "Reemplaza la habilidad {{name}} ya instalada",
+    "pickReplacesRemoved": "Reemplaza la habilidad {{name}} eliminada",
     "forAgent_one": "Activarla para {{agent}}",
     "forAgent_many": "Activarlas para {{agent}}",
     "forAgent_other": "Activarlas para {{agent}}",

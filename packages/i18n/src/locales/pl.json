@@ -9843,6 +9843,7 @@
     "pickMissing": "Wybierz co najmniej jedną umiejętność.",
     "pickSkipped": "Nie można zainstalować. {{reason}}",
     "pickReplaces": "Zastępuje zainstalowaną umiejętność {{name}}",
+    "pickReplacesRemoved": "Zastępuje usuniętą umiejętność {{name}}",
     "forAgent_one": "Włącz ją dla {{agent}}",
     "forAgent_few": "Włącz je dla {{agent}}",
     "forAgent_many": "Włącz je dla {{agent}}",

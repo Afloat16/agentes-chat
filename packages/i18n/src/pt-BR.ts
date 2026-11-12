@@ -9367,6 +9367,7 @@ export const ptBR = {
     pickMissing: "Escolha pelo menos uma skill.",
     pickSkipped: "Não dá para instalar. {{reason}}",
     pickReplaces: "Substitui a skill {{name}} já instalada",
+    pickReplacesRemoved: "Substitui a skill {{name}} removida",
     forAgent_one: "Fica ligada para {{agent}}",
     forAgent_other: "Ficam ligadas para {{agent}}",
     installedMany: "{{count}} skills instaladas.",

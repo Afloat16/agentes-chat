@@ -389,7 +389,8 @@ it off for that agent. The owner decided that agents edit their own settings whe
   and wrote it themselves: the agent may be acting on text from an email, an issue or a web page, so it never widens
   its own settings without a person's click. Its card gets no look from the right hand either (ADR 0139 §2 already keeps
   an agent's own settings the person's). A receipt that changed skills, from this card or the right hand's, is undone
-  or redone only by who manages agents (`requireMayUndo`): never the agent's owner, as on its page.
+  or redone only by who manages agents (`requireMayUndo`): never the agent's owner, as on its page. "Desfazer tudo"
+  checks every receipt of the card before undoing any, so it never undoes part of one and then refuses.
 - **What it says.** The capabilities and the tool tell an agent that lacks a skill, a channel, a model or another
   setting of its own to offer the card, never to list manual steps or say it can't ask. `load_skill` on a skill
   installed here but off for the agent, and `offer_install_skill` on a link already installed, point to the card.
@@ -398,10 +399,14 @@ it off for that agent. The owner decided that agents edit their own settings whe
   agent (`forAgentId`) only when it is checked and only on an install from the card's own link: a link typed over it, a
   repository picked under "Escolher do GitHub conectado", or a link to the screen that merely names an agent turns
   nothing on (`cardInstallAgent`: the card that opened it is kept in this tab's session on the web, through connecting
-  GitHub, and in memory on the phone). A pick named like an installed skill says it replaces it ("Substitui a skill X
-  já instalada"), since installing it makes a new version of that skill for every agent. The server turns it on when
-  the installer may change the agent's skills, never for an agent archived or gone nor the right hand, and announces
-  `agents.changed`. Otherwise the install still stands and the agent asks for it on its own card.
+  GitHub, and in memory on the phone). The box shows only for a live agent other than the right hand, the ones the
+  server would turn it on for. The server marks each pick that takes a name already used (`replaces`), and the dialog
+  says so: "Substitui a skill X já instalada" (it becomes a new version for every agent that has it) or "Substitui a
+  skill X removida". A removed skill installed again from a link comes back on for none of its old agents (their
+  assignments turn off, `source: "url"`): the link may hold anything under that name. A restore, or a save by hand or
+  from a .zip, still brings its agents back. The server turns it on for the card's agent when the installer may change
+  its skills, never for an agent archived or gone nor the right hand, and announces `agents.changed`. Otherwise the
+  install still stands and the agent asks for it on its own card.
 
 ### Consequences
 

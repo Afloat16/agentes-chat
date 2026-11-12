@@ -8845,6 +8845,7 @@
     "pickMissing": "スキルを1つ以上選んでください。",
     "pickSkipped": "インストールできません。{{reason}}",
     "pickReplaces": "インストール済みのスキル {{name}} を置き換えます",
+    "pickReplacesRemoved": "削除されたスキル {{name}} を置き換えます",
     "forAgent_other": "{{agent}} でオンにする",
     "installedMany": "{{count}}件のスキルをインストールしました。",
     "zipHelp": "ルートにSKILL.mdがある.zip。",
