@@ -289,7 +289,10 @@ html:not([data-pointer]) .routines-horizon__label:focus-visible {
   font-size: 14.5px;
   letter-spacing: -0.01em;
   text-align: left;
-  overflow-wrap: anywhere;
+  /* One line: a long name ends in "…" and its tooltip says it whole. */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   cursor: pointer;
   border-radius: 4px;
 }

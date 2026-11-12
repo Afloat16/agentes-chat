@@ -894,7 +894,7 @@ function RoutineRow({
     >
       <span className="routine-row__who">{actors.avatar(agent, "sm")}</span>
       <div className="routine-row__main">
-        <button type="button" className="routine-row__title" title={r.name} aria-expanded={selected} onClick={onOpen}>
+        <button type="button" className="routine-row__title" title={title} aria-expanded={selected} onClick={onOpen}>
           {title}
         </button>
         <span className="routine-row__sub">

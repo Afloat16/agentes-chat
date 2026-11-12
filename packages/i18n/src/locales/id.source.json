@@ -18541,6 +18541,33 @@
   "routines.horizon.laneNone": {
     "value": "{{name}}: nothing in the next hours"
   },
+  "routines.horizon.agentRoutines": {
+    "value": {
+      "one": "{{count}} routine",
+      "other": "{{count}} routines"
+    }
+  },
+  "routines.horizon.andMore": {
+    "value": "{{name}} and {{count}} more"
+  },
+  "routines.horizon.pick": {
+    "value": "See {{name}}'s routines"
+  },
+  "routines.horizon.restLater": {
+    "value": {
+      "one": "{{count}} more agent runs later",
+      "other": "{{count}} more agents run later"
+    }
+  },
+  "routines.horizon.restIdle": {
+    "value": {
+      "one": "{{count}} with nothing in the next {{hours}} hours",
+      "other": "{{count}} with nothing in the next {{hours}} hours"
+    }
+  },
+  "routines.horizon.showAll": {
+    "value": "Show all"
+  },
   "routines.horizon.legend.ok": {
     "value": "answered"
   },

@@ -7410,6 +7410,12 @@
       "now": "지금",
       "lane": "{{name}}: 다음 실행 {{when}}",
       "laneNone": "{{name}}: 다음 몇 시간 동안 일정 없음",
+      "agentRoutines_other": "루틴 {{count}}개",
+      "andMore": "{{name}} 외 {{count}}개",
+      "pick": "{{name}}의 루틴 보기",
+      "restLater_other": "에이전트 {{count}}개는 나중에 실행",
+      "restIdle_other": "{{count}}개는 다음 {{hours}}시간 동안 일정 없음",
+      "showAll": "모두 보기",
       "legend": {
         "ok": "답함",
         "silent": "새 소식 없음",
