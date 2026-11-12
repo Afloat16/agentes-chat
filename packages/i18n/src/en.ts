@@ -385,6 +385,60 @@ export const en = {
       say: "looks after billing",
     },
   },
+  /** Where a workspace lives: the Cloud or one's own server (sign-in's Change, the desktop app's first screen). */
+  hosting: {
+    title: "Where does your workspace live?",
+    lead: "The app is the same. What changes is who looks after the server.",
+    recommended: "Recommended",
+    free: "Free · open source",
+    cloud: {
+      name: "agentes.chat Cloud",
+      short: "Always on, nothing to install.",
+      on: "The agents' computer always on",
+      care: "Updates and backups are on us",
+      ready: "Ready in minutes, nothing to install",
+      price: "Monthly plan per workspace",
+      continue: "Continue on Cloud",
+      enter: "Sign in to Cloud",
+    },
+    own: {
+      name: "On your own server",
+      short: "You install it, update it and back it up.",
+      server: "You look after the server and Postgres",
+      care: "Updates and backups are yours",
+      off: "The agents stop when it's off",
+      license: "Free forever, AGPL license",
+      continue: "Continue on my server",
+      address: "Server address",
+      connect: "Connect",
+      invalid: "That isn't an address. Write it as in the browser, for example agentes.example.com.",
+      unreachable: "We didn't find agentes.chat at {{host}}. Check the address and that the server is on.",
+      none: "Don't have one yet?",
+      noneLink: "See how to get yours, free",
+    },
+    get: {
+      title: "Get your own server",
+      server: "Install on a server",
+      serverText: "For a team, always on",
+      serverAction: "See the steps",
+      here: "Run it on your computer",
+      hereText: "For you or a small team, no Docker",
+      download: "Download the app",
+      how: "How it works",
+      runHere: "Run on this computer",
+      foot: "Rather not look after anything?",
+      footLink: "Use Cloud",
+    },
+    /** Where the workspace is, before its agents' count (sidebar) or in the workspace list. */
+    badge: {
+      cloud: "Cloud",
+      own: "Your server",
+      here: "On this computer",
+    },
+    whyPaid: "Why pay?",
+    whyPaidText:
+      "Cloud includes the agents' always-on computer and someone who keeps the server running. Running it on your own server is free.",
+  },
   auth: {
     email: "Email",
     password: "Password",
@@ -508,10 +562,13 @@ export const en = {
       continue: "Continue on this {{device}}",
       text: "You set up agentes.chat on this {{device}}: no password needed.",
     },
-    /** The line over the sign-in in the desktop app: which server it signs in to (ADR 0158). */
+    /** The line under every sign-in: which server it signs in to (ADR 0158). */
     server: {
       into: "Signing in to <b>{{server}}</b>",
       intoHere: "Signing in to the agentes.chat <b>on this {{device}}</b>",
+      intoCloud: "Signing in to <b>agentes.chat Cloud</b>",
+      /** Change's name for screen readers: the email's Change sits on the same screen. */
+      change: "Change server",
     },
     /** "Forgot password" on a server that sends no email (ADR 0158). */
     forgotHere: {
@@ -1201,7 +1258,8 @@ export const en = {
         "A link reads up to 200 files and 8 MB. To bring the rest, download the folder and drop it here.",
       systemFiles_one: "{{count}} system file left out",
       systemFiles_other: "{{count}} system files left out",
-      systemFilesHelp: "Dependencies, caches and folders like node_modules and .git. We only read what belongs to the agents.",
+      systemFilesHelp:
+        "Dependencies, caches and folders like node_modules and .git. We only read what belongs to the agents.",
       never: "Keys, passwords and chat history never come along.",
       go_one: "Import {{count}} item",
       go_other: "Import {{count}} items",
@@ -1267,9 +1325,12 @@ export const en = {
         empty: "There's nothing to read there. Check that you picked the right folder or file.",
         tooLarge: "It's too big to read here. Try just the agents' folder, without the rest.",
         limit: {
-          files: "Leaving out system files, that's {{have}} files. One import reads up to {{max}}. Drop just the agents' folder, without the rest.",
-          bytes: "{{name}} is {{have}}. One import opens up to {{max}}. Drop just the agents' folder, without the rest.",
-          unpacked: "Unpacked, it comes to {{have}}. One import reads up to {{max}}. Drop just the agents' folder, without the rest.",
+          files:
+            "Leaving out system files, that's {{have}} files. One import reads up to {{max}}. Drop just the agents' folder, without the rest.",
+          bytes:
+            "{{name}} is {{have}}. One import opens up to {{max}}. Drop just the agents' folder, without the rest.",
+          unpacked:
+            "Unpacked, it comes to {{have}}. One import reads up to {{max}}. Drop just the agents' folder, without the rest.",
           text: "The pasted text is {{have}}. One import reads up to {{max}}. Ask for the export in parts, one agent at a time.",
           file: "{{name}} is {{have}}. One import reads up to {{max}} per file. Ask for the export in parts, one agent at a time.",
         },

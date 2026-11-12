@@ -737,6 +737,25 @@ html:not([data-pointer]) .consult-pair__row:focus-visible {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* The workspace's place, then its counts, on one line: the place keeps its words, the counts give way. */
+.sidebar__org-line {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
+}
+.sidebar__org-where {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+.sidebar__org-where + .sidebar__org-meta::before {
+  content: "· ";
+}
 .sidebar__group {
   display: flex;
   flex-direction: column;

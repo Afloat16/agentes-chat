@@ -202,3 +202,13 @@ export async function checkServer(server: string, fetchFn: FetchLike = fetch, ti
   const own = normalizeServer(here.instance.url ?? "", { allowHttp: isLoopback(server) ? "loopback" : false });
   return own && own !== server ? askInstance(own, fetchFn, timeoutMs) : here;
 }
+
+/** Where a workspace lives, said before its counts: the Cloud, the server the desktop app runs here, or one's own. */
+export type ServerPlace = "cloud" | "here" | "own";
+
+/** The place of a server from `GET /api/instance`'s `cloud` (and, in the desktop app, whether it is the app's own). */
+export const serverPlace = (cloud: boolean, thisComputer = false): ServerPlace =>
+  cloud ? "cloud" : thisComputer ? "here" : "own";
+
+/** Each place's line icon, the same on every surface. */
+export const SERVER_PLACE_ICON = { cloud: "cloud", here: "computer", own: "globe" } as const;

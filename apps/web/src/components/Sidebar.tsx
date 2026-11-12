@@ -48,6 +48,7 @@ import { can, makesAgents, managesChannel } from "@agenteschat/client/lib/permis
 import { AVAILABILITIES, isOutOfOffice, presenceOfAvailability, statusEndNote } from "@agenteschat/client/lib/presence";
 import { recentDms } from "@agenteschat/client/lib/recent";
 import { isRightHand, rightHandSeenKey } from "@agenteschat/client/lib/right-hand";
+import { SERVER_PLACE_ICON } from "@agenteschat/client/lib/server";
 import { inSidebarList, sidebarItemOrder, sidebarPlace } from "@agenteschat/client/lib/sidebar-items";
 import { AGENT_SORTS, sortAgents, splitPinned } from "@agenteschat/client/lib/sidebar-view";
 import { badgeCount, looksUnread } from "@agenteschat/client/lib/unread";
@@ -105,6 +106,7 @@ import { useApi } from "@/api/context";
 import { useAuth } from "@/auth/context";
 import { useDirectory } from "@/hooks/useDirectory";
 import { agentLine, availabilityOf, personLine, useAgentPresence, usePersonPresence } from "@/hooks/usePresence";
+import { useServerPlace } from "@/hooks/useServerPlace";
 import { useSidebarPins } from "@/hooks/useSidebarPins";
 import { useUnreadTitle } from "@/hooks/useUnreadTitle";
 import { useWorkspaceGroups } from "@/hooks/useWorkspaceGroups";
@@ -2337,6 +2339,7 @@ function WorkspaceMenu({ summary }: { summary: string | null }) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const dir = useDirectory(org.id);
+  const place = useServerPlace();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   return (
@@ -2352,7 +2355,18 @@ function WorkspaceMenu({ summary }: { summary: string | null }) {
         <OrgMark logo={org.logo} className="sidebar__org-mark" />
         <span className="sidebar__org-text">
           <span className="sidebar__org-name">{org.name}</span>
-          {summary && <span className="sidebar__org-meta">{summary}</span>}
+          {(place || summary) && (
+            <span className="sidebar__org-line">
+              {/* Where it lives, before its counts: the Cloud, this computer or one's own server. */}
+              {place && (
+                <span className="sidebar__org-where">
+                  <Icon name={SERVER_PLACE_ICON[place]} size={14} />
+                  {t(`hosting.badge.${place}`)}
+                </span>
+              )}
+              {summary && <span className="sidebar__org-meta">{summary}</span>}
+            </span>
+          )}
         </span>
         <Icon name="chevronDown" size={16} />
       </button>
