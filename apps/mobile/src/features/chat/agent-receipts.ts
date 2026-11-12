@@ -186,16 +186,17 @@ export function markLabel(
 }
 
 /**
- * Where someone else's receipt mark goes: the end of the name line of the turn its message ends. A grouped row has
- * no name line, and its text runs to the edge.
+ * The row that wears a receipt's mark: its own message's, a grouped one in its face's place or its bubble's corner.
+ * Only rows with neither (no faces, no bubbles) hand it to the name line of the turn they end.
  */
-export function turnHeadId(
+export function markRowId(
   rows: readonly { kind: string; message?: Message; grouped?: boolean }[],
   messageId: string,
+  look: { faces: boolean; bubbles: boolean },
 ): string | null {
   let at = rows.findIndex((r) => r.kind === "message" && r.message?.id === messageId);
   if (at < 0) return null;
-  while (at > 0 && rows[at]?.grouped && rows[at - 1]?.kind === "message") at--;
+  if (!look.faces && !look.bubbles) while (at > 0 && rows[at]?.grouped && rows[at - 1]?.kind === "message") at--;
   return rows[at]?.message?.id ?? null;
 }
 

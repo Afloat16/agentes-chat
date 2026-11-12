@@ -10,6 +10,7 @@ import {
 } from "@agenteschat/client";
 import { listNames } from "@agenteschat/client/lib/activity";
 import { failedRunFix, runFailureLine } from "@agenteschat/client/lib/errors";
+import { sentAtLine } from "@agenteschat/client/lib/format";
 import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { deciderOf } from "@agenteschat/client/lib/routing";
@@ -398,6 +399,7 @@ function ReceiptsSheet({
           <OpenPage href={helpUrl("who-answers", i18n.language)} label={t("routing.how")} />
         </>
       ) : null}
+      <Note icon="clock">{sentAtLine(t, i18n.language, m.createdAt)}</Note>
       {action ? (
         <Button
           variant={action === "connect" ? "primary" : "secondary"}

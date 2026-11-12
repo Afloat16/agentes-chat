@@ -12,7 +12,7 @@ import {
   useSteerState,
 } from "@agenteschat/client";
 import { errorText, runFailureLine } from "@agenteschat/client/lib/errors";
-import { joinNames } from "@agenteschat/client/lib/format";
+import { joinNames, sentAtLine } from "@agenteschat/client/lib/format";
 import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { retryAnswer } from "@agenteschat/client/lib/retry-answer";
@@ -295,6 +295,7 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
           <HelpLink slug="who-answers">{t("routing.how")}</HelpLink>
         </div>
       )}
+      <div className="receipt-sent">{sentAtLine(t, i18n.language, message.createdAt)}</div>
     </Popover>
   );
 

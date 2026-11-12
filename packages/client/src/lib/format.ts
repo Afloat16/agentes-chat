@@ -192,6 +192,18 @@ export function whenAt(t: TFunction, locale: string, iso: string, now = new Date
   return formatShortDate(locale, iso);
 }
 
+/** "Enviada hoje às 15:06", "Enviada ontem às 9:12", "Enviada em 12 out às 18:40" (a receipt's last line). */
+export function sentAtLine(t: TFunction, locale: string, iso: string, now = new Date()) {
+  const days = daysBetween(iso, now);
+  const time = formatTime(locale, iso);
+  if (days === 0) return t("receipts.sentToday", { time });
+  if (days === 1) return t("receipts.sentYesterday", { time });
+  return t("receipts.sentOn", {
+    date: formatShortDate(locale, iso, new Date(iso).getFullYear() !== now.getFullYear()),
+    time,
+  });
+}
+
 /** A time ahead, weekday and time on this device's clock: "seg 20 out, 09:00". */
 export const nextLabel = (locale: string, iso: string) =>
   new Intl.DateTimeFormat(locale, {
