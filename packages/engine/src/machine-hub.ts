@@ -8,6 +8,7 @@ import {
   type ErrorReporter,
   HEARTBEAT_MS,
   HELLO_TIMEOUT_MS,
+  IPHONE_WIFI_PROTOCOL,
   type MachineErrorCode,
   type MachineOp,
   type MachineReplies,
@@ -368,8 +369,9 @@ export function isNewWork(request: MachineRequest) {
     case "phone.pair.cancel":
     // Pausing or resuming the computer itself: a resume must reach a paused one.
     case "pause.set":
-    // A person's guide asking the computer to look for a phone.
+    // A person's guide asking the computer to look for a phone, or its owner picking an iPhone on its Wi-Fi.
     case "phone.look":
+    case "phone.wifi":
       return false;
     case "secret":
       return request.action !== "discard" && request.action !== "remove" && request.action !== "activate";
@@ -1489,7 +1491,11 @@ export function createMachineHub(deps: MachineHubDeps) {
     ): Promise<MachineReplies[Op]> {
       const conn = local.get(machineId);
       const phoneOp = request.op.startsWith("phone.");
-      const phonesNeed = request.op.startsWith("phone.pair.") ? PHONE_PAIRING_PROTOCOL : PHONES_PROTOCOL;
+      const phonesNeed = request.op.startsWith("phone.pair.")
+        ? PHONE_PAIRING_PROTOCOL
+        : request.op === "phone.wifi"
+          ? IPHONE_WIFI_PROTOCOL
+          : PHONES_PROTOCOL;
       if (conn) {
         if (phoneOp && conn.protocol < phonesNeed) throw phonesTooOld(conn.name);
         if (isNewWork(request)) {

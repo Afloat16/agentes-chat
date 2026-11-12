@@ -375,6 +375,8 @@ export function applyWorkspaceEvent(qc: QueryClient, orgId: string, event: { typ
     // Each channel's roster names them too, and so does an agent's open page.
     refreshChannelMembers(qc, orgId);
     readList(qc, `${orgId}:agent-pages`, { predicate: (q) => isAgentPart(q.queryKey, orgId, "detail") });
+    // The library and each agent's skills: an agent page saves its whole list, so a stale one would undo a card's.
+    readList(qc, `${orgId}:skills`, { queryKey: keys.skills(orgId) });
     return true;
   }
   if (event.type === "channels.changed") {

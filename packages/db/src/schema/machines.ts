@@ -521,7 +521,10 @@ export const machineFilePulls = pgTable(
 
 /** What a phone's host last said about it (`RunnerPhone` in the machine protocol, minus who holds it). */
 export interface MachinePhoneFacts {
-  /** `usb`, `wifi` (adb over the network) or `local` (an emulator or simulator on the host itself). */
+  /**
+   * `usb`, `wifi` (adb over the network, or an iPhone through its Mac's CoreDevice tunnel) or `local` (an emulator or
+   * simulator on the host itself).
+   */
   transport?: "usb" | "wifi" | "local";
   screen?: { width: number; height: number };
   abi?: string;

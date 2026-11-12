@@ -478,6 +478,8 @@ test("a system-mode runner (root) without workers does no agent work; machine-le
     // Pausing is the whole computer's, set by whoever runs it, not by one agent.
     "pause.set",
     "phone.look",
+    // The Mac's pick of iPhones on its Wi-Fi, kept beside the phones' locks.
+    "phone.wifi",
   ]);
 
   if (posix) {
