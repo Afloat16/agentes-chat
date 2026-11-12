@@ -760,7 +760,7 @@ html:not([data-pointer]) :is(a, button).dv-option:focus-visible {
 .dv-option--stretch:has(.dv-option__hit:hover) .dv-option__arrow {
   color: var(--ink);
 }
-.dv-option__hit:focus-visible {
+html:not([data-pointer]) .dv-option__hit:focus-visible {
   outline: none;
 }
 html:not([data-pointer]) .dv-option--stretch:has(.dv-option__hit:focus-visible) {
