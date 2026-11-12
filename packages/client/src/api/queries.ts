@@ -19,7 +19,14 @@ import type { ChoiceAnswer } from "../lib/choices";
 import { newerSetup } from "../lib/computer";
 import { CONSULT_CONVERSATION_POLL_MS, CONSULT_GROUP_POLL_MS, exchangeIds } from "../lib/consult-group";
 import { forPeople } from "../lib/consultations";
-import { PHONE_LOOK_MS, WIFI_IPHONES_POLL_MS, WIFI_PAIR_POLL_MS, wifiPairLive } from "../lib/devices";
+import {
+  PHONE_LOOK_MS,
+  WIFI_IPHONES_POLL_MS,
+  WIFI_PAIR_POLL_MS,
+  wifiPairLive,
+  XCODE_FIX_POLL_MS,
+  xcodeFixLive,
+} from "../lib/devices";
 import { answerWithin, noAnswer, sendFailureOf, sendWaits } from "../lib/errors";
 import { ISSUES_VIEW_DEFAULT, type IssuesViewChange, withIssuesView } from "../lib/issues-view";
 import { LoginReadError, loginReadPasses } from "../lib/machines";
@@ -6624,6 +6631,40 @@ export function useWifiIphones(orgId: string, machineId: string | null, on: bool
     },
   });
   return { available: on ? (list.data?.available ?? []) : [], pick };
+}
+
+/**
+ * A Mac fixing its own Xcode for the iPhone guide (`on`: the guide shows the Xcode step to who may manage the Mac):
+ * where the last fix stands, asked every 1.5 s while macOS's password window is open or the commands run. Once done,
+ * the devices refetch: the Mac has already looked at Xcode again.
+ */
+export function useXcodeFix(orgId: string, machineId: string | null, on: boolean) {
+  const api = useApi();
+  const qc = useQueryClient();
+  const key = keys.xcodeFix(orgId, machineId ?? "");
+  const state = useQuery({
+    queryKey: key,
+    queryFn: () => api.devices.xcodeFix(orgId, machineId ?? ""),
+    enabled: on && machineId !== null,
+    retry: false,
+    refetchInterval: (q) => (xcodeFixLive(q.state.data?.fix) ? XCODE_FIX_POLL_MS : false),
+    meta: { quiet: true },
+  });
+  const done = state.data?.fix?.state === "done";
+  useEffect(() => {
+    if (done) void qc.invalidateQueries({ queryKey: keys.devices(orgId) });
+  }, [done, qc, orgId]);
+  const start = useMutation({
+    mutationFn: (kind: "select" | "update") => api.devices.startXcodeFix(orgId, machineId ?? "", kind),
+    meta: { silent: true },
+    onSuccess: (data) => qc.setQueryData(key, data),
+  });
+  const cancel = useMutation({
+    mutationFn: () => api.devices.cancelXcodeFix(orgId, machineId ?? ""),
+    meta: { silent: true },
+    onSuccess: (data) => qc.setQueryData(key, data),
+  });
+  return { view: on ? state.data : undefined, start, cancel };
 }
 
 /**

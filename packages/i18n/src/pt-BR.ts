@@ -14152,6 +14152,30 @@ export const ptBR = {
       xcodeCommandLineTools:
         "O Xcode está em {{mac}}, mas o Mac ainda usa as Command Line Tools. Rode isto no Terminal, ele pede a senha do Mac.",
       xcodeLicense: "O Xcode em {{mac}} espera você aceitar a licença. Rode isto no Terminal, ele pede a senha do Mac.",
+      xcodeFix: {
+        commandLineTools:
+          "O Xcode está em {{mac}}, mas o Mac ainda usa as Command Line Tools. Corrigir pede a senha do Mac, numa janela que abre nesse Mac.",
+        license:
+          "O Xcode em {{mac}} espera você aceitar a licença. Corrigir pede a senha do Mac, numa janela que abre nesse Mac.",
+        fix: "Corrigir para mim",
+        update: "Atualizar para mim",
+        terminal: "Prefiro rodar no Terminal",
+        asking: "Digite a senha em {{mac}}. O macOS abriu a janela na tela dele.",
+        running: "Corrigindo o Xcode em {{mac}}. Leva cerca de um minuto.",
+        updating: "Atualizando o Xcode em {{mac}}.",
+        phases: {
+          select: "Xcode em uso",
+          license: "Licença aceita",
+          firstLaunch: "Componentes instalados",
+        },
+        done: "Pronto. {{mac}} confere o Xcode de novo.",
+        missed: "A senha não foi digitada em {{mac}}. Nada mudou. Tente de novo quando estiver nesse Mac.",
+        failed: "Não deu para corrigir em {{mac}}: {{message}}",
+        failedAny: "Não deu para corrigir em {{mac}}.",
+        outdated:
+          "Atualize o app agentes.chat em {{mac}} para corrigir com um clique. Ou rode isto no Terminal dele, ele pede a senha do Mac.",
+        follows: "Esta janela segue sozinha quando o Mac terminar.",
+      },
       getXcode: "Baixar o Xcode",
       toolsDone: "Baixadas pelo Mac",
       toolsText: "O Mac baixa sozinho, uns 8 GB.",

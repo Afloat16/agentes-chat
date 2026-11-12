@@ -1231,6 +1231,41 @@ body[data-window="popover"] {
 .dk-ip__tip b {
   font-weight: 600;
 }
+/* A step's actions side by side, wrapping under each other when the window is narrow. */
+.dk-ip__act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* The Terminal way for Xcode: the commands as they're pasted, selectable. */
+.dk-ip__cmd {
+  align-self: stretch;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--plate);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-user-select: text;
+  user-select: text;
+}
+/* This Mac fixing its Xcode: each of its three commands, ticked once done. */
+.dk-ip__phase {
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.dk-ip__phase[data-done] {
+  color: var(--ink2);
+}
+.dk-ip__phase[data-done] .ac-icon {
+  color: var(--ok);
+}
 /* An iPhone on this Mac's Wi-Fi: its line, then Use over Wi-Fi, side by side while they fit. */
 .dk-ip__wifi {
   display: flex;

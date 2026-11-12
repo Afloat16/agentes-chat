@@ -14502,6 +14502,27 @@
       "xcodeText": "Instala Xcode desde la App Store en {{mac}}. La configuración sigue cuando esté instalado.",
       "xcodeCommandLineTools": "Xcode está en {{mac}}, pero el Mac sigue usando las Command Line Tools. Ejecuta esto en Terminal, pedirá la contraseña del Mac.",
       "xcodeLicense": "Xcode en {{mac}} espera que aceptes su licencia. Ejecuta esto en Terminal, pedirá la contraseña del Mac.",
+      "xcodeFix": {
+        "commandLineTools": "Xcode está en {{mac}}, pero el Mac aún usa las Command Line Tools. Arreglarlo pide la contraseña del Mac, en una ventana que se abre en ese Mac.",
+        "license": "Xcode en {{mac}} espera que aceptes su licencia. Arreglarlo pide la contraseña del Mac, en una ventana que se abre en ese Mac.",
+        "fix": "Arréglalo por mí",
+        "update": "Actualízalo por mí",
+        "terminal": "Prefiero usar Terminal",
+        "asking": "Escribe la contraseña en {{mac}}. macOS abrió su ventana en la pantalla de ese Mac.",
+        "running": "Arreglando Xcode en {{mac}}. Tarda alrededor de un minuto.",
+        "updating": "Actualizando Xcode en {{mac}}.",
+        "phases": {
+          "select": "Xcode en uso",
+          "license": "Licencia aceptada",
+          "firstLaunch": "Componentes instalados"
+        },
+        "done": "Listo. {{mac}} vuelve a revisar Xcode.",
+        "missed": "No se escribió la contraseña en {{mac}}. Nada cambió. Inténtalo de nuevo cuando estés en ese Mac.",
+        "failed": "No se pudo arreglar en {{mac}}: {{message}}",
+        "failedAny": "No se pudo arreglar en {{mac}}.",
+        "outdated": "Actualiza la app agentes.chat en {{mac}} para arreglarlo con un clic. O ejecuta esto en su Terminal, pide la contraseña del Mac.",
+        "follows": "Esta ventana sigue sola cuando el Mac termine."
+      },
       "getXcode": "Obtener Xcode",
       "toolsDone": "Descargadas por la Mac",
       "toolsText": "La Mac las descarga, unos 8 GB.",

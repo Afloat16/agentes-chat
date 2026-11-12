@@ -535,6 +535,81 @@ describe("Connect a device", () => {
     expect(dialog.querySelector(".ac-setpath")?.textContent).toBe("SettingsPrivacy & SecurityDeveloper Mode");
   });
 
+  test("an iPhone: Xcode installed but not in use, fixed by the Mac behind its password, or the Terminal way", async () => {
+    const blocked = (xcodeBlocked: string, manage = true) => {
+      const list = acmeDevices();
+      const mac = list.devices.find((d) => d.id === MAC);
+      if (!mac) throw new Error("fixture");
+      delete mac.toolchains.xcode;
+      Object.assign(mac.toolchains, { xcodeBlocked });
+      mac.mayManage = manage;
+      mac.phones = mac.phones.filter((p) => p.id !== IPHONE);
+      return list;
+    };
+    const app = await open(`/org/${ORG_ID}/settings/devices/iphone-setup?computer=${MAC}`, (devices) =>
+      devices.set(blocked("command_line_tools")),
+    );
+    await settle(6);
+    const dialog = () => screen().getByRole("dialog", { name: "Connect an iPhone" });
+    const step = () => dialog().querySelector('.dv-step[data-state="current"], .dv-step[data-state="needs"]');
+    const inStep = () => within(step() as HTMLElement);
+    // The button first, saying the password window opens on that Mac; no "Install Xcode".
+    expect(step()?.textContent).toContain(
+      "Xcode is on Sam's MacBook Pro, but the Mac still uses the Command Line Tools. Fixing it asks for the Mac's password, in a window that opens on that Mac.",
+    );
+    expect(inStep().queryByRole("link", { name: "Get Xcode" })).toBeNull();
+    expect(step()?.querySelector(".machine-command")).toBeNull();
+    const fixIt = inStep().getByRole("button", { name: "Fix it for me" });
+    const terminal = inStep().getByRole("button", { name: "I'd rather use Terminal" });
+    expect(fixIt.className).toContain("ac-btn--sm");
+    expect(terminal.className).toContain("ac-btn--sm");
+
+    // The Terminal way: one paste for both causes, and the window goes on by itself.
+    await click(terminal);
+    expect(step()?.querySelector(".machine-command__code")?.textContent).toBe(
+      "sudo xcode-select -s /Applications/Xcode.app\nsudo xcodebuild -license accept\nsudo xcodebuild -runFirstLaunch",
+    );
+    expect(step()?.textContent).toContain("This window moves on by itself once the Mac is done.");
+
+    // Fix it: the password window on the Mac, then the three commands, then done.
+    await click(inStep().getByRole("button", { name: "Fix it for me" }));
+    expect(calls(app.state, "devices.startXcodeFix").at(-1)?.args).toEqual([ORG_ID, MAC, "select"]);
+    expect(step()?.textContent).toContain(
+      "Type the password on Sam's MacBook Pro. macOS opened its window on that Mac's screen.",
+    );
+    await click(inStep().getByRole("button", { name: "Cancel" }));
+    expect(calls(app.state, "devices.cancelXcodeFix")).toHaveLength(1);
+    expect(step()?.textContent).toContain("The password wasn't typed on Sam's MacBook Pro. Nothing changed.");
+    expect(inStep().getByRole("button", { name: "Try again" })).toBeTruthy();
+    app.devices.setXcodeFix({ fix: { kind: "select", state: "running", step: 1 } });
+    await refetch(app.services);
+    expect(step()?.textContent).toContain("Fixing Xcode on Sam's MacBook Pro. It takes about a minute.");
+    expect(
+      [...(step()?.querySelectorAll(".dv-fix-phases > li") ?? [])].map((l) => l.hasAttribute("data-done")),
+    ).toEqual([true, false, false]);
+    // The Mac's own error line, however long and unbroken, wraps inside the step.
+    const long = `xcodebuild:/Applications/Xcode.app/Contents/Developer/${"Platforms/".repeat(20)}error-69`;
+    app.devices.setXcodeFix({ fix: { kind: "select", state: "failed", step: 1, message: long } });
+    await refetch(app.services);
+    expect(step()?.textContent).toContain(`Couldn't fix it on Sam's MacBook Pro: ${long}`);
+
+    // A Mac whose app is too old: update it, or the command.
+    app.devices.setXcodeFix({ fix: null, update: true });
+    await refetch(app.services);
+    expect(step()?.textContent).toContain("Update the agentes.chat app on Sam's MacBook Pro to fix it with one click.");
+    expect(step()?.querySelector(".machine-command")).toBeTruthy();
+    expect(inStep().queryByRole("button", { name: "Fix it for me" })).toBeNull();
+
+    // Someone who doesn't manage the Mac: the cause and the command, no button.
+    app.devices.setXcodeFix({ fix: null });
+    app.devices.set(blocked("license", false));
+    await refetch(app.services);
+    expect(step()?.textContent).toContain(
+      "Xcode on Sam's MacBook Pro waits for its license to be accepted. Run this in Terminal",
+    );
+    expect(inStep().queryByRole("button", { name: "Fix it for me" })).toBeNull();
+  });
+
   test("an iPhone: each state has its way out, an old one ends the guide, a still step says why", async () => {
     type Status = PhoneDevice["status"];
     /** The fixture with Sam's iPhone in `status` (null: unplugged) and the Mac's toolchains topped up. */
@@ -566,6 +641,10 @@ describe("Connect a device", () => {
       "Sam's iPhone 16 runs iOS 27.1 and Xcode on Sam's MacBook Pro knows iOS 26.2 at most. Install Xcode 27, then run this in Terminal.",
     );
     expect(step()?.querySelector(".machine-command__code")?.textContent).toBe("xcrun devicectl manage ddis update");
+    // Or the Mac gets them itself: no password, and the step says it's under way.
+    await click(within(step() as HTMLElement).getByRole("button", { name: "Update it for me" }));
+    expect(calls(app.state, "devices.startXcodeFix").at(-1)?.args).toEqual([ORG_ID, MAC, "update"]);
+    expect(step()?.textContent).toContain("Updating Xcode on Sam's MacBook Pro.");
 
     // Below iOS 17: the guide ends at being connected, says why, and nothing spins.
     await show(iphoneAs({ kind: "unsupported", reason: "os_too_old" }, { osVersion: "16.7.10" }));
@@ -575,24 +654,6 @@ describe("Connect a device", () => {
     // devicectl names no version for some of them.
     await show(iphoneAs({ kind: "unsupported", reason: "os_too_old" }, { osVersion: "" }));
     expect(step()?.textContent).toContain("Sam's iPhone 16 runs iOS 16 or older, and agents need iOS 17 or newer.");
-
-    // Xcode installed but the Mac still on the Command Line Tools: why, and the command, not "Install Xcode".
-    const blocked = (xcodeBlocked: string) => {
-      const list = iphoneAs(null, {}, { xcodeBlocked });
-      for (const d of list.devices) if (d.id === MAC) delete d.toolchains.xcode;
-      return list;
-    };
-    await show(blocked("command_line_tools"));
-    expect(step()?.textContent).toContain(
-      "Xcode is on Sam's MacBook Pro, but the Mac still uses the Command Line Tools. Run this in Terminal",
-    );
-    expect(step()?.querySelector(".machine-command__code")?.textContent).toBe(
-      "sudo xcode-select -s /Applications/Xcode.app/Contents/Developer",
-    );
-    expect(within(step() as HTMLElement).queryByRole("link", { name: "Get Xcode" })).toBeNull();
-    await show(blocked("license"));
-    expect(step()?.textContent).toContain("Xcode on Sam's MacBook Pro waits for its license to be accepted.");
-    expect(step()?.querySelector(".machine-command__code")?.textContent).toBe("sudo xcodebuild -license accept");
 
     // Xcode lists an account that shows no team yet: how to get one, not "sign in".
     await show(iphoneAs(null, {}, { appleAccount: "no_team" }));

@@ -13606,6 +13606,27 @@
       "xcodeText": "{{mac}}에서 App Store로 Xcode를 설치하세요. 설치되면 설정이 이어져요.",
       "xcodeCommandLineTools": "{{mac}}에 Xcode가 있지만 Mac은 아직 Command Line Tools를 쓰고 있어요. 터미널에서 이것을 실행하세요. Mac 암호를 물어봐요.",
       "xcodeLicense": "{{mac}}의 Xcode가 라이선스 동의를 기다리고 있어요. 터미널에서 이것을 실행하세요. Mac 암호를 물어봐요.",
+      "xcodeFix": {
+        "commandLineTools": "{{mac}}에 Xcode가 있지만 Mac은 아직 Command Line Tools를 사용하고 있어요. 고치려면 Mac 암호가 필요하며, 그 Mac에서 창이 열려요.",
+        "license": "{{mac}}의 Xcode가 라이선스 동의를 기다리고 있어요. 고치려면 Mac 암호가 필요하며, 그 Mac에서 창이 열려요.",
+        "fix": "대신 고쳐 주기",
+        "update": "대신 업데이트하기",
+        "terminal": "터미널에서 실행할게요",
+        "asking": "{{mac}}에서 암호를 입력하세요. macOS가 그 Mac 화면에 창을 열었어요.",
+        "running": "{{mac}}에서 Xcode를 고치는 중이에요. 1분 정도 걸려요.",
+        "updating": "{{mac}}에서 Xcode를 업데이트하는 중이에요.",
+        "phases": {
+          "select": "Xcode 사용 중",
+          "license": "라이선스 동의됨",
+          "firstLaunch": "구성 요소 설치됨"
+        },
+        "done": "완료했어요. {{mac}}이 Xcode를 다시 확인해요.",
+        "missed": "{{mac}}에서 암호가 입력되지 않았어요. 바뀐 것은 없어요. 그 Mac 앞에 있을 때 다시 시도하세요.",
+        "failed": "{{mac}}에서 고치지 못했어요: {{message}}",
+        "failedAny": "{{mac}}에서 고치지 못했어요.",
+        "outdated": "{{mac}}의 agentes.chat 앱을 업데이트하면 클릭 한 번으로 고칠 수 있어요. 또는 그 Mac의 터미널에서 이것을 실행하세요. Mac 암호를 물어봐요.",
+        "follows": "Mac이 끝나면 이 창은 알아서 다음으로 넘어가요."
+      },
       "getXcode": "Xcode 받기",
       "toolsDone": "Mac이 다운로드함",
       "toolsText": "Mac이 약 8GB를 다운로드해요.",

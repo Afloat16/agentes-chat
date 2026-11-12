@@ -14143,6 +14143,33 @@ export const en = {
       /** Shown above the command it means. */
       xcodeLicense:
         "Xcode on {{mac}} waits for its license to be accepted. Run this in Terminal, it asks for the Mac's password.",
+      xcodeFix: {
+        /** Apple's name "Command Line Tools" stays in English. Above "Fix it for me". */
+        commandLineTools:
+          "Xcode is on {{mac}}, but the Mac still uses the Command Line Tools. Fixing it asks for the Mac's password, in a window that opens on that Mac.",
+        license:
+          "Xcode on {{mac}} waits for its license to be accepted. Fixing it asks for the Mac's password, in a window that opens on that Mac.",
+        fix: "Fix it for me",
+        update: "Update it for me",
+        terminal: "I'd rather use Terminal",
+        asking: "Type the password on {{mac}}. macOS opened its window on that Mac's screen.",
+        running: "Fixing Xcode on {{mac}}. It takes about a minute.",
+        updating: "Updating Xcode on {{mac}}.",
+        /** The three things the fix does, each ticked when done. */
+        phases: {
+          select: "Xcode in use",
+          license: "License accepted",
+          firstLaunch: "Components installed",
+        },
+        done: "Done. {{mac}} checks Xcode again.",
+        missed: "The password wasn't typed on {{mac}}. Nothing changed. Try again when you're at that Mac.",
+        /** `message`: the Mac's own error line, in English. */
+        failed: "Couldn't fix it on {{mac}}: {{message}}",
+        failedAny: "Couldn't fix it on {{mac}}.",
+        outdated:
+          "Update the agentes.chat app on {{mac}} to fix it with one click. Or run this in its Terminal, it asks for the Mac's password.",
+        follows: "This window moves on by itself once the Mac is done.",
+      },
       getXcode: "Get Xcode",
       toolsDone: "Downloaded by the Mac",
       toolsText: "The Mac downloads them, about 8 GB.",

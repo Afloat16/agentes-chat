@@ -326,6 +326,22 @@ a.dv-row__detail {
   align-items: center;
   gap: var(--space-2);
 }
+/* A Mac fixing its own Xcode: its three commands on one line, each ticked once done, wrapping on a phone. */
+.dv-fix-phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-muted);
+}
+.dv-fix-phases > [data-done] {
+  color: var(--ink);
+}
+.dv-fix-phases > [data-done] > .ac-icon {
+  color: var(--ok);
+}
 /* This computer from a browser: Open the app with its words, then getting the app, under a line. */
 .dv-app {
   display: flex;

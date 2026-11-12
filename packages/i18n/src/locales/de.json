@@ -14111,6 +14111,27 @@
       "xcodeText": "Installiere Xcode aus dem App Store auf {{mac}}. Die Einrichtung geht weiter, sobald es da ist.",
       "xcodeCommandLineTools": "Xcode ist auf {{mac}}, aber der Mac nutzt noch die Command Line Tools. Führe das hier im Terminal aus, es fragt nach dem Passwort des Macs.",
       "xcodeLicense": "Xcode auf {{mac}} wartet darauf, dass seine Lizenz akzeptiert wird. Führe das hier im Terminal aus, es fragt nach dem Passwort des Macs.",
+      "xcodeFix": {
+        "commandLineTools": "Xcode ist auf {{mac}}, aber der Mac nutzt noch die Command Line Tools. Das Beheben fragt nach dem Passwort des Macs, in einem Fenster, das sich auf diesem Mac öffnet.",
+        "license": "Xcode auf {{mac}} wartet darauf, dass seine Lizenz akzeptiert wird. Das Beheben fragt nach dem Passwort des Macs, in einem Fenster, das sich auf diesem Mac öffnet.",
+        "fix": "Für mich beheben",
+        "update": "Für mich aktualisieren",
+        "terminal": "Lieber im Terminal",
+        "asking": "Gib das Passwort auf {{mac}} ein. macOS hat sein Fenster auf dem Bildschirm dieses Macs geöffnet.",
+        "running": "Xcode wird auf {{mac}} behoben. Das dauert etwa eine Minute.",
+        "updating": "Xcode wird auf {{mac}} aktualisiert.",
+        "phases": {
+          "select": "Xcode in Gebrauch",
+          "license": "Lizenz akzeptiert",
+          "firstLaunch": "Komponenten installiert"
+        },
+        "done": "Fertig. {{mac}} prüft Xcode erneut.",
+        "missed": "Auf {{mac}} wurde kein Passwort eingegeben. Nichts hat sich geändert. Versuch es noch einmal, wenn du an diesem Mac bist.",
+        "failed": "Konnte auf {{mac}} nicht behoben werden: {{message}}",
+        "failedAny": "Konnte auf {{mac}} nicht behoben werden.",
+        "outdated": "Aktualisiere die agentes.chat-App auf {{mac}}, um es mit einem Klick zu beheben. Oder führe das hier in seinem Terminal aus, es fragt nach dem Passwort des Macs.",
+        "follows": "Dieses Fenster geht von selbst weiter, sobald der Mac fertig ist."
+      },
       "getXcode": "Xcode holen",
       "toolsDone": "Vom Mac geladen",
       "toolsText": "Der Mac lädt sie herunter, etwa 8 GB.",

@@ -14583,6 +14583,27 @@
       "xcodeText": "Installa Xcode dall'App Store su {{mac}}. La configurazione prosegue quando è installato.",
       "xcodeCommandLineTools": "Xcode è su {{mac}}, ma il Mac usa ancora i Command Line Tools. Esegui questo nel Terminale, ti chiederà la password del Mac.",
       "xcodeLicense": "Xcode su {{mac}} aspetta che la sua licenza venga accettata. Esegui questo nel Terminale, ti chiederà la password del Mac.",
+      "xcodeFix": {
+        "commandLineTools": "Xcode è su {{mac}}, ma il Mac usa ancora i Command Line Tools. La correzione chiede la password del Mac, in una finestra che si apre su quel Mac.",
+        "license": "Xcode su {{mac}} aspetta che la sua licenza venga accettata. La correzione chiede la password del Mac, in una finestra che si apre su quel Mac.",
+        "fix": "Correggi per me",
+        "update": "Aggiorna per me",
+        "terminal": "Preferisco il Terminale",
+        "asking": "Digita la password su {{mac}}. macOS ha aperto la sua finestra sullo schermo di quel Mac.",
+        "running": "Correzione di Xcode su {{mac}}. Ci vuole circa un minuto.",
+        "updating": "Aggiornamento di Xcode su {{mac}}.",
+        "phases": {
+          "select": "Xcode in uso",
+          "license": "Licenza accettata",
+          "firstLaunch": "Componenti installati"
+        },
+        "done": "Fatto. {{mac}} controlla di nuovo Xcode.",
+        "missed": "La password non è stata digitata su {{mac}}. Non è cambiato nulla. Riprova quando sei a quel Mac.",
+        "failed": "Impossibile correggere su {{mac}}: {{message}}",
+        "failedAny": "Impossibile correggere su {{mac}}.",
+        "outdated": "Aggiorna l'app agentes.chat su {{mac}} per correggere con un clic. Oppure esegui questo nel suo Terminale, chiede la password del Mac.",
+        "follows": "Questa finestra prosegue da sola quando il Mac ha finito."
+      },
       "getXcode": "Scarica Xcode",
       "toolsDone": "Scaricati dal Mac",
       "toolsText": "Il Mac li scarica, circa 8 GB.",
