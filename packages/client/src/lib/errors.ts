@@ -259,6 +259,8 @@ const KNOWN = {
   // `count`: minutes until GitHub stops limiting the server.
   "github.limited": "errors.github.limited",
   "github.unreachable": "errors.github.unreachable",
+  "wiki.github_no_notes": "errors.wiki.githubNoNotes",
+  "wiki.github_too_large": "errors.wiki.githubTooLarge",
   "skill.no_skill_md": "errors.skill.noSkillMd",
   "skill.too_many_skills": "errors.skill.tooManySkills",
   "skill.invalid_name": "errors.skill.invalidName",
