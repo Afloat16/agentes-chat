@@ -187,6 +187,8 @@ export function renderPush(locale: PushLocale, input: PushTextInput): { title: s
       );
     case "device.access_request":
       return out(s.deviceAccessTitle(actor, input.title?.trim() ?? "", input.label?.trim() ?? ""), s.deviceAccessBody);
+    case "device.tool_request":
+      return out(s.deviceToolTitle(actor, input.label?.trim() ?? ""), s.deviceToolBody);
     case "device.waiting":
       return out(s.deviceWaitingTitle(input.title?.trim() || actor, input.label?.trim() ?? ""), s.deviceWaitingBody);
     case "usage_limit":

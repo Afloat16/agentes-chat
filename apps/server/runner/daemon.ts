@@ -1442,6 +1442,7 @@ export class RunnerDaemon implements RequestObserver {
       accessOps: {
         request: (agent, req) => this.accessRequest(agent, req),
         reduce: (req) => this.accessReduce(req),
+        allow: (req) => this.accessAllow(req),
       },
       browser,
       accounts: this.accounts,
@@ -2486,6 +2487,25 @@ export class RunnerDaemon implements RequestObserver {
     const before = this.access();
     const next = reduceAccess(before, req);
     if (JSON.stringify(next) !== JSON.stringify(before)) this.writeAccess(next);
+    return { access: this.access() };
+  }
+
+  /**
+   * `access.allow` from the apps (`ACCESS_ALLOW_PROTOCOL`): the computer's owner turned a tool on there. Applied as
+   * its own switch, and whoever is at the computer is told, with a way to turn it back off.
+   */
+  async accessAllow(req: Extract<MachineRequest, { op: "access.allow" }>): Promise<MachineReplies["access.allow"]> {
+    const tool = req.tool;
+    if (!TOOL_NAMES.includes(tool)) throw new RunnerError("bad_request", `Unknown tool ${String(tool).slice(0, 40)}`);
+    const before = this.access();
+    if (before.tools[tool] !== true) {
+      this.writeAccess(setTool(before, tool, true));
+      const byName = (typeof req.byName === "string" ? req.byName : "").slice(0, 80);
+      this.emit({ kind: "access.allowed", tool, byName });
+      this.opts.print?.(
+        `${byName || "Its owner"} turned on ${tool} from agentes.chat. To turn it off: agentes-runner tools disable ${tool}`,
+      );
+    }
     return { access: this.access() };
   }
 

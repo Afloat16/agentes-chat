@@ -83,6 +83,8 @@ export const strings: Partial<PushStrings> = {
   deviceAccessTitle: (a, p, d) =>
     p ? `${a}이(가) ${p} 님을 위해 내 ${d} 사용을 요청해요` : `${a}이(가) 내 ${d} 사용을 요청해요`,
   deviceAccessBody: "탭해서 한 번 허용, 항상 허용 또는 거절을 선택하세요.",
+  deviceToolTitle: (a, d) => `${a} 님이 ${d}의 도구를 켜 달라고 요청합니다`,
+  deviceToolBody: "탭해서 한 번에 켜세요.",
   deviceWaitingTitle: (p, d) => `${p} 님의 에이전트가 내 ${d}을(를) 기다리고 있어요`,
   deviceWaitingBody: "돌아오면 시작해요.",
   teamWeekReady: "팀의 한 주 정리가 준비됐어요",

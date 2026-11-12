@@ -83,6 +83,8 @@ export const strings: Partial<PushStrings> = {
   deviceAccessTitle: (a, p, d) =>
     p ? `${a} (для ${p}) просит доступ к вашему устройству ${d}` : `${a} просит доступ к вашему устройству ${d}`,
   deviceAccessBody: "Нажмите, чтобы разрешить один раз, всегда или отказать.",
+  deviceToolTitle: (a, d) => `${a} просит включить инструмент на вашем ${d}`,
+  deviceToolBody: "Нажмите, чтобы включить в один клик.",
   deviceWaitingTitle: (p, d) => `Агент для ${p} ждёт ваше устройство ${d}`,
   deviceWaitingBody: "Начнёт, когда оно вернётся.",
   teamWeekReady: "Итоги недели команды готовы",

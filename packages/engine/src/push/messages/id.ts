@@ -83,6 +83,8 @@ export const strings: Partial<PushStrings> = {
   deviceAccessTitle: (a, p, d) =>
     p ? `${a} (untuk ${p}) minta izin memakai ${d} milikmu` : `${a} minta izin memakai ${d} milikmu`,
   deviceAccessBody: "Ketuk untuk mengizinkan sekali, selalu, atau menolak.",
+  deviceToolTitle: (a, d) => `${a} meminta kamu menyalakan alat di ${d} kamu`,
+  deviceToolBody: "Ketuk untuk menyalakannya dengan sekali klik.",
   deviceWaitingTitle: (p, d) => `Agen ${p} sedang menunggu ${d} milikmu`,
   deviceWaitingBody: "Mulai begitu perangkatnya kembali.",
   teamWeekReady: "Ringkasan minggu timmu sudah siap",

@@ -336,7 +336,9 @@ export type ControlEvent =
   | { kind: "pair.failed"; code: "expired" | "denied" | "network" | "internal" | "link_invalid"; message: string }
   | { kind: "access.requested"; request: ControlAccessRequest }
   | { kind: "access.resolved"; requestId: string; decision: "granted" | "denied" | "expired" }
-  | { kind: "access.changed"; access: RunnerAccess };
+  | { kind: "access.changed"; access: RunnerAccess }
+  /** The computer's owner turned `tool` on from the apps (`access.allow`): the app says so, with Undo. */
+  | { kind: "access.allowed"; tool: keyof RunnerTools; byName: string };
 
 /** Runner → app. */
 export type ControlOut =

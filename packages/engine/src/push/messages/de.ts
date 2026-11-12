@@ -82,6 +82,8 @@ export const strings: Partial<PushStrings> = {
   deviceInUseBody: "Tippe, um es zu stoppen.",
   deviceAccessTitle: (a, p, d) => (p ? `${a} (für ${p}) möchte dein ${d} nutzen` : `${a} möchte dein ${d} nutzen`),
   deviceAccessBody: "Tippe, um einmal oder immer zu erlauben oder Nein zu sagen.",
+  deviceToolTitle: (a, d) => `${a} bittet dich, ein Werkzeug auf deinem ${d} einzuschalten`,
+  deviceToolBody: "Tippe, um es mit einem Klick einzuschalten.",
   deviceWaitingTitle: (p, d) => `Der Agent von ${p} wartet auf dein ${d}`,
   deviceWaitingBody: "Er startet, sobald es zurück ist.",
   teamWeekReady: "Die Woche deines Teams ist fertig",

@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 60;
+export const MACHINE_PROTOCOL_VERSION = 62;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -621,6 +621,12 @@ export const SHARED_GEMINI_PROTOCOL = 58;
  * A Windows runner before it refuses every Codex turn, so the server reads it as too old for Codex there.
  */
 export const CODEX_WINDOWS_PROTOCOL = 60;
+/**
+ * `access.allow`: the person who paired the computer turns one of its tools on from the apps (ADR 0036 §8). The runner
+ * applies it as its own switch (`access.changed` follows) and tells whoever is at the computer, with a way to undo it.
+ * Older runners answer `bad_request`: the server asks none of them.
+ */
+export const ACCESS_ALLOW_PROTOCOL = 62;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -2295,6 +2301,8 @@ export type MachineRequest = (
       removeFolder?: { path: string; agentId?: string };
       disableTool?: keyof RunnerTools;
     }
+  /** `ACCESS_ALLOW_PROTOCOL`: the computer's owner turned `tool` on from the apps (`by` their user id, `byName` shown). */
+  | { op: "access.allow"; tool: keyof RunnerTools; by: string; byName: string }
   | {
       op: "push";
       path: string;
@@ -2470,6 +2478,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "mission.worktree",
   "access.request",
   "access.reduce",
+  "access.allow",
   "browser.act",
   "browser.stop",
   "browser.stream.start",
@@ -2575,6 +2584,7 @@ export interface MachineReplies {
   "mission.worktree": Partial<MissionWorktreeEnsured> & { removed?: boolean };
   "access.request": { requestId: string; status: "pending" | "granted" };
   "access.reduce": { access: RunnerAccess };
+  "access.allow": { access: RunnerAccess };
   /**
    * `agent-browser`'s own JSON answer: `success: false` with its `error` is a page-level failure (stale ref, covered
    * click). Protocol 45: `code` names a Vault refusal (`VAULT_TYPE_REFUSALS`).

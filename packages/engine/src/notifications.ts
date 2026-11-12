@@ -256,6 +256,12 @@ export const NOTIFICATION_KINDS = [
   "device.access_request",
   /** Someone else's agent waits for the device to be back or free, one per wait; done once the wait ends. */
   "device.waiting",
+  /**
+   * Someone needs a tool on this person's computer (`POST …/machines/{id}/access/ask`): its owner, waiting, one row per
+   * computer and tool (`device-tool:<machineId>:<tool>`), the asker as actor, the computer in `source.machineId` with
+   * its name in `source.label`, the tool in `latest.reason`. The row turns it on in one click; done once it is on.
+   */
+  "device.tool_request",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

@@ -80,6 +80,8 @@ export const ptBR: PushStrings = {
   deviceInUseBody: "Toque para parar.",
   deviceAccessTitle: (a, p, d) => (p ? `${a} (para ${p}) pede para usar seu ${d}` : `${a} pede para usar seu ${d}`),
   deviceAccessBody: "Toque para permitir uma vez, sempre, ou dizer não.",
+  deviceToolTitle: (a, d) => `${a} pede para você ligar uma ferramenta no seu ${d}`,
+  deviceToolBody: "Toque para ligar com um clique.",
   deviceWaitingTitle: (p, d) => `O agente de ${p} está esperando seu ${d}`,
   deviceWaitingBody: "Começa quando ele voltar.",
   teamWeekReady: "Sua semana da equipe está pronta",

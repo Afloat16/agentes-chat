@@ -351,6 +351,8 @@ export function isNewWork(request: MachineRequest) {
     case "task.cancel":
     case "task.output":
     case "access.reduce":
+    // Its owner turning a tool on from the apps changes the computer, not the agents' work on it.
+    case "access.allow":
     // A person's message for a turn already running (live steering).
     case "brain.steer":
     // The owner managing the brains' accounts (ADR 0041) isn't agent work.

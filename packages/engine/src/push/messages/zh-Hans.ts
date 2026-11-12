@@ -81,6 +81,8 @@ export const strings: Partial<PushStrings> = {
   deviceInUseBody: "点按停止它。",
   deviceAccessTitle: (a, p, d) => (p ? `${a}（为 ${p}）请求使用你的 ${d}` : `${a} 请求使用你的 ${d}`),
   deviceAccessBody: "点按允许一次、始终允许，或拒绝。",
+  deviceToolTitle: (a, d) => `${a} 请你在 ${d} 上打开一个工具`,
+  deviceToolBody: "点按即可一键打开。",
   deviceWaitingTitle: (p, d) => `${p} 的智能体正在等待你的 ${d}`,
   deviceWaitingBody: "它回来后就会开始。",
   teamWeekReady: "你的团队周报已准备好",

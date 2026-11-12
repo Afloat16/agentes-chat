@@ -273,6 +273,7 @@ fn pane_url(pane: &str) -> Option<String> {
         "screen" => "Privacy_ScreenCapture",
         "disk" => "Privacy_AllFiles",
         "network" => "Privacy_LocalNetwork",
+        "microphone" => "Privacy_Microphone",
         _ => return None,
     };
     Some(format!("x-apple.systempreferences:com.apple.preference.security?{anchor}"))

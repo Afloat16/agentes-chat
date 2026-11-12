@@ -132,6 +132,11 @@ export const desktopEn = {
     allowedAll: "{{folder}} allowed for all agents",
     denied: "Declined. {{agent}} lets them know in the chat.",
     notifTitle: "{{agent}} wants to use the folder {{folder}}",
+    allowedTitle: "{{name}} turned on {{tool}} from agentes.chat",
+    allowedBody: "If it wasn't you, undo it here.",
+    allowedUndo: "Undo",
+    allowedOk: "OK",
+    allowedUndone: "Off again: {{tool}}",
     quitTitle: "Quit agentes.chat?",
     quitBody:
       "Agents can't use this {{device}} while the app is closed. What is already running finishes and sends the result when you open it again.",
