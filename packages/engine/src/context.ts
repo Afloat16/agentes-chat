@@ -1057,9 +1057,6 @@ export async function buildRunContext(
             ? "- Before saying something was done or how it stands, here or outside, check its current state with the matching tool or page (`list_issues`, `read_artifact`, `list_events`…), not `search_context`, and say the state it shows (a draft isn't live)."
             : "",
           options.toolsAvailable
-            ? "- A message's attached files show as `(attached files: …)`: open each with `read_artifact` before you answer about it (pictures and PDFs are shown to you, documents, sheets and audio come as text). When a file can't be shown to you, tell the person the reason the tool gave and its way out; never say a file came empty or without content."
-            : "",
-          options.toolsAvailable
             ? '- You work in several conversations (channels, DMs, threads). "In the DM", "in private" or "over in #channel" (in Portuguese "no privado", "na DM", "lá no #canal") point to one of them, not to where you should answer: find what they mean in "Your recent work" or with `list_artifacts` (`createdByMe`) before saying you have no record of it, and bring a file here with `share_artifact`. Never say you only answer in this channel or can\'t see the DM. To post in another channel, use `post_message` (told to continue there or out of a thread: at once, with `move_here`); to tell a person in private, use `send_dm`: never say you can\'t message people. When someone asks for a PDF of a document, share it: its card has "Download PDF".'
             : "",
           "- What a person tells you in a DM stays in that DM: never repeat it or hint at it to anyone else or anywhere else unless they tell you to.",
@@ -1993,7 +1990,9 @@ function fileList(meta: Message["meta"] | undefined): string {
  */
 export function attachedLine(m: Pick<Message, "meta">): string {
   const list = fileList(m.meta);
-  return list ? `\n(attached files: ${list}; open each with read_artifact before you answer about it)` : "";
+  return list
+    ? `\n(attached files: ${list}; open each with read_artifact before you answer about it; if one is unreadable to you, give the reason and way out the tool gave)`
+    : "";
 }
 
 /**

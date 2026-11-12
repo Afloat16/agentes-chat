@@ -224,7 +224,7 @@ export function createArtifactToolSource(deps: ArtifactDeps): ToolSource {
     {
       name: "read_artifact",
       description:
-        "Read an artifact (latest version unless you ask for one). Tables come as CSV, diffs as a patch; uploaded files as name, type and size plus what is in them: text and code as text, a picture or a PDF shown to you, Word and PowerPoint as their text, a spreadsheet as CSV per sheet, a zip as its listing, audio as its transcript. Long ones go on at `offset`. When a file can't be shown to you, the result says why: tell the person that reason, never that the file came empty.",
+        "Read an artifact (latest version unless you ask for one). Tables come as CSV, diffs as a patch; uploaded files as name, type and size, plus their text (pictures and PDFs shown to you). Long ones go on at `offset`.",
       scope: "drive:read",
       inputSchema: {
         type: "object",

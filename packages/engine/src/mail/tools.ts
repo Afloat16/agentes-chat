@@ -476,7 +476,7 @@ export function createMailToolSource(deps: MailToolDeps): ToolSource {
     const attachment = files
       ? make(
           "attachment",
-          "Save one attachment of a message as a file in the Drive and read it: returns the file's id and what is in it (a picture or a PDF shown to you, documents, sheets and audio as text).",
+          "Save one attachment of a message as a file in the Drive (returns the file's id and what is in it).",
           {
             properties: { message_id: MESSAGE_ID, attachment_id: { type: "string", minLength: 1, maxLength: 500 } },
             required: ["message_id", "attachment_id"],

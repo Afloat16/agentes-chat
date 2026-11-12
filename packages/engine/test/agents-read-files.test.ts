@@ -325,7 +325,7 @@ describe("a file sent while the agent works", () => {
       body: "",
       attachments: [file.id],
     });
-    const line = `(attached files: "precos.html" (artifact ${file.id}); open each with read_artifact before you answer about it)`;
+    const line = `(attached files: "precos.html" (artifact ${file.id}); open each with read_artifact before you answer about it; if one is unreadable to you, give the reason and way out the tool gave)`;
     expect((await renderSteered(f.db, f.org.id, [m.id]))[0]?.text).toContain(line);
     expect((await renderSteered(f.db, f.org.id, [m.id], { beforeStart: true }))[0]?.text).toContain(line);
   });
