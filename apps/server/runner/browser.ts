@@ -2863,7 +2863,8 @@ export class BrowserManager {
     let best: Session | null = null;
     for (const [agentId, s] of this.sessions) {
       if (!s.chrome || s.queued || s.chromeStarting || this.inView(s) || this.held(agentId)) continue;
-      if (this.now() - s.lastUsed < BROWSER_RECLAIM_IDLE_MS) continue;
+      // Someone watching it a moment ago may come back to the page: that counts as use here.
+      if (this.now() - Math.max(s.lastUsed, s.heldAt ?? 0) < BROWSER_RECLAIM_IDLE_MS) continue;
       if (!best || s.lastUsed < best.lastUsed) best = s;
     }
     return best;
