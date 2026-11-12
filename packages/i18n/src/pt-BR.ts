@@ -2803,6 +2803,24 @@ export const ptBR = {
       zen: "Conectar o OpenCode",
       api_key: "Adicionar uma chave de API",
     },
+    /**
+     * A plan whose program is switched off on a computer the person connected. `program`: "Claude Code" or "Codex"
+     * (`brain.card`), as its switch is named in that computer's own settings.
+     */
+    toolOff: {
+      text: "O {{computer}} está conectado, mas o {{program}} está desligado nele. Por segurança, só dá para ligar no próprio computador.",
+      where: "No {{computer}}",
+      /** `<mark/>`: the app's icon, drawn. */
+      one: "Clique no ícone do agentes.chat <mark/> perto do relógio",
+      oneWindows: "No Windows, ele pode estar atrás da seta ^ da barra de tarefas.",
+      two: "Abra <b>Preferências</b>",
+      three: "Em <b>Ferramentas</b>, ligue <b>{{program}}</b>",
+      /** On a computer that may have no app: its command follows. */
+      terminal: "No terminal do computador, rode:",
+      /** In the app on that very computer: Open Tools follows. */
+      here: "Ligue <b>{{program}}</b> em <b>Ferramentas</b>.",
+      waiting: "Esperando você ligar. Esta tela muda sozinha.",
+    },
     titleFor: "Conectar uma IA para o {{name}}",
     titleFor_female: "Conectar uma IA para a {{name}}",
     /** What the person already has, before the new sign-ins: accounts on the agent's computer, the workspace's keys. */

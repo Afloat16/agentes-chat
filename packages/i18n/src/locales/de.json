@@ -2709,6 +2709,17 @@
       "zen": "OpenCode verbinden",
       "api_key": "API-Schlüssel hinzufügen"
     },
+    "toolOff": {
+      "text": "{{computer}} ist verbunden, aber {{program}} ist dort ausgeschaltet. Aus Sicherheitsgründen lässt es sich nur am Computer selbst einschalten.",
+      "where": "Auf {{computer}}",
+      "one": "Klicke auf das agentes.chat-Symbol <mark/> neben der Uhr",
+      "oneWindows": "Unter Windows kann es hinter dem Pfeil ^ der Taskleiste liegen.",
+      "two": "Öffne <b>Einstellungen</b>",
+      "three": "Schalte unter <b>Tools</b> <b>{{program}}</b> ein",
+      "terminal": "Führe im Terminal des Computers aus:",
+      "here": "Schalte <b>{{program}}</b> unter <b>Tools</b> ein.",
+      "waiting": "Warte darauf, dass du es einschaltest. Diese Ansicht ändert sich von selbst."
+    },
     "titleFor": "Eine KI für {{name}} verbinden",
     "have": {
       "title": "Bereits verbunden",

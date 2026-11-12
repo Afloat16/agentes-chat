@@ -2881,6 +2881,24 @@ export const en = {
       zen: "Connect OpenCode",
       api_key: "Add an API key",
     },
+    /**
+     * A plan whose program is switched off on a computer the person connected. `program`: "Claude Code" or "Codex"
+     * (`brain.card`), as its switch is named in that computer's own settings.
+     */
+    toolOff: {
+      text: "{{computer}} is connected, but {{program}} is switched off on it. For safety, it can only be turned on at the computer itself.",
+      where: "On {{computer}}",
+      /** `<mark/>`: the app's icon, drawn. */
+      one: "Click the agentes.chat icon <mark/> by the clock",
+      oneWindows: "On Windows, it may be behind the taskbar's ^ arrow.",
+      two: "Open <b>Preferences</b>",
+      three: "Under <b>Tools</b>, turn on <b>{{program}}</b>",
+      /** On a computer that may have no app: its command follows. */
+      terminal: "In the computer's terminal, run:",
+      /** In the app on that very computer: Open Tools follows. */
+      here: "Turn on <b>{{program}}</b> under <b>Tools</b>.",
+      waiting: "Waiting for you to turn it on. This screen changes by itself.",
+    },
     titleFor: "Connect an AI for {{name}}",
     /** What the person already has, before the new sign-ins: accounts on the agent's computer, the workspace's keys. */
     have: {
