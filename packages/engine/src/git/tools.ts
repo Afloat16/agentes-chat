@@ -174,7 +174,7 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
         if (block) {
           return {
             ok: false,
-            message: `${branch} is ${BLOCKED[block]}: push to agentes/${handle}/<topic> and open a pull request; merging asks a person.`,
+            message: `${branch} is ${BLOCKED[block]}: push to agentes/${handle}/<topic> and open a pull request; merging is a separate step.`,
           };
         }
         return { ok: true };
@@ -270,7 +270,7 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
         {
           name: "open_pull_request",
           description:
-            "Open a pull request on GitHub from a branch you pushed (agentes/<your handle>/…). Merging is separate and always needs a person's approval.",
+            "Open a pull request on GitHub from a branch you pushed (agentes/<your handle>/…). Merging is a separate step.",
           scope: connectorScope("github", "pr.write"),
           connectionId: connection.id,
           connector: { key: "github", via: "native", tool: "open_pull_request" },
@@ -346,7 +346,7 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
         {
           name: DELETE_BRANCHES_TOOL,
           description:
-            "Delete branches on GitHub, your own included: the only way agents delete branches (git push --delete is refused). A person approves the whole list on one card, then they're deleted. Never tags, the default branch or a protected branch.",
+            "Delete branches on GitHub, your own included: the only way agents delete branches (git push --delete is refused). The whole list goes to a person on one card, unless you never ask, then they're deleted. Never tags, the default branch or a protected branch.",
           scope: connectorScope("github", "git.write"),
           connectionId: connection.id,
           connector: { key: "github", via: "native", tool: DELETE_BRANCHES_TOOL },
