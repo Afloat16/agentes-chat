@@ -301,7 +301,8 @@ export class Holds {
     this.save();
     if (hold.browser) {
       this.opts.onBrowser?.(hold.agentId);
-      if (req.stop) await this.opts.closeBrowser?.({ id: hold.agentId, handle: hold.handle ?? hold.user })?.catch(() => undefined);
+      if (req.stop)
+        await this.opts.closeBrowser?.({ id: hold.agentId, handle: hold.handle ?? hold.user })?.catch(() => undefined);
     }
     return { ended: true };
   }
