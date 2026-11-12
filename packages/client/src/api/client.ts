@@ -323,6 +323,7 @@ import type {
   UnreadTask,
   UsageQueue,
   UsageReport,
+  WaitingList,
   WebhookProvider,
   WebhookSetup,
   WifiIphones,
@@ -1599,6 +1600,8 @@ export interface ApiClient {
     ): Promise<NotificationPage>;
     /** The sidebar badge. */
     count(orgId: string): Promise<NotificationCount>;
+    /** "Esperando você": what waits on me, oldest first; `channelId` for one conversation's. */
+    waiting(orgId: string, channelId?: string): Promise<WaitingList>;
     read(orgId: string, id: string, read: boolean): Promise<AppNotification>;
     /** "Feito" (`false` undoes it). */
     done(orgId: string, id: string, done: boolean): Promise<AppNotification>;
