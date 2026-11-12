@@ -375,7 +375,7 @@ export async function computerDriving(db: Database, userId: string, orgId: strin
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
   if (!agent) throw new NotFoundError("Agent not found");
-  // The right hand's computer is each person's own seat on the workspace's (ADR 0174): theirs to drive with the role
+  // The right hand's computer is each person's own seat on the workspace's (ADR 0175): theirs to drive with the role
   // key that gives a person their own agents' computers, and reached only as themselves (`viewerScope`).
   const home = isRightHand(agent) ? await workspaceHomeId(db, orgId) : null;
   const machineId = home ?? agent.machineId;
@@ -466,7 +466,7 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
         // The agents' order everywhere else (the sidebar, the team): who came first.
         .orderBy(agents.createdAt)
     : [];
-  // The right hand uses the workspace's own computer, as each person's own seat there (ADR 0174): listed on it where
+  // The right hand uses the workspace's own computer, as each person's own seat there (ADR 0175): listed on it where
   // seats can be kept apart, so the apps show whoever looks their own.
   const home = await workspaceHomeId(db, orgId);
   const homeRow = rows.find((r) => r.machine.id === home)?.machine;
@@ -622,7 +622,7 @@ export async function setMachineEgressWaiting(
 const DELETED_AGENTS_LISTED = 500;
 
 /**
- * The org's agents gone for good, the latest first, and the right hand's seats of people who left (ADR 0174). A
+ * The org's agents gone for good, the latest first, and the right hand's seats of people who left (ADR 0175). A
  * computer clears what it holds for those it knew, and stops their work.
  */
 export async function deletedAgentIds(db: Database, orgId: string): Promise<string[]> {
@@ -708,7 +708,7 @@ export async function machineAgents(db: Database, orgId: string, machineId: stri
       ...(a.builtin !== RIGHT_HAND && !isSandboxedBrain(a.brain) ? { containers: true } : {}),
     };
   });
-  // The right hand's seats (ADR 0174) live on the workspace's own computer, each listed like an agent of its own.
+  // The right hand's seats (ADR 0175) live on the workspace's own computer, each listed like an agent of its own.
   const rightHand = (await workspaceHomeId(db, orgId)) === machineId ? await rightHandRow(db, orgId) : null;
   if (!rightHand) return listed;
   return [...listed, ...(await liveSeats(db, orgId)).map((seat) => seatListed(rightHand, seat))];

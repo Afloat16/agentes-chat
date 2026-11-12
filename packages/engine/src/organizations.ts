@@ -1291,7 +1291,7 @@ export async function removeMember(
     });
     // No agent goes on reading or sending in their name: their mailboxes leave every agent, and what waits to run there doesn't.
     await dropMailOfOwner(tx, orgId, targetUserId, actorId);
-    // Their place on the workspace's computer for the right hand goes too (ADR 0174): coming back starts a new one.
+    // Their place on the workspace's computer for the right hand goes too (ADR 0175): coming back starts a new one.
     await removeSeat(tx, orgId, targetUserId);
     const mailActions = await cancelMailboxApprovals(tx, orgId, targetUserId, actorId);
     // Their AI accounts on the organization's computers are signed out and removed (ADR 0059 §1).

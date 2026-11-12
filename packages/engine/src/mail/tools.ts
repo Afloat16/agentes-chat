@@ -734,7 +734,7 @@ export function createMailToolSource(deps: MailToolDeps): ToolSource {
 
     const send = make(
       "send",
-      "Send a new email. A person approves each send unless this agent was set up to send to these recipients without asking.",
+      "Send a new email. A send asks a person first, unless this agent was set up to send to these recipients without asking or never asks.",
       { properties: outgoingProps, required: ["to", "subject", "body"] },
       { describe: describeSend("send"), checkCall: checkSend("send"), execute: executeSend("send") },
     );
@@ -880,7 +880,7 @@ export function createMailToolSource(deps: MailToolDeps): ToolSource {
     );
     const trash = organize(
       "trash",
-      "Move a message to the trash. A person approves every deletion.",
+      "Move a message to the trash. A deletion asks a person first, unless this agent never asks.",
       {},
       [],
       (p, input) => p.trash(str(input.message_id)),

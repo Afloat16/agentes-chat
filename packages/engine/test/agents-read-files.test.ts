@@ -442,7 +442,7 @@ describe("its other tools", () => {
     );
     const made = await bridged(run, "create_artifact", { title: "Resumo", kind: "document", markdown: "# Resumo" });
     expect(made.isError).toBeUndefined();
-    // Its computer's scopes are its own from the start (ADR 0174): none is among what it could still be given.
+    // Its computer's scopes are its own from the start (ADR 0175): none is among what it could still be given.
     const missing = await missingPermissions({ db: f.db, orgId: f.org.id, agentId: lodi.id });
     for (const scope of ["sandbox:run", "browser:use", "desktop:use"])
       expect(missing.map((m) => m.id)).not.toContain(scope);

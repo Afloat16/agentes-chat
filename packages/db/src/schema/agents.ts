@@ -190,8 +190,8 @@ export const agents = pgTable(
      */
     missionCommandApproval: text(),
     /**
-     * How much it asks before acting (ADR 0173): `always` (every write to a connected app), `risky` (what is marked
-     * sensitive, the default) or `never` (only merge, deploy, rollback and the like). Validated in code
+     * How much it asks before acting (ADR 0173): `always` (before every change), `risky` (what is marked sensitive,
+     * the default) or `never` (nothing, merge, deploy and routines included). Validated in code
      * (`APPROVALS_LEVELS`). It never widens what the agent may use.
      */
     approvalsLevel: text().$type<"always" | "risky" | "never">().notNull().default("risky"),
@@ -450,7 +450,7 @@ export const rightHandBrains = pgTable(
 );
 
 /**
- * A person's own place on the workspace's computer for the team's right hand (ADR 0174): one row answers everyone,
+ * A person's own place on the workspace's computer for the team's right hand (ADR 0175): one row answers everyone,
  * so each person's files, browser and sign-ins there live under this row's id, which the computer takes for an
  * agent's (its OS user is named from the first 8 of it). Made on first use. `removedAt`: the person left; the row
  * stays so the computer hears that id is gone, and coming back gives them a new one.

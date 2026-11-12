@@ -1,6 +1,7 @@
 import { type AgentScope, DESKTOP_PROTOCOL, type PubSub } from "@agenteschat/adapters";
 import { and, type Database, type Executor, eq, gte, inArray, schema, sql } from "@agenteschat/db";
 import { announceAgentStatus } from "./agent-status";
+import { publishApproval } from "./approvals";
 import { recordAudit } from "./audit";
 import { personOfMessage } from "./authority";
 import { lineMachineOf, publishQueueChanged } from "./computer-queue";
@@ -288,6 +289,7 @@ export async function stopRun(
     const status = run.status;
     let closedSecrets: SecretRequestRow[] = [];
     let closedQuestions: AgentQuestionRow[] = [];
+    let closedApprovals: (typeof approvals.$inferSelect)[] = [];
     const done = await db.transaction(async (tx) => {
       const moved = await transitionRun(tx, run.id, status, "canceled", { error });
       if (!moved) return null;
@@ -299,10 +301,11 @@ export async function stopRun(
           .where(eq(agentRuns.id, run.id));
       }
       const now = new Date();
-      await tx
+      closedApprovals = await tx
         .update(approvals)
         .set({ status: "canceled", decidedAt: now })
-        .where(and(eq(approvals.runId, run.id), eq(approvals.status, "pending")));
+        .where(and(eq(approvals.runId, run.id), eq(approvals.status, "pending")))
+        .returning();
       // Their cards close too, or "Responder" would stay offered on a question nobody can answer anymore.
       closedQuestions = await tx
         .update(agentQuestions)
@@ -335,6 +338,8 @@ export async function stopRun(
     if (done) {
       run = done;
       for (const r of closedSecrets) await publishSecret(deps, r, "secret.updated");
+      // Their cards say canceled and they leave the inbox: nothing waits on a person for a run that stopped.
+      for (const a of closedApprovals) await publishApproval(deps, a, "approval.decided").catch(() => {});
       for (const q of closedQuestions) {
         await publishQuestion(deps.pubsub, q, "question.answered");
         // Out of everyone's inbox too: a question nobody can answer any more never waits on a person.
@@ -510,7 +515,7 @@ export async function stopOrgWork(
         agentId ? eq(agents.id, agentId) : undefined,
       ),
     );
-  // The right hand's desktops are its people's seats on the workspace's own computer (ADR 0174).
+  // The right hand's desktops are its people's seats on the workspace's own computer (ADR 0175).
   const seats = !agentId || (await isRightHandId(deps.db, orgId, agentId)) ? await seatScopes(deps.db, orgId) : null;
   const stops: { machineId: string; agent: AgentScope }[] = desktops.map(({ machineId, ...agent }) => ({
     machineId,

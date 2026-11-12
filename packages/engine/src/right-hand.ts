@@ -55,7 +55,7 @@ export const RIGHT_HAND_AUTO = {
  * What it holds whatever its grant rows say (`loadScopeKeys` adds the rows on top: apps, mailboxes, databases, a
  * tool turned off): every built-in scope an agent can be given but a computer's, and the setup cards. A computer's
  * (`sandbox:run`, `browser:use`, `desktop:use`) are rows like any agent's, given when it is made
- * (`RIGHT_HAND_COMPUTER_GRANTS`, ADR 0174), so an admin turns them off on its page. One row answers everyone, so what
+ * (`RIGHT_HAND_COMPUTER_GRANTS`, ADR 0175), so an admin turns them off on its page. One row answers everyone, so what
  * is one person's stays in that person's own DM with it (`rightHandReader`): their Vault items, their mailbox, their
  * tasks, what it remembers for them, and their seat on the workspace's computer (`right-hand-seats.ts`).
  */
@@ -79,7 +79,7 @@ export const RIGHT_HAND_GRANTS: readonly string[] = [
 
 /**
  * Tools it is never offered, whatever its grants: each acts on a computer under the agent's own id, which reaches
- * none (ADR 0174 §2), so offering it would only end in a refusal. A folder outside its own, its browser's own hand-off
+ * none (ADR 0175 §2), so offering it would only end in a refusal. A folder outside its own, its browser's own hand-off
  * (its browser shows on the seat's desktop, asked for there) and missions.
  */
 export const RIGHT_HAND_NOT_OFFERED: ReadonlySet<string> = new Set([
@@ -88,7 +88,7 @@ export const RIGHT_HAND_NOT_OFFERED: ReadonlySet<string> = new Set([
   "propose_mission",
 ]);
 
-/** The grant rows it is made with: its computer's scopes, each a person's own seat there (ADR 0174). */
+/** The grant rows it is made with: its computer's scopes, each a person's own seat there (ADR 0175). */
 export const RIGHT_HAND_COMPUTER_GRANTS = ["sandbox:run", "browser:use", "desktop:use"] as const;
 
 /**

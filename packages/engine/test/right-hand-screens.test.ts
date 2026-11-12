@@ -37,7 +37,7 @@ import { addMember, type Fixture, setup } from "./fixtures";
 import { fakeRunner, pairMachine } from "./machine-fixtures";
 
 /**
- * The right hand's screens and who reaches them (ADR 0174): a person watches, drives and is asked onto their own
+ * The right hand's screens and who reaches them (ADR 0175): a person watches, drives and is asked onto their own
  * seat only, with the role keys and grants any agent's computer takes, and nothing of one person's seat (a handoff,
  * a wait, a hold's reach) crosses to another's.
  */

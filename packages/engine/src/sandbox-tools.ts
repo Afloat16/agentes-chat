@@ -668,7 +668,7 @@ export function createSandboxToolSource(
     }
     const run = { orgId: ctx.orgId, agentId: ctx.agentId, runId: ctx.runId };
     const released = await releaseVaultKeys(vault, run, names);
-    // The computer opens a value as who it takes the agent for: the right hand's seat there (ADR 0174).
+    // The computer opens a value as who it takes the agent for: the right hand's seat there (ADR 0175).
     const scope = await machineScope(hub, ctx, computer.machineId);
     const key = await requestVaultKey(hub, computer.machineId, scope, "use Vault keys", ctx.signal);
     const keys = await Promise.all(
@@ -735,7 +735,7 @@ export function createSandboxToolSource(
           const { item, kept } = await restoreMadePassword(vault, runIds, undo);
           return { content: undoneText(vaultItemName(item), kept) };
         }
-        // Made where the agent's work is: for the right hand, the seat of the person behind the run (ADR 0174).
+        // Made where the agent's work is: for the right hand, the seat of the person behind the run (ADR 0175).
         const value = await run(ctx, async (computer) =>
           requestMadePassword(
             hub,
@@ -1333,7 +1333,7 @@ export function createSandboxToolSource(
           if (executor === "shell" && !command) return { content: "A shell task needs `command`.", isError: true };
           if (executor !== "shell" && !prompt)
             return { content: `A ${executor} task needs \`prompt\`.`, isError: true };
-          // A CLI job thinks with a sign-in, and a person's seat of the right hand holds none (ADR 0174 §7).
+          // A CLI job thinks with a sign-in, and a person's seat of the right hand holds none (ADR 0175 §7).
           if (executor !== "shell" && (await isRightHandId(ctx.db, ctx.orgId, ctx.agentId))) {
             return {
               content: `Not started: a ${executor} job needs a sign-in your place on this computer doesn't have. Run it as a command (executor "shell"), or hand it to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it).`,

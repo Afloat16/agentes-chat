@@ -23,7 +23,7 @@ import { addMember, type Fixture, setup } from "./fixtures";
 import { fakeRunner, pairMachine } from "./machine-fixtures";
 
 /**
- * The right hand's computer (ADR 0174): one agent answers everyone, so each person has their own seat on the
+ * The right hand's computer (ADR 0175): one agent answers everyone, so each person has their own seat on the
  * workspace's computer, and nothing reaches a computer under the agent's own id but its locked chat turn.
  */
 

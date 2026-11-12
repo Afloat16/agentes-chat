@@ -526,7 +526,7 @@ export function createDesktopControl(deps: DesktopControlDeps) {
   /** Last keep-alive per open handoff. */
   const touched = new Map<string, number>();
 
-  /** `person`: on the right hand, whose seat's handoff changed: only their streams show that screen (ADR 0174). */
+  /** `person`: on the right hand, whose seat's handoff changed: only their streams show that screen (ADR 0175). */
   async function enforce(orgId: string, agentId: string, person: string | null) {
     const ofAgent = (s: Stream) =>
       s.orgId === orgId && s.agentId === agentId && s.request.kind === "desktop" && (!person || s.userId === person);

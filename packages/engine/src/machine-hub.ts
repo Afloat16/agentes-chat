@@ -884,7 +884,7 @@ export function createMachineHub(deps: MachineHubDeps) {
   }
 
   /**
-   * Every request goes out through here. The right hand's own id passes only for its locked chat turn (ADR 0174): on
+   * Every request goes out through here. The right hand's own id passes only for its locked chat turn (ADR 0175): on
    * a computer each person has a seat with its own id, so anything else under the agent's id would put every member
    * in one home, and is refused. Also fills `agent.name` (protocol 9, for the machine's activity log) when a caller
    * left it out.

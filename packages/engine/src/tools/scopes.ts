@@ -356,7 +356,7 @@ async function loadScopeKeys(db: Executor, orgId: string, agentId: string): Prom
   const keys = new Set(rows.map((r) => grantKey(r.connectionId, r.scope)));
   if (!isRightHand(agent)) return keys;
   // The right hand (ADR 0137) holds its own grants on top of its rows. Its computer's scopes are rows like any
-  // agent's (ADR 0174), given when it is made, so an admin turns them off on its page.
+  // agent's (ADR 0175), given when it is made, so an admin turns them off on its page.
   for (const scope of RIGHT_HAND_GRANTS) keys.add(grantKey(null, scope));
   return keys;
 }

@@ -162,7 +162,7 @@ export function AgentPage(props: AgentPageProps) {
     return (
       <div className="page page--full">
         <PageHeader title={agent.name} meta={t("settings.sectionText.right_hand")} />
-        {tellsNameStory(agent) && <p className="small muted">{t("rightHand.profile.nameStory")}</p>}
+        {tellsNameStory(agent) && <p className="page__note">{t("rightHand.profile.nameStory")}</p>}
         <RightHandSettingsSection agent={agent} />
       </div>
     );
@@ -747,7 +747,7 @@ function AgentProfile({
       {rightHand ? (
         <div className="page page--full" data-dirty={dirty || undefined}>
           <PageHeader title={agent.name} meta={t("settings.sectionText.right_hand")} />
-          {tellsNameStory(agent) && <p className="small muted">{t("rightHand.profile.nameStory")}</p>}
+          {tellsNameStory(agent) && <p className="page__note">{t("rightHand.profile.nameStory")}</p>}
           <div className="tabs-bar">
             <Tabs
               label={t("agentPage.tabsLabel", g)}

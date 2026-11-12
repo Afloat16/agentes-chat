@@ -13,7 +13,7 @@ import type { ToolContext } from "./tools/types";
 const { agents, organizationMembers, rightHandSeats, users } = schema;
 
 /**
- * The right hand's computer (ADR 0174). One agents row answers everyone, so on the workspace's own computer each
+ * The right hand's computer (ADR 0175). One agents row answers everyone, so on the workspace's own computer each
  * person has a seat: a stored random id the computer takes for an agent's, which gives that person's right hand its
  * own OS user, home, browser profile and sign-ins there. The agent's own id never goes to a computer for anything but
  * its locked chat turn (the hub refuses it), so a request built without a seat fails instead of landing every member

@@ -358,7 +358,7 @@ export async function noteComputerTaken(
     .select({ owner: agents.ownerUserId, name: agents.name, handle: agents.handle, builtin: agents.builtin })
     .from(agents)
     .where(and(eq(agents.id, input.agentId), eq(agents.orgId, input.orgId)));
-  // On the right hand a person takes only their own seat (ADR 0174): nobody else's to be told about.
+  // On the right hand a person takes only their own seat (ADR 0175): nobody else's to be told about.
   if (!agent || agent.owner === input.actorId || isRightHand(agent)) return;
   if (input.audit) {
     await recordAudit(deps.db, {
@@ -467,7 +467,7 @@ export async function screenAccess(
   if (!row) throw new NotFoundError("Agent not found");
   const full = screen === "desktop";
   const admin = can(membership, full ? "control_computers" : "control_browsers");
-  // The right hand's screens are each person's own seat (ADR 0174): theirs to watch and drive with the same role keys
+  // The right hand's screens are each person's own seat (ADR 0175): theirs to watch and drive with the same role keys
   // as any agent of their own, and nobody else's, an admin's included. What they reach is decided where the seat is
   // (`viewerScope`), and a handoff of another person's seat is never theirs to read or end.
   if (isRightHand(row)) {
@@ -569,7 +569,7 @@ export async function browserOnDesktop(db: Executor, orgId: string, agentId: str
     .select()
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
-  // The right hand's own is the workspace's, where each person's seat has its desktop (ADR 0174).
+  // The right hand's own is the workspace's, where each person's seat has its desktop (ADR 0175).
   const own = await toolMachineId(db, agent);
   if (!agent || !own || (machineId ?? agent.browserMachineId ?? own) !== own) return false;
   const [machine] = await db
@@ -668,7 +668,7 @@ async function loadHandoff(db: Executor, orgId: string, handoffId: string) {
 }
 
 /**
- * Whose screen is meant where an agent's is asked for. Only the right hand's reads it (ADR 0174): each person's seat
+ * Whose screen is meant where an agent's is asked for. Only the right hand's reads it (ADR 0175): each person's seat
  * there is another screen. A person's own request names that person, a run's tool the person whose seat it uses
  * (`screenPersonOf`: `false` when it has none). Any other agent has one screen, whoever asks.
  */
@@ -921,7 +921,7 @@ export function createBrowserHandoffToolSource(
     const instructions = String(input.instructions ?? "").trim();
     if (!instructions) return { content: "Say what the person should do.", isError: true };
     if (namesOwnApp(instructions)) return { content: ownAppRefusal(ctx.orgId), isError: true };
-    // The right hand's screen is the seat of the person behind the run (ADR 0174), whose browser shows on its desktop.
+    // The right hand's screen is the seat of the person behind the run (ADR 0175), whose browser shows on its desktop.
     const person = await screenPersonOf(ctx.db, ctx);
     if (person === false) return { content: NO_SEAT_MESSAGE, isError: true };
     if (person && screen === "browser") {
@@ -1372,7 +1372,7 @@ export async function startTakeover(
     if (!run || run.agentId !== agentId) throw new ValidationError("That run isn't this agent's");
     if (LIVE_RUN.includes(run.status)) boundRun = runId;
   }
-  // On the right hand the screen taken is the actor's own seat (ADR 0174), made here if this is their first use.
+  // On the right hand the screen taken is the actor's own seat (ADR 0175), made here if this is their first use.
   const seat = (await isRightHandId(deps.db, orgId, agentId)) ? actorId : null;
   if (seat) {
     const told = (org: string) => publishMachineAgentsChanged(deps.pubsub, org);
@@ -1678,7 +1678,7 @@ export async function stopAgentBrowser(
   if (!hub) throw new ValidationError("Connected computers are not available on this server");
   const machineId = await browserMachineOf(db, orgId, agentId, "browser");
   if (!machineId) throw new ValidationError("This agent has no computer");
-  // Whose browser it is there: the agent's, or on the right hand the asker's own seat's (ADR 0174).
+  // Whose browser it is there: the agent's, or on the right hand the asker's own seat's (ADR 0175).
   const theirs = await viewerScope(db, orgId, agentId, actorId, undefined, false);
   if (!theirs) throw new NotFoundError("Agent not found");
   if ("reason" in theirs) throw new ValidationError("This agent has no computer");

@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 58;
+export const MACHINE_PROTOCOL_VERSION = 59;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -1908,7 +1908,18 @@ export interface BrainTurnRequest {
    * The turn's permission profile (ADR 0053 §3): `work` (default) edits and asks a person (or the server's
    * rules) for the rest; `plan` reads only. Codex honours it from `BRAIN_PROFILES_PROTOCOL` on.
    */
-  permissions?: { mode?: "plan" | "work" | "chat"; branchPrefix?: string; allow?: string[] };
+  permissions?: {
+    mode?: "plan" | "work" | "chat";
+    branchPrefix?: string;
+    allow?: string[];
+    /**
+     * Protocol 59 (`ASKS_PROTOCOL`): how much the agent asks, when it isn't the default. `always`: a Claude Code
+     * work turn lets only reads through on the computer, and every other call of its own tools reaches the server's
+     * prompt. `never`: a command the computer holds is refused with where it runs, never with a wait for a person.
+     * An older runner ignores it.
+     */
+    asks?: "always" | "never";
+  };
   /** Protocol 13: the account folder to run in (`accounts/<kind>/<id>`); absent: the machine's own sign-in. */
   account?: string;
   /** Protocol 13: how hard it thinks; absent: the CLI's default. */
@@ -1928,6 +1939,12 @@ export interface BrainTurnRequest {
    */
   personWaiting?: boolean;
 }
+
+/**
+ * From this protocol on the runner reads `BrainTurnRequest.permissions.asks`, and `exec` answers `merge` for an
+ * approved command that is one merge. The server sends an older runner a `plan` turn for an agent that always asks.
+ */
+export const ASKS_PROTOCOL = 59;
 
 /** Largest strings of a `brain.event` (tool inputs and results are cut, text deltas are small). */
 export const BRAIN_LIMITS = {
@@ -2073,7 +2090,7 @@ export interface MachineAgent {
   /**
    * Its containers service may run here (ADR 0169). Absent for a brain whose shell runs in a sandbox of the CLI's own,
    * which that service, outside it, would be a way out of, and for the team's right hand, which thinks on several.
-   * A person's seat of the right hand (an entry of its own here, ADR 0174) has it.
+   * A person's seat of the right hand (an entry of its own here, ADR 0175) has it.
    */
   containers?: boolean;
 }
@@ -2214,7 +2231,7 @@ export interface FileEntry {
  * The agent a request is for (protocol 2+). The runner gives each agent its
  * own folder inside the workspace, `<handle>-<first 8 of id>`, and treats it
  * as that request's workspace; a renamed agent keeps its folder (found by id).
- * The id isn't always an agent's row: a browser profile's, or a person's seat of the team's right hand (ADR 0174),
+ * The id isn't always an agent's row: a browser profile's, or a person's seat of the team's right hand (ADR 0175),
  * which the runner serves like any agent.
  */
 export interface AgentScope {
@@ -2497,7 +2514,7 @@ export interface MachineReplies {
     stderr: string;
     timedOut: boolean;
     canceled?: { killed: boolean };
-    /** It ran as a merge the agent does without asking (`mergeRepos`). */
+    /** It ran as one merge with no card of its own: in `mergeRepos`, or approved (a saved rule, an agent that never asks). */
     merge?: MergeDone;
   };
   /** `base64: null`: no such file. */
@@ -3654,7 +3671,7 @@ export const MISSION_MCP_TOOLS: readonly MissionMcpTool[] = [
   {
     name: "request_approval",
     description:
-      "Ask a person to approve a merge, a deploy or a rollback before you do it. Never merge, deploy or roll back without an approval. Then stop and wait: you are resumed with the outcome.",
+      "Ask a person to approve a merge, a deploy or a rollback before you do it, whenever one is held for a person. Then stop and wait: you are resumed with the outcome.",
     inputSchema: {
       type: "object",
       properties: {

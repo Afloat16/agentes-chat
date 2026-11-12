@@ -965,7 +965,7 @@ const toolResultFor = (approval: Approval | undefined, by?: string | null): { co
   if (approval.status === "expired") {
     return {
       content: ahead
-        ? "Nobody approved this action ahead in time: at its time it asks a person first."
+        ? "Nobody approved this action ahead in time: at its time it goes the way calling its tool would."
         : "Nobody approved this action within 24 hours; it was not executed.",
       isError: true,
     };
@@ -2152,7 +2152,7 @@ async function executeRunInner(
         // "What you can do" names the loaded groups: it waits for the judge.
         capabilities: Promise.resolve(judging).then(async () =>
           [
-            // The right hand has a computer only as the seat of the person behind the run (ADR 0174).
+            // The right hand has a computer only as the seat of the person behind the run (ADR 0175).
             describeCapabilities(tools, pending, isRightHand(agent) && (await seatState(db, run)) !== "seat"),
             browsers,
             repositories,

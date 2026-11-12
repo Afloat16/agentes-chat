@@ -65,7 +65,7 @@ const POWERS: [RolePermission, string][] = [
 ];
 
 /** At most this many agents, people and channels in the snapshot, like the team roster. */
-/** What its "# Your tools" says of a computer, by what this run has of one (`seatState`, ADR 0174). */
+/** What its "# Your tools" says of a computer, by what this run has of one (`seatState`, ADR 0175). */
 const RIGHT_HAND_COMPUTER = {
   seat: "In this private conversation you have a computer: this person's own place on the workspace's computer, with its own files, browser, desktop and sign-ins, which no other person's conversation with you can reach. Run commands, keep files and browse there with your tools. Its browser shows on its desktop, which this person can watch and take control of from your page: when a site needs them to sign in or pass a check, ask with desktop_ask_person. The computer's shared folder is everyone's, every agent's and every other person's conversation with you included: put nothing of this person's there unless they ask.",
   away: "You have a computer only in a person's private conversation with you, where it is that person's own place on the workspace's computer. Here you have none, so you run no commands, keep no files on a machine and open no browser: hand that work to an agent that has one, or say it can be done in their private conversation with you.",

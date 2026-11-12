@@ -940,7 +940,7 @@ export function createBrowserLive(deps: BrowserLiveDeps) {
           .from(agents)
           .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
         // One view per agent goes to everyone watching it, and the right hand's browser is a different one for each
-        // person (ADR 0174): it has no live view. Its desktop shows each person their own.
+        // person (ADR 0175): it has no live view. Its desktop shows each person their own.
         agent = isRightHand(row) ? undefined : row;
         // The computer the browser runs on now (an open handoff's, a mission's, else the agent's).
         machineId = agent ? await browserMachineOf(deps.db, orgId, agentId) : null;

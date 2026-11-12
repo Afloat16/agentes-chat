@@ -13,6 +13,7 @@ import { formatShortDate } from "@agenteschat/client/lib/format";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
 import { can } from "@agenteschat/client/lib/permissions";
 import { memoryLine, pendingOnAgent, proposalTitle, proposalWhy } from "@agenteschat/client/lib/proposals";
+import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import {
   Alert,
   Button,
@@ -376,7 +377,7 @@ function RulesCard({ rules }: { rules: Memory[] }) {
         id="mem-rules"
         icon="flag"
         title={t("agentPage.memory.rules")}
-        subtitle={t("agentPage.memory.rulesNote")}
+        subtitle={t(isRightHand(agent) ? "agentPage.memory.rulesNoteRightHand" : "agentPage.memory.rulesNote")}
       />
       <ul className="agp-list agp-mems">
         {rules.map((m) => (
@@ -527,7 +528,7 @@ export function MemoryTab({ item }: { item?: string }) {
             icon={<Icon name="agent" size={16} />}
             label={t("agentPage.memory.lessons")}
             value={count("lessons")}
-            sub={t("agentPage.memory.fromTeam")}
+            sub={t(isRightHand(agent) ? "agentPage.memory.fromTeamRightHand" : "agentPage.memory.fromTeam")}
           />
           <Cell
             icon={<Icon name="document" size={16} />}

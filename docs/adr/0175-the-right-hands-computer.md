@@ -1,4 +1,4 @@
-# 0174. The right hand's computer: a seat per person
+# 0175. The right hand's computer: a seat per person
 
 - Status: Accepted (built: engine, the shared client's lists, the web and the phone app's row; not yet run on a real
   system-mode computer, see "Before it ships")

@@ -53,7 +53,7 @@ export const browserHandoffs = pgTable(
     /** Who is (or was) in control. */
     controllerUserId: text().references(() => users.id, { onDelete: "set null" }),
     /**
-     * On the right hand, whose seat's screen this is (ADR 0174): each person's seat is another screen, so its handoffs
+     * On the right hand, whose seat's screen this is (ADR 0175): each person's seat is another screen, so its handoffs
      * are kept and read per person. Null for every other agent, whose screen is one.
      */
     seatUserId: text().references(() => users.id, { onDelete: "cascade" }),

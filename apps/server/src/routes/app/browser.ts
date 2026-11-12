@@ -94,7 +94,7 @@ export function browserRoutes(deps: AppDeps) {
         const { orgId, agentId } = c.req.valid("param");
         const userId = c.get("user").id;
         await requireBrowserAccess(db, userId, orgId, agentId, undefined, screen);
-        // Whoever asks: on the right hand each person reads only their own seat's (ADR 0174).
+        // Whoever asks: on the right hand each person reads only their own seat's (ADR 0175).
         const open = await openHandoffOf(db, orgId, agentId, screen, userId);
         return c.json({ handoff: open ? handoffView(open) : null }, 200);
       },

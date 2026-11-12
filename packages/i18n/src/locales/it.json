@@ -3089,7 +3089,7 @@
     "lead": "Quando {{name}} chiede a una persona prima di agire.",
     "always": {
       "title": "Chiedere sempre",
-      "text": "Chiede prima di cambiare qualcosa in un’app."
+      "text": "Chiede prima di cambiare qualsiasi cosa, qui, sul suo computer o in un’app."
     },
     "risky": {
       "title": "Solo ciò che è rischioso",
@@ -3097,7 +3097,7 @@
     },
     "never": {
       "title": "Non chiedere mai",
-      "text": "Chiede comunque per merge, deploy e rollback."
+      "text": "Non chiede mai, nemmeno per merge, deploy, pagamenti e routine."
     }
   },
   "brakes": {
@@ -5612,6 +5612,7 @@
       "verified_other": "{{count}} verificati",
       "lessons": "Lezioni",
       "fromTeam": "imparate dal team",
+      "fromTeamRightHand": "imparate da te",
       "proposals": "Proposte",
       "waiting": "in attesa di una decisione",
       "noneWaiting": "nessuna in attesa",
@@ -5637,6 +5638,7 @@
       "saved": "Salvato. Ora conta come verificato.",
       "rules": "Regole date dalle persone",
       "rulesNote": "Valgono in tutto il lavoro per chi ha dato ciascuna, da dovunque arrivi la richiesta. Quelle del responsabile o di un admin valgono per tutti.",
+      "rulesNoteRightHand": "Le regole che dai nella tua DM valgono solo per te. Solo tu le vedi.",
       "ruleBy": "Da {{name}} · {{date}}",
       "removeRule": "Rimuovi",
       "ruleRemoved": "Regola rimossa. È in Archiviati se la rivuoi.",
@@ -6482,7 +6484,7 @@
     "connectorsLabel": "Connettori e livelli",
     "connectOther": "Collega un'altra app",
     "opensConnectors": "apre Connettori",
-    "approvalsNote": "Merge, deploy e rollback chiedono sempre l'approvazione in chat.",
+    "approvalsNote": "Merge, deploy e rollback chiedono l'approvazione in chat, a meno che l'agente non chieda mai.",
     "approverOwner": "L'approvazione spetta a {{name}}.",
     "approverAdmins": "L'approvazione spetta a un admin.",
     "skillsTitle": "Skill dello spazio di lavoro",
@@ -6758,8 +6760,8 @@
       "readDesc": "Vede cosa c'è in {{app}}. Non cambia nulla.",
       "write": "Leggere e scrivere",
       "writeDesc": "Crea e modifica anche in {{app}}.",
-      "asks": "{{actions}} chiedono sempre la tua approvazione, a qualsiasi livello.",
-      "asksAny": "Inviare, eliminare e pagare chiedono sempre la tua approvazione, a qualsiasi livello.",
+      "asks": "{{actions}} chiedono la tua approvazione, a meno che l'agente non chieda mai.",
+      "asksAny": "Inviare, eliminare e pagare chiedono la tua approvazione, a meno che l'agente non chieda mai.",
       "remove": "Togli {{app}}",
       "done": "Fatto"
     },
@@ -7990,7 +7992,7 @@
       "ownActions": "Fa da sola"
     },
     "ownActions": {
-      "hint": "Ogni esecuzione fa queste azioni nelle tue app collegate senza chiedere. Qualsiasi altra azione lì chiede prima l’approvazione di una persona, e merge, deploy e rollback la chiedono sempre.",
+      "hint": "Ogni esecuzione fa queste azioni nelle tue app collegate senza chiedere. Qualsiasi altra azione lì chiede prima l’approvazione di una persona, a meno che l’agente non chieda mai.",
       "none": "Nelle app collegate chiede l’approvazione di una persona prima di ogni azione. Per farle fare il suo lavoro da sola, di’ all’agente in chat quali azioni può fare.",
       "remove": "Torna a chiedere prima di: {{action}}",
       "hintShort": "Ogni esecuzione fa queste azioni senza chiedere.",
@@ -8929,7 +8931,7 @@
       "offline": "{{name}} è offline. Il piano parte quando torna.",
       "needsMachine": "Le missioni girano su un computer collegato. Collegane uno a {{name}} in Impostazioni › Dispositivi.",
       "commandHint": "Puoi anche avviarne una scrivendo nel campo di testo di qualsiasi conversazione:",
-      "approvals": "Merge, deploy e rollback chiedono sempre l'approvazione",
+      "approvals": "Di norma merge, deploy e rollback chiedono l'approvazione",
       "start": "Avvia missione",
       "created": "Missione creata: {{name}} sta preparando il piano.",
       "who": "Chi programma",
@@ -11399,7 +11401,7 @@
   },
   "access": {
     "matrixTitle": "Accesso degli agenti",
-    "matrixHint": "Le azioni sensibili (merge, deploy, condivisione, pagamento) chiedono sempre l'approvazione, a qualsiasi livello. Per impostarlo strumento per strumento, apri gli Strumenti del connettore.",
+    "matrixHint": "Di norma le azioni sensibili (merge, deploy, condivisione, pagamento) chiedono l'approvazione. Per impostarlo strumento per strumento, apri gli Strumenti del connettore.",
     "matrixHow": "Fai clic su una cella per cambiarla:",
     "kindLabel": "Mostra",
     "kind": {
@@ -11879,6 +11881,7 @@
     "notVisible": "Il tuo account GitHub non vede quell'installazione. Installala con un account che vi abbia accesso.",
     "otherWorkspace": "Questo account GitHub è già collegato a un altro spazio di lavoro. Rimuovi l'app da lì prima di installarla qui.",
     "installedOutside": "L'app è stata installata su questo account GitHub fuori da agentes.chat. Rimuovila su GitHub e installala di nuovo da Connettori › GitHub.",
+    "ownerUnknown": "GitHub non ha detto chi è proprietario di questa organizzazione. Chi gestisce il server deve aggiungere il permesso dell'organizzazione Members (sola lettura) all'app GitHub, poi la installi di nuovo.",
     "misconfigured": "L'app GitHub ha la chiave segreta sbagliata sul server, quindi l'installazione non può finire. Chi gestisce il server deve sostituire la chiave nelle impostazioni dell'app.",
     "connectAccount": "Collega un account GitHub",
     "ownerHint": "Il proprietario di questo server può creare l'app GitHub qui in Connettori.",
@@ -11929,7 +11932,7 @@
     "merge": {
       "label": "Può fare il merge senza chiedere",
       "none": "Nessun repository scelto. Ogni merge chiede l'approvazione.",
-      "help": "In questi repository il merge avviene senza scheda di approvazione, finisce nell'audit e lascia una ricevuta nella conversazione. Tutto il resto di sensibile continua a chiedere.",
+      "help": "In questi repository il merge avviene senza scheda di approvazione, finisce nell'audit e lascia una ricevuta nella conversazione. Un agente che chiede sempre continua a chiedere.",
       "dialogTitle": "Dove {{name}} fa il merge senza chiedere",
       "dialogDesc": "Solo repository che usa già. Un merge altrove chiede l'approvazione.",
       "short": "In questi repository il merge avviene senza scheda di approvazione."
@@ -12064,7 +12067,7 @@
       "github": {
         "1": "Leggere codice, issue e pull request",
         "2": "Aprire pull request e commentare",
-        "ask": "Merge e deploy chiedono sempre la tua approvazione"
+        "ask": "Di norma merge e deploy chiedono la tua approvazione"
       },
       "sentry": {
         "1": "Vedere errori ed eventi",
@@ -12098,7 +12101,7 @@
       "cloudflare_bindings": {
         "1": "Vedere Workers, KV, R2 e D1",
         "2": "Modificare Workers e storage",
-        "ask": "I deploy chiedono sempre la tua approvazione"
+        "ask": "Di norma i deploy chiedono la tua approvazione"
       },
       "cloudflare_observability": {
         "1": "Vedere log e metriche dei Workers"
@@ -12106,7 +12109,7 @@
       "supabase": {
         "1": "Vedere progetti e funzioni",
         "2": "Interrogare e modificare il database",
-        "ask": "I deploy chiedono sempre la tua approvazione"
+        "ask": "Di norma i deploy chiedono la tua approvazione"
       },
       "supabase_readonly": {
         "1": "Interrogare il database (sola lettura)",
@@ -12841,7 +12844,7 @@
     "see": "Vedi",
     "seeAsks": "Vedi cosa chiede l'approvazione",
     "agentTitle": "Cosa può usare {{name}}",
-    "agentSub": "Per connettore e argomento. Le azioni sensibili chiedono sempre l'approvazione."
+    "agentSub": "Per connettore e argomento. Di norma le azioni sensibili chiedono l'approvazione."
   },
   "connectFlow": {
     "steps": "Passaggi",
@@ -12913,7 +12916,7 @@
     "asksCount_one": "{{count}} azione chiede sempre l'approvazione in chat.",
     "asksCount_many": "{{count}} azioni chiedono sempre l'approvazione in chat.",
     "asksCount_other": "{{count}} azioni chiedono sempre l'approvazione in chat.",
-    "asksDefault": "Le azioni sensibili chiedono sempre l'approvazione in chat.",
+    "asksDefault": "Di norma le azioni sensibili chiedono l'approvazione in chat.",
     "grant": "Concedi",
     "saved_one": "{{name}}: {{count}} agente può usarlo.",
     "saved_many": "{{name}}: {{count}} agenti possono usarlo.",
@@ -16061,6 +16064,7 @@
         "plan": "Il piano non è ancora approvato",
         "tooMany": "Troppi da approvare di fila",
         "off": "L'esecuzione di comandi è disattivata per questo agente",
+        "asks": "Questo agente chiede prima di ogni modifica",
         "team": "Il team l'ha già fatto",
         "teamPersonal": "È già stato fatto",
         "unclear": "Non si può leggere chiaramente",

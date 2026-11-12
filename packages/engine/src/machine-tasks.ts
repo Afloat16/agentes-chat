@@ -230,7 +230,7 @@ export const taskScope = (task: { agentId: string; scopeId?: string | null }, ha
 export interface StartTaskInput {
   orgId: string;
   agent: { id: string; handle: string };
-  /** The id the computer knows the agent by when it isn't its own: a person's seat of the right hand (ADR 0174). */
+  /** The id the computer knows the agent by when it isn't its own: a person's seat of the right hand (ADR 0175). */
   scopeId?: string | null;
   machineId: string;
   /** The runner's protocol (from the machine's last hello): older than 4 can't run tasks. */
@@ -899,7 +899,7 @@ export async function settleInterruptedTask(
         .from(schema.missions)
         .where(eq(schema.missions.id, claimed.missionId))
     : [];
-  // A seat's task (ADR 0174) starts again only while the seat is still its person's: never for someone who left.
+  // A seat's task (ADR 0175) starts again only while the seat is still its person's: never for someone who left.
   const seated = !claimed.scopeId || (await seatLive(deps.db, claimed.scopeId));
   const resumable = seated && resumesByItself(claimed, machine, mission) && Boolean(deps.start);
   if (resumable && deps.start && machine) {

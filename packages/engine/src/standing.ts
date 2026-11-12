@@ -278,7 +278,7 @@ async function agentHold(db: Executor, orgId: string, agentId: string): Promise<
   // A shared browser profile's stream goes by "profile:<id>": no agent, so no hold of its own (and no row to ask for).
   if (profileIdOfKey(agentId)) return null;
   return (await caches.standing.getOrLoad(`${orgId}:${agentId}`, async () => {
-    // A computer knows a person's seat of the right hand by the seat's id (ADR 0174): its hold is the right hand's.
+    // A computer knows a person's seat of the right hand by the seat's id (ADR 0175): its hold is the right hand's.
     const seatOfIt = sql`${agents.builtin} = ${RIGHT_HAND} and exists (select 1 from ${rightHandSeats} s
       where s.id = ${agentId}::uuid and s.org_id = ${agents.orgId})`;
     const [row] = await db
