@@ -34,6 +34,8 @@ const github: ToolSource = {
 
 test("GET /waiting lists an approval the person may decide, its conversation's only on request, and the person's topic hears it come and go", async () => {
   t = await createTestServer({
+    // The person from another workspace signs up too.
+    env: { ALLOW_SIGNUP: "true" },
     toolSources: [github],
     reply: (req) => {
       const last = JSON.stringify(req.messages.at(-1)?.content);
@@ -82,4 +84,7 @@ test("GET /waiting lists an approval the person may decide, its conversation's o
 
   // Signed out, or another workspace's person: nothing.
   expect((await browser(t)(`/api/app/organizations/${orgId}/waiting`)).status).toBe(401);
+  const outsider = browser(t);
+  await signUp(outsider, "outsider@example.com");
+  expect([403, 404]).toContain((await outsider(`/api/app/organizations/${orgId}/waiting`)).status);
 });
