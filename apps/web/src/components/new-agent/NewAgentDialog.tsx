@@ -40,8 +40,10 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   createContext,
   type KeyboardEvent,
+  lazy,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -81,10 +83,12 @@ import {
 import { useScrollEdges } from "@/lib/scroll-edges";
 import { useToast } from "@/lib/toast";
 import { AppsPickerDialog } from "./AppsPicker";
-import { ImportAgentsDialog } from "./ImportAgentsDialog";
 import { useNewAgentBrain } from "./useNewAgentBrain";
 import "../team-plan.css";
 import "./new-agent-card.css";
+
+/** "Trazer agentes de outro app", loaded when it opens: every app's reader stays out of the app's first load. */
+const ImportAgentsDialog = lazy(() => import("./ImportAgentsDialog").then((m) => ({ default: m.ImportAgentsDialog })));
 
 /*
  * A new agent (ADR 0164): one dialog for every way in. On the left, from scratch first, then the ready-made starting
@@ -1250,7 +1254,11 @@ function NewAgentDialog({
           onClose={() => setPicking(false)}
         />
       )}
-      {importing && <ImportAgentsDialog orgId={org.id} standalone onClose={() => setImporting(false)} />}
+      {importing && (
+        <Suspense fallback={null}>
+          <ImportAgentsDialog orgId={org.id} standalone onClose={() => setImporting(false)} />
+        </Suspense>
+      )}
       {/* Signing in on the provider's page comes back here, to this card (`takeResume`). */}
       <ConnectFlow
         flow={flow}

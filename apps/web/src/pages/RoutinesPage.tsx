@@ -2793,8 +2793,13 @@ function RoutineDialog({
                   />
                 </Field>
                 <div className="ac-field">
-                  <span className="ac-field__label">{t("routines.panel.ownActions")}</span>
-                  <OwnActions routine={routine} />
+                  <HintLine
+                    name={t("common.about", { label: t("routines.panel.ownActions") })}
+                    hint={t(routine?.ownActions?.length ? "routines.ownActions.hint" : "routines.ownActions.none")}
+                  >
+                    <span className="ac-field__label">{t("routines.panel.ownActions")}</span>
+                  </HintLine>
+                  <OwnActions routine={routine} labelled />
                 </div>
                 <RoutineReachWarnings
                   prompt={prompt}
@@ -2839,20 +2844,31 @@ function RoutineDialog({
 }
 
 /** What a routine does in connected apps without asking (the job its creator set it up for), or that it asks for each. */
-function OwnActions({ routine }: { routine: Routine | undefined }) {
+function OwnActions({
+  routine,
+  labelled = false,
+}: {
+  routine: Routine | undefined;
+  /** Under a field's label, which carries the ⓘ: the short line is words alone, never a control in the field's place. */
+  labelled?: boolean;
+}) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const action = useRoutineAction(org.id);
   const own = routine?.ownActions ?? [];
   const about = t("common.about", { label: t("routines.panel.ownActions") });
-  if (own.length === 0)
-    return (
-      <p className="small muted">
-        <HintLine name={about} hint={t("routines.ownActions.none")}>
-          {t("routines.ownActions.noneShort")}
+  const line = (short: string, hint: string) => (
+    <p className="small muted">
+      {labelled ? (
+        short
+      ) : (
+        <HintLine name={about} hint={hint}>
+          {short}
         </HintLine>
-      </p>
-    );
+      )}
+    </p>
+  );
+  if (own.length === 0) return line(t("routines.ownActions.noneShort"), t("routines.ownActions.none"));
   return (
     <>
       <ul className="routine-own" aria-label={t("routines.panel.ownActions")}>
@@ -2879,11 +2895,7 @@ function OwnActions({ routine }: { routine: Routine | undefined }) {
           </li>
         ))}
       </ul>
-      <p className="small muted">
-        <HintLine name={about} hint={t("routines.ownActions.hint")}>
-          {t("routines.ownActions.hintShort")}
-        </HintLine>
-      </p>
+      {line(t("routines.ownActions.hintShort"), t("routines.ownActions.hint"))}
     </>
   );
 }

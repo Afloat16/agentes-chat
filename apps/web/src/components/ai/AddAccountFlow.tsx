@@ -993,7 +993,7 @@ function AddAccountFlow({
           <SettingNote icon="alert" live>
             {why}
           </SettingNote>
-          {said && <p className="ac-tools__io agp-addacct__said">{said}</p>}
+          {said && <pre className="ac-tools__io agp-addacct__said">{said}</pre>}
           {instead ? (
             <span className="ac-acts">
               {retry}

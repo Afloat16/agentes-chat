@@ -449,7 +449,7 @@
     if (!search || !actions) return true;
     const gap = parseFloat(style(bar).columnGap) || 0;
     const floor = parseFloat(style(search).minWidth) || 0;
-    return floor + gap + actions.getBoundingClientRect().width <= bar.clientWidth + 0.5;
+    return floor + gap + actions.getBoundingClientRect().width <= bar.clientWidth - 0.5;
   };
   const stackToolbars = () => {
     for (const bar of document.querySelectorAll(".ac-toolbar:has(> .ac-toolbar__search)")) {
