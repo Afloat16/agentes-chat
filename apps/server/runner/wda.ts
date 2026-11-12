@@ -716,6 +716,8 @@ export type HelperNeed = { state: "preparing" | "needs_you"; reason: PhoneReason
 
 interface BuildMeta {
   xcode: string;
+  /** The WebDriverAgent it was built from: another version is built again, as another Xcode is. */
+  wda?: string;
   team?: string;
   builtAt: number;
   expiresAt?: number;
@@ -865,7 +867,7 @@ export class IosHelper {
 
   /** Built for this Xcode, and its profile isn't about to run out. */
   private fresh(meta: BuildMeta | null) {
-    if (meta === null || (this.xcode && meta.xcode !== this.xcode)) return false;
+    if (meta === null || (this.xcode && meta.xcode !== this.xcode) || meta.wda !== WDA_VERSION) return false;
     const renewAt = this.ends(meta) - RENEW_BEFORE_MS;
     // Xcode keeps a profile until it runs out: a renewal that got the same one waits for that end, not a new build
     // every poll.
@@ -1014,7 +1016,7 @@ export class IosHelper {
     if (r.code !== 0 || r.timedOut) {
       throw new HelperFailure(helperReason(said), r.timedOut ? "The build didn't finish in time." : failureLine(said));
     }
-    const meta: BuildMeta = { xcode, builtAt: this.now(), ...(team ? { team: team.id } : {}) };
+    const meta: BuildMeta = { xcode, wda: WDA_VERSION, builtAt: this.now(), ...(team ? { team: team.id } : {}) };
     if (team) {
       const app = path.join(derived, "Build", "Products", "Debug-iphoneos", "WebDriverAgentRunner-Runner.app");
       const decoded = await runTool(
