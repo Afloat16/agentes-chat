@@ -1199,6 +1199,9 @@ export const en = {
       linkSkipped_other: "{{count}} files past the link's limit",
       linkSkippedHelp:
         "A link reads up to 200 files and 8 MB. To bring the rest, download the folder and drop it here.",
+      systemFiles_one: "{{count}} system file left out",
+      systemFiles_other: "{{count}} system files left out",
+      systemFilesHelp: "Dependencies, caches and folders like node_modules and .git. We only read what belongs to the agents.",
       never: "Keys, passwords and chat history never come along.",
       go_one: "Import {{count}} item",
       go_other: "Import {{count}} items",
@@ -1263,6 +1266,13 @@ export const en = {
       errors: {
         empty: "There's nothing to read there. Check that you picked the right folder or file.",
         tooLarge: "It's too big to read here. Try just the agents' folder, without the rest.",
+        limit: {
+          files: "Leaving out system files, that's {{have}} files. One import reads up to {{max}}. Drop just the agents' folder, without the rest.",
+          bytes: "{{name}} is {{have}}. One import opens up to {{max}}. Drop just the agents' folder, without the rest.",
+          unpacked: "Unpacked, it comes to {{have}}. One import reads up to {{max}}. Drop just the agents' folder, without the rest.",
+          text: "The pasted text is {{have}}. One import reads up to {{max}}. Ask for the export in parts, one agent at a time.",
+          file: "{{name}} is {{have}}. One import reads up to {{max}} per file. Ask for the export in parts, one agent at a time.",
+        },
         unknown:
           "We don't recognize these files. Pick the app they come from to see where the right file is, or use Another app.",
         newerVersion:

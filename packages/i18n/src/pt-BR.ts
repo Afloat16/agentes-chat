@@ -1119,6 +1119,9 @@ export const ptBR = {
       linkSkipped_one: "{{count}} arquivo além do limite do link",
       linkSkipped_other: "{{count}} arquivos além do limite do link",
       linkSkippedHelp: "Um link lê até 200 arquivos e 8 MB. Para trazer o resto, baixe a pasta e solte aqui.",
+      systemFiles_one: "{{count}} arquivo de sistema ficou de fora",
+      systemFiles_other: "{{count}} arquivos de sistema ficaram de fora",
+      systemFilesHelp: "Dependências, caches e pastas como node_modules e .git. Só lemos o que é dos agentes.",
       never: "Chaves, senhas e histórico de conversa nunca vêm.",
       go_one: "Importar {{count}} item",
       go_other: "Importar {{count}} itens",
@@ -1183,6 +1186,13 @@ export const ptBR = {
       errors: {
         empty: "Não achamos nada para ler aí. Confira se escolheu a pasta ou o arquivo certo.",
         tooLarge: "É grande demais para ler aqui. Tente só a pasta dos agentes, sem o resto.",
+        limit: {
+          files: "Fora os arquivos de sistema, são {{have}} arquivos. Uma importação lê até {{max}}. Solte só a pasta dos agentes, sem o resto.",
+          bytes: "O {{name}} tem {{have}}. Uma importação abre até {{max}}. Solte só a pasta dos agentes, sem o resto.",
+          unpacked: "Descompactado, ele chega a {{have}}. Uma importação lê até {{max}}. Solte só a pasta dos agentes, sem o resto.",
+          text: "O texto colado tem {{have}}. Uma importação lê até {{max}}. Peça a exportação por partes, um agente de cada vez.",
+          file: "O {{name}} tem {{have}}. Uma importação lê até {{max}} por arquivo. Peça a exportação por partes, um agente de cada vez.",
+        },
         unknown:
           "Não reconhecemos esses arquivos. Escolha o app de onde eles vêm para ver onde fica o arquivo certo, ou use Outro app.",
         newerVersion:
