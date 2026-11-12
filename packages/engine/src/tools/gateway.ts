@@ -37,6 +37,7 @@ import { recordRead } from "../outbound";
 import { routineCreatorOf } from "../requester";
 import { isRightHandId, RIGHT_HAND_NO_COMPUTER } from "../right-hand";
 import type { RoutineBrief } from "../routine-brief";
+import { keysOfCall, RUN_CODE_TOOL, routineKeysAllowed, routineKeysKind } from "../routine-keys";
 import { addRunStep } from "../runs";
 import { describeWhen } from "../schedule";
 import { REQUEST_SECRET_TOOL } from "../secrets";
@@ -1262,6 +1263,21 @@ export function createToolGateway(deps: {
           ? await ownJobCovers(ctx, authority.brief, tool, call.input)
           : false;
       if (ownJob) approves = false;
+      // A routine's own run puts Vault keys in a command only where its creator allowed them, or its agent never asks
+      // (ADR 0144 §2): else a person says yes first, and "Sempre nesta rotina" keeps those keys as the routine's own.
+      const keyNames =
+        tool.name === RUN_CODE_TOOL && !tool.connectionId && !never && authority?.kind === "routine" && authority.brief
+          ? keysOfCall(call.input)
+          : [];
+      const keysAt =
+        keyNames.length > 0 && authority?.kind === "routine" && authority.brief
+          ? { orgId: ctx.orgId, agentId: ctx.agentId, routineId: authority.brief.routineId }
+          : null;
+      const keysAsk =
+        keysAt && UUID.test(keysAt.routineId) && !(await routineKeysAllowed(ctx.db, keysAt, keyNames))
+          ? ((await routineKeysKind(ctx.db, keysAt, tool.name, keyNames)) ?? false)
+          : null;
+      if (keysAsk !== null) approves = true;
       // "Pode fazer merge sem perguntar": a merge in a repository its owner or an admin chose, with no card. An agent
       // that never asks merges anywhere it may, and leaves the same receipt.
       const mergeAlone: MergeDone | null = approves
@@ -1433,8 +1449,9 @@ export function createToolGateway(deps: {
       if (approves) {
         // A routine's card offers "Sempre nesta rotina" where the action can be its own: the narrower word for the
         // same run. Not for an agent that always asks: its routine's own actions ask too.
-        const own =
-          level !== "always" && authority?.kind === "routine" && authority.brief
+        const own = keysAsk
+          ? keysAsk
+          : level !== "always" && keysAsk === null && authority?.kind === "routine" && authority.brief
             ? await routineKind(ctx, authority.brief, tool, call.input)
             : null;
         return askPerson(why, own ?? remember);
