@@ -37958,6 +37958,9 @@
   "chat.work.step.cancelingTask": {
     "value": "Canceled a task"
   },
+  "chat.work.step.keepingRunning": {
+    "value": "Kept a program running"
+  },
   "chat.work.step.uploadingArtifact": {
     "value": "Sent a file to the Drive"
   },
@@ -38290,6 +38293,9 @@
   },
   "chat.activity.cancelingTask": {
     "value": "canceling a task"
+  },
+  "chat.activity.keepingRunning": {
+    "value": "keeping a program running"
   },
   "chat.activity.uploadingArtifact": {
     "value": "sending a file to the Drive"
