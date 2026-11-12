@@ -1243,6 +1243,8 @@ async function recordSave(ctx: ToolContext, res: ConsolidateResult) {
       params: {
         text: cutText(line, 500),
         ...(res.item.kind === "rule" ? { rule: true } : {}),
+        // No agent owns it (`saveForTeam`): the team's, never "my rules".
+        ...(res.item.agentId === null ? { team: true } : {}),
         ...(replaced ? { previousText: cutText(replaced.title || replaced.content, 500) } : {}),
       },
       before: replaced ? { itemId: replaced.id } : null,

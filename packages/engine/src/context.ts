@@ -47,9 +47,11 @@ import { openRequestsBlock, openRequestsOf } from "./open-requests";
 import { parkedOnBlock } from "./parked-asks";
 import { reachNote, reachOf } from "./reach";
 import {
+  answersForEveryone,
   byAnotherAgent,
   byEveryone,
   WHY_AN_AGENT_CALLED,
+  WHY_ANSWER_FOR_EVERYONE,
   WHY_EVERYONE_CALLED,
   WHY_YOU_WERE_CALLED,
 } from "./reply-policy";
@@ -1212,6 +1214,7 @@ export async function buildRunContext(
           },
         ]
       : []),
+    ...(answersForEveryone(run, trigger) ? [{ turn: true, text: WHY_ANSWER_FOR_EVERYONE }] : []),
     {
       turn: true,
       text: routine
