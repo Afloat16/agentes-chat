@@ -20,7 +20,7 @@ import {
   schema,
   sql,
 } from "@agenteschat/db";
-import { getAgentCached } from "../agents";
+import { getAgentCached, workspaceHomeId } from "../agents";
 import { recordAudit } from "../audit";
 import { isChannelMember } from "../channels";
 import { answersAgentsOnly } from "../consultations";
@@ -50,6 +50,7 @@ import {
 } from "../notification-producers";
 import { can, getMembership } from "../organizations";
 import { enqueue } from "../outbox";
+import { isRightHand } from "../right-hand";
 import { resumeRunWithResult } from "../run-resume";
 import { bodyCode, runWhere } from "../run-tools";
 import { closedRefusal } from "../standing";
@@ -351,10 +352,11 @@ export async function noteComputerTaken(
   input: { orgId: string; agentId: string; actorId: string; audit?: Record<string, unknown> },
 ) {
   const [agent] = await deps.db
-    .select({ owner: agents.ownerUserId, name: agents.name, handle: agents.handle })
+    .select({ owner: agents.ownerUserId, name: agents.name, handle: agents.handle, builtin: agents.builtin })
     .from(agents)
     .where(and(eq(agents.id, input.agentId), eq(agents.orgId, input.orgId)));
-  if (!agent || agent.owner === input.actorId) return;
+  // On the right hand a person takes only their own seat (ADR 0174): nobody else's to be told about.
+  if (!agent || agent.owner === input.actorId || isRightHand(agent)) return;
   if (input.audit) {
     await recordAudit(deps.db, {
       orgId: input.orgId,
@@ -455,11 +457,18 @@ export async function screenAccess(
   if (!membership) throw new ForbiddenError("You are not a member of this organization");
   const closed = closedRefusal(membership.standing);
   if (closed) throw closed;
-  const [agent] = await db
-    .select({ owner: agents.ownerUserId, machineId: agents.machineId })
+  const [row] = await db
+    .select({ owner: agents.ownerUserId, machineId: agents.machineId, builtin: agents.builtin })
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
-  if (!agent) throw new NotFoundError("Agent not found");
+  if (!row) throw new NotFoundError("Agent not found");
+  // The right hand's screens are each person's own seat (ADR 0174): theirs to watch and drive, and nobody else's,
+  // an admin's included. What they reach is decided where the seat is (`viewerScope`).
+  if (isRightHand(row)) {
+    const access = { owner: userId, machineId: await workspaceHomeId(db, orgId), admin: false };
+    return { access, refusal: null };
+  }
+  const agent = { owner: row.owner, machineId: row.machineId };
   const full = screen === "desktop";
   const admin = can(membership, full ? "control_computers" : "control_browsers");
   const access = { ...agent, admin };

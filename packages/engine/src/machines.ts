@@ -22,7 +22,7 @@ import {
   schema,
   sql,
 } from "@agenteschat/db";
-import { getAgent } from "./agents";
+import { getAgent, workspaceHomeId } from "./agents";
 import { type AuditEntry, recordAudit } from "./audit";
 import { isSandboxedBrain } from "./brains/types";
 import { caches } from "./cache";
@@ -31,6 +31,7 @@ import { publishOrgEvent } from "./events";
 import { can, requireActiveMembership, requirePermission } from "./organizations";
 import { maySql } from "./permissions";
 import { isRightHand, RIGHT_HAND, rightHandPermanent } from "./right-hand";
+import { liveSeats, removedSeatIds } from "./right-hand-seats";
 
 const { machines, agents, users, organizationMembers } = schema;
 
@@ -369,12 +370,18 @@ export async function computerDriving(db: Database, userId: string, orgId: strin
       owner: agents.ownerUserId,
       brain: agents.brain,
       account: agents.brainAccountId,
+      builtin: agents.builtin,
     })
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
   if (!agent) throw new NotFoundError("Agent not found");
-  const machine = agent.machineId ? await getMachine(db, orgId, agent.machineId) : null;
+  // The right hand's computer is each person's own seat on the workspace's (ADR 0174): theirs to drive, whatever
+  // their roles, and reached only as themselves (`viewerScope`).
+  const home = isRightHand(agent) ? await workspaceHomeId(db, orgId) : null;
+  const machineId = home ?? agent.machineId;
+  const machine = machineId ? await getMachine(db, orgId, machineId) : null;
   if (!machine) throw new NotFoundError("This agent has no computer");
+  if (home) return { machine, refusal: null };
   const person = {
     userId,
     admin: can(membership, "control_computers"),
@@ -599,15 +606,21 @@ export async function setMachineEgressWaiting(
 /** How many `deletedAgentIds` lists: a computer that misses one only keeps that agent's transcripts. */
 const DELETED_AGENTS_LISTED = 500;
 
-/** The org's agents gone for good, the latest first. A computer clears what it holds for those it knew. */
+/**
+ * The org's agents gone for good, the latest first, and the right hand's seats of people who left (ADR 0174). A
+ * computer clears what it holds for those it knew, and stops their work.
+ */
 export async function deletedAgentIds(db: Database, orgId: string): Promise<string[]> {
-  const rows = await db
-    .select({ id: agents.id })
-    .from(agents)
-    .where(and(eq(agents.orgId, orgId), isNotNull(agents.deletedAt)))
-    .orderBy(desc(agents.deletedAt))
-    .limit(DELETED_AGENTS_LISTED);
-  return rows.map((a) => a.id);
+  const [rows, seats] = await Promise.all([
+    db
+      .select({ id: agents.id })
+      .from(agents)
+      .where(and(eq(agents.orgId, orgId), isNotNull(agents.deletedAt)))
+      .orderBy(desc(agents.deletedAt))
+      .limit(DELETED_AGENTS_LISTED),
+    removedSeatIds(db, orgId, DELETED_AGENTS_LISTED),
+  ]);
+  return [...seats, ...rows.map((a) => a.id)];
 }
 
 /** The agents of the org pointed at this machine, as its `agents` frame lists them (protocol 9). */
@@ -660,7 +673,7 @@ export async function machineAgents(db: Database, orgId: string, machineId: stri
         )
         .where(and(eq(schema.rightHandBrains.orgId, orgId), eq(schema.machineAccounts.machineId, machineId)))
     : [];
-  return rows.map((a) => {
+  const listed = rows.map((a): MachineAgent => {
     const own = a.builtin === RIGHT_HAND ? lentAccount(a) : null;
     const extra = a.builtin === RIGHT_HAND ? [...new Set(personal.map((p) => p.id))].filter((id) => id !== own) : [];
     // The right hand off any workspace plan here thinks only with people's own: the first is its frame's account.
@@ -669,7 +682,7 @@ export async function machineAgents(db: Database, orgId: string, machineId: stri
       id: a.id,
       handle: a.handle,
       name: a.name,
-      locale: /^pt(?:-|$)/i.test(a.locale ?? "") ? "pt-BR" : "en",
+      locale: agentLocale(a.locale),
       ...(a.appearance
         ? { look: { color: a.appearance.color, eyes: a.appearance.eyes, accessory: a.appearance.accessory } }
         : {}),
@@ -680,7 +693,36 @@ export async function machineAgents(db: Database, orgId: string, machineId: stri
       ...(a.builtin !== RIGHT_HAND && !isSandboxedBrain(a.brain) ? { containers: true } : {}),
     };
   });
+  // The right hand's seats (ADR 0174) live on the workspace's own computer, each listed like an agent of its own.
+  const rightHand = (await workspaceHomeId(db, orgId)) === machineId ? await rightHandRow(db, orgId) : null;
+  if (!rightHand) return listed;
+  return [...listed, ...(await liveSeats(db, orgId)).map((seat) => seatListed(rightHand, seat))];
 }
+
+type RightHandRow = NonNullable<Awaited<ReturnType<typeof rightHandRow>>>;
+
+const agentLocale = (locale: string | null) => (/^pt(?:-|$)/i.test(locale ?? "") ? "pt-BR" : "en");
+
+async function rightHandRow(db: Database, orgId: string) {
+  const [row] = await db
+    .select({ handle: agents.handle, name: agents.name, appearance: agents.appearance })
+    .from(agents)
+    .where(and(eq(agents.orgId, orgId), eq(agents.builtin, RIGHT_HAND), isNull(agents.archivedAt)));
+  return row ?? null;
+}
+
+/** A seat as the `agents` frame lists it: the right hand's look, the person's name beside its own, their language. */
+const seatListed = (a: RightHandRow, seat: Awaited<ReturnType<typeof liveSeats>>[number]): MachineAgent => ({
+  id: seat.id,
+  handle: a.handle,
+  name: `${a.name} (${seat.person})`,
+  locale: agentLocale(seat.locale),
+  ...(a.appearance
+    ? { look: { color: a.appearance.color, eyes: a.appearance.eyes, accessory: a.appearance.accessory } }
+    : {}),
+  // Its turns never run there (the locked chat turn is the agent's own), so its containers service is no way out.
+  containers: true,
+});
 
 /**
  * The agents on the org's machines changed (pointed at or away, renamed, a

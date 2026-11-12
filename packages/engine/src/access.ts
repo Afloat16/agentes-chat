@@ -426,8 +426,7 @@ function builtinInfo(name: string, scope: string): Omit<AccessTool, "state"> {
 }
 
 /**
- * `rightHand`: its tree, which leaves out what only a computer of its own would give it and the setup tools it
- * always has.
+ * `rightHand`: its tree, which leaves out the setup tools it always has.
  */
 function treeFor(
   granted: Set<string>,
@@ -435,7 +434,7 @@ function treeFor(
   rightHand = false,
 ): AccessTree {
   const builtins: AccessScope[] = Object.entries(BUILTIN_TOOLS)
-    .filter(([scope]) => !(rightHand && (NOT_IN_ALL.has(scope) || scope === RIGHT_HAND_ALWAYS)))
+    .filter(([scope]) => !(rightHand && scope === RIGHT_HAND_ALWAYS))
     .map(([scope, names]) => ({
       scope,
       label: scope === "" ? "Ask the person" : (BUILTIN_SCOPES[scope]?.label ?? scope),

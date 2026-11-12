@@ -63,6 +63,7 @@ import {
   TaskSignInError,
   taskRequester,
   taskResumesByItself,
+  taskScope,
   taskSeconds,
 } from "./machine-tasks";
 import {
@@ -74,6 +75,7 @@ import {
 } from "./machines";
 import { missionOfRun, type RunMission, runActsForMission } from "./mission-context";
 import { recordTaskFinished } from "./operator-events";
+import { machineScope, seatIdOf } from "./right-hand-seats";
 import { runnerUpdateWay } from "./runner-update";
 import { replyThreadOf } from "./runs";
 import {
@@ -665,21 +667,16 @@ export function createSandboxToolSource(
     }
     const run = { orgId: ctx.orgId, agentId: ctx.agentId, runId: ctx.runId };
     const released = await releaseVaultKeys(vault, run, names);
-    const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
-    const key = await requestVaultKey(
-      hub,
-      computer.machineId,
-      { id: ctx.agentId, handle: agent?.handle ?? "agent", ...(agent?.name ? { name: agent.name } : {}) },
-      "use Vault keys",
-      ctx.signal,
-    );
+    // The computer opens a value as who it takes the agent for: the right hand's seat there (ADR 0174).
+    const scope = await machineScope(hub, ctx, computer.machineId);
+    const key = await requestVaultKey(hub, computer.machineId, scope, "use Vault keys", ctx.signal);
     const keys = await Promise.all(
       released.map(async (k) => ({
         name: k.name,
         box: await sealSecret(
           key.publicKey,
           k.value,
-          vaultAad({ keyId: key.keyId, agentId: ctx.agentId, use: { kind: "env", name: k.name } }),
+          vaultAad({ keyId: key.keyId, agentId: scope.id, use: { kind: "env", name: k.name } }),
         ).catch(() => {
           // Never the sealing's own words: they could name the value's size.
           throw new Error(`${k.name} couldn't be prepared for your computer.`);
@@ -1364,6 +1361,7 @@ export function createSandboxToolSource(
                 {
                   orgId: ctx.orgId,
                   agent: { id: ctx.agentId, handle: agent?.handle ?? "agent" },
+                  scopeId: seatIdOf(ctx, await machineScope(hub, ctx, computer.machineId)),
                   machineId: computer.machineId,
                   protocol: status?.protocol ?? 0,
                   machineName: status?.name ?? info.name,
@@ -1541,7 +1539,7 @@ export function createSandboxToolSource(
           let reply: { canceled: boolean } | null = null;
           try {
             reply = await hubOf().call<"task.cancel">(row.machineId, {
-              agent: { id: ctx.agentId, handle: agent?.handle ?? "agent" },
+              agent: taskScope(row, agent?.handle ?? "agent"),
               op: "task.cancel",
               taskId: row.id,
             });

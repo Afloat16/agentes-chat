@@ -220,9 +220,17 @@ export interface TaskDeps {
   pubsub?: PubSub;
 }
 
+/** The agent as a task's computer knows it: the agent, or the seat its task runs in (`scopeId`). */
+export const taskScope = (task: { agentId: string; scopeId?: string | null }, handle: string) => ({
+  id: task.scopeId ?? task.agentId,
+  handle,
+});
+
 export interface StartTaskInput {
   orgId: string;
   agent: { id: string; handle: string };
+  /** The id the computer knows the agent by when it isn't its own: a person's seat of the right hand (ADR 0174). */
+  scopeId?: string | null;
   machineId: string;
   /** The runner's protocol (from the machine's last hello): older than 4 can't run tasks. */
   protocol: number;
@@ -408,6 +416,7 @@ async function insertTask(
     .values({
       orgId: input.orgId,
       agentId: input.agent.id,
+      scopeId: input.scopeId ?? null,
       machineId: input.machineId,
       channelId: input.channelId,
       threadRootId: input.threadRootId,
@@ -464,7 +473,7 @@ export async function launchTask(
         })
       : null;
     const started = await deps.call<"task.start">(input.machineId, {
-      agent: input.agent,
+      agent: taskScope({ agentId: input.agent.id, scopeId: input.scopeId }, input.agent.handle),
       op: "task.start",
       taskId: row.id,
       executor: input.executor,
@@ -903,6 +912,7 @@ export async function settleInterruptedTask(
       const again = {
         orgId: claimed.orgId,
         agent: { id: claimed.agentId, handle: handle ?? "agent" },
+        scopeId: claimed.scopeId,
         machineId: claimed.machineId,
         protocol: machine.protocol,
         machineName: machine.name,
@@ -1159,7 +1169,7 @@ export async function cancelOrgTasks(
         deps.call && !task.startRequest
           ? await deps
               .call<"task.cancel">(task.machineId, {
-                agent: { id: task.agentId, handle },
+                agent: taskScope(task, handle),
                 op: "task.cancel",
                 taskId: task.id,
               })
@@ -1261,7 +1271,7 @@ export async function checkCutTaskStart(
     .where(eq(schema.agents.id, row.agentId));
   const reply = await deps
     .call<"task.status">(row.machineId, {
-      agent: { id: row.agentId, handle: agent?.handle ?? "agent" },
+      agent: taskScope(row, agent?.handle ?? "agent"),
       op: "task.status",
       taskId: row.id,
     })

@@ -53,10 +53,11 @@ export const RIGHT_HAND_AUTO = {
 
 /**
  * What it holds whatever its grant rows say (`loadScopeKeys` adds the rows on top: apps, mailboxes, databases, a
- * tool turned off): every built-in scope an agent can be given, and the setup cards. Not a computer's (`sandbox:run`,
- * `browser:use`, `desktop:use`): it has none of its own, and a row for one gives it nothing. One row answers
- * everyone, so what is one person's stays in that person's own DM with it (`rightHandReader`): their Vault items,
- * their mailbox, their tasks, and what it remembers for them.
+ * tool turned off): every built-in scope an agent can be given but a computer's, and the setup cards. A computer's
+ * (`sandbox:run`, `browser:use`, `desktop:use`) are rows like any agent's, given when it is made
+ * (`RIGHT_HAND_COMPUTER_GRANTS`, ADR 0174), so an admin turns them off on its page. One row answers everyone, so what
+ * is one person's stays in that person's own DM with it (`rightHandReader`): their Vault items, their mailbox, their
+ * tasks, what it remembers for them, and their seat on the workspace's computer (`right-hand-seats.ts`).
  */
 export const RIGHT_HAND_GRANTS: readonly string[] = [
   "setup:write",
@@ -76,9 +77,8 @@ export const RIGHT_HAND_GRANTS: readonly string[] = [
   "vault:write",
 ];
 
-/** What it reads for a computer tool: it has no computer, and no card or admin can give it one. */
-export const RIGHT_HAND_NO_COMPUTER =
-  "you have no computer yet, so you run no commands, keep no files there and open no browser. Hand this to an agent that has one (ask_agent, tell_agent, or create_issue assigned to it) or propose one, and never ask the person to try again";
+/** The grant rows it is made with: its computer's scopes, each a person's own seat there (ADR 0174). */
+export const RIGHT_HAND_COMPUTER_GRANTS = ["sandbox:run", "browser:use", "desktop:use"] as const;
 
 /**
  * Its owner (the person accountable for it) is the workspace's longest-standing owner who can still sign in: set
@@ -137,6 +137,10 @@ export async function ensureRightHand(db: Executor, orgId: string): Promise<stri
     .insert(agentBudgetPeriods)
     // The month's counter exists from the start, as for any new agent (`resyncBudgetCounter`): nothing spent yet.
     .values({ orgId, agentId: made.id, periodStart: sql`date_trunc('month', now() at time zone 'utc')::date` })
+    .onConflictDoNothing();
+  await db
+    .insert(schema.agentScopes)
+    .values(RIGHT_HAND_COMPUTER_GRANTS.map((scope) => ({ orgId, agentId: made.id, connectionId: null, scope })))
     .onConflictDoNothing();
   return made.id;
 }
