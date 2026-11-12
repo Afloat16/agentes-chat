@@ -2861,6 +2861,24 @@ export const en = {
       zen: "Connect OpenCode",
       api_key: "Add an API key",
     },
+    /**
+     * A plan whose program is switched off on a computer the person connected. `program`: "Claude Code" or "Codex"
+     * (`brain.card`), as its switch is named in that computer's own settings.
+     */
+    toolOff: {
+      text: "{{computer}} is connected, but {{program}} is switched off on it. For safety, it can only be turned on at the computer itself.",
+      where: "On {{computer}}",
+      /** `<mark/>`: the app's icon, drawn. */
+      one: "Click the agentes.chat icon <mark/> by the clock",
+      oneWindows: "On Windows, it may be behind the taskbar's ^ arrow.",
+      two: "Open <b>Preferences</b>",
+      three: "Under <b>Tools</b>, turn on <b>{{program}}</b>",
+      /** On a computer that may have no app: its command follows. */
+      terminal: "In the computer's terminal, run:",
+      /** In the app on that very computer: Open Tools follows. */
+      here: "Turn on <b>{{program}}</b> under <b>Tools</b>.",
+      waiting: "Waiting for you to turn it on. This screen changes by itself.",
+    },
     titleFor: "Connect an AI for {{name}}",
     /** What the person already has, before the new sign-ins: accounts on the agent's computer, the workspace's keys. */
     have: {
@@ -3000,9 +3018,6 @@ export const en = {
       email: "We'll email you when the computer is ready. You can close this page.",
       ready: "The computer is ready.",
       useKey: "Use an API key now",
-      /** `program`: "Claude Code" or "Codex" (`brain.card`), switched off in that computer's own settings. */
-      toolOff:
-        "{{computer}} is connected, but it doesn't let agents use {{program}} yet. For safety, that is turned on only on the computer itself.",
       connecting: "This server's computer connects within a minute. You sign in here as soon as it does.",
       /** On the onboarding with no computer: one is connected only once the workspace opens. */
       computerLater:
@@ -5303,11 +5318,8 @@ export const en = {
         title: "One step left, on {{computer}} itself",
         waiting: "Waiting",
         one: "Click the agentes.chat icon by the clock",
-        /** A PC: the icon may be among the hidden ones, behind the taskbar's arrow. */
-        onePc: "Click the agentes.chat icon by the clock, or under the arrow beside it",
-        two: "Open Preferences",
-        three: "Under Tools, turn on Browser",
-        turnOn: "Under Tools, turn on {{tool}}",
+        two: "Preferences",
+        three: "Turn on Browser",
         done: "That's it. This page notices on its own, no reload needed.",
         menuOpen: "Open agentes",
         menuPrefs: "Preferences…",
@@ -13261,7 +13273,6 @@ export const en = {
       outageTitle: "This {{device}} lost its connection {{ago}}",
       toolsOff: "Off on this {{device}}. Turn it on in the app's Preferences, under Tools.",
       browserTitle: "Turn the browser on on this {{device}}",
-      toolTitle: "Turn {{tool}} on on this {{device}}",
       browserText: "One click in the app's Preferences, under Tools. This page notices by itself.",
       noReport: "This {{device}} hasn't reported what it allows yet. Update the app.",
       update: "Update the app",

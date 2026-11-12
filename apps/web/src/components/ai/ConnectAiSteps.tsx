@@ -105,13 +105,13 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { BillingLinkButton } from "@/components/BillingLinkButton";
 import { useOrg } from "@/components/org-context";
 import { KeyMismatch, KeyRefused, ProviderSelect } from "@/components/ProviderKey";
-import { ToolSteps } from "@/components/ToolSteps";
 import { managedOf, SetupProgress, useSetupWait, useWaitReader } from "@/components/WorkspaceComputer";
 import { useDirectory } from "@/hooks/useDirectory";
 import { planWord } from "@/lib/plan-usage";
 import { useToast } from "@/lib/toast";
 import { AddAccount, OpenPage, Step, StepTitle } from "./AddAccountFlow";
 import { PlanReplies, usePlanRepliesShown } from "./PlanReplies";
+import { ToolOffSteps } from "./ToolOffSteps";
 
 /*
  * One picker wherever an AI is connected (the setup's AI step, Connect an AI, Settings › AI accounts): for one agent
@@ -1664,19 +1664,17 @@ function GateWait({
   } else if (gate.state === "offline" && hostConnecting && !signingIn) {
     wait = line(<Spinner size={14} />, t("connectAi.wait.connecting"));
   } else if (gate.state === "unsupported" && gate.reason === "tool_off" && edition !== "cloud" && !hold) {
-    // The computer is connected and its program is there, switched off: said as that, then the way to its switch,
-    // drawn (the app's three clicks, the command on a server, one button on this very computer).
+    // The computer is connected and its program is there, switched off: said as that, then the way to its switch
+    // (`ToolOffSteps`).
     const program = t(`brain.card.${kind}`);
     wait = (
       <>
-        <p className="setup-line" role="status">
-          {t("connectAi.wait.toolOff", { computer, program })}
-        </p>
-        <ToolSteps
+        <p className="setup-line">{t("connectAi.toolOff.text", { computer, program })}</p>
+        <ToolOffSteps
           computer={computer}
           machineId={machineId}
-          tool={kind === "claude_code" ? "claude" : kind}
-          name={program}
+          kind={kind === "claude_code" ? "claude" : kind}
+          program={program}
         />
         {useKey}
       </>

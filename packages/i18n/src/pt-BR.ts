@@ -2789,6 +2789,24 @@ export const ptBR = {
       zen: "Conectar o OpenCode",
       api_key: "Adicionar uma chave de API",
     },
+    /**
+     * A plan whose program is switched off on a computer the person connected. `program`: "Claude Code" or "Codex"
+     * (`brain.card`), as its switch is named in that computer's own settings.
+     */
+    toolOff: {
+      text: "O {{computer}} está conectado, mas o {{program}} está desligado nele. Por segurança, só dá para ligar no próprio computador.",
+      where: "No {{computer}}",
+      /** `<mark/>`: the app's icon, drawn. */
+      one: "Clique no ícone do agentes.chat <mark/> perto do relógio",
+      oneWindows: "No Windows, ele pode estar atrás da seta ^ da barra de tarefas.",
+      two: "Abra <b>Preferências</b>",
+      three: "Em <b>Ferramentas</b>, ligue <b>{{program}}</b>",
+      /** On a computer that may have no app: its command follows. */
+      terminal: "No terminal do computador, rode:",
+      /** In the app on that very computer: Open Tools follows. */
+      here: "Ligue <b>{{program}}</b> em <b>Ferramentas</b>.",
+      waiting: "Esperando você ligar. Esta tela muda sozinha.",
+    },
     titleFor: "Conectar uma IA para o {{name}}",
     titleFor_female: "Conectar uma IA para a {{name}}",
     /** What the person already has, before the new sign-ins: accounts on the agent's computer, the workspace's keys. */
@@ -2933,9 +2951,6 @@ export const ptBR = {
       email: "Avisamos você por e-mail quando o computador ficar pronto. Pode fechar esta página.",
       ready: "O computador está pronto.",
       useKey: "Usar uma chave de API agora",
-      /** `program`: "Claude Code" or "Codex" (`brain.card`), switched off in that computer's own settings. */
-      toolOff:
-        "O {{computer}} está conectado, mas ainda não deixa os agentes usarem o {{program}}. Por segurança, isso só se liga no próprio computador.",
       connecting: "O computador deste servidor conecta em até um minuto. Você entra aqui assim que ele conectar.",
       /** On the onboarding with no computer: one is connected only once the workspace opens. */
       computerLater:
@@ -5256,11 +5271,8 @@ export const ptBR = {
         title: "Falta 1 passo, no próprio {{computer}}",
         waiting: "Esperando",
         one: "Clique no ícone do agentes.chat perto do relógio",
-        /** A PC: the icon may be among the hidden ones, behind the taskbar's arrow. */
-        onePc: "Clique no ícone do agentes.chat perto do relógio, ou na seta ao lado",
-        two: "Abra Preferências",
-        three: "Em Ferramentas, ligue o Navegador",
-        turnOn: "Em Ferramentas, ligue o {{tool}}",
+        two: "Preferências",
+        three: "Ligue o Navegador",
         done: "Pronto. Esta página percebe sozinha, não precisa recarregar.",
         menuOpen: "Abrir agentes",
         menuPrefs: "Preferências…",
@@ -13301,7 +13313,6 @@ export const ptBR = {
       outageTitle: "Este {{device}} perdeu a conexão {{ago}}",
       toolsOff: "Desligado neste {{device}}. Ligue nas Preferências do app, em Ferramentas.",
       browserTitle: "Ligue o navegador neste {{device}}",
-      toolTitle: "Ligue o {{tool}} neste {{device}}",
       browserText: "Um clique nas Preferências do app, em Ferramentas. A página percebe sozinha.",
       noReport: "Este {{device}} ainda não informou o que libera. Atualize o app.",
       update: "Atualizar o app",

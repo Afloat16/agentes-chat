@@ -1100,7 +1100,7 @@ html:not([data-pointer]) .brw-kc:focus-visible {
 }
 .brw-step__shot {
   position: relative;
-  height: 126px;
+  height: 110px;
   overflow: hidden;
   border-radius: 12px 12px 12px 3px;
   background: var(--surface-raised);
@@ -1155,34 +1155,21 @@ html:not([data-pointer]) .brw-kc:focus-visible {
   background: color-mix(in srgb, var(--mac-accent) 25%, transparent);
   box-shadow: 0 0 0 1.5px var(--mac-accent);
 }
-/* A PC: the icons by the clock are at the bottom of the screen, and the menu opens upwards from them. */
-.brw-step__shot[data-os="windows"] .brw-mbar {
-  position: absolute;
-  inset: auto 0 0;
-}
-.brw-step__shot[data-os="windows"] .brw-mmenu {
-  top: auto;
-  bottom: 28px;
-}
-/* Under the icon, and never wider than its shot: three steps side by side in a narrow dialog are narrower than it. */
 .brw-mmenu {
   position: absolute;
   top: 28px;
-  right: 8px;
+  right: 30px;
   display: flex;
   flex-direction: column;
-  width: min(128px, calc(100% - 16px));
+  width: 128px;
   padding: 4px;
   border-radius: 8px;
   background: var(--surface-raised);
   box-shadow: var(--e2);
 }
 .brw-mmenu span {
-  overflow: hidden;
-  padding: 2px 7px;
+  padding: 3px 7px;
   border-radius: 4px;
-  line-height: 15px;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .brw-mmenu span[data-hl] {
@@ -1192,7 +1179,7 @@ html:not([data-pointer]) .brw-kc:focus-visible {
 .brw-mmenu hr {
   width: auto;
   height: 1px;
-  margin: 2px 4px;
+  margin: 3px 4px;
   border: 0;
   background: var(--line);
 }
@@ -1216,9 +1203,8 @@ html:not([data-pointer]) .brw-kc:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 3px 10px;
+  padding: 5px 10px;
   border-top: 1px solid var(--line);
-  line-height: 16px;
 }
 .brw-mwin__row[data-hl] {
   background: color-mix(in srgb, var(--mac-accent) 10%, transparent);

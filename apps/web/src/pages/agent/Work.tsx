@@ -17,7 +17,14 @@ import type { BrainScreen } from "@agenteschat/client/lib/agent-edit";
 import { ownSignInName } from "@agenteschat/client/lib/ai-accounts";
 import { effortLevel } from "@agenteschat/client/lib/brain-advanced";
 import { computerNameOf, setupPortrait, WORKSPACE_COMPUTER_KIND } from "@agenteschat/client/lib/computer";
-import { commandInReason, computerKind, computerState, machineReasonText } from "@agenteschat/client/lib/machines";
+import {
+  allowsInApp,
+  commandInReason,
+  computerKind,
+  computerState,
+  machineReasonText,
+  toolOnCommand,
+} from "@agenteschat/client/lib/machines";
 import {
   type AiChoice,
   aiChoiceOf,
@@ -42,6 +49,7 @@ import {
   type IconName,
   Input,
   Locked,
+  LogoMark,
   OptionList,
   ProviderLogo,
   SettingNote,
@@ -54,8 +62,14 @@ import { usePlanHold } from "@/components/ai/ConnectAiSteps";
 import { useConnectAi } from "@/components/ConnectAi";
 import { CommandBlock } from "@/components/machine-bits";
 import { useOrg } from "@/components/org-context";
-import { ReconnectThisMacButton, ThisMacButton, useAgentsHere, useIsThisMac, useThisMac } from "@/components/ThisMac";
-import { ToolSteps } from "@/components/ToolSteps";
+import {
+  OpenPrefsButton,
+  ReconnectThisMacButton,
+  ThisMacButton,
+  useAgentsHere,
+  useIsThisMac,
+  useThisMac,
+} from "@/components/ThisMac";
 import { useComputerEdition } from "@/components/WorkspaceComputer";
 import { useDirectory } from "@/hooks/useDirectory";
 import { inDesktopApp } from "@/lib/desktop";
@@ -365,14 +379,122 @@ function ThisMacReconnect({ machineId }: { machineId: string }) {
 }
 
 /**
- * What turns the computer's browser on, there (`ToolSteps`). Nothing once its switch is on, or on the workspace's own
+ * The steps card's head: the computer on the title's first line, then Esperando with its loader, under the title from
+ * its words' edge when the row has no room for both.
+ */
+function StepsHead({ title }: { title: string }) {
+  const { t } = useTranslation();
+  return (
+    <div className="brw-steps__head ac-iconline">
+      <Icon name="computer" size={16} />
+      <span className="brw-steps__headline">
+        <b>{title}</b>
+        <span className="brw-steps__wait" role="status">
+          <Icon name="spinner" size={14} />
+          {t("agentPage.work.steps.waiting")}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+/**
+ * What turns the computer's browser on, there; the page notices by itself. The app's three clicks, drawn small; on a
+ * Linux computer, which may be a server without the app, the command too. In agentes for Mac on this very Mac: one
+ * button to Preferences → Ferramentas instead (ADR 0036). Nothing once its switch is on, or on the workspace's own
  * computer, which nobody here reaches.
  */
 export function BrowserSteps({ computer, machineId }: { computer: string; machineId?: string }) {
+  const { t } = useTranslation();
   const { org } = useOrg();
+  const here = useIsThisMac(org.id, machineId ?? "");
   const row = useMachines(org.id).data?.find((m) => m.id === machineId);
   if (row?.kind === "managed" || row?.access?.tools.browser) return null;
-  return <ToolSteps computer={computer} machineId={machineId} tool="browser" />;
+  if (here) {
+    return (
+      <section className="brw-steps" aria-label={t("machines.thisMac.browserTitle")}>
+        <StepsHead title={t("machines.thisMac.browserTitle")} />
+        <div className="row" style={{ gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="small muted" style={{ flex: 1, minWidth: 200 }}>
+            {t("machines.thisMac.browserText")}
+          </span>
+          <OpenPrefsButton tab="tools">{t("machines.thisMac.openTools")}</OpenPrefsButton>
+        </div>
+      </section>
+    );
+  }
+  const step = (n: number, shot: ReactNode, text: string) => (
+    <div className="brw-step">
+      <div className="brw-step__shot" aria-hidden="true">
+        {shot}
+      </div>
+      <p>
+        <i>{n}</i>
+        {text}
+      </p>
+    </div>
+  );
+  const bar = (hit?: boolean) => (
+    <div className="brw-mbar">
+      <span />
+      <span />
+      <span className="brw-mbar__me" data-hit={hit || undefined}>
+        <LogoMark size={12} />
+      </span>
+      <b>14:32</b>
+    </div>
+  );
+  return (
+    <section className="brw-steps" aria-label={t("agentPage.work.steps.title", { computer })}>
+      <StepsHead title={t("agentPage.work.steps.title", { computer })} />
+      {row && !allowsInApp(row.os) ? (
+        <div className="stack-4" style={{ gap: 6 }}>
+          <span className="small">{t("browser.machine.offHelp")}</span>
+          <span className="small muted">{t("machines.access.grantTerminal")}</span>
+          <CommandBlock command={toolOnCommand(row, "browser")} />
+        </div>
+      ) : (
+        <div className="brw-steps__grid">
+          {step(1, bar(true), t("agentPage.work.steps.one"))}
+          {step(
+            2,
+            <>
+              {bar()}
+              <div className="brw-mmenu">
+                <span>{t("agentPage.work.steps.menuOpen")}</span>
+                <hr />
+                <span data-hl>{t("agentPage.work.steps.menuPrefs")}</span>
+                <span>{t("agentPage.work.steps.menuPause")}</span>
+                <hr />
+                <span>{t("agentPage.work.steps.menuQuit")}</span>
+              </div>
+            </>,
+            t("agentPage.work.steps.two"),
+          )}
+          {step(
+            3,
+            <div className="brw-mwin">
+              <div className="brw-mwin__bar">{t("agentPage.work.steps.tools")}</div>
+              <div className="brw-mwin__row">
+                Claude Code <i data-on />
+              </div>
+              <div className="brw-mwin__row">
+                {t("agentPage.work.steps.commands")} <i data-on />
+              </div>
+              <div className="brw-mwin__row" data-hl>
+                {t("agentPage.work.computer.browser")} <i data-flip />
+              </div>
+            </div>,
+            t("agentPage.work.steps.three"),
+          )}
+        </div>
+      )}
+      <p className="brw-steps__done ac-iconline">
+        <Icon name="check" size={14} />
+        {t("agentPage.work.steps.done")}
+      </p>
+    </section>
+  );
 }
 
 /** The dialog that is open, if any. */
