@@ -5,6 +5,7 @@ import { knownErrorText } from "@agenteschat/client/lib/errors";
 import {
   beginLogin,
   freeDuplicate,
+  geminiNotShared,
   isSignInCode,
   isUrlWithoutCode,
   type LoginRead,
@@ -637,6 +638,8 @@ function AddAccountFlow({
   const otherEmail = other?.email ?? (hint ? shown?.signedInAs : undefined);
   // The computer's own reason is the line only when nothing nearer the person explains it.
   const byCode = !otherEmail && !noAnswer && shown?.state !== "expired" && !shown?.duplicate;
+  // Trying again would end the same way: no Try again, the words say what to use instead.
+  const notShared = geminiNotShared(kind, shown);
   const why = otherEmail
     ? t(`connectAi.otherAccount.${kind}`, { email: otherEmail, account: hint })
     : noAnswer
@@ -649,12 +652,14 @@ function AddAccountFlow({
             : t(`agentPage.work.brain.add.duplicate.${kind}`, {
                 account: shown.duplicate.account?.email ?? shown.duplicate.label,
               })
-          : t(failure.key ?? "agentPage.work.brain.add.failed", {
-              brand: plan?.label ?? t(`aiAccounts.connect.${kind}`),
-              computer,
-            });
+          : notShared
+            ? t("agentPage.work.brain.add.geminiNotShared", { computer })
+            : t(failure.key ?? "agentPage.work.brain.add.failed", {
+                brand: plan?.label ?? t(`aiAccounts.connect.${kind}`),
+                computer,
+              });
   // What the provider's own program said, under the line about it.
-  const said = byCode && failure.detail ? shown?.message?.trim() || null : null;
+  const said = byCode && !notShared && failure.detail ? shown?.message?.trim() || null : null;
 
   const endWhy = other || ended ? why : null;
   useEffect(() => {
@@ -974,17 +979,19 @@ function AddAccountFlow({
                 </span>
               </Button>
             )}
-            <Button
-              variant="primary"
-              icon="refresh"
-              onClick={() => {
-                if (other && !again)
-                  void api.machines.removeAccount(org.id, machineId, other.id).catch(() => undefined);
-                onRetry();
-              }}
-            >
-              {t("common.retry")}
-            </Button>
+            {!notShared && (
+              <Button
+                variant="primary"
+                icon="refresh"
+                onClick={() => {
+                  if (other && !again)
+                    void api.machines.removeAccount(org.id, machineId, other.id).catch(() => undefined);
+                  onRetry();
+                }}
+              >
+                {t("common.retry")}
+              </Button>
+            )}
           </>,
           actionsAt,
         )
@@ -1004,7 +1011,7 @@ function AddAccountFlow({
               </Button>
             </span>
           ) : (
-            retry
+            !notShared && retry
           )}
         </div>
       ) : (

@@ -5060,6 +5060,7 @@
             "no_token": "{{brand}}, hesabın belirtecini göstermeden bitti. Tekrar deneyin.",
             "not_kept": "Hesap giriş yaptı ama {{computer}} girişi saklayamadı. Tekrar deneyin."
           },
+          "geminiNotShared": "Gemini'ye giriş yapıldı, ancak {{computer}} bu girişi tüm ajanlarla paylaşamıyor. Bunun yerine bir Gemini API anahtarı kullanın.",
           "duplicate": {
             "claude_code": "Claude, zaten bağladığınız {{account}} hesabıyla giriş yaptı. Başka bir hesap kullanmak için Claude sayfasında çıkış yapıp tekrar deneyin.",
             "codex": "ChatGPT, zaten bağladığınız {{account}} hesabıyla giriş yaptı. Başka bir hesap kullanmak için ChatGPT sayfasında çıkış yapıp tekrar deneyin.",

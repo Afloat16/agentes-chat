@@ -5338,6 +5338,9 @@ export const en = {
             no_token: "{{brand}} finished without showing the account's token. Try again.",
             not_kept: "The account signed in, but {{computer}} couldn't keep the sign-in. Try again.",
           },
+          /** Gemini signed in for all agents, but a copy of it doesn't work for each one: signing in again won't help. */
+          geminiNotShared:
+            "Gemini signed in, but {{computer}} can't share that sign-in with every agent. Use a Gemini API key instead.",
           duplicate: {
             claude_code:
               "Claude signed in as {{account}}, an account you already connected. To use another, sign out on Claude's page and try again.",

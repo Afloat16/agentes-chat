@@ -5217,6 +5217,7 @@
             "no_token": "{{brand}} terminó sin mostrar el token de la cuenta. Inténtalo de nuevo.",
             "not_kept": "La cuenta inició sesión, pero {{computer}} no pudo guardarla. Inténtalo de nuevo."
           },
+          "geminiNotShared": "Gemini inició sesión, pero {{computer}} no puede compartir ese inicio de sesión con todos los agentes. Usa una clave de API de Gemini.",
           "duplicate": {
             "claude_code": "Claude inició sesión como {{account}}, una cuenta que ya conectaste. Para usar otra, cierra sesión en la página de Claude e inténtalo de nuevo.",
             "codex": "ChatGPT inició sesión como {{account}}, una cuenta que ya conectaste. Para usar otra, cierra sesión en la página de ChatGPT e inténtalo de nuevo.",
