@@ -2570,6 +2570,7 @@ export const en = {
         delete: "Only admins delete an agent",
         audience: "Only admins and its owner change who talks to it",
         channels: "Only admins and its owner change its channels",
+        skill: "Only admins change an agent's skills",
         ai_account: "Only the account's owner gives it",
         name: "Only admins rename an agent",
         look: "Only admins and its owner change its look",
@@ -2588,6 +2589,7 @@ export const en = {
       name: "Name",
       look: "Look",
       reports_to: "Reports to",
+      skill: "{{name}} skill",
     },
     value: {
       lookDefault: "The default look",
@@ -2604,6 +2606,8 @@ export const en = {
       notIn: "Not in it",
       withoutMention: "On its own",
       mentionOnly: "Only when mentioned",
+      skillOn: "On",
+      skillOff: "Off",
     },
     /** One card that archives or deletes several agents (`propose_remove_agents`), each with its switch. */
     remove: {
@@ -2880,6 +2884,24 @@ export const en = {
       gemini: "Connect your Gemini plan",
       zen: "Connect OpenCode",
       api_key: "Add an API key",
+    },
+    /**
+     * A plan whose program is switched off on a computer the person connected. `program`: "Claude Code" or "Codex"
+     * (`brain.card`), as its switch is named in that computer's own settings.
+     */
+    toolOff: {
+      text: "{{computer}} is connected, but {{program}} is switched off on it. For safety, it can only be turned on at the computer itself.",
+      where: "On {{computer}}",
+      /** `<mark/>`: the app's icon, drawn. */
+      one: "Click the agentes.chat icon <mark/> by the clock",
+      oneWindows: "On Windows, it may be behind the taskbar's ^ arrow.",
+      two: "Open <b>Preferences</b>",
+      three: "Under <b>Tools</b>, turn on <b>{{program}}</b>",
+      /** On a computer that may have no app: its command follows. */
+      terminal: "In the computer's terminal, run:",
+      /** In the app on that very computer: Open Tools follows. */
+      here: "Turn on <b>{{program}}</b> under <b>Tools</b>.",
+      waiting: "Waiting for you to turn it on. This screen changes by itself.",
     },
     titleFor: "Connect an AI for {{name}}",
     /** What the person already has, before the new sign-ins: accounts on the agent's computer, the workspace's keys. */
@@ -9357,6 +9379,13 @@ export const en = {
     pickAll: "All",
     pickMissing: "Pick at least one skill.",
     pickSkipped: "Can't be installed. {{reason}}",
+    /** A pick named like a skill already installed: installing it makes a new version of that one, for every agent. */
+    pickReplaces: "Replaces the installed skill {{name}}",
+    /** A pick named like a removed skill: it comes back under that name, on for none of its old agents. */
+    pickReplacesRemoved: "Replaces the removed skill {{name}}",
+    /** Opened from an agent's card (`offer_install_skill`): what installs goes on for that agent, unless unchecked. */
+    forAgent_one: "Turn it on for {{agent}}",
+    forAgent_other: "Turn them on for {{agent}}",
     installedMany: "{{count}} skills installed.",
     zipHelp: "A .zip with SKILL.md at its root.",
     zipPick: "Choose .zip",
@@ -13091,6 +13120,7 @@ export const en = {
       targetNotFound: "That computer no longer exists. Choose another one.",
       targetSame: "The agents are already on that computer.",
       targetPaused: "That computer is paused. Choose another one.",
+      pausePast: "Choose a time in the future.",
       accountMethodUnsupported:
         "This computer can't connect Claude this way yet. Update the agentes.chat program on it, or use an API key.",
       offline: "{{name}} is offline right now. Try again once it's back.",
@@ -13138,6 +13168,8 @@ export const en = {
       detailsHidden: "Only who talks to {{agentName}} sees how it works.",
       extraOwnerOnly: "Only the agent's owner turns its plan's paid extra usage on or off.",
       undoForbidden: "Only the person the agent worked for, its owner or an admin can undo this.",
+      /** `action.skills_admins`: skills are only admins' on the agent's page, so are their Undo and Redo. */
+      undoSkillsAdmins: "Only an admin can undo or redo a change to an agent's skills.",
     },
     account: {
       notRestorable: "This account can't be restored anymore.",
@@ -13232,6 +13264,22 @@ export const en = {
     paused: "Paused",
     pausedUntil: "Paused until {{time}}",
     pausedHint: "Paused on the computer itself by whoever connected it.",
+    /** Pausing a computer from the web or phone app, for whoever connected it and admins. */
+    remotePause: {
+      button: "Pause",
+      menu: "Pause {{name}}",
+      oneHour: "For 1 hour",
+      tomorrow: "Until tomorrow at 9 AM",
+      manual: "Until I resume",
+      resume: "Resume",
+      byYou: "Paused by you.",
+      byYouUntil: "Paused by you until {{time}}.",
+      byName: "Paused by {{name}}.",
+      byNameUntil: "Paused by {{name}} until {{time}}.",
+      outdated: "Update the agentes.chat app on this computer to pause it from here.",
+      paused: "{{name}} is paused",
+      resumed: "{{name}} is back to work",
+    },
     seenNow: "connected now",
     seen: "seen {{when}}",
     neverSeen: "hasn't connected yet",
@@ -13635,6 +13683,9 @@ export const en = {
       openApp: "Open the app",
       server: "A server or VPS",
       serverLine: "One line to paste in its terminal",
+      /** This computer, on a server at a plain http address: the app's one-click link needs https. */
+      httpLine: "One line to paste in its terminal. The app connects in one click on an https address.",
+      httpHow: "How",
       other: "Another computer",
       otherLine: "Install the app on it",
       android: "Android phone",
@@ -15825,6 +15876,8 @@ export const en = {
       agent_proposal: "Proposed a new agent: {{name}}",
       team_proposal: "Proposed a team: {{names}}",
       settings_proposal: "Proposed a change to {{names}}",
+      /** An agent's card asking for a change to its own settings (`request_settings_change`). */
+      settings_request: "Asks for a change to its own settings",
       approval_request: "Approval request: {{title}}",
       secret_request: "{{agent}} asked for a key: {{name}}",
       secret_requestAnon: "Asked for a key: {{name}}",
