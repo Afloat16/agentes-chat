@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { AgentUser, Launcher } from "../../runner/agent-users";
 import { HOLDS_FILE, Holds, type HoldsSystem, keepScope, lockCommand, statStart } from "../../runner/holds";
@@ -189,6 +189,14 @@ test("holds outlive the runner: one restarted goes on with those still living an
   t.procs.delete(t.locks()[0]?.[0] ?? 0);
   const again = t.make();
   expect(again.report()).toEqual({ live: [OTHER], ended: [{ id: HOLD, reason: "exited" }] });
+});
+
+test("after the computer restarts no hold is left, and none is reported ended: the server takes a time's again", async () => {
+  const t = setup();
+  await t.holds.start(AGENT, USER, LAUNCHER, { op: "keep.start", holdId: HOLD, until: "2026-11-13T12:00:00Z" });
+  const file = path.join(t.home, HOLDS_FILE);
+  writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, "utf8")), boot: "a-boot-before" }));
+  expect(t.make().report()).toEqual({ live: [], ended: [] });
 });
 
 test("a different time takes the lock again, the old one first", async () => {

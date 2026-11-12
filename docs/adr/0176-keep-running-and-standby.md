@@ -57,7 +57,8 @@ systemd-inhibit --what=idle --mode=block --who=agentes.chat --why=keep_running <
 - While its browser is held, the agent's worker never closes it as idle, restarts it for an update or moves it to or
   from its desktop.
 - The scopes outlive the runner. `<runner home>/holds.json` keeps what each one holds, so a runner that restarts goes on
-  with the holds still living and reports those that ended meanwhile.
+  with the holds still living and reports those that ended meanwhile. The file names its boot: after the computer
+  restarts nothing of it holds, and nothing is reported ended, so the server takes a time's hold again.
 
 ### 3. The server's record
 

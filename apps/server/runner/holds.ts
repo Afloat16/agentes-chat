@@ -13,6 +13,7 @@ import {
 import type { AgentUser, Launcher } from "./agent-users";
 import { RunnerError } from "./errors";
 import { readJson, writeJson } from "./json-file";
+import { bootId } from "./lock";
 import { agentCategorySlice, agentSlice } from "./service";
 
 /**
@@ -64,6 +65,8 @@ interface Hold {
 }
 
 interface Stored {
+  /** The computer's boot they were taken in: a restart ended them all, which the server reads from `hello` alone. */
+  boot?: string;
   holds: Hold[];
   ended: { id: string; reason: HoldEnd }[];
 }
@@ -183,7 +186,9 @@ export class Holds {
   constructor(private readonly opts: HoldsOptions) {
     this.system = opts.system ?? defaultSystem();
     this.file = path.join(opts.home, HOLDS_FILE);
-    const stored = readJson<Stored>(this.file);
+    const read = readJson<Stored>(this.file);
+    // After a restart no lock is left: none is reported as ended either, so the server takes a time's hold again.
+    const stored = read?.boot === bootId() ? read : null;
     this.ended = Array.isArray(stored?.ended) ? stored.ended.slice(-ENDED_KEPT) : [];
     for (const hold of Array.isArray(stored?.holds) ? stored.holds : []) {
       if (isUuid(hold?.id) && hold.lock && Number.isInteger(hold.lock.pid)) this.holds.set(hold.id, hold);
@@ -354,7 +359,7 @@ export class Holds {
 
   private save() {
     try {
-      writeJson(this.file, { holds: [...this.holds.values()], ended: this.ended } satisfies Stored);
+      writeJson(this.file, { boot: bootId(), holds: [...this.holds.values()], ended: this.ended } satisfies Stored);
     } catch (err) {
       this.opts.log(`${HOLDS_FILE}: ${err instanceof Error ? err.message : String(err)}`);
     }
