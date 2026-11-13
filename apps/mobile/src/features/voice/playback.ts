@@ -50,7 +50,7 @@ export function stopPlayback() {
 function makePlayer() {
   const p = createAudioPlayer(null, { updateInterval: 100 });
   // A source that fails says so only in this event: `currentStatus`, which the timer reads, never carries the error
-  // (expo-audio 58), so the row used to stay on pause with its wave still.
+  // (expo-audio 58). Without it a row would stay on pause with its wave still.
   p.addListener("playbackStatusUpdate", (status) => {
     if (!status.error || !now) return;
     const { onError } = now;
