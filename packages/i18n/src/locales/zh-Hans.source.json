@@ -38117,6 +38117,9 @@
   "chat.work.step.cancelingTask": {
     "value": "Canceled a task"
   },
+  "chat.work.step.keepingRunning": {
+    "value": "Kept a program running"
+  },
   "chat.work.step.uploadingArtifact": {
     "value": "Sent a file to the Drive"
   },
@@ -38449,6 +38452,9 @@
   },
   "chat.activity.cancelingTask": {
     "value": "canceling a task"
+  },
+  "chat.activity.keepingRunning": {
+    "value": "keeping a program running"
   },
   "chat.activity.uploadingArtifact": {
     "value": "sending a file to the Drive"
@@ -41658,6 +41664,39 @@
   },
   "agentComputer.openAccess": {
     "value": "Open Tools and access"
+  },
+  "agentComputer.kept.title": {
+    "value": "Kept running"
+  },
+  "agentComputer.kept.meta": {
+    "value": "{{name}} · since {{since}} · {{until}}"
+  },
+  "agentComputer.kept.untilStops": {
+    "value": "until it stops"
+  },
+  "agentComputer.kept.untilClosed": {
+    "value": "until its browser closes"
+  },
+  "agentComputer.kept.until": {
+    "value": "until {{time}}"
+  },
+  "agentComputer.kept.stop": {
+    "value": "Stop"
+  },
+  "agentComputer.kept.stopOf": {
+    "value": "Stop “{{what}}”"
+  },
+  "agentComputer.kept.actions": {
+    "value": "Actions for “{{what}}”"
+  },
+  "agentComputer.kept.count": {
+    "value": {
+      "one": "Kept running · {{count}}",
+      "other": "Kept running · {{count}}"
+    }
+  },
+  "agentComputer.kept.stopFailed": {
+    "value": "Couldn't stop it. Try again."
   },
   "agentComputer.phone.now": {
     "value": "Now"

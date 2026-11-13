@@ -43,6 +43,7 @@ import type {
   AgentForYou,
   AgentGroup,
   AgentGroupPatch,
+  AgentHolds,
   AgentInput,
   AgentLineChange,
   AgentMailbox,
@@ -1975,6 +1976,10 @@ export interface ApiClient {
     status(orgId: string, agentId: string): Promise<DesktopStatus>;
     /** A recent picture of the agent's screen; never starts a stopped one. 403 for who may not watch it. */
     picture(orgId: string, agentId: string): Promise<DesktopPictureView>;
+    /** What the agent keeps running there (ADR 0176); 403 for who may not watch its computer. */
+    holds(orgId: string, agentId: string): Promise<AgentHolds>;
+    /** Stop: the hold ends, and its program stops or its browser closes. 403 for who may not (`canStop`). */
+    stopHold(orgId: string, agentId: string, holdId: string): Promise<void>;
   };
   /**
    * GIF search (ADR 0091), through our server: the browser and the phone never talk to the provider. Every member;
