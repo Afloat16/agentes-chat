@@ -344,7 +344,7 @@ export const ptBR: Words = {
       headline: "Seu e-mail mudou",
       body: (email, newEmail) => ["A conta ", { b: email }, " agora entra com ", { b: newEmail }, "."],
       notYou:
-        "Não foi você? Aperte o botão em até 7 dias. Este endereço volta, todas as sessões são encerradas e os apps de IA, desconectados.",
+        "Não foi você? Aperte o botão em até 7 dias. Este endereço volta, todas as sessões são encerradas e os apps de IA são desconectados.",
       button: "Não fui eu",
       small: "Se foi você, não precisa fazer nada.",
       why: "Você recebeu este e-mail porque este endereço era o e-mail de uma conta do agentes.chat.",

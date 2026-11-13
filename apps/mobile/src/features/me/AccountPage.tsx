@@ -369,7 +369,10 @@ export function EmailPage() {
                 variant="ghost"
                 size="sm"
                 label={t("shell.email.cantOpen")}
-                onPress={() => setCantOpen((open) => !open)}
+                onPress={() => {
+                  setCantOpen((open) => !open);
+                  setError(null);
+                }}
               />
             </View>
           ) : null}
@@ -574,8 +577,9 @@ const styles = StyleSheet.create({
   input: { flex: 1, paddingVertical: 12, paddingHorizontal: 0 },
   handle: { flexDirection: "row", alignItems: "center", gap: 1 },
   error: { paddingTop: 8, paddingHorizontal: 16 },
-  // Under the code's footer: its two quiet actions on one line, then the way to the website when asked for.
-  acts: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 8, paddingTop: 4 },
+  // Under the code's footer: its two quiet actions, their words on the footer's 16 (a small button pads 12), then the
+  // way to the website when asked for.
+  acts: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 4, paddingTop: 4 },
   web: { gap: 10, paddingHorizontal: 16, paddingTop: 8 },
   gapBig: { height: 24 },
   search: { paddingTop: 4, paddingBottom: 8 },

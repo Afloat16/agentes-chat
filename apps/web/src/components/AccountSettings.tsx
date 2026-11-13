@@ -463,7 +463,15 @@ export function EmailDialog({ open, onClose }: { open: boolean; onClose: () => v
               )}
               {sent && (
                 <p className="small">
-                  <button type="button" className="ac-link ac-link--muted" onClick={() => setReauth((r) => !r)}>
+                  <button
+                    type="button"
+                    className="ac-link ac-link--muted"
+                    onClick={() => {
+                      // Another way to prove it: what the code was refused for no longer applies.
+                      setReauth((r) => !r);
+                      reset();
+                    }}
+                  >
                     {t(reauth ? "shell.email.useCode" : "shell.email.cantOpen")}
                   </button>
                 </p>

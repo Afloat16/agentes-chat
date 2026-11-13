@@ -17335,7 +17335,7 @@ export const ptBR = {
   /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
   emailUndo: {
     title: "Trazer seu e-mail de volta",
-    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas e os apps de IA, desconectados.",
+    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas e os apps de IA são desconectados.",
     button: "Não fui eu",
     done: "Seu e-mail voltou",
     /** `{{email}}`: the address the account has again. Then: Sign in. */

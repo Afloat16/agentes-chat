@@ -7,7 +7,7 @@ import { type AiAccounts, type AiComputer, ApiError } from "@agenteschat/client"
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import { createFakeApi, fakeMachinesOf, ORG_ID, seedState } from "./fake-api";
 import { createFakeAuth } from "./fake-auth";
-import { renderApp, screen, settle } from "./render";
+import { renderApp, screen, settle, showIn } from "./render";
 
 /*
  * A plan serves the whole workspace unless whoever connected it keeps it to themselves (ADR 0059 §3, amended
@@ -188,6 +188,27 @@ describe("Sua conta: the account's e-mail (ADR 0088 §2, addendum 2026-11-13)", 
     await click(within(second.dialog).getByRole("button", { name: "Mudar e-mail" }));
     expect(second.dialog.textContent).toContain("Este e-mail acabou de sair de outra conta");
   });
+
+  test("worst case: long addresses with nothing to break at, in German, at every step", async () => {
+    const state = seedState();
+    const current = "aleksandra.wisniewskakowalczyk@northwindindustriesholdings.example.com";
+    const next = "bartholomew.fitzgeraldmontgomery@northwindindustriesholdings.example.com";
+    if (state.me) state.me.user.email = current;
+    const { dialog, services } = await open(state);
+    await showIn(services, "de");
+    await type(within(dialog).getByRole("textbox"), next);
+    await click(within(dialog).getByRole("button", { name: "E-Mail ändern" }));
+    expect(dialog.textContent).toContain(current);
+    state.emailChangeError = new ApiError(429, "reauth.code_limit", "Too many codes for this email.");
+    await type(within(dialog).getByLabelText("Code aus der E-Mail"), "123456");
+    await click(within(dialog).getByRole("button", { name: "E-Mail ändern" }));
+    await click(within(dialog).getByRole("button", { name: "Kein Zugriff auf dieses Postfach?" }));
+    await click(within(dialog).getByRole("button", { name: "Code verwenden" }));
+    state.emailChangeError = undefined;
+    await type(within(dialog).getByLabelText("Code aus der E-Mail"), "654321");
+    await click(within(dialog).getByRole("button", { name: "E-Mail ändern" }));
+    expect(dialog.textContent).toContain(next);
+  });
 });
 
 describe("“Não fui eu”: the page the old address's notice opens", () => {
@@ -218,5 +239,15 @@ describe("“Não fui eu”: the page the old address's notice opens", () => {
     await renderApp("/email-undo", { api: createFakeApi(seedState({ me: null })) });
     expect(screen().getByRole("heading", { name: "Este link não vale mais" })).toBeTruthy();
     expect(screen().queryByRole("button", { name: /Não fui eu/ })).toBeNull();
+  });
+
+  test("worst case: a long address with nothing to break at, in German, back and taken", async () => {
+    const back = "aleksandra.wisniewskakowalczyk@northwindindustriesholdings.example.com";
+    const state = seedState({ me: null });
+    state.undoError = new ApiError(409, "email.undo_taken", "Another account has this address now", { email: back });
+    const { services } = await renderApp("/email-undo?token=tok-worst", { api: createFakeApi(state) });
+    await showIn(services, "de");
+    await click(screen().getByRole("button", { name: /Das war ich nicht/ }));
+    expect(document.body.textContent).toContain(back);
   });
 });
