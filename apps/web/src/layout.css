@@ -4474,11 +4474,13 @@ html:not([data-pointer]) .settings__link:focus-visible {
   font-size: 14px;
   font-weight: 600;
 }
-/* What must stay in sight under the label: why the control is off, what it waits on, what the line opens to. */
+/* What must stay in sight under the label: why the control is off, what it waits on, what the line opens to. An
+   address or a path in it breaks where it must instead of running out of the row. */
 .settings-row__status {
   color: var(--ink-muted);
   font-size: 13px;
   line-height: 18px;
+  overflow-wrap: anywhere;
 }
 /* A value before its control (the plan a line uses: its logo and name). */
 .settings-row__value {

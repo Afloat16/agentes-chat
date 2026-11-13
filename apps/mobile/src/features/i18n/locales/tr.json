@@ -1155,6 +1155,8 @@
       "name": "Ad",
       "namePlaceholder": "Adınız",
       "email": "E-posta",
+      "emailWebLead": "Web sitesinde yeniden giriş yap ve orada kodsuz değiştir.",
+      "emailWeb": "Web sitesinde yeniden giriş yap",
       "inWorkspace": "Bu çalışma alanında · {{org}}",
       "handle": "@ adınız",
       "timezone": "Saat dilimi",

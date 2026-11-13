@@ -1154,6 +1154,9 @@
   "auth.flow.nameIsPassword": {
     "value": "Is this your name? It's the same as the password you typed."
   },
+  "auth.flow.emailHeld": {
+    "value": "This email just left an account here and is held for 7 days. If that account is yours, press “This wasn't me” in the email we sent to it."
+  },
   "auth.flow.nameLooksLikePassword": {
     "value": "That looks like a password. Your name goes here."
   },
@@ -4414,6 +4417,21 @@
   },
   "shell.email.noMail": {
     "value": "This server sends no email, so the new address can't be confirmed. Ask whoever runs the server to set up email."
+  },
+  "shell.email.held": {
+    "value": "This email just left another account and is held for it for 7 days. Use another one."
+  },
+  "shell.email.taken": {
+    "value": "Another account already uses this email. Use another one."
+  },
+  "shell.email.cantOpen": {
+    "value": "Can't open that inbox?"
+  },
+  "shell.email.signInInstead": {
+    "value": "Sign in again and change it without the code. You'll come back here."
+  },
+  "shell.email.useCode": {
+    "value": "Use the code"
   },
   "shell.openOnPhone": {
     "value": "Open on your phone"
@@ -41729,6 +41747,33 @@
   },
   "deleteOrg.submit": {
     "value": "Delete workspace"
+  },
+  "emailUndo.title": {
+    "value": "Bring your email back"
+  },
+  "emailUndo.lead": {
+    "value": "The address this link went to becomes your account's email again. Every session is signed out, the AI apps are disconnected and ways to sign in added since the change stop working. The password is cleared too, and “Forgot my password” sets the next one."
+  },
+  "emailUndo.button": {
+    "value": "This wasn't me"
+  },
+  "emailUndo.done": {
+    "value": "Your email is back"
+  },
+  "emailUndo.doneLead": {
+    "value": "{{email}} is your account's email again. Every session is signed out, ways to sign in added since the change no longer work, and the password was cleared: “Forgot my password” sets the next one when you sign in."
+  },
+  "emailUndo.gone": {
+    "value": "This link no longer works"
+  },
+  "emailUndo.goneLead": {
+    "value": "It was already used, or its 7 days are over."
+  },
+  "emailUndo.taken": {
+    "value": "Another account has this email"
+  },
+  "emailUndo.takenLead": {
+    "value": "{{email}} is another account's email now, so it can't come back. Nothing changed."
   },
   "proof.willSend": {
     "value": "We'll email a code to {{email}} to confirm it's you."

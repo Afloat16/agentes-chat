@@ -1227,6 +1227,9 @@ export const featureKeysEn = {
       name: "Name",
       namePlaceholder: "Your name",
       email: "Email",
+      /** E-mail, under the code: someone who can't open that inbox signs in again on the website instead. */
+      emailWebLead: "Sign in again on the website and change it there, without the code.",
+      emailWeb: "Sign in again on the website",
       inWorkspace: "In this workspace · {{org}}",
       handle: "Your @",
       timezone: "Time zone",

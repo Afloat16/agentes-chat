@@ -486,6 +486,9 @@ export const ptBR = {
       nameLead: "Como o time te chama?",
       namePlaceholder: "Seu nome",
       nameIsPassword: "Esse é o seu nome? É igual à senha que você digitou.",
+      /** A sign-up with an address an account just left: held while that account's “This wasn't me” works. */
+      emailHeld:
+        "Este e-mail acabou de sair de uma conta daqui e fica reservado por 7 dias. Se a conta é sua, aperte “Não fui eu” no e-mail que mandamos para ele.",
       nameLooksLikePassword: "Isso parece uma senha. Aqui vai o seu nome.",
       newPassword: "Agora uma senha.",
       newPasswordNamed: "Boa, {{name}}. Agora uma senha.",
@@ -1829,6 +1832,12 @@ export const ptBR = {
       same: "Esse já é o seu e-mail.",
       noMail:
         "Este servidor não envia e-mails, então não dá para confirmar o novo endereço. Peça a quem cuida do servidor para configurar o envio de e-mails.",
+      held: "Este e-mail acabou de sair de outra conta e fica reservado para ela por 7 dias. Use outro.",
+      taken: "Outra conta já usa este e-mail. Use outro.",
+      /** Under the code sent to the current address: a fresh sign-in instead. */
+      cantOpen: "Não consegue abrir esse e-mail?",
+      signInInstead: "Entre de novo e troque sem o código. Você volta para cá.",
+      useCode: "Usar o código",
     },
     openOnPhone: "Abrir no celular",
     openOnPhoneHint: "Entre no app com um QR code",
@@ -17476,6 +17485,20 @@ export const ptBR = {
     plan: "O plano dele para de renovar. Nada é reembolsado.",
     type: "Digite {{name}} para confirmar",
     submit: "Apagar workspace",
+  },
+  /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
+  emailUndo: {
+    title: "Trazer seu e-mail de volta",
+    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas, os apps de IA são desconectados e jeitos de entrar adicionados depois da troca deixam de valer. A senha também é apagada, e “Esqueci a senha” cria a próxima.",
+    button: "Não fui eu",
+    done: "Seu e-mail voltou",
+    /** `{{email}}`: the address the account has again. Then: Sign in. */
+    doneLead:
+      "{{email}} voltou a ser o e-mail da sua conta. Todas as sessões foram encerradas, jeitos de entrar adicionados depois da troca não valem mais e a senha foi apagada: “Esqueci a senha” cria a próxima quando você for entrar.",
+    gone: "Este link não vale mais",
+    goneLead: "Ele já foi usado, ou os 7 dias dele passaram.",
+    taken: "Outra conta usa este e-mail",
+    takenLead: "{{email}} agora é o e-mail de outra conta, então não dá para trazê-lo de volta. Nada mudou.",
   },
   /** Proof that it's the person, before deleting (ADR 0088 §2): a code emailed to them, or their password. */
   proof: {
