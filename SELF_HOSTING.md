@@ -1060,8 +1060,9 @@ Every commit an agent makes, through GitHub or with git on its computer, ends wi
 and the person's, never twice. It is on by default; to turn it off for the whole workspace, ask any agent ("stop
 adding your co-author line to commits"), and ask again to turn it back on. On a computer the runner adds it with git
 hooks of its own, handed only to the agents' processes through their environment: your own git, outside them, is
-never touched, and each repository's own hooks (husky's included) still run first. That needs a runner from this
-release on (protocol 63); with an older one, only a chat turn's instruction asks the agent to add it.
+never touched, each repository's own hooks (husky's included) still run first, and Git LFS still sends the files
+the agents push. That needs a runner from this release on (protocol 63); with an older one, only a chat turn's
+instruction asks the agent to add it.
 
 There are two ways to set the app up:
 

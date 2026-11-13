@@ -12,6 +12,9 @@ import type { AgentScope } from "@agenteschat/adapters/machine-protocol";
  * - Every hook name git knows is the same shim. It runs the repository's own hook of that name first, as git would
  *   without us, found by `git rev-parse --git-path hooks` with the env's config as it was before ours: a repository's
  *   own `core.hooksPath` (husky's `.husky/_`) keeps working, and the shim never finds itself.
+ * - A repository on Git LFS (an `lfs` folder in its git dir) with none of its own gets LFS's four (`git lfs pre-push`
+ *   and the others): LFS puts its hooks where `core.hooksPath` points, our folder, so in the agent's processes it
+ *   never installs them, and without its `pre-push` a push leaves the files out of the remote, silently.
  * - `commit-msg` then adds each line the message lacks (`git interpret-trailers --if-exists addIfDifferent`, which
  *   compares case-insensitively): never twice, after Claude Code's own `Co-Authored-By`. Git runs no `commit-msg` for
  *   a rebase, a cherry-pick or a revert, so commits of others picked again credit nobody new; `--no-verify` skips it,
@@ -58,13 +61,17 @@ export const CO_AUTHORS_ENV = "AGENTES_CO_AUTHORS";
 const BEFORE_ENV = "AGENTES_GIT_CONFIG_PARAMETERS";
 
 export const HOOK_SCRIPT = `#!/bin/sh
-# agentes.chat (ADR 0156): the repository's own hook of this name, then, in commit-msg, the agent's lines.
+# agentes.chat (ADR 0156): the repository's own hook of this name (else Git LFS's where it uses LFS), then, in
+# commit-msg, the agent's lines.
 d=$(GIT_CONFIG_PARAMETERS=\${${BEFORE_ENV}-} git rev-parse --git-path hooks 2>/dev/null)
 h=$d/\${0##*/}
 if [ -n "$d" ] && [ -f "$h" ] && [ -x "$h" ] && [ "$(cd "$d" 2>/dev/null && pwd -P)" != "$(cd "\${0%/*}" && pwd -P)" ]; then
   [ "\${0##*/}" = commit-msg ] || exec "$h" "$@"
   "$h" "$@" || exit
 fi
+case \${0##*/} in pre-push|post-checkout|post-commit|post-merge)
+  c=$(git rev-parse --git-common-dir 2>/dev/null) && [ -d "$c/lfs" ] && exec git lfs "\${0##*/}" "$@";;
+esac
 [ "\${0##*/}" = commit-msg ] || exit 0
 msg=$1
 set --
@@ -79,8 +86,9 @@ exit 0
 
 /**
  * The hooks folder where this process's agents may read it, made again on each piece of work: a hook installer run
- * in an agent's process (lefthook, simple-git-hooks) takes `core.hooksPath` for where to write, and what it left
- * there would run for every other repository. The agents' computer instructions say to run one without our setting.
+ * in an agent's process (lefthook, simple-git-hooks, `git lfs update --force`) takes `core.hooksPath` for where to
+ * write, and what it left there would run for every other repository. The agents' computer instructions say to run
+ * one without our setting.
  */
 export function coAuthorHooks(dir: string): string | null {
   try {

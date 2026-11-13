@@ -11,6 +11,8 @@ const NICK = "Co-authored-by: Nick <noreply@agentes.chat>";
 const ANA = "Co-authored-by: Ana <583231+ana-gh@users.noreply.github.com>";
 const CLAUDE = "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>";
 
+const hasLfs = hasGit && spawnSync("git", ["lfs", "version"]).status === 0;
+
 const dirs: string[] = [];
 let root = "";
 let hooks = "";
@@ -154,6 +156,40 @@ describe.skipIf(!hasGit)("git in the agent's processes", () => {
     const log = spawnSync("git", ["log", "-1", "--format=%B"], { cwd: wt, env: process.env, encoding: "utf8" });
     expect(log.stdout.trim()).toBe(`In a worktree\n\n${NICK}`);
   });
+
+  test.skipIf(!hasLfs)(
+    "a repository on Git LFS still runs LFS's hooks: the files the agent pushes reach the remote",
+    () => {
+      const base = tempDir("co-authors-lfs-");
+      dirs.push(base);
+      // `git lfs install`'s global part, the filters: LFS puts its hooks in a repository when it first runs there.
+      const global = path.join(base, "gitconfig");
+      const filters = '[filter "lfs"]\n\tclean = git-lfs clean -- %f\n\tsmudge = git-lfs smudge -- %f\n';
+      const required = "\tprocess = git-lfs filter-process\n\trequired = true\n";
+      writeFileSync(global, `${readFileSync(path.join(root, "gitconfig"), "utf8")}${filters}${required}`);
+      const person = { ...process.env, GIT_CONFIG_GLOBAL: global };
+      const agent = { ...person, ...coAuthorEnv([NICK], hooks, person) };
+      const git = (env: NodeJS.ProcessEnv, cwd: string, ...args: string[]) => {
+        const r = spawnSync("git", args, { cwd, env, encoding: "utf8" });
+        if (r.status !== 0) throw new Error(`git ${args.join(" ")}: ${r.stdout}${r.stderr}`);
+        return r.stdout.trim();
+      };
+      const remote = path.join(base, "remote.git");
+      git(person, base, "init", "-q", "--bare", remote);
+      const work = path.join(base, "work");
+      git(agent, base, "clone", "-q", `file://${remote}`, work);
+      writeFileSync(path.join(work, ".gitattributes"), "*.bin filter=lfs diff=lfs merge=lfs -text\n");
+      writeFileSync(path.join(work, "a.bin"), "the agent's file\n");
+      git(agent, work, "add", ".");
+      git(agent, work, "commit", "-q", "-m", "Add a.bin");
+      git(agent, work, "push", "-q", "origin", "HEAD:main");
+      expect(git(person, work, "log", "-1", "--format=%B")).toBe(`Add a.bin\n\n${NICK}`);
+      // Without LFS's pre-push the remote has the pointer alone, and this clone fails to check the file out.
+      const again = path.join(base, "again");
+      git(person, base, "clone", "-q", `file://${remote}`, again);
+      expect(readFileSync(path.join(again, "a.bin"), "utf8")).toBe("the agent's file\n");
+    },
+  );
 
   test("someone else's commits picked again credit nobody new; git outside the agent's processes adds nothing", () => {
     const r = repo([NICK]);
