@@ -1,0 +1,62 @@
+name: CLA
+
+# Asks every outside contributor to accept the contributor license agreement (CLA.md) before their pull request
+# can merge (ADR 0180). The "CLA" check is one main requires.
+#
+# It runs on pull_request_target, so the workflow file is always main's and the pull request's code is never
+# checked out or run here; the token can write only what the CLA bot needs. A contributor accepts by commenting
+# the sentence the bot asks for; the bot records it in signatures/version1/cla.json on the cla-signatures branch
+# (outside main, and unprotected so the bot can write it) and locks the pull request's conversation once it
+# merges, so the comment stays. A new version of CLA.md gets a new signatures path, which asks everyone again.
+#
+# Pull requests opened by the organization's members and collaborators, and by bots (Dependabot, the GitHub App
+# that opens the agents' pull requests), aren't asked: their work is Codari's by contract. The check still runs
+# and passes for them. An outside contribution reaches main only through a pull request of its own, where it's
+# asked.
+on:
+  pull_request_target:
+    types: [opened, closed, synchronize]
+  issue_comment:
+    types: [created]
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: cla-${{ github.event.pull_request.number || github.event.issue.number }}
+
+jobs:
+  cla:
+    name: CLA
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # A comment starts it only when it signs or asks for a recheck, so other comments leave no runs behind.
+    if: >-
+      github.event_name == 'pull_request_target'
+      || (github.event.issue.pull_request
+        && (github.event.comment.body == 'recheck'
+          || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA'))
+    steps:
+      - name: Ask for the CLA
+        if: >-
+          github.event_name == 'issue_comment'
+          || (!contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+            && github.event.pull_request.user.type != 'Bot')
+        # v2.6.1
+        uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-document: https://github.com/agentes-chat/agentes-chat/blob/main/CLA.md
+          path-to-signatures: signatures/version1/cla.json
+          branch: cla-signatures
+          allowlist: dependabot[bot],agentes-chat-connector[bot]
+          custom-notsigned-prcomment: >-
+            Thank you for your contribution! Before we can merge it, please read our
+            [Contributor License Agreement](https://github.com/agentes-chat/agentes-chat/blob/main/CLA.md)
+            and accept it by commenting on this pull request with the sentence below. You keep the copyright in
+            your work; the agreement lets Codari Global, LLC also license it outside the AGPL. You only do this
+            once.

@@ -23,7 +23,7 @@ Licensing: AGPL-3.0-only for everything public, contributions under the same lic
 ## Non-negotiables
 
 - PostgreSQL is the only required dependency (no Redis/BullMQ in core). Jobs = Postgres outbox, in-process workers (ADR 0005).
-- `apps/` and `packages/` never import `ee/` or any cloud package (`bun run check:boundaries`). With no contributor license agreement, anything in the server process must be AGPL, so Cloud-only behavior is public code switched on by env vars (through `AgentesModule` and adapters) or a separate service over the network, never a private in-process module (ADR 0002).
+- `apps/` and `packages/` never import `ee/` or any cloud package (`bun run check:boundaries`). Outside contributions now come in under a contributor license agreement (`CLA.md`, ADR 0180), but those merged before it are held only under the AGPL, so anything in the server process must still be AGPL: Cloud-only behavior is public code switched on by env vars (through `AgentesModule` and adapters) or a separate service over the network, never a private in-process module (ADR 0002 §5, ADR 0180).
 - Every tenant-owned table has `org_id` (a test enforces it).
 - Never expose keys to a client: every model and MCP call goes through the backend.
 - Model calls go only through the Model Gateway (`packages/engine/src/gateway.ts`): budget checked before the call, tokens and cost recorded with `org_id` and `agent_id`. Provider keys are encrypted per org (envelope encryption) and never returned to clients (ADR 0007).
