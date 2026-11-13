@@ -177,6 +177,21 @@ export function relativeTime(t: TFunction, locale: string, iso: string, now = ne
   return formatShortDate(locale, iso);
 }
 
+/** When an agent stopped working on a task: "Stopped 2 h ago", "Stopped yesterday", "Stopped on Nov 11". */
+export function stoppedLine(t: TFunction, locale: string, iso: string, now = new Date()) {
+  const diff = now.getTime() - new Date(iso).getTime();
+  if (diff < 60_000) return t("issues.now.stoppedNow");
+  if (diff < 3_600_000)
+    return t("issues.now.stoppedAgo", { ago: t("format.minutesAgo", { count: Math.floor(diff / 60_000) }) });
+  const days = daysBetween(iso, now);
+  if (days === 0)
+    return t("issues.now.stoppedAgo", { ago: t("format.hoursAgo", { count: Math.floor(diff / 3_600_000) }) });
+  if (days === 1) return t("issues.now.stoppedYesterday");
+  return t("issues.now.stoppedOn", {
+    date: formatShortDate(locale, iso, new Date(iso).getFullYear() !== now.getFullYear()),
+  });
+}
+
 /** How long since: "há 12 min", "há 3 h", "há 2 dias"; "agora" under a minute (a computer offline, a task stopped). */
 export function timeAgo(t: TFunction, iso: string, now = Date.now()): string {
   const diff = now - Date.parse(iso);

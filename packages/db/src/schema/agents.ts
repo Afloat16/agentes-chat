@@ -460,3 +460,24 @@ export const rightHandBrains = pgTable(
     index().on(t.orgId, t.brainAccountId),
   ],
 );
+
+/**
+ * A place of the team's right hand on the workspace's computer (ADR 0175): one agents row answers everyone, so each
+ * person's files, browser and sign-ins there live under a row's id here, which the computer takes for an agent's
+ * (its OS user is named from the first 8 of it), and one more row is the place it works in where others read
+ * (`userId` is then the word `shared`, no person's id). Made on first use. `removedAt`: the person left, or the
+ * shared place ended; the row stays so the computer hears that id is gone, and the next use makes a new one.
+ */
+export const rightHandSeats = pgTable(
+  "right_hand_seats",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    orgId: uuid()
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    userId: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    removedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [uniqueIndex("right_hand_seats_one_live").on(t.orgId, t.userId).where(sql`${t.removedAt} is null`)],
+);

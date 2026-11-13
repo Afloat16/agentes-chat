@@ -899,7 +899,21 @@ list who and what is in a workspace, never what was written there.
 `GET /runs/{runId}/trace` shows one run step by step, `GET /orgs/{orgId}/timeline` puts a conversation's
 messages, routing decisions and runs in order, and `GET /messages/{messageId}/explain` says why a message
 did or did not start a run: ids, codes, times and sizes, never a message's text or what a tool was given
-or answered.
+or answered. `GET /orgs/{orgId}/tool-calls` lists the tools a workspace's agents called (`?groupBy=tool`
+for counts): which tool, whether it is the server's own or a connected app's, and how each call ended.
+`GET /orgs/{orgId}/connections` lists what a workspace connected (apps, mailboxes, databases) with each
+one's state and last error, `GET /orgs/{orgId}/audit` its audit log without the entries' details,
+`GET /orgs/{orgId}/asks` what its agents asked of people and of each other (`?open=true` for what still
+waits) and `GET /orgs/{orgId}/routines` its routines with their latest firings: never a credential, what
+was asked or answered, or a routine's name or instructions. A connection's `label` is what its workspace
+calls it, which is a mailbox's address or a database's host when nobody named it; an audit entry's
+`targetId` is a name where the target has no id (a tool, a repository, a wiki folder).
+`GET /orgs/{orgId}/notifications?userId=` lists what one person was notified of and the pushes that
+carried it, never a notification's words; `GET /orgs/{orgId}/access?userId=&targetKind=&targetId=` says
+whether a person reaches an agent, a channel, a task, a file or a computer, and the rule that decides;
+`GET /orgs/{orgId}/unanswered` lists people's messages no run answered, each with why (`?summary=true`
+for counts); and `GET /email-jobs?to=` lists the emails queued to one address with their state, never
+the address, a subject or a link.
 `GET /jobs` lists the job queue without the jobs' payloads (`?stuck=true` for the ones nobody took,
 `?summary=true` for counts by kind and status), `GET /usage` adds up the tokens and cost of model calls
 for the instance, a workspace, an agent or a run, and `GET /orgs/{orgId}/machines` and
@@ -1278,6 +1292,23 @@ them, it goes on: each agent downloads `agent-browser` at its browser's first us
 Chrome is missing. Since its agents run as the
 person who connected it, a computer leaves the organization with them when they leave, are removed or
 delete their account; one installed with `--system` is the team's and stays.
+
+**Lodi's computer.** Lodi, the built-in agent every member talks to, works on the workspace's own computer (the
+server's own, set up with `--system`), where each person gets a place of their own: a separate user with its
+own files, browser, desktop and sign-ins, which only that person can watch or take control of, from Lodi's
+page. A computer that runs every agent as one user (the simple mode, a Mac, a computer a person connected)
+can't keep people's places apart, so Lodi has no computer there, and its page says so. Turn its commands,
+browser or desktop off for everyone on its page, under what it can use. The computer's shared folder is
+still shared: every agent and every person's Lodi reads and writes it.
+
+Where others read what Lodi does (a channel, a dashboard widget, a routine that reports to a channel) it works in
+one more place, shared by the whole workspace: one more user on that computer, "Lodi (shared)". Nothing of a
+person's own place reaches it. A person's own place is used only for what that person asks Lodi in their own
+conversation with it: a routine that reports there, or anything else nobody asked for there, has no computer.
+Whoever may open any agent's computer (the admins of computers) opens it from the computer's page in Settings,
+Computers. Turning all three of Lodi's computer permissions off ends that place and stops what runs there, and
+turning one back on starts an empty one. The ended place's files stay on the computer's disk under a user nothing
+runs as, until you delete that user.
 
 **What an agent reaches on its computer (`--system`).** Each agent reaches the local ports its own
 processes open (any port, port 0 included, on 127.0.0.1, ::1 or the computer's own addresses), and

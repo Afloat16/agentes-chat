@@ -2680,6 +2680,17 @@ export const en = {
       groupWorkspace: "For the whole workspace",
       groupAdmins: "admins only",
     },
+    /** Its "Computador" row: the computer is the viewer's own seat (ADR 0175). */
+    computerYours: "Your own place on the workspace's computer. Only you can watch or control it.",
+    sharedName: "{{name}} (shared)",
+    sharedPlace:
+      "Used in channels and in work that runs on its own. The whole workspace shares this place. Keep nothing private here.",
+    /** The row where it has none for anyone: the workspace has no computer of its own. */
+    computerNoHome:
+      "No computer yet. It gets one when this workspace has a computer of its own, added in Settings, Computers.",
+    /** The row where the workspace's computer runs every agent as one OS user. */
+    computerOneUser:
+      "No computer here. The workspace's computer runs every agent as one user, so it can't keep each person's place apart. A Linux server set up with the installer's --system option can.",
     /** "Workspace powers" on its page: what only the right hand does, one line each (`RIGHT_HAND_POWERS`). */
     powers: {
       title: "Workspace powers",
@@ -7808,9 +7819,26 @@ export const en = {
     auto: "automatic",
     autoHint: "It changed column on its own, from the agent's work.",
     now: {
-      title: "Agents working now",
-      stalled_one: "{{count}} stalled",
-      stalled_other: "{{count}} stalled",
+      stalledCount_one: "{{count}} stalled task",
+      stalledCount_other: "{{count}} stalled tasks",
+      viewStalled: "See stalled",
+      continue: "Continue",
+      continueAll: "Continue all",
+      continueAllCount: "Continue all ({{count}})",
+      sent_one: "Asked. {{names}} picks up where they left off.",
+      sent_other: "Asked. {{names}} pick up where they left off.",
+      rowSent: "Asked: picks up where it left off.",
+      stalledTitle: "Stalled tasks",
+      stalledSub: "{{tasks}} · {{agents}}",
+      tasks_one: "{{count}} task",
+      tasks_other: "{{count}} tasks",
+      agents_one: "{{count}} agent",
+      agents_other: "{{count}} agents",
+      stalledText: "The agents stopped before finishing. Continue asks them to pick up where they left off.",
+      stoppedNow: "Stopped just now",
+      stoppedAgo: "Stopped {{ago}}",
+      stoppedYesterday: "Stopped yesterday",
+      stoppedOn: "Stopped on {{date}}",
     },
     work: {
       label: "{{name}}'s work",
@@ -7821,8 +7849,6 @@ export const en = {
       started: "started {{when}}",
       starting: "Starting…",
       stalled: "Stalled {{when}}",
-      noRun: "No run going.",
-      noRunStep: "No run going. Last step: {{step}}",
       lastStep: "Last step: {{step}}",
       waitingApproval: "Asks for approval",
       waitingInput: "Has a question",

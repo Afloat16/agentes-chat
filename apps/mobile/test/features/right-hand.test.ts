@@ -225,6 +225,15 @@ test("on a hold for its first plan the phone's card leads with the plan row: whe
   for (const banned of ["billingLink", "BillingLink", "planOffer", "plans.json"]) expect(card).not.toContain(banned);
 });
 
+test("its Computador row is always there: it opens the viewer's own place, or says why it has none", () => {
+  const screen = readFileSync(new URL("../../src/features/right-hand/SettingsScreen.tsx", import.meta.url), "utf8");
+  expect(screen).toContain("      <Computer agentId={agent.id} />\n");
+  expect(screen).toContain("const none = rightHandNoComputer(view.desktopQ.data?.reason);");
+  // With none there is nothing to open: no chevron, no press, and the reason under the row.
+  expect(screen).toContain('<GroupedRow icon="laptop" label={t("agentComputer.button")} />');
+  expect(screen).toContain('<GroupedFooter>{t(none ?? "rightHand.computerYours")}</GroupedFooter>');
+});
+
 test("Configurações lists no section for it: its settings open from its own profile, on their screen", () => {
   const src = (f: string) => readFileSync(new URL(`../../src/features/${f}`, import.meta.url), "utf8");
   expect(SETTINGS_SECTIONS.map((s) => s.id as string)).not.toContain("right_hand");

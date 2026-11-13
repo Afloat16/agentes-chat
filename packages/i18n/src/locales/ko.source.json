@@ -6251,6 +6251,21 @@
   "rightHand.settings.groupAdmins": {
     "value": "admins only"
   },
+  "rightHand.computerYours": {
+    "value": "Your own place on the workspace's computer. Only you can watch or control it."
+  },
+  "rightHand.sharedName": {
+    "value": "{{name}} (shared)"
+  },
+  "rightHand.sharedPlace": {
+    "value": "Used in channels and in work that runs on its own. The whole workspace shares this place. Keep nothing private here."
+  },
+  "rightHand.computerNoHome": {
+    "value": "No computer yet. It gets one when this workspace has a computer of its own, added in Settings, Computers."
+  },
+  "rightHand.computerOneUser": {
+    "value": "No computer here. The workspace's computer runs every agent as one user, so it can't keep each person's place apart. A Linux server set up with the installer's --system option can."
+  },
   "rightHand.powers.title": {
     "value": "Workspace powers"
   },
@@ -18087,14 +18102,65 @@
   "issues.autoHint": {
     "value": "It changed column on its own, from the agent's work."
   },
-  "issues.now.title": {
-    "value": "Agents working now"
-  },
-  "issues.now.stalled": {
+  "issues.now.stalledCount": {
     "value": {
-      "one": "{{count}} stalled",
-      "other": "{{count}} stalled"
+      "one": "{{count}} stalled task",
+      "other": "{{count}} stalled tasks"
     }
+  },
+  "issues.now.viewStalled": {
+    "value": "See stalled"
+  },
+  "issues.now.continue": {
+    "value": "Continue"
+  },
+  "issues.now.continueAll": {
+    "value": "Continue all"
+  },
+  "issues.now.continueAllCount": {
+    "value": "Continue all ({{count}})"
+  },
+  "issues.now.sent": {
+    "value": {
+      "one": "Asked. {{names}} picks up where they left off.",
+      "other": "Asked. {{names}} pick up where they left off."
+    }
+  },
+  "issues.now.rowSent": {
+    "value": "Asked: picks up where it left off."
+  },
+  "issues.now.stalledTitle": {
+    "value": "Stalled tasks"
+  },
+  "issues.now.stalledSub": {
+    "value": "{{tasks}} · {{agents}}"
+  },
+  "issues.now.tasks": {
+    "value": {
+      "one": "{{count}} task",
+      "other": "{{count}} tasks"
+    }
+  },
+  "issues.now.agents": {
+    "value": {
+      "one": "{{count}} agent",
+      "other": "{{count}} agents"
+    }
+  },
+  "issues.now.stalledText": {
+    "value": "The agents stopped before finishing. Continue asks them to pick up where they left off."
+  },
+  "issues.now.stoppedNow": {
+    "value": "Stopped just now"
+  },
+  "issues.now.stoppedAgo": {
+    "value": "Stopped {{ago}}"
+  },
+  "issues.now.stoppedYesterday": {
+    "value": "Stopped yesterday"
+  },
+  "issues.now.stoppedOn": {
+    "value": "Stopped on {{date}}"
   },
   "issues.work.label": {
     "value": "{{name}}'s work"
@@ -18119,12 +18185,6 @@
   },
   "issues.work.stalled": {
     "value": "Stalled {{when}}"
-  },
-  "issues.work.noRun": {
-    "value": "No run going."
-  },
-  "issues.work.noRunStep": {
-    "value": "No run going. Last step: {{step}}"
   },
   "issues.work.lastStep": {
     "value": "Last step: {{step}}"
