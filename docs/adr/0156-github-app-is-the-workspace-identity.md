@@ -271,27 +271,31 @@ and with the person's credit of decision 4: the agent's line, then the person's,
 capitals). On by default on agentes.chat and on every server.
 
 - **API commits.** `push_files` and `create_or_update_file` end their message with both (`runCoAuthors`,
-  `creditedMessage`). A merge through `merge_pull_request` keeps GitHub's own message: a squash's lists the merged
-  commits, lines included.
+  `creditedMessage`), and so does a merge's `commit_message` when the agent writes one (`merge_pull_request`, the
+  catalog's `sign`). A merge without one keeps GitHub's own message: a squash's lists the merged commits, lines
+  included.
 - **Agents' computers.** The hub puts the agent's line on every `exec`, `brain.turn` and `task.start` it sends
   (`AgentScope.coAuthors`, protocol 63), unless the workspace turned it off. The runner hands git, in the agent's own
   processes only, `GIT_CONFIG_PARAMETERS` with `core.hooksPath` at `<runner home>/git-hooks` and the lines in
   `AGENTES_CO_AUTHORS` (`apps/server/runner/co-authors.ts`, through `agentSecrets`): no repository and nobody's git
   config changes, so a person's own git on that computer (self-host's user mode on someone's laptop) never sees it.
-  Every hook name is one shim that runs the repository's own hook of that name first, found by `git rev-parse
-  --git-path hooks` with the env's config as it was before ours: a repository's `core.hooksPath` (husky's `.husky/_`)
-  keeps working and keeps its hooks, and the shim never finds itself. `commit-msg` then adds the lines the message
-  lacks (`git interpret-trailers --if-exists addIfDifferent`). One variable, never `GIT_CONFIG_COUNT`'s three: a CLI
-  that drops variables named like a key (Codex's default `*KEY*` filter) would leave git a count without its key, and
-  git refuses every command then. It covers the CLIs' and shells' commits in chat turns (delegated ones in system mode
-  too, through the bridge's agent), `run_code` and skill scripts, background tasks and a mission item's commit at its
-  end (the task's journal keeps the lines for it and for a start again). A live Claude Code process starts again,
-  resumed, when the lines change; Codex's app server already does when its env changes.
-- **Hook installers.** One run in an agent's process (lefthook, simple-git-hooks) writes where `core.hooksPath`
-  points, our folder, and `pre-commit install` refuses while it is set. The computer brains' note
-  (`COMPUTER_TOOLS_NOTE`) says to run them with `GIT_CONFIG_PARAMETERS=` before: the hooks land in the repository,
-  where the shim runs them. What one wrote into our folder anyway is put back at the agent's next piece of work, so it
-  never runs for another repository for long.
+  Every hook name is one shim that runs the repository's own hook of that name first, found by `git rev-parse --git-path
+  hooks` with the env's config as it was before ours: a repository's `core.hooksPath` (husky's `.husky/_`) keeps working
+  and keeps its hooks, and the shim never finds itself. A repository on Git LFS (an `lfs` folder in its git dir) with
+  none of its own gets LFS's four (`git lfs pre-push`, `post-checkout`, `post-commit`, `post-merge`): LFS installs its
+  hooks where `core.hooksPath` points, our folder, so in the agent's processes it never does, and without its `pre-push`
+  a push would leave the files out of the remote without a word. `commit-msg` then adds the lines the message lacks
+  (`git interpret-trailers --if-exists addIfDifferent`). One variable, never `GIT_CONFIG_COUNT`'s three: a CLI that
+  drops variables named like a key (Codex's default `*KEY*` filter) would leave git a count without its key, and git
+  refuses every command then. It covers the CLIs' and shells' commits in chat turns (delegated ones in system mode too,
+  through the bridge's agent), `run_code` and skill scripts, background tasks and a mission item's commit at its end
+  (the task's journal keeps the lines for it and for a start again). A live Claude Code process starts again, resumed,
+  when the lines change; Codex's app server already does when its env changes.
+- **Hook installers.** One run in an agent's process (lefthook, simple-git-hooks, `git lfs update --force`) writes where
+  `core.hooksPath` points, our folder, and `pre-commit install` and `git lfs install` refuse while it is set. The
+  computer brains' note (`COMPUTER_TOOLS_NOTE`) says to run them with `GIT_CONFIG_PARAMETERS=` before: the hooks land in
+  the repository, where the shim runs them. What one wrote into our folder anyway is put back at the agent's next piece
+  of work, so it never runs for another repository for long.
 - **The turn's instruction too.** The line next to where a chat turn starts names every line (the agent's and the
   person's): an older runner has no hook, and `--no-verify` skips every hook. The person's credit stays on that line
   alone on computers: it changes from turn to turn, and a live CLI's environment is its first turn's.
