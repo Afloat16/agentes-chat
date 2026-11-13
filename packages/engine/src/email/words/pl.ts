@@ -393,7 +393,7 @@ export const words: EmailWords = {
       headline: "Twój adres e-mail się zmienił",
       body: (email, newEmail) => ["Konto ", { b: email }, " loguje się teraz adresem ", { b: newEmail }, "."],
       notYou:
-        "To nie ty? Naciśnij przycisk w ciągu 7 dni. Ten adres wróci, wszystkie sesje zostaną wylogowane, a aplikacje AI odłączone. Sposoby logowania dodane od tego czasu przestaną działać, także nowe hasło.",
+        "To nie ty? Naciśnij przycisk w ciągu 7 dni. Ten adres wróci, wszystkie sesje zostaną wylogowane, aplikacje AI odłączone, a sposoby logowania dodane od tego czasu przestaną działać. Hasło też zostanie usunięte, a następne ustawisz przez „Nie pamiętam hasła”.",
       button: "To nie ja",
       small: "Jeśli to ty, nie musisz nic robić.",
       why: "Otrzymujesz tę wiadomość, ponieważ ten adres był adresem e-mail konta agentes.chat.",

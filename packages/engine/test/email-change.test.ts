@@ -12,6 +12,7 @@ import {
   spendDeletionCode,
   spendProofCode,
   undoEmailChange,
+  undoneSince,
 } from "../src";
 import { addUser, type Fixture, setup } from "./fixtures";
 
@@ -57,12 +58,18 @@ const signIn = (providerId: string, createdAt: Date, password: string | null = n
   updatedAt: createdAt,
 });
 
-/** `userId` moves to `to` as Better Auth's link does it, after the change was asked; then the notice's token. */
-async function moveTo(userId: string, to: string, now: Date) {
+/**
+ * `userId` moves to `to` as Better Auth's link does it, asked at `now` and opened at `opened`; then the notice's token.
+ */
+async function moveTo(userId: string, to: string, now: Date, opened = now) {
   const user = await emailOf(userId);
   await askEmailChange(f.db, { userId, from: user?.email ?? "", to }, now);
   await f.db.update(schema.users).set({ email: to }).where(eq(schema.users.id, userId));
-  const told = await finishEmailChange({ db: f.db, publicUrl: `${SERVER}/` }, { ...user, id: userId, email: to }, now);
+  const told = await finishEmailChange(
+    { db: f.db, publicUrl: `${SERVER}/` },
+    { ...user, id: userId, email: to },
+    opened,
+  );
   return { told, token: tokenOf((await notices()).at(-1)) };
 }
 
@@ -173,15 +180,19 @@ describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () 
     expect(await answer(undoEmailChange(f.db, "x".repeat(43), at(DAY + 1)))).toBe("email.undo_gone");
     // Back on the account, the address needs no hold.
     expect(await addressHeld(f.db, from, { now: at(DAY + 1) })).toBe(false);
-    // The password from before, never set anew, still signs in.
+    // The password from before goes too: whoever knew it would sign in afresh, and ask a new address without the code.
     const [password] = await f.db.select().from(schema.accounts).where(eq(schema.accounts.userId, f.owner.id));
-    expect(password?.password).toBe("old-hash");
+    expect(password?.password).toBeNull();
+    // A sign-in under way when it ran lands after it, and is told so; one begun after it isn't.
+    expect(await undoneSince(f.db, f.owner.id, T0 + DAY - 50)).toBe(true);
+    expect(await undoneSince(f.db, f.owner.id, T0 + DAY + 2000)).toBe(false);
   });
 
   test("“This wasn't me” also takes every way in the other mailbox got since the change, and keeps the ones from before", async () => {
     f = await setup();
     await f.db.insert(schema.accounts).values([signIn("credential", at(-DAY), "old-hash"), signIn("google", at(-DAY))]);
-    const { token } = await moveTo(f.owner.id, "thief@example.com", at());
+    // Asked at 0, its link opened at 1.5 s: GitHub joined in between, by the session that asked, goes too.
+    const { token } = await moveTo(f.owner.id, "thief@example.com", at(), at(1500));
     // Its holder: GitHub joined by that address, the password reset from there, another reset waiting, a phone.
     await f.db.insert(schema.accounts).values(signIn("github", at(1000)));
     await f.db
@@ -294,13 +305,21 @@ describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () 
 
   test("rows past their end go", async () => {
     f = await setup();
-    await moveTo(f.owner.id, "ana.nova@example.com", at());
-    await askEmailChange(f.db, { userId: f.owner.id, from: "ana.nova@example.com", to: "ana.outra@example.com" }, at());
+    const undone = await moveTo(f.owner.id, "x@example.com", at());
+    await undoEmailChange(f.db, undone.token, at(1000));
+    await moveTo(f.owner.id, "ana.nova@example.com", at(2000));
+    await askEmailChange(
+      f.db,
+      { userId: f.owner.id, from: "ana.nova@example.com", to: "ana.outra@example.com" },
+      at(2000),
+    );
     const ours = async () =>
-      (await f.db.select().from(schema.verifications)).filter((r) => /^email-(change|held|undo):/.test(r.identifier));
-    expect((await ours()).length).toBeGreaterThanOrEqual(3);
+      (await f.db.select().from(schema.verifications)).filter((r) =>
+        /^email-(change|held|undo|undone):/.test(r.identifier),
+      );
+    expect((await ours()).map((r) => r.identifier.split(":")[0])).toContain("email-undone");
     await pruneEmailChanges(f.db, at(DAY));
-    // The change asked (2 h) goes; the undo and its hold (7 days) stay.
+    // The change asked (2 h) and the undo's mark (10 minutes) go; the undo and its hold (7 days) stay.
     expect((await ours()).map((r) => r.identifier.split(":")[0]).sort()).toEqual(["email-held", "email-undo"]);
     await pruneEmailChanges(f.db, at(8 * DAY));
     expect(await ours()).toEqual([]);

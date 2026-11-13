@@ -17171,10 +17171,10 @@
   },
   "emailUndo": {
     "title": "Haal je e-mailadres terug",
-    "lead": "Het adres waar deze link naartoe ging, wordt weer het e-mailadres van je account. Alle sessies worden uitgelogd en de AI-apps ontkoppeld. Inlogmethoden die sinds de wijziging zijn toegevoegd, werken niet meer, ook een nieuw wachtwoord.",
+    "lead": "Het adres waar deze link naartoe ging, wordt weer het e-mailadres van je account. Alle sessies worden uitgelogd, de AI-apps ontkoppeld en inlogmethoden die sinds de wijziging zijn toegevoegd, werken niet meer. Ook het wachtwoord wordt gewist, en met “Wachtwoord vergeten” stel je het volgende in.",
     "button": "Dit was ik niet",
     "done": "Je e-mailadres is terug",
-    "doneLead": "{{email}} is weer het e-mailadres van je account, en alle sessies zijn uitgelogd. Inlogmethoden die sinds de wijziging zijn toegevoegd, werken niet meer, ook een nieuw wachtwoord. Werkt je wachtwoord niet, of kent iemand het misschien? Druk dan bij het inloggen op “Wachtwoord vergeten”.",
+    "doneLead": "{{email}} is weer het e-mailadres van je account, en alle sessies zijn uitgelogd. Inlogmethoden die sinds de wijziging zijn toegevoegd, werken niet meer, en het wachtwoord is gewist: met “Wachtwoord vergeten” stel je bij het inloggen het volgende in.",
     "gone": "Deze link werkt niet meer",
     "goneLead": "Hij is al gebruikt, of zijn 7 dagen zijn voorbij.",
     "taken": "Een ander account gebruikt dit e-mailadres",

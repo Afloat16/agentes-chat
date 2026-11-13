@@ -101,7 +101,7 @@ A deleted workspace also left rows behind: tables with no foreign key to it (rea
   - the pinned owner's Jev key, and the pin once no account is left (ADR 0073 §7), `user.deleted` in the feed, and `user.files.purge` for their photos (ADR 0019).
 - **After the commit:** `membership.revoked` in every workspace closes their sockets, each workspace that closed is announced and its work stops, the removed computers are told, and Apple's tokens are revoked (ADR 0035).
 - **Stays:** messages and records they wrote, without an author (Privacy Policy §4); audit rows that name them; agents they were responsible for, with no responsible person; routines they made, which pause at their next firing (`creator_left`); the keys, connections and mailboxes they added, which are the workspace's, listed in the preflight so they can disconnect one first; the feed (90 days); the waiting-list entry and the early-access invitation, whose row keeps the address out of the next batch of invitations.
-- **Their other tabs and devices.** A cached session cookie outlives the account for up to 5 minutes: `GET /me` answers 401 and expires the cookies once the user row is gone, and creating a workspace locks the user row and answers 401 for a missing one.
+- **Their other tabs and devices.** Their sessions go with the user row, so their next request answers 401 (sessions are read from the database on every request, addendum 2026-11-13), and creating a workspace locks the user row and answers 401 for a missing one.
 - **The pinned owner may delete their account** (ADR 0073 §7). The preflight says the server's own settings will then have no owner here, only in its environment (`serverOwner`). Until no account is left, the owner key signs in nobody and the server's own computer serves no workspace.
 
 - **One thing's screen never offers to delete another** *(amended 2026-11-05)*. The suspended screen and the onboarding offer Delete account only to someone with no workspace that opens (`accountOutOfReach`; one being deleted opens), who has no other way to Settings › Your account, and then under its own "Your whole account" heading, never beside Restore or Sign out. Everyone else goes to their other workspace, the screen's main action. The dialog's title and first line, and the code's email, say it's the whole account. `GET /account/deletion` gives each workspace that would close its `agents` and `messages` (`workspaceContents`, outside `accountDeletionPlan` and its locks, messages counted per conversation on the index as `orgMessageCount` does), and the dialog links to deleting just one workspace. Lists say a closed workspace is closed, and tell apart two with the same name by state, else by `createdAt` (`workspaceNotes`).
@@ -195,13 +195,23 @@ mailbox, then reset the password from there.
   10 minutes per IP address). Opening the link does nothing, since mail scanners open links. Within 7 days and once, it
   puts the old address back (confirmed: its mailbox opened the link), ends every session and cuts off every AI app and
   token as a new password does (`revokeUserApps`, reason `email_change_undone`). It also takes every way in the other
-  mailbox got since the change, so its holder can't sign straight back in: the sign-ins made since then (Better Auth
-  joins a provider's sign-in to an account by its confirmed address), a password set since then (cleared, so "Forgot my
-  password" at the address that came back sets the next one), every reset link still waiting, and the phones that hear
-  the account's pushes (each registers again when it signs in). It voids the account's newer undos, since a later
-  change's would hand the address back to whoever made it, and keeps the older ones. 404 `email.undo_gone` once used or
-  run out. 409 `email.undo_taken` when another account has the address, which changes nothing and leaves the link
-  working. A cached session cookie can still answer for up to 5 minutes, as after a password reset.
+  mailbox got since the change was asked, so its holder can't sign straight back in: the sign-ins made since then
+  (Better Auth joins a provider's sign-in to an account by its confirmed address), every reset link still waiting, and
+  the phones that hear the account's pushes (each registers again when it signs in). It clears the password too,
+  whenever it was set: whoever knew it could sign in afresh, and a fresh sign-in asks a new address without the code.
+  "Forgot my password" at the address that came back sets the next one. It voids the account's newer undos, since a
+  later change's would hand the address back to whoever made it, and keeps the older ones. 404 `email.undo_gone` once
+  used or run out. 409 `email.undo_taken` when another account has the address, which changes nothing and leaves the
+  link working.
+- **Every session ends at once.** Better Auth's signed cookie cache is off: each request reads its session from the
+  database, once (`sessionOf`), so a session the undo, a new password or a block ends is refused on its next request:
+  it adds no token, phone or provider after its end.
+- **A sign-in under way gets nothing.** One that read the account before the undo lands after it: its session insert
+  waits for the undo's commit. The undo writes `email-undone:{userId}` (10 minutes), and Better Auth's
+  `session.create.after` and `account.create.after` (`createAuth`), its `onPasswordReset` and `POST /me/password` take
+  back the session, provider or password made by a request that began before the undo (`undoneSince`, a second of
+  slack for clocks). A provider's return counts from its sign-in's start (its state lasts 10 minutes): a link to the
+  account names the account in its state and needs no session to come back.
 - **The old address is held** from the moment a change is asked until its undo runs out (`email-held:{sha256}`): while
   no account has it, sign-up refuses it (`EMAIL_HELD`) and so does another account's change to it (`email.held`).
 - **A server that sends no email** changes the address at once, as before, and tells nobody, since nothing can be

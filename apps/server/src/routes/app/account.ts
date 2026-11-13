@@ -11,6 +11,7 @@ import {
   can,
   canCreateWorkspace,
   changeMemberRole,
+  clearPassword,
   cloudNotice,
   countUsers,
   createInvitation,
@@ -63,6 +64,7 @@ import {
   toldReason,
   USER_LOCALES,
   undoEmailChange,
+  undoneSince,
   unfinishedWorkspaces,
   updateMyProfile,
   updateOrganization,
@@ -79,6 +81,7 @@ import {
   deletionProof,
   mintPhoneSignIn,
   replacePassword,
+  sessionOf,
   sessionUser,
   signedInLately,
   signupOpen,
@@ -192,7 +195,7 @@ const Created = z.object({
 /** Account, organizations, members and invitations. */
 export function accountRoutes(deps: AppDeps) {
   const { db, config } = deps;
-  /** `GET /me`'s body; null once the account is deleted (its cached session cookie outlives it for minutes). */
+  /** `GET /me`'s body; null once the account is deleted. */
   const meBody = async (user: { id: string; name: string; email: string }): Promise<z.infer<typeof Me> | null> => {
     const [memberships, password, verified, creates, unfinished, account] = await Promise.all([
       listMemberships(db, user.id),
@@ -623,17 +626,12 @@ export function accountRoutes(deps: AppDeps) {
       tags,
       security,
       summary: "The signed-in person and their organizations",
-      description:
-        "401 with the session cookies expired once the account is deleted: a cached session cookie outlives it for minutes.",
+      description: "401 once the account is deleted: its sessions go with it.",
       responses: { 200: json(Me), 401: errors[401] },
     }),
     async (c) => {
       const me = await meBody(c.get("user"));
-      // A deleted account's session lives on in a cached cookie for minutes: its other tabs and devices learn it here.
-      if (!me) {
-        for (const cookie of expiredSessionCookies()) c.header("set-cookie", cookie, { append: true });
-        return apiError(c, 401, "unauthorized", "Sign in to continue");
-      }
+      if (!me) return apiError(c, 401, "unauthorized", "Sign in to continue");
       return c.json(me, 200);
     },
   );
@@ -717,21 +715,24 @@ export function accountRoutes(deps: AppDeps) {
       responses: { 204: noContent[204], ...errors },
     }),
     async (c) => {
+      const startedAt = Date.now();
       const userId = c.get("user").id;
       if (!(await signedInLately(deps.auth, c.req.raw.headers, userId))) {
         return apiError(c, 403, "reauth.sign_in", "Sign in again to set a password");
       }
       const { password } = c.req.valid("json");
       if (await hasPassword(db, userId)) {
-        const current = await deps.auth.api.getSession({
-          headers: c.req.raw.headers,
-          query: { disableCookieCache: true },
-        });
+        const current = await sessionOf(deps.auth, c.req.raw.headers);
         if (!current) return apiError(c, 401, "unauthorized", "Sign in to continue");
         await replacePassword(deps.auth, db, userId, password, current.session.token);
-        return c.body(null, 204);
+      } else {
+        await deps.auth.api.setPassword({ body: { newPassword: password }, headers: c.req.raw.headers });
       }
-      await deps.auth.api.setPassword({ body: { newPassword: password }, headers: c.req.raw.headers });
+      // "This wasn't me" ran meanwhile: the session was read before the undo, the password landed after it cleared one.
+      if (await undoneSince(db, userId, startedAt)) {
+        await clearPassword(db, userId);
+        return apiError(c, 401, "unauthorized", "Sign in to continue");
+      }
       return c.body(null, 204);
     },
   );
@@ -766,10 +767,7 @@ export function accountRoutes(deps: AppDeps) {
       if (isLoopback(server) && (config.INSTALL_MODE === "desktop" || config.INSTALL_MODE === "native")) {
         return apiError(c, 409, "phone.local_only", "This server answers only on its own computer");
       }
-      const current = await deps.auth.api.getSession({
-        headers: c.req.raw.headers,
-        query: { disableCookieCache: true },
-      });
+      const current = await sessionOf(deps.auth, c.req.raw.headers);
       if (!current) return apiError(c, 401, "unauthorized", "Sign in to continue");
       const limit = await deps.adapters.rateLimiter.consume(`phone-sign-in:${current.user.id}`, {
         limit: 30,
@@ -969,7 +967,7 @@ export function accountRoutes(deps: AppDeps) {
       tags,
       summary: "“This wasn't me”: put the account's old email address back",
       description:
-        "Public, from the page the notice to an account's old address links to (`/email-undo?token=`), never from the link itself: mail scanners open links. Within 7 days of the change and once, it puts that address back (confirmed), ends every session and cuts off every AI app and token, as a new password does. It also removes what the other mailbox got since the change: the sign-ins made since then, a password set since then (cleared), every reset link still waiting, and the phones' push registrations. It voids the newer ones of the same account, never the older. 404 `email.undo_gone` once used, run out or its account gone; 409 `email.undo_taken` (`params.email`) when another account has the address, which changes nothing. 10 tries per 10 minutes per IP address (429 `rate_limited`).",
+        "Public, from the page the notice to an account's old address links to (`/email-undo?token=`), never from the link itself: mail scanners open links. Within 7 days of the change and once, it puts that address back (confirmed), ends every session and cuts off every AI app and token, as a new password does. It also removes what the other mailbox got since the change was asked: the sign-ins made since then, every reset link still waiting and the phones' push registrations, and it clears the password, which “Forgot my password” at the address that came back sets anew. A sign-in under way when it runs gets nothing. It voids the newer ones of the same account, never the older. 404 `email.undo_gone` once used, run out or its account gone; 409 `email.undo_taken` (`params.email`) when another account has the address, which changes nothing. 10 tries per 10 minutes per IP address (429 `rate_limited`).",
       request: { body: body(z.object({ token: z.string().min(16).max(200) })) },
       responses: {
         ...errors,

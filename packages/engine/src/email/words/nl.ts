@@ -370,7 +370,7 @@ export const words: EmailWords = {
       headline: "Je e-mailadres is gewijzigd",
       body: (email, newEmail) => ["Het account ", { b: email }, " logt nu in met ", { b: newEmail }, "."],
       notYou:
-        "Was jij het niet? Druk binnen 7 dagen op de knop. Dit adres komt terug, alle sessies worden uitgelogd en de AI-apps worden ontkoppeld. Inlogmethoden die sindsdien zijn toegevoegd, werken niet meer, ook een nieuw wachtwoord.",
+        "Was jij het niet? Druk binnen 7 dagen op de knop. Dit adres komt terug, alle sessies worden uitgelogd, de AI-apps worden ontkoppeld en inlogmethoden die sindsdien zijn toegevoegd, werken niet meer. Ook het wachtwoord wordt gewist, en met “Wachtwoord vergeten” stel je het volgende in.",
       button: "Dit was ik niet",
       small: "Was jij het wel? Dan hoef je niets te doen.",
       why: "Je krijgt deze e-mail omdat dit adres het e-mailadres van een agentes.chat-account was.",

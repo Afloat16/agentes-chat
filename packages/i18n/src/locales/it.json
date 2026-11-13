@@ -17630,10 +17630,10 @@
   },
   "emailUndo": {
     "title": "Riprendi la tua email",
-    "lead": "L’indirizzo che ha ricevuto questo link torna a essere l’email del tuo account. Tutte le sessioni vengono chiuse e le app di IA scollegate. I modi di accesso aggiunti dopo la modifica smettono di funzionare, compresa una nuova password.",
+    "lead": "L’indirizzo che ha ricevuto questo link torna a essere l’email del tuo account. Tutte le sessioni vengono chiuse, le app di IA scollegate e i modi di accesso aggiunti dopo la modifica smettono di funzionare. Anche la password viene cancellata, e “Ho dimenticato la password” imposta la prossima.",
     "button": "Non ero io",
     "done": "La tua email è tornata",
-    "doneLead": "{{email}} è di nuovo l’email del tuo account, e tutte le sessioni sono state chiuse. I modi di accesso aggiunti dopo la modifica non funzionano più, compresa una nuova password. Se la tua password non funziona, o qualcuno potrebbe conoscerla, premi “Ho dimenticato la password” quando accedi.",
+    "doneLead": "{{email}} è di nuovo l’email del tuo account, e tutte le sessioni sono state chiuse. I modi di accesso aggiunti dopo la modifica non funzionano più e la password è stata cancellata: “Ho dimenticato la password” imposta la prossima quando accedi.",
     "gone": "Questo link non vale più",
     "goneLead": "È già stato usato, o i suoi 7 giorni sono passati.",
     "taken": "Un altro account usa questa email",

@@ -361,7 +361,7 @@ export const words: EmailWords = {
       headline: "La tua email è cambiata",
       body: (email, newEmail) => ["L’account ", { b: email }, " ora accede con ", { b: newEmail }, "."],
       notYou:
-        "Non sei stato tu? Premi il pulsante entro 7 giorni. Questo indirizzo torna, tutte le sessioni vengono chiuse e le app di IA vengono scollegate. I modi di accesso aggiunti da allora smettono di funzionare, compresa una nuova password.",
+        "Non sei stato tu? Premi il pulsante entro 7 giorni. Questo indirizzo torna, tutte le sessioni vengono chiuse, le app di IA vengono scollegate e i modi di accesso aggiunti da allora smettono di funzionare. Anche la password viene cancellata, e “Ho dimenticato la password” imposta la prossima.",
       button: "Non ero io",
       small: "Se sei stato tu, non devi fare nulla.",
       why: "Ricevi questa email perché questo indirizzo era l’email di un account agentes.chat.",

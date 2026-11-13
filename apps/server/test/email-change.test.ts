@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { eq, schema } from "@agenteschat/db";
+import { eq, like, schema } from "@agenteschat/db";
 import {
   type Browser,
   browser,
   createTestServer,
+  fakeGoogle,
   GOOGLE_ENV,
   googleSignIn,
   lastCode,
@@ -52,6 +53,12 @@ const tokenIn = async (to: string, path: string) =>
   new URL(`http://x${await newestLink(to, path)}`).searchParams.get("token") ?? "";
 /** Where a link that no longer works lands. */
 const DEAD_LINK = "/?email_confirmed=1&error=INVALID_TOKEN";
+/** A minute after "This wasn't me": a sign-in or reset begun now began after it, past its second of slack. */
+const aMinuteAfterTheUndo = () =>
+  t.db
+    .update(schema.verifications)
+    .set({ createdAt: new Date(Date.now() - 60_000) })
+    .where(like(schema.verifications.identifier, "email-undone:%"));
 
 describe("one door", () => {
   test("Better Auth's own change-email answers nothing over HTTP, however it's spelled, and update-user refuses it", async () => {
@@ -224,6 +231,7 @@ describe("on a server that sends email", () => {
     const waiting = await tokenIn("thief@example.com", "/reset-password");
 
     expect((await browser(t)("/api/app/email-undo", { json: { token: undoToken } })).status).toBe(200);
+    await aMinuteAfterTheUndo();
     const again = await googleSignIn(t, "web", "thief@example.com");
     expect((await again.browser("/api/app/me")).status).toBe(401);
     const signIn = { email: "ana@example.com", password: password.newPassword };
@@ -271,6 +279,189 @@ describe("on a server that sends email", () => {
     }
     const limited = await b("/api/app/email-undo", { json: { token: "made-up-token-10-xxxxxxxx" } });
     expect([limited.status, await errorOf(limited)]).toEqual([429, "rate_limited"]);
+  });
+});
+
+describe("after “This wasn't me”, nothing the other person has or began goes on", () => {
+  const sessionsOf = (userId: string) => t.db.select().from(schema.sessions).where(eq(schema.sessions.userId, userId));
+  const providersOf = async (userId: string) =>
+    (await t.db.select().from(schema.accounts).where(eq(schema.accounts.userId, userId))).map((a) => a.providerId);
+  const undo = (token: string) => browser(t)("/api/app/email-undo", { json: { token } });
+  const signIn = (email: string, password: string) =>
+    browser(t)("/api/auth/sign-in/email", { json: { email, password } });
+  /** Ana's account, moved to thief@ by its link opened in the other person's browser, which that signs in. */
+  async function movedToThief(env: Record<string, string> = {}) {
+    t = await createTestServer({ env });
+    const ana = browser(t);
+    await signUp(ana, "ana@example.com");
+    const userId = (await userOf("ana@example.com"))?.id ?? "";
+    await change(ana, { newEmail: "thief@example.com" });
+    const thief = browser(t);
+    await openLink(thief, "thief@example.com");
+    return { ana, thief, userId, undoToken: await tokenIn("ana@example.com", "/email-undo") };
+  }
+  /** Google's return to `b` for `state`, as thief@. */
+  async function backFromGoogle(b: Browser, state: string) {
+    const real = globalThis.fetch;
+    globalThis.fetch = fakeGoogle("thief@example.com");
+    try {
+      return await b(`/api/auth/callback/google?code=c0de&state=${state}`, { origin: null });
+    } finally {
+      globalThis.fetch = real;
+    }
+  }
+
+  test("their browser is signed out at once: no app, token, phone or provider after it", async () => {
+    const { ana, thief, userId, undoToken } = await movedToThief(GOOGLE_ENV);
+    const created = await ana("/api/app/organizations", { json: { name: "Acme" } });
+    const orgId = ((await created.json()) as { organization: { id: string } }).organization.id;
+    expect((await thief("/api/app/me")).status).toBe(200);
+
+    expect((await undo(undoToken)).status).toBe(200);
+    expect((await thief("/api/app/me")).status).toBe(401);
+    const grant = { name: "Backup", access: "write", expiresInDays: 365 };
+    expect((await thief(`/api/app/organizations/${orgId}/tokens`, { json: grant })).status).toBe(401);
+    const phone = { platform: "android", token: "fcm-thief-device-token-0000000000", locale: "pt-BR" };
+    expect((await thief("/api/app/push/devices", { json: phone })).status).toBe(401);
+    const link = await thief("/api/auth/link-social", { json: { provider: "google", callbackURL: "/" } });
+    expect(link.status).toBe(401);
+    expect(await t.db.select().from(schema.appGrants).where(eq(schema.appGrants.userId, userId))).toEqual([]);
+    expect(await t.db.select().from(schema.pushDevices).where(eq(schema.pushDevices.userId, userId))).toEqual([]);
+    expect(await providersOf(userId)).toEqual(["credential"]);
+  });
+
+  test("the password they knew is cleared, and “Forgot my password” at the address that came back sets the next", async () => {
+    t = await createTestServer();
+    await signUp(browser(t), "ana@example.com");
+    // They know it: a fresh sign-in, so the new address needs no code.
+    const known = "correct horse battery";
+    const thief = browser(t);
+    expect(
+      (await thief("/api/auth/sign-in/email", { json: { email: "ana@example.com", password: known } })).status,
+    ).toBe(200);
+    expect(await (await change(thief, { newEmail: "thief@example.com" })).json()).toMatchObject({ status: "sent" });
+    await openLink(browser(t), "thief@example.com");
+    expect((await undo(await tokenIn("ana@example.com", "/email-undo"))).status).toBe(200);
+
+    await aMinuteAfterTheUndo();
+    expect((await signIn("ana@example.com", known)).status).toBe(401);
+    const reset = { email: "ana@example.com", redirectTo: "/reset-password" };
+    await browser(t)("/api/auth/request-password-reset", { json: reset });
+    const next = { token: await tokenIn("ana@example.com", "/reset-password"), newPassword: "ana's own password" };
+    expect((await browser(t)("/api/auth/reset-password", { json: next })).status).toBe(200);
+    expect((await signIn("ana@example.com", next.newPassword)).status).toBe(200);
+  });
+
+  test("a password sign-in under way when it runs gets no session", async () => {
+    const { userId, undoToken } = await movedToThief();
+    const context = await t.auth.$context;
+    const verify = context.password.verify;
+    let undone = 0;
+    // The sign-in found the account and its password before the undo; its session lands after it.
+    context.password.verify = async (input) => {
+      context.password.verify = verify;
+      undone = (await undo(undoToken)).status;
+      return verify(input);
+    };
+    const racer = browser(t);
+    const res = await racer("/api/auth/sign-in/email", {
+      json: { email: "thief@example.com", password: "correct horse battery" },
+    });
+    expect(undone).toBe(200);
+    expect(res.status).toBe(401);
+    expect(await sessionsOf(userId)).toEqual([]);
+    expect((await change(racer, { newEmail: "thief2@example.com" })).status).toBe(401);
+  });
+
+  test("a Google sign-in that found the account before it joins nothing and gets no session", async () => {
+    const { userId, undoToken } = await movedToThief(GOOGLE_ENV);
+    const context = await t.auth.$context;
+    const find = context.internalAdapter.findUserByEmail;
+    let undone = 0;
+    context.internalAdapter.findUserByEmail = async (email, options) => {
+      const found = await find(email, options);
+      if (email === "thief@example.com" && !undone) undone = (await undo(undoToken)).status;
+      return found;
+    };
+    try {
+      const google = await googleSignIn(t, "web", "thief@example.com");
+      expect(undone).toBe(200);
+      expect(new URL(google.location, "http://x").pathname).toBe("/login");
+    } finally {
+      context.internalAdapter.findUserByEmail = find;
+    }
+    expect(await sessionsOf(userId)).toEqual([]);
+    expect(await providersOf(userId)).toEqual(["credential"]);
+  });
+
+  test("a link to Google asked before it, back from Google after it, joins nothing", async () => {
+    const { thief, userId, undoToken } = await movedToThief(GOOGLE_ENV);
+    const asked = await thief("/api/auth/link-social", { json: { provider: "google", callbackURL: "/" } });
+    expect(asked.status).toBe(200);
+    const state = new URL(((await asked.json()) as { url: string }).url).searchParams.get("state") ?? "";
+    expect((await undo(undoToken)).status).toBe(200);
+    // Google's page took a moment: its return began well after the undo, and needs no session.
+    await Bun.sleep(1100);
+    await backFromGoogle(thief, state);
+    expect(await providersOf(userId)).toEqual(["credential"]);
+    const later = await googleSignIn(t, "web", "thief@example.com");
+    expect((await later.browser("/api/app/me")).status).toBe(401);
+  });
+
+  test("a reset under way when it runs leaves no password", async () => {
+    const { thief, undoToken } = await movedToThief();
+    await thief("/api/auth/request-password-reset", {
+      json: { email: "thief@example.com", redirectTo: "/reset-password" },
+    });
+    const token = await tokenIn("thief@example.com", "/reset-password");
+    const context = await t.auth.$context;
+    const update = context.internalAdapter.updatePassword;
+    let undone = 0;
+    // Its link was spent before the undo dropped it; its new password lands after the undo cleared the old.
+    context.internalAdapter.updatePassword = async (userId, password) => {
+      context.internalAdapter.updatePassword = update;
+      undone = (await undo(undoToken)).status;
+      return update(userId, password);
+    };
+    const res = await thief("/api/auth/reset-password", { json: { token, newPassword: "the other one's password" } });
+    expect(undone).toBe(200);
+    expect(res.status).toBe(401);
+    await aMinuteAfterTheUndo();
+    expect((await signIn("ana@example.com", "the other one's password")).status).toBe(401);
+  });
+
+  test("a new password under way when it runs is cleared", async () => {
+    const { thief, undoToken } = await movedToThief();
+    const context = await t.auth.$context;
+    const hash = context.password.hash;
+    let undone = 0;
+    // The request read its session before the undo; its password lands after it.
+    context.password.hash = async (password) => {
+      context.password.hash = hash;
+      undone = (await undo(undoToken)).status;
+      return hash(password);
+    };
+    const res = await thief("/api/app/me/password", { json: { password: "the other one's password" } });
+    expect(undone).toBe(200);
+    expect(res.status).toBe(401);
+    await aMinuteAfterTheUndo();
+    expect((await signIn("ana@example.com", "the other one's password")).status).toBe(401);
+  });
+});
+
+describe("a made-up change link", () => {
+  test("addresses that aren't text land where a dead link does", async () => {
+    t = await createTestServer();
+    const part = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
+    for (const claims of [
+      { email: { toString: 1 }, updateTo: "x@example.com" },
+      { email: [{ toString: 1 }], updateTo: "x@example.com" },
+      { email: "ana@example.com", updateTo: { toString: 1 } },
+    ]) {
+      const token = `${part({ alg: "HS256", typ: "JWT" })}.${part(claims)}.x`;
+      const res = await browser(t)(`/api/auth/verify-email?token=${token}`, { origin: null });
+      expect({ claims, at: [res.status, res.headers.get("location")] }).toEqual({ claims, at: [302, DEAD_LINK] });
+    }
   });
 });
 

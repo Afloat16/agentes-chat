@@ -16,22 +16,28 @@ const { users, sessions, verifications, accounts, pushDevices } = schema;
  *   (`changeAsked`).
  * - `email-held:<sha256(address)>` `{ userId }`: an address the account is leaving or just left. While no account has
  *   it, nobody signs up with it and no other account takes it, so "This wasn't me" can always put it back.
- * - `email-undo:<sha256(token)>` `{ userId, from, to }`: "This wasn't me", emailed to the address the account left.
+ * - `email-undo:<sha256(token)>` `{ userId, from, to, since }`: "This wasn't me", emailed to the address the account
+ *   left; `since` is when the change was asked.
+ * - `email-undone:<userId>`: "This wasn't me" just ran, for the sign-ins already under way then (`undoneSince`).
  */
 export const EMAIL_UNDO_DAYS = 7;
 /** A change asked outlives its link (an hour, `emailVerification.expiresIn` in apps/server auth.ts). */
 const ASKED_MS = 2 * 3_600_000;
 const DAY_MS = 86_400_000;
+/** As long as a provider's sign-in may take, from its start to its return (Better Auth's state lasts 10 minutes). */
+const UNDONE_MS = 10 * 60_000;
 
 const lower = (email: string) => email.trim().toLowerCase();
 const askedId = (userId: string) => `email-change:${userId}`;
 const heldId = (address: string) => `email-held:${sha256(lower(address))}`;
 const undoId = (token: string) => `email-undo:${sha256(token)}`;
+const undoneId = (userId: string) => `email-undone:${userId}`;
 
 interface Undo {
   userId: string;
   from: string;
   to: string;
+  since: string;
 }
 
 function parsed<T extends object>(value: string, keys: (keyof T)[]): T | null {
@@ -136,11 +142,12 @@ export async function finishEmailChange(
       .from(verifications)
       .where(and(eq(verifications.identifier, askedId(user.id)), gt(verifications.expiresAt, now)));
     const from = row ? parsed<{ from: string }>(row.value, ["from"])?.from : undefined;
-    if (!from || from === lower(user.email)) return false;
+    if (!row || !from || from === lower(user.email)) return false;
     await tx.delete(verifications).where(eq(verifications.identifier, askedId(user.id)));
     const token = randomBytes(32).toString("base64url");
     const until = new Date(now.getTime() + EMAIL_UNDO_DAYS * DAY_MS);
-    await putRow(tx, undoId(token), { userId: user.id, from, to: lower(user.email) } satisfies Undo, until, now);
+    const undo: Undo = { userId: user.id, from, to: lower(user.email), since: row.createdAt.toISOString() };
+    await putRow(tx, undoId(token), undo, until, now);
     await hold(tx, from, user.id, until, now);
     await queueEmail(tx, {
       orgId: null,
@@ -161,10 +168,10 @@ export async function finishEmailChange(
 /**
  * "This wasn't me": the account the token was sent for gets the address back (confirmed: its mailbox opened the link),
  * every session ends and every AI app and token it let in is cut off, as a new password does, and so does every way in
- * the other mailbox got since the change. Once, within 7 days: it also voids the newer ones of that account (a later
- * change's undo would hand the address back to whoever made it), and keeps the older ones. Throws `email.undo_gone`
- * (used, run out, or the account is gone) and `email.undo_taken` (another account has the address: nothing changes,
- * and the link still works).
+ * the other mailbox got since the change was asked, and the password. Once, within 7 days: it also voids the newer ones
+ * of that account (a later change's undo would hand the address back to whoever made it), and keeps the older ones.
+ * Throws `email.undo_gone` (used, run out, or the account is gone) and `email.undo_taken` (another account has the
+ * address: nothing changes, and the link still works).
  */
 export async function undoEmailChange(db: Database, token: string, now = new Date()) {
   return db.transaction(async (tx) => {
@@ -173,7 +180,7 @@ export async function undoEmailChange(db: Database, token: string, now = new Dat
       .delete(verifications)
       .where(eq(verifications.identifier, undoId(token)))
       .returning();
-    const undo = row && row.expiresAt > now ? parsed<Undo>(row.value, ["userId", "from", "to"]) : null;
+    const undo = row && row.expiresAt > now ? parsed<Undo>(row.value, ["userId", "from", "to", "since"]) : null;
     if (!row || !undo) throw new NotFoundError("This link expired or was already used", "email.undo_gone");
     const [taken] = await tx
       .select({ id: users.id })
@@ -210,26 +217,49 @@ export async function undoEmailChange(db: Database, token: string, now = new Dat
     );
     await tx.delete(sessions).where(eq(sessions.userId, undo.userId));
     // Whoever holds the other mailbox would sign straight back in: through a provider its address joined to the
-    // account once confirmed (Better Auth links by a confirmed address), with a password set or reset from there, or
-    // with a reset link still waiting. The sign-ins made since the change go, and a password from before that was set
-    // anew is cleared, so "Forgot my password" at this address sets the next one. Phones hear no more pushes until
-    // they sign in again.
-    await tx.delete(accounts).where(and(eq(accounts.userId, undo.userId), gte(accounts.createdAt, row.createdAt)));
+    // account once confirmed (Better Auth links by a confirmed address), with a password they set, reset or already
+    // knew (the likeliest way in, since a fresh sign-in asks a new address without the code), or with a reset link
+    // still waiting. The sign-ins made since the change was asked go, and the password is cleared, so "Forgot my
+    // password" at this address sets the next one. Phones hear no more pushes until they sign in again.
     await tx
-      .update(accounts)
-      .set({ password: null, updatedAt: now })
-      .where(
-        and(
-          eq(accounts.userId, undo.userId),
-          eq(accounts.providerId, "credential"),
-          gte(accounts.updatedAt, row.createdAt),
-        ),
-      );
+      .delete(accounts)
+      .where(and(eq(accounts.userId, undo.userId), gte(accounts.createdAt, new Date(undo.since))));
+    await clearPassword(tx, undo.userId, now);
     await dropPasswordLinks(tx, undo.userId);
     await tx.delete(pushDevices).where(eq(pushDevices.userId, undo.userId));
     await revokeUserApps(tx, undo.userId, "email_change_undone");
+    await putRow(tx, undoneId(undo.userId), {}, new Date(now.getTime() + UNDONE_MS), now);
     return { email: undo.from };
   });
+}
+
+/** The account's password goes. Its row stays, so the sign-in page offers "Forgot my password", whose reset fills it. */
+export async function clearPassword(db: Executor, userId: string, now = new Date()) {
+  await db
+    .update(accounts)
+    .set({ password: null, updatedAt: now })
+    .where(and(eq(accounts.userId, userId), eq(accounts.providerId, "credential")));
+}
+
+/** Clocks differ a little between replicas, and an undo commits a moment after its rows are stamped. */
+const CLOCK_SLACK_MS = 1000;
+
+/**
+ * Whether "This wasn't me" ran for `userId` since a request that began at `startedAt` (ms). That request read the
+ * account as it was before, so the session, sign-in method or password it makes lands after the undo, and the caller
+ * takes it back (apps/server auth.ts).
+ */
+export async function undoneSince(db: Executor, userId: string, startedAt: number) {
+  const [row] = await db
+    .select({ id: verifications.id })
+    .from(verifications)
+    .where(
+      and(
+        eq(verifications.identifier, undoneId(userId)),
+        gte(verifications.createdAt, new Date(startedAt - CLOCK_SLACK_MS)),
+      ),
+    );
+  return row !== undefined;
 }
 
 /** Changes asked, holds and undos past their end: their rows go (the hourly `deletions` tick). */
@@ -242,6 +272,7 @@ export async function pruneEmailChanges(db: Database, now = new Date()) {
           like(verifications.identifier, "email-change:%"),
           like(verifications.identifier, "email-held:%"),
           like(verifications.identifier, "email-undo:%"),
+          like(verifications.identifier, "email-undone:%"),
         ),
         lte(verifications.expiresAt, now),
       ),

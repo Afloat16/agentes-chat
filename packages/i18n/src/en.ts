@@ -17303,12 +17303,12 @@ export const en = {
   /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
   emailUndo: {
     title: "Bring your email back",
-    lead: "The address this link went to becomes your account's email again. Every session is signed out and the AI apps are disconnected. Ways to sign in added since the change stop working, a new password included.",
+    lead: "The address this link went to becomes your account's email again. Every session is signed out, the AI apps are disconnected and ways to sign in added since the change stop working. The password is cleared too, and “Forgot my password” sets the next one.",
     button: "This wasn't me",
     done: "Your email is back",
     /** `{{email}}`: the address the account has again. Then: Sign in. */
     doneLead:
-      "{{email}} is your account's email again. Every session is signed out, and ways to sign in added since the change no longer work, a new password included. If your password doesn't work, or someone may know it, press “Forgot my password” when you sign in.",
+      "{{email}} is your account's email again. Every session is signed out, ways to sign in added since the change no longer work, and the password was cleared: “Forgot my password” sets the next one when you sign in.",
     gone: "This link no longer works",
     goneLead: "It was already used, or its 7 days are over.",
     taken: "Another account has this email",

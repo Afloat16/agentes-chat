@@ -12,6 +12,7 @@ import {
   CODE_LIMITS,
   ConflictError,
   changeAsked,
+  clearPassword,
   countUsers,
   deriveSecret,
   EARLY_ACCESS_HEADER,
@@ -42,6 +43,7 @@ import {
   spendProofCode,
   TooManyError,
   UnauthorizedError,
+  undoneSince,
   useEarlyAccess,
   ValidationError,
   type WorkspacePolicy,
@@ -136,6 +138,12 @@ export function createAuth(deps: {
   const appOrigins = [APP_SCHEME, ...(config.NODE_ENV !== "production" ? ["exp://", "exp://**"] : [])];
   const apple = appleSignIn(config);
   const authorizations = socialAuthorizations(config, apple?.clientId ?? null);
+  // A sign-in under way when "This wasn't me" ran read the account as it was: the session, sign-in method or password
+  // it makes lands after the undo took every one back, and goes too.
+  const undoneMeanwhile = async (userId: string) => {
+    const startedAt = await signInStartedAt();
+    return startedAt !== null && (await undoneSince(db, userId, startedAt));
+  };
 
   return betterAuth({
     appName: "agentes.chat",
@@ -175,10 +183,9 @@ export function createAuth(deps: {
     },
     session: {
       additionalFields: { activeOrganizationId: { type: "string", required: false, input: false } },
-      // Signed cookie cache: most requests don't hit the sessions table.
-      // Trade-off: signing out elsewhere takes up to 5 minutes to propagate.
-      // Permissions are still checked against the database on every request.
-      cookieCache: { enabled: true, maxAge: 5 * 60 },
+      // No signed cookie cache: every request reads its session from the database (once, `sessionOf`), so a session
+      // that ends (signing out, a new password, "This wasn't me", a block) stops working at once everywhere.
+      cookieCache: { enabled: false },
     },
     emailAndPassword: {
       enabled: true,
@@ -217,6 +224,11 @@ export function createAuth(deps: {
           }
         : {}),
       onPasswordReset: async ({ user }: { user: { id: string } }) => {
+        // Its link read before "This wasn't me" dropped it, the new password landed after the undo cleared the old one.
+        if (await undoneMeanwhile(user.id)) {
+          await clearPassword(db, user.id);
+          throw new APIError("UNAUTHORIZED", SIGN_IN_UNDONE);
+        }
         // An emailed link reached the mailbox, as a confirmation link would, and the password nobody proved is gone
         // with every session: the address counts as confirmed, so a provider can join the account (ADR 0006). A link
         // an owner made on a server without email proves nothing about the mailbox (ADR 0158).
@@ -349,8 +361,12 @@ export function createAuth(deps: {
           // unchecked: this only refuses, and Better Auth checks the signature next.
           const claims = jwtClaims(String((ctx.query as { token?: unknown } | undefined)?.token ?? ""));
           if (
-            typeof claims?.updateTo === "string" &&
-            !(await changeAsked(db, String(claims.email ?? ""), claims.updateTo))
+            claims?.updateTo !== undefined &&
+            !(await changeAsked(
+              db,
+              typeof claims.email === "string" ? claims.email : "",
+              typeof claims.updateTo === "string" ? claims.updateTo : "",
+            ))
           ) {
             // Where a link that no longer works lands: never the link's own callbackURL, which nothing checked yet.
             throw ctx.redirect(`${CONFIRMATION_LANDING}&error=INVALID_TOKEN`);
@@ -422,11 +438,16 @@ export function createAuth(deps: {
           },
         },
       },
-      // The operator API's events feed (ADR 0056). These run after the sign-in has committed: a failure
-      // here is logged and never fails the sign-in.
+      // After the sign-in has committed: the operator API's events feed (ADR 0056), whose failure is logged and never
+      // fails the sign-in, and a sign-in "This wasn't me" overtook (`undoneMeanwhile`), which fails.
       account: {
         create: {
+          // A provider joined (a provider's return from a sign-in begun before the undo included) or a password added.
           after: async (account) => {
+            if (await undoneMeanwhile(account.userId)) {
+              await db.delete(schema.accounts).where(eq(schema.accounts.id, account.id));
+              throw new APIError("UNAUTHORIZED", SIGN_IN_UNDONE);
+            }
             await recordSignUp(db, account).catch((error) =>
               log.error("operator event failed", { type: "user.signed_up", error }),
             );
@@ -448,7 +469,12 @@ export function createAuth(deps: {
               });
             }
           },
+          // Here, not in `before`: the insert may wait for the undo's commit, and only after it can it see the undo.
           after: async (session) => {
+            if (await undoneMeanwhile(session.userId)) {
+              await db.delete(schema.sessions).where(eq(schema.sessions.id, session.id));
+              throw new APIError("UNAUTHORIZED", SIGN_IN_UNDONE);
+            }
             await recordSession(db, session).catch((error) =>
               log.error("operator event failed", { type: "session.created", error }),
             );
@@ -461,14 +487,31 @@ export function createAuth(deps: {
 
 export type Auth = ReturnType<typeof createAuth>;
 
-/** The address a provider gave during this request's sign-in (`noteProviderEmail`), read by `authHandler`. */
-const providerEmail = new AsyncLocalStorage<{ email?: string }>();
+/**
+ * This request to Better Auth (`authHandler`): when it began, and the address a provider gave its sign-in
+ * (`noteProviderEmail`).
+ */
+const authRequest = new AsyncLocalStorage<{ startedAt: number; email?: string }>();
 
 /** Every provider's `mapProfileToUser`: notes the address, changes nothing. */
 function noteProviderEmail(profile: { email?: unknown }) {
-  const seen = providerEmail.getStore();
+  const seen = authRequest.getStore();
   if (seen && typeof profile.email === "string") seen.email = profile.email;
   return {};
+}
+
+/** How long Better Auth's state for a provider's sign-in lasts from its start (`generateState`). */
+const OAUTH_STATE_MS = 600_000;
+
+/**
+ * When this request's sign-in began: the request, or for a provider's return, the sign-in it finishes (a link to the
+ * account names it in its state, and needs no session on its return). Null outside a request (`auth.api` in-process).
+ */
+async function signInStartedAt(): Promise<number | null> {
+  const startedAt = authRequest.getStore()?.startedAt;
+  if (startedAt === undefined) return null;
+  const flow = await getOAuthState().catch(() => null);
+  return typeof flow?.expiresAt === "number" ? Math.min(startedAt, flow.expiresAt - OAUTH_STATE_MS) : startedAt;
 }
 
 /**
@@ -479,8 +522,8 @@ function noteProviderEmail(profile: { email?: unknown }) {
  */
 export function authHandler(auth: Auth, db: Database) {
   return (request: Request) => {
-    const seen: { email?: string } = {};
-    return providerEmail.run(seen, async () => {
+    const seen: { startedAt: number; email?: string } = { startedAt: Date.now() };
+    return authRequest.run(seen, async () => {
       const res = await auth.handler(request);
       const location = res.headers.get("location");
       if (!seen.email || !location) return res;
@@ -507,19 +550,33 @@ export function signInPageUrl(publicUrl: string, query?: Record<string, string>)
   return query ? `${page}?${new URLSearchParams(query)}` : page;
 }
 
+const sessionReads = new WeakMap<Headers, ReturnType<Auth["api"]["getSession"]>>();
+
+/**
+ * The session of the request whose `headers` these are, read from the database once for the whole request: its
+ * middleware and route share the read. Only a request's own `headers`, never a set kept across requests.
+ */
+export function sessionOf(auth: Auth, headers: Headers) {
+  let read = sessionReads.get(headers);
+  if (!read) {
+    read = auth.api.getSession({ headers });
+    sessionReads.set(headers, read);
+  }
+  return read;
+}
+
 /** Resolves the signed-in person from request headers (cookie), or null. Used by HTTP and WebSocket. */
 export async function sessionUser(auth: Auth, headers: Headers): Promise<SessionUser | null> {
-  const session = await auth.api.getSession({ headers });
+  const session = await sessionOf(auth, headers);
   return session ? (session.user as SessionUser) : null;
 }
 
 /**
- * Whether this request's session, as `userId`, signed in within `FRESH_SIGN_IN_MS`, as adding a password requires.
- * Read from the database: a cached cookie can't vouch for it. A session minted from another keeps that one's sign-in
- * time.
+ * Whether this request's session, as `userId`, signed in within `FRESH_SIGN_IN_MS`, as adding a password requires. A
+ * session minted from another keeps that one's sign-in time.
  */
 export async function signedInLately(auth: Auth, headers: Headers, userId: string) {
-  const current = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
+  const current = await sessionOf(auth, headers);
   if (current?.user.id !== userId) return false;
   return Date.now() - new Date(current.session.createdAt).getTime() < FRESH_SIGN_IN_MS;
 }
@@ -745,6 +802,8 @@ export const ACCOUNT_NOT_LINKED = "account_not_linked";
  * address, so it joins no account (`authHandler`, mirrored in packages/client errors.ts).
  */
 export const PROVIDER_EMAIL_UNVERIFIED = "provider_email_unverified";
+/** A sign-in "This wasn't me" overtook (`undoneMeanwhile`): what it made is gone, and a new one starts over. */
+const SIGN_IN_UNDONE = { code: "UNAUTHORIZED", message: "Sign in again." };
 
 /** Every sign-up but the password form's is through a provider (the redirect's callback, or the phone's id token). */
 const isSocial = (context: { path?: string } | null | undefined) => context?.path !== "/sign-up/email";

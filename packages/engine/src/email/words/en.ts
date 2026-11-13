@@ -386,7 +386,7 @@ export const en = {
         ".",
       ],
       notYou:
-        "Wasn't you? Press the button within 7 days. This address comes back, every session is signed out and the AI apps are disconnected. Ways to sign in added since then stop working, a new password included." as Text,
+        "Wasn't you? Press the button within 7 days. This address comes back, every session is signed out, the AI apps are disconnected and ways to sign in added since then stop working. The password is cleared too, and “Forgot my password” sets the next one." as Text,
       button: "This wasn't me",
       small: "If it was you, there's nothing to do.",
       why: "You got this email because this address was the email of an agentes.chat account.",

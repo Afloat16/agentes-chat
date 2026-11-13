@@ -16565,10 +16565,10 @@
   },
   "emailUndo": {
     "title": "Kembalikan emailmu",
-    "lead": "Alamat yang menerima tautan ini kembali menjadi email akunmu. Semua sesi dikeluarkan dan aplikasi AI diputuskan. Cara masuk yang ditambahkan sejak perubahan itu tidak berlaku lagi, termasuk kata sandi baru.",
+    "lead": "Alamat yang menerima tautan ini kembali menjadi email akunmu. Semua sesi dikeluarkan, aplikasi AI diputuskan, dan cara masuk yang ditambahkan sejak perubahan itu tidak berlaku lagi. Kata sandi juga dihapus, dan “Lupa kata sandi” membuat yang berikutnya.",
     "button": "Ini bukan saya",
     "done": "Emailmu sudah kembali",
-    "doneLead": "{{email}} kembali menjadi email akunmu, dan semua sesi sudah dikeluarkan. Cara masuk yang ditambahkan sejak perubahan itu tidak berlaku lagi, termasuk kata sandi baru. Kalau kata sandimu tidak berfungsi, atau mungkin ada yang tahu, tekan “Lupa kata sandi” saat masuk.",
+    "doneLead": "{{email}} kembali menjadi email akunmu, dan semua sesi sudah dikeluarkan. Cara masuk yang ditambahkan sejak perubahan itu tidak berlaku lagi, dan kata sandi sudah dihapus: tekan “Lupa kata sandi” saat masuk untuk membuat yang berikutnya.",
     "gone": "Tautan ini sudah tidak berlaku",
     "goneLead": "Tautan ini sudah dipakai, atau 7 harinya sudah lewat.",
     "taken": "Akun lain memakai email ini",

@@ -369,7 +369,7 @@ export const words: EmailWords = {
       headline: "Deine E-Mail-Adresse wurde geändert",
       body: (email, newEmail) => ["Das Konto ", { b: email }, " meldet sich jetzt mit ", { b: newEmail }, " an."],
       notYou:
-        "Das warst nicht du? Drück innerhalb von 7 Tagen auf den Button. Diese Adresse kommt zurück, alle Sitzungen werden abgemeldet und die KI-Apps getrennt. Anmeldewege, die seitdem hinzugekommen sind, funktionieren nicht mehr, auch ein neues Passwort.",
+        "Das warst nicht du? Drück innerhalb von 7 Tagen auf den Button. Diese Adresse kommt zurück, alle Sitzungen werden abgemeldet, die KI-Apps getrennt, und Anmeldewege, die seitdem hinzugekommen sind, funktionieren nicht mehr. Auch das Passwort wird gelöscht: Mit „Passwort vergessen“ legst du das nächste fest.",
       button: "Das war ich nicht",
       small: "Wenn du das warst, musst du nichts tun.",
       why: "Du erhältst diese E-Mail, weil diese Adresse die E-Mail-Adresse eines agentes.chat-Kontos war.",

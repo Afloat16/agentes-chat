@@ -17334,12 +17334,12 @@ export const ptBR = {
   /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
   emailUndo: {
     title: "Trazer seu e-mail de volta",
-    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas e os apps de IA são desconectados. Jeitos de entrar adicionados depois da troca deixam de valer, senha nova inclusive.",
+    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas, os apps de IA são desconectados e jeitos de entrar adicionados depois da troca deixam de valer. A senha também é apagada, e “Esqueci a senha” cria a próxima.",
     button: "Não fui eu",
     done: "Seu e-mail voltou",
     /** `{{email}}`: the address the account has again. Then: Sign in. */
     doneLead:
-      "{{email}} voltou a ser o e-mail da sua conta. Todas as sessões foram encerradas, e jeitos de entrar adicionados depois da troca não valem mais, senha nova inclusive. Se a sua senha não funcionar, ou se alguém puder saber dela, aperte “Esqueci a senha” quando for entrar.",
+      "{{email}} voltou a ser o e-mail da sua conta. Todas as sessões foram encerradas, jeitos de entrar adicionados depois da troca não valem mais e a senha foi apagada: “Esqueci a senha” cria a próxima quando você for entrar.",
     gone: "Este link não vale mais",
     goneLead: "Ele já foi usado, ou os 7 dias dele passaram.",
     taken: "Outra conta usa este e-mail",

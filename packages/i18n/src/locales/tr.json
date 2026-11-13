@@ -16986,10 +16986,10 @@
   },
   "emailUndo": {
     "title": "E-postanı geri al",
-    "lead": "Bu bağlantının gittiği adres yeniden hesabının e-postası olur. Tüm oturumlar kapatılır ve yapay zekâ uygulamalarının bağlantısı kesilir. Değişiklikten sonra eklenen giriş yolları, yeni bir şifre de dahil, artık çalışmaz.",
+    "lead": "Bu bağlantının gittiği adres yeniden hesabının e-postası olur. Tüm oturumlar kapatılır, yapay zekâ uygulamalarının bağlantısı kesilir ve değişiklikten sonra eklenen giriş yolları artık çalışmaz. Şifre de silinir, sonrakini “Şifremi unuttum” ile belirlersin.",
     "button": "Bu ben değildim",
     "done": "E-postan geri geldi",
-    "doneLead": "{{email}} yeniden hesabının e-postası oldu ve tüm oturumlar kapatıldı. Değişiklikten sonra eklenen giriş yolları, yeni bir şifre de dahil, artık çalışmıyor. Şifren çalışmıyorsa ya da biri onu biliyor olabilirse, giriş yaparken “Şifremi unuttum”a bas.",
+    "doneLead": "{{email}} yeniden hesabının e-postası oldu ve tüm oturumlar kapatıldı. Değişiklikten sonra eklenen giriş yolları artık çalışmıyor ve şifre silindi: giriş yaparken sonrakini “Şifremi unuttum” ile belirle.",
     "gone": "Bu bağlantı artık çalışmıyor",
     "goneLead": "Zaten kullanıldı ya da 7 günü doldu.",
     "taken": "Bu e-postayı başka bir hesap kullanıyor",
