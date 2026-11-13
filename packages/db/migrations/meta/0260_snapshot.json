@@ -1,6 +1,6 @@
 {
-  "id": "2902fc04-d1a0-4440-80c1-21929d146a84",
-  "prevId": "84d16a7f-9e31-426a-bdf0-c8b5f6530c2f",
+  "id": "84d16a7f-9e31-426a-bdf0-c8b5f6530c2f",
+  "prevId": "1a53a1e0-d3ba-4e37-a1a9-5781a57a25d0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -11350,20 +11350,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "spill_others": {
-          "name": "spill_others",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "spill_own": {
-          "name": "spill_own",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
         }
       },
       "indexes": {
@@ -19865,6 +19851,18 @@
         "file_name": {
           "name": "file_name",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },

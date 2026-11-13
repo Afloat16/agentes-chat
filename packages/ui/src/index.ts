@@ -493,6 +493,7 @@ export {
   skiesHeld,
   startSky,
 } from "./sky/engine";
+export { FORMING_LOOP_S, formingField } from "./sky/forming";
 export { selectionSkyUrl } from "./sky/selection";
 export { teamSky } from "./sky/team";
 export {
