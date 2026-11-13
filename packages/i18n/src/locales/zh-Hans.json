@@ -371,6 +371,56 @@
       "say": "管理账单"
     }
   },
+  "hosting": {
+    "title": "你的工作区放在哪里？",
+    "lead": "应用是一样的，区别在于谁来维护服务器。",
+    "recommended": "推荐",
+    "free": "免费 · 开源",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "始终在线，无需安装。",
+      "on": "智能体的电脑始终开机",
+      "care": "更新和备份由我们负责",
+      "ready": "几分钟即可就绪，无需安装",
+      "price": "按工作区的月度套餐",
+      "continue": "继续使用 Cloud",
+      "enter": "登录 Cloud"
+    },
+    "own": {
+      "name": "在你自己的服务器上",
+      "short": "由你安装、更新和备份。",
+      "server": "由你维护服务器和 Postgres",
+      "care": "更新和备份由你负责",
+      "off": "服务器关机时智能体也会停止",
+      "license": "永久免费，AGPL 许可",
+      "continue": "继续使用我的服务器",
+      "address": "服务器地址",
+      "connect": "连接",
+      "invalid": "这不是一个地址。请像在浏览器中一样输入，例如 agentes.example.com。",
+      "unreachable": "在 {{host}} 没有找到 agentes.chat。请检查地址以及服务器是否开机。",
+      "none": "还没有服务器？",
+      "noneLink": "看看如何免费拥有自己的服务器"
+    },
+    "get": {
+      "title": "拥有自己的服务器",
+      "server": "安装到服务器",
+      "serverText": "适合团队，始终在线",
+      "serverAction": "查看步骤",
+      "here": "在你的电脑上运行",
+      "hereText": "适合个人或小团队，无需 Docker",
+      "download": "下载应用",
+      "how": "了解原理",
+      "foot": "不想维护任何东西？",
+      "footLink": "使用 Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "你的服务器",
+      "here": "在这台电脑上"
+    },
+    "whyPaid": "为什么要付费？",
+    "whyPaidText": "Cloud 包含始终开机的智能体电脑，以及有人为你维护服务器。在你自己的服务器上运行是免费的。"
+  },
   "auth": {
     "email": "邮箱",
     "password": "密码",
@@ -496,7 +546,9 @@
     },
     "server": {
       "into": "正在登录 <b>{{server}}</b>",
-      "intoHere": "正在登录<b>这台 {{device}}</b> 上的 agentes.chat"
+      "intoHere": "正在登录<b>这台 {{device}}</b> 上的 agentes.chat",
+      "intoCloud": "正在登录 <b>agentes.chat Cloud</b>",
+      "change": "更换服务器"
     },
     "forgotHere": {
       "ownerTitle": "这里不需要密码。",
@@ -1076,6 +1128,8 @@
       },
       "linkSkipped_other": "{{count}} 个文件超出了链接的上限",
       "linkSkippedHelp": "一个链接最多读取 200 个文件和 8 MB。要带上其余内容，请下载文件夹并拖到这里。",
+      "systemFiles_other": "已略过 {{count}} 个系统文件",
+      "systemFilesHelp": "依赖、缓存以及 node_modules 和 .git 等文件夹。我们只读取属于智能体的内容。",
       "never": "密钥、密码和聊天记录绝不会被带上。",
       "go_other": "导入 {{count}} 项",
       "nothingNew": "这些内容这里都已经有了。",
@@ -1128,6 +1182,13 @@
       "errors": {
         "empty": "那里没有可读取的内容。请检查是否选对了文件夹或文件。",
         "tooLarge": "内容太大，这里无法读取。试试只选智能体的文件夹，不带其他内容。",
+        "limit": {
+          "files": "不算系统文件，共有 {{have}} 个文件。一次导入最多读取 {{max}} 个。请只拖入智能体的文件夹。",
+          "bytes": "{{name}} 有 {{have}}。一次导入最多打开 {{max}}。请只拖入智能体的文件夹。",
+          "unpacked": "解压后有 {{have}}。一次导入最多读取 {{max}}。请只拖入智能体的文件夹。",
+          "text": "粘贴的文本有 {{have}}。一次导入最多读取 {{max}}。请分批导出，每次一个智能体。",
+          "file": "{{name}} 有 {{have}}。一次导入每个文件最多读取 {{max}}。请分批导出，每次一个智能体。"
+        },
         "unknown": "无法识别这些文件。选择它们来自的应用，看看正确的文件在哪里，或者选择“其他应用”。",
         "newerVersion": "这个文件来自更新版本的应用，我们暂时还无法读取。你可以先使用“其他应用”。",
         "noAgents": "读取了文件，但没有找到任何智能体。请检查是不是整个团队的文件夹或文件。",

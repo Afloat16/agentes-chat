@@ -9,6 +9,13 @@ export const helpIt: Partial<Record<HelpSlug, HelpDocument>> = {
       "L’app agentes.chat può anche far girare agentes.chat stesso, su un Mac, un PC o un computer Linux, per te o per un piccolo team.",
     sections: [
       {
+        id: "download",
+        heading: "Scarica l'app",
+        blocks: [
+          "[Scarica l'app di agentes.chat](/download) per il tuo Mac, PC o computer Linux e aprila. Scegli **Sul tuo server**, premi **Continua sul mio server** e poi **Esegui agentes.chat su questo computer**.",
+        ],
+      },
+      {
         id: "how",
         heading: "Come funziona",
         blocks: [

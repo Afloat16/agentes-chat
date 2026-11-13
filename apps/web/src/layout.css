@@ -675,7 +675,8 @@ html:not([data-pointer]) .consult-pair__row:focus-visible {
   .wiki__center,
   .cal-side,
   .cal-agenda,
-  .cal-week__scroll
+  .cal-week__scroll,
+  .onb
 ):not(:hover, :has(:focus-visible)) {
   --scroll-thumb: transparent;
 }
@@ -735,6 +736,25 @@ html:not([data-pointer]) .consult-pair__row:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* The workspace's place, then its counts, on one line: the place keeps its words, the counts give way. */
+.sidebar__org-line {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
+}
+.sidebar__org-where {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+.sidebar__org-where + .sidebar__org-meta::before {
+  content: "· ";
 }
 .sidebar__group {
   display: flex;
@@ -8754,10 +8774,15 @@ html:not([data-pointer]) .machine-connect__toggle:focus-visible {
  * A rail like the app's sidebar (its surface, the steps), a strip of pixel sky
  * on top for the progress and the sky as a horizon at its bottom; on the right,
  * one calm screen per step hosted by an agent of the team. */
+/* Its own scroller, as every other page: the Linux app (WebKitGTK) doesn't wheel-scroll the document here. The scroll
+   padding keeps a field being typed in clear of the step's sticky action bar. */
 .onb {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  min-height: var(--onb-h, 100dvh);
+  height: var(--onb-h, 100dvh);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scroll-padding-bottom: 104px;
   background: var(--pane);
   color: var(--ink);
 }

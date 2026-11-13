@@ -8,6 +8,13 @@ export const helpEn: Record<HelpSlug, HelpDocument> = {
       "The agentes.chat app can also run agentes.chat itself, on a Mac, a PC or a Linux computer, for you or a small team.",
     sections: [
       {
+        id: "download",
+        heading: "Download the app",
+        blocks: [
+          "[Download the agentes.chat app](/download) for your Mac, PC or Linux computer and open it. Pick **On your own server**, press **Continue on my server**, then **Run agentes.chat on this computer**.",
+        ],
+      },
+      {
         id: "how",
         heading: "How it runs",
         blocks: [

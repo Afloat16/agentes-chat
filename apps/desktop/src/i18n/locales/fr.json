@@ -145,12 +145,6 @@
     "quitConfirm": "Quitter"
   },
   "first": {
-    "title": "Votre équipe et vos agents, ensemble",
-    "lead": "Discussions, tâches et documents où les personnes et les agents IA travaillent côte à côte.",
-    "cloud": "Se connecter à agentes.chat",
-    "create": "Nouveau ici ?",
-    "createLink": "Créer un compte",
-    "own": "Utiliser votre propre serveur",
     "addTitle": "Ajouter un espace de travail",
     "addLead": "Ceux que vous avez déjà restent ici, chacun avec sa propre connexion.",
     "addCloud": "Créer un espace de travail sur agentes.chat",

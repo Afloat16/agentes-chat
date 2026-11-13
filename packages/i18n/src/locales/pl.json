@@ -386,6 +386,56 @@
       "say": "zarządza płatnościami"
     }
   },
+  "hosting": {
+    "title": "Gdzie będzie twoja przestrzeń?",
+    "lead": "Aplikacja jest ta sama. Zmienia się tylko to, kto dba o serwer.",
+    "recommended": "Polecane",
+    "free": "Za darmo · open source",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Zawsze włączony, nic do instalowania.",
+      "on": "Komputer agentów zawsze włączony",
+      "care": "Aktualizacje i kopie zapasowe po naszej stronie",
+      "ready": "Gotowe w kilka minut, bez instalowania",
+      "price": "Plan miesięczny za przestrzeń roboczą",
+      "continue": "Kontynuuj w Cloud",
+      "enter": "Zaloguj się do Cloud"
+    },
+    "own": {
+      "name": "Na własnym serwerze",
+      "short": "Sam instalujesz, aktualizujesz i robisz kopie zapasowe.",
+      "server": "Sam dbasz o serwer i Postgresa",
+      "care": "Aktualizacje i kopie zapasowe są po twojej stronie",
+      "off": "Agenci stają, gdy jest wyłączony",
+      "license": "Za darmo na zawsze, licencja AGPL",
+      "continue": "Kontynuuj na moim serwerze",
+      "address": "Adres serwera",
+      "connect": "Połącz",
+      "invalid": "To nie jest adres. Wpisz go jak w przeglądarce, na przykład agentes.example.com.",
+      "unreachable": "Nie znaleźliśmy agentes.chat pod {{host}}. Sprawdź adres i czy serwer jest włączony.",
+      "none": "Nie masz jeszcze?",
+      "noneLink": "Zobacz, jak mieć własny, za darmo"
+    },
+    "get": {
+      "title": "Własny serwer",
+      "server": "Zainstaluj na serwerze",
+      "serverText": "Dla zespołu, zawsze włączony",
+      "serverAction": "Zobacz kroki",
+      "here": "Uruchom na swoim komputerze",
+      "hereText": "Dla ciebie lub małego zespołu, bez Dockera",
+      "download": "Pobierz aplikację",
+      "how": "Jak to działa",
+      "foot": "Wolisz o nic nie dbać?",
+      "footLink": "Użyj Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Twój serwer",
+      "here": "Na tym komputerze"
+    },
+    "whyPaid": "Za co płacę?",
+    "whyPaidText": "Cloud obejmuje zawsze włączony komputer agentów i kogoś, kto utrzymuje serwer. Uruchomienie na własnym serwerze jest darmowe."
+  },
   "auth": {
     "email": "E-mail",
     "password": "Hasło",
@@ -514,7 +564,9 @@
     },
     "server": {
       "into": "Logowanie do <b>{{server}}</b>",
-      "intoHere": "Logowanie do agentes.chat <b>na tym urządzeniu ({{device}})</b>"
+      "intoHere": "Logowanie do agentes.chat <b>na tym urządzeniu ({{device}})</b>",
+      "intoCloud": "Logowanie do <b>agentes.chat Cloud</b>",
+      "change": "Zmień serwer"
     },
     "forgotHere": {
       "ownerTitle": "Tutaj nie potrzebujesz hasła.",
@@ -1151,6 +1203,11 @@
       "linkSkipped_many": "{{count}} plików ponad limit linku",
       "linkSkipped_other": "{{count}} pliku ponad limit linku",
       "linkSkippedHelp": "Z linku odczytujemy do 200 plików i 8 MB. Aby przenieść resztę, pobierz folder i upuść go tutaj.",
+      "systemFiles_one": "Pominięto {{count}} plik systemowy",
+      "systemFiles_few": "Pominięto {{count}} pliki systemowe",
+      "systemFiles_many": "Pominięto {{count}} plików systemowych",
+      "systemFiles_other": "Pominięto {{count}} pliku systemowego",
+      "systemFilesHelp": "Zależności, pamięć podręczna i foldery takie jak node_modules i .git. Czytamy tylko to, co należy do agentów.",
       "never": "Klucze, hasła i historia czatów nigdy nie są przenoszone.",
       "go_one": "Importuj {{count}} element",
       "go_few": "Importuj {{count}} elementy",
@@ -1239,6 +1296,13 @@
       "errors": {
         "empty": "Nie ma tam nic do odczytania. Sprawdź, czy wybrano właściwy folder lub plik.",
         "tooLarge": "To za dużo, żeby odczytać to tutaj. Spróbuj z samym folderem agentów, bez reszty.",
+        "limit": {
+          "files": "Bez plików systemowych to {{have}} plików. Jeden import czyta do {{max}}. Upuść tylko folder agentów, bez reszty.",
+          "bytes": "{{name}} ma {{have}}. Jeden import otwiera do {{max}}. Upuść tylko folder agentów, bez reszty.",
+          "unpacked": "Po rozpakowaniu to {{have}}. Jeden import czyta do {{max}}. Upuść tylko folder agentów, bez reszty.",
+          "text": "Wklejony tekst ma {{have}}. Jeden import czyta do {{max}}. Poproś o eksport w częściach, po jednym agencie.",
+          "file": "{{name}} ma {{have}}. Jeden import czyta do {{max}} na plik. Poproś o eksport w częściach, po jednym agencie."
+        },
         "unknown": "Nie rozpoznajemy tych plików. Wybierz aplikację, z której pochodzą, żeby zobaczyć, gdzie jest właściwy plik, albo użyj opcji Inna aplikacja.",
         "newerVersion": "Ten plik pochodzi z nowszej wersji aplikacji, której jeszcze nie odczytujemy. Na razie możesz użyć opcji Inna aplikacja.",
         "noAgents": "Odczytaliśmy pliki, ale nie znaleźliśmy w nich żadnego agenta. Sprawdź, czy to folder lub plik całego zespołu.",

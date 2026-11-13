@@ -55,10 +55,8 @@ export const mobilePtBR = {
       footChoose: "Servidor e idioma",
       footServer: "Outro servidor",
       footLanguage: "Idioma",
-      /** A linha quieta do login, no agentes.chat: abre a câmera para o QR code do computador da equipe. */
-      footTeam: "Usa o servidor da sua equipe?",
-      footTeamAction: "Entrar por ele",
-      /** Num servidor da equipe: onde este login vai, e o jeito de trocar. */
+      /** A linha quieta do login: onde ele vai (o Cloud ou um servidor), e o jeito de trocar. */
+      footCloud: "Entrando no agentes.chat Cloud",
       footOn: "Entrando em {{host}}",
       footSwitch: "Trocar",
       now: "Agora em {{host}}",

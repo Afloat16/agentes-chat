@@ -376,6 +376,56 @@
       "say": "beheert de facturatie"
     }
   },
+  "hosting": {
+    "title": "Waar staat je werkruimte?",
+    "lead": "De app is dezelfde. Alleen wie de server beheert verandert.",
+    "recommended": "Aanbevolen",
+    "free": "Gratis · open source",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Altijd aan, niets te installeren.",
+      "on": "De computer van de agents staat altijd aan",
+      "care": "Updates en back-ups regelen wij",
+      "ready": "Binnen minuten klaar, zonder iets te installeren",
+      "price": "Maandelijks abonnement per werkruimte",
+      "continue": "Verder met Cloud",
+      "enter": "Inloggen bij Cloud"
+    },
+    "own": {
+      "name": "Op je eigen server",
+      "short": "Jij installeert, werkt bij en maakt de back-ups.",
+      "server": "Jij beheert de server en Postgres",
+      "care": "Updates en back-ups liggen bij jou",
+      "off": "De agents stoppen als hij uit staat",
+      "license": "Voor altijd gratis, AGPL-licentie",
+      "continue": "Verder met mijn server",
+      "address": "Serveradres",
+      "connect": "Verbinden",
+      "invalid": "Dat is geen adres. Schrijf het zoals in de browser, bijvoorbeeld agentes.example.com.",
+      "unreachable": "We hebben agentes.chat niet gevonden op {{host}}. Controleer het adres en of de server aan staat.",
+      "none": "Heb je er nog geen?",
+      "noneLink": "Zie hoe je er een krijgt, gratis"
+    },
+    "get": {
+      "title": "Je eigen server",
+      "server": "Op een server installeren",
+      "serverText": "Voor een team, altijd aan",
+      "serverAction": "Bekijk de stappen",
+      "here": "Op je eigen computer draaien",
+      "hereText": "Voor jou of een klein team, zonder Docker",
+      "download": "App downloaden",
+      "how": "Hoe het werkt",
+      "foot": "Liever niets beheren?",
+      "footLink": "Gebruik Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Je server",
+      "here": "Op deze computer"
+    },
+    "whyPaid": "Waarom betalen?",
+    "whyPaidText": "Cloud omvat de altijd aanstaande computer van de agents en iemand die de server onderhoudt. Op je eigen server draaien is gratis."
+  },
   "auth": {
     "email": "E-mail",
     "password": "Wachtwoord",
@@ -502,7 +552,9 @@
     },
     "server": {
       "into": "Aanmelden bij <b>{{server}}</b>",
-      "intoHere": "Aanmelden bij agentes.chat <b>op deze {{device}}</b>"
+      "intoHere": "Aanmelden bij agentes.chat <b>op deze {{device}}</b>",
+      "intoCloud": "Inloggen bij <b>agentes.chat Cloud</b>",
+      "change": "Andere server"
     },
     "forgotHere": {
       "ownerTitle": "Hier heb je geen wachtwoord nodig.",
@@ -1100,6 +1152,9 @@
       "linkSkipped_one": "{{count}} bestand voorbij de limiet van de link",
       "linkSkipped_other": "{{count}} bestanden voorbij de limiet van de link",
       "linkSkippedHelp": "Een link leest maximaal 200 bestanden en 8 MB. Download de map en sleep hem hierheen om de rest mee te nemen.",
+      "systemFiles_one": "{{count}} systeembestand weggelaten",
+      "systemFiles_other": "{{count}} systeembestanden weggelaten",
+      "systemFilesHelp": "Afhankelijkheden, caches en mappen zoals node_modules en .git. We lezen alleen wat van de agents is.",
       "never": "Sleutels, wachtwoorden en chatgeschiedenis komen nooit mee.",
       "go_one": "{{count}} item importeren",
       "go_other": "{{count}} items importeren",
@@ -1164,6 +1219,13 @@
       "errors": {
         "empty": "Daar valt niets te lezen. Controleer of je de juiste map of het juiste bestand hebt gekozen.",
         "tooLarge": "Het is te groot om hier te lezen. Probeer alleen de map van de agents, zonder de rest.",
+        "limit": {
+          "files": "Zonder systeembestanden zijn het {{have}} bestanden. Eén import leest er tot {{max}}. Sleep alleen de map van de agents, zonder de rest.",
+          "bytes": "{{name}} is {{have}}. Eén import opent tot {{max}}. Sleep alleen de map van de agents, zonder de rest.",
+          "unpacked": "Uitgepakt is het {{have}}. Eén import leest tot {{max}}. Sleep alleen de map van de agents, zonder de rest.",
+          "text": "De geplakte tekst is {{have}}. Eén import leest tot {{max}}. Vraag de export in delen, één agent tegelijk.",
+          "file": "{{name}} is {{have}}. Eén import leest tot {{max}} per bestand. Vraag de export in delen, één agent tegelijk."
+        },
         "unknown": "We herkennen deze bestanden niet. Kies de app waar ze vandaan komen om te zien waar het juiste bestand staat, of gebruik Een andere app.",
         "newerVersion": "Dit bestand komt uit een nieuwere versie van de app, die we nog niet kunnen lezen. Je kunt intussen Een andere app gebruiken.",
         "noAgents": "We hebben de bestanden gelezen maar er geen agent in gevonden. Controleer of het de map of het bestand van het hele team is.",

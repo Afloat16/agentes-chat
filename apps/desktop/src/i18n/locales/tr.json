@@ -142,12 +142,6 @@
     "quitConfirm": "Çık"
   },
   "first": {
-    "title": "Ekibiniz ve ajanlarınız bir arada",
-    "lead": "Kişilerin ve yapay zeka ajanlarının yan yana çalıştığı sohbetler, görevler ve belgeler.",
-    "cloud": "agentes.chat'e giriş yap",
-    "create": "Burada yeni misiniz?",
-    "createLink": "Hesap oluştur",
-    "own": "Kendi sunucunuzu kullanın",
     "addTitle": "Çalışma alanı ekle",
     "addLead": "Zaten sahip olduklarınız, her biri kendi girişiyle burada kalır.",
     "addCloud": "agentes.chat'te çalışma alanı oluştur",

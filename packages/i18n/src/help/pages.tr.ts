@@ -9,6 +9,13 @@ export const helpTr: Partial<Record<HelpSlug, HelpDocument>> = {
       "agentes.chat uygulaması, agentes.chat'in kendisini de bir Mac, PC ya da Linux bilgisayarda, sizin ya da küçük bir ekip için çalıştırabilir.",
     sections: [
       {
+        id: "download",
+        heading: "Uygulamayı indirin",
+        blocks: [
+          "Mac, PC veya Linux bilgisayarınız için [agentes.chat uygulamasını indirin](/download) ve açın. **Kendi sunucunuzda** seçeneğini seçin, **Kendi sunucumla devam et**'e ve ardından **agentes.chat'i bu bilgisayar üzerinde çalıştır**'a basın.",
+        ],
+      },
+      {
         id: "how",
         heading: "Nasıl çalışır",
         blocks: [

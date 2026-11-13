@@ -376,6 +376,59 @@ export const ptBR = {
       say: "cuida da cobrança",
     },
   },
+  /** Where a workspace lives: the Cloud or one's own server (sign-in's Trocar, the desktop app's first screen). */
+  hosting: {
+    title: "Onde fica o seu workspace?",
+    lead: "O app é o mesmo. Muda quem cuida do servidor.",
+    recommended: "Recomendado",
+    free: "Grátis · código aberto",
+    cloud: {
+      name: "agentes.chat Cloud",
+      short: "Sempre ligado, sem nada para instalar.",
+      on: "Computador dos agentes sempre ligado",
+      care: "Atualizações e backups por nossa conta",
+      ready: "Pronto em minutos, sem instalar nada",
+      price: "Plano mensal por workspace",
+      continue: "Continuar no Cloud",
+      enter: "Entrar no Cloud",
+    },
+    own: {
+      name: "No seu servidor",
+      short: "Você instala, atualiza e faz os backups.",
+      server: "Você cuida do servidor e do Postgres",
+      care: "Atualizações e backups ficam com você",
+      off: "Os agentes param quando ele desliga",
+      license: "Grátis para sempre, licença AGPL",
+      continue: "Continuar no meu servidor",
+      address: "Endereço do servidor",
+      connect: "Conectar",
+      invalid: "Isso não é um endereço. Escreva como no navegador, por exemplo agentes.example.com.",
+      unreachable: "Não achamos o agentes.chat em {{host}}. Confira o endereço e se o servidor está ligado.",
+      none: "Ainda não tem um?",
+      noneLink: "Veja como ter o seu, grátis",
+    },
+    get: {
+      title: "Ter o seu próprio servidor",
+      server: "Instalar num servidor",
+      serverText: "Para um time, sempre ligado",
+      serverAction: "Ver o passo a passo",
+      here: "Rodar no seu computador",
+      hereText: "Para você ou um time pequeno, sem Docker",
+      download: "Baixar o app",
+      how: "Como funciona",
+      foot: "Prefere não manter nada?",
+      footLink: "Use o Cloud",
+    },
+    /** Where the workspace is, before its agents' count (sidebar) or in the workspace list. */
+    badge: {
+      cloud: "Cloud",
+      own: "Seu servidor",
+      here: "Neste computador",
+    },
+    whyPaid: "Por que pago?",
+    whyPaidText:
+      "O Cloud inclui o computador dos agentes sempre ligado e quem mantém o servidor. Rodar no seu servidor é grátis.",
+  },
   auth: {
     email: "E-mail",
     password: "Senha",
@@ -504,6 +557,9 @@ export const ptBR = {
     server: {
       into: "Entrando em <b>{{server}}</b>",
       intoHere: "Entrando no agentes.chat <b>deste {{device}}</b>",
+      intoCloud: "Entrando no <b>agentes.chat Cloud</b>",
+      /** Trocar's name for screen readers: the e-mail's Trocar sits on the same screen. */
+      change: "Trocar de servidor",
     },
     /** "Forgot password" on a server that sends no email (ADR 0158). */
     forgotHere: {
@@ -1119,6 +1175,9 @@ export const ptBR = {
       linkSkipped_one: "{{count}} arquivo além do limite do link",
       linkSkipped_other: "{{count}} arquivos além do limite do link",
       linkSkippedHelp: "Um link lê até 200 arquivos e 8 MB. Para trazer o resto, baixe a pasta e solte aqui.",
+      systemFiles_one: "{{count}} arquivo de sistema ficou de fora",
+      systemFiles_other: "{{count}} arquivos de sistema ficaram de fora",
+      systemFilesHelp: "Dependências, caches e pastas como node_modules e .git. Só lemos o que é dos agentes.",
       never: "Chaves, senhas e histórico de conversa nunca vêm.",
       go_one: "Importar {{count}} item",
       go_other: "Importar {{count}} itens",
@@ -1183,6 +1242,15 @@ export const ptBR = {
       errors: {
         empty: "Não achamos nada para ler aí. Confira se escolheu a pasta ou o arquivo certo.",
         tooLarge: "É grande demais para ler aqui. Tente só a pasta dos agentes, sem o resto.",
+        limit: {
+          files:
+            "Fora os arquivos de sistema, são {{have}} arquivos. Uma importação lê até {{max}}. Solte só a pasta dos agentes, sem o resto.",
+          bytes: "O {{name}} tem {{have}}. Uma importação abre até {{max}}. Solte só a pasta dos agentes, sem o resto.",
+          unpacked:
+            "Descompactado, ele chega a {{have}}. Uma importação lê até {{max}}. Solte só a pasta dos agentes, sem o resto.",
+          text: "O texto colado tem {{have}}. Uma importação lê até {{max}}. Peça a exportação por partes, um agente de cada vez.",
+          file: "O {{name}} tem {{have}}. Uma importação lê até {{max}} por arquivo. Peça a exportação por partes, um agente de cada vez.",
+        },
         unknown:
           "Não reconhecemos esses arquivos. Escolha o app de onde eles vêm para ver onde fica o arquivo certo, ou use Outro app.",
         newerVersion:

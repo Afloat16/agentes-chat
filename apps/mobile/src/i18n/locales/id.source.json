@@ -95,11 +95,8 @@
   "auth.server.footLanguage": {
     "value": "Language"
   },
-  "auth.server.footTeam": {
-    "value": "Use your team's server?"
-  },
-  "auth.server.footTeamAction": {
-    "value": "Sign in through it"
+  "auth.server.footCloud": {
+    "value": "Signing in to agentes.chat Cloud"
   },
   "auth.server.footOn": {
     "value": "Signing in on {{host}}"

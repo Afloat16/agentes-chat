@@ -8,6 +8,13 @@ export const helpZhHans: Partial<Record<HelpSlug, HelpDocument>> = {
     summary: "agentes.chat 应用也可以在 Mac、PC 或 Linux 电脑上直接运行 agentes.chat，供你自己或小团队使用。",
     sections: [
       {
+        id: "download",
+        heading: "下载应用",
+        blocks: [
+          "为你的 Mac、PC 或 Linux 电脑[下载 agentes.chat 应用](/download)并打开。选择**在你自己的服务器上**，点击**继续使用我的服务器**，然后点击**在这台电脑上运行 agentes.chat**。",
+        ],
+      },
+      {
         id: "how",
         heading: "运行方式",
         blocks: [

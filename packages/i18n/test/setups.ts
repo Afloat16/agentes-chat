@@ -208,7 +208,7 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "help.any.computers.sections.0.blocks.0",
     "help.any.computers.sections.1.blocks.1.list.0",
     // The moving steps' command is the Mac's, said so in the step above it.
-    "help.selfhost.run-on-your-computer.sections.10.blocks.1.code",
+    "help.selfhost.run-on-your-computer.sections.11.blocks.1.code",
     "desktop.prefs.general.dockDesc",
     "desktop.prefs.general.menuBarTitle",
     "desktop.prefs.updates.",
@@ -269,6 +269,8 @@ export const ANYWHERE: readonly string[] = [
   "desktop.servers.",
   // The desktop app's workspaces by server: the line under a server that isn't agentes.chat, whichever server this is.
   "shell.yourServer",
+  // "Onde fica o seu workspace?": the Cloud and one's own server compared side by side, each named, whichever this is.
+  "hosting.",
   // People connect their own computers and phones in every setup, the Cloud included.
   "devices.",
   "mobile.devices.",

@@ -9,6 +9,13 @@ export const helpJa: Partial<Record<HelpSlug, HelpDocument>> = {
       "agentes.chat アプリは、agentes.chat そのものを Mac、PC、Linux コンピューターで動かすこともできます。個人や小さなチーム向けです。",
     sections: [
       {
+        id: "download",
+        heading: "アプリをダウンロード",
+        blocks: [
+          "Mac、PC、Linux のコンピューター向けに [agentes.chat アプリをダウンロード](/download)して開きます。**自分のサーバーで** を選び、**自分のサーバーで続ける** を押してから、**このコンピューターでagentes.chatを動かす** を押します。",
+        ],
+      },
+      {
         id: "how",
         heading: "動作のしくみ",
         blocks: [

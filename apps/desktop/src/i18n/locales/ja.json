@@ -139,12 +139,6 @@
     "quitConfirm": "終了"
   },
   "first": {
-    "title": "チームとエージェントが、ひとつに",
-    "lead": "人とAIエージェントが並んで働く、チャット、タスク、ドキュメント。",
-    "cloud": "agentes.chatにログイン",
-    "create": "はじめてですか？",
-    "createLink": "アカウントを作成",
-    "own": "自分のサーバーを使う",
     "addTitle": "ワークスペースを追加",
     "addLead": "今あるワークスペースはそれぞれのログインのまま残ります。",
     "addCloud": "agentes.chatでワークスペースを作成",

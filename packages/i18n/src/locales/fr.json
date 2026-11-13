@@ -381,6 +381,56 @@
       "say": "gère la facturation"
     }
   },
+  "hosting": {
+    "title": "Où vit votre espace de travail ?",
+    "lead": "L'application est la même. Ce qui change, c'est qui s'occupe du serveur.",
+    "recommended": "Recommandé",
+    "free": "Gratuit · open source",
+    "cloud": {
+      "name": "agentes.chat Cloud",
+      "short": "Toujours allumé, rien à installer.",
+      "on": "L'ordinateur des agents toujours allumé",
+      "care": "Mises à jour et sauvegardes à notre charge",
+      "ready": "Prêt en quelques minutes, sans rien installer",
+      "price": "Forfait mensuel par espace de travail",
+      "continue": "Continuer sur Cloud",
+      "enter": "Se connecter à Cloud"
+    },
+    "own": {
+      "name": "Sur votre propre serveur",
+      "short": "Vous l'installez, le mettez à jour et faites les sauvegardes.",
+      "server": "Vous gérez le serveur et Postgres",
+      "care": "Les mises à jour et sauvegardes sont pour vous",
+      "off": "Les agents s'arrêtent quand il s'éteint",
+      "license": "Gratuit pour toujours, licence AGPL",
+      "continue": "Continuer sur mon serveur",
+      "address": "Adresse du serveur",
+      "connect": "Se connecter",
+      "invalid": "Ce n'est pas une adresse. Écrivez-la comme dans le navigateur, par exemple agentes.example.com.",
+      "unreachable": "Nous n'avons pas trouvé agentes.chat à {{host}}. Vérifiez l'adresse et que le serveur est allumé.",
+      "none": "Vous n'en avez pas encore ?",
+      "noneLink": "Voyez comment avoir le vôtre, gratuitement"
+    },
+    "get": {
+      "title": "Avoir votre propre serveur",
+      "server": "Installer sur un serveur",
+      "serverText": "Pour une équipe, toujours allumé",
+      "serverAction": "Voir les étapes",
+      "here": "L'exécuter sur votre ordinateur",
+      "hereText": "Pour vous ou une petite équipe, sans Docker",
+      "download": "Télécharger l'application",
+      "how": "Comment ça marche",
+      "foot": "Vous préférez ne rien gérer ?",
+      "footLink": "Utilisez Cloud"
+    },
+    "badge": {
+      "cloud": "Cloud",
+      "own": "Votre serveur",
+      "here": "Sur cet ordinateur"
+    },
+    "whyPaid": "Pourquoi payer ?",
+    "whyPaidText": "Cloud inclut l'ordinateur des agents toujours allumé et quelqu'un qui maintient le serveur. L'exécuter sur votre propre serveur est gratuit."
+  },
   "auth": {
     "email": "E-mail",
     "password": "Mot de passe",
@@ -508,7 +558,9 @@
     },
     "server": {
       "into": "Connexion à <b>{{server}}</b>",
-      "intoHere": "Connexion à l’agentes.chat <b>de ce {{device}}</b>"
+      "intoHere": "Connexion à l’agentes.chat <b>de ce {{device}}</b>",
+      "intoCloud": "Connexion à <b>agentes.chat Cloud</b>",
+      "change": "Changer de serveur"
     },
     "forgotHere": {
       "ownerTitle": "Ici, pas besoin de mot de passe.",
@@ -1126,6 +1178,10 @@
       "linkSkipped_many": "{{count}} fichiers au-delà de la limite du lien",
       "linkSkipped_other": "{{count}} fichiers au-delà de la limite du lien",
       "linkSkippedHelp": "Un lien lit jusqu'à 200 fichiers et 8 Mo. Pour amener le reste, téléchargez le dossier et déposez-le ici.",
+      "systemFiles_one": "{{count}} fichier système laissé de côté",
+      "systemFiles_many": "{{count}} de fichiers système laissés de côté",
+      "systemFiles_other": "{{count}} fichiers système laissés de côté",
+      "systemFilesHelp": "Dépendances, caches et dossiers comme node_modules et .git. Nous ne lisons que ce qui appartient aux agents.",
       "never": "Les clés, les mots de passe et l'historique des discussions ne viennent jamais avec.",
       "go_one": "Importer {{count}} élément",
       "go_many": "Importer {{count}} éléments",
@@ -1202,6 +1258,13 @@
       "errors": {
         "empty": "Il n'y a rien à lire ici. Vérifiez que vous avez choisi le bon dossier ou le bon fichier.",
         "tooLarge": "C'est trop volumineux pour être lu ici. Essayez seulement le dossier des agents, sans le reste.",
+        "limit": {
+          "files": "Sans les fichiers système, cela fait {{have}} fichiers. Une importation en lit jusqu'à {{max}}. Déposez seulement le dossier des agents, sans le reste.",
+          "bytes": "{{name}} fait {{have}}. Une importation ouvre jusqu'à {{max}}. Déposez seulement le dossier des agents, sans le reste.",
+          "unpacked": "Décompressé, il atteint {{have}}. Une importation lit jusqu'à {{max}}. Déposez seulement le dossier des agents, sans le reste.",
+          "text": "Le texte collé fait {{have}}. Une importation lit jusqu'à {{max}}. Demandez l'export en plusieurs parties, un agent à la fois.",
+          "file": "{{name}} fait {{have}}. Une importation lit jusqu'à {{max}} par fichier. Demandez l'export en plusieurs parties, un agent à la fois."
+        },
         "unknown": "Nous ne reconnaissons pas ces fichiers. Choisissez l'app d'où ils viennent pour voir où se trouve le bon fichier, ou utilisez Une autre app.",
         "newerVersion": "Ce fichier vient d'une version plus récente de l'app, que nous ne savons pas encore lire. En attendant, vous pouvez utiliser Une autre app.",
         "noAgents": "Nous avons lu les fichiers mais n'y avons trouvé aucun agent. Vérifiez qu'il s'agit du dossier ou du fichier de toute l'équipe.",
