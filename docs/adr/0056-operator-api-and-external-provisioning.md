@@ -255,3 +255,18 @@ Known limits:
 - Usage groups have no cursor: past `limit` groups `more` is true and the dates are to be narrowed.
 
 The reads are in `packages/engine/src/operator-jobs.ts` and `operator-machines.ts`, the routes in `apps/server/src/operator/jobs.ts` and `machines.ts`, the tests in `apps/server/test/operator-jobs.test.ts`.
+
+## Addendum (2026-11-13): one test for every read
+
+Each addendum above has a test of what its own reads leave out. `apps/server/test/operator-canary.test.ts` holds every `GET` of the contract to the same rule at once, the reads of §4, §5 and §10 included, and keeps holding the ones added later.
+
+- **Every read, from the document.** The test takes the `GET`s from the OpenAPI document and fails when one of them has no call, so a read is under it from the day it ships. Every call uses the read-only token; a review block must answer it 403.
+- **What people wrote, first.** A workspace's history is made through the app (messages, a tool's input and result, an approval, a question) and the rest is stored beside it: a memory, an agent's instructions, a job's payload with a link, an audit entry's details, a credential, a session, a verification code, a push token, a computer's token and address, a sign-in's email. Each says "canary". No answer may say it, nor a secret the server made itself, nor name a field like a secret; a refusal (400, 403, 404) is read the same way.
+- **Then everything else.** Every column of the database that holds text (a string, a list of them, or JSON, where every string inside but an id or a time gets its own) is given a canary that names it, in every row and whatever its table, except the ids a foreign key ties. The reads are called again. What may come back is a closed list in the test (`KEPT`): the names, addresses and handles of §4, an error's first characters, and the kinds, states and codes the server writes. A read that starts returning any other column fails, and the way to make it pass is to add the column to that list, which is a decision someone reads in review.
+- **A table the reads query must have rows there.** The test records which tables the reads' statements name and fails when one of them is empty in its history: a column nobody stored anything in proves nothing.
+
+What it cannot see:
+
+- **The events feed's `data` (§5)** is returned whole, so it is on the list whole. What goes into an event is decided where the event is written, and stays the rule of §5.
+- **Text changed before it leaves.** The test looks for the canary as written. A value encoded, or cut to a few characters, would pass unseen.
+- **A credential inside an error** is covered for one shape (an address with a password, in a run's, a job's and a routing decision's error). The masking is `redactCredentials` (`packages/engine/src/tool-detail.ts`): a credential of a shape it doesn't know leaves with the error's first characters.
