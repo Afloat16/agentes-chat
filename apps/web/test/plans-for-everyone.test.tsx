@@ -172,6 +172,27 @@ describe("Sua conta: the account's e-mail (ADR 0088 §2, addendum 2026-11-13)", 
     expect(view.router.state.location.search).toMatchObject({ account: "email" });
   });
 
+  test("a current address never confirmed gets no code: the way on is a sign-in again, back to the dialog", async () => {
+    const state = seedState();
+    const fake = createFakeAuth();
+    const signOut = fake.auth.signOut;
+    fake.auth.signOut = async () => {
+      await signOut();
+      state.me = null;
+    };
+    state.emailChangeError = new ApiError(403, "reauth.sign_in", "Sign in again to change your email");
+    const { dialog, router } = await open(state, fake);
+    await type(within(dialog).getByLabelText("Novo e-mail"), "walter@novo.example.com");
+    await click(within(dialog).getByRole("button", { name: "Mudar e-mail" }));
+    expect(dialog.textContent).toContain("Entre de novo para confirmar que é você.");
+    expect(within(dialog).queryByLabelText("Código do email")).toBeNull();
+    window.history.replaceState(null, "", router.state.location.href);
+    await click(within(dialog).getByRole("button", { name: "Entrar de novo" }));
+    expect(router.state.location.pathname).toBe("/login");
+    expect(String(router.state.location.search.redirect)).toContain("account=email");
+    expect(sessionStorage.getItem("agentes.emailChangeAsk")).toBe("walter@novo.example.com");
+  });
+
   test("a server that sends no e-mail changes it at once, and a held address is said under it", async () => {
     const state = seedState();
     state.emailChange = { status: "changed", email: "walter@novo.example.com" };
@@ -208,6 +229,21 @@ describe("Sua conta: the account's e-mail (ADR 0088 §2, addendum 2026-11-13)", 
     await type(within(dialog).getByLabelText("Code aus der E-Mail"), "654321");
     await click(within(dialog).getByRole("button", { name: "E-Mail ändern" }));
     expect(dialog.textContent).toContain(next);
+  });
+
+  test("worst case: a long address never confirmed, in German, gets the sign-in again instead of a code", async () => {
+    const state = seedState();
+    if (state.me) state.me.user.email = "aleksandra.wisniewskakowalczyk@northwindindustriesholdings.example.com";
+    state.emailChangeError = new ApiError(403, "reauth.sign_in", "Sign in again to change your email");
+    const { dialog, services } = await open(state);
+    await showIn(services, "de");
+    await type(
+      within(dialog).getByRole("textbox"),
+      "bartholomew.fitzgeraldmontgomery@northwindindustriesholdings.example.com",
+    );
+    await click(within(dialog).getByRole("button", { name: "E-Mail ändern" }));
+    expect(dialog.textContent).toContain("Melde dich erneut an, um zu bestätigen, dass du es bist.");
+    expect(within(dialog).getByRole("button", { name: "Erneut anmelden" })).toBeTruthy();
   });
 });
 

@@ -32,6 +32,9 @@ test("Conta › E-mail: the code sent to the current address, then a link to the
   // Can't open that inbox: the same dialog on the website, where a sign-in again stands in for the code.
   expect(page).toContain('label={t("shell.email.cantOpen")}');
   expect(page).toContain("/settings/account?account=email`)");
+  // An address never confirmed gets no code (`reauth.sign_in`): the same way on, with no code sent first.
+  expect(page).toContain("if (errorCode(e) === REAUTH_SIGN_IN) setCantOpen(true);");
+  expect(page).not.toContain("{sent && cantOpen ? (");
 });
 
 test("a routine's page lists the Vault keys its commands use, each taken out on its own", () => {

@@ -910,7 +910,7 @@ export function accountRoutes(deps: AppDeps) {
       security,
       summary: "Change your account's email address",
       description:
-        "The same account under `newEmail` (ADR 0088 §2, addendum 2026-11-13), the only way to change it: Better Auth's `/api/auth/change-email` is off. Refused for the address it has (400 `email.same`) and for one another account just left (409 `email.held`, held 7 days for its “This wasn't me”). On a server that sends email it takes the 6-digit `code` emailed to the account's current address for this new one, with every emailed code's rules (`reauth.code_wrong`, `reauth.code_expired`, `reauth.code_tries`, 429 `reauth.code_wait` with `retryIn` and `reauth.code_limit`), or a sign-in in the last 10 minutes instead. Without either it emails that code and answers 202 `code`. With the proof, 200 `sent`: a link goes to `newEmail` and the address changes once it is opened, when the old one gets a notice with “This wasn't me” (`POST /email-undo`). 5 links an hour and 10 a day per account (429 `rate_limited`). On a server that sends no email, 200 `changed` at once, as an unconfirmed address only (409 `email.no_mail` for a confirmed one, 409 `email.taken` when another account has it).",
+        "The same account under `newEmail` (ADR 0088 §2, addendum 2026-11-13), the only way to change it: Better Auth's `/api/auth/change-email` is off. Refused for the address it has (400 `email.same`) and for one another account just left (409 `email.held`, held 7 days for its “This wasn't me”). On a server that sends email it takes the 6-digit `code` emailed to the account's current address for this new one, with every emailed code's rules (`reauth.code_wrong`, `reauth.code_expired`, `reauth.code_tries`, 429 `reauth.code_wait` with `retryIn` and `reauth.code_limit`), or a sign-in in the last 10 minutes instead. Without either it emails that code and answers 202 `code`, except to an address the account never confirmed, which gets no code (403 `reauth.sign_in`: a fresh sign-in is the proof there). With the proof, 200 `sent`: a link goes to `newEmail` and the address changes once it is opened, when the old one, only if the account had confirmed it, gets a notice with “This wasn't me” (`POST /email-undo`). 5 links an hour and 10 a day per account (429 `rate_limited`). On a server that sends no email, 200 `changed` at once, as an unconfirmed address only (409 `email.no_mail` for a confirmed one, 409 `email.taken` when another account has it).",
       request: {
         body: body(
           z.object({
@@ -940,7 +940,7 @@ export function accountRoutes(deps: AppDeps) {
         ),
         400: errorResponse("The address it has (`email.same`), or a wrong code (`reauth.code_wrong`)"),
         401: errors[401],
-        403: errors[403],
+        403: errorResponse("Blocked, or an address never confirmed without a fresh sign-in (`reauth.sign_in`)"),
         409: errorResponse(
           "Held for another account (`email.held`), a code refused (`reauth.code_expired`, `reauth.code_tries`), or on a server that sends no email `email.no_mail` and `email.taken`",
         ),

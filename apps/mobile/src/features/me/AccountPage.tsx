@@ -1,6 +1,6 @@
 import { ApiError, keys, useApi, useMe, useSettings } from "@agenteschat/client";
 import { formatTimeLeft } from "@agenteschat/client/lib/actions";
-import { emailChangeRefusal, errorText } from "@agenteschat/client/lib/errors";
+import { emailChangeRefusal, errorCode, errorText, REAUTH_SIGN_IN } from "@agenteschat/client/lib/errors";
 import { CODE_LENGTH, typedCode } from "@agenteschat/client/lib/join-requests";
 import { browserTimezone, zoneDisplayName } from "@agenteschat/client/lib/routines";
 import { isEmail } from "@agenteschat/client/lib/text";
@@ -233,9 +233,9 @@ export function AccountPage() {
 /**
  * E-mail, pushed over Conta: the same account under a new address, as on the web (ADR 0088 §2, addendum 2026-11-13). The
  * new address, then the code emailed to the current one, then a link to the new address, which changes it once opened.
- * Someone who can't open that inbox signs in again on the website, where the same dialog opens: the phone has no
- * sign-in while signed in, and signing out here would drop the messages it is still sending. On a server that sends no
- * e-mail it changes at once.
+ * Someone who can't open that inbox, or whose address was never confirmed (no code goes there), signs in again on the
+ * website, where the same dialog opens: the phone has no sign-in while signed in, and signing out here would drop the
+ * messages it is still sending. On a server that sends no e-mail it changes at once.
  */
 export function EmailPage() {
   const { t } = useTranslation();
@@ -278,6 +278,7 @@ export function EmailPage() {
       if (refused === "wait") codeOut(sent?.email ?? current, e instanceof ApiError ? Number(e.params?.retryIn) : 60);
       else {
         if (refused === "code") setCode("");
+        if (errorCode(e) === REAUTH_SIGN_IN) setCantOpen(true);
         setError(errorText(t, e));
       }
     } finally {
@@ -380,11 +381,13 @@ export function EmailPage() {
               />
             </View>
           ) : null}
-          {sent && cantOpen ? (
+          {cantOpen ? (
             <View style={styles.web}>
-              <Text variant="footnote" tone="muted">
-                {t("mobile.me.account.emailWebLead")}
-              </Text>
+              {sent ? (
+                <Text variant="footnote" tone="muted">
+                  {t("mobile.me.account.emailWebLead")}
+                </Text>
+              ) : null}
               <Button
                 variant="secondary"
                 label={t("mobile.me.account.emailWeb")}

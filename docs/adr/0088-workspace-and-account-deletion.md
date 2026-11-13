@@ -1,6 +1,6 @@
 # 0088. Deleting a workspace, and deleting an account
 
-- Status: Accepted (built: the server and the web, desktop and phone screens; the Cloud's own services follow). Amended 2026-10-31: §2 (the proof is one code emailed to the person; the password only where the server sends no email), §9 (no refunds at all, and the plans a deleted account paid for stop renewing), §10 (on the web, Delete account starts in Settings › Your account, not the account menu). Amended 2026-11-05: §9 and §10 (deleting an account waits 7 days, with Restaurar), §10 (a closed screen offers Delete account only to someone with no workspace that opens, and the dialog and its email say it is the whole account and what closes). Amended 2026-11-11: §1, §3, §4, §7 (a workspace being deleted stays readable to its members until it goes, read-only: its changes answer `org.deleting`, its sockets stay open, and the apps open it as ever under a line on top instead of a screen of its own). Amended 2026-11-13: §2's proof also guards a new address for the account, whose old address gets a "This wasn't me" for 7 days (addendum below)
+- Status: Accepted (built: the server and the web, desktop and phone screens; the Cloud's own services follow). Amended 2026-10-31: §2 (the proof is one code emailed to the person; the password only where the server sends no email), §9 (no refunds at all, and the plans a deleted account paid for stop renewing), §10 (on the web, Delete account starts in Settings › Your account, not the account menu). Amended 2026-11-05: §9 and §10 (deleting an account waits 7 days, with Restaurar), §10 (a closed screen offers Delete account only to someone with no workspace that opens, and the dialog and its email say it is the whole account and what closes). Amended 2026-11-11: §1, §3, §4, §7 (a workspace being deleted stays readable to its members until it goes, read-only: its changes answer `org.deleting`, its sockets stay open, and the apps open it as ever under a line on top instead of a screen of its own). Amended 2026-11-13: §2's proof also guards a new address for the account, whose old address, when the account had confirmed it, gets a "This wasn't me" for 7 days (addendum below)
 - Date: 2026-10-30
 - Amends: ADR 0009 (author indexes on `messages`), ADR 0019 (the purge job, a deleted account's photos), ADR 0035 §5 (account deletion needs proof, and has a web page), ADR 0056 §4, §5, §8, §9, §10 (the deletion's fields, events and hold; a workspace being deleted is no computer request), ADR 0059 §1 (a deleted workspace's AI accounts), ADR 0073 §7 (what follows the pin), ADR 0079 §2 (`org.create_unpaid` and a workspace being deleted)
 - Code: `packages/engine/src/workspace-deletion.ts`, `packages/engine/src/standing.ts` (`closedRefusal`, `readRefusal`, `workRefusal`, `openOrg`, `OrgDeletingError`), `apps/server/src/routes/app/context.ts` (`readOnlyWhileDeleting`), `packages/engine/src/organizations.ts` (`deleteAccount`, `removeMember`, `createOrganization`, `lockOrgMembers`, `requireChangePermission`), `packages/engine/src/machines.ts` (`personalMachines`), `packages/engine/src/email-codes.ts` (every emailed code's rules), `apps/server/src/auth.ts` (`deletionProof`, `signedInLately`), `apps/server/src/desktop-sign-in.ts`, `apps/server/src/routes/app/account.ts`, `apps/server/src/operator/standing.ts`, `apps/server/src/workers.ts`, `packages/db/migrations/0138_workspace_deletion.sql`; the screens: `packages/client/src/lib/deletion.ts`, `apps/web/src/components/DeleteWorkspace.tsx`, `DeleteAccount.tsx`, `Standing.tsx`, `apps/mobile/src/features/me/DeleteAccountScreen.tsx`, `apps/mobile/src/features/chats/DeletingNotice.tsx`
@@ -176,10 +176,12 @@ mailbox, then reset the password from there.
   a day per account counted with the deletion codes, 5 wrong tries a code and 10 a day per account). It is the
   deletion code's machinery (`sendProofCode` and `spendProofCode`, `packages/engine/src/email-codes.ts`) under a
   purpose of its own (`deletion-code:{userId}:email`), bound to the new address by its hash, so the digits typed for
-  another address are wrong. Without a code the route sends one and answers 202 `code`. "Can't open that inbox?": a
-  sign-in in the last 10 minutes stands in for the code (`signedInLately`, as for adding a password). The web signs out
-  and comes back to the dialog (`?account=email`) with the address typed. The phone opens that dialog on the website:
-  it has no sign-in while signed in, and signing out there drops the messages it is still sending.
+  another address are wrong. Without a code the route sends one and answers 202 `code`, but only to an address the
+  account had confirmed: a code names the new address, so one never confirmed gets none, and the route answers 403
+  `reauth.sign_in` instead. "Can't open that inbox?": a sign-in in the last 10 minutes stands in for the code
+  (`signedInLately`, as for adding a password). The web signs out and comes back to the dialog (`?account=email`) with
+  the address typed. The phone opens that dialog on the website: it has no sign-in while signed in, and signing out
+  there drops the messages it is still sending.
 - **Then the link, as before.** Better Auth's link goes to the new address, now in words of its own
   (`email_change_link`, no longer the sign-up's), at most 3 an hour per address. An account asks for at most 5 an hour
   and 10 a day (429 `rate_limited`). A link works for an hour, once, and only for the change its account asked last:
@@ -188,8 +190,12 @@ mailbox, then reset the password from there.
   `createAuth`'s `hooks.before` lets `/verify-email` go on with a new address only when the asked row names that very
   change (`changeAsked`), and the change or the undo deletes the row. Any other lands where a dead link does
   (`/?email_confirmed=1&error=INVALID_TOKEN`).
-- **The old address is told.** Asking records both addresses (`email-change:{userId}` `{ from, to }`, Better Auth's
-  `verifications`). When the link changes the address, `user.update.after` (`finishEmailChange`,
+- **The old address is told**, only for an address the account had confirmed. Asking records both addresses and
+  whether the old one is proven (`email-change:{userId}` `{ from, to, proven }`, Better Auth's `verifications`): the
+  account had confirmed it, or its code was just typed. A fresh sign-in proves nothing about that mailbox, and whoever
+  holds a mailbox the account never confirmed would get the account back through "This wasn't me", as confirmed. So
+  for one never proven the link changes the address and nothing else follows: no notice, no undo, no hold. When the
+  link changes a proven address, `user.update.after` (`finishEmailChange`,
   `packages/engine/src/email-change.ts`) sends the old one a notice in the person's language (`email_changed`) with
   "This wasn't me": `/email-undo?token=`, a page whose button posts to `POST /api/app/email-undo` (public, 10 tries per
   10 minutes per IP address). Opening the link does nothing, since mail scanners open links. Within 7 days and once, it
@@ -207,13 +213,14 @@ mailbox, then reset the password from there.
   database, once (`sessionOf`), so a session the undo, a new password or a block ends is refused on its next request:
   it adds no token, phone or provider after its end.
 - **A sign-in under way gets nothing.** One that read the account before the undo lands after it: its session insert
-  waits for the undo's commit. The undo writes `email-undone:{userId}` (10 minutes), and Better Auth's
-  `session.create.after` and `account.create.after` (`createAuth`), its `onPasswordReset` and `POST /me/password` take
-  back the session, provider or password made by a request that began before the undo (`undoneSince`, a second of
-  slack for clocks). A provider's return counts from its sign-in's start (its state lasts 10 minutes): a link to the
-  account names the account in its state and needs no session to come back.
-- **The old address is held** from the moment a change is asked until its undo runs out (`email-held:{sha256}`): while
-  no account has it, sign-up refuses it (`EMAIL_HELD`) and so does another account's change to it (`email.held`).
+  waits for the undo's commit. The undo writes `email-undone:{userId}` (10 minutes), stamped when it is written, just
+  before the commit, and Better Auth's `session.create.after` and `account.create.after` (`createAuth`), its
+  `onPasswordReset` and `POST /me/password` take back the session, provider or password made by a request that began
+  before the undo (`undoneSince`, a second of slack for clocks). A provider's return counts from its sign-in's start
+  (its state lasts 10 minutes): a link to the account names the account in its state and needs no session to come back.
+- **The old address is held**, only one the account had confirmed, from the moment a change is asked until its undo
+  runs out (`email-held:{sha256}`): while no account has it, sign-up refuses it (`EMAIL_HELD`) and so does another
+  account's change to it (`email.held`).
 - **A server that sends no email** changes the address at once, as before, and tells nobody, since nothing can be
   sent: Better Auth changes an unconfirmed address, refuses one a sign-in provider confirmed (409 `email.no_mail`), and
   answers 409 `email.taken` when another account has it.

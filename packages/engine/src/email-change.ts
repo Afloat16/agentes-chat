@@ -11,11 +11,11 @@ const { users, sessions, verifications, accounts, pushDevices } = schema;
 /**
  * A new address for an account (ADR 0088 §2, addendum 2026-11-13). Better Auth's link to the new address makes the
  * change; these rows, in its `verifications`, remember the address it leaves and keep it safe for a week:
- * - `email-change:<userId>` `{ from, to }`: the change the account asked last, until its link makes it. That link is a
- *   token signed for an hour that names both addresses and keeps no state, so only this row lets it work, once
- *   (`changeAsked`).
- * - `email-held:<sha256(address)>` `{ userId }`: an address the account is leaving or just left. While no account has
- *   it, nobody signs up with it and no other account takes it, so "This wasn't me" can always put it back.
+ * - `email-change:<userId>` `{ from, to, proven }`: the change the account asked last, until its link makes it. That
+ *   link is a token signed for an hour that names both addresses and keeps no state, so only this row lets it work,
+ *   once (`changeAsked`). `proven`: the account had confirmed `from`, or its code was just typed.
+ * - `email-held:<sha256(address)>` `{ userId }`: a proven address the account is leaving or just left. While no account
+ *   has it, nobody signs up with it and no other account takes it, so "This wasn't me" can always put it back.
  * - `email-undo:<sha256(token)>` `{ userId, from, to, since }`: "This wasn't me", emailed to the address the account
  *   left; `since` is when the change was asked.
  * - `email-undone:<userId>`: "This wasn't me" just ran, for the sign-ins already under way then (`undoneSince`).
@@ -92,17 +92,20 @@ export async function addressHeld(db: Executor, email: string, options: { except
 
 /**
  * A change from `from` to `to` was asked, before its link goes: only that link may make it (`changeAsked`), a link
- * asked before it no longer does, and its notice goes to `from`, which is held meanwhile.
+ * asked before it no longer does. When `proven` (the account had confirmed `from`, or typed the code sent there), its
+ * notice goes to `from`, which is held meanwhile. An address never proven gets neither: whoever holds that mailbox
+ * would get the account through "This wasn't me".
  */
 export async function askEmailChange(
   db: Database,
-  input: { userId: string; from: string; to: string },
+  input: { userId: string; from: string; to: string; proven: boolean },
   now = new Date(),
 ) {
   const until = new Date(now.getTime() + ASKED_MS);
   await db.transaction(async (tx) => {
-    await putRow(tx, askedId(input.userId), { from: lower(input.from), to: lower(input.to) }, until, now);
-    await hold(tx, input.from, input.userId, until, now);
+    const asked = { from: lower(input.from), to: lower(input.to), proven: input.proven };
+    await putRow(tx, askedId(input.userId), asked, until, now);
+    if (input.proven) await hold(tx, input.from, input.userId, until, now);
   });
 }
 
@@ -127,9 +130,9 @@ export async function changeAsked(db: Executor, from: string, to: string, now = 
 }
 
 /**
- * The account `user` now has its address, after a change asked here (`askEmailChange`): the address it left gets the
- * notice, in the person's language, with "This wasn't me" (`undoEmailChange`) for 7 days, and stays held as long.
- * Anything else that updates the account is no change: false.
+ * The account `user` now has its address, after a change asked here (`askEmailChange`): the address it left, when
+ * proven, gets the notice, in the person's language, with "This wasn't me" (`undoEmailChange`) for 7 days, and stays
+ * held as long. One never proven, or anything else that updates the account: false.
  */
 export async function finishEmailChange(
   deps: { db: Database; publicUrl: string },
@@ -141,9 +144,11 @@ export async function finishEmailChange(
       .select()
       .from(verifications)
       .where(and(eq(verifications.identifier, askedId(user.id)), gt(verifications.expiresAt, now)));
-    const from = row ? parsed<{ from: string }>(row.value, ["from"])?.from : undefined;
+    const asked = row ? parsed<{ from: string; proven?: unknown }>(row.value, ["from"]) : null;
+    const from = asked?.from;
     if (!row || !from || from === lower(user.email)) return false;
     await tx.delete(verifications).where(eq(verifications.identifier, askedId(user.id)));
+    if (asked?.proven !== true) return false;
     const token = randomBytes(32).toString("base64url");
     const until = new Date(now.getTime() + EMAIL_UNDO_DAYS * DAY_MS);
     const undo: Undo = { userId: user.id, from, to: lower(user.email), since: row.createdAt.toISOString() };
@@ -228,7 +233,10 @@ export async function undoEmailChange(db: Database, token: string, now = new Dat
     await dropPasswordLinks(tx, undo.userId);
     await tx.delete(pushDevices).where(eq(pushDevices.userId, undo.userId));
     await revokeUserApps(tx, undo.userId, "email_change_undone");
-    await putRow(tx, undoneId(undo.userId), {}, new Date(now.getTime() + UNDONE_MS), now);
+    // Stamped when written, just before the commit, not with `now`: a sign-in that began while this ran read the
+    // account as it was, and `undoneSince` must find the mark no older than that start.
+    const markedAt = new Date();
+    await putRow(tx, undoneId(undo.userId), {}, new Date(markedAt.getTime() + UNDONE_MS), markedAt);
     return { email: undo.from };
   });
 }

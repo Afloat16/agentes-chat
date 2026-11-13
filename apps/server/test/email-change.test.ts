@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { eq, like, schema } from "@agenteschat/db";
+import { undoEmailChange } from "@agenteschat/engine";
 import {
   type Browser,
   browser,
@@ -24,6 +25,11 @@ afterEach(async () => {
 
 const userOf = async (email: string) =>
   (await t.db.select().from(schema.users).where(eq(schema.users.email, email)))[0];
+/** Signs up, then confirms the address as its link would: only a confirmed address is told, held and given an undo. */
+async function signUpConfirmed(b: Browser, email: string) {
+  await signUp(b, email);
+  await t.db.update(schema.users).set({ emailVerified: true }).where(eq(schema.users.email, email));
+}
 /** The person signed in a while ago: past the 10 minutes when a sign-in stands in for the code. */
 async function signedInLongAgo(email: string) {
   const user = await userOf(email);
@@ -83,7 +89,7 @@ describe("one door", () => {
     expect((await userOf("ana@example.com"))?.id).toBeTruthy();
   });
 
-  test("the address it has, or another's just left, is refused before any code goes", async () => {
+  test("the address it already has is refused before any code goes, and a signed-out request is refused", async () => {
     t = await createTestServer();
     const ana = browser(t);
     await signUp(ana, "ana@example.com");
@@ -98,7 +104,7 @@ describe("on a server that sends email", () => {
   test("a session that signed in a while ago gets a code at its current address, naming the new one", async () => {
     t = await createTestServer();
     const ana = browser(t);
-    await signUp(ana, "ana@example.com");
+    await signUpConfirmed(ana, "ana@example.com");
     await signedInLongAgo("ana@example.com");
     const asked = await change(ana, { newEmail: "ana.nova@example.com" });
     expect(asked.status).toBe(202);
@@ -159,10 +165,44 @@ describe("on a server that sends email", () => {
     expect(mailTo("ana.nova@example.com")).toHaveLength(1);
   });
 
+  test("an address the account never confirmed gets no code, and its mailbox no “This wasn't me” and no hold", async () => {
+    t = await createTestServer({ env: { ALLOW_SIGNUP: "true" } });
+    const ana = browser(t);
+    await signUp(ana, "ana@example.com");
+    await signedInLongAgo("ana@example.com");
+    // A code there would tell whoever holds that mailbox the new address: only a fresh sign-in proves it's the person.
+    const stale = await change(ana, { newEmail: "ana.nova@example.com" });
+    expect([stale.status, await errorOf(stale)]).toEqual([403, "reauth.sign_in"]);
+    await t.drain();
+    expect(mailTo("ana@example.com").some((m) => /^\d{6} /.test(m.subject))).toBe(false);
+
+    const fresh = browser(t);
+    const signIn = { email: "ana@example.com", password: "correct horse battery" };
+    expect((await fresh("/api/auth/sign-in/email", { json: signIn })).status).toBe(200);
+    const sent = await change(fresh, { newEmail: "ana.nova@example.com" });
+    expect(await sent.json()).toEqual({ status: "sent", email: "ana.nova@example.com" });
+    await t.drain();
+    const told = mailTo("ana@example.com").length;
+    expect((await openLink(browser(t), "ana.nova@example.com")).status).toBe(302);
+    expect((await userOf("ana.nova@example.com"))?.id).toBeTruthy();
+    await t.drain();
+    expect(mailTo("ana@example.com")).toHaveLength(told);
+    const undos = await t.db
+      .select()
+      .from(schema.verifications)
+      .where(like(schema.verifications.identifier, "email-undo:%"));
+    expect(undos).toEqual([]);
+    // Whoever holds that mailbox may sign up with it at once.
+    const someone = await browser(t)("/api/auth/sign-up/email", {
+      json: { email: "ana@example.com", password: "correct horse battery", name: "Someone" },
+    });
+    expect(someone.status).toBe(200);
+  });
+
   test("“This wasn't me” brings the old address back and ends every session, once, and only by its button", async () => {
     t = await createTestServer();
     const ana = browser(t);
-    await signUp(ana, "ana@example.com");
+    await signUpConfirmed(ana, "ana@example.com");
     const userId = (await userOf("ana@example.com"))?.id ?? "";
     await change(ana, { newEmail: "thief@example.com" });
     await openLink(browser(t), "thief@example.com");
@@ -184,7 +224,7 @@ describe("on a server that sends email", () => {
   test("a link changes the address once: not after a newer ask, and never again after “This wasn't me”", async () => {
     t = await createTestServer();
     const ana = browser(t);
-    await signUp(ana, "ana@example.com");
+    await signUpConfirmed(ana, "ana@example.com");
     const userId = (await userOf("ana@example.com"))?.id ?? "";
     await change(ana, { newEmail: "ana.antigo@example.com" });
     const older = await newestLink("ana.antigo@example.com", "/api/auth/verify-email");
@@ -212,7 +252,7 @@ describe("on a server that sends email", () => {
   test("“This wasn't me” also takes the ways in the other mailbox got: Google by its address, a password, a reset link", async () => {
     t = await createTestServer({ env: GOOGLE_ENV });
     const ana = browser(t);
-    await signUp(ana, "ana@example.com");
+    await signUpConfirmed(ana, "ana@example.com");
     const userId = (await userOf("ana@example.com"))?.id ?? "";
     await change(ana, { newEmail: "thief@example.com" });
     await openLink(browser(t), "thief@example.com");
@@ -252,7 +292,7 @@ describe("on a server that sends email", () => {
   test("the old address is held while its undo works: no sign-up, no other account's change", async () => {
     t = await createTestServer({ env: { ALLOW_SIGNUP: "true" } });
     const ana = browser(t);
-    await signUp(ana, "ana@example.com");
+    await signUpConfirmed(ana, "ana@example.com");
     await change(ana, { newEmail: "ana.nova@example.com" });
     await openLink(browser(t), "ana.nova@example.com");
     const someone = browser(t);
@@ -293,7 +333,7 @@ describe("after “This wasn't me”, nothing the other person has or began goes
   async function movedToThief(env: Record<string, string> = {}) {
     t = await createTestServer({ env });
     const ana = browser(t);
-    await signUp(ana, "ana@example.com");
+    await signUpConfirmed(ana, "ana@example.com");
     const userId = (await userOf("ana@example.com"))?.id ?? "";
     await change(ana, { newEmail: "thief@example.com" });
     const thief = browser(t);
@@ -332,7 +372,7 @@ describe("after “This wasn't me”, nothing the other person has or began goes
 
   test("the password they knew is cleared, and “Forgot my password” at the address that came back sets the next", async () => {
     t = await createTestServer();
-    await signUp(browser(t), "ana@example.com");
+    await signUpConfirmed(browser(t), "ana@example.com");
     // They know it: a fresh sign-in, so the new address needs no code.
     const known = "correct horse battery";
     const thief = browser(t);
@@ -371,6 +411,24 @@ describe("after “This wasn't me”, nothing the other person has or began goes
     expect(res.status).toBe(401);
     expect(await sessionsOf(userId)).toEqual([]);
     expect((await change(racer, { newEmail: "thief2@example.com" })).status).toBe(401);
+  });
+
+  test("a password sign-in under way gets no session, even when the undo's clock read 1.5 s before it began", async () => {
+    const { userId, undoToken } = await movedToThief();
+    const context = await t.auth.$context;
+    const verify = context.password.verify;
+    const began = Date.now();
+    // A commit that waited, or another replica's clock: the mark counts from when it was written, not from `now`.
+    context.password.verify = async (input) => {
+      context.password.verify = verify;
+      await undoEmailChange(t.db, undoToken, new Date(began - 1500));
+      return verify(input);
+    };
+    const res = await browser(t)("/api/auth/sign-in/email", {
+      json: { email: "thief@example.com", password: "correct horse battery" },
+    });
+    expect(res.status).toBe(401);
+    expect(await sessionsOf(userId)).toEqual([]);
   });
 
   test("a Google sign-in that found the account before it joins nothing and gets no session", async () => {

@@ -592,9 +592,11 @@ const EMAIL_LINKS = [
  * to one, since `/change-email` is off over HTTP. Refused for the address it has (`email.same`) and one another account
  * just left (`email.held`). On a server that sends email, it takes the code emailed to the account's current address
  * (`code`, bound to `newEmail`) or a sign-in in the last 10 minutes: without either it emails that code and answers
- * `code`. Then Better Auth's link goes to the new address, which changes once it is opened (`sent`), and the old one is
- * told then (`finishEmailChange`). On a server that sends none, Better Auth changes it at once, as before (`changed`):
- * an unconfirmed address only (`email.no_mail` for a confirmed one), and `email.taken` when another account has it.
+ * `code`, or `reauth.sign_in` for an address the account never confirmed. Then Better Auth's link goes to the new
+ * address, which changes once it is opened (`sent`), and the old one is told then (`finishEmailChange`) when the
+ * account had confirmed it or typed its code. On a server that sends none, Better Auth changes it at once, as before
+ * (`changed`): an unconfirmed address only (`email.no_mail` for a confirmed one), and `email.taken` when another account
+ * has it.
  */
 export async function changeAccountEmail(
   auth: Auth,
@@ -645,6 +647,8 @@ export async function changeAccountEmail(
   }
   if (input.code) await spendProofCode({ db }, userId, "email", input.code, newEmail);
   else if (!(await signedInLately(auth, headers, userId))) {
+    // Nobody proved that mailbox is the account's: a code there would tell whoever holds it the new address.
+    if (!account.verified) throw new ForbiddenError("Sign in again to change your email", "reauth.sign_in");
     const sent = await sendProofCode(deps, userId, "email", {
       bound: newEmail,
       template: (code, account) => ({
@@ -664,7 +668,9 @@ export async function changeAccountEmail(
       throw new TooManyError("Too many new addresses. Try again later.");
     }
   }
-  await askEmailChange(db, { userId, from, to: newEmail });
+  // A code typed just now proves the old mailbox (`spendProofCode` throws otherwise), a fresh sign-in doesn't: an
+  // address never confirmed gets no "This wasn't me", which would hand whoever holds it the account.
+  await askEmailChange(db, { userId, from, to: newEmail, proven: account.verified || Boolean(input.code) });
   await change();
   return { status: "sent", email: newEmail };
 }

@@ -457,8 +457,9 @@ export interface ApiClient {
     restore(): Promise<void>;
     /**
      * My account under `newEmail` (ADR 0088 §2, addendum 2026-11-13): with the `code` emailed to my current address, or
-     * a sign-in in the last 10 minutes, a link goes to it; without either, the code goes first (`code`). On a server
-     * that sends no email it changes at once. `email.same` (400), `email.held` (409), `reauth.code_*` as deleting's.
+     * a sign-in in the last 10 minutes, a link goes to it; without either, the code goes first (`code`), or for an
+     * address I never confirmed `reauth.sign_in` (403). On a server that sends no email it changes at once.
+     * `email.same` (400), `email.held` (409), `reauth.code_*` as deleting's.
      */
     changeEmail(input: { newEmail: string; code?: string }): Promise<EmailChange>;
     /**

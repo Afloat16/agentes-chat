@@ -7,7 +7,13 @@ import {
   useSetShowActivity,
 } from "@agenteschat/client";
 import { formatTimeLeft } from "@agenteschat/client/lib/actions";
-import { authErrorText, emailChangeRefusal, errorCode, errorText } from "@agenteschat/client/lib/errors";
+import {
+  authErrorText,
+  emailChangeRefusal,
+  errorCode,
+  errorText,
+  REAUTH_SIGN_IN,
+} from "@agenteschat/client/lib/errors";
 import { CODE_LENGTH, typedCode } from "@agenteschat/client/lib/join-requests";
 import { browserTimezone, isTimeZone, timezoneName, zoneDisplayName } from "@agenteschat/client/lib/routines";
 import { isEmail } from "@agenteschat/client/lib/text";
@@ -323,8 +329,9 @@ class AuthRefused extends Error {
 /**
  * "E-mail": the same account under a new address (ADR 0088 §2, addendum 2026-11-13). The new address, then the code
  * emailed to the current one, or for someone who can't open that inbox a sign-in again, which comes back here with the
- * address typed (the dialog is kept in the address, `?account=email`). Then a link goes to the new address, which
- * changes once it is opened. On a server that sends no e-mail it changes at once.
+ * address typed (the dialog is kept in the address, `?account=email`). A current address never confirmed gets no code:
+ * only the sign-in again. Then a link goes to the new address, which changes once it is opened. On a server that sends
+ * no e-mail it changes at once.
  */
 export function EmailDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
@@ -356,6 +363,7 @@ export function EmailDialog({ open, onClose }: { open: boolean; onClose: () => v
       const retryIn = e instanceof ApiError && e.code === "reauth.code_wait" ? Number(e.params?.retryIn) : 0;
       if (retryIn > 0) codeOut(sent?.email ?? me.user.email, retryIn);
       if (errorCode(e)?.startsWith("reauth.code")) setCode("");
+      if (errorCode(e) === REAUTH_SIGN_IN) setReauth(true);
     },
   });
   const { reset } = change;
