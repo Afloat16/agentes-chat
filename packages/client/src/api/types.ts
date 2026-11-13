@@ -4752,6 +4752,8 @@ export interface UsageQueue {
   reason: "plan" | "budget" | null;
   plan: string | null;
   resetsAt: string | null;
+  /** A plan's line: when its plan was last read or asked about (absent: an older server). */
+  checkedAt?: string | null;
   /** Other agents in the same plan's line. */
   sharedWith: string[];
   rows: UsageQueueRow[];
@@ -5661,6 +5663,8 @@ export interface AgentBrain {
   ownUsage: Partial<Record<MachineAccountKind, PlanUsage>>;
   /** Its Autonomia (its new missions' autonomy), copied with its setup (ADR 0094); absent on older servers. */
   autonomy?: CommandApproval;
+  /** The workspace's live API keys, id and provider only: what its owner may move it onto (absent: an older server). */
+  keys?: { id: string; provider: string }[];
 }
 
 /** The team's right hand's AIs: the viewer's own, or the workspace's (admins). */
@@ -5773,6 +5777,10 @@ export interface PlanUsage {
    * the plan refused it for the key.
    */
   models?: Record<string, { at: string; until?: string; region?: true; off?: true; inactive?: true }>;
+  /** On a plan whose models have their own limits: the model that last answered with this key. */
+  answered?: string;
+  /** Stuck at its limit: when the server last asked its computer to read it again. */
+  checkedAt?: string;
 }
 
 export interface AgentBrainInput {

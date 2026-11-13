@@ -2938,6 +2938,7 @@
       "mine": "Les vôtres",
       "yours": "Le vôtre",
       "keys": "Clé de l'espace de travail",
+      "apiKeys": "Clés API",
       "best": "Le plus de marge en ce moment",
       "atLimit": "À leur limite",
       "seeAll": "Voir les {{count}} comptes",
@@ -3209,6 +3210,7 @@
     "continuedByYou": "Vous les avez laissés continuer · {{time}}"
   },
   "usageCard": {
+    "checked": "Vérifié {{when}}",
     "window": {
       "five_hour": "de ses 5 heures",
       "seven_day": "de sa semaine",
@@ -10123,6 +10125,34 @@
       "useFor": "Utiliser aussi pour {{name}}",
       "useFor_female": "Utiliser aussi pour {{name}}",
       "useForMenu": "Utiliser pour…",
+      "useAll": "Utiliser pour tous les agents",
+      "useAllTitle": "Utiliser {{plan}} pour tous les agents",
+      "useAllSub": "Choisissez le modèle qu'ils utiliseront avec cette clé.",
+      "useAllWorks": "Fonctionnent avec cette clé",
+      "useAllRefused": "Refusés avec cette clé",
+      "useAllAnswered": "A répondu avec cette clé",
+      "useAllOff": "Désactivé dans {{maker}}",
+      "useAllRegion": "Nécessite la région Global dans {{maker}}",
+      "useAllUntested_one": "{{count}} modèle pas encore testé",
+      "useAllUntested_many": "{{count}} modèles pas encore testés",
+      "useAllUntested_other": "{{count}} modèles pas encore testés",
+      "textOnly": "Lit seulement du texte",
+      "useAllTextOnly": "{{model}} ne voit ni images ni PDF. Un agent qui doit voir des captures fera mieux avec un autre modèle.",
+      "useAllAgents": "Tous les agents",
+      "useAllAgentsLine_one": "{{count}} agent passe à ce modèle",
+      "useAllAgentsLine_many": "{{count}} agents passent à ce modèle",
+      "useAllAgentsLine_other": "{{count}} agents passent à ce modèle",
+      "useAllNone": "Aucun agent ne peut utiliser cette clé pour l'instant.",
+      "useAllGo_one": "Utiliser pour {{count}} agent",
+      "useAllGo_many": "Utiliser pour {{count}} agents",
+      "useAllGo_other": "Utiliser pour {{count}} agents",
+      "useAllPick": "Choisissez un modèle",
+      "useAllDone_one": "{{count}} agent pense maintenant avec {{model}}.",
+      "useAllDone_many": "{{count}} agents pensent maintenant avec {{model}}.",
+      "useAllDone_other": "{{count}} agents pensent maintenant avec {{model}}.",
+      "useAllMissed_one": "{{count}} agent n'a pas changé. Ouvrez sa page pour savoir pourquoi.",
+      "useAllMissed_many": "{{count}} agents n'ont pas changé. Ouvrez la page de chacun pour savoir pourquoi.",
+      "useAllMissed_other": "{{count}} agents n'ont pas changé. Ouvrez la page de chacun pour savoir pourquoi.",
       "revokeOnClaude": "Pour y mettre fin aussi sur Claude, révoquez-le dans les paramètres de Claude."
     },
     "usage": {
@@ -11303,6 +11333,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "Changer le modèle de {{agent}}",
+      "ownSignIn": "Compte de cet ordinateur",
+      "apiKey": "{{provider}} avec une clé d'API",
+      "default": "par défaut",
+      "refused": "Refusé avec cette clé",
+      "textOnly": "Lit seulement du texte",
+      "search": "Rechercher des modèles",
+      "account": "Compte",
+      "connect": "Connecter une IA",
+      "applies": "S'applique dès la prochaine réponse.",
+      "more": "Plus d'options",
+      "undo": "Annuler",
+      "saved": "{{agent}} pense maintenant avec {{model}}.",
+      "readOnly": "Seuls les admins et le propriétaire de l'agent changent son modèle."
+    },
     "title": "Qui réfléchit",
     "auto": {
       "label": "Automatique",
@@ -16103,6 +16149,11 @@
       "text": "ChatGPT a refusé la vitesse Rapide pour ce compte ou ce modèle, cette réponse est donc arrivée en standard.",
       "action": "Ouvrir l'agent"
     },
+    "modelStandIn": {
+      "text": "{{plan}} a refusé {{from}} avec cette clé. J'ai répondu avec {{to}}, qui fonctionne avec elle.",
+      "useAll": "Utiliser {{model}} pour tous",
+      "pick": "Choisir le modèle"
+    },
     "usageWhen": {
       "at": "à {{time}}",
       "on": "{{day}} à {{time}}",
@@ -16602,7 +16653,7 @@
       "brain_interrupted": "{{brain}} s'est arrêté avant de terminer. Déjà fait, non répété : {{tools}}.",
       "plan_limit_cut": "Je me suis arrêté à la limite de l'abonnement {{plan}}. Je reprendrai là où j'en étais {{when}}, quand elle se réinitialisera.",
       "plan_limit_cut_unknown": "Je me suis arrêté à la limite de l'abonnement {{plan}}. Je reprendrai là où j'en étais dès qu'elle se réinitialisera.",
-      "plan_limit_wait": "L'abonnement {{plan}} a atteint sa limite. Je répondrai {{when}}, quand elle se réinitialisera.",
+      "plan_limit_wait": "L'abonnement {{plan}} a atteint sa limite. Je répondrai {{when}}, quand elle se réinitialisera. S'il est libéré plus tôt dans {{plan}}, je le verrai et répondrai aussitôt.",
       "plan_limit_wait_unknown": "L'abonnement {{plan}} a atteint sa limite. Je répondrai dès qu'elle se réinitialisera.",
       "plan_model_limit_wait": "{{model}} a atteint sa propre limite sur {{plan}}. Les autres modèles de l'abonnement fonctionnent toujours : changez le modèle de {{agent}} ou attendez qu'il se réinitialise {{when}}.",
       "plan_model_limit_wait_unknown": "{{model}} a atteint sa propre limite sur {{plan}}. Les autres modèles de l'abonnement fonctionnent toujours : changez le modèle de {{agent}} ou attendez qu'il se réinitialise.",

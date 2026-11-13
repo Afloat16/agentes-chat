@@ -2744,6 +2744,7 @@
       "mine": "Milikmu",
       "yours": "Milikmu",
       "keys": "Kunci ruang kerja",
+      "apiKeys": "Kunci API",
       "best": "Paling longgar saat ini",
       "atLimit": "Mencapai batas",
       "seeAll": "Lihat semua {{count}} akun",
@@ -3009,6 +3010,7 @@
     "continuedByYou": "Kamu membiarkan mereka lanjut · {{time}}"
   },
   "usageCard": {
+    "checked": "Dicek {{when}}",
     "window": {
       "five_hour": "dari jatah 5 jamnya",
       "seven_day": "dari jatah mingguannya",
@@ -9442,6 +9444,24 @@
       "disconnected": "{{label}} diputuskan.",
       "useFor": "Pakai untuk {{name}} juga",
       "useForMenu": "Pakai untuk…",
+      "useAll": "Pakai di semua agen",
+      "useAllTitle": "Pakai {{plan}} di semua agen",
+      "useAllSub": "Pilih model yang akan mereka pakai dengan kunci ini.",
+      "useAllWorks": "Berfungsi dengan kunci ini",
+      "useAllRefused": "Ditolak untuk kunci ini",
+      "useAllAnswered": "Sudah menjawab dengan kunci ini",
+      "useAllOff": "Dimatikan di {{maker}}",
+      "useAllRegion": "Butuh region Global di {{maker}}",
+      "useAllUntested_other": "{{count}} model belum dicoba",
+      "textOnly": "Hanya membaca teks",
+      "useAllTextOnly": "{{model}} tidak bisa melihat gambar atau PDF. Agen yang perlu melihat tangkapan layar lebih baik pakai model lain.",
+      "useAllAgents": "Semua agen",
+      "useAllAgentsLine_other": "{{count}} agen beralih ke model ini",
+      "useAllNone": "Belum ada agen yang bisa memakai kunci ini.",
+      "useAllGo_other": "Pakai di {{count}} agen",
+      "useAllPick": "Pilih model",
+      "useAllDone_other": "{{count}} agen sekarang berpikir dengan {{model}}.",
+      "useAllMissed_other": "{{count}} agen tidak berubah. Buka halaman masing-masing untuk melihat alasannya.",
       "revokeOnClaude": "Untuk mengakhirinya di Claude juga, cabut di pengaturan Claude."
     },
     "usage": {
@@ -10536,6 +10556,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "Ganti model {{agent}}",
+      "ownSignIn": "Akun komputer ini",
+      "apiKey": "{{provider}} dengan kunci API",
+      "default": "bawaan",
+      "refused": "Ditolak untuk kunci ini",
+      "textOnly": "Hanya membaca teks",
+      "search": "Cari model",
+      "account": "Akun",
+      "connect": "Hubungkan AI",
+      "applies": "Berlaku mulai jawaban berikutnya.",
+      "more": "Opsi lainnya",
+      "undo": "Urungkan",
+      "saved": "{{agent}} sekarang berpikir dengan {{model}}.",
+      "readOnly": "Hanya admin dan pemilik agen yang bisa mengganti modelnya."
+    },
     "title": "Siapa yang berpikir",
     "auto": {
       "label": "Otomatis",
@@ -15138,6 +15174,11 @@
       "text": "ChatGPT menolak kecepatan Cepat untuk akun atau model ini, jadi jawaban ini memakai kecepatan standar.",
       "action": "Buka agen"
     },
+    "modelStandIn": {
+      "text": "{{plan}} menolak {{from}} dengan kunci ini. Aku menjawab dengan {{to}}, yang berfungsi dengannya.",
+      "useAll": "Gunakan {{model}} untuk semua",
+      "pick": "Pilih model"
+    },
     "usageWhen": {
       "at": "pukul {{time}}",
       "on": "{{day}} pukul {{time}}",
@@ -15613,7 +15654,7 @@
       "brain_interrupted": "{{brain}} berhenti sebelum selesai. Sudah dikerjakan, tidak diulang: {{tools}}.",
       "plan_limit_cut": "Aku berhenti di batas paket {{plan}}. Aku akan melanjutkan dari titik terakhir {{when}}, saat batasnya direset.",
       "plan_limit_cut_unknown": "Aku berhenti di batas paket {{plan}}. Aku akan melanjutkan dari titik terakhir begitu batasnya direset.",
-      "plan_limit_wait": "Paket {{plan}} mencapai batasnya. Aku akan menjawab {{when}}, saat batasnya direset.",
+      "plan_limit_wait": "Paket {{plan}} mencapai batasnya. Aku akan menjawab {{when}}, saat batasnya direset. Kalau dibuka lebih awal di {{plan}}, aku akan tahu dan langsung menjawab.",
       "plan_limit_wait_unknown": "Paket {{plan}} mencapai batasnya. Aku akan menjawab begitu batasnya direset.",
       "plan_model_limit_wait": "{{model}} mencapai batasnya sendiri di {{plan}}. Model lain di paket tetap berfungsi: ganti model {{agent}} atau tunggu sampai direset {{when}}.",
       "plan_model_limit_wait_unknown": "{{model}} mencapai batasnya sendiri di {{plan}}. Model lain di paket tetap berfungsi: ganti model {{agent}} atau tunggu sampai direset.",

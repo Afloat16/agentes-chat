@@ -2958,6 +2958,8 @@ export const ptBR = {
       mine: "Suas",
       yours: "Sua",
       keys: "Chave do workspace",
+      /** A group of the switch screen's accounts by AI: the workspace's API keys. */
+      apiKeys: "Chaves de API",
       best: "Com mais folga agora",
       atLimit: "No limite",
       seeAll: "Ver as {{count}} contas",
@@ -3235,6 +3237,8 @@ export const ptBR = {
   },
   /** Trabalho longo pausado perto do limite do plano ou do orçamento (ADR 0118), e o seu Continuar agora. */
   usageCard: {
+    /** Under a plan limit's wait note: when the plan was last read or asked about, quietly (it is asked every few minutes). */
+    checked: "Conferido {{when}}",
     window: {
       five_hour: "das 5 horas",
       seven_day: "da semana",
@@ -10022,6 +10026,31 @@ export const ptBR = {
       useFor: "Usar também para o {{name}}",
       useFor_female: "Usar também para a {{name}}",
       useForMenu: "Usar para…",
+      /** "Usar em todos os agentes" on a coding plan key's row: one model of the key for every agent that may take it. */
+      useAll: "Usar em todos os agentes",
+      useAllTitle: "Usar o {{plan}} em todos os agentes",
+      useAllSub: "Escolha o modelo que eles vão usar com esta chave.",
+      useAllWorks: "Funcionam com esta chave",
+      useAllRefused: "Recusados por esta chave",
+      useAllAnswered: "Respondeu com esta chave",
+      useAllOff: "Desligado no {{maker}}",
+      useAllRegion: "Precisa da região Global no {{maker}}",
+      useAllUntested_one: "{{count}} modelo ainda não testado",
+      useAllUntested_other: "{{count}} modelos ainda não testados",
+      textOnly: "Só lê texto",
+      useAllTextOnly:
+        "O {{model}} não vê imagens nem PDFs. Um agente que precisa ver prints fica melhor com outro modelo.",
+      useAllAgents: "Todos os agentes",
+      useAllAgentsLine_one: "{{count}} agente passa a usar este modelo",
+      useAllAgentsLine_other: "{{count}} agentes passam a usar este modelo",
+      useAllNone: "Nenhum agente pode usar esta chave agora.",
+      useAllGo_one: "Usar em {{count}} agente",
+      useAllGo_other: "Usar em {{count}} agentes",
+      useAllPick: "Escolha um modelo",
+      useAllDone_one: "{{count}} agente agora pensa com o {{model}}.",
+      useAllDone_other: "{{count}} agentes agora pensam com o {{model}}.",
+      useAllMissed_one: "{{count}} agente não mudou. Abra a página dele para ver por quê.",
+      useAllMissed_other: "{{count}} agentes não mudaram. Abra a página de cada um para ver por quê.",
       revokeOnClaude: "Para encerrar também no Claude, revogue nas configurações do Claude.",
     },
     usage: {
@@ -11155,6 +11184,23 @@ export const ptBR = {
     },
   },
   brain: {
+    /** The model picker in place (a DM's header, the profile card, the side panel): the agent's AI and model. */
+    picker: {
+      open: "Mudar o modelo de {{agent}}",
+      ownSignIn: "Conta deste computador",
+      apiKey: "{{provider}} por chave de API",
+      default: "padrão",
+      refused: "Recusado por esta chave",
+      textOnly: "Só lê texto",
+      search: "Buscar modelos",
+      account: "Conta",
+      connect: "Conectar uma IA",
+      applies: "Vale a partir da próxima resposta.",
+      more: "Mais opções",
+      undo: "Desfazer",
+      saved: "{{agent}} agora pensa com o {{model}}.",
+      readOnly: "Só admins e quem é dono do agente mudam o modelo.",
+    },
     title: "Quem pensa",
     auto: {
       label: "Automático",
@@ -15700,6 +15746,12 @@ export const ptBR = {
       text: "O ChatGPT recusou a velocidade Rápida nesta conta ou neste modelo, então esta resposta veio no padrão.",
       action: "Abrir agente",
     },
+    /** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
+    modelStandIn: {
+      text: "O {{plan}} recusou o {{from}} com esta chave. Respondi com o {{to}}, que funciona nela.",
+      useAll: "Usar o {{model}} em todos",
+      pick: "Escolher modelo",
+    },
     /** When a waiting agent goes on (`usageWhen`). */
     usageWhen: { at: "às {{time}}", on: "{{day}} às {{time}}", date: "em {{date}}" },
     /** Typing bar: "{{names}} está {{doing}}" (agents' verbs come from their tool calls). */
@@ -16247,7 +16299,8 @@ export const ptBR = {
       brain_interrupted: "O {{brain}} parou antes de terminar. Já feito, sem repetir: {{tools}}.",
       plan_limit_cut: "Parei no limite do plano do {{plan}}. Continuo de onde parei {{when}}, quando ele renovar.",
       plan_limit_cut_unknown: "Parei no limite do plano do {{plan}}. Continuo de onde parei assim que ele renovar.",
-      plan_limit_wait: "O plano do {{plan}} chegou ao limite. Respondo {{when}}, quando ele renovar.",
+      plan_limit_wait:
+        "O plano do {{plan}} chegou ao limite. Respondo {{when}}, quando ele renovar. Se ele for liberado antes no {{plan}}, eu percebo e respondo na hora.",
       plan_limit_wait_unknown: "O plano do {{plan}} chegou ao limite. Respondo assim que ele renovar.",
       plan_model_limit_wait:
         "O {{model}} chegou ao limite dele no {{plan}}. Os outros modelos do plano seguem funcionando: troque o modelo de {{agent}} ou espere ele renovar {{when}}.",

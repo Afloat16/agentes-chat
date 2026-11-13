@@ -764,6 +764,7 @@ function BrainFlow({ view, onClose, at }: { view: AgentBrain; onClose: () => voi
             disabled={busy}
             pinned={{ label: t("agentPage.work.brain.v2.inUse"), items: s.currentRow ? [s.currentRow] : [] }}
             label={title}
+            byAi
           />
           {lockedHere && (
             <SettingNote icon="lock">

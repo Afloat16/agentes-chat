@@ -632,6 +632,12 @@ export interface Transcript {
   /** Fast was refused on a turn of this run, which went on at standard speed (`meta.speedFallback`). */
   speedFallback?: boolean;
   /**
+   * The plan refused the model "Automático" mapped to, and the turn went again on one the key serves
+   * (`meta.modelStandIn`): labels for the line under the reply, the id that answered, and the computer and account
+   * of the key, for its "Usar o <modelo> em todos".
+   */
+  modelStandIn?: { plan: string; from: string; to: string; model?: string; machineId?: string; account?: string };
+  /**
    * The computer brain is unavailable and nothing can stand in: the run waits for the computer. A usage wait
    * (`USAGE_WAIT_CODES`: the plan's limit, the agent's budget) has no computer to wait for: `machineId` is empty,
    * `waitKey` groups the runs that wait on the same plan or budget (`usageWaitKey`) and `until` is when its job runs.
@@ -3766,7 +3772,9 @@ async function executeRunInner(
                         ]
                       : [
                           known ? "plan_limit_wait" : "plan_limit_wait_unknown",
-                          `The ${name} plan hit its limit. I'll answer ${known ? "when" : "as soon as"} it resets.`,
+                          known
+                            ? `The ${name} plan hit its limit. I'll answer when it resets. If it's freed sooner on ${name}, I'll notice and answer right away.`
+                            : `The ${name} plan hit its limit. I'll answer as soon as it resets.`,
                         ];
           const m = await post(
             tx,
@@ -4638,15 +4646,27 @@ async function executeRunInner(
               : error.resetsAt
                 ? { resetsAt: error.resetsAt }
                 : {};
-          // "Automático" refused on one model: the turn goes again at once on the model that last answered with this key.
-          if (autoBrain && refusal.scope && refusal.scope !== "inactive" && machineId) {
+          // "Automático" refused on one model: the turn goes again at once, once a run, on a model the key serves
+          // (`autoPlanModel`), and the reply says so (`meta.modelStandIn`).
+          if (autoBrain && refusal.scope && refusal.scope !== "inactive" && machineId && !transcript.modelStandIn) {
             const stored = await storedPlanUsage(db, run.orgId, machineId, turnPlan.kind, turnPlan.account?.id).catch(
               () => null,
             );
             const from = turnPlan.model;
             const to = autoPlanModel(turnPlan.account?.provider, from, stored);
+            const provider = turnPlan.account?.provider;
             if (to && to !== from) {
               plan = { ...plan, model: to };
+              const fromModel = ownLimitsModel(provider, from);
+              const toModel = ownLimitsModel(provider, to);
+              transcript.modelStandIn = {
+                plan: planName(turnPlan.kind, provider),
+                from: fromModel?.label ?? from ?? "",
+                to: toModel?.label ?? to,
+                ...(toModel ? { model: toModel.id } : {}),
+                machineId,
+                ...(turnPlan.account?.id ? { account: turnPlan.account.id } : {}),
+              };
               later(() => addRunStep(db, run, "context", { autoModelStandIn: { from: from ?? null, to } }));
               continue;
             }
@@ -6083,11 +6103,12 @@ const withCode = (meta: Record<string, unknown> | undefined, code: ReturnType<ty
  * Fast was refused and it came at standard speed (`meta.speedFallback`, the apps say so under the reply).
  */
 const withFallback = (t: Transcript, meta: Record<string, unknown> | undefined) =>
-  t.fallback || t.speedFallback
+  t.fallback || t.speedFallback || t.modelStandIn
     ? {
         ...(meta ?? {}),
         ...(t.fallback ? { brainFallback: t.fallback } : {}),
         ...(t.speedFallback ? { speedFallback: true } : {}),
+        ...(t.modelStandIn ? { modelStandIn: t.modelStandIn } : {}),
       }
     : meta;
 

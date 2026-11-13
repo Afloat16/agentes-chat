@@ -165,6 +165,13 @@ html:not([data-pointer]) .cq__open:focus-visible {
   font-size: 13px;
   line-height: 18px;
 }
+/* "Conferido há 4 min": quiet, before the note's actions, its icon on the words' middle. */
+.cq__checked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--muted);
+}
 .cq__text > .cq-first {
   margin-top: 4px;
 }

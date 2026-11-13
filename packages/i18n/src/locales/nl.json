@@ -2841,6 +2841,7 @@
       "mine": "Van jou",
       "yours": "Van jou",
       "keys": "Werkruimtesleutel",
+      "apiKeys": "API-sleutels",
       "best": "Nu met de meeste ruimte",
       "atLimit": "Op hun limiet",
       "seeAll": "Alle {{count}} accounts bekijken",
@@ -3110,6 +3111,7 @@
     "continuedByYou": "Jij liet ze doorgaan · {{time}}"
   },
   "usageCard": {
+    "checked": "Gecontroleerd {{when}}",
     "window": {
       "five_hour": "van zijn 5 uur",
       "seven_day": "van zijn week",
@@ -9822,6 +9824,29 @@
       "useFor": "Ook gebruiken voor {{name}}",
       "useFor_female": "Ook gebruiken voor {{name}}",
       "useForMenu": "Gebruiken voor…",
+      "useAll": "Voor alle agents gebruiken",
+      "useAllTitle": "{{plan}} voor alle agents gebruiken",
+      "useAllSub": "Kies het model dat ze met deze sleutel gebruiken.",
+      "useAllWorks": "Werken met deze sleutel",
+      "useAllRefused": "Geweigerd voor deze sleutel",
+      "useAllAnswered": "Heeft met deze sleutel geantwoord",
+      "useAllOff": "Uitgeschakeld in {{maker}}",
+      "useAllRegion": "Heeft de regio Global nodig in {{maker}}",
+      "useAllUntested_one": "{{count}} model nog niet getest",
+      "useAllUntested_other": "{{count}} modellen nog niet getest",
+      "textOnly": "Leest alleen tekst",
+      "useAllTextOnly": "{{model}} ziet geen afbeeldingen of pdf's. Een agent die screenshots moet zien, is beter af met een ander model.",
+      "useAllAgents": "Alle agents",
+      "useAllAgentsLine_one": "{{count}} agent gaat dit model gebruiken",
+      "useAllAgentsLine_other": "{{count}} agents gaan dit model gebruiken",
+      "useAllNone": "Geen agent kan deze sleutel nu gebruiken.",
+      "useAllGo_one": "Voor {{count}} agent gebruiken",
+      "useAllGo_other": "Voor {{count}} agents gebruiken",
+      "useAllPick": "Kies een model",
+      "useAllDone_one": "{{count}} agent denkt nu met {{model}}.",
+      "useAllDone_other": "{{count}} agents denken nu met {{model}}.",
+      "useAllMissed_one": "{{count}} agent is niet veranderd. Open de pagina om te zien waarom.",
+      "useAllMissed_other": "{{count}} agents zijn niet veranderd. Open de pagina van elk om te zien waarom.",
       "revokeOnClaude": "Wil je het ook bij Claude beëindigen? Trek het dan in bij de instellingen van Claude."
     },
     "usage": {
@@ -10972,6 +10997,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "Model van {{agent}} wijzigen",
+      "ownSignIn": "Account van deze computer",
+      "apiKey": "{{provider}} met een API-sleutel",
+      "default": "standaard",
+      "refused": "Geweigerd voor deze sleutel",
+      "textOnly": "Leest alleen tekst",
+      "search": "Modellen zoeken",
+      "account": "Gebruikersaccount",
+      "connect": "Een AI koppelen",
+      "applies": "Geldt vanaf het volgende antwoord.",
+      "more": "Meer opties",
+      "undo": "Ongedaan maken",
+      "saved": "{{agent}} denkt nu met {{model}}.",
+      "readOnly": "Alleen beheerders en de eigenaar van de agent wijzigen het model."
+    },
     "title": "Wie denkt",
     "auto": {
       "label": "Automatisch",
@@ -15667,6 +15708,11 @@
       "text": "ChatGPT weigerde de snelheid Snel voor dit account of model, dus dit antwoord kwam op standaardsnelheid.",
       "action": "Agent openen"
     },
+    "modelStandIn": {
+      "text": "{{plan}} heeft {{from}} met deze sleutel geweigerd. Ik heb geantwoord met {{to}}, dat er wel mee werkt.",
+      "useAll": "{{model}} voor iedereen gebruiken",
+      "pick": "Model kiezen"
+    },
     "usageWhen": {
       "at": "om {{time}}",
       "on": "{{day}} om {{time}}",
@@ -16160,7 +16206,7 @@
       "brain_interrupted": "{{brain}} stopte voordat het klaar was. Al gedaan, niet herhaald: {{tools}}.",
       "plan_limit_cut": "Ik ben gestopt bij de limiet van het {{plan}}-abonnement. Ik ga {{when}} verder waar ik was, als de limiet reset.",
       "plan_limit_cut_unknown": "Ik ben gestopt bij de limiet van het {{plan}}-abonnement. Ik ga verder waar ik was zodra de limiet reset.",
-      "plan_limit_wait": "Het {{plan}}-abonnement heeft de limiet bereikt. Ik antwoord {{when}}, als de limiet is gereset.",
+      "plan_limit_wait": "Het {{plan}}-abonnement heeft de limiet bereikt. Ik antwoord {{when}}, als de limiet is gereset. Wordt het eerder vrijgegeven in {{plan}}, dan merk ik dat en antwoord ik meteen.",
       "plan_limit_wait_unknown": "Het {{plan}}-abonnement heeft de limiet bereikt. Ik antwoord zodra de limiet reset.",
       "plan_model_limit_wait": "{{model}} heeft zijn eigen limiet bij {{plan}} bereikt. De andere modellen van het abonnement blijven werken: kies een ander model voor {{agent}} of wacht tot het {{when}} wordt gereset.",
       "plan_model_limit_wait_unknown": "{{model}} heeft zijn eigen limiet bij {{plan}} bereikt. De andere modellen van het abonnement blijven werken: kies een ander model voor {{agent}} of wacht tot het wordt gereset.",

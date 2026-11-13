@@ -3034,6 +3034,7 @@
       "mine": "Twoje",
       "yours": "Twoje",
       "keys": "Klucz przestrzeni roboczej",
+      "apiKeys": "Klucze API",
       "best": "Teraz z największym zapasem",
       "atLimit": "Na limicie",
       "seeAll": "Pokaż wszystkie konta ({{count}})",
@@ -3307,6 +3308,7 @@
     "continuedByYou": "Pozwalasz im kontynuować · {{time}}"
   },
   "usageCard": {
+    "checked": "Sprawdzono {{when}}",
     "window": {
       "five_hour": "z 5 godzin",
       "seven_day": "z tygodnia",
@@ -10451,6 +10453,39 @@
       "useFor": "Użyj też dla agenta {{name}}",
       "useFor_female": "Użyj też dla agentki {{name}}",
       "useForMenu": "Użyj dla…",
+      "useAll": "Użyj we wszystkich agentach",
+      "useAllTitle": "Użyj {{plan}} we wszystkich agentach",
+      "useAllSub": "Wybierz model, którego będą używać z tym kluczem.",
+      "useAllWorks": "Działają z tym kluczem",
+      "useAllRefused": "Odrzucone dla tego klucza",
+      "useAllAnswered": "Odpowiedział z tym kluczem",
+      "useAllOff": "Wyłączony w {{maker}}",
+      "useAllRegion": "Wymaga regionu Global w {{maker}}",
+      "useAllUntested_one": "{{count}} model jeszcze niesprawdzony",
+      "useAllUntested_few": "{{count}} modele jeszcze niesprawdzone",
+      "useAllUntested_many": "{{count}} modeli jeszcze niesprawdzonych",
+      "useAllUntested_other": "{{count}} modelu jeszcze niesprawdzonego",
+      "textOnly": "Czyta tylko tekst",
+      "useAllTextOnly": "{{model}} nie widzi obrazów ani plików PDF. Agentowi, który musi oglądać zrzuty ekranu, lepiej posłuży inny model.",
+      "useAllAgents": "Wszyscy agenci",
+      "useAllAgentsLine_one": "{{count}} agent przejdzie na ten model",
+      "useAllAgentsLine_few": "{{count}} agentów przejdzie na ten model",
+      "useAllAgentsLine_many": "{{count}} agentów przejdzie na ten model",
+      "useAllAgentsLine_other": "{{count}} agenta przejdzie na ten model",
+      "useAllNone": "Żaden agent nie może teraz użyć tego klucza.",
+      "useAllGo_one": "Użyj w {{count}} agencie",
+      "useAllGo_few": "Użyj w {{count}} agentach",
+      "useAllGo_many": "Użyj w {{count}} agentach",
+      "useAllGo_other": "Użyj w {{count}} agenta",
+      "useAllPick": "Wybierz model",
+      "useAllDone_one": "{{count}} agent myśli teraz z {{model}}.",
+      "useAllDone_few": "{{count}} agentów myśli teraz z {{model}}.",
+      "useAllDone_many": "{{count}} agentów myśli teraz z {{model}}.",
+      "useAllDone_other": "{{count}} agenta myśli teraz z {{model}}.",
+      "useAllMissed_one": "{{count}} agent się nie zmienił. Otwórz jego stronę, aby zobaczyć dlaczego.",
+      "useAllMissed_few": "{{count}} agenci się nie zmienili. Otwórz stronę każdego, aby zobaczyć dlaczego.",
+      "useAllMissed_many": "{{count}} agentów się nie zmieniło. Otwórz stronę każdego, aby zobaczyć dlaczego.",
+      "useAllMissed_other": "{{count}} agenta się nie zmieniło. Otwórz stronę każdego, aby zobaczyć dlaczego.",
       "revokeOnClaude": "Aby zakończyć to także w Claude, cofnij dostęp w ustawieniach Claude."
     },
     "usage": {
@@ -11698,6 +11733,22 @@
     }
   },
   "brain": {
+    "picker": {
+      "open": "Zmień model agenta {{agent}}",
+      "ownSignIn": "Konto tego komputera",
+      "apiKey": "{{provider}} z kluczem API",
+      "default": "domyślny",
+      "refused": "Odrzucony dla tego klucza",
+      "textOnly": "Czyta tylko tekst",
+      "search": "Szukaj modeli",
+      "account": "Konto",
+      "connect": "Połącz AI",
+      "applies": "Obowiązuje od następnej odpowiedzi.",
+      "more": "Więcej opcji",
+      "undo": "Cofnij",
+      "saved": "{{agent}} myśli teraz z {{model}}.",
+      "readOnly": "Model agenta zmieniają tylko administratorzy i jego właściciel."
+    },
     "title": "Kto myśli",
     "auto": {
       "label": "Automatycznie",
@@ -16595,6 +16646,11 @@
       "text": "ChatGPT odrzucił szybkość Szybka dla tego konta lub modelu, więc ta odpowiedź przyszła ze standardową szybkością.",
       "action": "Otwórz agenta"
     },
+    "modelStandIn": {
+      "text": "{{plan}} odrzucił {{from}} z tym kluczem. Odpowiedziałem przez {{to}}, który z nim działa.",
+      "useAll": "Użyj {{model}} dla wszystkich",
+      "pick": "Wybierz model"
+    },
     "usageWhen": {
       "at": "o {{time}}",
       "on": "{{day}} o {{time}}",
@@ -17100,7 +17156,7 @@
       "brain_interrupted": "{{brain}} przerwał przed zakończeniem. Już zrobione, bez powtarzania: {{tools}}.",
       "plan_limit_cut": "Praca zatrzymana na limicie planu {{plan}}. Wrócę do niej w tym samym miejscu {{when}}, gdy limit się odnowi.",
       "plan_limit_cut_unknown": "Praca zatrzymana na limicie planu {{plan}}. Wrócę do niej w tym samym miejscu, gdy tylko limit się odnowi.",
-      "plan_limit_wait": "Plan {{plan}} osiągnął limit. Odpowiem {{when}}, gdy się odnowi.",
+      "plan_limit_wait": "Plan {{plan}} osiągnął limit. Odpowiem {{when}}, gdy się odnowi. Jeśli zostanie odblokowany wcześniej w {{plan}}, zauważę to i od razu odpowiem.",
       "plan_limit_wait_unknown": "Plan {{plan}} osiągnął limit. Odpowiem, gdy tylko się odnowi.",
       "plan_model_limit_wait": "{{model}} osiągnął własny limit w {{plan}}. Pozostałe modele planu działają dalej: zmień model agenta {{agent}} albo poczekaj, aż się odnowi {{when}}.",
       "plan_model_limit_wait_unknown": "{{model}} osiągnął własny limit w {{plan}}. Pozostałe modele planu działają dalej: zmień model agenta {{agent}} albo poczekaj, aż się odnowi.",

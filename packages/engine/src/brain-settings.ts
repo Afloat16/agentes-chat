@@ -48,6 +48,7 @@ import {
   isPlanModelId,
   OPENCODE_FREE_MODELS,
   planModel,
+  planModelById,
   planOf,
   speedFits,
 } from "@agenteschat/providers/plans";
@@ -486,6 +487,11 @@ export interface AgentBrainView {
   ownUsage: OwnPlanUsage;
   /** Its Autonomia (the autonomy its missions start with): "Usar em outros agentes" takes it along (ADR 0094). */
   autonomy: CommandApproval;
+  /**
+   * The workspace's live API keys, their id and provider only (`GET …/brain`): which providers its owner may move it
+   * onto in the model picker, since only admins list the keys themselves.
+   */
+  keys?: { id: string; provider: string }[];
 }
 
 /** The account part of the brain view. */
@@ -907,13 +913,19 @@ export async function getAgentBrain(
   const { admin, others } = access;
   const agent = await settingsAgent(deps.db, access.agent, userId);
   const machineLook = agentMachine(deps.db, orgId, agent.machineId);
-  const [machine, machines, accounts] = await Promise.all([
+  const { providerCredentials } = schema;
+  const [machine, machines, accounts, keys] = await Promise.all([
     machineLook,
     candidateMachines(deps.db, userId, orgId, admin, agent.machineId),
     machineLook.then((m) => brainAccounts(deps.db, userId, orgId, agent, m, others)),
+    deps.db
+      .select({ id: providerCredentials.id, provider: providerCredentials.provider })
+      .from(providerCredentials)
+      .where(and(eq(providerCredentials.orgId, orgId), isNull(providerCredentials.revokedAt))),
   ]);
   return {
     ...view(agent, machine, machines, accounts, userId, others),
+    keys,
     ...(access.scope ? { workspaceAi: await workspaceAi(deps.db, access.agent, userId) } : {}),
   };
 }
@@ -1116,6 +1128,21 @@ export async function setAgentBrain(
       : (changed && isComputerBrain(brain)) || newPlan
         ? false
         : agent.planForOthers;
+  // Choosing a model its plan refused for this key (switched off there) asks the plan again: the next turn tries it.
+  const picked = typeof input.model === "string" ? planModelById(input.model) : undefined;
+  if (account && picked) {
+    const { machineAccounts } = schema;
+    await deps.db
+      .update(machineAccounts)
+      .set({ usage: sql`${machineAccounts.usage} #- ${`{models,${picked.id}}`}::text[]` })
+      .where(
+        and(
+          eq(machineAccounts.orgId, orgId),
+          eq(machineAccounts.id, account),
+          sql`${machineAccounts.usage}->'models' ? ${picked.id}`,
+        ),
+      );
+  }
   const accounts = await brainAccounts(deps.db, userId, orgId, agent, machine, others);
   const thinks =
     changed ||

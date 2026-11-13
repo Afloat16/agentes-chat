@@ -240,6 +240,15 @@ export type ScreenKind = (typeof SCREEN_KINDS)[number];
  */
 export const PLAN_USAGE_PROTOCOL = 19;
 /**
+ * From this protocol on, `list.recheck`: a Claude setup-token account the server sees stuck at its plan's limit is
+ * checked with one call on the cheapest model (refused while still full, so free), at most every
+ * `TOKEN_RECHECK_MS`, since a token can't read its usage any other way. Older runners ignore it.
+ */
+export const PLAN_RECHECK_PROTOCOL = 62;
+/** How often a plan stuck at its limit is read again: a free probe (a CLI login, a key) and a token's check. */
+export const PLAN_RECHECK_MS = 5 * 60_000;
+export const TOKEN_RECHECK_MS = 10 * 60_000;
+/**
  * From this protocol on: coding plans as key accounts on Claude Code (ADR
  * 0059). `begin` with `provider` (a plan of `@agenteschat/providers/plans`)
  * starts no CLI: the runner makes the folder and a key the browser seals the
@@ -1236,7 +1245,15 @@ export type AccountRequest =
    * Protocol 19: `fresh`, accounts (ids, or `OWN_USAGE_ID`s) whose usage to look up now: the runner
    * answers at once, probes in the background and sends `accounts.changed` when it knows more.
    */
-  | { action: "list"; fresh?: string[] }
+  | {
+      action: "list";
+      fresh?: string[];
+      /**
+       * Protocol 62 (`PLAN_RECHECK_PROTOCOL`): Claude setup-token accounts at their plan's limit, of those in `fresh`,
+       * to check with one call on the cheapest model (a token has no usage to read without one).
+       */
+      recheck?: string[];
+    }
   | { action: "remove"; kind: AccountKind; accountId: string };
 
 export const ACCOUNT_LOGIN_TTL_MS = 15 * 60_000;
