@@ -17,6 +17,7 @@ import {
   MAX_OWN_ACTIONS,
   OWN_ACTION_NAME,
   type RememberedKind,
+  rememberedKindOf,
   rulesApprover,
   SQL_READS,
   sqlReadsTarget,
@@ -25,6 +26,7 @@ import { fedByRoutine, type RunAuthority, runAuthorityById, UUID } from "../auth
 import { type CostKind, costlyGate, costlyKind, LONG_STEPS, unrequested } from "../brakes";
 import { countToolCall } from "../connector-usage";
 import { actionLevel, nameWords, openEnded } from "../connectors/classify";
+import { COMPOSIO_EXECUTOR, composioActions } from "../connectors/custom";
 import { missingConnectors, type ServerCatalog } from "../connectors/listing";
 import { answersAgentsOnly, consultationOrigin } from "../consultations";
 import { recordOutcome } from "../context/outcomes";
@@ -187,7 +189,7 @@ export async function rememberKinds(
 
 /** Our own tools whose job is asking a person: the agent chose to ask, so one that never asks still does. */
 const ASKING_TOOLS = new Set(["request_approval", REQUEST_PERMISSION_TOOL, "send_feedback"]);
-const asksByChoice = (tool: Pick<ToolDefinition, "name" | "scope" | "connectionId">) =>
+export const asksByChoice = (tool: Pick<ToolDefinition, "name" | "scope" | "connectionId">) =>
   tool.connectionId ? tool.name === "request_branch_push" && serverGitTool(tool) : ASKING_TOOLS.has(tool.name);
 
 /**
@@ -210,6 +212,41 @@ export function unaskedAtNever(level: ApprovalsLevel, tool: ToolDefinition, auth
 const NEVER_IN_ROUTINE =
   /^(delete|deletes|deleted|remove|removes|destroy|drop|purge|erase|wipe|trash|truncate|overwrite|revoke|unbind|pay|pays|payment|payments|payout|payouts|refund|refunds|charge|charges|transfer|transfers|invoice|invoices|purchase|buy|renew|checkout|withdraw|withdrawal|approve|review|reviews)$/;
 const neverInRoutine = (name: string) => nameWords(name).some((w) => NEVER_IN_ROUTINE.test(w));
+
+/** Words of a tool that runs whatever its input says: code, a command, a script, a raw request. */
+const RUNS_ITS_INPUT = new Set(
+  "run exec execute eval evaluate invoke trigger shell bash script command code terminal workbench proxy raw http".split(
+    " ",
+  ),
+);
+/** A name that says all its call does, and nothing a person reads one by one: no merge, send, delete or payment. */
+const plainAction = (name: string) =>
+  !alwaysAsks(name) &&
+  actionLevel(name) !== "sensitive" &&
+  !neverInRoutine(name) &&
+  !nameWords(name).some((w) => RUNS_ITS_INPUT.has(w));
+
+/**
+ * Whether a waiting call may be approved together with others in one tap, told from its row alone. It errs towards
+ * leaving a call on its own card: only a connected app's named action passes, or SQL the Postgres guard proved
+ * read-only when it asked. Never one that is high risk, sends, deletes or pays by any word of its name, runs whatever
+ * its input says, asks by choice, or names who decides (`request_approval`, someone's mailbox). Our own tools stay
+ * out whole: a command on the agent's computer, its browser, the workspace's people, keys and settings. Composio's
+ * executor is judged by the actions its input names, and never passes when they cannot be read.
+ */
+export function routineCall(
+  a: Pick<Approval, "tool" | "scope" | "connectionId" | "params" | "highRisk" | "approvers" | "approveAlways">,
+): boolean {
+  if (!a.connectionId || a.approvers || a.scope.startsWith("mail:")) return false;
+  if (asksByChoice({ name: a.tool, scope: a.scope, connectionId: a.connectionId })) return false;
+  const kept = rememberedKindOf(a.approveAlways)?.actions ?? [];
+  if (kept.length > 0 && kept.every((action) => action.startsWith(SQL_READS))) return true;
+  if (a.highRisk) return false;
+  if (a.tool.includes(COMPOSIO_EXECUTOR)) {
+    return composioActions(a.params)?.every(plainAction) === true;
+  }
+  return [a.tool, ...kept].every(plainAction);
+}
 
 /** The scope of the GitHub connector's `merge_pull_request`. */
 const GITHUB_MERGE_SCOPE = "github:pr.merge";

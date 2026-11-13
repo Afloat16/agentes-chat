@@ -19,6 +19,7 @@ import {
 } from "@agenteschat/db";
 import { type ActiveCover, activeCoversFrom, activeCoversTo } from "./approval-covers";
 import { addApprovalRules, addRoutineOwnActions, type RememberedKind, rememberedKindOf } from "./approval-rules";
+import { queueApprovalsDigest } from "./approvals-digest";
 import { recordAudit } from "./audit";
 import { approvalCardVia } from "./card-via";
 import { CONNECTOR_CATALOG } from "./connectors/catalog";
@@ -33,7 +34,7 @@ import { enqueue } from "./outbox";
 import { maySql, type RolePermission } from "./permissions";
 import { accountInUse } from "./standing";
 import { taskReaderSql } from "./task-access";
-import { AHEAD_GRACE_MS, type Approval } from "./tools/gateway";
+import { AHEAD_GRACE_MS, type Approval, routineCall } from "./tools/gateway";
 import { REQUEST_PERMISSION_TOOL } from "./tools/permission";
 import type { ApprovalOrigin } from "./tools/run-policy";
 
@@ -121,6 +122,11 @@ export interface ApprovalView {
    * whose request it was, who decides it only when `requesterDecides` (an approver by role). Null: any other approval.
    */
   approvers: { label: string; requestedByUserId: string | null; requesterDecides: boolean } | null;
+  /**
+   * Still waiting, and plain enough to approve along with others in one tap (`routineCall`). The server alone says
+   * so: `decideApprovals` with `only: "routine"` decides nothing else.
+   */
+  routine: boolean;
 }
 
 /** What the approval row alone doesn't say: the connector, the issue (and, for one, the trail). */
@@ -426,6 +432,7 @@ export const approvalView = (a: Approval, canDecide = false): ApprovalView => ({
         requesterDecides: a.approvers.requesterDecides,
       }
     : null,
+  routine: a.status === "pending" && routineCall(a),
 });
 
 /** What "Aprovar sempre" would keep for an approval: the kind the gateway offered on it (`rememberKinds`). */
@@ -648,6 +655,7 @@ export async function repointApprovals(
     await resolveApprovalNotifications(deps, current).catch(() => {});
     // The new owner is told; with none left, the admins.
     await notifyNewcomers(deps, current).catch(() => {});
+    await queueApprovalsDigest(deps.db, orgId, await notifiedIds(deps.db, current)).catch(() => {});
   }
 }
 
@@ -698,7 +706,10 @@ export async function publishApproval(
   }
   // The inbox: waiting for whoever is told (`notifiedIds`); out of it once decided or expired.
   if (type === "approval.created" && approval.status === "pending") {
-    await notifyApproval(deps, approval, await notifiedIds(deps.db, approval)).catch(() => {});
+    const told = await notifiedIds(deps.db, approval);
+    await notifyApproval(deps, approval, told).catch(() => {});
+    // Several waiting on one of them: the right hand sums them up on one card, a little later.
+    await queueApprovalsDigest(deps.db, approval.orgId, told).catch(() => {});
   } else if (type === "approval.decided") {
     await resolveApprovalNotifications(deps, approval).catch(() => {});
   }
@@ -834,13 +845,14 @@ export async function decideApproval(
  * "Aprovar tudo" / "Agora não para todos" on a card: decides exactly these approvals (the items the card listed
  * when the person clicked, never one that joined since), each its own row, decision and audit. Only the items
  * this person may decide are decided (`decides`, per item); the rest come back in `skipped`. Each run that
- * asked resumes once, after all of its items here are decided in the same transaction.
+ * asked resumes once, after all of its items here are decided in the same transaction. `only: "routine"` (the right
+ * hand's digest) decides the plain ones among them (`routineCall`) and leaves every other waiting, in `skipped` too.
  */
 export async function decideApprovals(
   deps: { db: Database; pubsub: PubSub; now?: () => Date; memory?: MemoryJudging },
   actorId: string,
   orgId: string,
-  input: { ids: string[]; decision: "approve" | "refuse"; reason?: string; via?: string },
+  input: { ids: string[]; decision: "approve" | "refuse"; reason?: string; via?: string; only?: "routine" },
 ): Promise<{ approvals: ApprovalView[]; skipped: string[] }> {
   const { db } = deps;
   const at = deps.now?.() ?? new Date();
@@ -851,6 +863,8 @@ export async function decideApprovals(
   const covers = await activeCoversTo(db, orgId, actorId, at);
   const forUserOf = (r: Approval) => (decides(r, actorId, membership) ? null : coveredFor(r, actorId, covers));
   const allowed = (r: Approval) => decides(r, actorId, membership) || forUserOf(r) !== null;
+  /** Some still wait and none is this person's to decide. */
+  let theirs = false;
   const decided = await db.transaction(async (tx) => {
     const rows = ids.length
       ? await tx
@@ -862,7 +876,9 @@ export async function decideApprovals(
       : [];
     const out: Approval[] = [];
     const resumed = new Set<string>();
-    for (const row of rows.filter(allowed)) {
+    const mine = rows.filter(allowed);
+    theirs = rows.length > 0 && mine.length === 0;
+    for (const row of input.only ? mine.filter(routineCall) : mine) {
       const expired = row.expiresAt <= at;
       const [updated] = await tx
         .update(approvals)
@@ -888,14 +904,7 @@ export async function decideApprovals(
     }
     return out;
   });
-  if (decided.length === 0 && ids.length > 0) {
-    const [any] = await db
-      .select({ id: approvals.id })
-      .from(approvals)
-      .where(and(eq(approvals.orgId, orgId), inArray(approvals.id, ids), eq(approvals.status, "pending")))
-      .limit(1);
-    if (any) throw new ForbiddenError("Only the agent's owner or an admin can decide this");
-  }
+  if (theirs) throw new ForbiddenError("Only the agent's owner or an admin can decide this");
   for (const row of decided) await publishApproval(deps, row, "approval.decided");
   for (const row of decided) {
     if (row.status === "refused") await learnFromRefusal(deps, row).catch(() => null);

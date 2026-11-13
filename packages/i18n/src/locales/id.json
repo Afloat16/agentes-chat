@@ -2450,6 +2450,12 @@
       "title": "Persetujuan yang menunggumu",
       "done": "Sudah diputuskan"
     },
+    "digest": {
+      "routine_other": "{{count}} permintaan rutin",
+      "help": "Tindakan di aplikasi terhubung yang tidak mengirim, menghapus, membayar, melakukan merge, atau deploy apa pun. Permintaan lain tetap di kartunya masing-masing.",
+      "approve_other": "Setujui {{count}} ini",
+      "each": "Satu per satu"
+    },
     "open": {
       "open": "Buka",
       "web": "Buka di situs",

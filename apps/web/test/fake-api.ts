@@ -3315,6 +3315,7 @@ export function createFakeHttpApi(state: FakeState): Omit<HttpApi, FakedParts> {
       },
       decideMany: async (orgId, input) => {
         log("approvals.decideMany", orgId, input.ids, input.decision, ...(input.only ? [input.only] : []));
+        if (input.via) log("via", input.via);
         const out: Approval[] = [];
         const skipped: string[] = [];
         for (const approvalId of input.ids) {

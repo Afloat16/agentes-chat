@@ -6320,6 +6320,24 @@
   "rightHand.approvals.done": {
     "value": "Decided"
   },
+  "rightHand.digest.routine": {
+    "value": {
+      "one": "{{count}} routine request",
+      "other": "{{count}} routine requests"
+    }
+  },
+  "rightHand.digest.help": {
+    "value": "An action in a connected app that sends, deletes, pays, merges or deploys nothing. Every other request keeps its own card."
+  },
+  "rightHand.digest.approve": {
+    "value": {
+      "one": "Approve {{count}} request",
+      "other": "Approve these {{count}}"
+    }
+  },
+  "rightHand.digest.each": {
+    "value": "One by one"
+  },
   "rightHand.open.open": {
     "value": "Open"
   },

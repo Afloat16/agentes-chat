@@ -2614,6 +2614,17 @@ export const ptBR = {
     },
     /** Its approvals card (`offer_approvals`): each decided on it, as whoever clicks. */
     approvals: { title: "Aprovações esperando você", done: "Decididas" },
+    /** Its summary of what waits on a person: the routine requests together, one tap for all of them. */
+    digest: {
+      routine_one: "{{count}} pedido de rotina",
+      routine_other: "{{count}} pedidos de rotina",
+      /** Behind the ⓘ beside `routine`. */
+      help: "Uma ação em um app conectado que não envia, não apaga, não paga e não faz merge nem deploy. Os outros pedidos ficam cada um no seu cartão.",
+      approve_one: "Aprovar {{count}} pedido",
+      approve_other: "Aprovar os {{count}}",
+      /** Shows each routine request on its own card instead. */
+      each: "Um por um",
+    },
     /** Its "Abrir" card (`offer_open_page`): one of the app's screens. */
     open: { open: "Abrir", web: "Abrir no site", notAllowed: "Você não tem acesso a esta tela" },
     action: {

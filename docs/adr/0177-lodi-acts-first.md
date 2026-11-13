@@ -132,6 +132,14 @@ tool whose job is asking) and the one-tap decision skips anything else. The card
 then a new one replaces it, two a person a day at most. It never rings and adds no inbox row. The right hand decides
 nothing.
 
+As built, routine is told from the approval's row alone and errs towards "read it by itself" (`routineCall`,
+`tools/gateway.ts`): only a connected app's named action that no word of its name marks as a send, a delete, a
+payment, a merge or a deploy, or as running whatever its input says, and SQL the Postgres guard proved read-only when
+it asked. Composio's executor is judged by the actions its input names. Every tool of ours stays on its own card,
+whatever it does: a command on the agent's computer, the browser, tasks, the workspace's people, keys and settings.
+Fewer than two routine ones make no group. The older card is not marked when a new one is posted: it keeps showing
+what it listed, each approval in its present state. A card lists 50 at most.
+
 ### 5. Follow-through ("Lembrar o que combinamos")
 
 - A task the right hand handed to an agent for a person is followed to its end: when it is done or canceled after its

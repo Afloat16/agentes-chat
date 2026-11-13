@@ -2628,6 +2628,16 @@
       "title": "Approbations qui vous attendent",
       "done": "Décidées"
     },
+    "digest": {
+      "routine_one": "{{count}} demande de routine",
+      "routine_many": "{{count}} demandes de routine",
+      "routine_other": "{{count}} demandes de routine",
+      "help": "Une action dans une app connectée qui n'envoie, ne supprime, ne paie, ne merge et ne déploie rien. Chaque autre demande garde sa propre carte.",
+      "approve_one": "Approuver {{count}} demande",
+      "approve_many": "Approuver ces {{count}}",
+      "approve_other": "Approuver ces {{count}}",
+      "each": "Une par une"
+    },
     "open": {
       "open": "Ouvrir",
       "web": "Ouvrir sur le site",

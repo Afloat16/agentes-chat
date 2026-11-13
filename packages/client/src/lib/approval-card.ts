@@ -118,3 +118,15 @@ export function approveAlwaysAlso(card: readonly Approval[], a: Approval): strin
   if (!a.approveAlways) return [];
   return card.filter((x) => x.id !== a.id && x.status === "pending" && x.canDecide && sameKind(x, a)).map((x) => x.id);
 }
+
+/**
+ * A digest card's approvals as it draws them (the right hand's summary of what waits on a person): `routine`, the
+ * ones one tap approves together, and `waiting`, how many still wait in all. Routine is the server's word
+ * (`Approval.routine`), never worked out here, and the tap sends `only: "routine"` so the server has the last say.
+ * Fewer than two routine ones are no group: each keeps its own card.
+ */
+export function digestGroups(items: readonly Approval[], now = Date.now()) {
+  const waiting = items.filter((a) => asOfNow(a, now).status === "pending");
+  const routine = waiting.filter((a) => a.canDecide && a.routine === true);
+  return { routine: routine.length > 1 ? routine : [], waiting: waiting.length };
+}
