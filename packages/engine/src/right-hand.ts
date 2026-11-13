@@ -1,11 +1,11 @@
 import { LOCKED_BRAIN_PROTOCOL } from "@agenteschat/adapters";
-import { and, type Database, type Executor, eq, isNull, type SQL, schema, sql } from "@agenteschat/db";
+import { and, type Database, type Executor, eq, inArray, isNull, type SQL, schema, sql } from "@agenteschat/db";
 import { serverText } from "@agenteschat/i18n";
 import { appLocale } from "@agenteschat/i18n/locale";
 import { AUTO_MODEL } from "@agenteschat/providers";
 import type { Agent } from "./agents";
 import { recordAudit } from "./audit";
-import { accountablePerson, runAuthorityById } from "./authority";
+import { accountablePerson, fedByRoutine, personOfMessage, runAuthorityById } from "./authority";
 import type { BrainUnavailability, ModelScope } from "./brains/select";
 import { ForbiddenError } from "./errors";
 import type { MachineStatus } from "./machine-hub";
@@ -378,16 +378,60 @@ export async function thinkingAgent<T extends ThinkingAgent>(
   };
 }
 
-/** The person whose own AI a right hand's run thinks with (`thinkingAgent`); null for any other agent's run. */
+/** Those of `people` still in the workspace, each once, in the order given. */
+export async function membersAmong(db: Executor, orgId: string, people: readonly (string | null | undefined)[]) {
+  const named = [...new Set(people.filter((p): p is string => !!p))];
+  if (named.length === 0) return named;
+  const rows = await db
+    .select({ userId: organizationMembers.userId })
+    .from(organizationMembers)
+    .where(and(eq(organizationMembers.orgId, orgId), inArray(organizationMembers.userId, named)));
+  const members = new Set(rows.map((r) => r.userId));
+  return named.filter((p) => members.has(p));
+}
+
+/**
+ * Whose AI work nobody is behind thinks with (§11) where nothing can tell whose AI can think now (`rightHandWorkAi`
+ * does, when the work fires): of the people who set it up still in the workspace, the first who chose their own AI,
+ * else the first of them (the workspace's AI then answers them as it would in their DM), else nobody.
+ */
+export async function ownAiPerson(db: Executor, orgId: string, people: readonly (string | null | undefined)[]) {
+  const named = await membersAmong(db, orgId, people);
+  for (const person of named) if (await personalBrain(db, orgId, person)) return person;
+  return named[0] ?? null;
+}
+
+/**
+ * The person a right hand's run thinks for: who is behind it, else for a run a routine started or its report woke,
+ * whoever that firing picked (`RoutineBrief.aiUserId`: of who set the work up, the first whose AI could think). A
+ * brief with no pick: its widget's creator, then the routine's (`ownAiPerson`). Null: the workspace's AI, for nobody.
+ */
+async function thinksFor(db: Executor, run: Pick<AgentRun, "orgId" | "id" | "triggerMessageId">) {
+  const authority = await runAuthorityById(db, run.orgId, run.id);
+  if (authority.personId) return authority.personId;
+  // A run with no row yet reads as an agent's: the person behind its message, as `personBehindCall` says it.
+  if (authority.kind === "unattended" && authority.reason === "agent")
+    return run.triggerMessageId ? personOfMessage(db, run.orgId, run.triggerMessageId) : null;
+  const brief = authority.kind !== "person" && fedByRoutine(authority) ? authority.brief : null;
+  if (!brief) return null;
+  if (brief.aiUserId !== undefined) return brief.aiUserId;
+  const [widget] = brief.widget
+    ? await db
+        .select({ creator: schema.dashboardWidgets.createdByUserId })
+        .from(schema.dashboardWidgets)
+        .where(and(eq(schema.dashboardWidgets.orgId, run.orgId), eq(schema.dashboardWidgets.id, brief.widget.widgetId)))
+    : [];
+  return ownAiPerson(db, run.orgId, [widget?.creator, brief.creatorUserId]);
+}
+
+/** The person whose own AI a right hand's run thinks with (`thinkingAgent`, `thinksFor`); null for any other agent's run. */
 export async function rightHandPerson(
   db: Executor,
   agent: { builtin?: string | null },
   run: Pick<AgentRun, "orgId" | "id" | "triggerMessageId">,
 ): Promise<string | null> {
   if (!isRightHand(agent)) return null;
-  return personBehindCall({ db, orgId: run.orgId, runId: run.id, triggerMessageId: run.triggerMessageId }).catch(
-    () => null,
-  );
+  return thinksFor(db, run).catch(() => null);
 }
 
 /**
@@ -403,12 +447,7 @@ export async function rightHandPlanRefusal(
   status: Pick<MachineStatus, "name" | "protocol" | "kind" | "executors"> | null,
 ): Promise<BrainUnavailability | null> {
   if (!agent.planForOthers) {
-    const person = await personBehindCall({
-      db,
-      orgId: run.orgId,
-      runId: run.id,
-      triggerMessageId: run.triggerMessageId,
-    });
+    const person = await thinksFor(db, run);
     if (!person) {
       return {
         code: "plan_unattended",

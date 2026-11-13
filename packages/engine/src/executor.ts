@@ -274,7 +274,7 @@ import { seatState } from "./right-hand-seats";
 import { routineBriefOf } from "./routine-brief";
 import { missStaleRoutineRun, routineRunWaitingForComputer, routineRunWaitingForPlan } from "./routine-firing";
 import { closeRoutineRun, type RoutineRunEnd, recordRoutineReportMessage, routineFailureEnd } from "./routine-ledger";
-import { type ReleaseReason, releaseHeldInbox, releaseInbox, takeInbox, whileHeld } from "./run-inbox";
+import { type ReleaseReason, releaseHeldInbox, releaseInbox, stoppedToSend, takeInbox, whileHeld } from "./run-inbox";
 import { deliverNoticeToRun } from "./run-resume";
 import { issueRunToolToken, revokeRunToolTokens } from "./run-tool-tokens";
 import {
@@ -341,7 +341,7 @@ import {
 } from "./tools/directory";
 import { type Approval, type InvokeResult, isSensitive, type ToolGateway } from "./tools/gateway";
 import { grantedScopeKeys, grantKey } from "./tools/scopes";
-import type { ToolContext, ToolDefinition } from "./tools/types";
+import type { ToolContext, ToolDefinition, ToolOutput } from "./tools/types";
 import {
   budgetUsedPercent,
   continuesPastPlan,
@@ -484,6 +484,12 @@ export interface EngineDeps {
   prepareCode?(turn: BrainTurn, signal: AbortSignal): Promise<CodeSetup | null>;
   /** Computers' status (machine hub): a computer brain's availability is checked before its turn. */
   machines?: Pick<MachineCaller, "status" | "wake">;
+  /**
+   * A file a computer brain's own tool left in the agent's folder (a `file` event: Codex's image generation), sent to
+   * the Drive for this conversation (`shareSavedFile`): its `data.artifact` is the card on the reply. Absent: such
+   * files stay on the computer.
+   */
+  shareFile?(ctx: ToolContext, machineId: string, path: string): Promise<ToolOutput>;
   /** Each workspace gets its own computer here (`workspaceComputerText`); absent: people connect theirs. */
   workspaceComputer?: WorkspaceComputer;
   /** How long a run whose computer dropped mid-turn waits quietly for it (default `COMPUTER_DROP_GRACE_MS`). */
@@ -2569,6 +2575,8 @@ async function executeRunInner(
    * The run was canceled (the row is already `canceled`): post what the agent
    * wrote so far, nothing lost, with "Stopped by …", and tell the channel.
    * A background run posts nothing (ADR 0053 §5): its ledger says who stopped it.
+   * Stopped to read a message a person sent (`stoppedToSend`): what it wrote is posted as a plain message, placed
+   * before that message, and the run starts again from it.
    */
   /** `partial` goes on the transcript ("Continuar" reads on from it); `said`, what of it the stopped reply shows. */
   const stopCanceled = async (partial: string, said = partial) => {
@@ -2592,6 +2600,9 @@ async function executeRunInner(
       await finished("canceled");
       return;
     }
+    // Stopped to read a message the person sent ("Parar e mandar"): they stopped nothing, so nothing here says
+    // "stopped". What it wrote stays as its own message, and a run that wrote nothing posts nothing.
+    const sent = by ? await stoppedToSend(db, run) : null;
     const [person] = by ? await db.select({ name: users.name }).from(users).where(eq(users.id, by)) : [];
     const wrote = [
       ...t.messages
@@ -2610,29 +2621,38 @@ async function executeRunInner(
       t.messages.push({ role: "assistant", content: [{ type: "text", text: partial.trim() }] });
     const note = `_Stopped${person ? ` by ${person.name}` : ""}._`;
     const message = await db.transaction(async (tx) => {
-      const m = await post(tx, replyThreadId, shown ? `${shown}\n\n${note}` : note, {
-        ...(takeMemoryUpdates(t) ?? {}),
-        // `text`: what the agent wrote; the app adds "Stopped by …" in the person's language.
-        canceled: { byUserId: by, text: shown },
-      });
+      // What rides on the reply (files, memory, its browser's trail).
+      const carried = takeMemoryUpdates(t);
+      // Written before the person's message, so it reads before it: after it, the cut text would pass for the answer.
+      const m = sent
+        ? shown || carried
+          ? await post(tx, replyThreadId, shown, carried, new Date(sent.createdAt.getTime() - 1))
+          : null
+        : await post(tx, replyThreadId, shown ? `${shown}\n\n${note}` : note, {
+            ...(carried ?? {}),
+            // `text`: what the agent wrote; the app adds "Stopped by …" in the person's language.
+            canceled: { byUserId: by, text: shown },
+          });
       t.postedUpTo = t.messages.length;
-      t.postedCount++;
-      await addRunStep(tx, run, "error", { reason: "canceled", byUserId: by, messageId: m.id });
+      if (m) t.postedCount++;
+      await addRunStep(tx, run, "error", { reason: "canceled", byUserId: by, ...(m ? { messageId: m.id } : {}) });
       await tx
         .update(agentRuns)
-        .set({ replyMessageId: m.id, transcript: storedTranscript(t), updatedAt: new Date() })
+        .set({ ...(m ? { replyMessageId: m.id } : {}), transcript: storedTranscript(t), updatedAt: new Date() })
         .where(eq(agentRuns.id, run.id));
       return m;
     });
-    const [view] = await withWikiLinks(db, run.orgId, [messageView(message)]);
+    const [view] = message ? await withWikiLinks(db, run.orgId, [messageView(message)]) : [];
     if (view) await publishMessageCreated(deps.pubsub, view);
     await publishChannelEvent(deps.pubsub, event("canceled"));
     await finished("canceled");
     // Stopped by a "Parar e mandar" (a computer brain): it starts again from that message (and takes
-    // the rest of its unread messages along).
-    if (by) {
+    // the rest of its unread messages along). Its reply says no stop, so there is none to mark continued.
+    if (sent) {
       const { restartAfterStopAndSend } = await import("./continue-run");
-      await restartAfterStopAndSend(deps, run.id, { id: message.id, threadId: message.threadId }, t).catch(() => null);
+      // Read by the turn just before the stop landed: gone from the inbox, and still owed its answer.
+      const read = readIds.has(sent.id) ? sent.id : undefined;
+      await restartAfterStopAndSend(deps, run.id, { id: null, threadId: replyThreadId, read }, t).catch(() => null);
     }
     // Anything else sent to it and not read gets a run of its own (the "stop" itself was dropped by `stopRun`),
     // unless its workspace stopped it.
@@ -4222,6 +4242,8 @@ async function executeRunInner(
       const turnStepSeq = plan.kind !== "model" ? await lastStepSeq(db, run.id) : 0;
       /** Calls the computer brain said it ran in this turn (through the bridge or on its own). */
       const executedNow: { id: string; name: string; input: unknown; result?: ToolResult }[] = [];
+      /** Files the brain's own tools made this turn (`file` events), on their way to the Drive. */
+      const sharing: Promise<void>[] = [];
       /** Its own calls whose step line went out as they started (`tool_started`): not again as they end. */
       const stepTold = new Set<string>();
       /** A call of its own (not ours through the bridge, which says its step as it starts) is the step line now. */
@@ -4348,6 +4370,21 @@ async function executeRunInner(
               if (!stepTold.delete(call.id)) ownStep(call);
               // The text it streams next is another model call's: never one reply with what it wrote before.
               deltas.toolEnded();
+            },
+            onFile: (path) => {
+              const machineId = turnPlan.session?.machineId;
+              if (!machineId || !deps.shareFile || run.background) return;
+              sharing.push(
+                deps
+                  .shareFile(ctx, machineId, path)
+                  .then((shared) => {
+                    absorbToolData(transcript, shared.data);
+                    // Not shown (no "Write files", the computer gone, too large): why, on the run.
+                    if (!shared.data?.artifact)
+                      later(() => addRunStep(db, run, "context", { fileNotShown: { path, why: shared.content } }));
+                  })
+                  .catch(() => {}),
+              );
             },
             onSteerRead: (uuids) => {
               deltas.messageRead();
@@ -4610,6 +4647,8 @@ async function executeRunInner(
       }
       prof.mark(`model#${run.turns + 1}`);
       await deferred;
+      // The files its own tools made are cards on this reply too.
+      await Promise.all(sharing);
       // Side effects of the tools a computer brain ran through the bridge (cards, a `react`): for this reply.
       if (turnPlan.kind !== "model") mergeToolEffects(transcript, await takeBridgeEffects(db, run.id));
       // A computer brain's turn with nothing to say (its tools ran through the bridge) adds no empty message.
@@ -5464,6 +5503,8 @@ async function thinkOnce(
     onExecuted?(call: { id: string; name: string; input: unknown; result?: ToolResult }): void;
     /** A call of its own the brain started (`tool_started`): its `onExecuted` follows. */
     onStarted?(call: { id: string; name: string }): void;
+    /** A file a tool of the brain's own made in the agent's folder (`file`). */
+    onFile?(path: string): void;
     /** Messages handed to the turn mid-turn that it read (live steering). */
     onSteerRead?(uuids: string[]): void;
     /** The brain's first event that isn't an error: a computer had room for the turn. Done before that event is read. */
@@ -5552,6 +5593,7 @@ async function thinkOnce(
         },
       );
     } else if (event.type === "steer_read") hooks.onSteerRead?.(event.uuids);
+    else if (event.type === "file") hooks.onFile?.(event.path);
     else if (event.type === "speed_fallback") hooks.onSpeedFallback?.(event.message);
     // `event.session`: computer brains keep a stable session per conversation (`brainSessionId`); nothing to store.
     else if (event.type === "done") text = event.text;

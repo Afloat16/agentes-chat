@@ -51,6 +51,7 @@ export type ActivityKind =
   | "listingTasks"
   | "checkingTask"
   | "cancelingTask"
+  | "keepingRunning"
   | "uploadingArtifact"
   | "gettingContext"
   | "cancelingReminder"
@@ -195,6 +196,7 @@ const BUILTIN: Record<string, ActivityKind> = {
   list_tasks: "listingTasks",
   task_status: "checkingTask",
   cancel_task: "cancelingTask",
+  keep_running: "keepingRunning",
   upload_artifact: "uploadingArtifact",
   get_context: "gettingContext",
   cancel_reminder: "cancelingReminder",

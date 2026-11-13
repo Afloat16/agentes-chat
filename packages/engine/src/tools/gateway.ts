@@ -1152,6 +1152,7 @@ export function createToolGateway(deps: {
         const actions = tool.actions(takeWhy(tool.inputSchema, call.input).input);
         if (actions?.length && actions.every(opensPullRequestName)) tool = { ...tool, opensPullRequest: true };
       }
+      if (tool.sensitive && tool.asksNobody?.(call.input)) tool = { ...tool, sensitive: false };
       const builtIn = isBuiltIn(tool);
       // A call that only looks is judged as at the default level: an agent that always asks asks for changes.
       const decision = policyFor(authority, tool, tool.looksOnly?.(call.input) ? DEFAULT_APPROVALS_LEVEL : level);

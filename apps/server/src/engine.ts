@@ -88,6 +88,7 @@ import {
   type EmailArt,
   emailArtAt,
   envSpeechEngines,
+  feedbackDestination,
   type GatewayEmbeddings,
   type GitProxyDeps,
   GrokBrain,
@@ -119,6 +120,7 @@ import {
   type SkillDeps,
   type StorageDeps,
   setWorkOrgCap,
+  shareSavedFile,
   smallModelFor,
   standingJudge,
   streamClosed,
@@ -420,7 +422,7 @@ export function buildEngine(o: EngineOptions) {
       // A person's feedback, sent by the agent they asked or offered by it when the app fails, where the server takes
       // feedback (ADR 0160 §11, §12).
       createFeedbackToolSource({
-        to: config.FEEDBACK_EMAIL,
+        to: feedbackDestination(config),
         version,
         rateLimiter: adapters.rateLimiter,
       }),
@@ -547,7 +549,7 @@ export function buildEngine(o: EngineOptions) {
     catalog: { oauthApps: connectorDeps.oauthApps, mail: adapters.mail, composio },
     pubsub: adapters.pubsub,
     // One of our own tools broke: where the server takes feedback, the agent may offer a report (ADR 0160 §12).
-    ...(config.FEEDBACK_EMAIL ? { faultHint: APP_FAULT_HINT } : {}),
+    ...(feedbackDestination(config) ? { faultHint: APP_FAULT_HINT } : {}),
   });
   // Mission tasks' tools and computer-brain runs' tools come through the hub's MCP bridge (ADR 0032).
   // Runs waiting for a device (bring your own devices) go on when its computer is back or its phones report it free.
@@ -744,6 +746,7 @@ export function buildEngine(o: EngineOptions) {
   };
   const jobDeps: JobDeps = {
     feedbackBlobs: adapters.platformBlobs,
+    feedbackFetch: o.http,
     accountEmails: adapters.email.delivers ? { publicUrl: config.PUBLIC_URL, support: config.SUPPORT_EMAIL } : null,
     appleRevoke: o.appleRevoke ?? appleTokenRevoker(config),
     voice,
@@ -786,6 +789,15 @@ export function buildEngine(o: EngineOptions) {
     warmBrowser,
     brains,
     prepareCode,
+    // An image Codex's own tool made on the agent's computer goes to the Drive, as a shared screenshot does.
+    shareFile: (ctx, machineId, path) =>
+      shareSavedFile(
+        { machines: { hub: machineHub }, pubsub: adapters.pubsub, publicUrl: config.PUBLIC_URL },
+        ctx,
+        machineId,
+        path,
+        { content: `Saved ${path} in your folder.` },
+      ),
     machines: machineHub,
     workspaceComputer,
     releaseRunPhones: (run) => releaseRunPhones({ db, hub: machineHub }, run),

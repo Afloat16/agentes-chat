@@ -69,6 +69,7 @@ import { openConnectAi } from "../ai/NoAiCard";
 import { usePlanHold } from "../ai/parts";
 import { LetMeTalkButton } from "../chat/ReachLines";
 import { AgentComputerButton, AgentComputerPicture } from "../computer/AgentComputerRow";
+import { KeptRunningList } from "../computer/KeptRunning";
 import { ConnectorIcon } from "../connectors/ConnectorIcon";
 import { chatHref } from "../links/logic";
 import { UsageQueueSheet } from "../queue/UsageQueueSheet";
@@ -478,6 +479,8 @@ function Profile({ id }: { id: string }) {
     <>
       {nowBlock}
       <AgentComputerPicture agentId={id} />
+      {/* What it keeps running there (ADR 0176), for whoever may watch its computer. */}
+      <KeptRunningList agentId={id} />
       {/* What it thinks with and how much of it is used this month, one row (ADR 0063 §5): the plan or key as its
           name, the usage under it. The usage page has the rest. */}
       <GroupedHeader>{t("mobile.intentAgents.thinks")}</GroupedHeader>
@@ -590,7 +593,7 @@ function Profile({ id }: { id: string }) {
                 />
               ),
             )}
-            {/* Its mailboxes beside its apps (ADR 0038): a tap on one's own changes the level. */}
+            {/* Its mailboxes beside its apps (ADR 0038): a tap on one's own picks the level. */}
             {mailboxes.map((m) =>
               m.remove ? (
                 <ButtonRow
@@ -617,8 +620,10 @@ function Profile({ id }: { id: string }) {
                   icon="mail"
                   label={m.address}
                   {...(m.sub ? { sub: m.sub, subLines: 2 } : {})}
+                  {...(m.hint ? { hint: m.hint } : {})}
                   value={m.level}
-                  {...(m.onPress ? { onPress: m.onPress } : {})}
+                  // The value changes in its row, through the app's picker: its mark, not a chevron to a screen.
+                  {...(m.onPress ? { menu: true, onPress: m.onPress } : {})}
                 />
               ),
             )}
@@ -1010,7 +1015,14 @@ function GivenRules({ agentId, name, rightHand }: { agentId: string; name: strin
     ]);
   return (
     <>
-      <GroupedHeader>{t("agentPage.memory.rules")}</GroupedHeader>
+      <GroupedHeader
+        hint={{
+          name: t("common.about", { label: t("agentPage.memory.rules") }),
+          text: t(rightHand ? "agentPage.memory.rulesNoteRightHand" : "agentPage.memory.rulesNote"),
+        }}
+      >
+        {t("agentPage.memory.rules")}
+      </GroupedHeader>
       <GroupedList>
         {list.map((m) => {
           const row = (
@@ -1041,9 +1053,6 @@ function GivenRules({ agentId, name, rightHand }: { agentId: string; name: strin
           );
         })}
       </GroupedList>
-      <GroupedFooter>
-        {t(rightHand ? "agentPage.memory.rulesNoteRightHand" : "agentPage.memory.rulesNote")}
-      </GroupedFooter>
     </>
   );
 }
