@@ -476,7 +476,9 @@ describe("Perfil: agora, cada coisa uma vez", () => {
     // Mailboxes are rows of "Can use"; Chat stands alone under the name, and the computer is a card on Today.
     expect(mail).toContain("export function useAgentMailboxes(agentId: string, enabled = true): MailboxLine[]");
     expect(screen).not.toContain("AgentComputerButton");
-    expect(screen).toContain('acts: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 },');
+    expect(screen).toContain(
+      'acts: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 },',
+    );
     expect(computer).toContain('label={helps ? t("agentComputer.help") : t("agentComputer.button")}');
     // One card: the picture when there is one, the row with the status line always, in the lists' own relief.
     expect(computer).toContain("{...(line ? { sub: line, subLines: 2 } : {})}");

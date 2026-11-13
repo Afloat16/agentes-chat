@@ -761,7 +761,11 @@ function Profile({ id }: { id: string }) {
                 onPress={() => void openDm()}
               />
             ) : (
-              <Button variant="primary" label={t("profile.askAccess")} onPress={() => void openDm({ userId: ownerId })} />
+              <Button
+                variant="primary"
+                label={t("profile.askAccess")}
+                onPress={() => void openDm({ userId: ownerId })}
+              />
             )}
           </View>
           {agent?.canTalk === false ? (

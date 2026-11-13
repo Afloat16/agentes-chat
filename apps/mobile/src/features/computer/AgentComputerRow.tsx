@@ -7,7 +7,6 @@ import {
 } from "@agenteschat/client";
 import { entryLine, entryState, pictureWhen } from "@agenteschat/client/lib/agent-computer";
 import { computerName } from "@agenteschat/client/lib/computer";
-import { agentGrammar } from "@agenteschat/client/lib/grammar";
 import type { Seat } from "@agenteschat/client/lib/seat";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import { Image } from "expo-image";
@@ -88,7 +87,11 @@ export function AgentComputerCard({ agentId }: { agentId: string }) {
     <View style={[styles.card, { backgroundColor: colors.raised, boxShadow: `${shadows.e1}, ${shadows.top}` }]}>
       {picture ? (
         // The picture opens the computer too; the row under it is what a screen reader hears.
-        <Pressable onPress={press} accessible={false} style={{ borderBottomColor: colors.line2, ...styles.pictureEdge }}>
+        <Pressable
+          onPress={press}
+          accessible={false}
+          style={{ borderBottomColor: colors.line2, ...styles.pictureEdge }}
+        >
           <Image
             source={{ uri: `data:image/jpeg;base64,${picture.data}` }}
             contentFit="cover"
