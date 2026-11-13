@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { eq, schema } from "@agenteschat/db";
-import { grantScopes, type ToolSource } from "@agenteschat/engine";
+import { eq, schema, tracingLogger } from "@agenteschat/db";
+import { DEFAULT_AGENT_BUDGET_NANO_USD, grantScopes, monthStartUtc, type ToolSource } from "@agenteschat/engine";
 import { createLogger } from "../src/logger";
 import { createOperatorApp } from "../src/operator/app";
 import { type Browser, browser, createTestServer, joinByInvitation, seedOrg, signUp, type TestServer } from "./harness";
@@ -359,6 +359,25 @@ test("runs: newest first with what each waits for or failed with; filters, pages
   for (const bad of ["?status=asleep", "?limit=0", "?limit=201", "?from=yesterday", "?groupBy=agent", "?agentId=7"]) {
     expect({ bad, status: (await runs(bad)).status }).toEqual({ bad, status: 400 });
   }
+});
+
+test("a page of runs reads the stored transcripts of its own rows, in a list and in a timeline", async () => {
+  const seen: string[] = [];
+  const counts = tracingLogger.logQuery;
+  tracingLogger.logQuery = (query = "") => {
+    seen.push(query);
+    counts();
+  };
+  try {
+    expect((await ok<RunPage>(await runs("?limit=2"))).runs).toHaveLength(2);
+    expect((await timeline(`channelId=${org.channelId}&limit=2&${HOUR_EACH_WAY}`)).status).toBe(200);
+  } finally {
+    tracingLogger.logQuery = counts;
+  }
+  // A sort works out the columns of every row it is given, so a statement that reads transcripts names its rows.
+  const reading = seen.filter((query) => query.includes("transcript"));
+  expect(reading).toHaveLength(2);
+  for (const query of reading) expect(query).toMatch(/"id" in \(/);
 });
 
 test("a run's trace: its steps without their contents, what it asked, its jobs and what it spent", async () => {
@@ -748,6 +767,24 @@ test("what an explanation works out as things are now: holds, standing, and who 
       },
     );
   const reply = String((await runOf(sent.look)).replyMessageId);
+  // An agent without a budget of its own has the workspace's default: spent to it, it is over.
+  const spent = {
+    orgId: org.orgId,
+    agentId: org.agentId,
+    periodStart: monthStartUtc(new Date()).toISOString().slice(0, 10),
+    spentNanoUsd: DEFAULT_AGENT_BUDGET_NANO_USD,
+  };
+  await t.db.update(schema.agents).set({ monthlyBudgetNanoUsd: null }).where(eq(schema.agents.id, org.agentId));
+  expect((await explain(sent.look)).agents[0]?.now).toMatchObject({ overBudget: false });
+  await t.db
+    .insert(schema.agentBudgetPeriods)
+    .values(spent)
+    .onConflictDoUpdate({
+      target: [schema.agentBudgetPeriods.agentId, schema.agentBudgetPeriods.periodStart],
+      set: { spentNanoUsd: spent.spentNanoUsd },
+    });
+  expect((await explain(sent.look)).agents[0]?.now).toMatchObject({ overBudget: true });
+
   await t.db.update(schema.agents).set({ audienceMode: "owner" }).where(eq(schema.agents.id, org.agentId));
   expect((await put(`/orgs/${org.orgId}/agents/${org.agentId}/hold`, { held: true })).status).toBe(200);
   expect((await explain(sent.blocked)).agents[0]?.now).toMatchObject({ held: true, mayTalk: false });
@@ -780,6 +817,28 @@ test("what an explanation works out as things are now: holds, standing, and who 
   expect(await decided({ strategy: "no_ai", error: "platform_cap" })).toEqual(["platform_cap", []]);
   expect(JSON.stringify(await explain(reply))).not.toContain("canary");
   await t.db.delete(schema.routingDecisions).where(eq(schema.routingDecisions.messageId, reply));
+
+  // The router stops at a billing hold too, but for a person's message in a workspace waiting for its first plan.
+  const [bare] = await t.db
+    .insert(schema.messages)
+    .values({
+      orgId: org.orgId,
+      channelId: org.channelId,
+      authorType: "person",
+      authorUserId: ownerId,
+      body: "canary-unrouted",
+    })
+    .returning({ id: schema.messages.id });
+  const onHold = async (reason: string, messageId: string) => {
+    expect((await put(`/orgs/${org.orgId}/standing`, { state: "hold", reason, notice: "shown" })).status).toBe(200);
+    const { verdict, skipped, workspace } = await explain(messageId);
+    return [verdict, skipped, workspace.standing, workspace.billingHold];
+  };
+  expect(await onHold("unpaid", bare?.id ?? "")).toEqual(["not_routed", "workspace_paused", "hold", "unpaid"]);
+  expect(await onHold("ended", reply)).toEqual(["not_routed", "workspace_paused", "hold", "ended"]);
+  expect(await onHold("payment", reply)).toEqual(["not_routed", "workspace_paused", "hold", "payment"]);
+  // The person's message goes on there: the next exit says why nothing was decided (no job ever routed this one).
+  expect(await onHold("payment", bare?.id ?? "")).toEqual(["not_routed", "never_queued", "hold", "payment"]);
 
   const standing = { state: "suspended", reason: "abuse", notice: "silent" };
   expect((await put(`/orgs/${org.orgId}/standing`, standing)).status).toBe(200);

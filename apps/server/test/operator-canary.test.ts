@@ -77,7 +77,14 @@ const KEPT: Record<string, string[]> = {
     "usage.source",
   ],
   machine_provisioning: ["state", "step", "stage", "reason"],
-  agent_runs: ["brain", "error", "transcript.waitingForBrain.code", "transcript.waitingForBrain.source"],
+  agent_runs: [
+    "brain",
+    "error",
+    "transcript.waitingForBrain.code",
+    "transcript.waitingForBrain.source",
+    // The stages of a run's profile: named by the code that times them, counted by the work analytics.
+    "transcript.profiles.stages.stage",
+  ],
   agent_run_steps: [
     "data.name",
     "data.connector",

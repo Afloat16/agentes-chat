@@ -37,7 +37,7 @@ import {
   usageWaitSql,
 } from "./runs";
 import { type BillingHold, isBillingHold } from "./standing";
-import { monthStartUtc } from "./usage";
+import { monthStartUtc, orgDefaultAgentBudget } from "./usage";
 
 /**
  * Runs and conversations for the operator API (ADR 0056): what an agent's run did and why a message did or did not
@@ -141,6 +141,29 @@ const runColumns = {
 const selectRuns = (db: Database) => db.select(runColumns).from(agentRuns);
 type RunRow = Awaited<ReturnType<typeof selectRuns>>[number];
 
+/**
+ * The first `limit` runs matching `where`, oldest or newest first. Their ids are found first: a run's row is worked
+ * out from its stored transcript (what it waits for), and a sort computes the columns of every row it is given before
+ * it keeps a page of them. A transcript is the run's whole conversation: only the page's are read.
+ */
+async function runsInOrder(db: Database, where: SQL | undefined, order: typeof asc, limit: number) {
+  const page = await db
+    .select({ id: agentRuns.id })
+    .from(agentRuns)
+    .where(where)
+    .orderBy(order(runColumns.createdAt), order(agentRuns.id))
+    .limit(limit);
+  if (page.length === 0) return [];
+  const rows = await selectRuns(db).where(
+    inArray(
+      agentRuns.id,
+      page.map((r) => r.id),
+    ),
+  );
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  return page.flatMap(({ id }) => byId.get(id) ?? []);
+}
+
 const errorCodeOf = (error: string | null) => runErrorDetail(error)?.errorCode ?? null;
 
 function runOf({ error, model, waitCode, waitSource, waitResetsAt, ...run }: RunRow) {
@@ -224,18 +247,18 @@ export async function operatorRuns(db: Database, orgId: string, query: OperatorR
     errors = found.texts.filter((e) => errorCodeOf(e.error) === query.errorCode).map((e) => e.error);
     if (errors.length === 0) return { runs: [], next: null };
   }
-  const rows = await selectRuns(db)
-    .where(
-      and(
-        where,
-        errors ? inArray(agentRuns.error, errors) : undefined,
-        after
-          ? sql`(${runColumns.createdAt}, ${agentRuns.id}) < (${after[0]}::timestamptz, ${after[1]}::uuid)`
-          : undefined,
-      ),
-    )
-    .orderBy(desc(runColumns.createdAt), desc(agentRuns.id))
-    .limit(query.limit + 1);
+  const rows = await runsInOrder(
+    db,
+    and(
+      where,
+      errors ? inArray(agentRuns.error, errors) : undefined,
+      after
+        ? sql`(${runColumns.createdAt}, ${agentRuns.id}) < (${after[0]}::timestamptz, ${after[1]}::uuid)`
+        : undefined,
+    ),
+    desc,
+    query.limit + 1,
+  );
   const page = pageOf(rows, query.limit, (r) => [r.createdAt, r.id]);
   return { runs: page.items.map(runOf), next: page.next };
 }
@@ -666,10 +689,7 @@ export async function operatorTimeline(db: Database, orgId: string, query: Opera
       .where(within("routing")(routingDecisions, routingColumns.at))
       .orderBy(asc(routingColumns.at), asc(routingDecisions.id))
       .limit(more),
-    selectRuns(db)
-      .where(within("run")(agentRuns, runColumns.createdAt))
-      .orderBy(asc(runColumns.createdAt), asc(agentRuns.id))
-      .limit(more),
+    runsInOrder(db, within("run")(agentRuns, runColumns.createdAt), asc, more),
     asksWhere(db, within("ask"), more),
   ]);
   const events = [
@@ -737,7 +757,7 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
   const { orgId, channelId, meta } = message;
   const person = message.authorType === "person" ? message.authorUserId : null;
   const typed = parseMentionHandles(message.body);
-  const [receipts, taken, decisions, channel, workspace, posted, namedAgents, namedPeople] = await Promise.all([
+  const [receipts, taken, decisions, channel, workspace, posted, namedAgents, namedPeople, budget] = await Promise.all([
     receiptsFor(db, orgId, [message]),
     // A run already at work that took it, whoever sent it there (the router, an agent's mention): it still waits in
     // the run's inbox, or a step says the run read it. Only the insert's own steering is on the message.
@@ -785,6 +805,7 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
           .from(organizationMembers)
           .where(and(eq(organizationMembers.orgId, orgId), inArray(organizationMembers.handle, typed)))
           .limit(OPERATOR_EXPLAIN_AGENTS),
+    orgDefaultAgentBudget(db, orgId),
   ]);
   const receipt = receipts.get(messageId);
   const handled = receipt?.handled ?? [];
@@ -819,10 +840,11 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
         mayTalk: (person
           ? audienceSql("agents", sql`${person}::text`, { channelId: sql`${channelId}::uuid` })
           : sql`null`) as SQL<boolean | null>,
-        overBudget: sql<boolean>`(${agents.monthlyBudgetNanoUsd} is not null and coalesce((
+        // Every agent has a budget (`effectiveAgentBudget`): its own, else the workspace's default.
+        overBudget: sql<boolean>`(coalesce((
           select bp.spent_nano_usd from ${agentBudgetPeriods} bp where bp.agent_id = ${AGENT_ID}
             and bp.period_start = ${monthStartUtc(new Date()).toISOString().slice(0, 10)}::date), 0)
-          >= ${agents.monthlyBudgetNanoUsd})`,
+          >= coalesce(${agents.monthlyBudgetNanoUsd}, ${budget}::bigint))`,
       })
       .from(agents)
       .where(
@@ -918,7 +940,8 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
       ? null
       : standing?.deletionDueAt
         ? "workspace_deleting"
-        : standing && standing.state !== "active" && !billingHold
+        : // The router goes on in one case only: a person's message while the workspace waits for its first plan.
+          standing && standing.state !== "active" && !(billingHold === "payment" && message.authorType === "person")
           ? "workspace_paused"
           : !job
             ? "never_queued"

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { schema } from "@agenteschat/db";
+import { eq, rowsOf, schema, sql, tracingLogger } from "@agenteschat/db";
 import { createLogger } from "../src/logger";
 import { createOperatorApp } from "../src/operator/app";
 import { createTestServer, type TestServer } from "./harness";
@@ -497,6 +497,52 @@ test("jobs: newest first without their payloads; by workspace, kind, status, run
   for (const bad of ["status=asleep", "limit=0", "limit=201", "orgId=7", "runId=7", "stuck=maybe", "from=yesterday"]) {
     expect({ bad, status: (await get(`/jobs?${bad}`)).status }).toEqual({ bad, status: 400 });
   }
+});
+
+test("a page of jobs continues from the stored time itself, in an order an index on it serves", async () => {
+  // Queued within one millisecond: a cursor cut to milliseconds would repeat or skip one of them.
+  const close = [9, 10, 11].map(job);
+  await t.db.execute(sql`insert into outbox (id, kind, payload, created_at) values
+    (${close[0]}, 'test.close', '{}', '2026-01-20T00:00:00.000100Z'),
+    (${close[1]}, 'test.close', '{}', '2026-01-20T00:00:00.000200Z'),
+    (${close[2]}, 'test.close', '{}', '2026-01-20T00:00:00.000300Z')`);
+  const seen: [string, unknown[]][] = [];
+  const counts = tracingLogger.logQuery;
+  tracingLogger.logQuery = (query = "", params: unknown[] = []) => {
+    seen.push([query, params]);
+    counts();
+  };
+  const paged: string[] = [];
+  try {
+    let cursor: string | null = null;
+    do {
+      const path = `/jobs?kind=test.close&limit=1${cursor ? `&cursor=${cursor}` : ""}`;
+      const part: JobPage = await ok<JobPage>(await get(path));
+      paged.push(...part.jobs.map((j) => j.id));
+      cursor = part.next;
+    } while (cursor);
+  } finally {
+    tracingLogger.logQuery = counts;
+  }
+
+  // The plan, not a time: given an index on `(created_at, id)`, the page after a cursor walks it and sorts nothing.
+  const [statement = "", params = []] = seen.filter(([query]) => query.includes("outbox")).at(-1) ?? [];
+  const page = statement.replace(/\$(\d+)/g, (_, n) => `'${params[Number(n) - 1]}'`);
+  await t.db.execute(sql`create index outbox_queued_test_idx on outbox (created_at, id)`);
+  const plan = await t.db.transaction(async (tx) => {
+    // Nothing here is big enough for the planner to prefer an index on its own.
+    await tx.execute(sql`set local enable_seqscan = off`);
+    await tx.execute(sql`set local enable_sort = off`);
+    return rowsOf<{ "QUERY PLAN": string }>(await tx.execute(sql.raw(`explain (costs off) ${page}`)))
+      .map((row) => row["QUERY PLAN"])
+      .join("\n");
+  });
+  await t.db.execute(sql`drop index outbox_queued_test_idx`);
+  await t.db.delete(schema.outbox).where(eq(schema.outbox.kind, "test.close"));
+
+  expect(paged).toEqual([...close].reverse());
+  expect(plan).toMatch(/Index Scan Backward using outbox_queued_test_idx on outbox/);
+  expect(plan).not.toContain("Sort");
 });
 
 test("jobs in counts: by kind and status, with since when the oldest one due has waited", async () => {

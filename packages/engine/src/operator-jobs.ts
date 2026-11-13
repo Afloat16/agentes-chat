@@ -1,7 +1,7 @@
 import { and, asc, count, type Database, desc, eq, gte, lt, or, type SQL, schema, sql } from "@agenteschat/db";
-import { decodeCursor } from "./cursor";
+import { decodeCursor, encodeCursor } from "./cursor";
 import { ValidationError } from "./errors";
-import { codeOf, errorText, ms, orgExists, type PageQuery, pageOf, UuidCursor, uuidOf } from "./operator-paging";
+import { codeOf, errorText, ms, orgExists, type PageQuery, UuidCursor, uuidOf } from "./operator-paging";
 import { LANE_SLOW_FOR_MS } from "./outbox";
 
 /**
@@ -97,26 +97,34 @@ const jobsIn = (q: JobFilters, now: Date) =>
     q.to ? lt(outbox.createdAt, q.to) : undefined,
   );
 
+// The stored time whole, microseconds included, which a JS Date drops: what a page's cursor carries.
+const QUEUED_AT = sql<string>`to_char(${outbox.createdAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+
 /**
  * Jobs of every workspace and of none, newest first, in keyset pages.
- * ponytail: only due and leased jobs are indexed, so every other filter reads the whole outbox and sorts it; an
- * index on `(created_at, id)` (a migration) once that takes long.
+ * ponytail: only due and leased jobs are indexed, so every other filter reads the whole outbox and sorts it. A page
+ * is ordered and continued by the stored `created_at` itself, never an expression of it (which an index on the
+ * column can't serve), so an index on `(created_at, id)` (a migration) serves it once that takes long.
  */
 export async function operatorJobs(db: Database, query: OperatorJobQuery, now = new Date()) {
   const after = query.cursor ? decodeCursor(query.cursor, UuidCursor) : null;
-  const rows = await selectJobs(db)
+  const rows = await db
+    .select({ ...jobColumns, queuedAt: QUEUED_AT })
+    .from(outbox)
     .where(
       and(
         jobsIn(query, now),
-        after
-          ? sql`(${jobColumns.createdAt}, ${outbox.id}) < (${after[0]}::timestamptz, ${after[1]}::uuid)`
-          : undefined,
+        after ? sql`(${outbox.createdAt}, ${outbox.id}) < (${after[0]}::timestamptz, ${after[1]}::uuid)` : undefined,
       ),
     )
-    .orderBy(desc(jobColumns.createdAt), desc(outbox.id))
+    .orderBy(desc(outbox.createdAt), desc(outbox.id))
     .limit(query.limit + 1);
-  const page = pageOf(rows, query.limit, (j) => [j.createdAt, j.id]);
-  return { jobs: page.items.map(jobOf), next: page.next };
+  const page = rows.slice(0, query.limit);
+  const last = page.at(-1);
+  return {
+    jobs: page.map(({ queuedAt, ...job }) => jobOf(job)),
+    next: last && rows.length > query.limit ? encodeCursor([last.queuedAt, last.id]) : null,
+  };
 }
 
 /** How many kinds and states of job a summary lists: every kind the code queues, in each of its four states. */

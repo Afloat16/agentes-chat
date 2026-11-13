@@ -249,7 +249,7 @@ What these add to the rules above:
 
 Known limits:
 
-- Only due and leased jobs are indexed. Every other reading of `/jobs`, the counts included, reads the whole outbox; `stuck=true` is the cheap one. An index on `outbox (created_at, id)`, and one on `dedupe_key` with `text_pattern_ops` for `runId`, fix it when that takes long.
+- Only due and leased jobs are indexed. Every other reading of `/jobs`, the counts included, reads the whole outbox, and so does a run's trace for its jobs; `stuck=true` is the cheap one. The outbox keeps its finished jobs, so on an instance with a long history these are for an occasional look, not for polling. Two indexes fix it when that takes long, and neither exists yet: one on `outbox (created_at, id)` for a page, one on `dedupe_key` with `text_pattern_ops` for `runId` and the trace. A page is ordered and continued by the stored `created_at` itself, its cursor carrying the time to the microsecond, because an index on the column serves no expression of it. The counts still read every job in their dates.
 - A finished job loses its `lastError` after 30 days (ADR 0005); its row and its name stay.
 - `GET /orgs/{orgId}/machines` lists every computer still in the workspace in one answer, as it did, and at most 200 AI accounts across them; `accountCount` says when a computer has more, and `GET /ai-accounts?orgId=` pages them all.
 - Usage groups have no cursor: past `limit` groups `more` is true and the dates are to be narrowed.
