@@ -1,6 +1,6 @@
 import type { Run } from "@agenteschat/client";
 import { useAgentDetail, useChannels, useRoutines, useRuns, useUsage } from "@agenteschat/client";
-import { runErrorText } from "@agenteschat/client/lib/errors";
+import { runErrorText, runErrorWords } from "@agenteschat/client/lib/errors";
 import {
   capitalize,
   dayLabel,
@@ -50,7 +50,7 @@ export const RUNS_PAGE = 20;
 const failure = (t: TFunction, run: Run) =>
   runErrorText(t, run.errorCode, run.errorParams) ??
   run.errorParams?.detail ??
-  run.error ??
+  runErrorWords(run.error) ??
   t("agentPage.activity.errors.unknown");
 
 /**
