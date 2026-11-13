@@ -100,47 +100,47 @@ export function ConsultationDialog({
   }
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => !open && onClose()}
-      title={
-        <span className="consult-title">
-          {from.name}
-          <Icon name="swap" size={16} label={t("newAgent.and")} inline />
-          {to.name}
-        </span>
-      }
-      subtitle={
-        <span className="thread-head__meta">
-          <span className="thread-head__where">
-            {channelName ? t("chat.consultPanel.where", { channel: channelName }) : t("chat.consultPanel.whereDm")}
+    <ChannelActionsContext.Provider value={actions}>
+      <Dialog
+        open
+        onOpenChange={(open) => !open && onClose()}
+        title={
+          <span className="consult-title">
+            {from.name}
+            <Icon name="swap" size={16} label={t("newAgent.and")} inline />
+            {to.name}
           </span>
-          {list && list.length > 0 && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>{t("chat.consultPanel.messages", { count: list.length })}</span>
-            </>
-          )}
-        </span>
-      }
-      leading={
-        c && (
-          <AvatarStack>
-            <AgentAvatar agentId={c.agentId} size="sm" name={from.name} state="idle" />
-            <AgentAvatar
-              agentId={c.consultedAgentId}
-              size="sm"
-              name={to.name}
-              state={state === "working" ? "thinking" : state === "waiting" ? "waiting" : "idle"}
-            />
-          </AvatarStack>
-        )
-      }
-      closeLabel={t("common.close")}
-      width={620}
-      className="consult-dialog"
-    >
-      <ChannelActionsContext.Provider value={actions}>
+        }
+        subtitle={
+          <span className="thread-head__meta">
+            <span className="thread-head__where">
+              {channelName ? t("chat.consultPanel.where", { channel: channelName }) : t("chat.consultPanel.whereDm")}
+            </span>
+            {list && list.length > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{t("chat.consultPanel.messages", { count: list.length })}</span>
+              </>
+            )}
+          </span>
+        }
+        leading={
+          c && (
+            <AvatarStack>
+              <AgentAvatar agentId={c.agentId} size="sm" name={from.name} state="idle" />
+              <AgentAvatar
+                agentId={c.consultedAgentId}
+                size="sm"
+                name={to.name}
+                state={state === "working" ? "thinking" : state === "waiting" ? "waiting" : "idle"}
+              />
+            </AvatarStack>
+          )
+        }
+        closeLabel={t("common.close")}
+        width={620}
+        className="consult-dialog"
+      >
         <section className="channel__messages consult-dialog__list" aria-label={label}>
           {query.isLoading && <LoadingConversation />}
           {query.isError && !query.data && <ErrorState error={query.error} onRetry={() => void query.refetch()} />}
@@ -181,14 +181,14 @@ export function ConsultationDialog({
             </p>
           )}
         </section>
-      </ChannelActionsContext.Provider>
-      <DialogFooter bar note={readOnly}>
-        {asker && (
-          <Button size="sm" icon="message" onClick={() => onTalk(asker.handle)}>
-            {t("chat.consultPanel.talk", { name: from.name, context: from.context })}
-          </Button>
-        )}
-      </DialogFooter>
-    </Dialog>
+        <DialogFooter bar note={readOnly}>
+          {asker && (
+            <Button size="sm" icon="message" onClick={() => onTalk(asker.handle)}>
+              {t("chat.consultPanel.talk", { name: from.name, context: from.context })}
+            </Button>
+          )}
+        </DialogFooter>
+      </Dialog>
+    </ChannelActionsContext.Provider>
   );
 }
