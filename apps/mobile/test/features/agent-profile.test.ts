@@ -473,15 +473,19 @@ describe("Perfil: agora, cada coisa uma vez", () => {
     // One surface level: grouped lists on the gray, no pills, sections or cards of its own.
     expect(screen).not.toContain("NowPill");
     expect(screen).not.toMatch(/<(Section|Card|Row)\b/);
-    // Mailboxes are rows of "Can use"; the computer is a named button beside Chat, as wide as it.
+    // Mailboxes are rows of "Can use"; Chat stands alone under the name, and the computer is a card on Today.
     expect(mail).toContain("export function useAgentMailboxes(agentId: string, enabled = true): MailboxLine[]");
-    expect(screen).toContain(
-      "{details && !rightHand ? (\n              <View style={styles.grow}>\n                <AgentComputerButton agentId={id} />",
-    );
-    expect(computer).toContain('wide\n      label={helps ? t("agentComputer.help") : t("agentComputer.button")}');
+    expect(screen).not.toContain("AgentComputerButton");
+    expect(screen).toContain('acts: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 },');
+    expect(computer).toContain('label={helps ? t("agentComputer.help") : t("agentComputer.button")}');
+    // One card: the picture when there is one, the row with the status line always, in the lists' own relief.
+    expect(computer).toContain("{...(line ? { sub: line, subLines: 2 } : {})}");
+    expect(computer).toContain("{ backgroundColor: colors.raised, boxShadow:");
+    // The screen's views are as tall as its button.
+    expect(screen).toContain('wide\n                size="page"');
     // The screen's recent picture on Today; the rules people gave on Memory, under what it learned; where it merges on
     // Access; the right hand's own AI above how it works: each in the grouped lists, none a section of its own.
-    expect(screen).toContain("      {nowBlock}\n      <AgentComputerPicture agentId={id} />");
+    expect(screen).toContain("      {nowBlock}\n      <AgentComputerCard agentId={id} />");
     expect(computer).toContain("asksPicture(focused, view.desktopQ.data ?? null)");
     expect(screen).toContain(
       "      {knows.data ? memoryKnows : null}\n      {/* What people told it to always do, under what it learned, as the web's Memória. */}\n      <GivenRules agentId={id} name={name} rightHand={rightHand} />",
