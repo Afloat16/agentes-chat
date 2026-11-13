@@ -889,6 +889,22 @@ then a second listener on `OPERATOR_API_PORT` (3001) serves `/api/operator/v1`, 
 `Authorization: Bearer <token>`, and its OpenAPI document is at `/api/operator/v1/openapi.json`. That
 port reaches every workspace, so never publish it or put it behind your proxy: the compose file
 doesn't publish it, and containers on the same Docker network reach it as `http://agentes:3001`.
+For a caller that only looks things up, set `OPERATOR_API_READ_TOKEN` too (a different value, same
+length): it is accepted for `GET` requests alone and never for `GET /review/...`, and anything else
+it asks for is refused (403). It still reads names, emails and IP addresses, so keep it as private.
+`GET /users?q=` finds an account by part of its address or name, `GET /resolve?ref=` says what a
+pasted link, an `@handle` or an id names, and `GET /orgs/{orgId}/members`, `/channels` and `/agents`
+list who and what is in a workspace, never what was written there.
+`GET /orgs/{orgId}/runs` lists a workspace's runs with what each waits for or failed with,
+`GET /runs/{runId}/trace` shows one run step by step, `GET /orgs/{orgId}/timeline` puts a conversation's
+messages, routing decisions and runs in order, and `GET /messages/{messageId}/explain` says why a message
+did or did not start a run: ids, codes, times and sizes, never a message's text or what a tool was given
+or answered.
+`GET /jobs` lists the job queue without the jobs' payloads (`?stuck=true` for the ones nobody took,
+`?summary=true` for counts by kind and status), `GET /usage` adds up the tokens and cost of model calls
+for the instance, a workspace, an agent or a run, and `GET /orgs/{orgId}/machines` and
+`GET /machines/{machineId}` say what is on a computer and what waits for it: its runner and CLI versions,
+its AI accounts, open tasks and waiting runs, never a token, a hostname or an address.
 With the token set, the server also keeps 90 days of events for it to read (`GET /events`: sign-ups
 with their email, sign-ins with their IP address and browser, workspaces, invitations, agents, emails
 sent and runs finished, as metadata), and `GET /review/...` shows what one run or task did, with
