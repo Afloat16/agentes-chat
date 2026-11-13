@@ -4730,6 +4730,21 @@ export const en = {
     },
     /** Under `plan_model_dropped`: opens the agent's "Quem pensa". */
     planModelDropped: { choose: "Choose another model" },
+    /**
+     * What the right hand found wrong and the one way out (`team_watch`), by cause. `names`: what it is about, the
+     * first few by name and "+2" for the rest. Also the notice's stored text and its push.
+     */
+    teamWatch: {
+      /** The notice's headline, the right hand's name bold. The sentence under it says what and how to fix it. */
+      found: "<b>{{name}}</b> found something to fix",
+      sign_in: "AI sign-in ended: {{names}}. Sign in again in Settings",
+      connector: "Needs reconnecting: {{names}}. Reconnect it in Settings",
+      mailbox: "Mailbox needs reconnecting: {{names}}. Reconnect it in Settings",
+      database: "Database needs reconnecting: {{names}}. Reconnect it in Settings",
+      budget_out: "Out of budget this month: {{names}}. Raise the budget on the agent's page",
+      budget_low: "Budget about to run out this month: {{names}}. Raise it on the agent's page",
+      computer: "Computer offline with agents waiting: {{names}}. Turn it on or check its connection",
+    },
     docTitleUnread: "({{count}}) Notifications",
     summaryWaiting_one: "{{count}} thing waiting on you",
     summaryWaiting_other: "{{count}} things waiting on you",

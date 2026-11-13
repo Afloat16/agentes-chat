@@ -1921,6 +1921,50 @@ export async function setRoutineActive(
 }
 
 /**
+ * A resume nobody clicked: a scheduled routine that paused itself as `failing` runs again from its next slot, its
+ * failure streak cleared and its pause notice done, with `actor` in the audit log. Only that pause: one for who made
+ * it, its agent or its audience is a person's to decide. False when it was not paused so.
+ */
+export async function resumeRoutineBySystem(
+  deps: { db: Database; pubsub?: PubSub },
+  orgId: string,
+  id: string,
+  actor: { type: "agent" | "system"; id: string | null },
+): Promise<boolean> {
+  const current = await loadRoutine(deps.db, orgId, id);
+  if (current.triggerType !== "schedule") return false;
+  const [row] = await deps.db
+    .update(routines)
+    .set({
+      active: true,
+      nextRunAt: nextRoutineTime(current, new Date()),
+      updatedAt: new Date(),
+      pausedReason: null,
+      failuresInRow: 0,
+    })
+    .where(
+      and(
+        eq(routines.id, id),
+        eq(routines.orgId, orgId),
+        eq(routines.active, false),
+        eq(routines.pausedReason, "failing"),
+      ),
+    )
+    .returning({ id: routines.id });
+  if (!row) return false;
+  await recordAudit(deps.db, {
+    orgId,
+    actor,
+    action: "routine.resumed",
+    target: { type: "routine", id },
+    details: { name: current.name, after: "failing" },
+  });
+  await resolveRoutinePaused(deps, orgId, id).catch(() => {});
+  await publishListChanged(deps.pubsub, orgId, "routines");
+  return true;
+}
+
+/**
  * Queues one slot or manual run of a routine (`routine.run` job); null when that slot already ran.
  * Events go through `fireRoutineEvent` (deduplicated and coalesced).
  */

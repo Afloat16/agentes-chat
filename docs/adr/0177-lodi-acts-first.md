@@ -87,21 +87,56 @@ would break their card. The apps draw `rows` then `moreRows`, known kinds only.
 
 ### 1. Team watch ("Cuidar da equipe")
 
-A sweep with no model call. It fixes what is safe and tells the one person who can act, through "Esperando você"
-(ADR 0172), never in a DM message.
+A sweep with no model call (`team-watch.ts`). It fixes what is safe and tells the one person who can act, through
+"Esperando você" (ADR 0172), never in a DM message.
 
-- Tells: an AI sign-in that ended (the plan's owner), a connector or a database to reconnect for over 20 minutes (who
-  connected it, else who manages connectors), a mailbox (its owner only), a budget on pace to end early or already out
-  (the agent's owner if they may raise it, else the workspace's owner), a brought computer offline for over 30 minutes
-  with agents on it (who paired it). One row per person and cause, its objects listed and counted, updated in place,
-  at most three new rows a person a day. No row while the same person already has one for the same thing from another
-  kind (a failed run, a usage limit, a stalled routine).
-- Fixes: a routine paused as failing is resumed once per pause, only when every recent failure came from its
-  surroundings and its agent can think now. A schedule routine that failed on a passing cause gets one retry.
-- Reminds: one push a person a day that counts what still waits on them unread, in their own daytime, and none while
-  the approvals summary (§4) is the reminder.
-- It never raises a budget, reconnects, signs in or moves agents. Rows carry names and a cause, nothing from a DM, a
-  vault, memory or a mailbox, and name only agents their reader sees.
+- Tells, as one notification kind `team_watch` with the right hand as actor and the cause in `latest.reason`:
+
+  | Cause | When | Who hears it | Opens |
+  |---|---|---|---|
+  | `sign_in` | a plan's sign-in ended over 20 minutes ago and an agent thinks with it | the plan's owner, nobody else | the AI accounts |
+  | `connector` | an app to reconnect for over 20 minutes | who connected it while they manage connectors, else the first who does | Connectors |
+  | `mailbox` | a mailbox to reconnect for over 20 minutes | its owner, nobody else | Connectors |
+  | `database` | its password was refused | who connected it while they manage connectors, else the first who does | Connectors |
+  | `budget_out` | an agent's month is used up | its owner if they manage agents, else the workspace's owner | the agent |
+  | `budget_low` | 80% used and the month's pace would end it early | the same | the agent |
+  | `computer` | a brought computer gone over 30 minutes while a run waits for it | who paired it, else the first who configures the workspace | the computer |
+
+  One open row per person and cause: it lists everything of that cause that is theirs (`latest.names`, `count`), is
+  rewritten in place as the list changes and is done once the list is empty. `latest.text` is the whole sentence, the
+  cause and the one way out, in the reader's language, so a build from before the kind shows it as it is. A new row
+  comes only for a problem that person was never told (a finished outbox row per person, thing and episode), so one
+  put away with "Feito" does not return, and at most three new rows a person a day. Every cause waits on the person
+  but `budget_low`, which stops nothing yet: a plain row that reaches no device. The kind has no notice category of
+  its own, so a waiting row pushes as anything waiting does.
+- No second row for what another notice already told that person since the problem began:
+
+  | Cause | Kinds that already say it |
+  |---|---|
+  | `sign_in` | `run_failed` with the reason `not_logged_in` |
+  | `budget_out` | `run_failed`, `routine_failed` or `widget_failed` with the reason `budget_exceeded` |
+  | `computer` | `routine_stalled`, `device.waiting`, or `run_failed` with the reason `machine_offline` |
+
+  A routine paused as failing and a widget that stopped keep their own notices (`routine_paused`, `widget_failed`)
+  and get no row here.
+- Fixes, silent but for the audit log:
+  - A routine's first failure after a good run, for a cause outside it (`OUTSIDE_RUN_ERRORS`, read from its agent
+    run's stored error: the provider down, slow or over its rate, an error of ours, its computer, a restart), is
+    queued once more 15 minutes later when it is scheduled and its next slot is over an hour away. That happens where
+    the failure is recorded (`routine-ledger.ts`), not in the sweep, so the `routine_failed` notice is held exactly
+    when a retry was queued and sent when the retry fails too. A widget's routine is retried the same way and keeps
+    its `widget_failed` row, which reaches no device and leaves with the good update.
+  - A scheduled routine paused as `failing` whose last five failures were all outside it is resumed, from 30 minutes
+    to a day after the pause, once its agent can think now, with the right hand as actor in the audit log.
+  - Both happen once between two good runs of the routine, so one that keeps failing is neither retried nor resumed
+    in a loop: after a resume its next failure is not told again, and its next pause is, by its own notice.
+- Reminds: once a day per person, in their own daytime (9 to 18 in their time zone), of the approvals, questions and
+  secret requests they left unread for over four hours. The oldest comes back on top with one push that says how
+  many still wait, and all of them are marked reminded, so none is reminded twice. Approvals are left out for who has
+  the approvals summary (§4) on with three or more waiting.
+- It never raises a budget, reconnects, signs in or moves agents, and resumes only a pause for `failing`. Rows carry
+  names and a cause, nothing from a DM, a vault, memory or a mailbox. A computer's row names the computer, never the
+  agents waiting for it.
 
 ### 2. The daily brief ("Resumo do dia")
 

@@ -8,6 +8,7 @@ import {
   askersOf,
   channelOf,
   runFailedGroupOf,
+  teamWatchOf,
   widgetNoticeOf,
   workspaceHeadline,
 } from "@agenteschat/client/lib/notifications";
@@ -33,6 +34,16 @@ export type Dir = ReturnType<typeof useDirectory>;
 export function sayWords(t: TFunction, w: Words, otherwise = "") {
   const tt = t as unknown as (key: string, options?: Record<string, unknown>) => string;
   return tt(w.key, { ...w.values, defaultValue: w.fallback ? tt(w.fallback) : otherwise });
+}
+
+/**
+ * What the right hand found wrong and the one way out (ADR 0177 §1), in the reader's language. A cause this build
+ * doesn't know keeps the server's own sentence. Null for any other notice.
+ */
+export function teamWatchLine(t: TFunction, n: AppNotification): string | null {
+  const found = teamWatchOf(n);
+  if (!found) return null;
+  return found.words ? sayWords(t, found.words, found.text) : found.text;
 }
 
 export const nameOf = (t: TFunction, dir: Dir, a: NotificationActor | undefined) =>
@@ -247,6 +258,11 @@ export function Headline({
       <Trans i18nKey={key} values={{ name: agent, title: widget.title }} components={{ b: <b /> }} {...TYPED_VALUES} />
     );
   }
+  // What the right hand found (ADR 0177 §1): who found it. What it is and how to fix it is the line under it.
+  if (n.kind === "team_watch")
+    return (
+      <Trans i18nKey="notifications.teamWatch.found" values={{ name }} components={{ b: <b /> }} {...TYPED_VALUES} />
+    );
   switch (n.kind) {
     case "mention":
       if (n.source.issueId) return k("mentionComment", { name });

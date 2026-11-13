@@ -4314,6 +4314,16 @@
     "planModelDropped": {
       "choose": "选择其他模型"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> 发现了需要处理的问题",
+      "sign_in": "AI 登录已失效：{{names}}。请在设置中重新登录",
+      "connector": "需要重新连接：{{names}}。请在设置中重新连接",
+      "mailbox": "邮箱需要重新连接：{{names}}。请在设置中重新连接",
+      "database": "数据库需要重新连接：{{names}}。请在设置中重新连接",
+      "budget_out": "本月预算已用完：{{names}}。请在智能体页面提高预算",
+      "budget_low": "本月预算即将用完：{{names}}。请在智能体页面提高预算",
+      "computer": "电脑离线，有智能体在等待：{{names}}。请开机或检查网络连接"
+    },
     "docTitleUnread": "({{count}}) 通知",
     "summaryWaiting_other": "{{count}} 件事等你处理",
     "summaryUnread_other": "{{count}} 条未读",

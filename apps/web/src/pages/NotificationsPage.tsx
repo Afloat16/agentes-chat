@@ -40,6 +40,7 @@ import {
   snoozeTimes,
   sortWaiting,
   stepCells,
+  teamWatchOf,
   WIDGET_NOTICES,
   widgetNoticeOf,
   workspaceHeadline,
@@ -87,7 +88,16 @@ import { useConnectAi } from "@/components/ConnectAi";
 import { DeviceNoticeActions, deviceNoticeLine } from "@/components/devices/DeviceNotice";
 import { ErrorState, LoadingCards } from "@/components/Loading";
 import { useNotificationHref, useNotificationOpener } from "@/components/NotificationOpen";
-import { type Dir, Face, Headline, joinerOf, nameOf, SystemFace, sayWords } from "@/components/NotificationParts";
+import {
+  type Dir,
+  Face,
+  Headline,
+  joinerOf,
+  nameOf,
+  SystemFace,
+  sayWords,
+  teamWatchLine,
+} from "@/components/NotificationParts";
 import { useOrg } from "@/components/org-context";
 import { UsageLimitActions } from "@/components/PeopleUsage";
 import { AllowTalkButton } from "@/components/ReachLines";
@@ -191,7 +201,14 @@ function sourceOf(t: TFunction, n: AppNotification, channelName: (id: string) =>
     (n.kind === "browser_handoff" && s.screen === "desktop")
   )
     [icon, label] = ["computer", t("notifications.source.machine")];
-  else if (n.kind === "plan_lent") [icon, label] = ["bulb", t("settings.section.usage")];
+  else if (n.kind === "team_watch") {
+    // Where it is fixed: the plans, the agent's budget, the computers, the connections.
+    const cause = teamWatchOf(n)?.cause;
+    if (cause === "sign_in" || cause === "budget_out" || cause === "budget_low")
+      [icon, label] = ["bulb", t("settings.section.usage")];
+    else if (cause === "computer") [icon, label] = ["computer", t("notifications.source.machine")];
+    else if (cause) [icon, label] = ["plug", t("settings.section.connectors")];
+  } else if (n.kind === "plan_lent") [icon, label] = ["bulb", t("settings.section.usage")];
   else if (n.kind === "plan_model_dropped") [icon, label] = ["bulb", t("brain.title")];
   else if (n.kind === "browser_handoff") [icon, label] = ["globe", t("notifications.source.browser")];
   else if (s.issueNumber != null)
@@ -707,6 +724,8 @@ function Row({
   const restriction = restrictionOf(n);
   // A board's notice says what the agent saw, why the widget stopped, or whom it would show the board to (ADR 0135).
   const widgetLine = widgetNoticeLine(t, n, dir);
+  // What the right hand found, and how to fix it, in the reader's language.
+  const found = teamWatchLine(t, n);
   // A GIF or a sticker has no words: its word stands for it (ADR 0091).
   const media = mediaKindOf(l.media);
   const text = restriction
@@ -715,11 +734,13 @@ function Row({
       ? usageLimitLine(t, n)
       : widgetLine
         ? widgetLine
-        : why
-          ? sayWords(t, why, l.text ?? "")
-          : media === "voice"
-            ? mediaWord(t, media)
-            : latestText(t, l) || (media ? mediaWord(t, media) : l.text);
+        : found !== null
+          ? found
+          : why
+            ? sayWords(t, why, l.text ?? "")
+            : media === "voice"
+              ? mediaWord(t, media)
+              : latestText(t, l) || (media ? mediaWord(t, media) : l.text);
   const stopStep = steps ? (steps.failedAt ?? steps.done + 1) : 0;
   const stepWords = steps
     ? failed
@@ -1218,7 +1239,7 @@ function WaitRow({
           ? usageLimitLine(t, n)
           : deviceNoticeOf(n)
             ? deviceNoticeLine(t, n)
-            : (widgetNoticeLine(t, n, dir) ?? n.latest.title ?? n.latest.text);
+            : (teamWatchLine(t, n) ?? widgetNoticeLine(t, n, dir) ?? n.latest.title ?? n.latest.text);
   const source = sourceOf(t, n, channelName);
   const when = whenText(t, i18n.language, n.createdAt);
   return (

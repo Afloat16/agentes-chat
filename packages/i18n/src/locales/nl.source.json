@@ -10869,6 +10869,30 @@
   "notifications.planModelDropped.choose": {
     "value": "Choose another model"
   },
+  "notifications.teamWatch.found": {
+    "value": "<b>{{name}}</b> found something to fix"
+  },
+  "notifications.teamWatch.sign_in": {
+    "value": "AI sign-in ended: {{names}}. Sign in again in Settings"
+  },
+  "notifications.teamWatch.connector": {
+    "value": "Needs reconnecting: {{names}}. Reconnect it in Settings"
+  },
+  "notifications.teamWatch.mailbox": {
+    "value": "Mailbox needs reconnecting: {{names}}. Reconnect it in Settings"
+  },
+  "notifications.teamWatch.database": {
+    "value": "Database needs reconnecting: {{names}}. Reconnect it in Settings"
+  },
+  "notifications.teamWatch.budget_out": {
+    "value": "Out of budget this month: {{names}}. Raise the budget on the agent's page"
+  },
+  "notifications.teamWatch.budget_low": {
+    "value": "Budget about to run out this month: {{names}}. Raise it on the agent's page"
+  },
+  "notifications.teamWatch.computer": {
+    "value": "Computer offline with agents waiting: {{names}}. Turn it on or check its connection"
+  },
   "notifications.docTitleUnread": {
     "value": "({{count}}) Notifications"
   },

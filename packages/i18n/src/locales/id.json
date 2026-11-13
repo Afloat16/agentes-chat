@@ -4324,6 +4324,16 @@
     "planModelDropped": {
       "choose": "Pilih model lain"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> menemukan sesuatu yang perlu diperbaiki",
+      "sign_in": "Login AI berakhir: {{names}}. Masuk lagi di Pengaturan",
+      "connector": "Perlu dihubungkan ulang: {{names}}. Hubungkan ulang di Pengaturan",
+      "mailbox": "Kotak surat perlu dihubungkan ulang: {{names}}. Hubungkan ulang di Pengaturan",
+      "database": "Database perlu dihubungkan ulang: {{names}}. Hubungkan ulang di Pengaturan",
+      "budget_out": "Anggaran bulan ini habis: {{names}}. Naikkan anggaran di halaman agen",
+      "budget_low": "Anggaran bulan ini hampir habis: {{names}}. Naikkan di halaman agen",
+      "computer": "Komputer offline dan agen menunggu: {{names}}. Nyalakan atau periksa koneksinya"
+    },
     "docTitleUnread": "({{count}}) Notifikasi",
     "summaryWaiting_other": "{{count}} hal menunggumu",
     "summaryUnread_other": "{{count}} belum dibaca",

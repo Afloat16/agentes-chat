@@ -6371,7 +6371,14 @@ export type NotificationKind =
    */
   | "right_hand_decided"
   /** ADR 0139 §2: three of its decisions undone in a week stopped it. Waiting until it is turned back on. */
-  | "right_hand_paused";
+  | "right_hand_paused"
+  /**
+   * ADR 0177 §1: the right hand found something that stops the team and this person can fix. One open row per cause
+   * (`latest.reason`: `sign_in`, `connector`, `mailbox`, `database`, `budget_out`, `budget_low`, `computer`),
+   * `latest.names` the first things it is about and `count` how many, `latest.text` the whole sentence in the
+   * person's language. `source.agentId`, `machineId` or `accountId` when it is about one. Done once fixed.
+   */
+  | "team_watch";
 
 /** "O Gerente aprova por você" (ADR 0139 §2): what the person let the workspace's right hand approve. */
 export interface RightHandApprovals {
@@ -6545,6 +6552,8 @@ export interface NotificationLatest {
   runs?: number;
   /** `usage_limit`: the share of the requests made with the agent named in `title`. */
   share?: number;
+  /** A reminder of what was left unread: how many things still wait on the person, this one included. */
+  still?: number;
 }
 
 /** A run a `run_failed` row lists: its agent and where it failed (`key` names both). */

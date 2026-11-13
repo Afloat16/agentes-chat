@@ -4311,6 +4311,16 @@
     "planModelDropped": {
       "choose": "別のモデルを選ぶ"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b>が対応の必要なことを見つけました",
+      "sign_in": "AIのサインインが切れました：{{names}}。設定からもう一度サインインしてください",
+      "connector": "再接続が必要です：{{names}}。設定から再接続してください",
+      "mailbox": "メールボックスの再接続が必要です：{{names}}。設定から再接続してください",
+      "database": "データベースの再接続が必要です：{{names}}。設定から再接続してください",
+      "budget_out": "今月の予算を使い切りました：{{names}}。エージェントのページで予算を増やしてください",
+      "budget_low": "今月の予算がまもなくなくなります：{{names}}。エージェントのページで増やしてください",
+      "computer": "コンピューターがオフラインで、エージェントが待っています：{{names}}。電源を入れるか接続を確認してください"
+    },
     "docTitleUnread": "（{{count}}）通知",
     "summaryWaiting_other": "あなたの対応待ち{{count}}件",
     "summaryUnread_other": "未読{{count}}件",
