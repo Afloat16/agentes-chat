@@ -7395,9 +7395,25 @@ html:not([data-pointer]) .run-continue:focus-visible {
   height: 16px;
   overflow: hidden;
 }
-.ac-typing__rest > .ac-turn {
+.ac-typing__said {
+  display: flex;
   flex: 0 1 auto;
   min-width: 0;
+  white-space: pre;
+}
+/* Short of room the name ends in "…" (after the sentence gave up its "retorna às"), never the time. */
+.ac-typing__said > b {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ac-typing__said > span {
+  flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ac-typing__said {
+    animation: ac-fade-in 160ms ease-out both;
+  }
 }
 .ac-typing__about {
   flex: none;

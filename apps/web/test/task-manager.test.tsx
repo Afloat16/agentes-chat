@@ -963,6 +963,13 @@ describe("returns agents set (Retornos)", () => {
       canceledFollowUps: [
         canceled({ messageId: "c-1", canceledBy: { kind: "person", userId: "u-joao", name: "João" } }),
         canceled({ messageId: "c-2", about: "ver o CI", canceledAt: ago(5) }),
+        // The worst case (break-ui, measured by CI's geometry step): a long name, and her 80 characters.
+        canceled({
+          messageId: "c-4",
+          about: "rever os pedidos de reembolso de outubro e responder quem pediu o valor em dobro",
+          canceledAt: ago(7),
+          canceledBy: { kind: "person", userId: "u-maria", name: LONG_NAME },
+        }),
         canceled({
           messageId: "c-3",
           about: "ver o build",
@@ -980,7 +987,12 @@ describe("returns agents set (Retornos)", () => {
     const ends = [...document.querySelectorAll(".tm-row--ended")].map(
       (el) => el.querySelector(".tm-cell--state .ac-chip, .tm-cell--state > :first-child")?.textContent,
     );
-    expect(ends).toEqual(["Retorno cancelado por João", "Retorno cancelado por Atlas", "Retorno cancelado"]);
+    expect(ends).toEqual([
+      "Retorno cancelado por João",
+      "Retorno cancelado por Atlas",
+      "Retorno cancelado",
+      `Retorno cancelado por ${LONG_NAME}`,
+    ]);
   });
 });
 

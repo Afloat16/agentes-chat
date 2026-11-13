@@ -1,5 +1,5 @@
 import { type PendingReturn, useCancelFollowUp } from "@agenteschat/client";
-import { markInk } from "@agenteschat/client/lib/activity";
+import { markedPieces, markInk } from "@agenteschat/client/lib/activity";
 import { returnClock, returnFaces, returnSentence, returnWhen } from "@agenteschat/client/lib/agent-work";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
@@ -10,7 +10,6 @@ import { ActorAvatar, AgentAvatar } from "@/components/AgentAvatar";
 import { useChannelActions } from "@/components/channel-actions";
 import { useOrg } from "@/components/org-context";
 import { WaitMark } from "@/components/RequestCard";
-import { TurnText } from "@/components/WorkingLine";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useFitStep } from "@/hooks/useFitStep";
 import { useToast } from "@/lib/toast";
@@ -21,7 +20,8 @@ import "./threads/threads.css";
  * the live pill's box holds it, bare: up to three faces (one per agent), the clock (the amber wait mark when it waits on
  * the reader's answer), "Ada retorna às 00:32", " · " and her words, "+1", then ⋯ with the list. Her words stay whole
  * or leave the line with their " · " (CSS: they wrap onto a line the box hides); where even the sentence doesn't fit it
- * says the name and the time ("Ada 00:32"). Never a second line: work takes the same box.
+ * says the name and the time ("Ada 00:32"), and only then does the name end in "…": the time always shows. Never a
+ * second line: work takes the same box.
  */
 export function ReturnLine({
   returns,
@@ -43,7 +43,7 @@ export function ReturnLine({
   const first = returns[0];
   const name = first ? (dir.anyAgent(first.agentId)?.name ?? t("channel.unknownAgent")) : "";
   const sentence = first ? returnSentence(t, i18n.language, first, markInk(name), { canAnswer, now }) : "";
-  const step = useFitStep(text, 2, `${sentence}|${first?.about ?? ""}`, ".ac-turn__in");
+  const step = useFitStep(text, 2, `${sentence}|${first?.about ?? ""}`, ".ac-typing__said > b");
   if (!first) return null;
   const words =
     step === 1 && !first.held
@@ -60,7 +60,13 @@ export function ReturnLine({
       </span>
       {first.held && canAnswer ? <WaitMark /> : <Icon name="clock" size={14} className="ac-typing__rest-mark" />}
       <span ref={text} className="ac-typing__text ac-typing__rest">
-        <TurnText text={words} />
+        {/* The name gives way, never the time after it. A new sentence fades in. */}
+        <span key={words} className="ac-typing__said">
+          {markedPieces(words).map((p, i) =>
+            // biome-ignore lint/suspicious/noArrayIndexKey: the pieces of one sentence, in order
+            p.bold ? <b key={i}>{p.text}</b> : <span key={i}>{p.text}</span>,
+          )}
+        </span>
         {step === 0 && !first.held && first.about && (
           <span className="ac-typing__about">
             <span className="ac-typing__about-dot"> · </span>

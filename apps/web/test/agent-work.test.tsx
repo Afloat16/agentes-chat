@@ -285,7 +285,13 @@ describe("a thread's chip", () => {
     expect(state.textContent).toBe(`Retorno às ${formatTime("pt-BR", at)}`);
     expect(state.classList.contains("thread-line__state--neutral")).toBe(true);
     expect(state.querySelector(".thread-line__clock")).toBeTruthy();
-    expect(chip().querySelector(".thread-line__when")).toBeNull();
+    // No last reply's time beside it; on a phone-wide window, where its words go to screen readers, its time alone.
+    expect(chip().querySelector(".thread-line__when:not(.thread-line__later-at)")).toBeNull();
+    const narrow = chip().querySelector(".thread-line__later-at");
+    expect(narrow?.getAttribute("aria-hidden")).toBe("true");
+    expect(narrow?.textContent).toBe(`·${formatTime("pt-BR", at)}`);
+    const css = await Bun.file(new URL("../src/components/threads/threads.css", import.meta.url)).text();
+    expect(css).toMatch(/@media \(min-width: 421px\) \{\s*\.thread-line__later-at \{\s*display: none;/);
   });
 
   test("one state, with how long it has held in place of the last reply's time", async () => {

@@ -1,6 +1,7 @@
 import type { Actor, Message, ThreadInfo, ThreadStartMeta } from "@agenteschat/client";
 import { runsInChannel, useChannelThreads } from "@agenteschat/client";
 import {
+  returnClock,
   type ThreadWorkState,
   threadWorkState,
   threadWorkTone,
@@ -177,6 +178,13 @@ export function ThreadLineBody({
           <span className="thread-line__state-words">
             {threadWorkWord(t, work.state, { at: work.laterAt, locale: i18n.language, now })}
           </span>
+        </span>
+      )}
+      {/* Where the words go to screen readers (a phone-wide window), a return keeps its time in sight. */}
+      {work?.state === "later" && work.laterAt && (
+        <span className="thread-line__when thread-line__later-at" aria-hidden="true">
+          <span className="thread-line__dot">·</span>
+          <span className="thread-line__held">{returnClock(t, i18n.language, work.laterAt, now)}</span>
         </span>
       )}
       {(work ? held : at) && (

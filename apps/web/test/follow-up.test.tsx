@@ -228,6 +228,27 @@ test("worst case: three returns (the cap), two agents, a long name, 80-character
   expect(list().querySelector(".thread-pop__sub")?.textContent).toBe(about);
 });
 
+test("in English, 12-hour time; her words stay in the language she wrote them in", async () => {
+  const state = seedState();
+  const at = inMinutes(33);
+  state.followUps = [ret({ at })];
+  const { services } = await open(state);
+  await act(async () => {
+    await services.i18n.changeLanguage("en");
+  });
+  await settle(3);
+  expect(formatTime("en", at)).toMatch(/[AP]M$/);
+  expect(words()).toBe(`Atlas follows up at ${formatTime("en", at)} · rever o deploy de hoje`);
+  await click(within(bar()).getByRole("button", { name: "Follow-ups" }));
+  await settle(2);
+  const crosses = within(screen().getByRole("dialog", { name: "Follow-ups" })).getAllByRole("button", {
+    name: /^Cancel Atlas's follow-up/,
+  });
+  expect(crosses.map((b) => b.getAttribute("aria-label"))).toEqual([
+    `Cancel Atlas's follow-up at ${formatTime("en", at)}`,
+  ]);
+});
+
 test("a mention its message explains leaves the conversation; what stays opens people's words", async () => {
   const state = seedState();
   const said = (id: string, minutesAgo: number, body: string, meta?: Record<string, unknown>) => ({

@@ -921,6 +921,12 @@ html:not([data-pointer]) .thread-line:focus-visible {
     white-space: nowrap;
   }
 }
+/* A return's time is in its words ("Retorno às 00:32"): it shows on its own only where they go to screen readers. */
+@media (min-width: 421px) {
+  .thread-line__later-at {
+    display: none;
+  }
+}
 .thread-line__dot {
   color: var(--faint);
 }

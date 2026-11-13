@@ -71,25 +71,22 @@ export function ReturnLine({ returns, onOpen }: { returns: PendingReturn[]; onOp
           </View>
           {first.held ? <WaitMark size={8} /> : <Icon name="clock" size={14} color={c.faint} />}
           <View style={styles.words} onLayout={(e) => setRoom(e.nativeEvent.layout.width)}>
-            <Text
-              variant="caption"
-              tone="muted"
-              numberOfLines={1}
-              maxFontSizeMultiplier={CHROME_MAX_SCALE}
-              style={styles.shrink}
-              onLayout={(e) => setSaid(e.nativeEvent.layout.width)}
-            >
-              {parts.map((p, i) =>
-                p.bold ? (
+            {/* The name gives way ("…"), never the time after it. */}
+            <View style={styles.said} onLayout={(e) => setSaid(e.nativeEvent.layout.width)}>
+              {parts.map((p, i) => (
+                <Text
                   // biome-ignore lint/suspicious/noArrayIndexKey: the pieces of one sentence, in order
-                  <RNText key={i} style={[styles.ink, { color: c.ink }]}>
-                    {p.text}
-                  </RNText>
-                ) : (
-                  p.text
-                ),
-              )}
-            </Text>
+                  key={i}
+                  variant="caption"
+                  tone="muted"
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={CHROME_MAX_SCALE}
+                  style={p.bold ? [styles.shrink, styles.ink, { color: c.ink }] : styles.keep}
+                >
+                  {p.text}
+                </Text>
+              ))}
+            </View>
             {shows ? (
               <Text variant="caption" tone="muted" numberOfLines={1} maxFontSizeMultiplier={CHROME_MAX_SCALE}>
                 <RNText style={{ color: c.faint }}> · </RNText>
@@ -248,7 +245,9 @@ const styles = StyleSheet.create({
   tok: { padding: 1.5, borderRadius: 7 },
   overlap: { marginLeft: -5 },
   words: { flex: 1, flexDirection: "row", alignItems: "center", minWidth: 0, overflow: "hidden" },
+  said: { flexDirection: "row", flexShrink: 1, minWidth: 0 },
   shrink: { flexShrink: 1 },
+  keep: { flexShrink: 0 },
   ink: { fontWeight: "600" },
   // Laid out where nothing shows it, for its width alone.
   measure: { position: "absolute", left: 0, top: 0, opacity: 0 },

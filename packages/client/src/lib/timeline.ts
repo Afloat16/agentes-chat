@@ -169,7 +169,12 @@ export function buildTimeline(messages: Message[], approvals: Approval[], runs: 
   const settled = settledNotices(messages);
   // The last message shown, across day dividers and cards (to tell a reply that lands far from its root).
   let lastShown: Message | null = null;
+  // A routine's call written as its creator, a report the agent already told people about, a notice only its agent
+  // reads, a return's line, a mention its message explains: not shown, nor the day they alone would open.
+  const unshown = (m: Message) =>
+    isRoutineCall(m) || isAnsweredNotice(m, answered) || isAgentOnlyNotice(m.meta) || settled.has(m.id);
   for (const entry of entries) {
+    if (entry.item.kind === "message" && unshown(entry.item.message)) continue;
     const day = dayKey(entry.at);
     if (day !== lastDay) {
       out.push({ kind: "day", key: `day-${day}`, iso: entry.at });
@@ -178,9 +183,6 @@ export function buildTimeline(messages: Message[], approvals: Approval[], runs: 
     }
     if (entry.item.kind === "message") {
       const m = entry.item.message;
-      // A routine's call written as its creator, a report the agent already told people about, a notice only its agent
-      // reads, an event that is over: not shown.
-      if (isRoutineCall(m) || isAnsweredNotice(m, answered) || isAgentOnlyNotice(m.meta) || settled.has(m.id)) continue;
       // A routine's answer (or an automatic line: a notice) always shows its own header, and nothing groups under it.
       const routine = Boolean(routineReplyOf(m)) || isEventLine(m.meta);
       const prevRoutine = Boolean(prev && (routineReplyOf(prev) || isEventLine(prev.meta)));
