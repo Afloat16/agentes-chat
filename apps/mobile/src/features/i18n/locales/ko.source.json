@@ -2846,6 +2846,12 @@
   "me.account.email": {
     "value": "Email"
   },
+  "me.account.emailWebLead": {
+    "value": "Sign in again on the website and change it there, without the code."
+  },
+  "me.account.emailWeb": {
+    "value": "Sign in again on the website"
+  },
   "me.account.inWorkspace": {
     "value": "In this workspace · {{org}}"
   },
