@@ -31,6 +31,7 @@ import { commentIssue } from "./issues";
 import { getMessage, postPersonMessage } from "./messages";
 import { maySql } from "./permissions";
 import { pushStrings } from "./push-messages";
+import { taskEndToldSql } from "./right-hand-follow";
 import {
   knownZonesSql,
   type LodiPrefs,
@@ -40,7 +41,6 @@ import {
   setLodiPrefs,
   zoneSql,
 } from "./right-hand-prefs";
-import { taskEndToldSql } from "./right-hand-follow";
 import { lodiFor, postFromLodi, setCardOnMessage } from "./right-hand-proactive";
 import { createRoutine, type RoutineDeps } from "./routines";
 import { localDate, nextOccurrence, type ScheduleRule } from "./rrule";
