@@ -94,7 +94,7 @@ function itemOf(t: TFunction, r: ExistingAi, agentName: string, dims: (choice: P
       about: keyLine(t, r.key),
       whose: t("connectAi.chat.keys"),
       group: { key: "keys", label: t("connectAi.chat.keys") },
-      mark: <Icon name="key" size={16} className="arrival-have__mark" />,
+      mark: <Icon name="key" size={20} className="arrival-have__mark" />,
       usage: null,
       isKey: true,
     };

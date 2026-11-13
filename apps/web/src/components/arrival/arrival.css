@@ -624,13 +624,15 @@ html:not([data-pointer]) .arrival-have__row:has(.ac-radio:focus-visible) {
 html:not([data-pointer]) .arrival-have__row[data-state="checked"]:has(.ac-radio:focus-visible) {
   box-shadow: var(--have-chosen), var(--field-ring);
 }
-.arrival-have__row > .ac-brand {
+.arrival-have__row > .ac-brand,
+.arrival-have__mark {
   width: 20px;
   height: 20px;
 }
-/* A key's 16px glyph (its size is the icon's own) in the middle of the marks' 20px column. */
+/* A key's glyph drawn 16px inside the marks' 20px box: its icon is sized 20 (`ConnectHave`), the padding takes 2. */
 .arrival-have__mark {
-  margin: 2px;
+  padding: 2px;
+  box-sizing: border-box;
   color: var(--ink);
 }
 .arrival-have__text {

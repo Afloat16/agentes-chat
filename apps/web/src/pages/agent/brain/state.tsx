@@ -290,7 +290,7 @@ export function useBrainState(view: AgentBrain, opts: { added: readonly MachineA
   const all = models.data?.models ?? [];
   const apiProvider = apiProviderOf(saved.model, all);
   const keyMark = (provider: string | undefined) =>
-    provider ? <ProviderLogo id={provider} size="xs" /> : <Icon name="key" size={16} className="arrival-have__mark" />;
+    provider ? <ProviderLogo id={provider} size="xs" /> : <Icon name="key" size={20} className="arrival-have__mark" />;
   const keysGroup = { key: "keys", label: t("connectAi.chat.keys") };
   const keyCurrent = saved.key ?? DEFAULT_KEY;
   const keyRow = (keyId: string | undefined, title: string, about: string | undefined, provider?: string): BrainRow => {
