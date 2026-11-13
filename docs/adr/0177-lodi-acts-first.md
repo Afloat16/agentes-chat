@@ -134,15 +134,28 @@ nothing.
 
 ### 5. Follow-through ("Lembrar o que combinamos")
 
-- A task the right hand handed to an agent for a person is followed to its end: when it is done or canceled after its
-  first report, the right hand is woken once in that person's DM, unless they made the change themselves or it did so
-  for them. The inbox row of the same change is resolved, so one thing tells them.
-- A handed task that has not moved is looked at a day later, then daily for a week, and said once, with who it waits
-  on, from the task's own conversation.
+- A task the right hand handed to an agent for a person is followed to its end: when it is done or canceled after the
+  hand-over was reported back, the right hand is woken once per hand-over in that person's DM. Not when they made the
+  change themselves, asked the run that made it in their own words, it did so for them or asked the agent that did in
+  a later turn of theirs, and not while the hand-over's own report is still to come, or came after the change or
+  within five minutes before it (that report tells the end). An agent's background work that ends the task counts
+  too. The inbox row of the same change is marked read for them when a turn starts: it sends no push and counts in no
+  badge, so one thing tells them, and it stays in their list, so a turn that fails or passes still leaves the news.
+- A handed task is looked at a day after the hand-over, then daily, seven looks in all. One that has not changed and
+  whose conversation was quiet for four hours is said once per task with what it waits on, read from the task's own
+  conversation: the people something there waits on (also while the hand-over is still out), else its agent's run
+  paused on something no inbox shows. Never said: a task that waits on the requester (their inbox has it), a hand-over
+  that failed or was never taken (told when it closed), and a task whose hand-over was reported back and that nobody
+  closed (the person heard the report, and what is left of it is theirs).
+- What the right hand is told is a notice only it reads (`wait_result` with `refs.task`, agent-only on every build),
+  which names the run that handed the task over, so the turn it starts is that person's own.
 - A commitment with a time becomes a plain reminder, said in one line. A run at that time only when the person asked
-  the right hand to do something then.
-- At most three wakes a person a day. Each wake is one turn on that person's AI, through the gateway, budget checked
-  and cost recorded.
+  the right hand to do something then. It keeps at most three by itself in one DM, a rule of its prompt, which also
+  lists the ones waiting there. A reminder a person asks for in words has no such cap.
+- At most three wakes a person a day, in their own time zone. Past it the notice is written and read with the next
+  turn, and the inbox row stays. Each wake is one turn on that person's AI, through the gateway, budget checked and
+  cost recorded. The looks and the reminders call no model.
+- The person's switch stops all of it: the task's end, the looks and the reminders it sets by itself.
 
 ### 6. Welcome ("Dar boas-vindas a quem entra")
 
