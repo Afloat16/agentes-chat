@@ -770,7 +770,13 @@ export function useDecideActionCard(
       part(api, "actionCards").decide(orgId, where.messageId, decision, knows),
     onSuccess: ({ card }) => {
       cacheActionCard(qc, orgId, where, card);
-      for (const key of [keys.roles(orgId), keys.members(orgId), keys.channels(orgId)])
+      for (const key of [
+        keys.roles(orgId),
+        keys.members(orgId),
+        keys.channels(orgId),
+        keys.invitations(orgId),
+        keys.credentials(orgId),
+      ])
         void qc.invalidateQueries({ queryKey: key });
     },
   });

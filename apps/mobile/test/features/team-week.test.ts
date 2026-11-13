@@ -69,7 +69,7 @@ test("the card's footer says when the card it sits on comes", () => {
 test("the approvals and the people cards live in files of their own, drawn as the other offers", () => {
   const offer = src("ai/OfferCard.tsx");
   expect(offer).toContain('if (card.kind === "approvals") return <OfferApprovals card={card} />;');
-  expect(offer).toContain('if (card.kind === "member_changes") return <OfferPeople card={card} />;');
+  expect(offer).toContain('if (card.kind === "member_changes") return <OfferPeople card={card} message={m} />;');
   expect(src("ai/OfferApprovals.tsx")).toContain("<OfferShell");
   expect(src("ai/OfferPeople.tsx")).toContain("<OfferShell");
 });
