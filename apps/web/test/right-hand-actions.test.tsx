@@ -251,9 +251,11 @@ describe("a change in the workspace that names all it does", () => {
     const c = cardGroup();
     expect(c.textContent).toContain("As duas novas vendedoras.");
     expect(c.querySelector(".rq__wt b")?.textContent).toBe(
-      "Convidar ana@example.com, bia@example.com para o workspace",
+      "Convidar ana@example.com, bia@example.com para o workspace.",
     );
-    expect(c.querySelector(".rq__wt small")?.textContent).toBe("+ Vendas");
+    // Its role is said in words, and the card says it proposes a change while it still does.
+    expect(c.querySelector(".rq__wt small")?.textContent).toBe("Com o papel Vendas.");
+    expect(c.querySelector(".rq__kind")?.textContent).toBe("Propõe uma mudança");
     // Nothing is sent before the tap, and the tap says which action this app showed.
     expect(state.calls.some((x) => x.method === "actionCards.decide")).toBe(false);
     await click(within(c).getByRole("button", { name: "Aplicar" }));
@@ -268,9 +270,11 @@ describe("a change in the workspace that names all it does", () => {
     // Applied, the card says what happened, and the address left out is a line of its own that points to no button.
     expect(over.querySelector(".rq__wt b")?.textContent).toBe("Convite enviado para ana@example.com.");
     expect(over.querySelector(".rq__wt small")?.textContent).toBe(
-      "+ Vendas\nbia@example.com já tinha um convite pendente.",
+      "Com o papel Vendas.\nbia@example.com já tinha um convite pendente.",
     );
     expect(within(over).queryByRole("button", { name: "Aplicar" })).toBeNull();
+    // Its sentence says what was done: nothing over it still says it proposes a change.
+    expect(over.querySelector(".rq__kind")).toBeNull();
   });
 
   test("who was already invited is read from the answer to their own tap, and stays when the card everyone reads arrives", async () => {
@@ -308,7 +312,7 @@ describe("a change in the workspace that names all it does", () => {
     await settle(2);
     expect(cardGroup().textContent).toContain("Aplicado por você");
     expect(cardGroup().querySelector(".rq__wt small")?.textContent).toBe(
-      "+ Vendas\nbia@example.com já tinha um convite pendente.",
+      "Com o papel Vendas.\nbia@example.com já tinha um convite pendente.",
     );
   });
 
@@ -318,7 +322,9 @@ describe("a change in the workspace that names all it does", () => {
     const c = cardGroup();
     expect(c.querySelector(".rq__wt b")?.textContent).toBe("Apagar a chave de API «Chave antiga».");
     expect(c.querySelector(".rq__wt small")?.textContent).toBe("DeepSeek");
-    const apply = within(c).getByRole("button", { name: "Aplicar" });
+    // The button says what it does, never "Aplicar".
+    expect(within(c).queryByRole("button", { name: "Aplicar" })).toBeNull();
+    const apply = within(c).getByRole("button", { name: "Apagar" });
     await click(apply);
     expect(state.calls.find((x) => x.method === "actionCards.decide")?.args.slice(2)).toEqual([
       "apply",
@@ -380,10 +386,10 @@ describe("a change in the workspace that names all it does", () => {
     await renderApp(`/org/${ORG_ID}/notifications`, { api });
     await settle(8);
     const row = () => document.querySelector('[data-n="n-invite"]') as HTMLElement;
-    expect(row().querySelector(".rq__wt small")?.textContent).toBe("+ Vendas");
+    expect(row().querySelector(".rq__wt small")?.textContent).toBe("Com o papel Vendas.");
     await click(within(row()).getByRole("button", { name: "Aplicar" }));
     // Refused, and the card is read again from the server: it names the role it would now give.
-    expect(row().querySelector(".rq__wt small")?.textContent).toBe("+ Diretoria");
+    expect(row().querySelector(".rq__wt small")?.textContent).toBe("Com o papel Diretoria.");
     expect(state.calls.filter((x) => x.method.startsWith("actionCards.")).map((x) => x.method)).toEqual([
       "actionCards.get",
       "actionCards.decide",
@@ -407,6 +413,6 @@ describe("a change in the workspace that names all it does", () => {
     await goWith(state, worst);
     const c = cardGroup();
     expect(c.querySelector(".rq__wt b")?.textContent).toContain(emails[19] ?? "");
-    expect(c.querySelector(".rq__wt small")?.textContent).toBe(roleNames.map((n) => `+ ${n}`).join(", "));
+    expect(c.querySelector(".rq__wt small")?.textContent).toBe(`Com os papéis ${roleNames.join(" e ")}.`);
   });
 });

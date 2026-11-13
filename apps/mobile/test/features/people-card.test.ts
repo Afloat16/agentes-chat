@@ -33,4 +33,9 @@ test("a workspace change's card says who asked, and its tap says which action th
   expect(card).toContain("const asker = mine ? undefined : dir.memberById.get(card.forUserId)?.name;");
   // What only whoever applied it reads (an address that already held an invitation) comes from their tap's answer.
   expect(card).toContain('actionCardDetail(own?.state === "applied" ? own : card, t, i18n.language)');
+  // As on the web: a card that deletes says so on its button, and one whose sentence says what happened has no kind
+  // line over it.
+  expect(card).toContain("label={t(actionCardApplyKey(card))}");
+  expect(card).toContain("headless={actionCardSaysDone(card)}");
+  expect(src("chat/asks.tsx")).toContain("{headless ? null : (");
 });

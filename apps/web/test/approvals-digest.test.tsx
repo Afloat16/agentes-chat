@@ -127,9 +127,13 @@ test("a long routine group shows its first three rows, the rest behind one butto
   expect(rows()).toHaveLength(4);
   expect(within(group).getByRole("button", { name: "Aprovar os 10" })).toBeTruthy();
   await click(within(group).getByRole("button", { name: "Ver os outros 7" }));
-  // In place: every row, the button gone, and the one tap still approves all ten.
-  expect(rows()).toHaveLength(10);
+  // In place: every row and the way to fold them back, which brings the first three again.
+  expect(rows()).toHaveLength(11);
   expect(within(group).queryByRole("button", { name: /Ver os outros/ })).toBeNull();
+  await click(within(group).getByRole("button", { name: "Mostrar menos" }));
+  expect(rows()).toHaveLength(4);
+  await click(within(group).getByRole("button", { name: "Ver os outros 7" }));
+  // The one tap still approves all ten.
   await click(within(group).getByRole("button", { name: "Aprovar os 10" }));
   expect(state.calls.find((c) => c.method === "approvals.decideMany")?.args.slice(1)).toEqual([
     ids,

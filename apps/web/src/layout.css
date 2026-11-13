@@ -14425,6 +14425,11 @@ html:not([data-pointer]) .settings-row--open:focus-visible {
     box-sizing: border-box;
     padding-left: calc(28px + var(--space-3));
   }
+  /* The name over it keeps, above and below, the room one line has inside the icon's 28: the value stands as far
+     under a name of two lines as under a name of one, which centres on the icon. */
+  .settings-row--toggle:has(> .settings-row__value) > .settings-row__text {
+    padding-block: calc((28px - 1lh) / 2);
+  }
   /* A line with a status under its name and a switch or nothing at its end: the icon, the name and the switch on one
      line as above (the name keeps the 24 characters), the status under them at the row's full width, so the icon never
      owns a column beside three lines. A step (`--space-2`, a MediaRow's) parts it from the icon: closer, it reads as

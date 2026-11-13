@@ -4,6 +4,7 @@ import i18next from "i18next";
 import type { AppNotification } from "../src/api/types";
 import { openTarget, sortWaiting, TEAM_WATCH_CAUSES, teamWatchOf, waitingCardOf } from "../src/lib/notifications";
 import { soundForNotification } from "../src/lib/sounds";
+import { teamWatchLine } from "../src/lib/team-watch";
 
 const notice = (latest: AppNotification["latest"], extra: Partial<AppNotification> = {}): AppNotification => ({
   id: "n1",
@@ -25,14 +26,13 @@ test("the right hand's notice is worded by its cause, with the first names, how 
   const n = notice({ reason: "connector", names: ["Slack", "Notion", "Linear"], text: "stored" }, { count: 5 });
   expect(teamWatchOf(n)).toEqual({
     cause: "connector",
-    words: { key: "notifications.teamWatch.connector", values: { names: "Slack, Notion, Linear +2", count: 5 } },
+    key: "notifications.teamWatch.connector",
+    names: ["Slack", "Notion", "Linear"],
+    count: 5,
     text: "stored",
     act: "notifications.teamWatch.act.reconnect",
   });
-  expect(teamWatchOf(notice({ reason: "sign_in", names: ["Work"] }))?.words?.values).toEqual({
-    names: "Work",
-    count: 1,
-  });
+  expect(teamWatchOf(notice({ reason: "sign_in", names: ["Work"] }))).toMatchObject({ names: ["Work"], count: 1 });
   expect(teamWatchOf({ ...n, kind: "approval" })).toBeNull();
 });
 
@@ -46,13 +46,15 @@ test("its one button names the way out of its cause, and every cause's sentence 
 
   const t = i18next.createInstance();
   void t.init({ lng: "pt-BR", fallbackLng: "en", resources, initAsync: false });
-  const say = (reason: string, names: string[]) => {
-    const words = teamWatchOf(notice({ reason, names }, { count: names.length }))?.words;
-    return words ? t.t(words.key, words.values) : "";
-  };
+  const say = (reason: string, names: string[], count = names.length) =>
+    teamWatchLine(t.t, notice({ reason, names }, { count }));
   expect(say("sign_in", ["Claude da Ana"])).toBe("O login de Claude da Ana acabou.");
   expect(say("connector", ["Notion"])).toBe("Notion precisa ser reconectado.");
-  expect(say("connector", ["Slack", "Notion"])).toBe("Slack, Notion precisam ser reconectados.");
+  // Its names are a list in words, and the ones it does not name are counted in words too.
+  expect(say("connector", ["Slack", "Notion"])).toBe("Slack e Notion precisam ser reconectados.");
+  expect(say("connector", ["Slack", "Notion"], 3)).toBe("Slack, Notion e mais 1 precisam ser reconectados.");
+  // A computer's name often holds the word: the sentence does not say it again.
+  expect(say("computer", ["Computador da Ana"])).toBe("Computador da Ana está offline com agentes esperando.");
   expect(say("budget_out", ["Ada"])).toBe("O orçamento de Ada acabou.");
   expect(t.t(act("sign_in") ?? "")).toBe("Entrar de novo");
   expect(t.t(act("connector") ?? "")).toBe("Reconectar");
@@ -74,7 +76,7 @@ test("a cause this build does not know keeps the server's own sentence", () => {
   const n = notice({ reason: "something_new", names: ["X"], text: "Something new is wrong. Fix it in Settings" });
   expect(teamWatchOf(n)).toMatchObject({
     cause: null,
-    words: null,
+    key: null,
     text: "Something new is wrong. Fix it in Settings",
     // Its button only opens.
     act: null,

@@ -2,11 +2,13 @@ import { expect, test } from "bun:test";
 import type { TFunction } from "i18next";
 import type { AgentProposalCard, CalendarProposal, WorkspaceActionCard } from "../src/api/types";
 import {
+  actionCardApplyKey,
   actionCardDestroys,
   actionCardDetail,
   actionCardKey,
   actionCardMark,
   actionCardOf,
+  actionCardSaysDone,
   actionCardWords,
   agentProposalEnd,
   agentProposalOf,
@@ -469,10 +471,17 @@ test("an invite card says every address in its sentence, its roles under it and,
     decidedAt: null,
   });
   const t = ((key: string, o?: Record<string, unknown>) =>
-    o?.email ? `${key}(${o.email})` : key) as unknown as TFunction;
+    o?.email
+      ? `${key}(${o.email})`
+      : o?.names
+        ? (o.names as string[]).join(" e ")
+        : o?.roles
+          ? `${key}(${o.roles}, ${o.count})`
+          : key) as unknown as TFunction;
   // This app words it, so its click may say it knows the action.
   expect(actionCardKey(card())).toBe("rightHand.action.invite_people");
-  expect(actionCardDetail(card(), t)).toBe("+ Vendas, + Admin");
+  // Its roles are a sentence, never a list of marks.
+  expect(actionCardDetail(card(), t)).toBe("rightHand.action.invite_roles(Vendas e Admin, 2)");
   // Plain members: the sentence says it all.
   expect(actionCardDetail(card({}, []), t)).toBe("");
   const sent = card({
@@ -483,15 +492,18 @@ test("an invite card says every address in its sentence, its roles under it and,
   });
   // Each address left out is a line of its own. Nothing on the card resends, so the open invitation is only said.
   expect(actionCardDetail(sent, t)).toBe(
-    "+ Vendas, + Admin\nmembers.batch.had_invite(bia@example.com)\nmembers.batch.already_member(caio@example.com)",
+    "rightHand.action.invite_roles(Vendas e Admin, 2)\nmembers.batch.had_invite(bia@example.com)\nmembers.batch.already_member(caio@example.com)",
   );
   // Still to apply, the sentence says what it would do. Applied, what happened: who got an invitation.
   expect(actionCardKey(sent)).toBe("rightHand.action.invite_people");
+  expect(actionCardSaysDone(sent)).toBe(false);
   const applied: WorkspaceActionCard = {
     ...card({ invited: "ana@example.com, caio@example.com" }),
     state: "applied",
   };
   expect(actionCardKey(applied)).toBe("rightHand.action.invite_people_sent");
+  // Its sentence then says what happened: nothing over it says it proposes a change.
+  expect(actionCardSaysDone(applied)).toBe(true);
   expect(actionCardWords(applied, ((key: string) => key) as unknown as TFunction)).toEqual({
     emails: "format.list",
     count: 2,
@@ -500,6 +512,7 @@ test("an invite card says every address in its sentence, its roles under it and,
   expect(actionCardKey({ ...card(), state: "applied" })).toBe("rightHand.action.invite_people");
   expect(actionCardMark(card())).toBe("members");
   expect(actionCardDestroys(card())).toBe(false);
+  expect(actionCardApplyKey(card())).toBe("rightHand.card.apply");
   // Its receipt names who got an invitation.
   const receipt = {
     kind: "workspace.changed",
@@ -529,7 +542,9 @@ test("removing an API key: the key in its sentence, its provider under it, a cha
   expect(actionCardDetail(card, t)).toBe("DeepSeek");
   expect(actionCardMark(card)).toBe("key");
   expect(actionCardDestroys(card)).toBe(true);
-  // Only who manages keys gets Aplicar.
+  // Its button says what it does.
+  expect(actionCardApplyKey(card)).toBe("rightHand.card.delete");
+  // Only who manages keys gets it.
   expect(mayApplyCard(card, { userId: "u1", may: (k) => k === "manage_credentials" })).toBe(true);
   expect(mayApplyCard(card, { userId: "u1", may: (k) => k === "invite_people" })).toBe(false);
   const other = (action: string) => ({ ...card, params: { ...card.params, action } });

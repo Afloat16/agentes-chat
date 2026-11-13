@@ -159,7 +159,7 @@ export interface DigestRow {
 /**
  * A routine group's rows: the requests of one agent that read the same (`titleOf`) are one row with how many. The
  * first rows show and the rest wait behind one "Ver os outros" (`hidden`: the requests it holds back), unless that
- * would hide a single row.
+ * would hide a single row. `folds`: there are rows to hold back, so shown whole (`all`) it can close again.
  */
 export function digestRows(
   routine: readonly Approval[],
@@ -180,6 +180,7 @@ export function digestRows(
   const rows: DigestRow[] = [...byKey.values()].map(({ details, ...row }) => {
     return { ...row, detail: details.size <= DIGEST_DETAILS ? [...details].join(", ") : "" };
   });
-  const shown = all || rows.length <= DIGEST_ROWS + 1 ? rows : rows.slice(0, DIGEST_ROWS);
-  return { rows: shown, hidden: rows.slice(shown.length).reduce((n, r) => n + r.count, 0) };
+  const folds = rows.length > DIGEST_ROWS + 1;
+  const shown = all || !folds ? rows : rows.slice(0, DIGEST_ROWS);
+  return { rows: shown, hidden: rows.slice(shown.length).reduce((n, r) => n + r.count, 0), folds };
 }

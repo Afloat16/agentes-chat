@@ -2522,6 +2522,7 @@
     "card": {
       "settings": "{{name}} · Instellingen",
       "apply": "Toepassen",
+      "delete": "Verwijderen",
       "dismiss": "Negeren",
       "decline": "Weigeren",
       "askAdmin": "Een admin vragen",
@@ -2664,7 +2665,9 @@
       "update_workspace": "Werkruimte <b>{{name}}</b> wijzigen",
       "set_action_check_on": "De check van wat het team al deed aanzetten",
       "set_action_check_off": "De check van wat het team al deed uitzetten",
-      "invite_people": "<b>{{emails}}</b> uitnodigen voor de werkruimte",
+      "invite_people": "<b>{{emails}}</b> uitnodigen voor de werkruimte.",
+      "invite_roles_one": "Met de rol {{roles}}.",
+      "invite_roles_other": "Met de rollen {{roles}}.",
       "invite_people_sent_one": "Uitnodiging verstuurd naar <b>{{emails}}</b>.",
       "invite_people_sent_other": "Uitnodigingen verstuurd naar <b>{{emails}}</b>.",
       "remove_ai_key": "API-sleutel \"{{name}}\" verwijderen."
@@ -4631,8 +4634,8 @@
       "budget_out_other": "De budgetten van {{names}} zijn op.",
       "budget_low_one": "Het budget van {{names}} is bijna op.",
       "budget_low_other": "De budgetten van {{names}} zijn bijna op.",
-      "computer_one": "De computer {{names}} is offline terwijl agents wachten.",
-      "computer_other": "De computers {{names}} zijn offline terwijl agents wachten.",
+      "computer_one": "{{names}} is offline terwijl agents wachten.",
+      "computer_other": "{{names}} zijn offline terwijl agents wachten.",
       "act": {
         "sign_in": "Opnieuw aanmelden",
         "reconnect": "Opnieuw verbinden",

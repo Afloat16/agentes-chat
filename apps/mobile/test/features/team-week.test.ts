@@ -33,6 +33,8 @@ test("stacked rows: every fix's button under its words, full width, and the foot
   expect(card).toContain("{!dismissed && bulk.length > 1 ? (");
   // Three numbers share one line. With the workspace's money they are four, two by two.
   expect(card).toContain("stats.budgetNanoUsd > 0 ? styles.statOfFour : styles.statOfThree");
+  // A fix's face shares a line with its title only: the line under them takes the row's width.
+  expect(card).toMatch(/\{title\}\s+<\/Text>\s+<\/View>\s+<Text variant="footnote" tone="ink2">\s+\{line\}/);
   expect(card).toContain("onPress={openRightHandSettings}");
   // Approvals open the phone's own approval screen, as the approvals card does.
   expect(card).toContain("router.push(`/approval/");

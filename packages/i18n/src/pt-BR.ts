@@ -2606,6 +2606,8 @@ export const ptBR = {
     card: {
       settings: "{{name}} · Configurações",
       apply: "Aplicar",
+      /** In `apply`'s place on a card that deletes something for good (a role, a channel, an API key). */
+      delete: "Apagar",
       dismiss: "Descartar",
       decline: "Recusar",
       askAdmin: "Pedir a um admin",
@@ -2753,7 +2755,10 @@ export const ptBR = {
       update_workspace: "Mudar o workspace <b>{{name}}</b>",
       set_action_check_on: "Ligar a conferência do que o time já fez",
       set_action_check_off: "Desligar a conferência do que o time já fez",
-      invite_people: "Convidar <b>{{emails}}</b> para o workspace",
+      invite_people: "Convidar <b>{{emails}}</b> para o workspace.",
+      /** Under it: the roles every address gets ("Vendas e Suporte"). `count`: how many roles. */
+      invite_roles_one: "Com o papel {{roles}}.",
+      invite_roles_other: "Com os papéis {{roles}}.",
       /** The same card once applied: who got an invitation ("ana@example.com e caio@example.com"). */
       invite_people_sent_one: "Convite enviado para <b>{{emails}}</b>.",
       invite_people_sent_other: "Convites enviados para <b>{{emails}}</b>.",
@@ -4824,7 +4829,7 @@ export const ptBR = {
     planServes: { onlyMe: "Mudar para Só eu", done: "Agora só você usa este plano." },
     /**
      * What the right hand found wrong (`team_watch`), by cause: the notice's headline, its stored text and its push.
-     * `names`: what it is about, the first few by name and "+2" for the rest. `count`: how many things in all.
+     * `names`: what it is about, the first few by name, then "e mais 2". `count`: how many things in all.
      */
     teamWatch: {
       sign_in_one: "O login de {{names}} acabou.",
@@ -4839,8 +4844,8 @@ export const ptBR = {
       budget_out_other: "Os orçamentos de {{names}} acabaram.",
       budget_low_one: "O orçamento de {{names}} está quase no fim.",
       budget_low_other: "Os orçamentos de {{names}} estão quase no fim.",
-      computer_one: "O computador {{names}} está offline com agentes esperando.",
-      computer_other: "Os computadores {{names}} estão offline com agentes esperando.",
+      computer_one: "{{names}} está offline com agentes esperando.",
+      computer_other: "{{names}} estão offline com agentes esperando.",
       /** The notice's one button: the way out, where the notice opens. */
       act: {
         sign_in: "Entrar de novo",

@@ -20,7 +20,10 @@ test("the one tap approves only what the server calls routine, and the card work
   expect(source).toContain("{row.count > 1 ? `");
   expect(source).toContain(" × ");
   expect(source).toContain('t("rightHand.digest.more", { count: group.hidden })');
-  expect(source).toContain("onPress={() => setAll(true)}");
+  // Opened, the same line folds the rows back.
+  expect(source).toContain("group.folds ? (");
+  expect(source).toContain('all ? t("folded.less")');
+  expect(source).toContain("onPress={() => setAll((v) => !v)}");
   // No risk is judged on the phone: the words that would do it never appear.
   expect(source).not.toMatch(/approvalRisk|approvalAction|highRisk/);
   // Approved, the phone says so as the conversation's "Aprovar tudo" does. A failure says its cause.

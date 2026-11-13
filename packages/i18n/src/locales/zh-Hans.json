@@ -2437,6 +2437,7 @@
     "card": {
       "settings": "{{name}} · 设置",
       "apply": "应用",
+      "delete": "删除",
       "dismiss": "放弃",
       "decline": "拒绝",
       "askAdmin": "请管理员处理",
@@ -2571,7 +2572,8 @@
       "update_workspace": "更改工作区 <b>{{name}}</b>",
       "set_action_check_on": "开启对团队已做之事的检查",
       "set_action_check_off": "关闭对团队已做之事的检查",
-      "invite_people": "邀请 <b>{{emails}}</b> 加入工作区",
+      "invite_people": "邀请 <b>{{emails}}</b> 加入工作区。",
+      "invite_roles_other": "角色为 {{roles}}。",
       "invite_people_sent_other": "已向 <b>{{emails}}</b> 发送邀请。",
       "remove_ai_key": "删除 API 密钥“{{name}}”。"
     }
@@ -4469,7 +4471,7 @@
       "database_other": "数据库 {{names}} 需要重新连接。",
       "budget_out_other": "{{names}} 的预算已用完。",
       "budget_low_other": "{{names}} 的预算即将用完。",
-      "computer_other": "电脑 {{names}} 已离线，有智能体在等待。",
+      "computer_other": "{{names}} 已离线，有智能体在等待。",
       "act": {
         "sign_in": "重新登录",
         "reconnect": "重新连接",

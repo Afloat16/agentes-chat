@@ -2692,6 +2692,8 @@ export const en = {
     card: {
       settings: "{{name}} · Settings",
       apply: "Apply",
+      /** In `apply`'s place on a card that deletes something for good (a role, a channel, an API key). */
+      delete: "Delete",
       dismiss: "Dismiss",
       decline: "Decline",
       askAdmin: "Ask an admin",
@@ -2843,7 +2845,10 @@ export const en = {
       set_action_check_on: "Turn on the check of what the team already did",
       set_action_check_off: "Turn off the check of what the team already did",
       /** `emails`: every address on the card, in a list ("ana@example.com, bia@example.com"). */
-      invite_people: "Invite <b>{{emails}}</b> to the workspace",
+      invite_people: "Invite <b>{{emails}}</b> to the workspace.",
+      /** Under it: the roles every address gets ("Sales and Support"). `count`: how many roles. */
+      invite_roles_one: "With the role {{roles}}.",
+      invite_roles_other: "With the roles {{roles}}.",
       /** The same card once applied: who got an invitation ("ana@example.com and caio@example.com"). */
       invite_people_sent_one: "Invitation sent to <b>{{emails}}</b>.",
       invite_people_sent_other: "Invitations sent to <b>{{emails}}</b>.",
@@ -4924,7 +4929,7 @@ export const en = {
     planServes: { onlyMe: "Switch to Only me", done: "Only you use this plan now." },
     /**
      * What the right hand found wrong (`team_watch`), by cause: the notice's headline, its stored text and its push.
-     * `names`: what it is about, the first few by name and "+2" for the rest. `count`: how many things in all.
+     * `names`: what it is about, the first few by name, then "and 2 more". `count`: how many things in all.
      */
     teamWatch: {
       sign_in_one: "The sign-in for {{names}} ended.",
@@ -4939,8 +4944,8 @@ export const en = {
       budget_out_other: "{{names}} are out of budget.",
       budget_low_one: "{{names}} is about to run out of budget.",
       budget_low_other: "{{names}} are about to run out of budget.",
-      computer_one: "The computer {{names}} is offline with agents waiting.",
-      computer_other: "The computers {{names}} are offline with agents waiting.",
+      computer_one: "{{names}} is offline with agents waiting.",
+      computer_other: "{{names}} are offline with agents waiting.",
       /** The notice's one button: the way out, where the notice opens. */
       act: {
         sign_in: "Sign in again",

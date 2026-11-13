@@ -703,11 +703,17 @@ const invitedBy = (card: WorkspaceActionCard) =>
   card.params.action === "invite_people" && card.state === "applied" ? listed(card.params.words.invited) : [];
 
 /**
+ * Whether the card's sentence says what happened (an applied invite card's "Convites enviados para …"): nothing over
+ * it then says that it proposes a change.
+ */
+export const actionCardSaysDone = (card: WorkspaceActionCard) => invitedBy(card).length > 0;
+
+/**
  * The card's sentence: `rightHand.action.{action}`, or the plain one for an action this build doesn't know. An invite
  * card that was applied says who got an invitation instead of what it would do.
  */
 export const actionCardKey = (card: WorkspaceActionCard) =>
-  invitedBy(card).length > 0
+  actionCardSaysDone(card)
     ? "rightHand.action.invite_people_sent"
     : (WORKSPACE_ACTION_IDS as readonly string[]).includes(card.params.action)
       ? `rightHand.action.${workspaceActionContext(card.params.action, card.params.words)}`
@@ -725,7 +731,8 @@ export const actionCardWords = (card: WorkspaceActionCard, t: TFunction): Record
  * Everything else the card changes, under its sentence, so whoever applies it from their inbox sees all of it: what a
  * role or a channel's exception gives or takes in the permissions' own words ("conversar, dar missões e editar a wiki";
  * "+ editar a wiki, − aprovar ações"), a new name, where a role moves, a channel turned private, a new budget. Empty when
- * the sentence says it all. An invite card's lines are each their own (a line break between them).
+ * the sentence says it all. An invite card's lines are each their own (a line break between them), its roles a
+ * sentence ("Com os papéis Vendas e Suporte.").
  */
 export function actionCardDetail(card: WorkspaceActionCard, t: TFunction, locale = "en"): string {
   const input = card.params.input;
@@ -771,9 +778,11 @@ export function actionCardDetail(card: WorkspaceActionCard, t: TFunction, locale
       // The roles every address gets and, once sent, each address left out with why, a line each. Nothing on the
       // card resends: an address that held an invitation is only said.
       return [
-        keys(input.roleNames)
-          .map((n) => `+ ${n}`)
-          .join(", "),
+        keys(input.roleNames).length > 0 &&
+          (t("rightHand.action.invite_roles", {
+            roles: joinNames(keys(input.roleNames), t),
+            count: keys(input.roleNames).length,
+          }) as string),
         ...INVITE_LEFT_OUT.flatMap((status) =>
           listed(card.params.words[status]).map(
             (email) => t(`members.batch.${status === "already_invited" ? "had_invite" : status}`, { email }) as string,
@@ -804,8 +813,12 @@ export const actionCardMark = (card: WorkspaceActionCard): "channel" | "members"
   return action === "invite_people" ? "members" : action === "remove_ai_key" ? "key" : "shield";
 };
 
-/** A change nothing brings back (a role, a channel or a key deleted): its Aplicar reads as a danger. */
+/** A change nothing brings back (a role, a channel or a key deleted): its button reads as a danger. */
 export const actionCardDestroys = (card: WorkspaceActionCard) => /^(delete|remove)_/.test(card.params.action);
+
+/** The words of the button that does what the card says: "Apagar" on one that deletes, else "Aplicar". */
+export const actionCardApplyKey = (card: WorkspaceActionCard) =>
+  actionCardDestroys(card) ? "rightHand.card.delete" : "rightHand.card.apply";
 
 /**
  * Whether this viewer gets Aplicar on the card: the key its screen asks for, unless they are the person it was for and

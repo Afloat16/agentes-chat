@@ -6275,6 +6275,9 @@
   "rightHand.card.apply": {
     "value": "Apply"
   },
+  "rightHand.card.delete": {
+    "value": "Delete"
+  },
   "rightHand.card.dismiss": {
     "value": "Dismiss"
   },
@@ -6648,7 +6651,13 @@
     "value": "Turn off the check of what the team already did"
   },
   "rightHand.action.invite_people": {
-    "value": "Invite <b>{{emails}}</b> to the workspace"
+    "value": "Invite <b>{{emails}}</b> to the workspace."
+  },
+  "rightHand.action.invite_roles": {
+    "value": {
+      "one": "With the role {{roles}}.",
+      "other": "With the roles {{roles}}."
+    }
   },
   "rightHand.action.invite_people_sent": {
     "value": {
@@ -11279,8 +11288,8 @@
   },
   "notifications.teamWatch.computer": {
     "value": {
-      "one": "The computer {{names}} is offline with agents waiting.",
-      "other": "The computers {{names}} are offline with agents waiting."
+      "one": "{{names}} is offline with agents waiting.",
+      "other": "{{names}} are offline with agents waiting."
     }
   },
   "notifications.teamWatch.act.sign_in": {

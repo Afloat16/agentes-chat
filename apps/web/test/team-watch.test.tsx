@@ -22,7 +22,7 @@ test("what the right hand found: the problem itself as the headline, in the read
         latest: {
           reason: "connector",
           names: ["Slack", "Notion", "Linear"],
-          text: "Slack, Notion, Linear +1 need reconnecting.",
+          text: "Slack, Notion, Linear, and 1 more need reconnecting.",
         },
       }),
       notification({
@@ -71,7 +71,9 @@ test("what the right hand found: the problem itself as the headline, in the read
   const apps = row("n-apps");
   // The headline is the problem, said for how many there are. Nothing under it says it again, and who found it is
   // named once, on the row's top line.
-  expect(apps.querySelector(".rq__lead")?.textContent).toBe("Slack, Notion, Linear +1 precisam ser reconectados.");
+  expect(apps.querySelector(".rq__lead")?.textContent).toBe(
+    "Slack, Notion, Linear e mais 1 precisam ser reconectados.",
+  );
   expect(apps.querySelector(".nt-wr__sub")).toBeNull();
   expect(apps.querySelector(".rq__who")?.textContent).toBe("Ada");
   expect(apps.querySelector(".rq__lead")?.textContent).not.toContain("Ada");
@@ -84,7 +86,7 @@ test("what the right hand found: the problem itself as the headline, in the read
   expect(row("n-out").querySelector(".rq__lead")?.textContent).toBe("O orçamento de Ada acabou.");
   expect(button("n-out")).toBe("Aumentar orçamento");
   expect(row("n-pc").querySelector(".rq__lead")?.textContent).toBe(
-    "O computador Mac do escritório está offline com agentes esperando.",
+    "Mac do escritório está offline com agentes esperando.",
   );
   expect(button("n-pc")).toBe("Trocar computador");
   expect(within(waiting).queryByRole("button", { name: "Abrir" })).toBe(row("n-new").querySelector(".nt-wr__open"));

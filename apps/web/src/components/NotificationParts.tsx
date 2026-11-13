@@ -8,11 +8,11 @@ import {
   askersOf,
   channelOf,
   runFailedGroupOf,
-  teamWatchOf,
   widgetNoticeOf,
   workspaceHeadline,
 } from "@agenteschat/client/lib/notifications";
 import type { Words } from "@agenteschat/client/lib/routine-view";
+import { teamWatchLine } from "@agenteschat/client/lib/team-watch";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import { Avatar, ComputerIcon, cx, Icon } from "@agenteschat/ui";
 import type { TFunction } from "i18next";
@@ -34,16 +34,6 @@ export type Dir = ReturnType<typeof useDirectory>;
 export function sayWords(t: TFunction, w: Words, otherwise = "") {
   const tt = t as unknown as (key: string, options?: Record<string, unknown>) => string;
   return tt(w.key, { ...w.values, defaultValue: w.fallback ? tt(w.fallback) : otherwise });
-}
-
-/**
- * What the right hand found wrong (ADR 0177 §1), in the reader's language: the notice's headline. A cause this build
- * doesn't know keeps the server's own sentence. Null for any other notice.
- */
-export function teamWatchLine(t: TFunction, n: AppNotification): string | null {
-  const found = teamWatchOf(n);
-  if (!found) return null;
-  return found.words ? sayWords(t, found.words, found.text) : found.text;
 }
 
 export const nameOf = (t: TFunction, dir: Dir, a: NotificationActor | undefined) =>

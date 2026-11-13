@@ -20,10 +20,12 @@ import {
   type WorkspaceActionCard,
 } from "@agenteschat/client";
 import {
+  actionCardApplyKey,
   actionCardDetail,
   actionCardKey,
   actionCardMark,
   actionCardOf,
+  actionCardSaysDone,
   actionCardWords,
   mayApplyCard,
 } from "@agenteschat/client/lib/action-cards";
@@ -409,7 +411,7 @@ function WorkspaceActionView({
           variant="primary"
           size="card"
           wide
-          label={t("rightHand.card.apply")}
+          label={t(actionCardApplyKey(card))}
           disabled={decide.isPending}
           loading={decide.isPending && decide.variables === "apply"}
           onPress={() => decide.mutate("apply", { onError: failed })}
@@ -445,6 +447,7 @@ function WorkspaceActionView({
     <AskCard
       id={where.messageId}
       kind="proposal"
+      headless={actionCardSaysDone(card)}
       kindNote={asker ? t("audit.behind.person", { name: asker }) : undefined}
       agentId={agentId ?? ""}
       waitsFor={may ? "you" : t("rightHand.action.only")}

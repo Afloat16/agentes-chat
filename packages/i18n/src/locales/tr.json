@@ -2519,6 +2519,7 @@
     "card": {
       "settings": "{{name}} · Ayarlar",
       "apply": "Uygula",
+      "delete": "Sil",
       "dismiss": "Vazgeç",
       "decline": "Reddet",
       "askAdmin": "Bir yöneticiye sor",
@@ -2661,7 +2662,9 @@
       "update_workspace": "<b>{{name}}</b> çalışma alanını değiştir",
       "set_action_check_on": "Ekibin zaten yaptıklarının kontrolünü aç",
       "set_action_check_off": "Ekibin zaten yaptıklarının kontrolünü kapat",
-      "invite_people": "Çalışma alanına davet et: <b>{{emails}}</b>",
+      "invite_people": "Çalışma alanına davet et: <b>{{emails}}</b>.",
+      "invite_roles_one": "{{roles}} rolüyle.",
+      "invite_roles_other": "{{roles}} rolleriyle.",
       "invite_people_sent_one": "<b>{{emails}}</b> adresine davet gönderildi.",
       "invite_people_sent_other": "<b>{{emails}}</b> adreslerine davet gönderildi.",
       "remove_ai_key": "\"{{name}}\" API anahtarını sil."
@@ -4613,8 +4616,8 @@
       "budget_out_other": "{{names}} için bütçeler bitti.",
       "budget_low_one": "{{names}} için bütçe bitmek üzere.",
       "budget_low_other": "{{names}} için bütçeler bitmek üzere.",
-      "computer_one": "{{names}} bilgisayarı çevrimdışı ve ajanlar bekliyor.",
-      "computer_other": "{{names}} bilgisayarları çevrimdışı ve ajanlar bekliyor.",
+      "computer_one": "{{names}} çevrimdışı ve ajanlar bekliyor.",
+      "computer_other": "{{names}} çevrimdışı ve ajanlar bekliyor.",
       "act": {
         "sign_in": "Yeniden oturum aç",
         "reconnect": "Yeniden bağla",

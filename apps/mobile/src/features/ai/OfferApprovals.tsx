@@ -89,15 +89,16 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
                   </View>
                 );
               })}
-              {group.hidden > 0 ? (
+              {group.folds ? (
                 <Pressable
                   accessibilityRole="button"
+                  accessibilityState={{ expanded: all }}
                   hitSlop={8}
-                  onPress={() => setAll(true)}
+                  onPress={() => setAll((v) => !v)}
                   style={({ pressed }) => [styles.more, pressed && styles.pressed]}
                 >
                   <Text variant="footnote" style={styles.semibold}>
-                    {t("rightHand.digest.more", { count: group.hidden })}
+                    {all ? t("folded.less") : t("rightHand.digest.more", { count: group.hidden })}
                   </Text>
                 </Pressable>
               ) : null}

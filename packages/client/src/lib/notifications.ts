@@ -264,26 +264,20 @@ const TEAM_WATCH_ACT = {
 } as const satisfies Record<TeamWatchCause, string>;
 
 /**
- * What the right hand found wrong (ADR 0177 §1): its cause, the sentence saying it as words in the reader's language
- * (`names`: the first things it is about, then how many more; `count`: all of them, for the sentence's number) and
- * the name of its one button (`act`). A cause this build doesn't know has neither: `text`, the server's own sentence,
- * stands for it and its button only opens. Null for any other notice.
+ * What the right hand found wrong (ADR 0177 §1): its cause, the key of the sentence saying it (`key`, said by
+ * `teamWatchLine` with `names`, the first things it is about, and `count`, how many in all) and the name of its one
+ * button (`act`). A cause this build doesn't know has neither: `text`, the server's own sentence, stands for it and
+ * its button only opens. Null for any other notice.
  */
 export function teamWatchOf(n: Pick<AppNotification, "kind" | "count" | "latest">) {
   if (n.kind !== "team_watch") return null;
   const names = n.latest.names ?? [];
-  const more = n.count - names.length;
   const cause = TEAM_WATCH_CAUSES.find((c) => c === n.latest.reason) ?? null;
-  const words: Words | null =
-    cause && names.length > 0
-      ? {
-          key: `notifications.teamWatch.${cause}`,
-          values: { names: names.join(", ") + (more > 0 ? ` +${more}` : ""), count: Math.max(n.count, names.length) },
-        }
-      : null;
   return {
     cause,
-    words,
+    key: cause && names.length > 0 ? `notifications.teamWatch.${cause}` : null,
+    names,
+    count: Math.max(n.count, names.length),
     text: n.latest.text ?? "",
     act: cause ? `notifications.teamWatch.act.${TEAM_WATCH_ACT[cause]}` : null,
   };

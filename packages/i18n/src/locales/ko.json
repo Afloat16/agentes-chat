@@ -2438,6 +2438,7 @@
     "card": {
       "settings": "{{name}} · 설정",
       "apply": "적용",
+      "delete": "삭제",
       "dismiss": "버리기",
       "decline": "거절",
       "askAdmin": "관리자에게 요청",
@@ -2572,7 +2573,8 @@
       "update_workspace": "워크스페이스 <b>{{name}}</b> 변경",
       "set_action_check_on": "팀이 이미 한 일 확인 켜기",
       "set_action_check_off": "팀이 이미 한 일 확인 끄기",
-      "invite_people": "<b>{{emails}}</b>을(를) 워크스페이스에 초대하기",
+      "invite_people": "<b>{{emails}}</b>을(를) 워크스페이스에 초대합니다.",
+      "invite_roles_other": "{{roles}} 역할로 초대해요.",
       "invite_people_sent_other": "<b>{{emails}}</b>에게 초대를 보냈어요.",
       "remove_ai_key": "API 키 \"{{name}}\"을(를) 삭제합니다."
     }
@@ -4464,7 +4466,7 @@
       "database_other": "데이터베이스 {{names}}을(를) 다시 연결해야 해요.",
       "budget_out_other": "{{names}}의 예산을 다 썼어요.",
       "budget_low_other": "{{names}}의 예산이 곧 바닥나요.",
-      "computer_other": "컴퓨터 {{names}}이(가) 오프라인이고 에이전트가 기다리고 있어요.",
+      "computer_other": "{{names}}이(가) 오프라인이고 에이전트가 기다리고 있어요.",
       "act": {
         "sign_in": "다시 로그인",
         "reconnect": "다시 연결",

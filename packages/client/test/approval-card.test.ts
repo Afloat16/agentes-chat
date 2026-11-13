@@ -93,6 +93,7 @@ test("a routine group's rows: one agent's requests that read the same are one ro
   expect(digestRows(ten, titleOf, detailOf)).toEqual({
     rows: [{ id: "0", title: "Create page", agentId: "agent-ada", count: 10, detail: "" }],
     hidden: 0,
+    folds: false,
   });
   // Up to three are said whole.
   expect(digestRows(ten.slice(0, 3), titleOf, detailOf).rows[0]?.detail).toBe("Note 0, Note 1, Note 2");
@@ -116,5 +117,7 @@ test("a routine group's rows: one agent's requests that read the same are one ro
   const cut = digestRows(long, titleOf, detailOf);
   expect(cut.rows.map((r) => r.title)).toEqual(["Create page 0", "Create page 1", "Create page 2"]);
   expect(cut.hidden).toBe(7);
-  expect(digestRows(long, titleOf, detailOf, true)).toMatchObject({ hidden: 0, rows: { length: 9 } });
+  // Shown whole it still folds, so it can close again.
+  expect(cut.folds).toBe(true);
+  expect(digestRows(long, titleOf, detailOf, true)).toMatchObject({ hidden: 0, rows: { length: 9 }, folds: true });
 });

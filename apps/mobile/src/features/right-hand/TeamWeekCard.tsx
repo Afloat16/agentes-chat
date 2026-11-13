@@ -312,7 +312,9 @@ function Fix({
   return (
     // A flat row on the card, divided by a hairline (never a plate or a box in a card).
     <View style={[styles.fix, divider && [styles.divided, { borderTopColor: c.line2 }]]}>
-      <View style={styles.fixTop}>
+      {/* The face and the title on one line, the rest under them at the row's width: a face never owns a column
+          beside lines of words. */}
+      <View style={[styles.fixTop, agentId ? styles.fixFace : null]}>
         <View style={styles.lead}>
           {agentId ? (
             <AgentFace agentId={agentId} size={32} live={false} />
@@ -333,15 +335,13 @@ function Fix({
             />
           )}
         </View>
-        <View style={styles.fill}>
-          <Text variant="small" tone={done ? "muted" : "ink"} style={styles.semibold}>
-            {title}
-          </Text>
-          <Text variant="footnote" tone="ink2">
-            {line}
-          </Text>
-        </View>
+        <Text variant="small" tone={done ? "muted" : "ink"} style={[styles.semibold, styles.fill]}>
+          {title}
+        </Text>
       </View>
+      <Text variant="footnote" tone="ink2">
+        {line}
+      </Text>
       {state === "done" ? (
         <Animated.View entering={reduced ? undefined : FadeIn.duration(160)} style={styles.doneRow}>
           <View style={[styles.line, styles.fill]}>
@@ -427,6 +427,8 @@ const styles = StyleSheet.create({
   // 12 above the hairline (with the section's gap) and 12 under it.
   divided: { marginTop: 4, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
   fixTop: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  // Beside a face the title centres on it. An icon keeps the title's first line.
+  fixFace: { alignItems: "center" },
   // One column for whatever leads (a face, or an icon on the title's first line): the words start at one place.
   lead: { width: 32, alignItems: "center" },
   doneRow: { flexDirection: "row", alignItems: "center", gap: 6 },

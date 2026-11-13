@@ -355,6 +355,12 @@ html:not([data-pointer]) .rq__more:focus-visible {
 .rq__foot > .ac-btn {
   height: 32px;
 }
+/* A ghost that leads the footer shows only its words: they start on the card's words' edge, its plate reaching out
+   by `--ghost-plate` (as `.ac-acts` places a ghost at a row's end), so it stays 8 from the card's edge. */
+.rq__foot > .ac-btn--ghost:first-child {
+  margin-inline-start: calc(-1 * var(--ghost-plate));
+  padding-inline-start: var(--ghost-plate);
+}
 /* On touch every button keeps its 32 plate, its target grown to 44 above and below it (the kit's small button's). */
 @media (pointer: coarse) {
   :is(.rq__foot, .rq__item-acts) > .ac-btn {

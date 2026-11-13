@@ -2523,6 +2523,7 @@
     "card": {
       "settings": "{{name}} · Einstellungen",
       "apply": "Anwenden",
+      "delete": "Löschen",
       "dismiss": "Verwerfen",
       "decline": "Ablehnen",
       "askAdmin": "Einen Admin fragen",
@@ -2665,7 +2666,9 @@
       "update_workspace": "Workspace <b>{{name}}</b> ändern",
       "set_action_check_on": "Die Prüfung, was das Team schon getan hat, einschalten",
       "set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausschalten",
-      "invite_people": "<b>{{emails}}</b> in den Workspace einladen",
+      "invite_people": "<b>{{emails}}</b> in den Workspace einladen.",
+      "invite_roles_one": "Mit der Rolle {{roles}}.",
+      "invite_roles_other": "Mit den Rollen {{roles}}.",
       "invite_people_sent_one": "Einladung an <b>{{emails}}</b> gesendet.",
       "invite_people_sent_other": "Einladungen an <b>{{emails}}</b> gesendet.",
       "remove_ai_key": "API-Schlüssel „{{name}}“ löschen."
@@ -4628,8 +4631,8 @@
       "budget_out_other": "Die Budgets von {{names}} sind aufgebraucht.",
       "budget_low_one": "Das Budget von {{names}} ist fast aufgebraucht.",
       "budget_low_other": "Die Budgets von {{names}} sind fast aufgebraucht.",
-      "computer_one": "Der Computer {{names}} ist offline, Agenten warten.",
-      "computer_other": "Die Computer {{names}} sind offline, Agenten warten.",
+      "computer_one": "{{names}} ist offline, Agenten warten.",
+      "computer_other": "{{names}} sind offline, Agenten warten.",
       "act": {
         "sign_in": "Erneut anmelden",
         "reconnect": "Neu verbinden",

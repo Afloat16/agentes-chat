@@ -1,5 +1,7 @@
 import { and, type Database, desc, eq, gt, inArray, isNull, lt, rowsOf, type SQL, schema, sql } from "@agenteschat/db";
 import { serverText } from "@agenteschat/i18n";
+import { formatList } from "@agenteschat/i18n/format";
+import type { AppLocale } from "@agenteschat/i18n/locale";
 import type { Agent } from "./agents";
 import { backgroundAiState } from "./ai-status";
 import { postApprovalsDigest } from "./approvals-digest";
@@ -580,9 +582,14 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
 
 const toldKey = (userId: string, p: Problem) => `team_watch.told:${userId}:${p.cause}:${p.id}:${p.episode}`;
 
-/** The names a row shows: the first ones, then how many more ("Slack, Notion, Linear +2"). */
-export const teamWatchNames = (names: readonly string[]) =>
-  names.slice(0, MAX_NAMES).join(", ") + (names.length > MAX_NAMES ? ` +${names.length - MAX_NAMES}` : "");
+/** The names a row's sentence says, as a list in the person's language: the first ones, then how many more. */
+export const teamWatchNames = (names: readonly string[], locale: AppLocale) =>
+  formatList(locale, [
+    ...names.slice(0, MAX_NAMES),
+    ...(names.length > MAX_NAMES
+      ? [serverText(locale, "notifications.namesMore", { count: String(names.length - MAX_NAMES) })]
+      : []),
+  ]);
 
 /**
  * Tells each problem to the one person who can fix it: one open row per person and cause, listing all of that cause
@@ -672,11 +679,12 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
       ...(only && g.cause === "computer" ? { machineId: only.id } : {}),
       ...(only && g.cause === "sign_in" ? { accountId: only.id } : {}),
     };
+    const locale = await personLocale(db, g.userId);
     const latest = {
       reason: g.cause,
       names: names.slice(0, MAX_NAMES),
-      text: serverText(await personLocale(db, g.userId), `notifications.teamWatch.${g.cause}`, {
-        names: teamWatchNames(names),
+      text: serverText(locale, `notifications.teamWatch.${g.cause}`, {
+        names: teamWatchNames(names, locale),
         count: String(names.length),
       }),
     };

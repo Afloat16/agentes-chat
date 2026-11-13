@@ -1,5 +1,6 @@
 import type { TFunction } from "i18next";
 import type { Approval, Proposal } from "../api/types";
+import { keepWhole } from "./format";
 import { agentGrammar } from "./grammar";
 
 /**
@@ -288,8 +289,9 @@ export function teamWeekRowText(t: TFunction, locale: string, row: TeamWeekRow, 
       };
     case "model":
       return {
-        title: say("teamWeek.model.title", { name: n.agent(row.agentId), to: n.model?.(row.to) ?? row.to }),
-        line: say("teamWeek.model.line", { from: n.model?.(row.from) ?? row.from }),
+        // A model's name and its number stay on one line ("Claude Sonnet 5.5").
+        title: say("teamWeek.model.title", { name: n.agent(row.agentId), to: keepWhole(n.model?.(row.to) ?? row.to) }),
+        line: say("teamWeek.model.line", { from: keepWhole(n.model?.(row.from) ?? row.from) }),
         action: say("rightHand.card.apply"),
       };
     case "waiting":

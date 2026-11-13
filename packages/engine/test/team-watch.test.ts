@@ -389,7 +389,7 @@ describe("what it tells", () => {
     expect((await rows())[0]).toMatchObject({
       count: 2,
       // Two of them: the sentence is said in the plural.
-      latest: { text: "Slack, Notion precisam ser reconectados." },
+      latest: { text: "Slack e Notion precisam ser reconectados." },
     });
 
     await connector("Linear", { updatedAt: ago(HOUR) });
@@ -400,7 +400,7 @@ describe("what it tells", () => {
     expect(await rows()).toHaveLength(1);
     // Something new in it: unread again, with no second row.
     expect(grown).toMatchObject({ count: 4, readAt: null, latest: { names: ["Slack", "Notion", "Linear"] } });
-    expect(String(grown?.latest.text)).toContain("Slack, Notion, Linear +1");
+    expect(String(grown?.latest.text)).toContain("Slack, Notion, Linear e mais 1");
 
     await f.db
       .update(schema.connectorConnections)
@@ -409,7 +409,9 @@ describe("what it tells", () => {
     await watch(new Date(NOW.getTime() + 20 * MIN));
     expect(await rows()).toHaveLength(1);
     expect((await rows())[0]).toMatchObject({ count: 3, doneAt: null });
-    expect(teamWatchNames(["a", "b", "c", "d", "e"])).toBe("a, b, c +2");
+    // A list in the person's language, the ones it does not name counted in words.
+    expect(teamWatchNames(["a", "b", "c", "d", "e"], "en")).toBe("a, b, c, and 2 more");
+    expect(teamWatchNames(["a", "b"], "pt-BR")).toBe("a e b");
   });
 
   test("a new problem joins the open row at once, and brings it back unread only once it lasted", async () => {

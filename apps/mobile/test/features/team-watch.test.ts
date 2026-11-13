@@ -32,8 +32,7 @@ test("the phone says the problem itself, once, and its card's button names the w
   // The title of the row, the card and the island: the cause's sentence in the reader's language, the server's own
   // for a cause this build doesn't know.
   const title = read("activity/noticeTitle.ts");
-  expect(title).toContain("const found = teamWatchOf(n);");
-  expect(title).toContain("defaultValue: found.text,");
+  expect(title).toContain("const problem = teamWatchLine(t, n);");
   // Nothing under the title says it again, in the list or on the island.
   const screen = read("activity/ActivityScreen.tsx");
   expect(screen).toMatch(/n\.kind === "team_watch"\s+\? ""/);

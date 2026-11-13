@@ -2,7 +2,8 @@ import type { AppNotification } from "@agenteschat/client";
 import { appCreatedLine } from "@agenteschat/client/lib/apps";
 import { formatUsd } from "@agenteschat/client/lib/format";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
-import { restrictionOf, teamWatchOf, workspaceHeadline } from "@agenteschat/client/lib/notifications";
+import { restrictionOf, workspaceHeadline } from "@agenteschat/client/lib/notifications";
+import { teamWatchLine } from "@agenteschat/client/lib/team-watch";
 import { useTranslation } from "react-i18next";
 import { useOrg } from "@/providers/org";
 import { isDashboardNotice } from "../dashboards/logic";
@@ -49,15 +50,7 @@ export function useNoticeTitle(n: AppNotification) {
   const person = useNoticePerson(n);
   const orgName = useOrg().org?.name ?? "";
   // What the right hand found (ADR 0177 §1): the problem itself, in the reader's language. Who found it is the face.
-  const found = teamWatchOf(n);
-  const problem = found
-    ? found.words
-      ? (t as unknown as (key: string, values: Record<string, unknown>) => string)(found.words.key, {
-          ...found.words.values,
-          defaultValue: found.text,
-        })
-      : found.text
-    : null;
+  const problem = teamWatchLine(t, n);
   // A widget's alert or failure, an agent asking to publish a dashboard (ADR 0135): the dashboards' own words.
   const template = held
     ? t("standing.notification.agentHold", { name: NAMES })

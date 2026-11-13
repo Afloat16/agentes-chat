@@ -65,7 +65,7 @@ function Digest({ id, author, approvalIds }: { id: string; author: Agent | undef
 
 /**
  * The routine requests of a digest as one request: what each is (the ones of one agent that read the same on one row
- * with how many, the first rows only until "Ver os outros"), one button that approves them all as whoever clicks, and
+ * with how many, the first rows only until "Ver os outros", which "Mostrar menos" folds back), one button that approves them all as whoever clicks, and
  * the way to read them one by one. The server decides only the ones it still calls routine (`only`). It is the card's
  * author who asks (`author`): out of view, the conversation's bar names them.
  */
@@ -87,7 +87,7 @@ function RoutineGroup({
   const count = routine.length;
   const title = t("rightHand.digest.routine", { count });
   const [all, setAll] = useState(false);
-  const { rows, hidden } = digestRows(
+  const { rows, hidden, folds } = digestRows(
     routine,
     (a) => approvalTitle(t, a),
     (a) => approvalDetail(a, i18n.language),
@@ -125,10 +125,10 @@ function RoutineGroup({
               </li>
             );
           })}
-          {hidden > 0 && (
+          {folds && (
             <li className="rq__item">
-              <RequestMore open={false} onClick={() => setAll(true)}>
-                {t("rightHand.digest.more", { count: hidden })}
+              <RequestMore open={all} onClick={() => setAll((v) => !v)}>
+                {all ? t("folded.less") : t("rightHand.digest.more", { count: hidden })}
               </RequestMore>
             </li>
           )}

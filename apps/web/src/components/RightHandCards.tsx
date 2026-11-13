@@ -27,10 +27,12 @@ import {
   useSetMemberRoles,
 } from "@agenteschat/client";
 import {
+  actionCardApplyKey,
   actionCardDestroys,
   actionCardDetail,
   actionCardKey,
   actionCardMark,
+  actionCardSaysDone,
   actionCardWords,
   type MemberChangeRow,
   type MemberChangesCard,
@@ -765,7 +767,7 @@ export function WorkspaceActionCardView({
         loading={decide.isPending && decide.variables === "apply"}
         onClick={() => decide.mutate("apply", { onError: failed })}
       >
-        {t("rightHand.card.apply")}
+        {t(actionCardApplyKey(card))}
       </Button>
       <Button
         size="sm"
@@ -802,6 +804,7 @@ export function WorkspaceActionCardView({
       agent={dir.anyAgent(agentId ?? "")}
       label={label}
       mine={may}
+      headless={actionCardSaysDone(card)}
       waitingFor={may ? undefined : t("rightHand.action.only")}
       source={asker ? t("audit.behind.person", { name: asker }) : undefined}
       answer={answer}

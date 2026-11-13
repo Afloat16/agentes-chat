@@ -356,6 +356,11 @@ test("suggestions: archive an idle agent, a smaller model for light work, each p
     line: "Hoje usa o Grande.",
     action: "Aplicar",
   });
+  // A model's name and its number never part at a line's end.
+  const spaced = { ...names, model: () => "Claude Sonnet 5.5" };
+  expect(teamWeekRowText(t, "pt-BR", model as never, spaced).title).toBe(
+    "Ada pode usar o Claude\u00a0Sonnet\u00a05.5.",
+  );
   // Without a model list the ids stand in.
   expect(teamWeekRowText(t, "pt-BR", model as never, names)).toMatchObject({
     title: "Ada pode usar o mid-1.",
