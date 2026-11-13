@@ -4014,7 +4014,7 @@ export const en = {
     when: { at: "at {{time}}", today: "today at {{time}}", tomorrow: "tomorrow at {{time}}" },
     /** The same, opening a label: "At 12:32 AM". */
     whenLabel: { at: "At {{time}}", today: "Today at {{time}}", tomorrow: "Tomorrow at {{time}}" },
-    /** The bar above the composer while a follow-up waits here; the agent's words follow after " · ", as written. */
+    /** The bar above the composer while a follow-up waits here. The agent's words follow after " · ", as written. */
     bar: {
       at: "{{name}} follows up {{when}}",
       /** Where even the sentence doesn't fit: the name and the time. */

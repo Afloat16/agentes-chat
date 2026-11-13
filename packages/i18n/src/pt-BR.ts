@@ -3927,7 +3927,7 @@ export const ptBR = {
     when: { at: "às {{time}}", today: "hoje às {{time}}", tomorrow: "amanhã às {{time}}" },
     /** The same, opening a label: "Às 00:32". */
     whenLabel: { at: "Às {{time}}", today: "Hoje às {{time}}", tomorrow: "Amanhã às {{time}}" },
-    /** The bar above the composer while a return waits here; the agent's words follow after " · ", as written. */
+    /** The bar above the composer while a return waits here. The agent's words follow after " · ", as written. */
     bar: {
       at: "{{name}} retorna {{when}}",
       /** Where even the sentence doesn't fit: the name and the time. */

@@ -97,7 +97,7 @@ conversation could cancel it, with no context. So:
   canceled, and the notice that woke the agent. Her reply says it in her own words, and her run's steps keep "Agendou a
   volta à conversa". The engine keeps the line as it was (`QUIET_NOTICES`, the agent's context text, the outbox job).
 - **The bar above the composer holds it** while nobody works there: the live pill's box, bare and one line high (faces,
-  the clock, "Ada retorna às 00:32 · her words", "+1", ⋯), so work taking the box moves nothing; work comes first and
+  the clock, "Ada retorna às 00:32 · her words", "+1", ⋯), so work taking the box moves nothing. Work comes first, and
   the return comes back when it ends. A thread's bar holds that thread's returns, a channel's or DM's its main
   timeline's. Her words show whole or leave the line. The time says its day only more than 12 h away, so the words
   never turn at midnight. Past its time while it waits on an answer (ADR 0131 §1) it reads "retorna quando você
