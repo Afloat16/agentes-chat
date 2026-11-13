@@ -390,7 +390,11 @@ describe("Quem pensa: the account on the computer and the effort (ADR 0041)", ()
     // All of them, under their AI, each saying whose it is: the one another agent has can't be picked.
     await click(within(d).getByRole("button", { name: /^Ver as/ }));
     const rows = brainRows(d);
-    expect(rows.find((r) => r.title === "Max da Bia")).toMatchObject({ group: "Claude", lines: ["De Bia"], off: false });
+    expect(rows.find((r) => r.title === "Max da Bia")).toMatchObject({
+      group: "Claude",
+      lines: ["De Bia"],
+      off: false,
+    });
     expect(rows.find((r) => r.title === "Pro do Caio")).toMatchObject({ lines: ["De Caio"], off: true });
     await pickRow(d, "Max da Bia");
     // Its owner hears of it.

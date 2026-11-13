@@ -998,7 +998,11 @@ test.if(posix)(
     expect(lines.join("\n")).not.toContain("oat01");
     // Removed: nothing runs as root (only Claude's settings end a token), the folder and its markers go.
     expect(await m.remove("claude_code", id)).toBe(true);
-    expect(runs().map((r) => r.args).filter((a) => a === "setup-token")).toEqual(["setup-token", "setup-token"]);
+    expect(
+      runs()
+        .map((r) => r.args)
+        .filter((a) => a === "setup-token"),
+    ).toEqual(["setup-token", "setup-token"]);
     expect(existsSync(dir)).toBe(false);
     expect(existsSync(`${dir}.shared`)).toBe(false);
     expect(existsSync(`${dir}.invalid`)).toBe(false);
