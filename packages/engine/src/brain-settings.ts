@@ -63,7 +63,7 @@ import {
   planOpened,
 } from "./audience";
 import { recordAudit } from "./audit";
-import { BRAIN_NAMES, type BrainKind, isComputerBrain } from "./brains/types";
+import { BRAIN_NAMES, type BrainKind, brainRunsOn, isComputerBrain } from "./brains/types";
 import { caches } from "./cache";
 import { defaultCredentials, providerKeyOf } from "./credentials";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
@@ -299,7 +299,9 @@ export type BrainUnavailable =
   | "not_installed"
   | "outdated"
   /** Its runner hasn't said which CLIs it has yet (`detectedAt`): nobody knows whether this one is there. */
-  | "not_reported";
+  | "not_reported"
+  /** Its runner doesn't run this CLI on the computer's system (`brainRunsOn`): Cursor on Windows, for one. */
+  | "system";
 
 export interface BrainOption {
   kind: BrainKind;
@@ -393,6 +395,7 @@ function cliOption(machine: MachineLike | null, kind: "cursor" | "opencode" | "g
   // On Windows a runner before `OPENCODE_ACP_PROTOCOL` refuses every OpenCode turn.
   else if (kind === "opencode" && machine.os === "windows" && machine.protocol < OPENCODE_ACP_PROTOCOL)
     reason = "runner_old";
+  else if (!brainRunsOn(kind, machine.os)) reason = "system";
   else if (tools && (tools[kind] ?? tools.codex) !== true) reason = "tool_off";
   else if (!machine.executors?.[kind]) reason = missingCli(machine);
   return {
