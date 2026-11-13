@@ -2623,6 +2623,16 @@
       "title": "Approvazioni che ti aspettano",
       "done": "Decise"
     },
+    "digest": {
+      "routine_one": "{{count}} richiesta di routine",
+      "routine_many": "{{count}} richieste di routine",
+      "routine_other": "{{count}} richieste di routine",
+      "help": "Un'azione in un'app collegata che non invia, non elimina, non paga e non fa merge né deploy. Ogni altra richiesta resta nella sua scheda.",
+      "approve_one": "Approva {{count}} richiesta",
+      "approve_many": "Approva queste {{count}}",
+      "approve_other": "Approva queste {{count}}",
+      "each": "Una per una"
+    },
     "open": {
       "open": "Apri",
       "web": "Apri sul sito",

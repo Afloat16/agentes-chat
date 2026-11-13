@@ -2536,6 +2536,14 @@
       "title": "Goedkeuringen die op jou wachten",
       "done": "Besloten"
     },
+    "digest": {
+      "routine_one": "{{count}} routineverzoek",
+      "routine_other": "{{count}} routineverzoeken",
+      "help": "Een actie in een gekoppelde app die niets verstuurt, verwijdert, betaalt, merget of deployt. Elk ander verzoek houdt zijn eigen kaart.",
+      "approve_one": "{{count}} verzoek goedkeuren",
+      "approve_other": "Deze {{count}} goedkeuren",
+      "each": "Een voor een"
+    },
     "open": {
       "open": "Openen",
       "web": "Openen op de website",

@@ -1,17 +1,76 @@
-import { useApprovals } from "@agenteschat/client";
+import { useApprovals, useDecideApprovals } from "@agenteschat/client";
 import type { ApprovalsCard } from "@agenteschat/client/lib/action-cards";
+import { digestGroups } from "@agenteschat/client/lib/approval-card";
+import { errorText } from "@agenteschat/client/lib/errors";
 import { useTranslation } from "react-i18next";
 import { useOrg } from "@/providers/org";
+import { EventPillAction, EventPillText, Text, useToast } from "@/ui";
 import { router } from "@/ui/navigation";
+import { approvalTitleText } from "../approvals/parts";
+import { AskWaiting } from "../chat/asks";
+import { successHaptic } from "../shared/parts";
 import { OfferShell } from "./OfferShell";
 
-/** The right hand's approvals card (ADR 0137 §4) as a waiting pill that opens the next one still waiting. */
+/**
+ * The right hand's approvals card (ADR 0137 §4) as a waiting pill that opens the next one still waiting. Its digest
+ * (ADR 0177 §4), while the server calls two or more of them routine: those by name, one action that approves them all
+ * as whoever taps (the server decides only the ones it still calls routine), and the way to read each.
+ */
 export function OfferApprovals({ card }: { card: ApprovalsCard }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { orgId } = useOrg();
+  const toast = useToast();
   const approvals = useApprovals(orgId);
+  const decide = useDecideApprovals(orgId);
   const rows = card.approvalIds.map((id) => approvals.data?.find((a) => a.id === id));
+  const routine = card.digest ? digestGroups(rows.flatMap((a) => a ?? [])).routine : [];
   const next = rows.find((a) => a?.status === "pending");
+  const open = () => router.push(`/approval/${next?.id ?? ""}` as never);
+  if (routine.length > 0) {
+    const count = routine.length;
+    return (
+      <AskWaiting
+        forMe
+        mark="shield"
+        words={t("rightHand.digest.routine", { count })}
+        actions={
+          <>
+            <EventPillAction
+              primary
+              label={t("rightHand.digest.approve", { count })}
+              loading={decide.isPending}
+              onPress={() =>
+                decide.mutate(
+                  { ids: routine.map((a) => a.id), decision: "approve", only: "routine" },
+                  {
+                    // The same answer as the conversation's "Aprovar tudo". The agents are several: no name under it.
+                    onSuccess: () => {
+                      successHaptic();
+                      toast({ title: t("mobile.approval.approved") });
+                    },
+                    onError: (error) => toast({ title: errorText(t, error, i18n.language), icon: "x" }),
+                  },
+                )
+              }
+            />
+            <EventPillAction label={t("rightHand.digest.each")} disabled={decide.isPending} onPress={open} />
+          </>
+        }
+        below={
+          <EventPillText>
+            {routine.map((a) => (
+              <Text key={a.id} variant="footnote">
+                {approvalTitleText(t, a)}
+              </Text>
+            ))}
+            <Text variant="footnote" tone="muted">
+              {t("rightHand.digest.help")}
+            </Text>
+          </EventPillText>
+        }
+      />
+    );
+  }
   const titles = rows
     .map((a) => a?.title)
     .filter(Boolean)
@@ -24,7 +83,7 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
       detail={titles}
       done={approvals.isSuccess && !next ? `${t("rightHand.approvals.done")}: ${titles}` : null}
       action={next ? t("rightHand.open.open") : null}
-      onAction={() => router.push(`/approval/${next?.id ?? ""}` as never)}
+      onAction={open}
       blocked=""
     />
   );

@@ -2533,6 +2533,14 @@
       "title": "Sizi bekleyen onaylar",
       "done": "Karar verildi"
     },
+    "digest": {
+      "routine_one": "{{count}} rutin istek",
+      "routine_other": "{{count}} rutin istek",
+      "help": "Bağlı bir uygulamada hiçbir şey göndermeyen, silmeyen, ödemeyen, merge veya deploy yapmayan bir işlem. Diğer her istek kendi kartında kalır.",
+      "approve_one": "{{count}} isteği onayla",
+      "approve_other": "Bu {{count}} isteği onayla",
+      "each": "Tek tek"
+    },
     "open": {
       "open": "Aç",
       "web": "Sitede aç",

@@ -2696,6 +2696,17 @@ export const en = {
     },
     /** Its approvals card (`offer_approvals`): each decided on it, as whoever clicks. */
     approvals: { title: "Approvals waiting for you", done: "Decided" },
+    /** Its summary of what waits on a person: the routine requests together, one tap for all of them. */
+    digest: {
+      routine_one: "{{count}} routine request",
+      routine_other: "{{count}} routine requests",
+      /** Behind the ⓘ beside `routine`. */
+      help: "An action in a connected app that sends, deletes, pays, merges or deploys nothing. Every other request keeps its own card.",
+      approve_one: "Approve {{count}} request",
+      approve_other: "Approve these {{count}}",
+      /** Shows each routine request on its own card instead. */
+      each: "One by one",
+    },
     /** Its "Abrir" card (`offer_open_page`): one of the app's screens. */
     open: { open: "Open", web: "Open on the website", notAllowed: "You don't have access to this screen" },
     /** Its card of a change in the workspace (`workspace_action`): applied as whoever clicks, Undo on it after. */

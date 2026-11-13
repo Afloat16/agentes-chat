@@ -2715,6 +2715,18 @@
       "title": "Zatwierdzenia czekające na ciebie",
       "done": "Rozstrzygnięte"
     },
+    "digest": {
+      "routine_one": "{{count}} rutynowa prośba",
+      "routine_few": "{{count}} rutynowe prośby",
+      "routine_many": "{{count}} rutynowych próśb",
+      "routine_other": "{{count}} rutynowej prośby",
+      "help": "Działanie w połączonej aplikacji, które niczego nie wysyła, nie usuwa, nie opłaca, nie scala i nie wdraża. Każda inna prośba zostaje na własnej karcie.",
+      "approve_one": "Zatwierdź {{count}} prośbę",
+      "approve_few": "Zatwierdź te {{count}}",
+      "approve_many": "Zatwierdź te {{count}}",
+      "approve_other": "Zatwierdź te {{count}}",
+      "each": "Po kolei"
+    },
     "open": {
       "open": "Otwórz",
       "web": "Otwórz w witrynie",

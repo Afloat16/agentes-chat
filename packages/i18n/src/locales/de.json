@@ -2537,6 +2537,14 @@
       "title": "Freigaben, die auf dich warten",
       "done": "Entschieden"
     },
+    "digest": {
+      "routine_one": "{{count}} Routineanfrage",
+      "routine_other": "{{count}} Routineanfragen",
+      "help": "Eine Aktion in einer verbundenen App, die nichts sendet, löscht, bezahlt, mergt oder deployt. Jede andere Anfrage behält ihre eigene Karte.",
+      "approve_one": "{{count}} Anfrage freigeben",
+      "approve_other": "Diese {{count}} freigeben",
+      "each": "Einzeln ansehen"
+    },
     "open": {
       "open": "Öffnen",
       "web": "Auf der Website öffnen",

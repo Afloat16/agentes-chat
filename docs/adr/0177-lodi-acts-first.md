@@ -132,6 +132,20 @@ tool whose job is asking) and the one-tap decision skips anything else. The card
 then a new one replaces it, two a person a day at most. It never rings and adds no inbox row. The right hand decides
 nothing.
 
+As built, routine takes two words and errs towards "read it by itself". The approval's row (`routineCall`,
+`tools/gateway.ts`): only a connected app's named action that no word of its name marks as a send, a post, a delete,
+a payment, a merge or a deploy, as changing who gets in, or as running whatever its input says, and SQL the Postgres
+guard proved read-only when it asked. Then the connection (`routineIds`, `approvals.ts`), because a row does not say
+why its call asked: the tool must still be listed there as a plain write, so one an admin set to ask every time or
+turned off, one our rules or the judge would have ask, one marked sensitive and one its server says destroys keep
+their own card whatever their name. At the default level a person's run asks a connected app's call only when its
+tool is marked to ask, so nothing there is routine but proven SQL reads: the group is for work nobody watched and for
+agents that always ask. Composio's executor is never routine, since no record vouches for the actions its input
+names. Every tool of ours stays on its own card, whatever it does: a command on the agent's computer, the browser,
+tasks, the workspace's people, keys and settings. Fewer than two routine ones make no group. The older card is not
+marked when a new one is posted: it keeps showing what it listed, each approval in its present state. A card lists 50
+at most, and a full one lets go of what was decided first, never of what still waits.
+
 ### 5. Follow-through ("Lembrar o que combinamos")
 
 - A task the right hand handed to an agent for a person is followed to its end: when it is done or canceled after the

@@ -2623,6 +2623,16 @@
       "title": "Aprobaciones esperándote",
       "done": "Decididas"
     },
+    "digest": {
+      "routine_one": "{{count}} solicitud de rutina",
+      "routine_many": "{{count}} solicitudes de rutina",
+      "routine_other": "{{count}} solicitudes de rutina",
+      "help": "Una acción en una app conectada que no envía, no borra, no paga y no hace merge ni deploy. Las demás solicitudes siguen cada una en su tarjeta.",
+      "approve_one": "Aprobar {{count}} solicitud",
+      "approve_many": "Aprobar las {{count}}",
+      "approve_other": "Aprobar las {{count}}",
+      "each": "Una por una"
+    },
     "open": {
       "open": "Abrir",
       "web": "Abrir en el sitio",
