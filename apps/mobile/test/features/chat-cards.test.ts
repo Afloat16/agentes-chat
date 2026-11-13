@@ -201,12 +201,16 @@ describe("what an agent changed wraps whole, on a card as wide as its words", ()
   });
 
   test("a receipt's card, and the cards that look like it, are as wide as their words, up to the column", () => {
-    for (const file of ["Receipts.tsx", "TeamChecks.tsx", "ReachLines.tsx", "FeedbackOffer.tsx"]) {
+    for (const file of ["Receipts.tsx", "TeamChecks.tsx", "ReachLines.tsx"]) {
       const text = source(file);
       expect([file, text.includes('alignSelf: "flex-start",\n    maxWidth: "100%",')]).toEqual([file, true]);
       // A content-sized row collapses a `flex: 1` child to nothing: the words shrink instead.
       expect([file, /(fit|line|words|body): \{ flexShrink: 1, minWidth: 0/.test(text)]).toEqual([file, true]);
     }
+    // The report offer keeps the column's width, as a request does: its report opening inside never widens it.
+    const offer = source("FeedbackOffer.tsx");
+    expect(offer).not.toContain('alignSelf: "flex-start"');
+    expect(offer).toContain("body: { flex: 1, minWidth: 0 },");
   });
 
   test("a receipt is its sentence alone: no Desfazer, no Refazer, no time left, no clock", () => {

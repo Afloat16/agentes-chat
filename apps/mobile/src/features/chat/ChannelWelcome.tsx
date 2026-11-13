@@ -1,6 +1,6 @@
 import { type Message, useMe, useOverview } from "@agenteschat/client";
 import { joinNames, whenAt } from "@agenteschat/client/lib/format";
-import { agentActivitySince, dayPart, isNewDay, WELCOME_CLOSE_MS } from "@agenteschat/client/lib/welcome";
+import { agentActivitySince, dayPart, isNewDay, welcomeClock } from "@agenteschat/client/lib/welcome";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
@@ -130,13 +130,12 @@ export function ChannelWelcome({
       setClosed(true);
     }
   };
-  // The day's greeting goes by itself a while after the person's first touch elsewhere (a newcomer's welcome stays);
-  // a finger on it keeps it, and it goes as the finger lifts.
+  // The day's greeting goes by itself on the clock the web's shares (`welcomeClock`), from the person's first touch
+  // elsewhere (a newcomer's welcome stays): a finger on it holds it, and it goes 2 s after the finger lifts.
   const held = useRef(false);
-  const due = useRef(false);
+  const clock = useRef<ReturnType<typeof welcomeClock> | null>(null);
   // Leaves upward, the way it came; gone from the tree once it's out. A tap or a swipe is felt; going by itself isn't.
   const putAway = (felt = true) => {
-    due.current = false;
     if (felt) haptics.light();
     shown.set(withTiming(0, { duration: 180, easing: EASE_OUT }));
     if (!reduced) y.set(withTiming(-24, { duration: 180, easing: EASE_OUT }));
@@ -147,15 +146,22 @@ export function ChannelWelcome({
   const autoCloses = Boolean(me) && greets && messages !== undefined && touched;
   useEffect(() => {
     if (!autoCloses) return;
-    const timer = setTimeout(() => {
-      due.current = held.current;
-      if (!due.current) away.current(false);
-    }, WELCOME_CLOSE_MS);
-    return () => clearTimeout(timer);
-  }, [autoCloses]);
+    const run = welcomeClock(
+      () => away.current(false),
+      () => held.current,
+    );
+    clock.current = run;
+    run.used();
+    return () => {
+      run.stop();
+      clock.current = null;
+      // Leaving the channel once its clock runs counts as closed.
+      if (run.running()) greeting.closed = true;
+    };
+  }, [autoCloses, greeting]);
   const lift = () => {
     held.current = false;
-    if (due.current) away.current(false);
+    clock.current?.left();
   };
   const pan = usePanGesture({
     // Up only: [start, end] offsets, activating 8 above; a move down or sideways first is not this.

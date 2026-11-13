@@ -138,33 +138,41 @@ describe("the wave's handle", () => {
     return { canvas, bars, dots };
   }
 
-  test("runs from the first bar's left edge at 0:00 to the last bar's end, whole on the canvas, like WhatsApp's dot", () => {
-    for (const width of [200, 263, 401]) {
+  test("stands flush with the left edge before the first bar at 0:00 and flush with the right one after the last at the end, like WhatsApp's dot", () => {
+    // Every width the bars leave 0 to 4px over on, and the players' own.
+    for (const width of [200, 201, 202, 203, 204, 263, 276, 401]) {
       const start = drawn(width, 0);
       const end = drawn(width, 1);
       const first = start.bars[0] as { x: number };
       const last = end.bars.at(-1) as { x: number; w: number };
       const [atStart] = start.dots as [{ x: number; r: number }];
       const [atEnd] = end.dots as [{ x: number; r: number }];
-      expect([width, atStart.x, atEnd.x]).toEqual([width, first.x, last.x + last.w]);
-      expect(atStart.x - atStart.r).toBeGreaterThanOrEqual(0);
-      expect(atEnd.x + atEnd.r).toBeLessThanOrEqual(width);
+      expect([width, atStart.x - atStart.r, atEnd.x + atEnd.r]).toEqual([width, 0, width]);
+      // Never on a bar: 2px of room or more between it and the first bar, and the last bar and it.
+      expect(first.x - (atStart.x + atStart.r)).toBeGreaterThanOrEqual(2);
+      expect(atEnd.x - atEnd.r - (last.x + last.w)).toBeGreaterThanOrEqual(2);
+      // The bars on whole pixels, the room at both ends within a pixel of each other.
+      expect(Number.isInteger(first.x)).toBe(true);
+      expect(Math.abs(first.x - (width - last.x - last.w))).toBeLessThanOrEqual(1);
       // Nothing is played at 0:00, all of it at the end.
       expect(new Set(start.bars.map((b) => b.fill)).size).toBe(1);
       expect(new Set(end.bars.map((b) => b.fill)).size).toBe(1);
       expect(start.bars[0]?.fill).not.toBe(end.bars[0]?.fill);
-      // A press where the handle is goes there: 0 on the first bar's edge, 1 on the last one's end.
+      // A press where the handle is goes there: 0 flush left, 1 flush right.
       expect(waveAt(start.canvas, 100 + atStart.x)).toBe(0);
       expect(waveAt(end.canvas, 100 + atEnd.x)).toBeCloseTo(1, 9);
     }
   });
 
-  test("halfway, the handle's middle is where played bars end", () => {
-    const { bars, dots } = drawn(263, 0.5);
-    const dot = dots[0] as { x: number };
-    const played = bars.filter((b) => b.fill === bars[0]?.fill);
-    const rest = bars.slice(played.length);
-    expect((played.at(-1)?.x ?? 0) + 1.5).toBeLessThanOrEqual(dot.x);
-    expect((rest[0]?.x ?? 0) + 1.5).toBeGreaterThan(dot.x);
+  test("on the way, the handle's middle is where played bars end, and a press there keeps it there", () => {
+    for (const progress of [0.1, 0.5, 0.9]) {
+      const { canvas, bars, dots } = drawn(263, progress);
+      const dot = dots[0] as { x: number };
+      const played = bars.filter((b) => b.fill === bars[0]?.fill);
+      const rest = bars.slice(played.length);
+      expect((played.at(-1)?.x ?? 0) + 1.5).toBeLessThanOrEqual(dot.x);
+      expect((rest[0]?.x ?? 0) + 1.5).toBeGreaterThan(dot.x);
+      expect(waveAt(canvas, 100 + dot.x)).toBeCloseTo(progress, 9);
+    }
   });
 });

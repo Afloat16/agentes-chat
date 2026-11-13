@@ -276,7 +276,10 @@ describe("receipts under the agent's reply", () => {
     const title = "Página de preços: o botão Assinar não responde no tablet quando o cupom de desconto expira no meio";
     await open(
       withActions([
-        action({ target: { type: "issue", id: "iss-23", number: 23, title }, params: { number: 23, title, files: [file] } }),
+        action({
+          target: { type: "issue", id: "iss-23", number: 23, title },
+          params: { number: 23, title, files: [file] },
+        }),
         memory(),
       ]),
     );

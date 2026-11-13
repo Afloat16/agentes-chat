@@ -15,16 +15,18 @@ function resample(peaks: readonly number[], n: number) {
 /** How many bars fit in `width`. */
 const barsIn = (width: number) => Math.max(1, Math.floor((width + GAP) / (BAR + GAP)));
 
-/**
- * The handle's radius. A wave with a handle leaves this much room at both ends, so the handle stays whole there and its
- * middle runs from the first bar's left edge (0:00) to the last bar's right edge (the end), as WhatsApp's dot does.
- */
+/** The handle's radius. */
 const HANDLE = 6;
+/**
+ * With a handle, the bars leave its width and 2px at both ends: at 0:00 it stands before the first bar and at the end
+ * after the last, flush with the canvas's edges, as WhatsApp's dot does.
+ */
+const INSET = 2 * HANDLE + 2;
 
-/** Where `clientX` falls on a wave drawn with its handle: 0 on its first bar's left edge, 1 on its last bar's end. */
+/** Where `clientX` falls on a wave drawn with its handle: its middle there, 0 flush left, 1 flush right. */
 export function waveAt(canvas: HTMLElement, clientX: number) {
   const r = canvas.getBoundingClientRect();
-  return (clientX - r.left - HANDLE) / (barsIn(r.width - 2 * HANDLE) * (BAR + GAP) - GAP);
+  return (clientX - r.left - HANDLE) / (r.width - 2 * HANDLE);
 }
 
 /**
@@ -55,11 +57,14 @@ export function drawVoiceWave(
   const css = getComputedStyle(canvas);
   const on = css.getPropertyValue("--voice-on").trim() || css.color;
   const off = css.getPropertyValue("--voice-off").trim() || on;
-  const n = barsIn(handle ? w - 2 * HANDLE : w);
+  const n = barsIn(handle ? w - 2 * INSET : w);
   const data = live ? peaks.slice(-n) : resample(peaks, n);
-  const x0 = live ? w - data.length * (BAR + GAP) + GAP : handle ? HANDLE : 0;
-  // Where the audio is: a bar is played once its middle is behind it.
-  const at = x0 + progress * (data.length * (BAR + GAP) - GAP);
+  const span = data.length * (BAR + GAP) - GAP;
+  // Live: the newest bar at the right edge. Otherwise centred on whole pixels, the same room at both ends.
+  const x0 = live ? w - span : Math.round((w - span) / 2);
+  // Where the audio is: the handle's middle, or the bars' own span without one. A bar is played once its middle is
+  // behind it.
+  const at = handle ? HANDLE + progress * (w - 2 * HANDLE) : x0 + progress * span;
   if (live) {
     g.fillStyle = off;
     for (let px = x0 - (BAR + GAP); px > -BAR; px -= BAR + GAP) {

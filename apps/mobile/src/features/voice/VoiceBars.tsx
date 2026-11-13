@@ -2,7 +2,14 @@ import { Canvas, Group, LinearGradient, Path, Rect, rect, Skia, type SkPath, vec
 import { useState } from "react";
 import { type LayoutChangeEvent, StyleSheet, type ViewStyle } from "react-native";
 import { type SharedValue, useDerivedValue } from "react-native-reanimated";
-import { WAVE_CELL as CELL, columnsIn, WAVE_HANDLE as HANDLE, WAVE_PITCH as PITCH, waveSpan } from "./logic";
+import {
+  WAVE_CELL as CELL,
+  columnsIn,
+  WAVE_HANDLE as HANDLE,
+  handleAt,
+  WAVE_PITCH as PITCH,
+  playedColumns,
+} from "./logic";
 
 /** How much of the left end fades into the field while a recording grows from the right. */
 const FADE = 0.35;
@@ -15,17 +22,18 @@ export interface WavePaths {
 
 /**
  * `peaks` as columns of cells, each centered on the middle row. `tail`: the newest columns at the right end, the way a
- * live recording looks (the rest of the width stays empty); otherwise spread over the width, half the handle in from
- * both ends (`waveSpan`).
+ * live recording looks (the rest of the width stays empty); otherwise spread over the width, clear of the handle's
+ * room at both ends (`playedColumns`).
  */
 export function wavePaths(peaks: readonly number[], width: number, height: number, tail = false): WavePaths {
   const inner = Skia.PathBuilder.Make();
   const edge = Skia.PathBuilder.Make();
   const rows = Math.max(1, Math.floor(height / CELL));
-  const n = columnsIn(tail ? width : width - HANDLE);
+  const spread = tail ? null : playedColumns(width);
+  const n = spread ? spread.count : columnsIn(width);
   const shown = tail ? peaks.slice(-n) : stretched(peaks, n);
   // Right-aligned when live: the last column ends at the right edge.
-  const startAt = tail ? width - shown.length * PITCH + (PITCH - CELL) : HANDLE / 2;
+  const startAt = spread ? spread.start : width - shown.length * PITCH + (PITCH - CELL);
   shown.forEach((level, i) => {
     const cells = Math.max(1, Math.min(rows, Math.round(level * rows)));
     const top = Math.round((rows - cells) / 2);
@@ -83,8 +91,7 @@ export function PixelWave({
     onWidth?.(next);
   };
   // Where the audio is: the handle's middle, and how far the played tones reach.
-  const span = waveSpan(width);
-  const at = useDerivedValue(() => (handle ? HANDLE / 2 + span * progress.value : width * progress.value));
+  const at = useDerivedValue(() => (handle ? handleAt(progress.value, width) + HANDLE / 2 : width * progress.value));
   const clip = useDerivedValue(() => rect(0, 0, at.value, height));
   const handleX = useDerivedValue(() => at.value - HANDLE / 2);
   return (

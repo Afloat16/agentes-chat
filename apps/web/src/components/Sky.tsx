@@ -37,7 +37,7 @@ import { useCloseAfterUse } from "@/hooks/useCloseAfterUse";
 import { useDirectory } from "@/hooks/useDirectory";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { lookOf } from "@/lib/look";
-import { agentActivitySince, dayPart, isNewDay, lastVisit, markVisit, WELCOME_CLOSE_MS } from "@/lib/welcome";
+import { agentActivitySince, dayPart, isNewDay, lastVisit, markVisit } from "@/lib/welcome";
 
 /*
  * The pixel sky inside the app. The sky is the
@@ -94,22 +94,25 @@ export function ChannelWelcome({
   const shut = useRef<HTMLButtonElement>(null);
   const shows =
     greeting.show && greeting.channelId === channelId && !closed && messages !== undefined && greeting.last !== null;
-  // Glides shut: its height and the room above it go to nothing, the conversation takes the room, then it leaves.
+  // Glides shut: its height and the room above it fold to nothing as it fades, the conversation takes the room (the
+  // list keeps what is read in place), then it leaves. With reduced motion it only fades.
   const close = () => {
     if (greeting.closed) return;
     greeting.closed = true;
     const el = box.current;
-    if (!el || reduced || typeof el.animate !== "function") return setClosed(true);
+    if (!el || typeof el.animate !== "function") return setClosed(true);
     const gone = () => setClosed(true);
-    el.animate(
-      [
-        { height: `${el.offsetHeight}px`, minHeight: "0px", marginTop: getComputedStyle(el).marginTop, opacity: 1 },
-        { height: "0px", minHeight: "0px", marginTop: "0px", opacity: 0 },
-      ],
-      { duration: 240, easing: "ease", fill: "forwards" },
-    ).finished.then(gone, gone);
+    const fold = [
+      { height: `${el.offsetHeight}px`, minHeight: "0px", marginTop: getComputedStyle(el).marginTop, opacity: 1 },
+      { height: "0px", minHeight: "0px", marginTop: "0px", opacity: 0 },
+    ];
+    el.animate(reduced ? [{ opacity: 1 }, { opacity: 0 }] : fold, {
+      duration: reduced ? 160 : 240,
+      easing: "ease-out",
+      fill: "forwards",
+    }).finished.then(gone, gone);
   };
-  useCloseAfterUse(box, close, WELCOME_CLOSE_MS, shows);
+  useCloseAfterUse(box, close, shows);
   if (!shows || greeting.last === null || !messages) return null;
   const since = greeting.last;
   const activity = agentActivitySince(messages, since);

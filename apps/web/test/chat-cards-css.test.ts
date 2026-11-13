@@ -30,12 +30,10 @@ test("a message's words use the whole column; a code block or a table scrolls in
   expect(value(".code-card__code", "overflow-x")).toBe("auto");
 });
 
-test("the cards in a message share one width: the tools, a lone call's line, every receipt and the other cards", () => {
+test("the cards in a message share one width: the tools, a lone call's line and the other cards (receipts hug their words)", () => {
   expect(value(":root", "--msg-card-w")).toBe("640px");
   for (const selector of [
     ".ac-tools",
-    ".ag-rc",
-    ".ag-rcg",
     // A request, a memory change, a question to another agent, the older work line.
     ".ac-approval",
     ".consult-pair__detail",
@@ -108,9 +106,17 @@ test("a row's sentence and a tool's line wrap, whole; what an agent changed too,
   expect(value(".ac-tools__label", "flex-wrap")).toBe("wrap");
   // Nothing cuts a change's words with "…" any more.
   expect(css).not.toContain(".ag-rc__line");
-  // A receipt is as wide as its words, up to the cards' width: a short one never spans the conversation.
-  for (const selector of [".ag-rc", ".ag-rcg"])
+  // A receipt is as wide as its words, up to 480px (its padding inside) and never past the column: a long routine's
+  // receipt wraps short of the members column, a short one never spans the conversation.
+  for (const selector of [".ag-rc", ".ag-rcg"]) {
     expect([selector, value(selector, "width")]).toEqual([selector, "fit-content"]);
+    expect([selector, value(selector, "max-width")]).toEqual([selector, "min(100%,480px)"]);
+    expect([selector, value(selector, "box-sizing")]).toEqual([selector, "border-box"]);
+  }
+  // The report offer is the cards' width from the start, as a request is: its report opening inside never widens it,
+  // so Enviar and Agora não stay where they were.
+  expect(value(".ag-rc.ag-fb", "width")).toBe("auto");
+  expect(value(".ag-rc.ag-fb", "max-width")).toBe("var(--msg-card-w)");
 });
 
 test("a card's rows start under its title: a row's hover never covers it", () => {
