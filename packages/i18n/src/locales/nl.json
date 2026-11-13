@@ -11126,6 +11126,7 @@
       "not_installed": "{{program}} is niet geïnstalleerd op {{computer}}.",
       "not_reported": "{{computer}} controleert nog welke programma's erop staan. Dit verandert vanzelf als het klaar is.",
       "outdated": "De versie op {{computer}} is oud. Werk Codex bij om het te gebruiken.",
+      "system": "{{program}} werkt nog niet op het systeem van {{computer}}.",
       "no_computerCloud": "Klaar zodra {{computer}} klaar is."
     },
     "notAvailableNow": "Gekozen, maar nu niet beschikbaar.",
@@ -16042,6 +16043,7 @@
         "sendingDm": "Een direct bericht verstuurd",
         "settingStatus": "De eigen status bijgewerkt",
         "settingReplyStyle": "Aangepast hoe er wordt geantwoord",
+        "settingCommitLine": "De regel van de agents in commits aangepast",
         "sendingFeedback": "Gevraagd om feedback te versturen",
         "offeringFeedback": "Aangeboden om een probleem te melden",
         "deletingRoutine": "Een routine verwijderd",
@@ -16158,6 +16160,7 @@
       "sendingDm": "een direct bericht aan het versturen",
       "settingStatus": "de eigen status aan het bijwerken",
       "settingReplyStyle": "aan het aanpassen hoe er wordt geantwoord",
+      "settingCommitLine": "aan het aanpassen van de regel van de agents in commits",
       "sendingFeedback": "feedback aan het voorbereiden",
       "offeringFeedback": "een melding aan het voorbereiden",
       "deletingRoutine": "een routine aan het verwijderen",

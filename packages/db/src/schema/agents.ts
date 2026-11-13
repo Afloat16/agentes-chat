@@ -391,6 +391,11 @@ export const organizationSettings = pgTable("organization_settings", {
    * what exists or who may do what.
    */
   mode: text().$type<"team" | "personal">().notNull().default("team"),
+  /**
+   * Agents' commits end with their own `Co-authored-by: <name> <noreply@agentes.chat>` (ADR 0156). On unless a person
+   * asks an agent to turn it off (`commit_co_author`); no screen has it.
+   */
+  agentCoAuthor: boolean().notNull().default(true),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 

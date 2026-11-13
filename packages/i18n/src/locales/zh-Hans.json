@@ -10695,6 +10695,7 @@
       "not_installed": "{{computer}} 上没有安装 {{program}}。",
       "not_reported": "{{computer}} 还在检查有哪些程序。完成后这里会自动更新。",
       "outdated": "{{computer}} 上的版本太旧。请更新 Codex 后使用。",
+      "system": "{{program}} 暂时还不能在 {{computer}} 的系统上运行。",
       "no_computerCloud": "{{computer}} 一就绪即可使用。"
     },
     "notAvailableNow": "已选择，但目前不可用。",
@@ -15504,6 +15505,7 @@
         "sendingDm": "发送了一条私信",
         "settingStatus": "更新了自己的状态",
         "settingReplyStyle": "调整了回复方式",
+        "settingCommitLine": "调整了提交中的智能体署名行",
         "sendingFeedback": "请求发送反馈",
         "offeringFeedback": "提出报告一个问题",
         "deletingRoutine": "删除了例行工作",
@@ -15620,6 +15622,7 @@
       "sendingDm": "发送私信",
       "settingStatus": "更新自己的状态",
       "settingReplyStyle": "调整回复方式",
+      "settingCommitLine": "调整提交中的智能体署名行",
       "sendingFeedback": "准备反馈",
       "offeringFeedback": "准备报告",
       "deletingRoutine": "删除例行工作",

@@ -11061,6 +11061,7 @@
       "not_installed": "{{program}} ist auf {{computer}} nicht installiert.",
       "not_reported": "{{computer}} prüft noch, welche Programme vorhanden sind. Das ändert sich von selbst, wenn es so weit ist.",
       "outdated": "Die Version auf {{computer}} ist veraltet. Aktualisiere Codex, um es zu nutzen.",
+      "system": "{{program}} läuft noch nicht auf dem System von {{computer}}.",
       "no_computerCloud": "Bereit, sobald {{computer}} es ist."
     },
     "notAvailableNow": "Ausgewählt, aber gerade nicht verfügbar.",
@@ -15975,6 +15976,7 @@
         "sendingDm": "Eine Direktnachricht gesendet",
         "settingStatus": "Den eigenen Status aktualisiert",
         "settingReplyStyle": "Die Art zu antworten angepasst",
+        "settingCommitLine": "Die Zeile der Agenten in Commits angepasst",
         "sendingFeedback": "Um das Senden von Feedback gebeten",
         "offeringFeedback": "Angeboten, ein Problem zu melden",
         "deletingRoutine": "Eine Routine gelöscht",
@@ -16091,6 +16093,7 @@
       "sendingDm": "Senden einer Direktnachricht",
       "settingStatus": "Aktualisieren des eigenen Status",
       "settingReplyStyle": "Anpassen der Art zu antworten",
+      "settingCommitLine": "Anpassen der Zeile der Agenten in Commits",
       "sendingFeedback": "Feedback vorbereiten",
       "offeringFeedback": "Bericht vorbereiten",
       "deletingRoutine": "Löschen einer Routine",

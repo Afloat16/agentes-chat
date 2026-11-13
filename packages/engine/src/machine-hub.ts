@@ -39,6 +39,7 @@ import { getAgentCached } from "./agents";
 import { UUID } from "./authority";
 import { type MachinePhoneRow, publishDevicesChanged, syncMachinePhones } from "./devices";
 import { cutText } from "./format";
+import { agentCoAuthorLine } from "./git/signature";
 import {
   applyAccessDecided,
   storedExecutors,
@@ -940,18 +941,23 @@ export function createMachineHub(deps: MachineHubDeps) {
    * Every request goes out through here. The right hand's own id passes only for its locked chat turn (ADR 0175): on
    * a computer each person has a seat with its own id, so anything else under the agent's id would put every member
    * in one home, and is refused. Also fills `agent.name` (protocol 9, for the machine's activity log) when a caller
-   * left it out.
+   * left it out, and on what runs the agent's programs the agent's own line its commits end with (`coAuthors`,
+   * ADR 0156), unless the workspace turned it off.
    */
   async function outgoing<R extends MachineRequest>(orgId: string | null, request: R): Promise<R> {
     const scope = request.agent;
     if (!scope || !orgId) return request;
     // A read that fails sends nothing: who the id is must be known before it goes out. An id that is no row's
-    // (a shared browser profile's key) is nobody's to look up.
+    // (a seat, a shared browser profile's key) is nobody's to look up.
     const agent = UUID.test(scope.id) ? await getAgentCached(db, orgId, scope.id) : null;
     if (isRightHand(agent) && !isLockedTurn(request)) {
       throw new MachineRequestError("not_allowed", RIGHT_HAND_OWN_ID_MESSAGE);
     }
-    return agent && !scope.name ? { ...request, agent: { ...scope, name: agent.name } } : request;
+    if (!agent) return request;
+    const runs = request.op === "exec" || request.op === "brain.turn" || request.op === "task.start";
+    const line = runs ? await agentCoAuthorLine(db, orgId, agent).catch(() => null) : null;
+    if (scope.name && !line) return request;
+    return { ...request, agent: { ...scope, name: scope.name || agent.name, ...(line ? { coAuthors: [line] } : {}) } };
   }
 
   /** Bridge calls of work already on the machine stop with its workspace (`standing.ts`). */
