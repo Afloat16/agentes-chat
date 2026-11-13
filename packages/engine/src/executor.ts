@@ -340,7 +340,7 @@ import {
 } from "./tools/directory";
 import { type Approval, type InvokeResult, isSensitive, type ToolGateway } from "./tools/gateway";
 import { grantedScopeKeys, grantKey } from "./tools/scopes";
-import type { ToolContext, ToolDefinition } from "./tools/types";
+import type { ToolContext, ToolDefinition, ToolOutput } from "./tools/types";
 import {
   budgetUsedPercent,
   continuesPastPlan,
@@ -483,6 +483,12 @@ export interface EngineDeps {
   prepareCode?(turn: BrainTurn, signal: AbortSignal): Promise<CodeSetup | null>;
   /** Computers' status (machine hub): a computer brain's availability is checked before its turn. */
   machines?: Pick<MachineCaller, "status" | "wake">;
+  /**
+   * A file a computer brain's own tool left in the agent's folder (a `file` event: Codex's image generation), sent to
+   * the Drive for this conversation (`shareSavedFile`): its `data.artifact` is the card on the reply. Absent: such
+   * files stay on the computer.
+   */
+  shareFile?(ctx: ToolContext, machineId: string, path: string): Promise<ToolOutput>;
   /** Each workspace gets its own computer here (`workspaceComputerText`); absent: people connect theirs. */
   workspaceComputer?: WorkspaceComputer;
   /** How long a run whose computer dropped mid-turn waits quietly for it (default `COMPUTER_DROP_GRACE_MS`). */
@@ -4216,6 +4222,8 @@ async function executeRunInner(
       const turnStepSeq = plan.kind !== "model" ? await lastStepSeq(db, run.id) : 0;
       /** Calls the computer brain said it ran in this turn (through the bridge or on its own). */
       const executedNow: { id: string; name: string; input: unknown; result?: ToolResult }[] = [];
+      /** Files the brain's own tools made this turn (`file` events), on their way to the Drive. */
+      const sharing: Promise<void>[] = [];
       /** Its own calls whose step line went out as they started (`tool_started`): not again as they end. */
       const stepTold = new Set<string>();
       /** A call of its own (not ours through the bridge, which says its step as it starts) is the step line now. */
@@ -4342,6 +4350,21 @@ async function executeRunInner(
               if (!stepTold.delete(call.id)) ownStep(call);
               // The text it streams next is another model call's: never one reply with what it wrote before.
               deltas.toolEnded();
+            },
+            onFile: (path) => {
+              const machineId = turnPlan.session?.machineId;
+              if (!machineId || !deps.shareFile || run.background) return;
+              sharing.push(
+                deps
+                  .shareFile(ctx, machineId, path)
+                  .then((shared) => {
+                    absorbToolData(transcript, shared.data);
+                    // Not shown (no "Write files", the computer gone, too large): why, on the run.
+                    if (!shared.data?.artifact)
+                      later(() => addRunStep(db, run, "context", { fileNotShown: { path, why: shared.content } }));
+                  })
+                  .catch(() => {}),
+              );
             },
             onSteerRead: (uuids) => {
               deltas.messageRead();
@@ -4604,6 +4627,8 @@ async function executeRunInner(
       }
       prof.mark(`model#${run.turns + 1}`);
       await deferred;
+      // The files its own tools made are cards on this reply too.
+      await Promise.all(sharing);
       // Side effects of the tools a computer brain ran through the bridge (cards, a `react`): for this reply.
       if (turnPlan.kind !== "model") mergeToolEffects(transcript, await takeBridgeEffects(db, run.id));
       // A computer brain's turn with nothing to say (its tools ran through the bridge) adds no empty message.
@@ -5458,6 +5483,8 @@ async function thinkOnce(
     onExecuted?(call: { id: string; name: string; input: unknown; result?: ToolResult }): void;
     /** A call of its own the brain started (`tool_started`): its `onExecuted` follows. */
     onStarted?(call: { id: string; name: string }): void;
+    /** A file a tool of the brain's own made in the agent's folder (`file`). */
+    onFile?(path: string): void;
     /** Messages handed to the turn mid-turn that it read (live steering). */
     onSteerRead?(uuids: string[]): void;
     /** The brain's first event that isn't an error: a computer had room for the turn. Done before that event is read. */
@@ -5546,6 +5573,7 @@ async function thinkOnce(
         },
       );
     } else if (event.type === "steer_read") hooks.onSteerRead?.(event.uuids);
+    else if (event.type === "file") hooks.onFile?.(event.path);
     else if (event.type === "speed_fallback") hooks.onSpeedFallback?.(event.message);
     // `event.session`: computer brains keep a stable session per conversation (`brainSessionId`); nothing to store.
     else if (event.type === "done") text = event.text;

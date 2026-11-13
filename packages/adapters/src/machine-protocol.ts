@@ -1852,7 +1852,12 @@ export type WireBrainEvent =
   /** Protocol 46: Fast failed (`message`: the provider's words) and this turn answered at standard speed. */
   | { type: "speed_fallback"; message: string }
   /** A call the brain starts on its own (Claude Code's Read, Bash, Task): its `tool_call` follows once it ended. */
-  | { type: "tool_started"; id: string; name: string };
+  | { type: "tool_started"; id: string; name: string }
+  /**
+   * A file a tool of the brain's own made (Codex's image generation), kept in the agent's folder (`path`, relative
+   * to it): the server sends it to the Drive and its card goes with the reply. An older server drops the event.
+   */
+  | { type: "file"; path: string };
 
 /**
  * `brain.steer` (protocol 15): messages for the turn of `runId` in progress.
@@ -3280,6 +3285,8 @@ export function parseBrainEvent(v: unknown): WireBrainEvent | null {
       return isString(v.id) && isString(v.name)
         ? { type: "tool_started", id: v.id.slice(0, 128), name: v.name.slice(0, BRAIN_LIMITS.toolName) }
         : null;
+    case "file":
+      return isString(v.path) && v.path.length > 0 && v.path.length <= 1024 ? { type: "file", path: v.path } : null;
     default:
       return null;
   }

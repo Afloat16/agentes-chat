@@ -1179,6 +1179,51 @@ test("Fast: the turn of a conversation asks for it; refused, the reply says it c
   expect((await timeline(f)).at(-1)?.meta.speedFallback).toBeUndefined();
 });
 
+test("a file a computer brain's own tool made goes to the Drive and is a card on the reply", async () => {
+  f = await setup({});
+  const machineId = await computerAgent(f, { brain: "codex" });
+  const { brain } = scriptedComputerBrain(() => [
+    { type: "tool_call", id: "ig-1", name: "image_generation", input: {}, executed: { content: "Saved." } },
+    { type: "file", path: "generated-images/image-1.png" },
+    { type: "file", path: "generated-images/image-2.png" },
+    { type: "done", text: "Aqui está." },
+  ]);
+  const artifactId = crypto.randomUUID();
+  const shared: { machineId: string; path: string; channelId: string }[] = [];
+  const handlers = createJobHandlers({
+    ...f.jobDeps,
+    brains: { codex: () => ({ ...brain, kind: "codex" }) },
+    machines: {
+      status: async (id) =>
+        statusOf(id, {
+          protocol: MACHINE_PROTOCOL_VERSION,
+          executors: { codex: { version: "codex-cli 0.166.0" }, detectedAt: new Date().toISOString() },
+        }),
+    },
+    shareFile: async (ctx, machine, path) => {
+      shared.push({ machineId: machine, path, channelId: ctx.channelId });
+      // The second one isn't shown (the agent may not make Drive files): no card, and the run says why.
+      return path.endsWith("image-1.png")
+        ? { content: "Shown.", data: { artifact: { id: artifactId, version: 1, title: "image-1.png" } } }
+        : { content: "It isn't shown in this conversation." };
+    },
+  });
+  await post(f, "@dev faz uma imagem de um farol");
+  await drainOutbox(f.db, handlers);
+
+  expect(shared).toEqual([
+    { machineId, path: "generated-images/image-1.png", channelId: f.general.id },
+    { machineId, path: "generated-images/image-2.png", channelId: f.general.id },
+  ]);
+  const reply = (await timeline(f)).at(-1);
+  expect(reply).toMatchObject({ body: "Aqui está." });
+  expect(reply?.meta.artifacts).toEqual([{ id: artifactId, version: 1, title: "image-1.png" }]);
+  const steps = await f.db.select().from(schema.agentRunSteps);
+  expect(steps.map((s) => (s.data as { fileNotShown?: { path: string } }).fileNotShown?.path).filter(Boolean)).toEqual([
+    "generated-images/image-2.png",
+  ]);
+});
+
 test("a turn says a person waits on it only in the line's first rank: not for a routine, background work, an agent or a work", async () => {
   f = await setup();
   await computerAgent(f);
