@@ -11353,6 +11353,8 @@ export const en = {
       /** Its runner hasn't said which CLIs it has yet: nobody knows whether this one is there. */
       not_reported: "{{computer}} is still checking which programs it has. This changes by itself when it's done.",
       outdated: "The version on {{computer}} is old. Update Codex to use it.",
+      /** The runner doesn't run this program on that computer's system (Cursor on Windows, for one). */
+      system: "{{program}} doesn't run on {{computer}}'s system yet.",
       no_computerCloud: "Ready as soon as {{computer}} is.",
     },
     notAvailableNow: "Chosen, but unavailable right now.",
@@ -16239,6 +16241,7 @@ export const en = {
         sendingDm: "Sent a direct message",
         settingStatus: "Updated its status",
         settingReplyStyle: "Adjusted how it replies",
+        settingCommitLine: "Adjusted the agents' line on commits",
         sendingFeedback: "Asked to send feedback",
         offeringFeedback: "Offered to report a problem",
         deletingRoutine: "Deleted a routine",
@@ -16355,6 +16358,7 @@ export const en = {
       sendingDm: "sending a direct message",
       settingStatus: "updating its status",
       settingReplyStyle: "adjusting how it replies",
+      settingCommitLine: "adjusting the agents' line on commits",
       sendingFeedback: "preparing feedback",
       offeringFeedback: "preparing a report",
       deletingRoutine: "deleting a routine",

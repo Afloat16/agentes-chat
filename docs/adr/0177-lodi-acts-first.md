@@ -35,13 +35,14 @@ The writer merges (`team_week || patch`), so a key a version does not know survi
 **Who had stopped the card gets nothing new.** Rows saved before the two cards were told apart hold `off`, `daily` and
 one `hour`. They are read as what they meant: `off` stops both cards, `daily` is the day's card in place of the week's
 at that hour, and any other saved row has the day's card off, since it was off unless asked for. Only a row that
-never chose gets the day's card by default. The same rules exist once in SQL (`lodiPrefsSql`), and a test holds the
+never chose gets the day's card by default. `off` was "nothing comes by itself" when it was the only switch, so it
+also reads as the approvals summary and the reminders off (§4, §5), until the row holds a word of its own for each. The same rules exist once in SQL (`lodiPrefsSql`), and a test holds the
 two together.
 
 **App builds from before** still send and read `off`, `daily` and `hour`. `GET …/team-week` answers them beside the new
 fields (`off` only when nothing comes, `daily` when the day's card comes alone, `hour` of the card that build shows),
-and a `PUT` that carries them is applied as that build meant it: `off: true` stops both cards, so its one switch still
-stops everything, and `off: false` starts the one card that build draws (the week's for an administrator, the day's
+and a `PUT` that carries them is applied as that build meant it: `off: true` stops both cards, the approvals summary
+and the reminders, so its one switch still stops everything, and `off: false` starts the one card that build draws (the week's for an administrator, the day's
 for anyone else), never a card the person has no control for there. The row keeps those three beside the new keys, so
 a server of the version before reads the same choice. Two saves at once take turns on the member's row.
 
@@ -65,16 +66,19 @@ that person's card of that day is not sent.
 **Helpers** (`right-hand-proactive.ts`): `lodiFor` (the right hand, or null in a closed workspace, when it is archived,
 or when it may not talk to that person), `postFromLodi` (one message in a person's DM, in their language, ringing only
 when asked, said once), `saidOnce` (a finished outbox row whose dedupe key is the memory, stored with the workspace
-and a prefix no job uses), `setCardOnMessage`, `lodiSwitches`. No new table: what was done once is an outbox key,
-what was told once is an inbox group key, what was put away is on the card's message. The one migration (0262) adds
+and a prefix no job uses), `setCardOnMessage`, `lodiSwitches`. A message that rings names its person on itself
+(`meta.forUserId`): nobody asked for it, so no run says whose inbox it belongs in. No new table: what was done once is
+an outbox key, what was told once is an inbox group key, what was put away is on the card's message. The one
+migration (0263) adds
 the two workspace switches and an index on `agent_consultations (org_id, channel_id)`, which finds the hand-over of a
 task by the task's conversation (§5).
 
 **One thing tells one thing.** Where two of the seven, or one of them and a notice from before, would say the same,
 one yields, and which is written with the feature: the watch keeps no row for what another notice already says of
-that very thing (§1), its reminder leaves approvals to the approvals summary (§1, §4), a handed task's end is told
-in the DM with its inbox row read and is left out of the day's card (§2, §5), and a failed run is on the day's card
-without a second ring (§2).
+that very thing (§1), its reminder leaves approvals to the approvals summary when one of its cards holds them (§1,
+§4), the day's card lists no approval for who that summary serves and rings for nothing the inbox already rang for
+(§2), the summary grows the card the right hand posted when asked instead of adding one (§4), and a handed task's
+end is told in the DM with its inbox row read and is left out of the day's card (§2, §5).
 
 **Lanes.** Each feature below that runs by itself is one file that calls `defineLodiLane` (`right-hand-lane.ts`) with
 its switch, whether it is built (`live`), its outbox jobs, its sweep and its block of the right hand's prompt. The
@@ -85,7 +89,7 @@ still answers.
 
 **Switches.** On the right hand's page, web and phone, one group "O que o Lodi faz por conta própria": the day's card
 with its hour (everyone), the week's card with its day and hour (administrators), then one switch per live lane. Two
-are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0262, on by default and on
+are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0263, on by default and on
 with no settings row), saved by who configures the workspace, and say so under their name. The right hand flips the
 person's own when asked (`set_team_week`: `card`, `off`, `day`, `hour`, and `digest`, `reminders` once live) and the
 workspace's through `update_workspace`.
@@ -152,8 +156,15 @@ A sweep with no model call (`team-watch.ts`). It fixes what is safe and tells th
     the routine's next failure is told as any first failure: the fix did not hold.
 - Reminds: once a day per person, in their own daytime (9 to 18 in their time zone), of the approvals, questions and
   secret requests they left unread for over four hours. The oldest comes back on top with one push that says how
-  many still wait (`latest.still`, read by `push.ts`), and all of them are marked reminded, so none is reminded twice. Approvals are left out for who has
-  the approvals summary (§4) on with three or more waiting.
+  many still wait (`latest.still`, read by `push.ts`), and all of them are marked reminded, so none is reminded
+  twice. Approvals are left to the approvals summary (§4) only when one of its cards holds them: the reminder asks
+  it to post or grow its card then, so approvals that came before the summary existed get one, quietly. Someone the
+  right hand may not write to, with fewer than it sums up, or past its two cards of the day, is reminded of approvals
+  like anything else.
+- Old news is nobody's: a sign-in, an app, a mailbox, a database or a computer already wrong for over seven days
+  when it is first looked at is not told (it is listed in a row only once one of its cause is open for something
+  newer), and an ask left unread for over seven days is not reminded of. So the day the watch starts in a workspace
+  tells nothing that stood there for weeks. A budget is told for the month it is in.
 - The sweep queues a check only for what the check would act on, every 10 minutes while something is new (it
   began or its row moved within a day, or a person is due their reminder) and once an hour while everything only
   stands as it was (a problem told and not fixed, a budget, a paused routine). With the switch turned off or the
@@ -185,9 +196,15 @@ The day's card for everyone, from stored data.
   a computer away or full. Any other wait (a computer a person paused, a plan its owner did not share) reads as
   "the conversation shows what".
 - The card keeps what was still open when it went out (`seen`). The next day's card posts only for something not in
-  it, so what waits or is held is said once, and it rings only for a new thing waiting or held. A run that failed
-  told its person when it did (the inbox's `run_failed`), so it is on the card without a second ring. What only
-  finished posts without ringing.
+  it, so what waits or is held is said once. It rings only for a run newly held, which told nobody yet. What waits
+  on the reader rang when it was asked (and the watch reminds of it, §1), and a run that failed told its person when
+  it did (the inbox's `run_failed`): both are on the card without a second ring. What only finished posts without
+  ringing.
+- For someone the approvals summary serves (it is on for them and it counts three or more waiting, §4), the card
+  lists no approval and approvals alone never post it: they are on that summary's card, with its buttons. The count
+  of what waits still includes them.
+- A how-to is offered only when it was learned where the reader reads, by the rule of the agent's memory page: one
+  worked out in another person's DM with their agent, or in a private channel they are not in, stays there.
 - It covers from the last day's card to its slot, three days back at most, so a day with no card is not lost. A run
   counts on the day it ended, so one still working at the slot is on the next card (one that began more than three
   days before the window is on none). Its job is found again by the slot kept on the card, whatever the window was.
@@ -202,7 +219,8 @@ The day's card for everyone, from stored data.
 
 Two more rows on an administrator's weekly card, never on the day's: an agent idle for 28 days with no routine and no
 open task (archive it), and an agent on a large model whose work is light (one tier down, never the smallest). One of
-each per card, applied as the admin who clicks, with Undo. A row can be put away alone: for good and for every admin
+each per card, applied as the admin who clicks, with Undo. The offer to archive is checked again at the tap: an agent
+that ran, got a routine or a task since reads "no longer applies" and is not archived. A row can be put away alone: for good and for every admin
 on those two, per person on unanswered questions. One left alone returns after four weeks at most. Both are counted
 over all runs, private conversations included, so these rows never name a channel or link a run. Archiving is never
 part of "Aplicar as N".
@@ -232,7 +250,9 @@ minutes after the newest: the routine ones listed with one button for all, each 
 decides which are routine (never a merge, deploy, delete, send or publish, a command, unproven SQL, a mailbox's, or a
 tool whose job is asking) and the one-tap decision skips anything else. The card is updated in place for 12 hours,
 then a new one replaces it, two a person a day at most. It never rings and adds no inbox row. The right hand decides
-nothing.
+nothing. The card it posted in that DM when the person asked what waits is the same card: the summary grows that one
+in place, keeping its line, and never posts a second beside it. On the phone each routine request reads its name,
+the agent that asked and what it holds, as on the web.
 
 As built, routine takes two words and errs towards "read it by itself". The approval's row (`routineCall`,
 `tools/gateway.ts`): only a connected app's named action that no word of its name marks as a send, a post, a delete,
@@ -265,13 +285,16 @@ at most, and a full one lets go of what was decided first, never of what still w
   that failed or was never taken (told when it closed), and a task whose hand-over was reported back and that nobody
   closed (the person heard the report, and what is left of it is theirs).
 - What the right hand is told is a notice only it reads (`wait_result` with `refs.task`, agent-only on every build),
-  which names the run that handed the task over, so the turn it starts is that person's own.
+  which names the run that handed the task over, so the turn it starts is that person's own: their permissions, and
+  the AI that answers them in that DM.
 - A commitment with a time becomes a plain reminder, said in one line. A run at that time only when the person asked
   the right hand to do something then. It keeps at most three by itself in one DM, a rule of its prompt, which also
   lists the ones waiting there. A reminder a person asks for in words has no such cap.
 - At most three wakes a person a day, in their own time zone. Past it the notice is written and read with the next
-  turn, and the inbox row stays. Each wake is one turn on that person's AI, through the gateway, budget checked and
-  cost recorded. The looks and the reminders call no model.
+  turn, and the inbox row stays. Each wake is one turn on the AI that answers that person in their DM with the right
+  hand, through the gateway, budget checked and cost recorded: their own AI for it when they chose one, else the
+  workspace's as it serves them, which may be a plan of another person that serves everyone. It is the payer of any
+  message they write there themselves. The looks and the reminders call no model.
 - The person's switch stops all of it: the task's end, the looks and the reminders it sets by itself.
 
 ### 6. Welcome ("Dar boas-vindas a quem entra")
@@ -291,7 +314,7 @@ ordinary conversation: a tap is their own message.
   AI: not how agents should talk to them, not the line to build the team. So they are asked one thing at a time. Once
   they answered, it asks what it asks anyone. The apps tell this from the newest page of messages alone (the greeting
   loaded and no message of the person after it), and ask nothing while that page loads for anyone but an owner.
-- The greeting calls no model and rings as any new message does.
+- The greeting calls no model and rings as any new message does: one row in the newcomer's inbox, and its push.
 
 ### 7. Action cards
 
@@ -299,7 +322,7 @@ Two more changes the right hand starts as a card, only on a person's request: in
 on the card, sent as whoever applies it) and removing an API key. Neither applies at once, and a build that does not
 word such a card may not apply it: the click says which action it knows (`knows`), and the server refuses without it
 (`action_card.update_app`). A plan's sign-in is removed on its own screen. On the phone the people card applies each
-row as on the web. There is no switch: nothing happens without a tap.
+row as on the web, and on both a row offers its button only once the roles it names are loaded. There is no switch: nothing happens without a tap.
 
 - **Invites.** The right hand's `offer_invites` posts this card (every other agent's still opens the invite dialog),
   and it is the turn's one ask. Someone who may invite hears before any card which addresses already belong to a
@@ -313,8 +336,11 @@ row as on the web. There is no switch: nothing happens without a tap.
   read the invitations and the keys again.
 - **What the card names, at the tap.** A role renamed or deleted since the card was posted refuses the tap
   (`action_card.changed`) and the card, still pending, takes the roles as they are now, to be read again. Only the
-  name is compared: what a role may do is not on the card. A workspace on hold or being deleted refuses the tap
-  with its own reason and leaves the card as it was, the asker's own included.
+  name is compared: what a role may do is not on the card. The same for a key renamed since its card was posted
+  (a key replaced under the same id may take a new name). A refused tap makes the app read the card again, so
+  whoever opened it from their inbox, outside its conversation, sees it as it is now before a second tap. A
+  workspace on hold or being deleted refuses the tap with its own reason and leaves the card as it was, the asker's
+  own included.
 - **API keys.** Only someone who manages keys gets the card, and only in their own conversation with the right hand:
   a key's name stays out of conversations others read. A key an agent thinks with, or the workspace's default key, is
   refused before any card, and again at the tap if an agent came to think with it since. The card never releases
@@ -326,8 +352,10 @@ row as on the web. There is no switch: nothing happens without a tap.
   days with something of the reader's own.
 - A person's worst day is bounded per feature (one day's card, one week's card, two digests, three watch rows, one
   reminder push, three follow-through wakes, one welcome ever).
-- Something a person was asked can still reach their devices three times: when it is asked, in the watch's one
-  reminder of the day if they left it unread for four hours, and on the next morning's card if it still waits. Each
-  is once, and the last two have a switch.
+- Something a person was asked reaches their devices twice at most: when it is asked, and in the watch's one
+  reminder of the day if they left it unread for four hours. The next morning's card lists it without a ring. With
+  three or more approvals and the summary on, nothing rings after each approval's own notice.
+- The watch's tells, and the right hand's turn on a handed task's end, come at any hour, as agents' own replies do.
+  Only the reminder keeps to the person's daytime.
 - No model call anywhere except §5's wakes and turns a person starts.
 - `team_week` holds more than the weekly card. Renaming the column would be a migration that buys nothing.

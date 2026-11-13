@@ -1550,6 +1550,20 @@ test.if(posix)(
 );
 
 test.if(posix)(
+  "other lines for the agent's commits (turned off, the agent renamed) restart the process, resumed",
+  async () => {
+    const { spawns, turn } = setup();
+    const nick = { agent: { ...AGENT, coAuthors: ["Co-authored-by: Nick <noreply@agentes.chat>"] } };
+    await turn(1, "first", {}, undefined, nick);
+    await turn(2, "second", {}, undefined, nick);
+    expect(spawns()).toHaveLength(1);
+    await turn(3, "third", {}, undefined, { agent: AGENT });
+    expect(spawns()).toHaveLength(2);
+    expect(spawns()[1]?.args.slice(-2)).toEqual(["--resume", SESSION(1)]);
+  },
+);
+
+test.if(posix)(
   "an account turn runs in its folder (CLAUDE_CONFIG_DIR), a new session there; a change restarts the process",
   async () => {
     const accountDir = tempDir("claude-account-");

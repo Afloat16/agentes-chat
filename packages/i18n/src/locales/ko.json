@@ -10686,6 +10686,7 @@
       "not_installed": "{{computer}}에 {{program}}이(가) 설치되어 있지 않아요.",
       "not_reported": "{{computer}}에 어떤 프로그램이 있는지 아직 확인하는 중이에요. 끝나면 저절로 바뀌어요.",
       "outdated": "{{computer}}의 버전이 오래됐어요. 사용하려면 Codex를 업데이트하세요.",
+      "system": "{{program}}은(는) 아직 {{computer}}의 시스템에서 실행되지 않아요.",
       "no_computerCloud": "{{computer}}이(가) 준비되면 바로 쓸 수 있어요."
     },
     "notAvailableNow": "선택했지만 지금은 사용할 수 없어요.",
@@ -15493,6 +15494,7 @@
         "sendingDm": "다이렉트 메시지를 보냈어요",
         "settingStatus": "자기 상태를 업데이트했어요",
         "settingReplyStyle": "답변 방식을 조정했어요",
+        "settingCommitLine": "커밋의 에이전트 줄을 조정했어요",
         "sendingFeedback": "피드백 전송을 요청했어요",
         "offeringFeedback": "문제 보고를 제안했어요",
         "deletingRoutine": "루틴을 삭제했어요",
@@ -15609,6 +15611,7 @@
       "sendingDm": "다이렉트 메시지를 보내는 중",
       "settingStatus": "자기 상태를 업데이트하는 중",
       "settingReplyStyle": "답변 방식을 조정하는 중",
+      "settingCommitLine": "커밋의 에이전트 줄을 조정하는 중",
       "sendingFeedback": "피드백을 준비하는 중",
       "offeringFeedback": "보고를 준비하는 중",
       "deletingRoutine": "루틴을 삭제하는 중",

@@ -1,5 +1,5 @@
 {
-  "id": "a1133803-4026-4402-ab85-8db26567c386",
+  "id": "df0fd47b-eb9d-4762-b7c1-c28c3f485204",
   "prevId": "2902fc04-d1a0-4440-80c1-21929d146a84",
   "version": "7",
   "dialect": "postgresql",
@@ -786,15 +786,8 @@
           "notNull": true,
           "default": "'team'"
         },
-        "team_watch": {
-          "name": "team_watch",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "welcome_people": {
-          "name": "welcome_people",
+        "agent_co_author": {
+          "name": "agent_co_author",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -14844,27 +14837,6 @@
             },
             {
               "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "agent_consultations_org_id_channel_id_index": {
-          "name": "agent_consultations_org_id_channel_id_index",
-          "columns": [
-            {
-              "expression": "org_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "channel_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
