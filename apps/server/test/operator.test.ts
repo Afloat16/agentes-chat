@@ -1076,6 +1076,11 @@ test("no answer carries a secret or a field named like one", async () => {
     if (access) secrets.push(access);
   }
   expect(secrets.length).toBeGreaterThan(10);
+  const [run] = await t.db
+    .select({ id: schema.agentRuns.id, messageId: schema.agentRuns.triggerMessageId })
+    .from(schema.agentRuns)
+    .where(eq(schema.agentRuns.orgId, acme.orgId))
+    .limit(1);
   for (const path of [
     "/health",
     "/orgs?limit=200",
@@ -1087,6 +1092,10 @@ test("no answer carries a secret or a field named like one", async () => {
     `/orgs/${acme.orgId}/agents?limit=200`,
     `/agents/${acme.agentId}`,
     `/resolve?ref=${acme.agentId}`,
+    `/orgs/${acme.orgId}/runs?limit=200`,
+    `/orgs/${acme.orgId}/runs?groupBy=error`,
+    `/orgs/${acme.orgId}/timeline?channelId=${acme.channelId}&limit=200`,
+    ...(run ? [`/runs/${run.id}/trace`, `/messages/${run.messageId}/explain`] : []),
     "/signup",
     "/waitlist",
     "/early-access/invitations?limit=200",

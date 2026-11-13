@@ -17,10 +17,11 @@ import { modelInfo } from "@agenteschat/providers";
 import { parseFileLink, parseMessageLink } from "@agenteschat/tokens/message-links";
 import { z } from "zod";
 import { UUID } from "./authority";
-import { decodeCursor, encodeCursor } from "./cursor";
+import { decodeCursor } from "./cursor";
 import { ValidationError } from "./errors";
 import { machineOnline } from "./machines";
 import { operatorRole } from "./operator";
+import { ms, orgExists, type PageQuery, pageOf, UuidCursor } from "./operator-paging";
 
 /**
  * Lookups of the operator API (ADR 0056): accounts, a workspace's people, channels and agents, and what a pasted
@@ -52,30 +53,9 @@ const {
 } = schema;
 
 const asDate = (v: string | Date) => new Date(v);
-// Cut to milliseconds (what a JS Date and a cursor carry), so paging compares exactly what it returned.
-const ms = (column: unknown) => sql<Date>`date_trunc('milliseconds', ${column})`.mapWith(asDate);
 
-/** A page ends at this key: `[createdAt (ms), id]`. An account's id is not a uuid. */
-const UuidCursor = z.tuple([z.iso.datetime(), z.uuid()]);
+/** A page of accounts ends at this key: `[createdAt (ms), id]`. An account's id is not a uuid. */
 const UserCursor = z.tuple([z.iso.datetime(), z.string().min(1).max(200)]);
-
-interface PageQuery {
-  limit: number;
-  /** `next` of the previous page. */
-  cursor?: string;
-}
-
-/** The first `limit` of the `limit + 1` rows read, and the cursor after them when there are more. */
-function pageOf<T>(rows: T[], limit: number, key: (last: T) => [Date, string]) {
-  const items = rows.slice(0, limit);
-  const last = items.at(-1);
-  if (rows.length <= limit || !last) return { items, next: null };
-  const [at, id] = key(last);
-  return { items, next: encodeCursor([at.toISOString(), id]) };
-}
-
-const orgExists = async (db: Database, orgId: string) =>
-  (await db.select({ id: organizations.id }).from(organizations).where(eq(organizations.id, orgId))).length > 0;
 
 // ── Accounts ─────────────────────────────────────────────────────────────────
 

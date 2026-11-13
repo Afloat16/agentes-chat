@@ -26,11 +26,11 @@ const errors = {
   404: errorResponse("Not found"),
 };
 
-const paging = {
+export const paging = {
   limit: z.coerce.number().int().min(1).max(200).default(50),
   cursor: z.string().max(200).optional(),
 };
-const Next = z.string().nullable().openapi({ description: "`cursor` for the next page; null on the last one." });
+export const Next = z.string().nullable().openapi({ description: "`cursor` for the next page; null on the last one." });
 
 // Postgres takes no NUL in text: refused here, it is a 400 and not a failed query.
 const word = () =>

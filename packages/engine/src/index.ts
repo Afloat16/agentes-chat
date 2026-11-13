@@ -214,6 +214,7 @@ export * from "./operator";
 export * from "./operator-events";
 export * from "./operator-lookups";
 export * from "./operator-review";
+export * from "./operator-runs";
 export * from "./organizations";
 export * from "./out-of-office";
 export * from "./outbound";
