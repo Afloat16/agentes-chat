@@ -161,7 +161,7 @@ import { AgentTasksButton, useDmAgentTasks } from "../task-manager/AgentTasksBut
 import { agentTasksHref, tasksBadge } from "../task-manager/logic";
 import { retryVoice, type VoiceRefusal } from "../voice/outbox";
 import { useVoiceComposer } from "../voice/useVoiceComposer";
-import { AgentReceiptLine } from "./AgentReceipts";
+import { AgentReceiptLine, EveryoneLine } from "./AgentReceipts";
 import { AttachmentStrip, MAX_PENDING, type PendingFile } from "./AttachmentStrip";
 import { markRowId, receiptMessageId } from "./agent-receipts";
 import { AskStore } from "./ask-store";
@@ -1740,9 +1740,10 @@ function Chat({
     : "";
   // biome-ignore lint/correctness/useExhaustiveDependencies: `receiptKey` stands for the receipt
   const receipt = useMemo(() => receiptNow, [receiptKey]);
-  // Agents' messages that called several agents: their strip (`FanStrip`). Only their receipts redraw the list.
+  // Agents' messages that called several agents (their strip, `FanStrip`) and a person's mention of everyone one agent
+  // answered for all (`EveryoneLine`). Only their receipts redraw the list.
   const fanNow = shownMessages
-    .filter((m) => m.author.type === "agent" && m.mentionedAgentIds.length > 1)
+    .filter((m) => (m.author.type === "agent" && m.mentionedAgentIds.length > 1) || m.meta?.everyoneShape)
     .map((m) => [m.id, live.receipts[m.id]] as const);
   const fanKey = JSON.stringify(fanNow);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `fanKey` stands for the receipts
@@ -1890,6 +1891,13 @@ function Chat({
               </SwipeReply>
               {item.message.author.type === "agent" && item.message.mentionedAgentIds.length > 1 ? (
                 <FanStrip message={item.message} receipt={receipts[item.message.id]} />
+              ) : null}
+              {item.message.meta?.everyoneShape ? (
+                <EveryoneLine
+                  message={item.message}
+                  receipt={receipts[item.message.id]}
+                  mine={item.message.author.id === meId}
+                />
               ) : null}
               {item.message.id === receiptId ? (
                 <AgentReceiptLine

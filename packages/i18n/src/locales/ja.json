@@ -2223,6 +2223,14 @@
     "sentYesterday": "昨日 {{time}} に送信",
     "sentOn": "{{date}} {{time}} に送信",
     "seenBy": "{{names}}が確認済み",
+    "everyone": {
+      "seen_other": "{{count}} 人のエージェントが確認",
+      "answering": "{{name}} が全員を代表して回答中",
+      "answered": "{{name}} が全員を代表して回答",
+      "who": "回答したエージェント",
+      "hintOne": "1 つの回答で全員に足りるため、{{name}} だけが回答しました。ほかのエージェントはメッセージを読みました。",
+      "hintNone": "エージェントへの依頼はなかったため、どのエージェントも回答しませんでした。全員が読みました。"
+    },
     "retry": "もう一度試す",
     "retrying": "もう一度試しています…",
     "platformCap": "回答させるには、@でエージェントをメンションしてください。",
@@ -3119,6 +3127,8 @@
     "memory": {
       "saved": "<b>メモリ</b>に保存しました: {{text}}",
       "saved_rule": "<b>自分のルール</b>に保存しました: {{text}}",
+      "saved_team_rule": "<b>チームのルール</b>に保存しました: {{text}}",
+      "saved_team": "<b>チームのメモリー</b>に保存しました: {{text}}",
       "updated": "<b>メモリ</b>を更新しました: {{text}}",
       "forgotten": "<b>メモリ</b>から削除しました: {{text}}"
     },

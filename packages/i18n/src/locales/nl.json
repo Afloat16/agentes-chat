@@ -2309,6 +2309,15 @@
     "sentYesterday": "Gisteren om {{time}} verzonden",
     "sentOn": "Op {{date}} om {{time}} verzonden",
     "seenBy": "Gezien door {{names}}",
+    "everyone": {
+      "seen_one": "{{count}} agent zag het",
+      "seen_other": "{{count}} agents zagen het",
+      "answering": "{{name}} antwoordt voor iedereen",
+      "answered": "{{name}} antwoordde voor iedereen",
+      "who": "wie antwoordde",
+      "hintOne": "Eén antwoord was genoeg voor iedereen, dus alleen {{name}} antwoordde. De andere agents lazen het bericht.",
+      "hintNone": "Het bericht vroeg niets van de agents, dus niemand antwoordde. Ze hebben het allemaal gelezen."
+    },
     "retry": "Opnieuw proberen",
     "retrying": "Opnieuw proberen…",
     "platformCap": "Noem een agent met @ om hem te laten antwoorden.",
@@ -3234,6 +3243,8 @@
     "memory": {
       "saved": "Opgeslagen in <b>geheugen</b>: {{text}}",
       "saved_rule": "Opgeslagen in <b>mijn regels</b>: {{text}}",
+      "saved_team_rule": "Opgeslagen in de <b>regels van het team</b>: {{text}}",
+      "saved_team": "Opgeslagen in het <b>geheugen van het team</b>: {{text}}",
       "updated": "<b>Geheugen</b> bijgewerkt: {{text}}",
       "forgotten": "Uit <b>geheugen</b> verwijderd: {{text}}"
     },

@@ -2480,6 +2480,17 @@
     "sentYesterday": "Wysłano wczoraj o {{time}}",
     "sentOn": "Wysłano {{date}} o {{time}}",
     "seenBy": "Widzą: {{names}}",
+    "everyone": {
+      "seen_one": "{{count}} agent to widział",
+      "seen_few": "{{count}} agenci to widzieli",
+      "seen_many": "{{count}} agentów to widziało",
+      "seen_other": "{{count}} agenta to widziało",
+      "answering": "{{name}} odpowiada za wszystkich",
+      "answered": "{{name}} odpowiedział za wszystkich",
+      "who": "kto odpowiedział",
+      "hintOne": "Jedna odpowiedź wystarczała dla wszystkich, więc odpowiedział tylko {{name}}. Pozostali agenci przeczytali wiadomość.",
+      "hintNone": "Wiadomość nie wymagała niczego od agentów, więc żaden nie odpowiedział. Wszyscy ją przeczytali."
+    },
     "retry": "Spróbuj ponownie",
     "retrying": "Ponawianie…",
     "platformCap": "Wspomnij agenta przez @, aby odpowiedział.",
@@ -3440,6 +3451,8 @@
     "memory": {
       "saved": "Zapisano w <b>pamięci</b>: {{text}}",
       "saved_rule": "Zapisano w <b>moich zasadach</b>: {{text}}",
+      "saved_team_rule": "Zapisano w <b>zasadach zespołu</b>: {{text}}",
+      "saved_team": "Zapisano w <b>pamięci zespołu</b>: {{text}}",
       "updated": "Zaktualizowano <b>pamięć</b>: {{text}}",
       "forgotten": "Usunięto z <b>pamięci</b>: {{text}}"
     },

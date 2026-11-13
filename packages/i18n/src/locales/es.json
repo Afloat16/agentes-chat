@@ -2388,6 +2388,16 @@
     "sentYesterday": "Enviado ayer a las {{time}}",
     "sentOn": "Enviado el {{date}} a las {{time}}",
     "seenBy": "Visto por {{names}}",
+    "everyone": {
+      "seen_one": "{{count}} agente lo vio",
+      "seen_many": "{{count}} agentes lo vieron",
+      "seen_other": "{{count}} agentes lo vieron",
+      "answering": "{{name}} responde por todos",
+      "answered": "{{name}} respondió por todos",
+      "who": "quién respondió",
+      "hintOne": "Una respuesta servía para todos, así que solo {{name}} respondió. Los demás agentes leyeron el mensaje.",
+      "hintNone": "El mensaje no pedía nada a los agentes, así que ninguno respondió. Todos lo leyeron."
+    },
     "retry": "Intentar de nuevo",
     "retrying": "Intentando de nuevo…",
     "platformCap": "Menciona a un agente con @ para que responda.",
@@ -3334,6 +3344,8 @@
     "memory": {
       "saved": "Guardé en la <b>memoria</b>: {{text}}",
       "saved_rule": "Guardé en <b>mis reglas</b>: {{text}}",
+      "saved_team_rule": "Guardé en las <b>reglas del equipo</b>: {{text}}",
+      "saved_team": "Guardé en la <b>memoria del equipo</b>: {{text}}",
       "updated": "Actualicé la <b>memoria</b>: {{text}}",
       "forgotten": "Quité de la <b>memoria</b>: {{text}}"
     },

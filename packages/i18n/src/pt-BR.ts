@@ -2341,6 +2341,15 @@ export const ptBR = {
     sentYesterday: "Enviada ontem às {{time}}",
     sentOn: "Enviada em {{date}} às {{time}}",
     seenBy: "Vista por {{names}}",
+    everyone: {
+      seen_one: "{{count}} agente viu",
+      seen_other: "{{count}} agentes viram",
+      answering: "{{name}} responde por todos",
+      answered: "{{name}} respondeu por todos",
+      who: "quem respondeu",
+      hintOne: "Uma resposta servia para todos, então só {{name}} respondeu. Os outros agentes leram a mensagem.",
+      hintNone: "A mensagem não pedia nada aos agentes, então nenhum respondeu. Todos leram.",
+    },
     retry: "Tentar de novo",
     /** On its way (`receipts.retry` pressed): the line says so until the server answers. */
     retrying: "Tentando de novo…",
@@ -3363,6 +3372,8 @@ export const ptBR = {
     memory: {
       saved: "Guardei na <b>memória</b>: {{text}}",
       saved_rule: "Guardei nas <b>minhas regras</b>: {{text}}",
+      saved_team_rule: "Guardei nas <b>regras do time</b>: {{text}}",
+      saved_team: "Guardei na <b>memória do time</b>: {{text}}",
       updated: "Atualizei a <b>memória</b>: {{text}}",
       forgotten: "Tirei da <b>memória</b>: {{text}}",
     },
