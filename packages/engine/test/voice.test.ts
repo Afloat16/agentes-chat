@@ -309,6 +309,17 @@ describe("“gravando áudio…” while the words are made out", () => {
     expect(heard.length).toBe(count);
   });
 
+  test("a long one, too big for its event, still names who sent it, so the line ends with it all the same", async () => {
+    const { done, answer, heard } = await listening();
+    await Bun.sleep(30);
+    // About five minutes of speech: more than the event carries.
+    answer("e depois a gente revisa o relatório de ontem ".repeat(160));
+    await done;
+    const created = heard.find((h) => h.e.type === "message.created")?.e;
+    expect(created).toMatchObject({ threadId: null, agentRunId: null, authorUserId: f.owner.id });
+    expect(created && "message" in created).toBe(false);
+  });
+
   test("writing takes over: her typing in the channel ends it while the words are still on their way", async () => {
     const { done, answer, beats } = await listening();
     await Bun.sleep(30);

@@ -415,9 +415,14 @@ describe("working line", () => {
     const tick = take.slice(take.indexOf("const tick = useCallback("), take.indexOf("const record = useCallback("));
     expect(tick).toContain('if (phaseNow === "hold" || phaseNow === "locked") targetRef.current.onRecording?.();');
     const screen = await source("features/chat/ChatScreen.tsx");
+    // Recording never waits on what was just written (an agent asked in it waits for the take); the upload's frames do.
     expect(screen).toContain('onRecording: () => sendTyping(threadId, undefined, "voice"),');
     expect(screen).toContain("!m.meta?.voiceAccepted &&");
-    expect(screen).toContain('const timer = setInterval(() => sendTyping(threadId, undefined, "voice"), 1000);');
+    expect(screen).toContain('const timer = setInterval(() => sendTyping(threadId, undefined, "voice", true), 1000);');
+    const live = (await source("features/chat/live.ts")).replace(/\s+/g, " ");
+    expect(live).toContain("throttle(Date.now(), text, kind, keepAlive)");
+    // Its message ends the line, also one too big for its event (`applyTypingEvent`, apps/web/test/live.test.ts).
+    expect(live).toContain("const typing = applyTypingEvent(state.typing, event, action.at);");
   });
 
   test("beside a long name typing, the agents' words give way first and leave whole when only a sliver would show", async () => {

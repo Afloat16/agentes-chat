@@ -4,6 +4,7 @@ import {
   applyChannelEvent,
   applyReceiptEvent,
   applyTyping,
+  applyTypingEvent,
   emptyStreams,
   expectReply,
   expireTyping,
@@ -147,13 +148,40 @@ describe("typing", () => {
     ]);
     // Sent: writing right after shows at once, and the take still uploading waits while she writes.
     expect(send(6500, "e mais")).toBe(true);
-    expect(send(7000, undefined, "voice")).toBe(false);
+    expect(send(7000, undefined, "voice", true)).toBe(false);
     expect(send(9000, "e mais uma coisa", "typing")).toBe(false);
-    expect(send(11_000, undefined, "voice")).toBe(false);
+    expect(send(11_000, undefined, "voice", true)).toBe(false);
     // Three seconds without writing: it shows again, at once.
-    expect(send(12_000, undefined, "voice")).toBe(true);
+    expect(send(12_000, undefined, "voice", true)).toBe(true);
     // Writing again takes over at once.
     expect(send(12_100, "e mais uma coisa!")).toBe(true);
+  });
+
+  test("a take recorded right after a typed message tells at once, so the agent asked in it waits for the take", () => {
+    const send = typingThrottle(3000);
+    expect(send(0, "@")).toBe(true);
+    expect(send(600, "@dev olha isso")).toBe(false);
+    // Sent at 1 s; the microphone half a second later. The server's grace for a sign of more is 1.2 s.
+    expect(send(1500, undefined, "voice")).toBe(true);
+    expect(send(2500, undefined, "voice")).toBe(false);
+    expect(send(4500, undefined, "voice")).toBe(true);
+  });
+
+  test("a message ends its author's line, also one too big for its event that only names them; an agent's ends none", () => {
+    const s = applyTypingEvent(
+      {},
+      { type: "user.typing", channelId: "c1", threadId: null, userId: "marina", ttlMs: 5000, kind: "voice" },
+      1000,
+    );
+    expect(typingIn(s, "c1", 1000)).toEqual([{ id: "marina", kind: "voice" }]);
+    const created = { type: "message.created", channelId: "c1", messageId: "m1" } as const;
+    const byMarina = { id: "m1", channelId: "c1", author: { type: "person", id: "marina" } } as Message;
+    expect(typingIn(applyTypingEvent(s, { ...created, message: byMarina }, 1500), "c1", 1500)).toEqual([]);
+    expect(typingIn(applyTypingEvent(s, { ...created, authorUserId: "marina" }, 1500), "c1", 1500)).toEqual([]);
+    expect(applyTypingEvent(s, { ...created, authorUserId: null }, 1500)).toBe(s);
+    expect(
+      applyTypingEvent(s, { ...created, message: { ...byMarina, author: { type: "agent", id: "ada" } } }, 1500),
+    ).toBe(s);
   });
 });
 

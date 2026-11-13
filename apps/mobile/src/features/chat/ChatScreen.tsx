@@ -1106,7 +1106,7 @@ function Chat({
   );
   useEffect(() => {
     if (!uploading) return;
-    const timer = setInterval(() => sendTyping(threadId, undefined, "voice"), 1000);
+    const timer = setInterval(() => sendTyping(threadId, undefined, "voice", true), 1000);
     return () => clearInterval(timer);
   }, [uploading, sendTyping, threadId]);
   const sendMedia = (media: MessageMedia) => {

@@ -1,3 +1,5 @@
+import type { ChannelEvent } from "../api/types";
+
 /**
  * "Marina está digitando…" and "Marina está gravando áudio…": who is typing or recording a voice message per channel,
  * from `user.typing` events (`kind: "voice"` while recording), each valid for `ttlMs`, and where (a thread's id, null
@@ -29,6 +31,20 @@ export function stopTyping(state: TypingState, channelId: string, userId: string
   if (!current?.[userId]) return state;
   const { [userId]: _u, ...rest } = current;
   return { ...state, [channelId]: rest };
+}
+
+/**
+ * A conversation's event on who is at it: a frame starts or renews someone, and their message ends them, also one too
+ * big for its event, which names its author without the message.
+ */
+export function applyTypingEvent(state: TypingState, event: ChannelEvent, now: number): TypingState {
+  if (event.type === "user.typing")
+    return applyTyping(state, event.channelId, event.userId, now, event.ttlMs, event.threadId, event.kind);
+  if (event.type !== "message.created") return state;
+  const author = event.message
+    ? event.message.author?.type === "person" && event.message.author.id
+    : event.authorUserId;
+  return author ? stopTyping(state, event.channelId, author) : state;
 }
 
 /** Without the typing that ran out by `now` (the same state when none did): a store can drop it on time. */
@@ -64,16 +80,17 @@ export const typingIn = (
  * starts a new message, so a person writing a second message right after the first shows at once (the server ends an
  * agent's wait early when nobody is typing). A new message: the text is neither a continuation of the last one seen
  * nor cut from it (the field was sent and cleared, or emptied), whatever its length (a pasted text, a suggestion
- * tapped, swipe typing). A frame of the other kind also goes at once, so the others see the change. A voice frame (a
- * take recording, or on its way to the server) waits until the person hasn't written for 3 s: writing takes over.
+ * tapped, swipe typing). A frame of the other kind also goes at once, so the others see the change. A take's
+ * `keepAlive` frames while it uploads wait until the person hasn't written for 3 s: writing takes over. Its frames
+ * while it records never wait, so an agent asked just before still holds its quiet window for the take.
  */
 export function typingThrottle(every = TYPING_SEND_EVERY_MS) {
   let last = Number.NEGATIVE_INFINITY;
   let wrote = Number.NEGATIVE_INFINITY;
   let seen = "";
   let sent: TypingKind = "typing";
-  return (now: number, text?: string, kind: TypingKind = "typing") => {
-    if (kind === "voice" && now - wrote < every) return false;
+  return (now: number, text?: string, kind: TypingKind = "typing", keepAlive = false) => {
+    if (kind === "voice" && keepAlive && now - wrote < every) return false;
     const next = text?.trim() ?? "";
     const first = kind !== sent || (next !== "" && (seen === "" || (!next.startsWith(seen) && !seen.startsWith(next))));
     if (text !== undefined) seen = next;

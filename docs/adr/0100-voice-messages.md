@@ -111,11 +111,13 @@ person wins. Agents never record.
 
 - The apps send it while the take records, held or hands free (web: `onRecording` from the kit's recorder each second;
   phone: `useVoiceTake`'s tick), never while starting or paused, and while the take uploads. The typing throttle keeps
-  it to one frame every 3 s, sends a change of kind at once, and holds a voice frame while the person has written in
-  the last 3 s: writing takes over.
+  it to one frame every 3 s and sends a change of kind at once. The upload's frames (`keepAlive`) wait while the person
+  has written in the last 3 s: writing takes over. The recorder's never wait, so a take started right after a typed
+  message tells the agent asked in it at once.
 - The upload's 202 hands it to the server: `voice.transcribe` sends it every 3 s while the words are made out
   (`keepRecording` in `voice.ts`), until the person's typing frame in that channel or the message. Its last frame is
-  out before the message, which clears the line at once in the apps.
+  out before the message, which clears the line at once in the apps (`applyTypingEvent`). A message too big for its
+  event still names its author (`authorUserId`), so a long take ends the line as fast.
 - Paused or deleted, the frames stop: gone within 5 s. A recording dropped as silent, or one waiting for the job's
   retry, ends the same way.
 

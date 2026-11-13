@@ -15,8 +15,8 @@ afterEach(() => {
   restore = () => {};
 });
 
-const open = async (state = seedState()) => {
-  const r = await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api: createFakeApi(state) });
+const open = async (state = seedState(), api = createFakeApi(state)) => {
+  const r = await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api });
   await settle(5);
   const socket = r.sockets.last();
   await act(async () => socket.open());
@@ -33,6 +33,18 @@ const frame = (userId: string, kind?: "voice") => ({
   ...(kind ? { kind } : {}),
 });
 const pill = () => document.querySelector(".ac-typing") as HTMLElement;
+const composer = () => screen().getByRole("combobox", { name: /Mensagem para/ });
+const typed = (text: string) => act(async () => fireEvent.change(composer(), { target: { value: text } }));
+const record = () =>
+  act(async () => {
+    fireEvent.pointerDown(screen().getByRole("button", { name: "Gravar áudio" }), { button: 0 });
+    fireEvent.pointerUp(window);
+  });
+/** The typing frames this app sent, with their kind. */
+const typingSent = (socket: { sent: unknown[] }) =>
+  socket.sent
+    .filter((f) => (f as { type: string }).type === "typing")
+    .map((f) => (f as { kind?: string }).kind ?? "typing");
 /** The pill's words as read: without the faces' initials and the marks, which screen readers skip too. */
 const words = () => {
   const text = pill().querySelector(".ac-typing__text")?.cloneNode(true) as HTMLElement | undefined;
@@ -95,6 +107,22 @@ describe("“gravando áudio…” beside “está digitando…”", () => {
         meta: { voice: { clipId: "clip-1", durationMs: 4000, peaks: [0.2, 0.6] } },
         createdAt: new Date().toISOString(),
       },
+    });
+    await settle();
+    expect(pill().dataset.active).toBe("false");
+  });
+
+  test("a voice message too big for its event, which only names who sent it, ends their line at once all the same", async () => {
+    const { socket } = await open();
+    await push(socket, frame("u-joao", "voice"));
+    await settle();
+    expect(words()).toBe("João está gravando áudio…");
+    await push(socket, {
+      type: "message.created",
+      messageId: "m-long",
+      threadId: null,
+      agentRunId: null,
+      authorUserId: "u-joao",
     });
     await settle();
     expect(pill().dataset.active).toBe("false");
@@ -183,5 +211,35 @@ describe("“gravando áudio…” beside “está digitando…”", () => {
     await act(async () => fireEvent.click(screen().getByRole("button", { name: "Continuar gravando" })));
     await act(() => Bun.sleep(150));
     expect(voiceFrames()).toHaveLength(2);
+  }, 15_000);
+
+  test("a take right after a typed message tells at once, so the agent asked in it still waits for the take", async () => {
+    restore = fakeMicrophone();
+    const { socket } = await open(seedState({ media: { voiceAvailable: true } }));
+    await typed("olha isso");
+    await act(async () => fireEvent.keyDown(composer(), { key: "Enter" }));
+    await record();
+    await act(() => Bun.sleep(150));
+    expect(typingSent(socket)).toEqual(["typing", "voice"]);
+  });
+
+  test("while the take uploads the others still see it, and writing meanwhile takes over", async () => {
+    restore = fakeMicrophone();
+    const state = seedState({ media: { voiceAvailable: true } });
+    const api = createFakeApi(state);
+    let uploaded = () => {};
+    api.voice.send = () => new Promise((resolve) => (uploaded = () => resolve({ clipId: "clip-1" })));
+    const { socket } = await open(state, api);
+    await record();
+    await act(() => Bun.sleep(800));
+    await act(async () => fireEvent.click(screen().getByRole("button", { name: "Enviar áudio" })));
+    // On its way: still one frame every 3 s.
+    await act(() => Bun.sleep(3300));
+    expect(typingSent(socket)).toEqual(["voice", "voice"]);
+    // Writing shows at once, and the upload's frames wait while she writes.
+    await typed("e mais");
+    await act(() => Bun.sleep(1300));
+    expect(typingSent(socket)).toEqual(["voice", "voice", "typing"]);
+    await act(async () => uploaded());
   }, 15_000);
 });

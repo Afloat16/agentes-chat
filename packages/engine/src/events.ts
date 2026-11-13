@@ -126,6 +126,8 @@ export type ChannelEvent =
       message?: MessageView;
       threadId?: string | null;
       agentRunId?: string | null;
+      /** With `message` left out: the person who wrote it (null for an agent), so their typing line ends with it. */
+      authorUserId?: string | null;
     }
   /** An agent run changed state (`running` = typing indicator). */
   | {
@@ -711,18 +713,19 @@ export async function publishTyping(
 
 export async function publishMessageCreated(pubsub: PubSub, message: MessageView) {
   const inline = Buffer.byteLength(JSON.stringify(message)) <= INLINE_LIMIT;
+  const authorUserId = message.author.type === "person" ? message.author.id : null;
   await publishChannelEvent(pubsub, {
     type: "message.created",
     channelId: message.channelId,
     messageId: message.id,
-    ...(inline ? { message } : { threadId: message.threadId, agentRunId: message.agentRunId }),
+    ...(inline ? { message } : { threadId: message.threadId, agentRunId: message.agentRunId, authorUserId }),
   });
   try {
     await pubsub.publish(chatActivityTopic, {
       type: "channel.activity",
       channelId: message.channelId,
       threadId: message.threadId,
-      authorUserId: message.author.type === "person" ? message.author.id : null,
+      authorUserId,
       mentionedUserIds: message.mentionedUserIds,
     });
   } catch {

@@ -1540,6 +1540,8 @@ export type ChannelEvent =
       message?: Message;
       threadId?: string | null;
       agentRunId?: string | null;
+      /** With `message` left out: the person who wrote it (null for an agent), so their typing line ends with it. */
+      authorUserId?: string | null;
     }
   /** Someone joined or left, or an agent's way of replying changed (agents carry `autoReply`). */
   | {

@@ -2061,12 +2061,12 @@ function ChannelView({
             return allowed;
           },
           // "gravando áudio…" for the others while it records and while it uploads (then the server keeps it until the
-          // message comes); the throttle makes it one frame every 3 s.
+          // message comes); the throttle makes it one frame every 3 s, and holds the upload's while they write.
           onRecording: () => sendTyping(undefined, "voice"),
           onTake: ({ blob, durationMs, peaks }) => {
             toBottom(true);
             setQuote(null);
-            const uploading = setInterval(() => sendTyping(undefined, "voice"), 1000);
+            const uploading = setInterval(() => sendTyping(undefined, "voice", true), 1000);
             void sendVoice({
               blob,
               durationMs,
