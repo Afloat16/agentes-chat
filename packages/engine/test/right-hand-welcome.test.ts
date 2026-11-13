@@ -98,10 +98,14 @@ describe("who is greeted", () => {
     });
     // It rings as any new message does, and nobody else's conversation got a line.
     expect((await rings(f)).map((j) => j.payload)).toEqual([{ messageId: all[0]?.id }]);
-    // The ring reaches the newcomer and nobody else: one row in their inbox, as an agent's reply to them.
+    // The ring reaches the newcomer and nobody else: one row in their inbox, as a message sent to them (nobody
+    // asked, so it is no reply), with its own words in their language.
     await drainOutbox(f.db, f.handlers);
     const inbox = await f.db.select().from(schema.notifications);
-    expect(inbox.map((n) => [n.userId, n.kind, n.source.messageId])).toEqual([[bia.id, "agent_reply", all[0]?.id]]);
+    expect(inbox.map((n) => [n.userId, n.kind, n.source.messageId])).toEqual([[bia.id, "dm", all[0]?.id]]);
+    expect(inbox[0]?.latest).toEqual({
+      text: "Você acabou de entrar na Acme. Do que você cuida por aqui? Me conta e eu monto seu primeiro agente com você.",
+    });
     expect(await f.db.select({ id: schema.messages.id }).from(schema.messages)).toHaveLength(1);
     // The greeting is stored text: no model was called, and nothing was made for them.
     expect(f.provider.calls).toHaveLength(0);

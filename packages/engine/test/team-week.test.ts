@@ -257,7 +257,7 @@ describe("the card", () => {
     expect(
       await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: f.owner.id, slot: SLOT.toISOString() }),
     ).toBeNull();
-    // Notified like any agent's message in a DM.
+    // Notified as a message it sent them: nobody asked, so it is no reply.
     const [notice] = await f.db
       .select()
       .from(schema.outbox)
@@ -265,7 +265,7 @@ describe("the card", () => {
     expect(notice).toBeDefined();
     await notifyMessage({ db: f.db, pubsub: f.pubsub }, f.org.id, id as string);
     const inbox = await f.db.select().from(schema.notifications).where(eq(schema.notifications.userId, f.owner.id));
-    expect(inbox.map((n) => n.kind)).toContain("agent_reply");
+    expect(inbox.map((n) => [n.kind, n.latest.text])).toContainEqual(["dm", "Sua semana da equipe está pronta"]);
   });
 
   test("a personal workspace's card says the week is the person's own (ADR 0159)", async () => {
@@ -1116,6 +1116,46 @@ describe("Resumo do dia", () => {
       .set({ updatedAt: new Date(day(2).getTime() - HOUR) })
       .where(eq(schema.issues.id, task));
     expect(await post(f, bia.id, day(2))).toBeNull();
+  });
+
+  test("a task its maker no longer sees is not counted for them", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    const at = new Date(NINE.getTime() - 2 * HOUR);
+    // Bia made it, then its audience was narrowed to someone else. Dev closed it.
+    const [issue] = await f.db
+      .insert(schema.issues)
+      .values({
+        orgId: f.org.id,
+        number: 41,
+        title: "Write the report",
+        status: "done",
+        assigneeType: "agent",
+        assigneeId: f.agent.id,
+        createdByType: "person",
+        createdById: bia.id,
+        restricted: true,
+        audienceUserIds: [f.owner.id],
+        updatedAt: at,
+      })
+      .returning();
+    await f.db.insert(schema.issueActivity).values({
+      orgId: f.org.id,
+      issueId: issue?.id ?? "",
+      kind: "event",
+      authorType: "agent",
+      authorId: f.agent.id,
+      text: "changed the status to Done",
+      event: "status_changed",
+      data: { from: "in_progress", to: "done" },
+      createdAt: at,
+    });
+    expect(await post(f, bia.id, NINE)).toBeNull();
+    // Shown to her again, it is her agent's work of the day.
+    await f.db.update(schema.issues).set({ restricted: false, audienceUserIds: [] });
+    const id = (await post(f, bia.id, NINE)) as string;
+    expect((await cardOf(f, id)).card.worked).toEqual([{ kind: "tasks", agentId: f.agent.id, count: 1 }]);
   });
 
   test("what a run waits on is named for what it is, and every waiting item is on the row", async () => {

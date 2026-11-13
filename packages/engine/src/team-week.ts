@@ -842,6 +842,7 @@ export async function buildTeamDay(
     await db.execute(sql`select assignee_id as agent_id, count(*) as n from issues
       where org_id = ${w.orgId} and assignee_type = 'agent'
         and created_by_type = 'person' and created_by_id = ${w.userId}
+        and ${taskSeenSql("issues", user)}
         and ${closedByAgentSql("issues", start, end)}
         and not ${taskEndToldSql(
           sql`issues.id`,

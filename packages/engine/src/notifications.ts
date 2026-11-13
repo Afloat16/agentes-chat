@@ -479,6 +479,11 @@ const MERGING: ReadonlySet<NotificationKind> = new Set([
   // One per person, read or not, until nothing waits on them.
   "proposal_waiting",
 ]);
+/**
+ * Group key prefix of what the right hand wrote in a DM by itself (`notifyMessage`): reading the conversation
+ * resolves these rows (`markChannelRead`), as it does an agent's replies there.
+ */
+export const unaskedGroup = (channelId: string) => `unasked:${channelId}:`;
 /** "Menções" in the inbox: what was said to me. */
 const MENTION_KINDS: NotificationKind[] = ["mention", "dm", "agent_reply", "agent_question"];
 /** A read reaction row still takes new reactions for this long (the "9 min" span on the card). */
