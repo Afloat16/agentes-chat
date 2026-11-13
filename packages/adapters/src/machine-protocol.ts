@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 62;
+export const MACHINE_PROTOCOL_VERSION = 63;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -2341,6 +2341,11 @@ export interface AgentScope {
   handle: string;
   /** Protocol 9: the agent's display name, for the machine's activity log. */
   name?: string;
+  /**
+   * Protocol 63 (ADR 0156): on the work the server starts (`exec`, `brain.turn`, `task.start`), the `Co-authored-by`
+   * lines its commits end with. The runner hands them to git in the agent's own processes alone (`co-authors.ts`).
+   */
+  coAuthors?: string[];
 }
 
 /** What the server asks. Paths are always relative to the workspace (the agent's folder when `agent` is set). */
