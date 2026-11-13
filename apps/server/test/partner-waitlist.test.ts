@@ -97,11 +97,14 @@ test("a number that can't be a WhatsApp number is refused as invalid_whatsapp, a
   const anon = browser(t);
   // Too few digits, words, past E.164's 15 digits, blank.
   for (const whatsapp of ["+55 11 912", "call me 11912345678", "+5511912345678901", "  "]) {
-    const res = await anon(PATH, { json: { ...ana, whatsapp } });
-    expect({ whatsapp, status: res.status, code: await errorCode(res) }).toEqual({
+    // From the landing's form, which reads the code through CORS to word it itself.
+    const res = await anon(PATH, { json: { ...ana, whatsapp }, origin: LANDING });
+    const cors = res.headers.get("access-control-allow-origin");
+    expect({ whatsapp, status: res.status, code: await errorCode(res), cors }).toEqual({
       whatsapp,
       status: 400,
       code: "invalid_whatsapp",
+      cors: LANDING,
     });
   }
   expect(await t.db.select().from(schema.partnerWaitlistEntries)).toEqual([]);
@@ -164,7 +167,13 @@ test("with the bot check, a token the landing page made for the list joins; one 
     browser(t)(PATH, { json: { ...ana, email }, origin: LANDING, headers: { "x-captcha-response": token } });
   for (const token of [tokenMadeOn("elsewhere.example", "waitlist"), tokenMadeOn("agentes.example", "sign-in")]) {
     const res = await join(token, "bia@example.com");
-    expect({ status: res.status, code: await errorCode(res) }).toEqual({ status: 403, code: "human_check" });
+    // The page reads the refusal through CORS, to try once more.
+    const cors = res.headers.get("access-control-allow-origin");
+    expect({ status: res.status, code: await errorCode(res), cors }).toEqual({
+      status: 403,
+      code: "human_check",
+      cors: LANDING,
+    });
   }
   expect((await join(tokenMadeOn("agentes.example", "waitlist"), "ana@example.com")).status).toBe(202);
   await t.drain();

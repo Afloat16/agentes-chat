@@ -143,6 +143,24 @@ test("a token made on the landing page counts for its waiting lists only; one ma
     expect(await outcomes(await guardedCalls(token, madeOn(host)))).toEqual(REFUSED);
   }
   expect(await outcomes(await guardedCalls(token, madeOn(APP_HOST)))).toEqual(THROUGH);
+
+  // As the landing page sends it: from its own origin, reading each answer through CORS, a refusal too.
+  for (const [action, outcome] of [
+    ["sign-in", "human_check"],
+    ["waitlist", 202],
+  ] as const) {
+    const res = await browser(t)("/api/waitlist", {
+      json: { email: "bia@example.com" },
+      origin: LANDING,
+      headers: madeOn(LANDING_HOST)(action),
+    });
+    const cors = res.headers.get("access-control-allow-origin");
+    expect({ action, outcome: res.ok ? res.status : await codeOf(res), cors }).toEqual({
+      action,
+      outcome,
+      cors: LANDING,
+    });
+  }
 });
 
 test("without LANDING_URL, only a token made on PUBLIC_URL's host counts, and there is no waiting list to join", async () => {
