@@ -174,9 +174,9 @@
   padding: var(--space-2);
 }
 /* A narrow column (the phone's browser, a side panel): four numbers go two a line, three stay on one line while each
-   keeps its 88 and else the third takes the next line whole. A fix is a MediaRow: the face and the title on one line
-   (the title's first line on the face's middle, however many it wraps to), then its line and its button under them at
-   the row's width (rule 23), a quiet button beside it keeping its own. The face never owns a column beside them. */
+   keeps its 88 and else the third takes the next line whole. A fix is a MediaRow: the face and the title on one line,
+   then its line and its button under them at the row's width (rule 23), a quiet button beside it keeping its own. The
+   face never owns a column beside them. */
 @container (max-width: 520px) {
   .tw__stat:first-child:nth-last-child(4),
   .tw__stat:first-child:nth-last-child(4) ~ .tw__stat {
@@ -190,9 +190,19 @@
   .tw__fix-t {
     display: contents;
   }
+  /* The title ends half a line under the face's middle, held from the bottom of their line: one line centres on the
+     face, and a title of two lines or more, taller than the face with that room under it, grows the line downwards
+     and keeps its rise (`.ac-captop`), its capitals starting at the face's top. Either way its line stands as far
+     under it. */
   .tw__fix-t b {
-    margin-block-start: 0;
-    padding-block-start: calc((var(--tw-face) - 1lh) / 2);
+    align-self: end;
+    /* Browsers without the lh unit: the page's 22px line. */
+    margin-block-end: calc((var(--tw-face) - 22px) / 2);
+  }
+  @supports (top: 1lh) {
+    .tw__fix-t b {
+      margin-block-end: calc((var(--tw-face) - 1lh) / 2);
+    }
   }
   .tw__fix-t span,
   .tw__fix-side {
