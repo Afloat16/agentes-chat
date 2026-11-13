@@ -1229,6 +1229,11 @@ span.work-line {
 .work-line__time {
   flex: none;
 }
+/* In the role tag's place, at its height (its 1px above included): the row doesn't move when work starts or ends. */
+.sidebar__item-role.work-line,
+.members-side__line.work-line {
+  margin-top: 1px;
+}
 .work-line[data-tone="you"] .work-line__words {
   color: var(--warn);
   font-weight: 600;

@@ -138,6 +138,32 @@ describe("the worst case (break-ui, measured by CI's geometry step)", () => {
   });
 });
 
+describe("two blues on small faces", () => {
+  test("at work (three dots) beside out of office (the arrow, asleep): each keeps its own mark", async () => {
+    const state = seedState();
+    state.agentStatuses = [
+      status(ATLAS_ID, { presence: "busy", working: true, work: work({ forAgentId: ADA_ID }) }),
+      status(ADA_ID, {
+        presence: "out",
+        status: {
+          by: "auto",
+          text: null,
+          kind: "out_of_plan",
+          subject: null,
+          emoji: null,
+          until: new Date(Date.now() + 3 * 3600_000).toISOString(),
+        },
+      }),
+    ];
+    await renderApp(`/org/${ORG_ID}/c/${GENERAL_ID}`, { api: createFakeApi(state) });
+    await settle(8);
+    expect(agentRow(ATLAS_ID).querySelector(".ac-presence")?.getAttribute("data-presence")).toBe("working");
+    expect(agentRow(ADA_ID).querySelector(".ac-presence")?.getAttribute("data-presence")).toBe("out");
+    // Out of office keeps its own line: why, and when it is back.
+    expect(agentRow(ADA_ID).querySelector(".sidebar__item-role")?.textContent).toContain("Sem limite");
+  });
+});
+
 describe("the members column", () => {
   test("its work here reads 'aqui', with how long, before its role", async () => {
     desktop();
