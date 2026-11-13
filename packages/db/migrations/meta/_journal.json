@@ -1797,8 +1797,15 @@
     {
       "idx": 258,
       "version": "7",
-      "when": 1794695500000,
-      "tag": "0258_right_hand_seats",
+      "when": 1794705400000,
+      "tag": "0258_picture_size",
+      "breakpoints": true
+    },
+    {
+      "idx": 259,
+      "version": "7",
+      "when": 1794705500000,
+      "tag": "0259_right_hand_seats",
       "breakpoints": true
     }
   ]
