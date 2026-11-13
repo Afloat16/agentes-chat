@@ -190,13 +190,15 @@ export async function notifyMessage(deps: NotificationDeps, orgId: string, messa
   const stoppedAt = card?.agentIds.at(-1);
   const owner = !behind && !card?.forUserId && stoppedAt ? await agentOwner(deps, stoppedAt) : null;
   // The autonomy brakes' proposal card, digest and loop stop (ADR 0131) are for the person they name.
-  // Lodi's weekly card (ADR 0137 §9) is for the admin whose DM it is in.
+  // Lodi's weekly card (ADR 0137 §9) is for the admin whose DM it is in, and what it posts by itself with a ring
+  // (`postFromLodi`) names its person on the message.
   const asker =
     behind ??
     card?.forUserId ??
     proposalCardOf(meta)?.forUserId ??
     autonomyNoteFor(meta) ??
     teamWeekCardOf(meta)?.forUserId ??
+    (message.authorType === "agent" && typeof meta.forUserId === "string" ? meta.forUserId : null) ??
     owner;
   const ownerSees =
     asker !== null &&

@@ -6,6 +6,7 @@ import {
   approveJoinRequest,
   askToJoin,
   createInvitation,
+  drainOutbox,
   inviteLink,
   joinOrganization,
   liveLodiSwitches,
@@ -87,6 +88,7 @@ describe("who is greeted", () => {
     expect(all[0]?.meta).toEqual({
       bodyCode: "welcome_member",
       bodyParams: { org: "Acme" },
+      forUserId: bia.id,
       replyChips: {
         choices: ["Desenvolvimento", "Marketing", "Vendas", "Finanças", "Operações", "Atendimento"],
         multiple: false,
@@ -96,6 +98,10 @@ describe("who is greeted", () => {
     });
     // It rings as any new message does, and nobody else's conversation got a line.
     expect((await rings(f)).map((j) => j.payload)).toEqual([{ messageId: all[0]?.id }]);
+    // The ring reaches the newcomer and nobody else: one row in their inbox, as an agent's reply to them.
+    await drainOutbox(f.db, f.handlers);
+    const inbox = await f.db.select().from(schema.notifications);
+    expect(inbox.map((n) => [n.userId, n.kind, n.source.messageId])).toEqual([[bia.id, "agent_reply", all[0]?.id]]);
     expect(await f.db.select({ id: schema.messages.id }).from(schema.messages)).toHaveLength(1);
     // The greeting is stored text: no model was called, and nothing was made for them.
     expect(f.provider.calls).toHaveLength(0);
@@ -147,7 +153,7 @@ describe("who is greeted", () => {
     await f.db.update(schema.users).set({ workArea: "sales" }).where(eq(schema.users.id, bia.id));
     await greet(f, bia.id);
     const [m] = await said(f);
-    expect(m?.meta).toEqual({ bodyCode: "welcome_member", bodyParams: { org: "Acme" } });
+    expect(m?.meta).toEqual({ bodyCode: "welcome_member", bodyParams: { org: "Acme" }, forUserId: bia.id });
     // Skipped, or "something else": the areas come.
     const caio = await join(f, "caio");
     await f.db.update(schema.users).set({ workArea: "other" }).where(eq(schema.users.id, caio.id));

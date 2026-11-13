@@ -13,7 +13,7 @@ import {
   runRoutineNow,
   wakeSnoozedNotifications,
 } from "../src";
-import { approvalsDigestLane } from "../src/approvals-digest";
+import { APPROVALS_DIGEST_JOB, approvalsDigestLane } from "../src/approvals-digest";
 import { OUTSIDE_RUN_ERRORS, outsideRoutineFailure, ROUTINE_RETRY_AFTER_MS } from "../src/routine-ledger";
 import {
   enqueueTeamWatches,
@@ -424,6 +424,39 @@ describe("what it tells", () => {
     await watch(new Date(NOW.getTime() + 30 * MIN));
     expect(await rows()).toHaveLength(1);
     expect((await rows())[0]).toMatchObject({ count: 2, readAt: null });
+  });
+
+  test("what was wrong for over a week when it first looked is nobody's news: the day it starts tells none of it", async () => {
+    f = await setup({ rightHand: true, budgetNanoUsd: 10_000_000_000 });
+    const WEEKS = 30 * 24 * HOUR;
+    await connector("Slack", { updatedAt: ago(WEEKS) });
+    await plan({ lastUsedAt: ago(WEEKS), updatedAt: ago(WEEKS), createdAt: ago(2 * WEEKS) });
+    await f.db.insert(schema.mailAccounts).values({
+      orgId: f.org.id,
+      provider: "imap",
+      via: "imap",
+      address: "ana@example.com",
+      status: "needs_reconnect",
+      createdByUserId: f.owner.id,
+      updatedAt: ago(WEEKS),
+    });
+    await watch();
+    expect(await rows()).toEqual([]);
+    expect(await pushes()).toBe(0);
+    // Later looks do not tell it either.
+    await watch(new Date(NOW.getTime() + 24 * HOUR));
+    expect(await rows()).toEqual([]);
+
+    // A budget used up is of the month it is in: told, whenever the month began.
+    await spend(f.agent.id, 10_000_000_000);
+    await watch();
+    expect((await rows()).map((r) => r.latest.reason)).toEqual(["budget_out"]);
+
+    // Once a row of its cause is open for something new, the old one is listed in it.
+    await connector("Notion");
+    await watch();
+    const apps = (await rows()).find((r) => r.latest.reason === "connector");
+    expect(apps).toMatchObject({ count: 2, latest: { names: ["Slack", "Notion"] } });
   });
 
   test("a connector goes to who connected it while they manage connectors, else to who does", async () => {
@@ -996,42 +1029,60 @@ describe("what it reminds of", () => {
     expect(await pushes()).toBe(1);
   });
 
-  test("approvals are left to their digest for who has it on with enough waiting. The rest is still reminded", async () => {
-    f = await setup({ rightHand: true });
+  /** Approvals waiting on `userId` since before anything summed them up, each with its row in their inbox. */
+  const oldApprovals = async (userId: string, count = 3) => {
     const approvals = await f.db
       .insert(schema.approvals)
       .values(
-        [1, 2, 3].map((n) => ({
+        Array.from({ length: count }, (_, i) => i + 1).map((n) => ({
           orgId: f.org.id,
           agentId: f.agent.id,
           channelId: f.general.id,
           threadRootId: crypto.randomUUID(),
-          toolUseId: `tool-${n}`,
+          toolUseId: `tool-${userId}-${n}`,
           tool: "github_merge",
           scope: "github:pr.merge",
           params: { pr: n },
-          actionHash: `hash-${n}`,
+          actionHash: `hash-${userId}-${n}`,
           title: `Merge PR #${n}`,
+          ownerUserId: userId,
           expiresAt: new Date(NOW.getTime() + 24 * HOUR),
         })),
       )
       .returning();
     const asked = [];
-    for (const a of approvals)
+    for (const [i, a] of approvals.entries())
       asked.push(
-        await ask(f.owner.id, ago(8 * HOUR), {
+        await ask(userId, ago((8 - i) * HOUR), {
           kind: "approval",
           groupKey: `approval:${a.id}`,
           source: { approvalId: a.id },
         }),
       );
+    return { approvals, asked };
+  };
+  const digestJobs = async () =>
+    (await f.db.select().from(schema.outbox).where(eq(schema.outbox.kind, APPROVALS_DIGEST_JOB))).length;
+  const lodiSaid = async () =>
+    f.db
+      .select()
+      .from(schema.messages)
+      .where(eq(schema.messages.authorAgentId, (await lodiOf()).id));
+
+  test("approvals nobody summed up yet get their digest card from the reminder, and no ring. The rest is still reminded", async () => {
+    f = await setup({ rightHand: true });
+    const { approvals, asked } = await oldApprovals(f.owner.id);
     const question = await ask(f.owner.id, ago(5 * HOUR));
-    approvalsDigestLane.live = true;
-    try {
-      await watch();
-    } finally {
-      approvalsDigestLane.live = false;
-    }
+    // They came before the digest existed: no job of it was ever queued for this person.
+    expect(await digestJobs()).toBe(0);
+    await watch();
+    const [card, ...more] = await lodiSaid();
+    expect(more).toEqual([]);
+    expect(card?.meta.actionCard).toMatchObject({
+      kind: "approvals",
+      forUserId: f.owner.id,
+      params: { approvalIds: approvals.map((a) => a.id), digest: true },
+    });
     for (const a of asked) {
       const row = await reread(a.id);
       expect(row.latest.reminder).toBe(true);
@@ -1039,6 +1090,51 @@ describe("what it reminds of", () => {
       expect(row.updatedAt.getTime()).toBe(a.updatedAt.getTime());
     }
     expect((await reread(question.id)).latest).toMatchObject({ reminder: true, still: 1 });
+    // The lane is as it was for whatever runs next.
+    expect(approvalsDigestLane.live).toBe(true);
+    // The next looks add no second card.
+    await watch(new Date(NOW.getTime() + 24 * HOUR));
+    expect(await lodiSaid()).toHaveLength(1);
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
+  test("with no digest card to yield to, approvals are reminded like any other ask", async () => {
+    f = await setup({ rightHand: true });
+    await registerPushDevice(f.db, f.owner.id, {
+      token: `ExponentPushToken[${f.owner.id.slice(0, 8)}-phone-01]`,
+      platform: "ios",
+      locale: "pt-BR",
+    });
+    // The right hand may not write to this person: its digest never comes for them.
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    await f.db
+      .update(schema.agents)
+      .set({ audienceMode: "owner", ownerUserId: f.owner.id })
+      .where(eq(schema.agents.id, (await lodiOf()).id));
+    const theirs = await oldApprovals(bia.id);
+    // Two waiting: under what the digest sums up.
+    const few = (await oldApprovals(f.owner.id, 2)).asked;
+    await watch();
+    expect(await lodiSaid()).toEqual([]);
+    expect((await reread(theirs.asked[0]?.id ?? "")).latest).toMatchObject({ reminder: true, still: 3 });
+    expect((await reread(theirs.asked[0]?.id ?? "")).updatedAt.getTime()).toBe(NOW.getTime());
+    expect((await reread(theirs.asked[1]?.id ?? "")).latest.reminder).toBe(true);
+    expect((await reread(few[0]?.id ?? "")).latest).toMatchObject({ reminder: true, still: 2 });
+    expect(await pushes()).toBe(1);
+  });
+
+  test("an ask older than a week when it is first looked at is left alone: no reminder on the day it starts", async () => {
+    f = await setup({ rightHand: true });
+    const old = await ask(f.owner.id, ago(30 * 24 * HOUR));
+    expect(await enqueueTeamWatches(f.db, NOW)).toBe(0);
+    await watch();
+    expect((await reread(old.id)).latest.reminder).toBeUndefined();
+    // One of this week beside it is reminded alone, and counts alone.
+    const week = await ask(f.owner.id, ago(3 * 24 * HOUR));
+    expect(await enqueueTeamWatches(f.db, NOW)).toBe(1);
+    await watch();
+    expect((await reread(week.id)).latest).toMatchObject({ reminder: true, still: 1 });
+    expect((await reread(old.id)).latest.reminder).toBeUndefined();
   });
 
   test("a reminded item snoozed and back says its own line, not that day's count", async () => {

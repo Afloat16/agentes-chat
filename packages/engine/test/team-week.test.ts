@@ -562,6 +562,25 @@ describe("suggestions on the week's card", () => {
     expect(await post(f, bia.id, SLOT)).toBeNull();
   });
 
+  test("an offer to archive is not applied once the agent went back to work", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const ivo = await agent(f, "Ivo");
+    await busy(f, SLOT);
+    const id = (await post(f, f.owner.id, SLOT)) as string;
+    const row = (await cardOf(f, id)).moreRows?.[0] as { proposalId: string };
+    expect(await proposal(f, row.proposalId)).toMatchObject({ agentId: ivo.id, rationale: IDLE_REASON });
+    // Days after the card, someone puts it to work. The card still reads "has not worked in four weeks".
+    await run(f, ivo.id, new Date(), "done");
+    await expect(
+      decideProposal(f.db, f.owner.id, f.org.id, row.proposalId, "accept", { pubsub: f.pubsub }),
+    ).rejects.toThrow("changed since");
+    expect((await proposal(f, row.proposalId))?.status).toBe("stale");
+    const [still] = await f.db.select().from(schema.agents).where(eq(schema.agents.id, ivo.id));
+    expect(still?.archivedAt).toBeNull();
+    expect(await f.db.select().from(schema.agentActions).where(eq(schema.agentActions.messageId, id))).toEqual([]);
+  });
+
   test("an agent on a large model with light work is offered the next one down, never the smallest", async () => {
     f = await setup({ rightHand: true });
     await inZone(f);
@@ -925,7 +944,8 @@ describe("Resumo do dia", () => {
     expect(JSON.stringify(card)).not.toContain("Which plan");
     // A build from before reads `rows` alone, and finds only kinds it words.
     expect(card.rows.every((r) => FIRST_KINDS.includes(r.kind))).toBe(true);
-    expect(await rings(f, id as string)).toBe(true);
+    // The question rang when it was asked and the failure when it happened: the card is read when they come.
+    expect(await rings(f, id as string)).toBe(false);
     // A retry of the same job posts no second card, and none of it called a model.
     expect(await post(f, bia.id, NINE)).toBeNull();
     expect(f.provider.calls).toHaveLength(0);
@@ -1010,11 +1030,16 @@ describe("Resumo do dia", () => {
     expect(await rings(f, second)).toBe(false);
     // Asked the same day's job again after its window moved: still one card.
     expect(await post(f, bia.id, day(2))).toBeNull();
-    // A new thing waiting rings again.
+    // A new thing waiting is on a new card, which does not ring: its own notice did.
     await waits(f, bia.id, "question:2");
     const third = (await post(f, bia.id, day(3))) as string;
     expect((await cardOf(f, third)).card.moreRows?.[0]).toMatchObject({ kind: "waiting", count: 2 });
-    expect(await rings(f, third)).toBe(true);
+    expect(await rings(f, third)).toBe(false);
+    // A run newly held told nobody yet: that rings.
+    await ask(f, bia.id, new Date(day(4).getTime() - 6 * HOUR), "waiting_input", {
+      transcript: { waitingForBrain: { code: "not_logged_in", since: day(4).getTime() - 6 * HOUR } },
+    });
+    expect(await rings(f, (await post(f, bia.id, day(4))) as string)).toBe(true);
     expect(f.provider.calls).toHaveLength(0);
   });
 
@@ -1163,6 +1188,114 @@ describe("Resumo do dia", () => {
     expect(hers.moreRows).toEqual([
       expect.objectContaining({ kind: "stuck", channelId: dm.id, dm: true, code: "other", count: 1 }),
     ]);
+  });
+
+  test("a how-to learned in someone else's DM or a private channel is on no card of the agent's owner", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    const [lia] = await f.db
+      .insert(schema.agents)
+      .values({
+        orgId: f.org.id,
+        name: "Lia",
+        handle: "lia",
+        role: "Research",
+        instructions: "",
+        model: "claude-sonnet-5-5",
+        ownerUserId: bia.id,
+      })
+      .returning();
+    const [hidden] = await f.db
+      .insert(schema.channels)
+      .values({ orgId: f.org.id, name: "diretoria", kind: "channel", visibility: "private" })
+      .returning();
+    // Someone else uses Bia's agent in their own DM with it.
+    const theirs = await openPersonAgentDm(f.db, f.org.id, f.owner.id, lia?.id ?? "");
+    const hers = await openPersonAgentDm(f.db, f.org.id, bia.id, lia?.id ?? "");
+    const howTo = (title: string, channelIds: string[]) =>
+      f.db
+        .insert(schema.contextItems)
+        .values({
+          orgId: f.org.id,
+          agentId: lia?.id,
+          kind: "note",
+          scopeType: "agent",
+          scopeId: lia?.id,
+          subjectKey: "howto close the month",
+          title,
+          content: title,
+          channelIds,
+          trust: "low",
+          recurrence: 5,
+        })
+        .returning();
+    await howTo("Payroll: the board's salary table", [theirs.id]);
+    await howTo("Layoff list steps", [hidden?.id ?? ""]);
+    // Nothing of hers to say: the two alone post no card, and neither title leaves where it was learned.
+    expect(await post(f, bia.id, NINE)).toBeNull();
+
+    const [own] = await howTo("Export the report", [hers.id]);
+    const [anywhere] = await howTo("Name the files", []);
+    const { card } = await cardOf(f, (await post(f, bia.id, NINE)) as string);
+    expect(card.rows.flatMap((r) => (r.kind === "howto" ? [r.itemId] : [])).sort()).toEqual(
+      [own?.id ?? "", anywhere?.id ?? ""].sort(),
+    );
+    expect(JSON.stringify(card)).not.toContain("Payroll");
+    expect(JSON.stringify(card)).not.toContain("Layoff");
+  });
+
+  test("three approvals or more are on the summary of approvals alone, for who has it on", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const approvals = await f.db
+      .insert(schema.approvals)
+      .values(
+        [1, 2, 3].map((n) => ({
+          orgId: f.org.id,
+          agentId: f.agent.id,
+          channelId: f.general.id,
+          threadRootId: crypto.randomUUID(),
+          toolUseId: `tool-${n}`,
+          tool: "github_merge",
+          scope: "github:pr.merge",
+          params: { pr: n },
+          actionHash: `hash-${n}`,
+          title: `Merge PR #${n}`,
+          ownerUserId: f.owner.id,
+          expiresAt: new Date(Date.now() + DAY),
+        })),
+      )
+      .returning();
+    for (const a of approvals)
+      await notify(
+        { db: f.db, pubsub: f.pubsub },
+        {
+          orgId: f.org.id,
+          userIds: [f.owner.id],
+          kind: "approval",
+          groupKey: `approval:${a.id}`,
+          waiting: true,
+          actor: { type: "agent", id: f.agent.id },
+          source: { approvalId: a.id },
+          latest: { title: a.title },
+        },
+      );
+    // The summary holds them: the day's card would only say them again, so it says nothing.
+    expect(await post(f, f.owner.id, NINE)).toBeNull();
+    // Who turned the summary off reads them on the day's card, as before.
+    await setLodiPrefs(f.db, f.org.id, f.owner.id, { digestOff: true });
+    const off = await cardOf(f, (await post(f, f.owner.id, NINE)) as string);
+    expect(off.card.rows.filter((r) => r.kind === "approvals")).toEqual([
+      expect.objectContaining({ agentId: f.agent.id, approvalIds: expect.arrayContaining(approvals.map((a) => a.id)) }),
+    ]);
+    // On again, with something else to say: the card comes without their rows, and still counts them as waiting.
+    await setLodiPrefs(f.db, f.org.id, f.owner.id, { digestOff: false });
+    await waits(f, f.owner.id, "question:1");
+    const { card } = await cardOf(f, (await post(f, f.owner.id, new Date(NINE.getTime() + DAY))) as string);
+    expect(card.rows.filter((r) => r.kind === "approvals")).toEqual([]);
+    expect(card.moreRows?.map((r) => r.kind)).toEqual(["waiting"]);
+    expect(card.stats.waiting).toBe(4);
   });
 
   test("asked of Lodi: set_team_week moves it for the person behind the run", async () => {

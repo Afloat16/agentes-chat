@@ -6,8 +6,10 @@ import {
   decideApprovals,
   ForbiddenError,
   highRisk,
+  insertMessage,
   listApprovals,
   liveLodiSwitches,
+  openPersonAgentDm,
   personAgentDmKey,
   publishApproval,
   REQUEST_PERMISSION_TOOL,
@@ -168,11 +170,12 @@ test("a new approval queues one job a person on the next 10-minute mark at least
 test("under three nothing, three give one quiet card, a fourth joins it, and no model is called", async () => {
   f = await setup({ rightHand: true });
   const first = [await ask(), await ask()];
-  await digest(f.owner.id);
+  // It answers whether a card holds what waits: the reminder of unread asks leaves approvals to it only then.
+  expect(await digest(f.owner.id)).toBe(false);
   expect(await posts()).toEqual([]);
 
   first.push(await ask());
-  await digest(f.owner.id);
+  expect(await digest(f.owner.id)).toBe(true);
   const [card, ...more] = await posts();
   expect(more).toEqual([]);
   expect(card?.meta).toMatchObject({
@@ -207,6 +210,53 @@ test("under three nothing, three give one quiet card, a fourth joins it, and no 
   // It never rings: no inbox row, no push, and nothing asked of a model.
   expect(await f.db.select().from(schema.outbox).where(eq(schema.outbox.kind, "notifications.message"))).toEqual([]);
   expect(await f.db.select().from(schema.notifications)).toEqual([]);
+  expect(f.provider.calls).toHaveLength(0);
+});
+
+test("the card the right hand posted when asked what waits is the one that grows: the same approvals are on one card", async () => {
+  f = await setup({ rightHand: true });
+  const lodi = await lodiOf();
+  const first = [await ask(), await ask()];
+  const card = {
+    kind: "approvals",
+    forUserId: f.owner.id,
+    params: { approvalIds: first.map((a) => a.id), why: "Two wait" },
+  };
+  const say = async (channelId: string, minutesAgo: number) =>
+    insertMessage(f.db, {
+      orgId: f.org.id,
+      channelId,
+      author: { type: "agent", agentId: lodi.id, runId: null, hop: 1, stretchId: null },
+      body: "Approvals waiting: 2",
+      meta: { actionCard: card },
+      createdAt: new Date(NOW.getTime() - minutesAgo * 60_000),
+    });
+  // Asked in a channel: that card is everyone's to read there, and is left as it is.
+  const inChannel = await say(f.general.id, 9);
+  first.push(await ask());
+  expect(await digest(f.owner.id)).toBe(true);
+  const [, own, ...more] = await posts();
+  expect(more).toEqual([]);
+  expect(own?.meta.actionCard).toMatchObject({
+    params: { approvalIds: first.map((a) => a.id), why: "", digest: true },
+  });
+  await f.db.delete(schema.messages).where(eq(schema.messages.id, own?.id ?? ""));
+
+  // Asked in their own DM with it: no second card under it. It takes what came since and keeps its line.
+  const dm = await openPersonAgentDm(f.db, f.org.id, f.owner.id, lodi.id);
+  const asked = await say(dm.id, 5);
+  expect(await digest(f.owner.id)).toBe(true);
+  const after = await posts();
+  expect(after.map((m) => m.id)).toEqual([inChannel.id, asked.id]);
+  expect(after[0]?.meta.actionCard).toEqual(card);
+  expect(after[1]?.meta.actionCard).toEqual({
+    kind: "approvals",
+    forUserId: f.owner.id,
+    params: { approvalIds: first.map((a) => a.id), why: "Two wait", digest: true },
+  });
+  // Nothing new since: it says nothing and changes nothing.
+  expect(await digest(f.owner.id)).toBe(true);
+  expect(await posts()).toHaveLength(2);
   expect(f.provider.calls).toHaveLength(0);
 });
 
@@ -266,7 +316,7 @@ test("an old card is left alone, and a person gets at most two digests a day", a
   // All decided, three new ones the same day: the day's two are spent, so nothing.
   await settle([...first.map((a) => a.id), fourth.id]);
   const next = [await ask(), await ask(), await ask()];
-  await digest(f.owner.id, new Date(later.getTime() + HOUR));
+  expect(await digest(f.owner.id, new Date(later.getTime() + HOUR))).toBe(false);
   expect(await posts()).toHaveLength(2);
 
   // The next day it speaks again.

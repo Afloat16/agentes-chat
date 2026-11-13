@@ -42,8 +42,9 @@ import { forPeople } from "./run-resume";
  *   Otherwise it looks again a day later, `HANDED_TASK_LOOKS` times. A task reported back and left open is not
  *   stopped: the person heard its report, and closing it is theirs.
  * - What it is told is a notice only it reads (`wait_result` with `refs.task`), and at most
- *   `HANDED_TASK_WAKES_A_DAY` of them a person a day start a turn of it, on that person's AI. Neither job calls a
- *   model.
+ *   `HANDED_TASK_WAKES_A_DAY` of them a person a day start a turn of it, on the AI that answers that person in that
+ *   DM: their own for the right hand when they chose one, else the workspace's as it serves them, which may be
+ *   another person's plan that serves everyone (`right-hand.ts`). Neither job calls a model.
  * - `keepingWordBlock` is a block of its prompt in its DM with `ctx.personId`: when to set a reminder by itself and
  *   the ones waiting there. A plain reminder posts the person's words at its time, with no model call.
  * - The person's switch (`remindOff`) stops all three. `live` shows it on the right hand's page and adds `reminders`
@@ -175,7 +176,8 @@ async function takeWake(tx: Executor, orgId: string, userId: string, zone: strin
 /**
  * Tells the right hand about a handed task, once per `once`, in its DM with the person it was for: a notice only it
  * reads, which starts a turn there while the day has one left. The notice names the run that handed the task over, so
- * the turn is that person's, with their AI and their permissions. Null when it was already said.
+ * the turn is that person's: their permissions, and the AI that answers them in that DM. Null when it was already
+ * said.
  */
 async function tellLodi(
   deps: Deps,

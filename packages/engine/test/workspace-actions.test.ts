@@ -1353,7 +1353,7 @@ describe("cards that must be read: inviting people and removing an API key", () 
     expect(posted.card.params).toMatchObject({
       action: "remove_ai_key",
       needs: "manage_credentials",
-      input: { credentialId: key.id },
+      input: { credentialId: key.id, name: "Chave antiga" },
       words: { name: "Chave antiga", provider: "DeepSeek" },
     });
     expect(await has()).toBe(true);
@@ -1367,12 +1367,26 @@ describe("cards that must be read: inviting people and removing an API key", () 
     ).rejects.toMatchObject({ code: "credential.in_use", params: { agents: f.agent.name } });
     expect(await has()).toBe(true);
     await updateAgent(f.db, f.owner.id, f.org.id, f.agent.id, { credentialId: null });
+    // The key was replaced and renamed under the same id since: the card names a key that is not this one any more.
+    // The tap is refused, nothing is removed, and the card reads the new name before anyone taps again.
+    await f.db
+      .update(schema.providerCredentials)
+      .set({ label: "Produção" })
+      .where(eq(schema.providerCredentials.id, key.id));
+    await expect(
+      decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "remove_ai_key"),
+    ).rejects.toMatchObject({ code: "action_card.changed" });
+    expect(await keys(f)).toHaveLength(2);
+    expect(await cardNow(f, posted.id)).toMatchObject({
+      state: "pending",
+      params: { input: { credentialId: key.id, name: "Produção" }, words: { name: "Produção", provider: "DeepSeek" } },
+    });
     const card = await decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "remove_ai_key");
     expect(card).toMatchObject({ state: "applied", decidedByUserId: f.owner.id });
     expect(await has()).toBe(false);
     expect(await keys(f)).toHaveLength(1);
     const [receipt] = (await actionsFor(f.db, f.org.id, [posted.id])).get(posted.id) ?? [];
-    expect(receipt?.params).toMatchObject({ action: "remove_ai_key", name: "Chave antiga", provider: "DeepSeek" });
+    expect(receipt?.params).toMatchObject({ action: "remove_ai_key", name: "Produção", provider: "DeepSeek" });
     await expect(
       decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "remove_ai_key"),
     ).rejects.toThrow("already decided");

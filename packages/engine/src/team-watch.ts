@@ -2,6 +2,7 @@ import { and, type Database, desc, eq, gt, inArray, isNull, lt, rowsOf, type SQL
 import { serverText } from "@agenteschat/i18n";
 import type { Agent } from "./agents";
 import { backgroundAiState } from "./ai-status";
+import { postApprovalsDigest } from "./approvals-digest";
 import type { JobDeps } from "./jobs";
 import {
   inboxVisible,
@@ -36,6 +37,9 @@ import { DEFAULT_AGENT_BUDGET_NANO_USD, monthStartUtc } from "./usage";
  *   about to be, a computer gone while agents wait for it (`tellProblems`).
  * - It reminds a person, once a day and never twice of the same thing, of what they left unread there for hours
  *   (`remindUnread`).
+ *
+ * What was already old when it first looked (`OLD_NEWS_MS`) is nobody's news: it is neither told nor reminded of, so
+ * the day it starts in a workspace is as quiet as any other.
  *
  * The contract with the rest of the server is `teamWatchLane` below: the server reads the jobs, the sweep and the
  * switch from it, so nothing else is wired by hand.
@@ -88,8 +92,11 @@ const DAY_STARTS = 9;
 const DAY_ENDS = 18;
 /** The asks it reminds of: what blocks an agent until this person answers. */
 const REMINDED_KINDS: NotificationKind[] = ["approval", "agent_question", "secret_request"];
-/** From this many approvals waiting, the digest of approvals is the reminder. */
-const DIGEST_FROM = 3;
+/**
+ * Something wrong, or an ask left unread, for longer than this before it was ever told or reminded of is left alone.
+ * A budget is not read by it: it is told for the month it is in.
+ */
+export const OLD_NEWS_MS = 7 * DAY_MS;
 
 const {
   agentBudgetPeriods,
@@ -120,6 +127,7 @@ const unreadAsk = (at: SQL) => sql`n.waiting and n.done_at is null and n.read_at
     sql`, `,
   )})
   and n.created_at < (${at} - make_interval(secs => ${UNANSWERED_MS / 1000}))
+  and n.created_at > (${at} - make_interval(secs => ${OLD_NEWS_MS / 1000}))
   and n.latest->>'reminder' is null`;
 
 /** The person's own clock (their zone, else the workspace's, else UTC), over `organization_members m` and settings `s`. */
@@ -337,7 +345,10 @@ interface Problem {
    */
   episode: string;
   since: Date;
-  /** Wrong for long enough to tell. One that is not yet opens no row and brings none back unread. */
+  /**
+   * Wrong for long enough to tell, and not for so long that it is old news. One that is not opens no row and brings
+   * none back unread.
+   */
   ripe: boolean;
   /** Whose it is to fix, when they still may (`needs`). Else the first person who may `orElse`, else nobody. */
   to: string | null;
@@ -378,6 +389,7 @@ const saidElsewhere = {
 /** Everything wrong in the workspace now, from stored rows only. */
 async function problemsOf(db: Database, orgId: string, now: Date): Promise<Problem[]> {
   const stale = new Date(now.getTime() - TELL_GRACE_MS);
+  const recent = (since: Date) => since.getTime() > now.getTime() - OLD_NEWS_MS;
   const out: Problem[] = [];
   const at = (d: Date) => String(d.getTime());
 
@@ -409,7 +421,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       name: a.name,
       episode: at(since),
       since,
-      ripe: since < stale,
+      ripe: since < stale && recent(since),
       to: a.by,
       elsewhere: saidElsewhere.signIn(orgId, a.id),
     });
@@ -437,7 +449,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       cause: "connector",
       ...c,
       episode: at(c.since),
-      ripe: c.since < stale,
+      ripe: c.since < stale && recent(c.since),
       to: c.by,
       needs: "manage_connectors",
       orElse: "manage_connectors",
@@ -463,7 +475,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       name: m.address || m.label,
       episode: at(m.since),
       since: m.since,
-      ripe: m.since < stale,
+      ripe: m.since < stale && recent(m.since),
       to: m.by,
     });
 
@@ -484,7 +496,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       cause: "database",
       ...d,
       episode: at(d.since),
-      ripe: true,
+      ripe: recent(d.since),
       to: d.by,
       needs: "manage_connectors",
       orElse: "manage_connectors",
@@ -557,7 +569,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       name: m.name,
       episode: at(since),
       since,
-      ripe: true,
+      ripe: recent(since),
       to: m.by,
       orElse: "configure",
       elsewhere: saidElsewhere.computer(orgId, m.id),
@@ -712,7 +724,9 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
  * One reminder a day for what a person left unread in "Esperando você" for hours (an approval, an agent's question, a
  * secret to give), in their own daytime: the oldest comes back on top and goes to their devices once, saying how many
  * still wait, and every one of them is marked reminded, so none is ever reminded twice. Approvals are left to the
- * digest of approvals for who has it on with enough of them waiting.
+ * digest of approvals only when one of its cards holds them: it is asked to post or grow its card here, so a person
+ * it never summed up for (their approvals are older than it, or they turned it on since) gets one, and a person it
+ * cannot write to, or whose approvals it does not count, is reminded like anyone else.
  */
 async function remindUnread(deps: NotificationDeps, orgId: string, now: Date): Promise<number> {
   const { db } = deps;
@@ -734,6 +748,7 @@ async function remindUnread(deps: NotificationDeps, orgId: string, now: Date): P
       isNull(notifications.readAt),
       inArray(notifications.kind, REMINDED_KINDS),
       lt(notifications.createdAt, new Date(now.getTime() - UNANSWERED_MS)),
+      gt(notifications.createdAt, new Date(now.getTime() - OLD_NEWS_MS)),
       sql`${notifications.latest}->>'reminder' is null`,
     );
     let rows = await db
@@ -757,15 +772,14 @@ async function remindUnread(deps: NotificationDeps, orgId: string, now: Date): P
         ),
       );
     const quiet = theirs.map((r) => r.id).filter((id) => !rows.some((r) => r.id === id));
-    if (liveLodiSwitches().includes("digest") && !p.digest_off) {
-      const [pending] = await db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(notifications)
-        .where(and(mine, eq(notifications.kind, "approval")));
-      if ((pending?.n ?? 0) >= DIGEST_FROM) {
-        quiet.push(...rows.filter((r) => r.kind === "approval").map((r) => r.id));
-        rows = rows.filter((r) => r.kind !== "approval");
-      }
+    if (
+      liveLodiSwitches().includes("digest") &&
+      !p.digest_off &&
+      rows.some((r) => r.kind === "approval") &&
+      (await postApprovalsDigest(deps, orgId, { userId: p.user_id }, now))
+    ) {
+      quiet.push(...rows.filter((r) => r.kind === "approval").map((r) => r.id));
+      rows = rows.filter((r) => r.kind !== "approval");
     }
     const first = rows[0];
     const once = first ? await saidOnce(db, orgId, remindKey(p.user_id, p.day)) : false;

@@ -122,6 +122,8 @@ const SHAPES: Record<string, unknown>[] = [
   { off: "yes", day: 9, hour: -1, dayHour: 7.5 },
   { weekOff: true, dayOff: false, dayHour: 7, weekHour: 8, day: 1, off: false, daily: true, hour: 7 },
   { dayOff: true, digestOff: true, remindOff: true },
+  { off: true, daily: false, digestOff: false },
+  { off: false, daily: false, remindOff: true },
 ];
 
 describe("a person's choice", () => {
@@ -132,8 +134,23 @@ describe("a person's choice", () => {
   });
 
   test("who stopped the card before gets nothing new, and who chose it daily keeps exactly that", () => {
-    // Stopped: both stay off.
-    expect(lodiPrefsOf({ off: true, day: 5, hour: 17, daily: false })).toMatchObject({ weekOff: true, dayOff: true });
+    // Stopped: both stay off, and so does everything that did not exist when "off" was the only switch.
+    expect(lodiPrefsOf({ off: true, day: 5, hour: 17, daily: false })).toMatchObject({
+      weekOff: true,
+      dayOff: true,
+      digestOff: true,
+      remindOff: true,
+    });
+    // Until the row says otherwise for one of them.
+    expect(lodiPrefsOf({ off: true, daily: false, digestOff: false })).toMatchObject({
+      digestOff: false,
+      remindOff: true,
+    });
+    // A card left on then is no word about the rest: it is on.
+    expect(lodiPrefsOf({ off: false, day: 3, hour: 10, daily: false })).toMatchObject({
+      digestOff: false,
+      remindOff: false,
+    });
     expect(lodiPrefsOf({ off: true, day: 5, hour: 9, daily: true })).toMatchObject({ weekOff: true, dayOff: true });
     // Daily in place of the week's, at its hour.
     expect(lodiPrefsOf({ off: false, day: 5, hour: 8, daily: true })).toMatchObject({
@@ -164,9 +181,15 @@ describe("a person's choice", () => {
     expect(legacyTeamWeek(on, false)).toEqual({ off: false, daily: true, hour: 9 });
     expect(legacyTeamWeek({ ...on, weekOff: true }, true)).toEqual({ off: false, daily: true, hour: 9 });
     expect(legacyTeamWeek({ ...on, weekOff: true, dayOff: true }, true).off).toBe(true);
-    // Its stop.
-    expect(patchLodiPrefs(on, { off: true }, true)).toMatchObject({ weekOff: true, dayOff: true });
-    expect(patchLodiPrefs(on, { off: true }, false)).toMatchObject({ weekOff: true, dayOff: true });
+    // Its stop: nothing comes by itself any more, the summary of approvals and the reminders included.
+    const nothing = { weekOff: true, dayOff: true, digestOff: true, remindOff: true };
+    expect(patchLodiPrefs(on, { off: true }, true)).toMatchObject(nothing);
+    expect(patchLodiPrefs(on, { off: true }, false)).toMatchObject(nothing);
+    // Stopping one card on a newer build stops that card alone.
+    expect(patchLodiPrefs(on, { weekOff: true, dayOff: true }, true)).toMatchObject({
+      digestOff: false,
+      remindOff: false,
+    });
     // Its start brings back the one card it draws, never the other: an admin who only had the week's keeps only that.
     const stopped = { ...on, weekOff: true, dayOff: true };
     expect(patchLodiPrefs(stopped, { off: false }, true)).toMatchObject({ weekOff: false, dayOff: true });

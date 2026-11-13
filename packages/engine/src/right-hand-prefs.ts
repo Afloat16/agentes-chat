@@ -66,6 +66,8 @@ const flag = (v: unknown) => (typeof v === "boolean" ? v : null);
  * A person's stored choice, whatever it holds, with the defaults for what it lacks. A row from before the two cards
  * keeps exactly what it had: `off` stops both, `daily` is the day's card in place of the week's, and anything else
  * saved then gets no day's card (it was off unless asked for). Only a row that never chose gets today's defaults.
+ * `off` was "nothing comes by itself" when it was the only switch, so it also stops the summary of approvals and the
+ * reminders until the row says otherwise for each.
  */
 export function lodiPrefsOf(raw: unknown): LodiPrefs {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
@@ -79,8 +81,8 @@ export function lodiPrefsOf(raw: unknown): LodiPrefs {
     weekHour: whole(r.weekHour, 23) ?? (daily ? null : hour) ?? LODI_PREFS_DEFAULTS.weekHour,
     dayOff: flag(r.dayOff) ?? (before ? off || !daily : LODI_PREFS_DEFAULTS.dayOff),
     dayHour: whole(r.dayHour, 23) ?? (daily ? (hour ?? LEGACY_HOUR) : LODI_PREFS_DEFAULTS.dayHour),
-    digestOff: r.digestOff === true,
-    remindOff: r.remindOff === true,
+    digestOff: flag(r.digestOff) ?? off,
+    remindOff: flag(r.remindOff) ?? off,
     muted: stringsOf(r.muted).slice(-MUTED_MAX),
   };
 }
@@ -101,9 +103,9 @@ export function patchLodiPrefs(now: LodiPrefs, patch: LodiPrefsPatch, admin: boo
   const next = { ...now, ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) };
   // Put away for good: a save adds its keys, so one made from an older read of the list drops none.
   if (muted) next.muted = [...new Set([...now.muted, ...muted])];
-  // Its one switch stops everything. Its start brings back the one card that build draws: the other has no
-  // control there, so it never starts by a tap on that screen.
-  if (off === true) next.weekOff = next.dayOff = true;
+  // Its one switch stops everything the right hand does for them by itself. Its start brings back the one card that
+  // build draws: the rest has no control there, so it never starts by a tap on that screen.
+  if (off === true) next.weekOff = next.dayOff = next.digestOff = next.remindOff = true;
   else if (off === false) next[admin ? "weekOff" : "dayOff"] = false;
   if (daily === true) {
     next.weekOff = true;
@@ -136,8 +138,12 @@ export const lodiPrefsSql = {
   dayOff: sql.raw(`(case when ${isFlag("dayOff")} then ${isTrue("dayOff")}
     when ${isFlag("off")} or ${isFlag("daily")} then ${isTrue("off")} or not ${isTrue("daily")}
     else ${LODI_PREFS_DEFAULTS.dayOff} end)`) as SQL<boolean>,
-  digestOff: sql.raw(isTrue("digestOff")) as SQL<boolean>,
-  remindOff: sql.raw(isTrue("remindOff")) as SQL<boolean>,
+  digestOff: sql.raw(
+    `(case when ${isFlag("digestOff")} then ${isTrue("digestOff")} else ${isTrue("off")} end)`,
+  ) as SQL<boolean>,
+  remindOff: sql.raw(
+    `(case when ${isFlag("remindOff")} then ${isTrue("remindOff")} else ${isTrue("off")} end)`,
+  ) as SQL<boolean>,
   day: sql.raw(`coalesce(${wholeSql("day", 6)}, ${LODI_PREFS_DEFAULTS.day})`) as SQL<number>,
   weekHour: sql.raw(`coalesce(${wholeSql("weekHour", 23)},
     case when ${isTrue("daily")} then null else ${wholeSql("hour", 23)} end, ${LODI_PREFS_DEFAULTS.weekHour})`) as SQL<number>,

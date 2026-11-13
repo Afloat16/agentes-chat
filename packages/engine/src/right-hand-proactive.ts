@@ -79,7 +79,13 @@ export async function postFromLodi(
       channelId: dm.id,
       author: { type: "agent", agentId: lodi.id, runId: null, hop: 1, stretchId: null },
       body,
-      meta: { ...post.meta, bodyCode: post.bodyCode, ...(post.bodyParams ? { bodyParams: post.bodyParams } : {}) },
+      meta: {
+        ...post.meta,
+        bodyCode: post.bodyCode,
+        ...(post.bodyParams ? { bodyParams: post.bodyParams } : {}),
+        // Nobody asked for it, so no run says whose it is: the inbox reads it here (`notifyMessage`).
+        ...(post.push ? { forUserId: userId } : {}),
+      },
     });
     if (post.push)
       await enqueue(tx, {

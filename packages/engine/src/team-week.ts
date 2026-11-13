@@ -1,6 +1,7 @@
 import type { PubSub } from "@agenteschat/adapters";
 import {
   and,
+  arrayContained,
   type Database,
   desc,
   type Executor,
@@ -14,11 +15,14 @@ import {
 } from "@agenteschat/db";
 import { modelForTier, modelInfo } from "@agenteschat/providers";
 import { listApprovals } from "./approvals";
+import { DIGEST_FROM, digestWaitingOn } from "./approvals-digest";
 import { editContextItem, howToSql } from "./context/items";
 import { LEARN_DEFAULTS } from "./context/learn";
 import {
   decideProposal,
+  IDLE_MS,
   IDLE_REASON,
+  idleAgentSql,
   LIGHT_WORK_REASON,
   NO_CHANNEL_REASON,
   OVER_BUDGET_REASON,
@@ -45,6 +49,7 @@ import { lodiFor, postFromLodi, setCardOnMessage } from "./right-hand-proactive"
 import { createRoutine, type RoutineDeps } from "./routines";
 import { localDate, nextOccurrence, type ScheduleRule } from "./rrule";
 import { runErrorDetail } from "./runs";
+import { userVisibleChannels } from "./search";
 import { openOrg } from "./standing";
 import { channelReaderSql, taskSeenSql } from "./task-access";
 import { listWaiting } from "./waiting";
@@ -84,8 +89,6 @@ const REPEAT_DAYS = 3;
 const UNANSWERED_MIN = 3;
 /** In a team, questions from this many people: one person asking alone is talking to themselves. */
 const UNANSWERED_ASKERS = 2;
-/** An agent this long without a run, or a suggestion this long without an answer, comes up (again). */
-const IDLE_MS = 4 * WEEK_MS;
 /** Done runs in `IDLE_MS` before an agent's work is judged light, and how many in ten of them must be. */
 const LIGHT_RUNS = 20;
 const LIGHT_IN_TEN = 9;
@@ -628,12 +631,7 @@ async function suggestions(
     ? rowsOf<{ id: string }>(
         await db.execute(sql`select a.id from agents a
           where a.org_id = ${w.orgId} and a.id = any(${`{${old.map((a) => a.id).join(",")}}`}::uuid[])
-            and not exists (select 1 from agent_runs r where r.org_id = a.org_id and r.agent_id = a.id
-              and r.created_at >= ${since}::timestamptz)
-            and not exists (select 1 from routines ro where ro.org_id = a.org_id and ro.agent_id = a.id
-              and ro.active and ro.deleted_at is null)
-            and not exists (select 1 from issues i where i.org_id = a.org_id and i.assignee_type = 'agent'
-              and i.assignee_id = a.id::text and i.status not in ('done', 'canceled'))
+            and ${idleAgentSql(new Date(w.end.getTime() - IDLE_MS))}
           order by a.created_at`),
       )
     : [];
@@ -723,8 +721,9 @@ const isMoreRow = (r: TeamWeekRow | TeamWeekMoreRow): r is TeamWeekMoreRow =>
  * no team yet). Theirs: what waits on them, runs they asked for or of an agent they own, tasks they made, their
  * agents' how-tos. New: not on the card before (`seen`), or ended inside this card's window. Work that finished posts
  * it only when the person did not ask for it themselves (the answer reached them where they asked), and it rings only
- * for what waits or is held. The whole workspace's work never posts it, an administrator's included, and every run is
- * read through a conversation the person reads. A task whose end the right hand was already told for them
+ * for a run newly held: what waits on them rang when it was asked, and a failure when it happened. Approvals are left
+ * to the summary of approvals (`digest`) for who gets one: they are on that card, never on both. The whole workspace's
+ * work never posts it, an administrator's included, and every run is read through a conversation the person reads. A task whose end the right hand was already told for them
  * (`taskEndToldSql`) is not counted: that end is said in their DM, once.
  *
  * A run is the person's when they wrote the message that started it or the first message of its thread, which is one
@@ -732,7 +731,7 @@ const isMoreRow = (r: TeamWeekRow | TeamWeekMoreRow): r is TeamWeekMoreRow =>
  */
 export async function buildTeamDay(
   db: Database,
-  w: Window & { seen?: string[] },
+  w: Window & { seen?: string[]; digest?: boolean },
 ): Promise<{ card: BuiltCard; push: boolean } | null> {
   const [team] = rowsOf(
     await db.execute(sql`select 1 from agents where org_id = ${w.orgId} and builtin is null
@@ -888,12 +887,20 @@ export async function buildTeamDay(
   const stalled = await stalledSteps(db, w, true);
   const rest: TeamWeekRow[] = [...(await provenHowTos(db, w)), ...(stalled ? [stalled] : [])];
 
-  const newWaiting = waiting.items.some((i) => !seen.has(i.id));
+  // Enough approvals for the summary of approvals, by its own count: that card lists them, and decides them.
+  const digested =
+    w.digest === true &&
+    approvals.length >= DIGEST_FROM &&
+    (await digestWaitingOn(db, w.orgId, w.userId, new Date())).length >= DIGEST_FROM;
+  const newWaiting = waiting.items.some((i) => !seen.has(i.id) && !(digested && i.kind === "approval"));
   const newHeld = heldKeys.some((k) => !seen.has(k));
   const failed = stuck.some((s) => s.failed > 0);
   if (unread === 0 && closed.length === 0 && !newWaiting && !newHeld && !failed && rest.every((r) => seen.has(r.id)))
     return null;
-  const shown = [...approvalRows(approvals), ...waitingRow, ...stuckRows, ...rest].slice(0, MAX_DAY_ROWS);
+  const shown = [...approvalRows(digested ? [] : approvals), ...waitingRow, ...stuckRows, ...rest].slice(
+    0,
+    MAX_DAY_ROWS,
+  );
   return {
     card: {
       kind: TEAM_WEEK_CARD,
@@ -914,9 +921,10 @@ export async function buildTeamDay(
       seen: [...waiting.items.map((i) => i.id), ...heldKeys, ...rest.map((r) => r.id)],
       proposalIds: [],
     },
-    // It rings for what waits on them or is held and was not said before. A run that failed told its person when it
-    // did (their inbox), and what only finished is read when they come: neither rings again.
-    push: newWaiting || newHeld,
+    // It rings for a run held that was not said before: nothing told its person yet. What waits on them rang when it
+    // was asked and is reminded of by the team watch, a run that failed told its person when it did (their inbox),
+    // and what only finished is read when they come: none of those rings again.
+    push: newHeld,
   };
 }
 
@@ -1087,9 +1095,12 @@ const HOWTOS_SHOWN = 3;
 
 /**
  * The person's own agents' how-tos reused at least `LEARN_DEFAULTS.skillAfter` times that are still untrusted, so the
- * day's pass can't make them skills (ADR 0167), the most reused first.
+ * day's pass can't make them skills (ADR 0167), the most reused first. Only what was learned where this person reads,
+ * as their agent's memory page lists it (`listAgentMemoryRows`): one worked out in someone else's DM or in a private
+ * channel they are not in stays there, its title included.
  */
 async function provenHowTos(db: Database, w: Window): Promise<TeamWeekRow[]> {
+  const visible = await userVisibleChannels(db, w.orgId, w.userId);
   const rows = await db
     .select({
       id: contextItems.id,
@@ -1108,6 +1119,10 @@ async function provenHowTos(db: Database, w: Window): Promise<TeamWeekRow[]> {
         eq(contextItems.status, "active"),
         isNull(contextItems.supersededBy),
         howToSql(),
+        // Someone in no conversation yet reads only what is tied to none.
+        visible.length
+          ? arrayContained(contextItems.channelIds, visible)
+          : sql`cardinality(${contextItems.channelIds}) = 0`,
         eq(contextItems.trust, "low"),
         eq(contextItems.disputed, false),
         gte(contextItems.recurrence, LEARN_DEFAULTS.skillAfter),
@@ -1273,7 +1288,7 @@ export async function postTeamWeek(
       before && before.getTime() < slot.getTime()
         ? new Date(Math.max(before.getTime(), slot.getTime() - DAY_REACH_MS))
         : span;
-    built = await buildTeamDay(db, { ...w, start, seen: stringsOf(last?.card?.seen) });
+    built = await buildTeamDay(db, { ...w, start, seen: stringsOf(last?.card?.seen), digest: !prefs.digestOff });
   } else {
     const week = await buildTeamWeek(db, w);
     built = week && { card: week, push: true };

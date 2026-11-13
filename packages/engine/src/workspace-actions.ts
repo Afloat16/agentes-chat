@@ -141,8 +141,8 @@ export interface ActionDone {
 }
 
 /**
- * What a card names moved since it was posted (a role renamed or deleted). The tap is refused and the card, still
- * pending, takes `input` and `words` as they are now: whoever applies it reads it again first.
+ * What a card names moved since it was posted (a role renamed or deleted, a key renamed). The tap is refused and the
+ * card, still pending, takes `input` and `words` as they are now: whoever applies it reads it again first.
  */
 class CardChangedError extends ConflictError {
   constructor(
@@ -1500,12 +1500,17 @@ const removeAiKeyAction: WorkspaceAction = {
       return `Nothing was posted: ${key.usedBy.map((a) => a.name).join(", ")} still think${key.usedBy.length > 1 ? "" : "s"} with ${say(key)}. They move to another key or AI first (propose_settings_change), then it can be removed.`;
     if (key.isDefault)
       return `Nothing was posted: ${say(key)} is the workspace's default key. They make another key the default first (offer_open_page ai_accounts).`;
-    return { input: { credentialId: key.id }, words: { name: key.label, provider: providerName(key.provider) } };
+    return {
+      input: { credentialId: key.id, name: key.label },
+      words: { name: key.label, provider: providerName(key.provider) },
+    };
   },
   async run(deps, actorId, orgId, input) {
     const id = str(input.credentialId);
     const key = (await listCredentials(deps.db, actorId, orgId)).find((k) => k.id === id);
     if (!key) throw new NotFoundError("That key is gone already", "action.target_gone");
+    // The card is what was read: a key replaced and renamed since is not the key it names.
+    if (key.label !== str(input.name)) throw new CardChangedError({ ...input, name: key.label }, { name: key.label });
     // Agents that came to think with it since the card was posted: the same refusal as its screen's.
     if (key.usedBy?.length)
       throw new ConflictError(

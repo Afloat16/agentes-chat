@@ -1,9 +1,10 @@
+import type { PubSub } from "@agenteschat/adapters";
 import { and, asc, type Database, type Executor, eq, gt, rowsOf, schema, sql } from "@agenteschat/db";
 import { activeCoversTo } from "./approval-covers";
 import { adminsDecide, decidableBySql, decidingKeys, notifiedIds } from "./approvals";
+import { personAgentDmKey } from "./dms";
 import { NotFoundError } from "./errors";
 import { stringsOf } from "./format";
-import type { JobDeps } from "./jobs";
 import { enqueue } from "./outbox";
 import { defineLodiLane } from "./right-hand-lane";
 import { readLodiPrefs } from "./right-hand-prefs";
@@ -21,8 +22,11 @@ import { REQUEST_PERMISSION_TOOL } from "./tools/permission";
  *   came and a person who decides at once gets no card.
  * - `postApprovalsDigest` is that job. Silent when the person turned it off, when `lodiFor` says no and under
  *   `DIGEST_FROM` waiting. It counts what the person was told about and may decide, never what an admin could decide
- *   silently. A card of the last 12 hours that still lists one of them is rewritten where it stands. Otherwise one new
- *   message without a push, at most `DIGEST_A_DAY` a day.
+ *   silently. A card of the last 12 hours that still lists one of them is rewritten where it stands, the one the
+ *   right hand posted there when asked what waits included: the same approvals are never on two of its cards.
+ *   Otherwise one new message without a push, at most `DIGEST_A_DAY` a day. It answers whether such a card now holds
+ *   what waits on the person: the reminder of asks left unread (`team-watch.ts`) leaves approvals to it only then,
+ *   and calls it to get one. The day's card lists no approval for who it sums up for (`digestWaitingOn`).
  * - The card is `{ kind: "approvals", forUserId, params: { approvalIds, why: "", digest: true } }`: ids only, so each
  *   reader's app shows what that reader may see. What is routine is the server's word (`ApprovalView.routine`), and
  *   the card's group button decides through `decideApprovals` with `only: "routine"`, as the person who taps.
@@ -68,8 +72,8 @@ const toldSomeoneElse = (userId: string) => sql`(${approvals.approvers} is null
     where ${organizationMembers.orgId} = ${approvals.orgId} and ${organizationMembers.userId} = ${approvals.ownerUserId}
       and ${accountInUse}))`;
 
-/** The approvals waiting that this person was told about and may decide, oldest first. */
-async function waitingOn(db: Database, orgId: string, userId: string, now: Date): Promise<string[]> {
+/** The approvals waiting that this person was told about and may decide, oldest first: what the digest sums up. */
+export async function digestWaitingOn(db: Database, orgId: string, userId: string, now: Date): Promise<string[]> {
   // Someone who covers another person is told about that person's too: nothing is left out for them. Read on the
   // clock `notifiedIds` reads its covers on.
   const covers = (await activeCoversTo(db, orgId, userId)).length > 0;
@@ -106,45 +110,52 @@ async function waitingOn(db: Database, orgId: string, userId: string, now: Date)
   return mine.slice(0, MAX_ON_CARD);
 }
 
-/** The right hand's latest digest card for this person since `since`: its message and the approvals it lists. */
-async function lastDigest(db: Executor, orgId: string, lodiId: string, userId: string, since: Date) {
-  const [row] = rowsOf<{ id: string; ids: unknown }>(
-    await db.execute(sql`select id, meta->'actionCard'->'params'->'approvalIds' as ids from messages
+/**
+ * The right hand's latest approvals card for this person in their DM with it since `since`, its own digest or the one
+ * it posted there when asked: its message, the approvals it lists and the line it gave.
+ */
+async function lastCard(db: Executor, orgId: string, lodiId: string, userId: string, since: Date) {
+  const [row] = rowsOf<{ id: string; ids: unknown; why: unknown }>(
+    await db.execute(sql`select id, meta->'actionCard'->'params'->'approvalIds' as ids,
+        meta->'actionCard'->'params'->>'why' as why from messages
       where org_id = ${orgId} and author_agent_id = ${lodiId} and created_at > ${since.toISOString()}::timestamptz
+        and channel_id = (select id from channels where org_id = ${orgId}
+          and dm_key = ${personAgentDmKey(userId, lodiId)})
         and deleted_at is null and meta->'actionCard'->>'kind' = 'approvals'
-        and meta->'actionCard'->>'forUserId' = ${userId} and meta->'actionCard'->'params'->>'digest' = 'true'
+        and meta->'actionCard'->>'forUserId' = ${userId}
       order by created_at desc limit 1`),
   );
-  return row ? { id: row.id, ids: stringsOf(row.ids) } : null;
+  return row ? { id: row.id, ids: stringsOf(row.ids), why: typeof row.why === "string" ? row.why : "" } : null;
 }
 
-const cardOf = (userId: string, approvalIds: string[]) => ({
+const cardOf = (userId: string, approvalIds: string[], why = "") => ({
   kind: "approvals",
   forUserId: userId,
-  params: { approvalIds, why: "", digest: true },
+  params: { approvalIds, why, digest: true },
 });
 
+/** The job. True when a card of the last hours holds what waits on the person once it ends. */
 export async function postApprovalsDigest(
-  deps: JobDeps,
+  deps: { db: Database; pubsub?: PubSub },
   orgId: string,
   payload: Record<string, unknown>,
   now = new Date(),
-): Promise<void> {
+): Promise<boolean> {
   const { db } = deps;
   const userId = typeof payload.userId === "string" ? payload.userId : "";
-  if (!userId) return;
+  if (!userId) return false;
   // Someone who left since the job was queued has nothing waiting.
   const member = await readLodiPrefs(db, orgId, userId).catch((error) => {
     if (error instanceof NotFoundError) return null;
     throw error;
   });
-  if (!member || member.prefs.digestOff) return;
+  if (!member || member.prefs.digestOff) return false;
   const lodi = await lodiFor(db, orgId, userId);
-  if (!lodi) return;
-  const waiting = await waitingOn(db, orgId, userId, now);
-  if (waiting.length < DIGEST_FROM) return;
+  if (!lodi) return false;
+  const waiting = await digestWaitingOn(db, orgId, userId, now);
+  if (waiting.length < DIGEST_FROM) return false;
 
-  const fresh = (tx: Executor) => lastDigest(tx, orgId, lodi.id, userId, new Date(now.getTime() - FRESH_MS));
+  const fresh = (tx: Executor) => lastCard(tx, orgId, lodi.id, userId, new Date(now.getTime() - FRESH_MS));
   const open = (card: { ids: string[] } | null) => card?.ids.some((id) => waiting.includes(id)) === true;
   const last = await fresh(db);
   if (last && open(last)) {
@@ -154,8 +165,8 @@ export async function postApprovalsDigest(
     const settled = all.filter((id) => !waiting.includes(id));
     const dropped = new Set(settled.slice(0, Math.max(0, all.length - MAX_ON_CARD)));
     const ids = all.filter((id) => !dropped.has(id));
-    if (ids.join() !== last.ids.join()) await setCardOnMessage(deps, orgId, last.id, cardOf(userId, ids));
-    return;
+    if (ids.join() !== last.ids.join()) await setCardOnMessage(deps, orgId, last.id, cardOf(userId, ids, last.why));
+    return true;
   }
   const day = localDate(now, member.dayTimezone);
   /** Takes one of the day's places, inside the post's transaction: a post that fails gives it back. */
@@ -164,7 +175,7 @@ export async function postApprovalsDigest(
       if (await saidOnce(tx, orgId, `approvals_digest.day:${userId}:${day}:${n}`)) return true;
     return false;
   };
-  await postFromLodi(deps, orgId, userId, {
+  const posted = await postFromLodi(deps, orgId, userId, {
     bodyCode: "action_approvals",
     meta: { actionCard: cardOf(userId, waiting) },
     push: false,
@@ -176,6 +187,8 @@ export async function postApprovalsDigest(
     },
     lodi,
   });
+  // Not posted: another worker's card holds them, or the day's places are spent and none does.
+  return posted !== null || open(await fresh(db));
 }
 
 export const approvalsDigestLane = defineLodiLane({
