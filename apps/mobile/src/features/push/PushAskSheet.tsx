@@ -42,7 +42,13 @@ export function PushAskSheet({ onClose }: { onClose: () => void }) {
     const allowed = ok || (await pushPermission()) === "granted";
     onClose();
     if (ok) toast({ title: t("mobile.push.ask.done"), icon: "bell" });
-    else if (allowed) toast({ title: t("mobile.push.ask.failed"), icon: "x" });
+    // Its way out right there: asking again registers this phone again.
+    else if (allowed)
+      toast({
+        title: t("mobile.push.ask.failed"),
+        icon: "x",
+        action: { label: t("mobile.common.retry"), onPress: () => void ask().catch(() => false) },
+      });
   };
 
   return (

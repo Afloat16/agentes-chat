@@ -17,14 +17,17 @@ test.each([false, true])(
 test("ZIP64 sizes must fit inside their own extra field", async () => {
   const original = zip({ "file.txt": "hello" });
   const at = original.length - 22;
-  const bytes = new Uint8Array(original.length + 4);
+  const bytes = new Uint8Array(original.length + 12);
   bytes.set(original.subarray(0, at));
-  bytes.set(original.subarray(at), at + 4);
+  bytes.set(original.subarray(at), at + 12);
   const view = viewOf(bytes);
   const central = directory(bytes);
   view.setUint32(central + 24, 0xffffffff, true);
-  view.setUint16(central + 30, 4, true);
+  view.setUint16(central + 30, 12, true);
   view.setUint16(at, 1, true);
+  // The following empty extra fields would be misread as the ZIP64 size 5.
+  view.setUint16(at + 4, 5, true);
+  view.setUint32(bytes.length - 10, at - central + 12, true);
   await expect(readZip(blob(bytes))).rejects.toEqual(new ZipError("corrupt"));
 });
 

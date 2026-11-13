@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import {
+  ACCESS_ALLOW_PROTOCOL,
   BROWSER_PROFILE_PROTOCOL,
   DESKTOP_PROTOCOL,
   HEARTBEAT_MS,
@@ -497,6 +498,8 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
         : null,
       /** Its app can be paused from here (`REMOTE_PAUSE_PROTOCOL`); the workspace's own computer never is. */
       remotePause: !managed && m.protocol >= REMOTE_PAUSE_PROTOCOL,
+      /** Its tools can be turned on from here by the person who paired it (`ACCESS_ALLOW_PROTOCOL`, ADR 0036 §8). */
+      accessAllow: !managed && m.protocol >= ACCESS_ALLOW_PROTOCOL,
       pairedBy: m.pairedByUserId ? { id: m.pairedByUserId, name: pairedByName ?? "" } : null,
       agents: using.filter((a) => a.machineId === m.id).map((a) => ({ id: a.id, name: a.name, handle: a.handle })),
       /** Shown to admins and the person who paired it only. */

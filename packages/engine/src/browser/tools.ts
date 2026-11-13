@@ -27,6 +27,7 @@ import {
 } from "@agenteschat/adapters";
 import { and, type Database, desc, eq, isNull, schema, sql } from "@agenteschat/db";
 import { getAgentCached } from "../agents";
+import { ToolOffError } from "../errors";
 import type { Judge } from "../judge";
 import { callWhenBack, type MachineCaller, MachineRequestError } from "../machine-hub";
 import { requestMadePassword, requestVaultKey, vaultUpdateText } from "../machine-provider";
@@ -481,6 +482,12 @@ export function vaultTypingRefusal(text: string, site: string): string {
   }
 }
 
+/** The browser switched off on its computer mid-run: the whole call stops, carrying the switch for the reply's card. */
+function refuseIfOff(error: unknown, status: { machineId: string; machineName: string }) {
+  if (error instanceof MachineRequestError && error.code === "not_allowed")
+    throw new ToolOffError(explain(error, status.machineName), { machineId: status.machineId, tool: "browser" });
+}
+
 /** Runner refusals → what the agent reads. */
 function explain(error: unknown, machineName: string): string {
   if (error instanceof MachineOfflineError || error instanceof MachinePausedError) return error.message;
@@ -489,7 +496,7 @@ function explain(error: unknown, machineName: string): string {
     case "browser_unavailable":
       return `The browser isn't available on the computer ${machineName}: ${error.message.replace(/\.$/, "")}. Tell the person.`;
     case "not_allowed":
-      return `The browser is turned off on the computer ${machineName}. Only the person at that computer can turn it on; tell the people.`;
+      return `The browser is turned off on the computer ${machineName}. Whoever connected it turns it on with the button under your reply; tell the people.`;
     case "paused":
       return `The owner paused the computer ${machineName}: nothing new can start there until they resume it. Tell the people.`;
     case "timeout":
@@ -887,6 +894,7 @@ export function createBrowserToolSource(deps: BrowserToolDeps): ToolSource & { r
         );
       } catch (error) {
         await reportChromeFailure(deps.errors, hub, error, { ...ids(ctx), machineId: status.machineId });
+        refuseIfOff(error, status);
         return { ok: false, text: explain(error, status.machineName) };
       }
       addSetup(reply);
@@ -928,6 +936,7 @@ export function createBrowserToolSource(deps: BrowserToolDeps): ToolSource & { r
           );
         } catch (error) {
           await reportChromeFailure(deps.errors, hub, error, { ...ids(ctx), machineId: status.machineId });
+          refuseIfOff(error, status);
           return [{ ok: false, text: explain(error, status.machineName) }];
         }
         addSetup(reply);
