@@ -14442,7 +14442,7 @@ html:not([data-pointer]) .app-icons__item:focus-visible {
   color: var(--ink);
 }
 /* The open workspace's agents (ADR 0179): under the icons, side by side, each drawn as the icon it makes, its name
-   under it; picked, the same raised face as a picked line. */
+   under it; picked, pressed in like every chosen tile (`--chosen-*`): no radio here to say it. */
 .app-icons__group {
   margin: 0;
   padding: 16px 0 6px;
@@ -14470,8 +14470,8 @@ html:not([data-pointer]) .app-icons__item:focus-visible {
   background: var(--plate);
 }
 .app-icons__agent[aria-checked="true"] {
-  background: linear-gradient(180deg, var(--card-face-top), var(--raised));
-  box-shadow: var(--card-key);
+  background: var(--chosen-bg);
+  box-shadow: var(--chosen-shadow);
 }
 html:not([data-pointer]) .app-icons__agent:focus-visible {
   box-shadow: var(--focus-ring);
