@@ -14120,8 +14120,8 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
 .ac-msg__foot .ac-receipt > .ac-receipt__check:first-child {
   margin-inline-start: -2px;
 }
-/* A face in the receipt's place (the agent that read a message sent while it worked, the person who read it in a
-   DM): 18px with 1px each side, the check's 20px, so the action bar keeps its place left of it. */
+/* A face in the receipt's place (the person who read it in a DM): 18px with 1px each side, the check's 20px, so the
+   action bar keeps its place left of it. */
 .ac-receipt__check:has(> .ac-avatar) {
   padding: 0 1px;
 }

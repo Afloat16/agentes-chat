@@ -17332,6 +17332,7 @@
       "agent_archived": "{{name}} 已归档。",
       "audience": "设置它的人已无法再与 {{name}} 对话。",
       "failing": "连续失败多次，已停止。",
+      "failingLast": "连续失败 5 次后已停止。最后一次：{{cause}}",
       "stopped": "更新已停止。",
       "missing_credential": "{{name}} 没有可用的 AI 密钥或套餐。",
       "timeout": "更新耗时太长。",

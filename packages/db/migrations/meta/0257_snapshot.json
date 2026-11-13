@@ -1,5 +1,5 @@
 {
-  "id": "1a53a1e0-d3ba-4e37-a1a9-5781a57a25d0",
+  "id": "bfee5765-3859-4aa0-94f7-e3a93e2d500b",
   "prevId": "8ff9066b-d99c-48d6-8d6e-595ab1057398",
   "version": "7",
   "dialect": "postgresql",
@@ -16467,12 +16467,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "superseded_by_id": {
-          "name": "superseded_by_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {

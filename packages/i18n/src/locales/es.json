@@ -18230,6 +18230,7 @@
       "agent_archived": "{{name}} fue archivado.",
       "audience": "Quien lo configuró ya no puede hablar con {{name}}.",
       "failing": "Falló varias veces seguidas y se detuvo.",
+      "failingLast": "Se detuvo tras 5 fallos seguidos. El último: {{cause}}",
       "stopped": "Se detuvo la actualización.",
       "missing_credential": "{{name}} no tiene clave ni plan de IA para trabajar.",
       "timeout": "La actualización tardó demasiado.",
