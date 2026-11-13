@@ -13,6 +13,7 @@ import {
   groupLine,
   isHere,
   rowState,
+  taskHref,
   taskStateWords,
   taskSubline,
   tasksBadge,
@@ -274,6 +275,31 @@ describe("an agent's tasks, from its DM's header", () => {
       ended({ runId: "d", agentId: "infra" }),
     ];
     expect(doneTodayOf(list, "dev")).toBe(1);
+  });
+
+  test("its request opens where it was asked; work another agent handed it, where that was handed off", () => {
+    expect(taskHref(task({ runId: "r1", channelId: "c1", threadId: "t1" }))).toBe("/chat/c1?thread=t1");
+    // Its own conversation is two agents' DM, which nobody opens; a routine's room neither.
+    expect(taskHref(task({ runId: "r2", channelId: "dm-ag", betweenAgents: true }))).toBeNull();
+    expect(taskHref(task({ runId: "r3", background: true }))).toBeNull();
+    const from = {
+      channelId: "c-vendas",
+      channelKind: "channel" as const,
+      channelName: "vendas",
+      threadId: "t9",
+      messageId: "m9",
+      label: null,
+    };
+    expect(
+      taskHref(
+        task({
+          runId: "r4",
+          channelId: "dm-ag",
+          betweenAgents: true,
+          delegation: { agentId: "ada", origin: { kind: "agent" }, from },
+        }),
+      ),
+    ).toBe("/chat/c-vendas?thread=t9&m=m9");
   });
 
   test("its screen knows the conversation it came from", () => {
