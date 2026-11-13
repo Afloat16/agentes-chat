@@ -1932,6 +1932,8 @@ export interface Approval {
   /** Decided by someone covering this person (ADR 0139): "Aprovado por Bruno, cobrindo Ana". */
   decidedForUserId?: string | null;
   decidedAt: string | null;
+  /** Canceled because the agent asked for the same action again in a later turn: that newer request. */
+  supersededById?: string | null;
   reason: string | null;
   /** You are the agent's owner or an admin, and it is pending. */
   canDecide: boolean;

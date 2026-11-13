@@ -1786,6 +1786,13 @@
       "when": 1794695300000,
       "tag": "0256_machine_holds",
       "breakpoints": true
+    },
+    {
+      "idx": 257,
+      "version": "7",
+      "when": 1794705300000,
+      "tag": "0257_approval_superseded_by",
+      "breakpoints": true
     }
   ]
 }

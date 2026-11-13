@@ -4644,6 +4644,9 @@ export const en = {
       bcc: "Bcc",
       subject: "Subject",
       noSubject: "(no subject)",
+      /** A connector's reply: who it goes to is the message's sender, not in its call. */
+      toSender: "To whoever sent the message",
+      toList: "To {{to}}",
       more: "Read all",
       less: "Show less",
       answers: "Answers <b>“{{subject}}”</b>",
@@ -4693,6 +4696,8 @@ export const en = {
     outcomeApprovedByYou: "Approved by you",
     outcomeRefusedBy: "Refused by {{name}}",
     outcomeRefusedByYou: "Refused by you",
+    /** The agent asked for the same action again in a later turn: that newer request is on the card under it. */
+    outcomeSuperseded: "Replaced by the version below",
     /** Decided by someone covering the person it was asked of (ADR 0139). */
     outcomeApprovedCovering: "Approved by {{name}}, covering {{for}}",
     outcomeRefusedCovering: "Refused by {{name}}, covering {{for}}",
@@ -5128,6 +5133,8 @@ export const en = {
     },
     expiredLine: "Nobody decided within 24 h, so nothing was done.",
     canceledLine: "The run stopped before a decision.",
+    /** Replaced by the agent's newer request for the same action (`supersededById`). */
+    supersededLine: "The agent asked again with a newer version; this one wasn't done.",
     lesson: "{{name}} will keep it in mind: {{reason}}",
     again: "Ask again",
     againBody: "@{{handle}} the request “{{title}}” expired without a decision. If it still makes sense, ask again.",

@@ -2456,7 +2456,7 @@ async function executeRunInner(
     let mootCalls = 0;
     for (const call of transcript.pending.calls) {
       let result = call.result;
-      const mootText = moot[call.questionId ?? call.secretRequestId ?? call.waitId ?? ""];
+      const mootText = moot[call.questionId ?? call.secretRequestId ?? call.waitId ?? call.approvalId ?? ""];
       if (!result && call.secretRequestId) {
         const [request] = await db.select().from(secretRequests).where(eq(secretRequests.id, call.secretRequestId));
         if (request?.status === "delivered" || request?.status === "declined") {
@@ -2507,6 +2507,9 @@ async function executeRunInner(
           // The approvals screen shows it ran (and what came back).
           const [ran] = await db.select().from(approvals).where(eq(approvals.id, approval.id));
           if (ran) await publishApproval({ db, pubsub: deps.pubsub }, ran, "approval.decided").catch(() => {});
+        } else if (approval?.status === "canceled" && approval.supersededById && mootText) {
+          // Replaced by its newer request (`supersedeApprovals`): nothing was decided here.
+          result = { isError: false, content: mootText };
         } else {
           result = toolResultFor(approval, approval?.status === "refused" ? decider : undefined);
         }

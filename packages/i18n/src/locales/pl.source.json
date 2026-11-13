@@ -10641,6 +10641,12 @@
   "approval.email.noSubject": {
     "value": "(no subject)"
   },
+  "approval.email.toSender": {
+    "value": "To whoever sent the message"
+  },
+  "approval.email.toList": {
+    "value": "To {{to}}"
+  },
   "approval.email.more": {
     "value": "Read all"
   },
@@ -10769,6 +10775,9 @@
   },
   "approval.outcomeRefusedByYou": {
     "value": "Refused by you"
+  },
+  "approval.outcomeSuperseded": {
+    "value": "Replaced by the version below"
   },
   "approval.outcomeApprovedCovering": {
     "value": "Approved by {{name}}, covering {{for}}"
@@ -11873,6 +11882,9 @@
   },
   "approvals.canceledLine": {
     "value": "The run stopped before a decision."
+  },
+  "approvals.supersededLine": {
+    "value": "The agent asked again with a newer version; this one wasn't done."
   },
   "approvals.lesson": {
     "value": "{{name}} will keep it in mind: {{reason}}"
