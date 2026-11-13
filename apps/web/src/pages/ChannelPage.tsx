@@ -97,7 +97,7 @@ import {
   screenAboveEnd,
   usageLine,
 } from "@agenteschat/client/lib/chat";
-import { firstUnreadId, opensAtLastRead } from "@agenteschat/client/lib/chat-look";
+import { firstUnreadId, opensAtLastRead, unreadThreadRootId } from "@agenteschat/client/lib/chat-look";
 import { choiceReplyLine } from "@agenteschat/client/lib/choices";
 import { draftKeyOf } from "@agenteschat/client/lib/composer-drafts";
 import { consultsForLine } from "@agenteschat/client/lib/consult-group";
@@ -1927,6 +1927,24 @@ function ChannelView({
     setFocusTarget(messageId);
     setFocusDone(false);
   };
+  // Opened with something unread that isn't at its end: a reply in a thread, one line under its root, maybe far
+  // above. That root comes into view, highlighted, instead of an end with nothing new. Once, with what was unread
+  // on opening (reading moves it).
+  const [openedUnread] = useState(() => ({
+    count: thread || focusMessageId || adjustThreadId ? 0 : (channel.unreadCount ?? dmRead?.unread ?? 0),
+    at: channel.lastReadAt ?? dmRead?.lastReadAt,
+  }));
+  const threadLanded = useRef(openedUnread.count === 0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once, when the messages and the threads are in
+  useEffect(() => {
+    // The threads as the server has them now: a list kept from an earlier visit knows nothing of the new reply.
+    if (threadLanded.current || !serverRead || !openThreads.isSuccess || openThreads.isFetching || !channelList) return;
+    threadLanded.current = true;
+    // A thread made from a range has no root in the conversation (its marker stands there).
+    const threads = (openThreads.data?.threads ?? []).filter((x) => !x.context);
+    const root = unreadThreadRootId(channelList.visible, threads, openedUnread.at, me.user.id);
+    if (root) jumpTo(root);
+  }, [serverRead, openThreads.isSuccess, openThreads.isFetching, channelList]);
   // A message link to this same conversation (a pill) changes only `?m=`: the page stays, so jump to it.
   const linked = useRef(focusMessageId);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a new `?m=`
