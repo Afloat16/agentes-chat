@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { schema } from "@agenteschat/db";
-import { browser, createTestServer, type TestServer } from "./harness";
+import { browser, createTestServer, fakeCloudflare, type TestServer, tokenMadeOn, turnstileCheck } from "./harness";
 
 /** The landing page's own site. */
 const LANDING = "https://agentes.example";
@@ -152,4 +152,22 @@ test("the landing's origin passes its preflight and joins through CORS; any othe
     expect(await errorCode(res)).toBe("bad_origin");
   }
   expect((await t.db.select().from(schema.partnerWaitlistEntries)).map((r) => r.email)).toEqual(["ana@example.com"]);
+});
+
+test("with the bot check, a token the landing page made for the list joins; one made elsewhere or for a sign-in keeps nothing", async () => {
+  await t.close();
+  t = await createTestServer({
+    env: { LANDING_URL: LANDING },
+    humanCheck: turnstileCheck(fakeCloudflare().fetch, { LANDING_URL: LANDING }),
+  });
+  const join = (token: string, email: string) =>
+    browser(t)(PATH, { json: { ...ana, email }, origin: LANDING, headers: { "x-captcha-response": token } });
+  for (const token of [tokenMadeOn("elsewhere.example", "waitlist"), tokenMadeOn("agentes.example", "sign-in")]) {
+    const res = await join(token, "bia@example.com");
+    expect({ status: res.status, code: await errorCode(res) }).toEqual({ status: 403, code: "human_check" });
+  }
+  expect((await join(tokenMadeOn("agentes.example", "waitlist"), "ana@example.com")).status).toBe(202);
+  await t.drain();
+  expect((await t.db.select().from(schema.partnerWaitlistEntries)).map((r) => r.email)).toEqual(["ana@example.com"]);
+  expect(t.email.contacts.map((c) => c.email)).toEqual(["ana@example.com"]);
 });
