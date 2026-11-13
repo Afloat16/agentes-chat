@@ -84,7 +84,7 @@ import {
 } from "./pairing";
 import { agentWorkspace } from "./paths";
 import { connectVnc, type VncConnection, vncInit } from "./rfb";
-import { installService, installSystemService, serviceStatus, uninstallService } from "./service";
+import { installService, installSystemService, removeOwnService, serviceStatus, uninstallService } from "./service";
 import { askStandby, STANDBY_DEFAULT_MINUTES, STANDBY_MAX_MINUTES, standbyAcked } from "./standby";
 import type { DataListener, DataSocket } from "./streams";
 import { runTaskWrapper } from "./tasks";
@@ -445,6 +445,15 @@ async function start(): Promise<number> {
       case "outdated":
         log("This runner is too old for the server. Update it: agentes-runner update");
         return serviceSafe(3);
+      case "revoked": {
+        const removed = removeOwnService({ manager: process.env.AGENTES_RUNNER_SERVICE });
+        log(
+          removed
+            ? `This computer was removed from the workspace, so its login service is gone too (${removed}). To connect it again: agentes-runner pair --server <url>`
+            : "This computer was removed from the workspace. To connect it again: agentes-runner pair --server <url>",
+        );
+        return serviceSafe(TOKEN_REFUSED_EXIT);
+      }
       default:
         log("Connect this computer again: agentes-runner pair --server <url>");
         return serviceSafe(TOKEN_REFUSED_EXIT);

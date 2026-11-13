@@ -213,6 +213,8 @@ export const OP_ROUTES: Readonly<Record<MachineOp, "machine" | "agent">> = {
   // Root takes each hold in the agent's slice (`holds.ts`), and checks its program is the agent's.
   "keep.start": "machine",
   "keep.end": "machine",
+  // The person's own session: macOS's password window opens on their screen (a system-mode runner answers unsupported).
+  "xcode.fix": "machine",
 };
 
 type AccessRequestOp = Extract<MachineRequest, { op: "access.request" }>;
@@ -328,6 +330,8 @@ export interface HandlerContext {
     start(agent: AgentScope, req: Extract<MachineRequest, { op: "keep.start" }>): Promise<MachineReplies["keep.start"]>;
     end(req: Extract<MachineRequest, { op: "keep.end" }>): Promise<MachineReplies["keep.end"]>;
   };
+  /** `XCODE_FIX_PROTOCOL`: fixing this Mac's own Xcode; without it the op answers `unsupported`. */
+  xcodeFix?: (req: Extract<MachineRequest, { op: "xcode.fix" }>) => MachineReplies["xcode.fix"];
 }
 
 export interface RequestScope {
@@ -698,6 +702,13 @@ async function routeRequest(ctx: HandlerContext, req: MachineRequest, scope: Req
   if (req.op === "phone.look") return { looking: ctx.phones?.look() ?? false } satisfies MachineReplies["phone.look"];
   if (req.op === "phone.wifi")
     return ctx.phones ? ctx.phones.wifi(req) : ({ available: [] } satisfies MachineReplies["phone.wifi"]);
+  if (req.op === "xcode.fix") {
+    return (
+      ctx.xcodeFix?.(req) ?? {
+        fix: { kind: req.kind === "update" ? "update" : "select", state: "unsupported", step: 0 },
+      }
+    );
+  }
   if (isPhoneOp(req)) return handlePhone(ctx, req, scope);
   // Each agent works in its own folder: that folder is its workspace.
   if (req.agent) ctx = { ...ctx, workspaceReal: await agentWorkspace(ctx.workspaceReal, req.agent) };

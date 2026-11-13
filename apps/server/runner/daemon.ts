@@ -158,7 +158,8 @@ import {
 } from "./supervisor";
 import { type SettledTask, TaskManager } from "./tasks";
 import { runnerTerminalUser, systemTerminalUser, Terminals, type TerminalUser } from "./terminal";
-import { appleToolchains, cachedToolchains, TOOLCHAINS_FILE } from "./toolchains";
+import { appleToolchains, cachedToolchains, TOOLCHAINS_FILE, xcodeBlocked } from "./toolchains";
+import { XcodeFixer, type XcodeFixOptions } from "./xcode-fix";
 
 /**
  * The runner's long-lived core, shared by `agentes-runner start` (terminal,
@@ -387,6 +388,8 @@ export interface DaemonOptions {
   phones?: Partial<PhoneManagerOptions> | false;
   /** Tests: the iPhone setup's tools and folders. */
   iphone?: Partial<IphoneSetupOptions>;
+  /** Tests: the Xcode fix's tools and timings. */
+  xcodeFix?: Partial<XcodeFixOptions>;
 }
 
 /** What a task is in its activity words: a shell task's command, or the CLI that works it (the app names it). */
@@ -477,7 +480,7 @@ export class RunnerDaemon implements RequestObserver {
   /** The phones the last `hello` carried (JSON). */
   private toldPhones = "[]";
   /** What this computer builds with, cached (`hello.toolchains`); looked at from the first session on. */
-  private toolchains: { get(): RunnerToolchains | undefined; stop(): void } | null = null;
+  private toolchains: { get(): RunnerToolchains | undefined; stop(): void; lookApple?(): Promise<void> } | null = null;
   /** The Mac's side of an iPhone's setup (the desktop app asks), made on its first request. */
   private iphone: IphoneSetup | null = null;
   /** System mode under systemd: the agents' holds (ADR 0176), which outlive sessions and this process. */
@@ -486,6 +489,8 @@ export class RunnerDaemon implements RequestObserver {
   private standby = false;
   /** The last standby ask answered (`standby-ack.json`). */
   private standbyAsk: string | null = null;
+  /** A fix of the Mac's own Xcode (`xcode.fix`, the desktop app's iPhone window), made on its first request. */
+  private fixer: XcodeFixer | null = null;
 
   constructor(private readonly opts: DaemonOptions) {
     this.uidNetworks = new AgentNetworks({}, readNetworkPins(opts.home));
@@ -822,6 +827,7 @@ export class RunnerDaemon implements RequestObserver {
     this.holds?.close();
     await this.phones?.stop();
     this.iphone?.stop();
+    this.fixer?.stop();
     this.toolchains?.stop();
     await this.accounts.close().catch(() => undefined);
     await this.chain.catch(() => undefined);
@@ -1415,17 +1421,11 @@ export class RunnerDaemon implements RequestObserver {
     if (!supervisor && this.access().tools.browser === true) void browser.prepareInBackground();
     this.toolchains ??= this.opts.toolchains
       ? { get: this.opts.toolchains, stop: () => {} }
-      : cachedToolchains(
-          path.join(home, TOOLCHAINS_FILE),
-          undefined,
-          process.platform === "darwin"
-            ? {
-                look: () => appleToolchains(),
-                // An older server drops the frame: its next hello carries the same.
-                onChange: (toolchains) => this.send({ type: "toolchains.changed", toolchains }),
-              }
-            : null,
-        );
+      : cachedToolchains(path.join(home, TOOLCHAINS_FILE), undefined, {
+          ...(process.platform === "darwin" ? { look: () => appleToolchains() } : {}),
+          // An older server drops the frame: its next hello carries the same.
+          onChange: (toolchains) => this.send({ type: "toolchains.changed", toolchains }),
+        });
     // Phones are reached as the person (adb's key, the Mac's pairing with the iPhone): a system-mode runner has none.
     if (!this.phones && config.mode !== "system" && this.opts.phones !== false) {
       this.phones = new PhoneManager({
@@ -1488,6 +1488,7 @@ export class RunnerDaemon implements RequestObserver {
       },
       ...(this.phones ? { phones: this.phones } : {}),
       ...(this.holds && agentUser ? { keep: this.keepOps(this.holds, agentUser) } : {}),
+      xcodeFix: (req) => this.xcodeFixer().handle(req),
     };
     // `hello` lists the accounts it already knows; a fresh look (each runs its CLI) never delays connecting:
     // it lands in `hello` if it finishes first, else comes after as `accounts.changed`. Nothing reaches the
@@ -2193,8 +2194,24 @@ export class RunnerDaemon implements RequestObserver {
 
   /** The desktop app's iPhone setup: what the Mac has, a download of the iOS platform, Xcode opened. */
   iphoneSetup(): IphoneSetup {
-    this.iphone ??= new IphoneSetup({ log: this.opts.log, ...this.opts.iphone });
+    this.iphone ??= new IphoneSetup({ log: this.opts.log, fixer: () => this.xcodeFixer(), ...this.opts.iphone });
     return this.iphone;
+  }
+
+  /**
+   * Fixing the Mac's Xcode: once done, Xcode is looked at again at once, so the setup moves on by itself, and asked
+   * once more why it is still blocked (the look may skip while another is under way).
+   */
+  xcodeFixer(): XcodeFixer {
+    this.fixer ??= new XcodeFixer({
+      log: this.opts.log,
+      onDone: async () => {
+        await this.toolchains?.lookApple?.();
+        return xcodeBlocked({});
+      },
+      ...this.opts.xcodeFix,
+    });
+    return this.fixer;
   }
 
   // ── Accounts (ADR 0041) ────────────────────────────────────────────────────

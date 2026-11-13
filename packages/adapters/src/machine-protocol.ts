@@ -635,6 +635,13 @@ export type HoldEnd = "exited" | "expired";
  * the agent there that the picture can't reach it until the app on that computer is updated.
  */
 export const MCP_IMAGES_PROTOCOL = 62;
+/**
+ * `xcode.fix`: a Mac fixes its own Xcode for an iPhone's setup, started from the apps. `select` points the developer
+ * folder at Xcode, accepts its license and installs its first-launch packages behind macOS's own password window;
+ * `update` gets the device support files for a newer iOS (no password). The server sends no command: the runner holds
+ * the script. Older runners answer `bad_request`, and the apps show the Terminal command instead.
+ */
+export const XCODE_FIX_PROTOCOL = 62;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -772,6 +779,35 @@ export function pairAddress(input: unknown): string | null {
   return v6?.[1]?.includes(":") ? text : null;
 }
 
+export const XCODE_BLOCKED = ["command_line_tools", "license"] as const;
+export type XcodeBlocked = (typeof XCODE_BLOCKED)[number];
+
+/** `select`: Xcode in use, its license and first-launch packages (asks the Mac's password); `update`: `ddis update`. */
+export type XcodeFixKind = "select" | "update";
+export const XCODE_FIX_STATES = [
+  "asking",
+  "running",
+  "done",
+  "canceled",
+  "no_answer",
+  "failed",
+  "unsupported",
+] as const;
+/**
+ * Where a fix stands: `asking` (macOS's password window is open on the Mac), `running` (`step` of 3 commands done),
+ * `done`, `canceled` (Cancel in that window, or from the apps), `no_answer` (nobody typed the password in 3 minutes),
+ * `failed` (`message`: the command's own last line), `unsupported` (this runner can't: not a Mac, a system-mode runner,
+ * no Xcode in /Applications).
+ */
+export interface XcodeFix {
+  kind: XcodeFixKind;
+  state: (typeof XCODE_FIX_STATES)[number];
+  step: number;
+  message?: string;
+  /** `failed` after a `select` whose commands all ran: the look after it still finds Xcode blocked, and why. */
+  still?: XcodeBlocked;
+}
+
 /** What this computer can build and drive with (versions found, best effort; absent: not found). */
 export interface RunnerToolchains {
   git?: string;
@@ -789,6 +825,11 @@ export interface RunnerToolchains {
   appleAccount?: "team" | "no_team" | "none";
   /** The iPhone SDK's version (`xcrun --sdk iphoneos --show-sdk-version`, "26.2"): the newest iOS it drives. */
   xcodeSdk?: string;
+  /**
+   * Xcode is installed but its tools don't answer, for a reason one command fixes: the developer folder is still the
+   * Command Line Tools (`xcode-select -s`), or Xcode's license isn't agreed to. Absent with `xcode`.
+   */
+  xcodeBlocked?: XcodeBlocked;
   node?: string;
   /** Podman's version: with the runner in system mode, the agents' containers (ADR 0169). */
   podman?: string;
@@ -2467,6 +2508,8 @@ export type MachineRequest = (
   | { op: "keep.start"; holdId: string; pid?: number; browser?: boolean; until?: string }
   /** Ends hold `holdId`; with `stop`, what it holds too: its program (SIGTERM, SIGKILL 10 s later) or the browser. */
   | { op: "keep.end"; holdId: string; stop?: boolean }
+  /** `XCODE_FIX_PROTOCOL`: start a fix (`kind`), or say where the last one stands, or stop it. One at a time. */
+  | { op: "xcode.fix"; action: "start" | "status" | "cancel"; kind?: XcodeFixKind }
 ) & {
   agent?: AgentScope;
   /** Protocol 34: a `browser.*` op in this browser profile's session instead of the agent's (ADR 0110). */
@@ -2542,6 +2585,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "phone.wifi",
   "keep.start",
   "keep.end",
+  "xcode.fix",
 ];
 
 /** What each op answers with `ok: true`. */
@@ -2706,6 +2750,7 @@ export interface MachineReplies {
   "keep.start": { held: true };
   /** `false`: no such hold lived here. */
   "keep.end": { ended: boolean };
+  "xcode.fix": { fix: XcodeFix | null };
 }
 
 /** An element numbered on a `browser.capture` image: its ref and box (CSS pixels). */
@@ -2978,6 +3023,7 @@ const TOOLCHAINS: readonly (keyof RunnerToolchains)[] = [
   "appleTeam",
   "appleAccount",
   "xcodeSdk",
+  "xcodeBlocked",
   "node",
   "podman",
 ];
@@ -3054,6 +3100,7 @@ export function parseToolchains(v: Record<string, unknown>): RunnerToolchains {
     if (value) (out as Record<string, string>)[key] = value;
   }
   if (out.appleAccount && !["team", "no_team", "none"].includes(out.appleAccount)) delete out.appleAccount;
+  if (out.xcodeBlocked && !(XCODE_BLOCKED as readonly string[]).includes(out.xcodeBlocked)) delete out.xcodeBlocked;
   return out;
 }
 

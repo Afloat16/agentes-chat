@@ -18,6 +18,9 @@ import type {
   RunnerPause,
   RunnerPhone,
   RunnerTools,
+  XcodeBlocked,
+  XcodeFix,
+  XcodeFixKind,
 } from "./machine-protocol";
 
 /** Bumped on breaking changes; the app refuses a runner whose `hello.control` it doesn't know. */
@@ -199,6 +202,10 @@ export interface ControlIphoneSetup {
   noTeam?: true;
   /** The iPhone SDK's version ("26.2"): an iPhone on a newer iOS needs a newer Xcode. */
   sdk?: string;
+  /** With `xcode: null`: Xcode is installed but blocked, for a reason `iphone.fixXcode` fixes (`select`). */
+  xcodeBlocked?: XcodeBlocked;
+  /** The last Xcode fix started here (from this window or the web), where it stands. */
+  fix?: XcodeFix;
 }
 
 /** App → runner requests. Every request is answered by exactly one `reply` with the same `id`. */
@@ -272,6 +279,8 @@ export type ControlRequest =
   | { type: "iphone.download" }
   /** Opens Xcode (its Accounts are only there), or Xcode's page in the App Store. */
   | { type: "iphone.open"; app: "xcode" | "appStore" }
+  /** Fixes the Mac's Xcode (macOS asks for the Mac's password for `select`), or stops the fix; answers the setup. */
+  | { type: "iphone.fixXcode"; action: "start" | "cancel"; kind: XcodeFixKind }
   /** Finish what's running briefly, then exit 0 (the app quits). */
   | { type: "shutdown" };
 
@@ -312,6 +321,7 @@ export interface ControlReplies {
   "iphone.setup": ControlIphoneSetup;
   "iphone.download": ControlIphoneSetup;
   "iphone.open": { opened: boolean };
+  "iphone.fixXcode": ControlIphoneSetup;
   shutdown: { stopping: true };
 }
 

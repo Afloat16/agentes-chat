@@ -283,7 +283,8 @@
       "install.page.beta",
       "install.scene.finder",
       "install.scene.downloads",
-      "devices.armBuild"
+      "devices.armBuild",
+      "devices.iphone.xcodeFix.ok"
     ],
     "es": [
       "devices.iphone.path.general",
@@ -927,7 +928,8 @@
       "install.page.version",
       "install.page.versionSize",
       "devices.armBuild",
-      "routines.horizon.agentRoutines"
+      "routines.horizon.agentRoutines",
+      "devices.iphone.xcodeFix.ok"
     ],
     "de": [
       "devices.iphone.steps.account",
@@ -1356,7 +1358,8 @@
       "install.scene.account",
       "install.scene.appLabel",
       "install.scene.downloads",
-      "devices.armBuild"
+      "devices.armBuild",
+      "devices.iphone.xcodeFix.ok"
     ],
     "it": [
       "calendar.moreRuns",
@@ -1703,7 +1706,8 @@
       "install.scene.finder",
       "install.scene.password",
       "devices.armBuild",
-      "routines.horizon.agentRoutines"
+      "routines.horizon.agentRoutines",
+      "devices.iphone.xcodeFix.ok"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -2275,7 +2279,8 @@
       "devices.armBuild",
       "issues.projects.label",
       "issues.display.field.project",
-      "routines.horizon.agentRoutines"
+      "routines.horizon.agentRoutines",
+      "devices.iphone.xcodeFix.ok"
     ],
     "ja": [
       "channel.tooLong.fileName",
@@ -2433,7 +2438,8 @@
       "devices.android.drivers.samsung",
       "install.page.beta",
       "install.scene.finder",
-      "devices.armBuild"
+      "devices.armBuild",
+      "devices.iphone.xcodeFix.ok"
     ],
     "ko": [
       "channel.tooLong.fileName",
@@ -3017,7 +3023,8 @@
       "install.scene.finder",
       "install.scene.edit",
       "install.scene.desktopDock",
-      "devices.armBuild"
+      "devices.armBuild",
+      "devices.iphone.xcodeFix.ok"
     ],
     "tr": [
       "devices.cpus",
@@ -3472,7 +3479,8 @@
       "install.page.beta",
       "install.page.system",
       "install.scene.finder",
-      "devices.armBuild"
+      "devices.armBuild",
+      "devices.iphone.xcodeFix.ok"
     ],
     "ru": [
       "channel.tooLong.fileName",

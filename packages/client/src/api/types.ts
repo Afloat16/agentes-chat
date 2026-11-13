@@ -7744,6 +7744,25 @@ export interface WifiIphones {
   update?: true;
 }
 
+/**
+ * A Mac fixing its own Xcode for an iPhone (`select`: Xcode in use, its license, first launch, behind macOS's password
+ * window on that Mac; `update`: support files for a newer iOS). `step`: how many of `select`'s 3 commands are done.
+ */
+export interface XcodeFix {
+  kind: "select" | "update";
+  state: "asking" | "running" | "done" | "canceled" | "no_answer" | "failed" | "unsupported";
+  step: number;
+  message?: string;
+  /** `failed` after every command ran: Xcode is still blocked on the Mac, and why. */
+  still?: "command_line_tools" | "license";
+}
+
+/** `fix: null`: none ran; `update`: the Mac's agentes.chat is too old to fix it (the Terminal way instead). */
+export interface XcodeFixView {
+  fix: XcodeFix | null;
+  update?: true;
+}
+
 /** Pairing an Android phone over Wi-Fi with a computer: where it stands. */
 export interface WifiPairing {
   id: string;

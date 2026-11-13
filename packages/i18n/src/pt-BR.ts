@@ -14162,8 +14162,41 @@ export const ptBR = {
         uiAutomation: "Ative a Automação de UI",
         helper: "Assistente de testes",
       },
+      xcodeBlockedTitle: "O Xcode está instalado, mas não está em uso",
       xcodeDone: "Versão {{version}}",
       xcodeText: "Instale o Xcode pela App Store em {{mac}}. A configuração segue quando ele estiver lá.",
+      xcodeCommandLineTools: "O Mac ainda usa as Command Line Tools. Rode isto no Terminal, ele pede a senha do Mac.",
+      xcodeLicense: "O Xcode em {{mac}} espera você aceitar a licença. Rode isto no Terminal, ele pede a senha do Mac.",
+      xcodeFix: {
+        commandLineTools:
+          "O Mac ainda usa as Command Line Tools. Corrigir pede a senha do Mac, numa janela que abre nesse Mac.",
+        license:
+          "O Xcode em {{mac}} espera você aceitar a licença. Corrigir pede a senha do Mac, numa janela que abre nesse Mac.",
+        fix: "Corrigir para mim",
+        update: "Atualizar para mim",
+        terminal: "Prefiro rodar no Terminal",
+        asking: "Digite a senha em {{mac}}. O macOS abriu a janela na tela dele.",
+        running: "Corrigindo o Xcode em {{mac}}. Leva cerca de um minuto.",
+        updating: "Atualizando o Xcode em {{mac}}.",
+        phases: {
+          select: "Xcode em uso",
+          license: "Licença aceita",
+          firstLaunch: "Componentes instalados",
+        },
+        done: "Pronto. {{mac}} confere o Xcode de novo.",
+        missed: "A senha não foi digitada em {{mac}}. Nada mudou. Tente de novo quando estiver nesse Mac.",
+        failed: "Não deu para corrigir em {{mac}}: {{message}}",
+        failedAny: "Não deu para corrigir em {{mac}}.",
+        stillCommandLineTools:
+          "A correção terminou, mas o Mac ainda usa as Command Line Tools. Tente de novo ou rode isto no Terminal, ele pede a senha do Mac.",
+        stillLicense:
+          "A correção terminou, mas o Xcode em {{mac}} ainda espera você aceitar a licença. Tente de novo ou rode isto no Terminal, ele pede a senha do Mac.",
+        outdated:
+          "Atualize o app agentes.chat em {{mac}} para corrigir com um clique. Ou rode isto no Terminal dele, ele pede a senha do Mac.",
+        follows: "Esta janela segue sozinha quando o Mac terminar.",
+        window: "O agentes.chat quer colocar o Xcode em uso para conectar iPhones.",
+        ok: "OK",
+      },
       getXcode: "Baixar o Xcode",
       toolsDone: "Baixadas pelo Mac",
       toolsText: "O Mac baixa sozinho, uns 8 GB.",

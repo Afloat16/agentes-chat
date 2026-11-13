@@ -346,6 +346,7 @@ import type {
   WorkspaceActionCardView,
   WorkspaceLimits,
   WorkspaceMode,
+  XcodeFixView,
 } from "./types";
 
 /**
@@ -1076,6 +1077,10 @@ export interface ApiClient {
     wifiIphones(orgId: string, machineId: string): Promise<WifiIphones>;
     /** Uses that iPhone over Wi-Fi from now on; forgetting the phone stops it. */
     pickIphoneOverWifi(orgId: string, machineId: string, serial: string): Promise<WifiIphones>;
+    /** Fixes the Mac's Xcode (its owner or an admin); `select` asks for the Mac's password on the Mac. */
+    startXcodeFix(orgId: string, machineId: string, kind: "select" | "update"): Promise<XcodeFixView>;
+    xcodeFix(orgId: string, machineId: string): Promise<XcodeFixView>;
+    cancelXcodeFix(orgId: string, machineId: string): Promise<XcodeFixView>;
   };
   /** Connected computers (ADR 0025): machines running `agentes-runner`. */
   machines: {

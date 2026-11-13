@@ -483,6 +483,8 @@ test("a system-mode runner (root) without workers does no agent work; machine-le
     // Root takes an agent's holds as that agent's own user, and checks its program is its own (ADR 0176).
     "keep.start",
     "keep.end",
+    // Fixing the Mac's own Xcode is the computer's; root answers it can't (no person's screen to ask on).
+    "xcode.fix",
   ]);
 
   if (posix) {
