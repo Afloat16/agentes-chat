@@ -199,6 +199,7 @@ type WhatKey =
   | "proposalWaiting"
   | "changeRequest"
   | "changeRequestAgent"
+  | "changeRequestAction"
   | "usageLimitWarning"
   | "usageLimitReachedSelf"
   | "usageLimitReached"
@@ -362,6 +363,8 @@ export function Headline({
     case "proposal_waiting":
       return k("proposalWaiting", { names });
     case "change_request":
+      // A card of a workspace change sent on (`source.action`): neither about an agent nor a new one.
+      if (n.source.action) return k("changeRequestAction", { name });
       return k(n.source.proposalId ? "changeRequest" : "changeRequestAgent", { name, agent: n.source.label ?? "" });
     case "usage_limit": {
       // The person's own rows say a percent only; who decides reads the amount (ADR 0141).

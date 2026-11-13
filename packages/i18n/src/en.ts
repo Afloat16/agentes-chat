@@ -2898,7 +2898,7 @@ export const en = {
       /** "Resumo do dia": the day's card, which everyone gets unless they stop it. */
       dayLabel: "Daily summary",
       dayHelp:
-        "Every day {{name}} tells you in your DM what the team did and what waits for you, on days with something to say.",
+        "Every day {{name}} tells you in your DM what waits for you, what your agents finished and what is stuck, on days with something new.",
     },
   },
   routing: {
@@ -4928,6 +4928,8 @@ export const en = {
       /** Proposals wait on this person: `names`, the agents that made them. */
       proposalWaiting: "Improvement proposals from <b>{{names}}</b>",
       changeRequestAgent: "<b>{{name}}</b> asks for a new agent: <b>{{agent}}</b>",
+      /** A card of a workspace change (an invite, a role, a channel) sent on to who may apply it. */
+      changeRequestAction: "<b>{{name}}</b> asks for a change in the workspace",
       approvalCover: "<b>{{name}}</b> picked you in Who approves for me",
       approvalCoverDeclined: "<b>{{name}}</b> won't approve for you any more",
       approvalCoverEnded: "<b>{{name}}</b> ended who approves for you",

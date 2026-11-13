@@ -2804,9 +2804,9 @@ export const ptBR = {
       /** "Resumo do dia": o cartão do dia, que todos recebem até pararem. */
       dayLabel: "Resumo do dia",
       dayHelp:
-        "Todo dia o {{name}} conta na sua DM o que o time fez e o que espera você, só nos dias com algo a dizer.",
+        "Todo dia o {{name}} conta na sua DM o que espera você, o que seus agentes terminaram e o que travou, só nos dias com algo novo.",
       dayHelp_female:
-        "Todo dia a {{name}} conta na sua DM o que o time fez e o que espera você, só nos dias com algo a dizer.",
+        "Todo dia a {{name}} conta na sua DM o que espera você, o que seus agentes terminaram e o que travou, só nos dias com algo novo.",
     },
   },
   routing: {
@@ -4833,6 +4833,7 @@ export const ptBR = {
       changeRequest: "<b>{{name}}</b> pede uma mudança em <b>{{agent}}</b>",
       proposalWaiting: "Propostas de melhoria de <b>{{names}}</b>",
       changeRequestAgent: "<b>{{name}}</b> pede um novo agente: <b>{{agent}}</b>",
+      changeRequestAction: "<b>{{name}}</b> pede uma mudança no workspace",
       approvalCover: "<b>{{name}}</b> escolheu você em Quem aprova por mim",
       approvalCoverDeclined: "<b>{{name}}</b> não vai mais aprovar por você",
       approvalCoverEnded: "<b>{{name}}</b> encerrou quem aprova por você",
