@@ -16,6 +16,7 @@ import {
   schema,
   sql,
 } from "@agenteschat/db";
+import { waitSinceIn } from "./agent-work";
 import { currentHandles } from "./agents";
 import { type AiStatusDeps, agentAiState } from "./ai-status";
 import { canTalkTo, speakerFor, viaAgent } from "./audience";
@@ -1591,7 +1592,7 @@ export async function consultationsIn(db: Executor, orgId: string, channelId: st
           waitingMachineId: agentRuns.waitingMachineId,
           handedOn: handedOnSql,
           outage: outageParkedSql,
-          since: waitSinceSql,
+          since: waitSinceSql(),
         })
         .from(agentRuns)
         .where(and(eq(agentRuns.orgId, orgId), inArray(agentRuns.id, held)))
@@ -1752,7 +1753,7 @@ export async function consultationConversation(
           waitingMachineId: agentRuns.waitingMachineId,
           handedOn: handedOnSql,
           outage: outageParkedSql,
-          since: waitSinceSql,
+          since: waitSinceSql(),
           createdAt: agentRuns.createdAt,
         })
         .from(agentRuns)
@@ -1916,11 +1917,11 @@ function stuckOn(target: {
   return "its computer stayed away";
 }
 
-/** Since when a run waits for its computer, plan or provider, in ms: the wait's own clock, else the run's last change. */
-const waitSinceSql = sql<string>`coalesce((${agentRuns.transcript}->>'roomWaitSince')::bigint,
-  (${agentRuns.transcript}->'waitingForBrain'->>'since')::bigint,
-  (${agentRuns.transcript}->'outage'->>'since')::bigint,
-  (extract(epoch from ${agentRuns.updatedAt}) * 1000)::bigint)`;
+/**
+ * Since when a run over `agent_runs` waits (`waitSinceIn`), in ms. Built per query: `agent-work` imports modules that
+ * import this one, so it may not be loaded yet when this module is.
+ */
+const waitSinceSql = () => sql<string>`(extract(epoch from ${waitSinceIn("agent_runs")}) * 1000)::bigint`;
 
 /**
  * The worker's sweep, every minute (ADR 0095). A colleague at it (queued, running, waiting on a person, or done but
@@ -1939,7 +1940,7 @@ export async function expireConsultations(deps: { db: Database; pubsub?: PubSub 
       code: sql<string | null>`${agentRuns.transcript}->'waitingForBrain'->>'code'`,
       outage: outageParkedSql,
       waitingMachineId: agentRuns.waitingMachineId,
-      since: waitSinceSql,
+      since: waitSinceSql(),
       wake: sql<boolean>`(${agentConsultations.targetRunId} is null and ${wakeWaitsSql(sql`${agentConsultations}`)})`,
     })
     .from(agentConsultations)

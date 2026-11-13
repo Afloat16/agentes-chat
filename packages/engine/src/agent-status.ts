@@ -6,6 +6,7 @@ import { cutText } from "./format";
 import type { Judge } from "./judge";
 import { requirePermission } from "./organizations";
 import { type OutOfOffice, type OutOfOfficeOptions, outOfOffice } from "./out-of-office";
+import { rightHandId } from "./right-hand";
 import { routineSeer } from "./routines";
 import { outageParkedSql } from "./runs";
 import { toolGroupKey } from "./tools/directory";
@@ -128,18 +129,31 @@ export async function agentStatuses(
   options: Pick<OutOfOfficeOptions, "hasModel"> = {},
 ): Promise<(AgentStatusView & { work: AgentWork | null })[]> {
   await requirePermission(db, actorId, orgId, "read");
-  const [list, sees, work] = await Promise.all([
+  const [list, sees, work, rightHand] = await Promise.all([
     loadAgentStatuses(db, orgId, now, undefined, options),
     routineSeer(db, orgId, actorId),
     agentWorkFor(db, actorId, orgId, new Date(now.getTime() - AGENT_HEARTBEAT_FRESH_MS)),
+    rightHandId(db, orgId),
   ]);
   return list.map((s) => {
     const w = work.get(s.agentId) ?? null;
+    const seen = s.agentId === rightHand ? rightHandFor(s, w) : s;
     return sees({ agentId: s.agentId, createdByUserId: null })
-      ? { ...s, work: w }
-      : { ...s, status: null, work: w && bareWork(w) };
+      ? { ...seen, work: w }
+      : { ...seen, status: null, work: w && bareWork(w) };
   });
 }
+
+/**
+ * The right hand as one person sees it (ADR 0137: each person's own): at work, busy and with its line only on their
+ * work, never on someone else's talk with it. Out of office says so to everyone, and held stays held.
+ */
+const rightHandFor = (s: AgentStatusView, w: AgentWork | null): AgentStatusView => ({
+  ...s,
+  working: w?.state === "working",
+  presence: s.presence === "busy" && w?.state !== "working" ? "online" : s.presence,
+  status: w || s.presence === "out" ? s.status : null,
+});
 
 /**
  * Every agent's presence and line in an organization, at `now` (no permission check), or only `ids`'. Checked on

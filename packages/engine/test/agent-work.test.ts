@@ -6,10 +6,15 @@ import {
   agentStatuses,
   consultationsIn,
   createAgent,
+  ensureRightHand,
   getThread,
+  insertMessage,
   listWorkingRuns,
   openConsultationsIn,
+  openPersonAgentDm,
   postPersonMessage,
+  queueOnRun,
+  rightHandId,
   sendNote,
   suspendRunForTool,
   taskManager,
@@ -129,9 +134,10 @@ describe("work one agent handed another (ADR 0084 addendum)", () => {
     const caio = await addMember(f.db, f.org.id, "member", "caio");
     for (const id of [bia.id, caio.id])
       await addChannelMember(f.db, f.owner.id, f.org.id, f.general.id, { userId: id });
+    // Its last change is now (a message queued on it moves it): the wait still began with the card.
     await f.db
       .update(schema.agentRuns)
-      .set({ status: "waiting_approval", updatedAt: new Date(Date.now() - 180_000) })
+      .set({ status: "waiting_approval", updatedAt: new Date() })
       .where(eq(schema.agentRuns.id, helper.id));
     await f.db.insert(schema.approvals).values({
       orgId: f.org.id,
@@ -148,6 +154,7 @@ describe("work one agent handed another (ADR 0084 addendum)", () => {
       ownerUserId: bia.id,
       requestedByUserId: f.owner.id,
       expiresAt: new Date(Date.now() + 3600_000),
+      createdAt: new Date(Date.now() - 180_000),
     });
 
     // The agent's owner decides it; so does the workspace's owner (every key). Caio waits like everyone else.
@@ -161,7 +168,47 @@ describe("work one agent handed another (ADR 0084 addendum)", () => {
     // The divider reads the same wait, with its clock.
     const [c] = await consultationsIn(f.db, f.org.id, f.general.id);
     expect(c).toMatchObject({ kind: "note", waiting: "approval" });
-    expect(c?.waitingSince).toBeInstanceOf(Date);
+    expect(Date.now() - (c?.waitingSince?.getTime() ?? 0)).toBeGreaterThanOrEqual(170_000);
+  });
+
+  test("a wait's clock holds while people write: from its question, and a run in line from when it was made", async () => {
+    f = await setup();
+    const { infra, helper } = await delegated();
+    const tenAgo = new Date(Date.now() - 600_000);
+    await f.db
+      .update(schema.agentRuns)
+      .set({ status: "waiting_input", updatedAt: tenAgo })
+      .where(eq(schema.agentRuns.id, helper.id));
+    await f.db.insert(schema.agentQuestions).values({
+      orgId: f.org.id,
+      runId: helper.id,
+      agentId: infra.id,
+      channelId: f.general.id,
+      toolUseId: "toolu_q",
+      text: "Qual ambiente?",
+      expiresAt: new Date(Date.now() + 3600_000),
+      createdAt: tenAgo,
+    });
+    const waited = async () => {
+      const work = await workOf(f.owner.id, infra.id);
+      const [c] = await consultationsIn(f.db, f.org.id, f.general.id);
+      return [work?.since, c?.waitingSince?.toISOString()].map((at) =>
+        Math.round((Date.now() - Date.parse(at ?? "")) / 60_000),
+      );
+    };
+    expect(await waited()).toEqual([10, 10]);
+    // Someone writes while it waits: the message is queued on the run, its last change moves, the wait doesn't.
+    expect(await queueOnRun(f.db, helper.id, Bun.randomUUIDv7())).toBe(true);
+    expect(await waited()).toEqual([10, 10]);
+
+    // In line, never started: since it was made, whatever is queued on it.
+    await f.db
+      .update(schema.agentRuns)
+      .set({ status: "queued", startedAt: null, createdAt: new Date(Date.now() - 480_000) })
+      .where(eq(schema.agentRuns.id, helper.id));
+    await queueOnRun(f.db, helper.id, Bun.randomUUIDv7());
+    expect(await workOf(f.owner.id, infra.id)).toMatchObject({ state: "queued" });
+    expect(await waited()).toEqual([8, 8]);
   });
 
   test("a run in line says so", async () => {
@@ -170,6 +217,42 @@ describe("work one agent handed another (ADR 0084 addendum)", () => {
     await f.db.update(schema.agentRuns).set({ status: "queued" }).where(eq(schema.agentRuns.id, helper.id));
     expect(await workOf(f.owner.id, infra.id)).toMatchObject({ state: "queued", forAgentId: f.agent.id });
     expect((await consultationsIn(f.db, f.org.id, f.general.id))[0]).toMatchObject({ waiting: "queued" });
+  });
+
+  test("the right hand is each person's own: someone else's talk with it shows nobody else", async () => {
+    f = await setup();
+    await ensureRightHand(f.db, f.org.id);
+    const lodi = await rightHandId(f.db, f.org.id);
+    if (!lodi) throw new Error("no right hand");
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    const dm = await openPersonAgentDm(f.db, f.org.id, f.owner.id, lodi);
+    const trigger = await insertMessage(f.db, {
+      orgId: f.org.id,
+      channelId: dm.id,
+      author: { type: "person", userId: f.owner.id },
+      body: "monta o time de vendas",
+    });
+    // Going for five minutes: heavy work, busy to the server.
+    await f.db.insert(schema.agentRuns).values({
+      orgId: f.org.id,
+      agentId: lodi,
+      channelId: dm.id,
+      threadRootId: trigger.id,
+      triggerMessageId: trigger.id,
+      trigger: "dm",
+      hop: 1,
+      status: "running",
+      startedAt: new Date(Date.now() - 300_000),
+      heartbeatAt: new Date(),
+    });
+    const of = async (userId: string) => (await agentStatuses(f.db, userId, f.org.id)).find((s) => s.agentId === lodi);
+    expect(await of(f.owner.id)).toMatchObject({
+      presence: "busy",
+      working: true,
+      work: { state: "working", channelId: dm.id, count: 1 },
+    });
+    // Bia's own right hand is free: nothing of the owner's talk, how long it has gone or what it does.
+    expect(await of(bia.id)).toMatchObject({ presence: "online", working: false, status: null, work: null });
   });
 
   test("a thread counts what its runs handed off as its own work, and says what holds it", async () => {

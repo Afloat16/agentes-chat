@@ -82,11 +82,25 @@ export const outageIn = (r: string) =>
   sql.raw(`(${r}.status = 'waiting_input' and ${r}.transcript -> 'outage' is not null
     and ${r}.waiting_machine_id is null and ${r}.transcript -> 'waitingForBrain' is null)`);
 
-/** Since when a run waits (in line, on its computer, its plan, its provider), else its last change, over `r`. */
+/**
+ * Since when a run waits, over `r`: in line for room, on its computer, plan or provider, by that wait's own clock; on a
+ * person, since the oldest card it waits on; in line before it ever started, since it was made. Its last change only
+ * when none says: a message queued on a waiting run moves `updated_at`, and the wait goes on.
+ */
 export const waitSinceIn = (r: string) =>
-  sql.raw(`to_timestamp(coalesce((${r}.transcript->>'roomWaitSince')::bigint,
-    (${r}.transcript->'waitingForBrain'->>'since')::bigint, (${r}.transcript->'outage'->>'since')::bigint,
-    (extract(epoch from ${r}.updated_at) * 1000)::bigint) / 1000.0)`);
+  sql.raw(`coalesce(to_timestamp(coalesce((${r}.transcript->>'roomWaitSince')::bigint,
+    (${r}.transcript->'waitingForBrain'->>'since')::bigint, (${r}.transcript->'outage'->>'since')::bigint) / 1000.0),
+    case ${r}.status
+      when 'waiting_approval' then (select min(pa.created_at) from approvals pa
+        where pa.org_id = ${r}.org_id and pa.run_id = ${r}.id and pa.status = 'pending')
+      when 'waiting_input' then least(
+        (select min(pq.created_at) from agent_questions pq
+          where pq.org_id = ${r}.org_id and pq.run_id = ${r}.id and pq.status = 'open'),
+        (select min(ps.created_at) from secret_requests ps
+          where ps.org_id = ${r}.org_id and ps.run_id = ${r}.id and ps.status = 'pending'))
+      when 'queued' then case when ${r}.started_at is null then ${r}.created_at end
+    end,
+    ${r}.updated_at)`);
 
 type Row = {
   run_id: string;
@@ -108,6 +122,7 @@ type Row = {
   reply_message_id: string | null;
   readable: boolean | string;
   you: boolean | string;
+  right_hand: boolean | string | null;
 };
 
 const truthy = (v: boolean | string | null | undefined) => v === true || v === "t";
@@ -150,7 +165,8 @@ const RANK: Record<AgentWorkState, number> = {
  * Each agent's work for `viewerId`, by agent id: its most important run (`RANK`, then the oldest) and how many it has
  * on. One statement whatever the number of agents: the open runs, their anchors, whether the viewer reads each anchor
  * (`channelReaderSql`) and whether the run waits on them (`decidableBySql` for an approval, the question or secret
- * asked of them).
+ * asked of them). The right hand is each person's own (ADR 0137): its runs where the viewer doesn't read are someone
+ * else's talk with it, never counted.
  */
 export async function agentWorkFor(
   db: Executor,
@@ -179,9 +195,11 @@ export async function agentWorkFor(
             or exists (select 1 from secret_requests s
               where s.org_id = r.org_id and s.run_id = r.id and s.status = 'pending'
                 and s.requested_for_user_id = ${viewer})
-          else false end as you
+          else false end as you,
+        g.builtin = 'right_hand' as right_hand
       from anchors t
       join agent_runs r on r.id = t.run_id
+      join agents g on g.id = r.agent_id
       join agent_runs a on a.id = t.anchor_id
       join channels c on c.id = a.channel_id
       where not (r.status = 'running'
@@ -189,6 +207,7 @@ export async function agentWorkFor(
   );
   const out = new Map<string, AgentWork & { rank: number }>();
   for (const r of rows) {
+    if (truthy(r.right_hand) && !truthy(r.readable)) continue;
     const you = truthy(r.you);
     const state = workStateOf({
       status: r.status,
