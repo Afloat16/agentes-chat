@@ -175,6 +175,17 @@ describe.skipIf(!hasGit)("git in the agent's processes", () => {
     expect(r.message()).toBe("By a person");
   });
 
+  test("`git -c` settings the environment already had still hold, a hooks folder of its own included", () => {
+    const r = repo([NICK]);
+    const theirs = path.join(tempDir("co-authors-theirs-"), "hooks");
+    dirs.push(path.dirname(theirs));
+    r.hook("commit-msg", "echo their hook ran >&2", theirs);
+    const base = { ...process.env, GIT_CONFIG_PARAMETERS: `'core.hooksPath=${theirs}'` };
+    const env = { ...base, ...coAuthorEnv([NICK], hooks, base) };
+    expect(r.run(env, ["commit", "-q", "--allow-empty", "-m", "Theirs"]).out).toContain("their hook ran");
+    expect(r.message()).toBe(`Theirs\n\n${NICK}`);
+  });
+
   test("a hook installer run without our setting installs into the repository; what one left in our folder goes", () => {
     const r = repo([NICK]);
     // Where lefthook and simple-git-hooks write: `core.hooksPath` as git says it.
