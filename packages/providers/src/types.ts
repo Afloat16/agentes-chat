@@ -51,6 +51,12 @@ export const PDF_PAGE_CHARS = 8000;
 export const toolImageChars = (i: ToolImage) =>
   i.mediaType === PDF_MEDIA_TYPE ? Math.max(1, i.pages ?? 1) * PDF_PAGE_CHARS : IMAGE_CHARS;
 
+/** Whether a tool result carries a picture or a PDF. */
+export const hasToolImages = (messages: ModelMessage[]) =>
+  messages.some(
+    (m) => typeof m.content !== "string" && m.content.some((b) => b.type === "tool_result" && b.images?.length),
+  );
+
 /**
  * The messages with tool results' pictures and PDFs left out, a note in their place: for endpoints that take text
  * only (another company's Anthropic-compatible API, OpenRouter), where one would fail the whole request. The note
@@ -180,6 +186,8 @@ export interface ModelResult {
    * refusal that sent the call again without any.
    */
   thinking?: { dropped?: Record<string, number>; refused?: string };
+  /** Tool results' pictures or PDFs were left out: this connection takes text only (`withoutImages`). */
+  imagesLeftOut?: true;
 }
 
 export interface StreamOptions {

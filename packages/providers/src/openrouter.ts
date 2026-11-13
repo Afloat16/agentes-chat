@@ -14,6 +14,7 @@ import {
   type ContentBlock,
   deniedError,
   estimateTokens,
+  hasToolImages,
   laidOut,
   type ModelProvider,
   type ModelRequest,
@@ -639,6 +640,7 @@ export function createOpenRouterProvider(
                 cacheWriteTokens: 0,
               },
           ...(cost !== undefined ? { costNanoUsd: cost } : {}),
+          ...(hasToolImages(request.messages) ? { imagesLeftOut: true as const } : {}),
         };
       } catch (error) {
         const mapped = request.signal?.aborted

@@ -275,7 +275,7 @@ describe("calls", () => {
     ];
     const send = async (model: string) => {
       const { fetcher, requests } = scripted(reply);
-      await createCustomProvider({ fetch: fetcher, maxRetries: 0 }).stream(
+      const result = await createCustomProvider({ fetch: fetcher, maxRetries: 0 }).stream(
         { model: customModelId(CRED, model), system: "s", messages, maxTokens: 100 },
         {
           apiKey: "k-123456789",
@@ -283,12 +283,17 @@ describe("calls", () => {
           onDelta() {},
         },
       );
-      return JSON.stringify(requests[0]?.body.messages);
+      return { body: JSON.stringify(requests[0]?.body.messages), leftOut: result.imagesLeftOut };
     };
-    expect(await send("global.anthropic.claude-sonnet-5-5")).toContain('"type":"image"');
+    const claude = await send("global.anthropic.claude-sonnet-5-5");
+    expect(claude.body).toContain('"type":"image"');
+    expect(claude.leftOut).toBeUndefined();
     const other = await send("moonshotai.kimi-k2.5");
-    expect(other).not.toContain('"type":"image"');
-    expect(other).toContain("The picture is not shown to you: this agent's AI (moonshotai.kimi-k2.5) reads text only");
+    expect(other.leftOut).toBe(true);
+    expect(other.body).not.toContain('"type":"image"');
+    expect(other.body).toContain(
+      "The picture is not shown to you: this agent's AI (moonshotai.kimi-k2.5) reads text only",
+    );
   });
 
   test("tool calls without an index, or with object arguments, stay apart and readable", async () => {

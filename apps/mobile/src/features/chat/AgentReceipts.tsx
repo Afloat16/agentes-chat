@@ -9,7 +9,7 @@ import {
   useSteerState,
 } from "@agenteschat/client";
 import { listNames } from "@agenteschat/client/lib/activity";
-import { failedRunFix, runFailureLine } from "@agenteschat/client/lib/errors";
+import { failedRunFix, filesTextOnlyOf, runFailureLine } from "@agenteschat/client/lib/errors";
 import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { deciderOf } from "@agenteschat/client/lib/routing";
@@ -50,6 +50,28 @@ import {
 } from "./agent-receipts";
 import { requestComposerText } from "./composer-request";
 import { useQuietInset } from "./look";
+
+/** Under a reply whose picture or PDF reached its AI as text only: "Trocar modelo", for who may change the agent. */
+export function FilesTextOnlyFix({ message: m }: { message: Message }) {
+  const { t } = useTranslation();
+  const { org } = useOrg();
+  const meId = useMeId();
+  const dir = useDirectory();
+  const agentId = m.author.id;
+  const fix = agentId
+    ? failedRunFix(filesTextOnlyOf(m.meta), {
+        keys: false,
+        admin: can(org, "manage_agents"),
+        owner: meId !== null && dir.agentById.get(agentId)?.ownerUserId === meId,
+      })
+    : null;
+  if (fix !== "changeModel" || !agentId) return null;
+  return (
+    <View style={styles.fix}>
+      <Button variant="secondary" size="sm" label={t("usageCard.changeModel")} onPress={() => openAgentAi(agentId)} />
+    </View>
+  );
+}
 
 /**
  * Under a person's latest message, for what asks something of you (./agent-receipts.ts says what): the agents'
@@ -423,4 +445,5 @@ const styles = StyleSheet.create({
   // hold it.
   mark: { flexDirection: "row", alignItems: "center", gap: 4, height: 16 },
   pressed: { opacity: 0.6 },
+  fix: { alignItems: "flex-start" },
 });

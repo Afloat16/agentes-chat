@@ -292,6 +292,21 @@ describe("attachments reach every brain", () => {
   });
 });
 
+test("a reply whose file reached a text-only connection carries its way out (meta.filesTextOnly)", async () => {
+  let call = 0;
+  f = await setup({
+    reply: () => ({ chunks: ["Não vejo a imagem."], ...(++call === 1 ? { imagesLeftOut: true } : {}) }),
+  });
+  const reply = async () => {
+    await postPersonMessage({ db: f.db, pubsub: f.pubsub }, f.owner.id, f.org.id, f.general.id, { body: "@dev oi" });
+    await drainOutbox(f.db, f.handlers);
+    const rows = await f.db.select().from(schema.messages).where(eq(schema.messages.authorAgentId, f.agent.id));
+    return rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).at(-1);
+  };
+  expect((await reply())?.meta.filesTextOnly).toBe(true);
+  expect((await reply())?.meta.filesTextOnly).toBeUndefined();
+});
+
 describe("computer brains through the runner bridge", () => {
   const picture = { mediaType: "image/png", data: Buffer.from(PNG).toString("base64") };
 

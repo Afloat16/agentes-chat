@@ -10,6 +10,7 @@ import { MODEL_CATALOG } from "./catalog";
 import {
   type ContentBlock,
   deniedError,
+  hasToolImages,
   laidOut,
   type ModelMessage,
   type ModelProvider,
@@ -130,6 +131,8 @@ export function createAnthropicProvider(
         outputTokens: null,
         outputChars: 0,
       };
+      const textOnly = Boolean(compat && !compat.images);
+      const leftOut = textOnly && hasToolImages(request.messages);
       const params = (withThinking: boolean) => {
         // `block_binding` is taken only with thinking on; the call made without thinking goes plain.
         const bind = withThinking && !compat && !thinkingOff;
@@ -143,7 +146,7 @@ export function createAnthropicProvider(
           system: toSystem(request, compat ? undefined : room(request)),
           // Another company's endpoint (DeepSeek, Kimi, Z.ai, MiniMax) isn't trusted to take images, unless it says it does.
           messages: toMessageParams(
-            compat && !compat.images ? withoutImages(request.messages, request.model) : request.messages,
+            textOnly ? withoutImages(request.messages, request.model) : request.messages,
             id,
             withThinking,
             cacheControl(request),
@@ -248,6 +251,7 @@ export function createAnthropicProvider(
               : {}),
           },
           ...(Object.keys(dropped).length > 0 ? { thinking: { dropped } } : {}),
+          ...(leftOut ? { imagesLeftOut: true as const } : {}),
         };
       };
       const failure = (error: unknown) => {

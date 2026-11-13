@@ -96,7 +96,7 @@ import { useColors, useDirectory, useMeId, useMyHandle, useNamesComputers, useOr
 import { agentLook } from "../shared/logic";
 import { tapHaptic } from "../shared/parts";
 import { VoiceMessage } from "../voice/VoiceMessage";
-import { ReceiptMark } from "./AgentReceipts";
+import { FilesTextOnlyFix, ReceiptMark } from "./AgentReceipts";
 import { secretRequestOf } from "./ask-store";
 import { ChatMedia } from "./ChatMedia";
 import { ClippedMessage } from "./ClippedMessage";
@@ -916,6 +916,7 @@ export const MessageRow = memo(function MessageRow({
             {isAgent ? <TeamCard message={m} /> : null}
             {isAgent ? <ReplyChips message={m} /> : null}
             {isAgent ? <OfferCard message={m} /> : null}
+            {isAgent ? <FilesTextOnlyFix message={m} /> : null}
             {isAgent ? <InstructionProposals message={m} /> : null}
             {isAgent ? <SettingsProposals message={m} /> : null}
             {isAgent ? <TeamWeek message={m} /> : null}
