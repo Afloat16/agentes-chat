@@ -723,7 +723,7 @@ function Chat({
           (id) => lineStep(t, presence.agent(id)?.status?.status),
         ),
       })),
-    [consults, shownMessages, consultList, consultData, presence, t, i18n.language],
+    [consults, shownMessages, consultList, consultData, presence, t],
   );
 
   // ── Following the end ──
