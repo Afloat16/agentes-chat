@@ -554,8 +554,9 @@ describe("Connect a device", () => {
     const step = () => dialog().querySelector('.dv-step[data-state="current"], .dv-step[data-state="needs"]');
     const inStep = () => within(step() as HTMLElement);
     // The button first, saying the password window opens on that Mac; no "Install Xcode".
+    expect(step()?.querySelector(".dv-step__title")?.textContent).toBe("Xcode is installed but not in use");
     expect(step()?.textContent).toContain(
-      "Xcode is on Sam's MacBook Pro, but the Mac still uses the Command Line Tools. Fixing it asks for the Mac's password, in a window that opens on that Mac.",
+      "The Mac still uses the Command Line Tools. Fixing it asks for the Mac's password, in a window that opens on that Mac.",
     );
     expect(inStep().queryByRole("link", { name: "Get Xcode" })).toBeNull();
     expect(step()?.querySelector(".machine-command")).toBeNull();
@@ -598,6 +599,16 @@ describe("Connect a device", () => {
     app.devices.setXcodeFix({ fix: { kind: "select", state: "failed", step: 1, message: long } });
     await refetch(app.services);
     expect(step()?.textContent).toContain(`Couldn't fix it on Sam's MacBook Pro: ${long}`);
+    // Every command ran, yet the Mac still reports Xcode blocked: why, the command and Try again.
+    app.devices.setXcodeFix({ fix: { kind: "select", state: "failed", step: 3, still: "command_line_tools" } });
+    await refetch(app.services);
+    expect(step()?.textContent).toContain(
+      "The fix ran, but the Mac still uses the Command Line Tools. Try again, or run this in Terminal",
+    );
+    expect(step()?.querySelector(".machine-command__code")?.textContent).toContain("sudo xcode-select -s");
+    expect(inStep().getByRole("button", { name: "Try again" }).className).toContain("ac-btn--sm");
+    await click(inStep().getByRole("button", { name: "Try again" }));
+    expect(calls(app.state, "devices.startXcodeFix").at(-1)?.args).toEqual([ORG_ID, MAC, "select"]);
 
     // A Mac whose app is too old: update it, or the command.
     app.devices.setXcodeFix({ fix: null, update: true });

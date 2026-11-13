@@ -7729,6 +7729,8 @@ export interface XcodeFix {
   state: "asking" | "running" | "done" | "canceled" | "no_answer" | "failed" | "unsupported";
   step: number;
   message?: string;
+  /** `failed` after every command ran: Xcode is still blocked on the Mac, and why. */
+  still?: "command_line_tools" | "license";
 }
 
 /** `fix: null`: none ran; `update`: the Mac's agentes.chat is too old to fix it (the Terminal way instead). */

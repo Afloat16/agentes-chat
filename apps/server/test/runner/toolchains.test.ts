@@ -64,13 +64,13 @@ test("Xcode installed but blocked: the Command Line Tools still selected, or its
       writeFileSync(path.join(c.root, "bin", name), `#!/bin/sh\n${script}\n`, { mode: 0o755 });
     return c;
   };
-  const look = (c: ReturnType<typeof computer>, xcodeApp: string) =>
+  const look = (c: ReturnType<typeof computer>, apps: string) =>
     appleToolchains({
       env: c.env,
       platform: "darwin",
       home: c.root,
       dirs: [],
-      xcodeApp,
+      apps,
       teams: async () => ({ teams: [], account: "none" }),
     });
   // Command Line Tools installed before Xcode: xcode-select never moved, so xcodebuild refuses.
@@ -80,11 +80,18 @@ test("Xcode installed but blocked: the Command Line Tools still selected, or its
       "echo \"xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance\" >&2; exit 1",
     xcrun: "exit 1",
   });
-  const app = path.join(cli.root, "Xcode.app");
-  mkdirSync(app);
+  const app = path.join(cli.root, "Applications");
+  mkdirSync(path.join(app, "Xcode.app"), { recursive: true });
   expect(await look(cli, app)).toMatchObject({ xcode: undefined, xcodeBlocked: "command_line_tools" });
+  // Only a beta or a versioned Xcode: the same one the fix would select.
+  const beta = path.join(cli.root, "Beta");
+  mkdirSync(path.join(beta, "Xcode-beta.app"), { recursive: true });
+  expect((await look(cli, beta)).xcodeBlocked).toBe("command_line_tools");
+  const versioned = path.join(cli.root, "Versioned");
+  mkdirSync(path.join(versioned, "Xcode_27.2.app"), { recursive: true });
+  expect((await look(cli, versioned)).xcodeBlocked).toBe("command_line_tools");
   // No Xcode at all: installing it is the step, nothing blocked.
-  expect((await look(cli, path.join(cli.root, "Nowhere.app"))).xcodeBlocked).toBeUndefined();
+  expect((await look(cli, path.join(cli.root, "Nowhere"))).xcodeBlocked).toBeUndefined();
   // Xcode selected, its license waiting.
   const license = mac({
     "xcode-select": "echo /Applications/Xcode.app/Contents/Developer",

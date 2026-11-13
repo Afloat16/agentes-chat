@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { RunnerToolchains } from "@agenteschat/adapters/machine-protocol";
@@ -25,14 +25,24 @@ export interface ToolchainsProbe {
   dirs?: string[];
   /** Tests: the teams of Xcode's Apple Accounts, or the whole look (default `appleLook`). */
   teams?: () => Promise<AppleTeam[] | AppleLook>;
-  /** Tests: where Xcode is installed (default `XCODE_APP`). */
-  xcodeApp?: string;
+  /** Tests: the folder Xcode is looked for in (default `/Applications`, as `findXcodeApp`). */
+  apps?: string;
 }
 
 type AppleKeys = Pick<RunnerToolchains, "xcode" | "xcodeSdk" | "appleTeam" | "appleAccount" | "xcodeBlocked">;
 
-/** Where the App Store installs Xcode; `xcode-select -s` takes its Developer folder. */
-export const XCODE_APP = "/Applications/Xcode.app";
+/** `/Applications/Xcode.app`, else the newest-named other Xcode there (`Xcode-beta.app`, `Xcode_27.2.app`). */
+export function findXcodeApp(apps = "/Applications"): string | null {
+  if (existsSync(path.join(apps, "Xcode.app"))) return path.join(apps, "Xcode.app");
+  let names: string[] = [];
+  try {
+    names = readdirSync(apps).filter((n) => /^Xcode.*\.app$/.test(n));
+  } catch {
+    return null;
+  }
+  const name = names.sort((a, b) => b.localeCompare(a, "en", { numeric: true }))[0];
+  return name ? path.join(apps, name) : null;
+}
 
 /** The first version-looking word after `prefix` in `text`. */
 const version = (text: string, prefix: RegExp) =>
@@ -85,7 +95,7 @@ export async function xcodeBlocked(opts: ToolchainsProbe): Promise<RunnerToolcha
   const selected = await say(find("xcode-select"), ["-p"]);
   // No developer tools at all: macOS's /usr/bin/xcodebuild stub would open an install dialog.
   if (!selected) return undefined;
-  if (/CommandLineTools/.test(selected) && existsSync(opts.xcodeApp ?? XCODE_APP)) return "command_line_tools";
+  if (/CommandLineTools/.test(selected) && findXcodeApp(opts.apps)) return "command_line_tools";
   const xcodebuild = find("xcodebuild");
   if (!xcodebuild) return undefined;
   const r = await runTool(xcodebuild, ["-version"], { timeoutMs: 20_000, env });

@@ -34284,6 +34284,9 @@
   "devices.iphone.steps.helper": {
     "value": "Test helper"
   },
+  "devices.iphone.xcodeBlockedTitle": {
+    "value": "Xcode is installed but not in use"
+  },
   "devices.iphone.xcodeDone": {
     "value": "Version {{version}}"
   },
@@ -34291,13 +34294,13 @@
     "value": "Install Xcode from the App Store on {{mac}}. The setup goes on when it's there."
   },
   "devices.iphone.xcodeCommandLineTools": {
-    "value": "Xcode is on {{mac}}, but the Mac still uses the Command Line Tools. Run this in Terminal, it asks for the Mac's password."
+    "value": "The Mac still uses the Command Line Tools. Run this in Terminal, it asks for the Mac's password."
   },
   "devices.iphone.xcodeLicense": {
     "value": "Xcode on {{mac}} waits for its license to be accepted. Run this in Terminal, it asks for the Mac's password."
   },
   "devices.iphone.xcodeFix.commandLineTools": {
-    "value": "Xcode is on {{mac}}, but the Mac still uses the Command Line Tools. Fixing it asks for the Mac's password, in a window that opens on that Mac."
+    "value": "The Mac still uses the Command Line Tools. Fixing it asks for the Mac's password, in a window that opens on that Mac."
   },
   "devices.iphone.xcodeFix.license": {
     "value": "Xcode on {{mac}} waits for its license to be accepted. Fixing it asks for the Mac's password, in a window that opens on that Mac."
@@ -34340,6 +34343,12 @@
   },
   "devices.iphone.xcodeFix.failedAny": {
     "value": "Couldn't fix it on {{mac}}."
+  },
+  "devices.iphone.xcodeFix.stillCommandLineTools": {
+    "value": "The fix ran, but the Mac still uses the Command Line Tools. Try again, or run this in Terminal, it asks for the Mac's password."
+  },
+  "devices.iphone.xcodeFix.stillLicense": {
+    "value": "The fix ran, but Xcode on {{mac}} still waits for its license to be accepted. Try again, or run this in Terminal, it asks for the Mac's password."
   },
   "devices.iphone.xcodeFix.outdated": {
     "value": "Update the agentes.chat app on {{mac}} to fix it with one click. Or run this in its Terminal, it asks for the Mac's password."

@@ -793,6 +793,13 @@ function XcodeFixActs({
         {canFix && <span className="dv-step__acts">{fixButton(t("devices.iphone.xcodeFix.fix"), "default")}</span>}
       </>
     );
+  if (stage === "still")
+    return (
+      <>
+        <CommandBlock command={XCODE_FIX_COMMAND} />
+        {canFix && <span className="dv-step__acts">{fixButton(t("common.retry"))}</span>}
+      </>
+    );
   if (stage === "asking")
     return (
       <>
@@ -915,9 +922,16 @@ export function IphoneFlow({
           ? t("devices.iphone.xcodeFix.done", { mac: macName })
           : at === "missed"
             ? t("devices.iphone.xcodeFix.missed", { mac: macName })
-            : fix?.message
-              ? t("devices.iphone.xcodeFix.failed", { mac: macName, message: fix.message })
-              : t("devices.iphone.xcodeFix.failedAny", { mac: macName });
+            : at === "still"
+              ? t(
+                  fix?.still === "license"
+                    ? "devices.iphone.xcodeFix.stillLicense"
+                    : "devices.iphone.xcodeFix.stillCommandLineTools",
+                  { mac: macName },
+                )
+              : fix?.message
+                ? t("devices.iphone.xcodeFix.failed", { mac: macName, message: fix.message })
+                : t("devices.iphone.xcodeFix.failedAny", { mac: macName });
   const text: Record<IphoneStep, ReactNode> = {
     xcode:
       states.xcode === "done"
@@ -1093,7 +1107,14 @@ export function IphoneFlow({
             ) : (
               <ol className="dv-steps">
                 {IPHONE_STEPS.map((s) => (
-                  <Step key={s} state={states[s]} title={t(`devices.iphone.steps.${s}`)} text={text[s]}>
+                  <Step
+                    key={s}
+                    state={states[s]}
+                    title={
+                      s === "xcode" && blocked ? t("devices.iphone.xcodeBlockedTitle") : t(`devices.iphone.steps.${s}`)
+                    }
+                    text={text[s]}
+                  >
                     {s === at && (more[s] || stalled || (looking && plugged)) ? (
                       <>
                         {more[s]}

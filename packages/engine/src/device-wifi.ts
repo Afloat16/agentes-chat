@@ -4,6 +4,7 @@ import {
   type PhonePairState,
   type PubSub,
   type WifiIphone,
+  XCODE_BLOCKED,
   XCODE_FIX_PROTOCOL,
   XCODE_FIX_STATES,
   type XcodeFix,
@@ -266,11 +267,13 @@ function xcodeFixOf(r: { fix?: unknown } | undefined, kind: XcodeFixKind): Xcode
   const state = XCODE_FIX_STATES.find((s) => s === f.state) ?? "failed";
   const step = typeof f.step === "number" && Number.isInteger(f.step) ? Math.min(3, Math.max(0, f.step)) : 0;
   const message = typeof f.message === "string" ? f.message.slice(0, 300) : "";
+  const still = XCODE_BLOCKED.find((b) => b === f.still);
   return {
     kind: f.kind === "update" || f.kind === "select" ? f.kind : kind,
     state,
     step,
     ...(message ? { message } : {}),
+    ...(state === "failed" && still ? { still } : {}),
   };
 }
 

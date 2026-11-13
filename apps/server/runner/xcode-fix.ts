@@ -1,11 +1,12 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import type { EventEmitter } from "node:events";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { XcodeFix, XcodeFixKind } from "@agenteschat/adapters/machine-protocol";
+import type { XcodeBlocked, XcodeFix, XcodeFixKind } from "@agenteschat/adapters/machine-protocol";
 import { killTree } from "./exec";
 import { shQuote } from "./install-script";
+import { findXcodeApp } from "./toolchains";
 
 /**
  * A Mac fixing its own Xcode for an iPhone's setup (`xcode.fix`, the desktop app's `iphone.fixXcode`): `select` runs
@@ -29,23 +30,13 @@ export function xcodeFixPrompt(locale = Intl.DateTimeFormat().resolvedOptions().
     : "agentes.chat wants to put Xcode in use to connect iPhones.";
 }
 
-/** `/Applications/Xcode.app`, else the newest-named other Xcode there (`Xcode-beta.app`, `Xcode_27.2.app`). */
-export function findXcodeApp(apps = "/Applications"): string | null {
-  if (existsSync(path.join(apps, "Xcode.app"))) return path.join(apps, "Xcode.app");
-  let names: string[] = [];
-  try {
-    names = readdirSync(apps).filter((n) => /^Xcode.*\.app$/.test(n));
-  } catch {
-    return null;
-  }
-  const name = names.sort((a, b) => b.localeCompare(a, "en", { numeric: true }))[0];
-  return name ? path.join(apps, name) : null;
-}
-
 export interface XcodeFixOptions {
   log: (line: string) => void;
-  /** Once a fix is done: Xcode is looked at again at once (`toolchains.changed`). */
-  onDone?: () => unknown;
+  /**
+   * Once a fix is done: Xcode is looked at again at once (`toolchains.changed`), resolving to why it is still blocked
+   * if it is: a `select` then ends `failed` with that cause (`still`) instead of `done`, so the apps offer a way out.
+   */
+  onDone?: () => Promise<XcodeBlocked | undefined> | undefined;
   platform?: NodeJS.Platform;
   uid?: number;
   env?: NodeJS.ProcessEnv;
@@ -184,7 +175,13 @@ export class XcodeFixer {
       else this.fix = { ...fix, state: "failed", ...(last ? { message: last } : {}) };
       this.end();
       this.opts.log(`xcode: ${kind} ${this.fix.state}${last && code !== 0 ? `: ${last}` : ""}`);
-      if (code === 0) void Promise.resolve(this.opts.onDone?.()).catch(() => undefined);
+      if (code !== 0) return;
+      const done = this.fix;
+      void Promise.resolve(this.opts.onDone?.())
+        .then((still) => {
+          if (kind === "select" && still && this.fix === done) this.fix = { ...done, state: "failed", still };
+        })
+        .catch(() => undefined);
     };
     events.on("error", (err: Error) => {
       said = err.message;

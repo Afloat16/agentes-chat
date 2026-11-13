@@ -76,8 +76,8 @@ export interface IphoneSetupOptions {
   dirs?: string[];
   /** The Mac's Xcode fix (`iphone.fixXcode`), shared with the server's `xcode.fix`. */
   fixer?: () => XcodeFixer;
-  /** Tests: where Xcode is installed (default `XCODE_APP`). */
-  xcodeApp?: string;
+  /** Tests: the folder Xcode is looked for in (default `/Applications`). */
+  apps?: string;
 }
 
 const CHECK_MS = 15_000;
@@ -122,7 +122,7 @@ export class IphoneSetup {
         env: this.env,
         platform: this.platform,
         dirs: this.dirs,
-        ...(this.opts.xcodeApp ? { xcodeApp: this.opts.xcodeApp } : {}),
+        ...(this.opts.apps ? { apps: this.opts.apps } : {}),
       });
       return {
         xcode,

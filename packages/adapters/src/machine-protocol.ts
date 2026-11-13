@@ -790,6 +790,8 @@ export interface XcodeFix {
   state: (typeof XCODE_FIX_STATES)[number];
   step: number;
   message?: string;
+  /** `failed` after a `select` whose commands all ran: the look after it still finds Xcode blocked, and why. */
+  still?: XcodeBlocked;
 }
 
 /** What this computer can build and drive with (versions found, best effort; absent: not found). */

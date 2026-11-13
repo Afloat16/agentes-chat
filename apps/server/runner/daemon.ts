@@ -156,7 +156,7 @@ import {
 } from "./supervisor";
 import { type SettledTask, TaskManager } from "./tasks";
 import { runnerTerminalUser, systemTerminalUser, Terminals, type TerminalUser } from "./terminal";
-import { appleToolchains, cachedToolchains, TOOLCHAINS_FILE } from "./toolchains";
+import { appleToolchains, cachedToolchains, TOOLCHAINS_FILE, xcodeBlocked } from "./toolchains";
 import { XcodeFixer, type XcodeFixOptions } from "./xcode-fix";
 
 /**
@@ -2131,11 +2131,17 @@ export class RunnerDaemon implements RequestObserver {
     return this.iphone;
   }
 
-  /** Fixing the Mac's Xcode: once done, Xcode is looked at again at once, so the setup moves on by itself. */
+  /**
+   * Fixing the Mac's Xcode: once done, Xcode is looked at again at once, so the setup moves on by itself, and asked
+   * once more why it is still blocked (the look may skip while another is under way).
+   */
   xcodeFixer(): XcodeFixer {
     this.fixer ??= new XcodeFixer({
       log: this.opts.log,
-      onDone: () => this.toolchains?.lookApple?.(),
+      onDone: async () => {
+        await this.toolchains?.lookApple?.();
+        return xcodeBlocked({});
+      },
       ...this.opts.xcodeFix,
     });
     return this.fixer;

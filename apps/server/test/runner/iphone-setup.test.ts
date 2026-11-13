@@ -191,7 +191,7 @@ test("Xcode installed but the Command Line Tools still selected: the window says
   mkdirSync(path.join(apps, "Xcode.app"));
   const fixer = new XcodeFixer({ log: () => {}, platform: "darwin", uid: 501, apps, bin: () => "/nonexistent/tool" });
   const { setup } = rig({ selected: "/Library/Developer/CommandLineTools" }, "darwin", {
-    xcodeApp: path.join(apps, "Xcode.app"),
+    apps,
     fixer: () => fixer,
   });
   expect(await setup.check()).toEqual({

@@ -187,7 +187,11 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
   };
   const tip = hintFor(t, t("desktop.iphone.tip"), t("desktop.iphone.tipHint"));
   const title = (step: IphoneSetupStep) =>
-    step === "account" ? t("desktop.iphone.account") : t(`devices.iphone.steps.${step}`);
+    step === "account"
+      ? t("desktop.iphone.account")
+      : step === "xcode" && setup?.xcodeBlocked
+        ? t("devices.iphone.xcodeBlockedTitle")
+        : t(`devices.iphone.steps.${step}`);
 
   const fix = setup?.fix;
   const fixLine = (stage: XcodeFixStage, kind: "select" | "update") =>
@@ -201,9 +205,16 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
           ? t("devices.iphone.xcodeFix.done", { mac: macName })
           : stage === "missed"
             ? t("devices.iphone.xcodeFix.missed", { mac: macName })
-            : fix?.message
-              ? t("devices.iphone.xcodeFix.failed", { mac: macName, message: fix.message })
-              : t("devices.iphone.xcodeFix.failedAny", { mac: macName });
+            : stage === "still"
+              ? t(
+                  fix?.still === "license"
+                    ? "devices.iphone.xcodeFix.stillLicense"
+                    : "devices.iphone.xcodeFix.stillCommandLineTools",
+                  { mac: macName },
+                )
+              : fix?.message
+                ? t("devices.iphone.xcodeFix.failed", { mac: macName, message: fix.message })
+                : t("devices.iphone.xcodeFix.failedAny", { mac: macName });
   /** Xcode installed but not in use: this Mac fixes it behind its own password window, or the Terminal way. */
   const blockedLine = (blocked: "command_line_tools" | "license"): ReactNode => {
     const stage = xcodeFixStage(fix, "select", { mayFix: true, terminal });
@@ -217,6 +228,18 @@ export function IphoneSetup({ onClose }: { onClose: () => void }) {
           <span className="dk-ip__act">
             <Button size="sm" onClick={() => fixXcode("start", "select")}>
               {t("devices.iphone.xcodeFix.fix")}
+            </Button>
+          </span>
+        </>
+      );
+    if (stage === "still")
+      return (
+        <>
+          {fixLine(stage, "select")}
+          <pre className="dk-ip__cmd">{XCODE_FIX_COMMAND}</pre>
+          <span className="dk-ip__act">
+            <Button size="sm" variant="primary" onClick={() => fixXcode("start", "select")}>
+              {t("desktop.common.retry")}
             </Button>
           </span>
         </>

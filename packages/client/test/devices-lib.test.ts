@@ -349,6 +349,8 @@ describe("connecting a phone", () => {
     expect(xcodeFixStage(fix("canceled"), "select", may)).toBe("missed");
     expect(xcodeFixStage(fix("failed"), "select", may)).toBe("failed");
     expect(xcodeFixStage(fix("failed"), "select", { ...may, terminal: true })).toBe("terminal");
+    // Every command ran, yet the Mac still reports Xcode blocked: why, the command and Try again.
+    expect(xcodeFixStage({ ...fix("failed"), still: "license" }, "select", may)).toBe("still");
     // Another kind's fix says nothing about this one.
     expect(xcodeFixStage(fix("asking", "update"), "select", may)).toBe("offer");
     // Someone who doesn't manage the Mac, an app too old, a Mac that can't: the command.

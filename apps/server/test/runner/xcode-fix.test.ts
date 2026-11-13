@@ -1,7 +1,8 @@
 import { afterEach, expect, test } from "bun:test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { findXcodeApp, XcodeFixer, type XcodeFixOptions, xcodeFixPrompt } from "../../runner/xcode-fix";
+import { findXcodeApp } from "../../runner/toolchains";
+import { XcodeFixer, type XcodeFixOptions, xcodeFixPrompt } from "../../runner/xcode-fix";
 import { removeDirs, tempDir, waitFor } from "./helpers";
 
 const dirs: string[] = [];
@@ -43,7 +44,10 @@ function mac(mode = "ok", over: Partial<XcodeFixOptions> = {}) {
   const done: unknown[] = [];
   const fixer = new XcodeFixer({
     log: () => {},
-    onDone: () => done.push(true),
+    onDone: async () => {
+      done.push(true);
+      return undefined;
+    },
     platform: "darwin",
     uid: 501,
     env: { PATH: "/usr/bin:/bin", FAKE_MODE: mode },
@@ -69,6 +73,13 @@ test("select: the password window, then Xcode in use, its license and first laun
     "xcodebuild -runFirstLaunch",
   ]);
   await waitFor(() => done.length === 1);
+});
+
+test("every command ran yet the look after still finds Xcode blocked: failed, with why", async () => {
+  const { fixer } = mac("ok", { onDone: async () => "command_line_tools" as const });
+  fixer.start("select");
+  await waitFor(() => fixer.state()?.state === "failed");
+  expect(fixer.state()).toEqual({ kind: "select", state: "failed", step: 3, still: "command_line_tools" });
 });
 
 test("Cancel in the password window, nobody there for the timeout, a command failing: each says so", async () => {

@@ -601,15 +601,16 @@ export const XCODE_FIX_POLL_MS = 1500;
 export const xcodeFixLive = (fix: { state: string } | null | undefined) =>
   fix?.state === "asking" || fix?.state === "running";
 
-export type XcodeFixStage = "offer" | "asking" | "running" | "done" | "missed" | "failed" | "terminal";
+export type XcodeFixStage = "offer" | "asking" | "running" | "done" | "missed" | "failed" | "still" | "terminal";
 
 /**
  * What the Xcode step shows for a fix of `kind`: the button (`offer`), the password window open, the commands
- * running, done (the Mac looks at Xcode again), nobody typed the password or Cancel (`missed`), failed, or the
- * Terminal command: picked (`terminal`), for who can't press the button, or a Mac whose app can't fix it.
+ * running, done (the Mac looks at Xcode again), nobody typed the password or Cancel (`missed`), failed, every command
+ * ran yet Xcode is still blocked (`still`: why, the command and Try again), or the Terminal command: picked
+ * (`terminal`), for who can't press the button, or a Mac whose app can't fix it.
  */
 export function xcodeFixStage(
-  fix: { kind: string; state: string } | null | undefined,
+  fix: { kind: string; state: string; still?: string } | null | undefined,
   kind: "select" | "update",
   o: { mayFix: boolean; terminal: boolean; outdated?: boolean },
 ): XcodeFixStage {
@@ -619,7 +620,8 @@ export function xcodeFixStage(
   if (o.terminal) return "terminal";
   if (mine?.state === "done") return "done";
   if (mine?.state === "canceled" || mine?.state === "no_answer") return "missed";
-  return mine?.state === "failed" ? "failed" : "offer";
+  if (mine?.state === "failed") return mine.still ? "still" : "failed";
+  return "offer";
 }
 
 /** A step under way or waiting on the person this long, unchanged, says what most likely holds it and one way out. */
