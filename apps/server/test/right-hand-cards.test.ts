@@ -265,7 +265,7 @@ test("an API key's removal through the routes: only from an app that names the k
     forUserId: ownerId,
     params: {
       action: "remove_ai_key",
-      input: { credentialId: spare.id },
+      input: { credentialId: spare.id, name: "Chave antiga" },
       words: { name: "Chave antiga", provider: "DeepSeek" },
       needs: "manage_credentials",
       why: "",

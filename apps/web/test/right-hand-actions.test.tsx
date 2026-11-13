@@ -216,7 +216,7 @@ describe("a change in the workspace that names all it does", () => {
     ...invite(),
     params: {
       action: "remove_ai_key",
-      input: { credentialId: "k-old" },
+      input: { credentialId: "k-old", name: "Chave antiga" },
       words: { name: "Chave antiga", provider: "DeepSeek" },
       needs: "manage_credentials",
       why: "Ninguém usa mais.",
