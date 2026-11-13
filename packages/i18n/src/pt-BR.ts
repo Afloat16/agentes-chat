@@ -13407,6 +13407,7 @@ export const ptBR = {
     device: {
       notLinkMaker: "Só quem gerou o link pode deixar este computador entrar.",
       widenForbidden: "Admins só podem restringir quem usa o dispositivo de outra pessoa.",
+      spillOwnerOnly: "Só quem conectou este computador pode deixar respostas pensarem nele. Você pode desligar.",
       notHome: "Os agentes moram no computador do workspace e usam este quando o citam pelo nome.",
     },
     machine: {

@@ -32392,6 +32392,9 @@
   "errors.device.widenForbidden": {
     "value": "Admins can only narrow who can use someone's own device."
   },
+  "errors.device.spillOwnerOnly": {
+    "value": "Only the person who connected this computer can let replies think on it. You can turn it off."
+  },
   "errors.device.notHome": {
     "value": "Agents live on the workspace computer and use this one when they name it."
   },

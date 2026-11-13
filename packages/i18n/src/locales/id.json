@@ -12928,6 +12928,7 @@
     "device": {
       "notLinkMaker": "Hanya orang yang membuat tautan ini yang bisa mengizinkan komputer ini bergabung.",
       "widenForbidden": "Admin hanya bisa mempersempit siapa yang boleh memakai perangkat milik seseorang.",
+      "spillOwnerOnly": "Hanya orang yang menghubungkan komputer ini yang bisa membiarkan balasan berpikir di sini. Kamu bisa mematikannya.",
       "notHome": "Agen tinggal di komputer workspace dan memakai komputer ini saat menyebut namanya."
     },
     "machine": {

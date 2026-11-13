@@ -13302,6 +13302,7 @@
     "device": {
       "notLinkMaker": "Bu bilgisayarı yalnızca bağlantıyı oluşturan kişi katılmaya izin verebilir.",
       "widenForbidden": "Yöneticiler birinin kendi cihazını kimin kullanabileceğini yalnızca daraltabilir.",
+      "spillOwnerOnly": "Yanıtların bu bilgisayarda düşünmesine yalnızca onu bağlayan kişi izin verebilir. Kapatmak senin elinde.",
       "notHome": "Ajanlar workspace bilgisayarında yaşar ve adını söylediklerinde bunu kullanır."
     },
     "machine": {

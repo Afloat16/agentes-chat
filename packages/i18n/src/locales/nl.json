@@ -13429,6 +13429,7 @@
     "device": {
       "notLinkMaker": "Alleen wie de link heeft gemaakt, kan deze computer laten deelnemen.",
       "widenForbidden": "Admins kunnen alleen beperken wie iemands eigen apparaat mag gebruiken.",
+      "spillOwnerOnly": "Alleen wie deze computer heeft gekoppeld, kan antwoorden hier laten denken. Uitzetten kan wel.",
       "notHome": "Agents wonen op de computer van de workspace en gebruiken deze als ze hem bij naam noemen."
     },
     "machine": {

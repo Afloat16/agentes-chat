@@ -13835,6 +13835,7 @@
     "device": {
       "notLinkMaker": "Solo chi ha creato il link può far entrare questo computer.",
       "widenForbidden": "Gli admin possono solo restringere chi usa il dispositivo personale di qualcuno.",
+      "spillOwnerOnly": "Solo chi ha collegato questo computer può lasciare che le risposte pensino qui. Tu puoi disattivarlo.",
       "notHome": "Gli agenti vivono sul computer del workspace e usano questo quando lo nominano."
     },
     "machine": {

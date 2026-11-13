@@ -13376,6 +13376,7 @@ export const en = {
     device: {
       notLinkMaker: "Only the person who made the link can let this computer join.",
       widenForbidden: "Admins can only narrow who can use someone's own device.",
+      spillOwnerOnly: "Only the person who connected this computer can let replies think on it. You can turn it off.",
       notHome: "Agents live on the workspace computer and use this one when they name it.",
     },
     machine: {
