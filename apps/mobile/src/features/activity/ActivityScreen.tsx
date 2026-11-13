@@ -206,6 +206,8 @@ function WaitingCardView({ item: n, first = false }: { item: AppNotification; fi
   // Someone asking to join: who asked (the first names, how many in all), with their faces.
   const join = card.kind === "join" ? joinRequestLine(t, n) : null;
   const notice = useNoticeTitle(n);
+  // What the right hand found (ADR 0177 §1): the problem in the reader's language, and its way out on the button.
+  const found = teamWatchOf(n);
   const title =
     card.kind === "approval" && request
       ? [approvalTitle(t, request), onCard > 1 ? t("approval.all.waitingCount", { count: onCard }) : null]
@@ -213,7 +215,7 @@ function WaitingCardView({ item: n, first = false }: { item: AppNotification; fi
           .join(" · ")
       : join
         ? join.text
-        : card.kind === "limit"
+        : card.kind === "limit" || found
           ? notice.title
           : (dash?.title ?? card.title);
   // A routine's trouble opens the routine; the computer being ready, Connect an AI while no agent has one.
@@ -230,7 +232,11 @@ function WaitingCardView({ item: n, first = false }: { item: AppNotification; fi
   const where = [place ? t("mobile.chats.waitIn", { where: place }) : null, when.short(n.updatedAt)]
     .filter(Boolean)
     .join(" · ");
-  const button = dash ? t("mobile.activityNow.open") : t(`mobile.activityNow.${card.action}`);
+  const button = found?.act
+    ? (t as unknown as (key: string) => string)(found.act)
+    : dash
+      ? t("mobile.activityNow.open")
+      : t(`mobile.activityNow.${card.action}`);
   const open = () => {
     if (n.readAt === null) act.mutate({ type: "read", item: n, read: true });
     if (href) router.push(href);
@@ -455,16 +461,13 @@ const ActivityRow = memo(function ActivityRow({ item: n, divider }: { item: AppN
     (kind) => mediaWord(t, kind),
     (l) => latestText(t, l),
   );
-  // What the right hand found and how to fix it (ADR 0177 §1), in the reader's language.
-  const found = teamWatchOf(n);
   const sub = restriction
     ? restrictionLine(t, restriction.code, restriction.facts)
     : n.kind === "usage_limit"
       ? usageLimitLine(t, n)
-      : found
-        ? found.words
-          ? say(found.words, found.text)
-          : found.text
+      : // What the right hand found (ADR 0177 §1) is the title itself: nothing under it says it again.
+        n.kind === "team_watch"
+        ? ""
         : failed
           ? failed.sub
           : // A widget's or routine's name is often its line too: said once ("Assinaturas hoje", not twice).

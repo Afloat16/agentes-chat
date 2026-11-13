@@ -129,3 +129,57 @@ export function digestGroups(items: readonly Approval[], now = Date.now()) {
   const routine = items.filter((a) => asOfNow(a, now).status === "pending" && a.canDecide && a.routine === true);
   return { routine: routine.length > 1 ? routine : [] };
 }
+
+/**
+ * What a digest's first line counts: how many of its approvals still wait, how many of them go in the routine group
+ * and how many are left to read one by one.
+ */
+export function digestCounts(items: readonly Approval[], now = Date.now()) {
+  const waiting = items.filter((a) => asOfNow(a, now).status === "pending").length;
+  const routine = digestGroups(items, now).routine.length;
+  return { waiting, routine, careful: waiting - routine };
+}
+
+/** How many rows of a routine group show before "Ver os outros". */
+const DIGEST_ROWS = 3;
+/** Up to this many different things a row's requests hold are said under it. More, and "Um por um" reads them. */
+const DIGEST_DETAILS = 3;
+
+export interface DigestRow {
+  /** Its first request's id. */
+  id: string;
+  title: string;
+  agentId: string;
+  /** How many requests it stands for ("Criar página × 10"). */
+  count: number;
+  /** What its requests hold, each once, while they are few enough to say whole. Else nothing. */
+  detail: string;
+}
+
+/**
+ * A routine group's rows: the requests of one agent that read the same (`titleOf`) are one row with how many. The
+ * first rows show and the rest wait behind one "Ver os outros" (`hidden`: the requests it holds back), unless that
+ * would hide a single row.
+ */
+export function digestRows(
+  routine: readonly Approval[],
+  titleOf: (a: Approval) => string,
+  detailOf: (a: Approval) => string,
+  all = false,
+) {
+  const byKey = new Map<string, DigestRow & { details: Set<string> }>();
+  for (const a of routine) {
+    const title = titleOf(a);
+    const key = `${a.agentId}\n${title}`;
+    const row = byKey.get(key) ?? { id: a.id, title, agentId: a.agentId, count: 0, detail: "", details: new Set() };
+    row.count += 1;
+    const detail = detailOf(a);
+    if (detail) row.details.add(detail);
+    byKey.set(key, row);
+  }
+  const rows: DigestRow[] = [...byKey.values()].map(({ details, ...row }) => {
+    return { ...row, detail: details.size <= DIGEST_DETAILS ? [...details].join(", ") : "" };
+  });
+  const shown = all || rows.length <= DIGEST_ROWS + 1 ? rows : rows.slice(0, DIGEST_ROWS);
+  return { rows: shown, hidden: rows.slice(shown.length).reduce((n, r) => n + r.count, 0) };
+}

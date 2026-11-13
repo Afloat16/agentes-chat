@@ -361,7 +361,7 @@ function WorkspaceActionView({
   const when = useWhen();
   const decide = useDecideActionCard(orgId, { ...where, action: card.params.action });
   const undo = useAgentActions(orgId, where.channelId).undo;
-  const say = t as unknown as (key: string, values: Record<string, string>) => string;
+  const say = t as unknown as (key: string, values: Record<string, string | number>) => string;
   const sentence = say(actionCardKey(card), actionCardWords(card, t));
   const plain = sentence.replace(/<\/?b>/g, "");
   // The answer to their own tap says more than the card everyone reads (an address that already held an invitation).

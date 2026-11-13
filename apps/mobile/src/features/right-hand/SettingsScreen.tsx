@@ -531,9 +531,10 @@ function Form({ agent }: { agent: Agent }) {
 }
 
 /**
- * What the right hand does without being asked, each with its switch, as on the web (ADR 0177): the daily card and its
- * hour for everyone, the weekly card with its day and hour for admins, then the switches of whatever else this server
- * has built: the person's own, and the workspace's for who configures it, which say that they are for everyone.
+ * What the right hand does without being asked, one list of rows with a switch each, as on the web (ADR 0177): the
+ * daily card for everyone and the weekly card for admins (while one is on, its hour and day under its row), then the
+ * switches of whatever else this server has built: the person's own, and the workspace's for who configures it, which
+ * say that they are for everyone.
  */
 function OwnRows({ name }: { name: string }) {
   const { t, i18n } = useTranslation();
@@ -573,8 +574,7 @@ function OwnRows({ name }: { name: string }) {
   return (
     <>
       <GroupTitle>{t("rightHand.settings.own.title", g)}</GroupTitle>
-      <GroupedHeader>{dayLabel}</GroupedHeader>
-      {/* The hour is a row of the switch's group, as any settings group. */}
+      <Gap />
       <GroupedList>
         <GroupedRow
           icon="clock"
@@ -592,75 +592,63 @@ function OwnRows({ name }: { name: string }) {
             onPick={(dayHour) => save({ dayHour })}
           />
         ) : null}
-      </GroupedList>
-      {admin ? (
-        <>
-          <GroupedHeader>{weekLabel}</GroupedHeader>
-          <GroupedList>
+        {admin ? (
+          <GroupedRow
+            icon="clock"
+            label={weekLabel}
+            hint={about(weekLabel, t("teamWeek.settings.help", g))}
+            toggle={weekOn}
+            disabled={set.isPending}
+            onPress={() => save({ weekOff: weekOn })}
+          />
+        ) : null}
+        {admin && weekOn ? (
+          <Pills
+            label={t("teamWeek.schedule.day")}
+            value={prefs.day}
+            options={[1, 2, 3, 4, 5, 6, 0].map((d) => ({ value: d, label: dayText(locale, d) }))}
+            onPick={(day) => save({ day })}
+          />
+        ) : null}
+        {admin && weekOn ? (
+          <Pills
+            label={t("teamWeek.schedule.hour")}
+            value={prefs.weekHour}
+            options={hours}
+            onPick={(weekHour) => save({ weekHour })}
+          />
+        ) : null}
+        {mine.map((r) => {
+          const label = t(`rightHand.settings.own.${r.id}`);
+          return (
             <GroupedRow
-              icon="clock"
-              label={weekLabel}
-              hint={about(weekLabel, t("teamWeek.settings.help", g))}
-              toggle={weekOn}
+              key={r.id}
+              icon={r.icon}
+              label={label}
+              hint={about(label, t(`rightHand.settings.own.${r.id}Help`, g))}
+              toggle={!prefs[r.off]}
               disabled={set.isPending}
-              onPress={() => save({ weekOff: weekOn })}
+              onPress={() => save({ [r.off]: !prefs[r.off] })}
             />
-            {weekOn ? (
-              <Pills
-                label={t("teamWeek.schedule.day")}
-                value={prefs.day}
-                options={[1, 2, 3, 4, 5, 6, 0].map((d) => ({ value: d, label: dayText(locale, d) }))}
-                onPick={(day) => save({ day })}
-              />
-            ) : null}
-            {weekOn ? (
-              <Pills
-                label={t("teamWeek.schedule.hour")}
-                value={prefs.weekHour}
-                options={hours}
-                onPick={(weekHour) => save({ weekHour })}
-              />
-            ) : null}
-          </GroupedList>
-        </>
-      ) : null}
-      {mine.length + everyones.length > 0 ? (
-        <>
-          <Gap />
-          <GroupedList>
-            {mine.map((r) => {
-              const label = t(`rightHand.settings.own.${r.id}`);
-              return (
-                <GroupedRow
-                  key={r.id}
-                  icon={r.icon}
-                  label={label}
-                  hint={about(label, t(`rightHand.settings.own.${r.id}Help`, g))}
-                  toggle={!prefs[r.off]}
-                  disabled={set.isPending}
-                  onPress={() => save({ [r.off]: !prefs[r.off] })}
-                />
-              );
-            })}
-            {everyones.map((r) => {
-              const label = t(`rightHand.settings.own.${r.words}`);
-              const on = settings?.[r.id] !== false;
-              return (
-                <GroupedRow
-                  key={r.id}
-                  icon={r.icon}
-                  label={label}
-                  sub={t("rightHand.settings.groupWorkspace")}
-                  hint={about(label, t(`rightHand.settings.own.${r.words}Help`, g))}
-                  toggle={on}
-                  disabled={setSettings.isPending}
-                  onPress={() => setSettings.mutate({ [r.id]: !on }, { onError: failed })}
-                />
-              );
-            })}
-          </GroupedList>
-        </>
-      ) : null}
+          );
+        })}
+        {everyones.map((r) => {
+          const label = t(`rightHand.settings.own.${r.words}`);
+          const on = settings?.[r.id] !== false;
+          return (
+            <GroupedRow
+              key={r.id}
+              icon={r.icon}
+              label={label}
+              sub={t("rightHand.settings.groupWorkspace")}
+              hint={about(label, t(`rightHand.settings.own.${r.words}Help`, g))}
+              toggle={on}
+              disabled={setSettings.isPending}
+              onPress={() => setSettings.mutate({ [r.id]: !on }, { onError: failed })}
+            />
+          );
+        })}
+      </GroupedList>
     </>
   );
 }

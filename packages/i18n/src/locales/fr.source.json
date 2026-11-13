@@ -6512,6 +6512,24 @@
   "rightHand.approvals.done": {
     "value": "Decided"
   },
+  "rightHand.digest.waiting": {
+    "value": {
+      "one": "{{count}} approval waiting.",
+      "other": "{{count}} approvals waiting."
+    }
+  },
+  "rightHand.digest.split": {
+    "value": "{{routine}} routine, {{careful}} to look at with care."
+  },
+  "rightHand.digest.allRoutine": {
+    "value": "All routine."
+  },
+  "rightHand.digest.more": {
+    "value": {
+      "one": "See {{count}} more",
+      "other": "See the other {{count}}"
+    }
+  },
   "rightHand.digest.routine": {
     "value": {
       "one": "{{count}} routine request",
@@ -6632,8 +6650,14 @@
   "rightHand.action.invite_people": {
     "value": "Invite <b>{{emails}}</b> to the workspace"
   },
+  "rightHand.action.invite_people_sent": {
+    "value": {
+      "one": "Invitation sent to <b>{{emails}}</b>.",
+      "other": "Invitations sent to <b>{{emails}}</b>."
+    }
+  },
   "rightHand.action.remove_ai_key": {
-    "value": "Delete the API key <b>{{name}}</b> for good"
+    "value": "Delete the API key \"{{name}}\"."
   },
   "teamWeek.title": {
     "value": "Team week"
@@ -6834,10 +6858,10 @@
     "value": "Archive"
   },
   "teamWeek.model.title": {
-    "value": "{{name}} on {{to}} in place of {{from}}"
+    "value": "{{name}} can use {{to}}."
   },
   "teamWeek.model.line": {
-    "value": "Its work is light: short answers in one or two steps."
+    "value": "It uses {{from}} today."
   },
   "teamWeek.skip": {
     "value": "Dismiss"
@@ -11217,29 +11241,59 @@
   "notifications.planServes.done": {
     "value": "Only you use this plan now."
   },
-  "notifications.teamWatch.found": {
-    "value": "<b>{{name}}</b> found something to fix"
-  },
   "notifications.teamWatch.sign_in": {
-    "value": "AI sign-in ended: {{names}}. Sign in again in Settings"
+    "value": {
+      "one": "The sign-in for {{names}} ended.",
+      "other": "The sign-ins for {{names}} ended."
+    }
   },
   "notifications.teamWatch.connector": {
-    "value": "Needs reconnecting: {{names}}. Reconnect it in Settings"
+    "value": {
+      "one": "{{names}} needs reconnecting.",
+      "other": "{{names}} need reconnecting."
+    }
   },
   "notifications.teamWatch.mailbox": {
-    "value": "Mailbox needs reconnecting: {{names}}. Reconnect it in Settings"
+    "value": {
+      "one": "The mailbox {{names}} needs reconnecting.",
+      "other": "The mailboxes {{names}} need reconnecting."
+    }
   },
   "notifications.teamWatch.database": {
-    "value": "Database needs reconnecting: {{names}}. Reconnect it in Settings"
+    "value": {
+      "one": "The database {{names}} needs reconnecting.",
+      "other": "The databases {{names}} need reconnecting."
+    }
   },
   "notifications.teamWatch.budget_out": {
-    "value": "Out of budget this month: {{names}}. Raise the budget on the agent's page"
+    "value": {
+      "one": "{{names}} is out of budget.",
+      "other": "{{names}} are out of budget."
+    }
   },
   "notifications.teamWatch.budget_low": {
-    "value": "Budget about to run out this month: {{names}}. Raise it on the agent's page"
+    "value": {
+      "one": "{{names}} is about to run out of budget.",
+      "other": "{{names}} are about to run out of budget."
+    }
   },
   "notifications.teamWatch.computer": {
-    "value": "Computer offline with agents waiting: {{names}}. Turn it on or check its connection"
+    "value": {
+      "one": "The computer {{names}} is offline with agents waiting.",
+      "other": "The computers {{names}} are offline with agents waiting."
+    }
+  },
+  "notifications.teamWatch.act.sign_in": {
+    "value": "Sign in again"
+  },
+  "notifications.teamWatch.act.reconnect": {
+    "value": "Reconnect"
+  },
+  "notifications.teamWatch.act.budget": {
+    "value": "Raise budget"
+  },
+  "notifications.teamWatch.act.computer": {
+    "value": "Switch computer"
   },
   "notifications.docTitleUnread": {
     "value": "({{count}}) Notifications"
@@ -17152,6 +17206,9 @@
   },
   "members.batch.already_invited": {
     "value": "{{email}} already has a pending invitation. Use Resend."
+  },
+  "members.batch.had_invite": {
+    "value": "{{email}} already had a pending invitation."
   },
   "members.batch.invalid_email": {
     "value": "{{email}} doesn't look like a valid email."

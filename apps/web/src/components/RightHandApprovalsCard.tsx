@@ -1,8 +1,8 @@
 import type { Agent, Approval, Message } from "@agenteschat/client";
 import { CardVia, useApproval, useApprovals, useDecideApprovals, useMembers } from "@agenteschat/client";
 import type { ApprovalsCard } from "@agenteschat/client/lib/action-cards";
-import { digestGroups } from "@agenteschat/client/lib/approval-card";
-import { approvalDetail, approvalTitle } from "@agenteschat/client/lib/approval-words";
+import { digestCounts, digestGroups, digestRows } from "@agenteschat/client/lib/approval-card";
+import { approvalDetail, approvalTitle, digestLine } from "@agenteschat/client/lib/approval-words";
 import { Button, HintLine } from "@agenteschat/ui";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,12 +11,13 @@ import { useOrg } from "@/components/org-context";
 import { useDirectory } from "@/hooks/useDirectory";
 import { inlineWords } from "@/lib/markdown";
 import { ConnectorMark } from "@/pages/ApprovalsPage";
-import { RequestCard } from "./RequestCard";
+import { RequestCard, RequestMore } from "./RequestCard";
 
 /**
  * The right hand's approvals card (`offer_approvals`, ADR 0137 §4): each approval as the conversation shows it, with its
  * own buttons, holds and confirmations, decided as whoever clicks (audited via the right hand); decided, its one line.
- * Its digest (ADR 0177 §4) puts the ones the server calls routine together first, with one button for all of them.
+ * Its digest (ADR 0177 §4) is one summary: a line that counts what waits, the ones the server calls routine together
+ * with one button for all of them, then every other, none repeating that it asks for an approval.
  */
 export function ApprovalsCardView({ message, card }: { message: Message; card: ApprovalsCard }) {
   const { t } = useTranslation();
@@ -37,8 +38,12 @@ export function ApprovalsCardView({ message, card }: { message: Message; card: A
   );
 }
 
-/** A digest's approvals: the routine ones as one request with one button, then every other on its own card. */
+/**
+ * A digest's approvals: how many wait, the routine ones as one request with one button, then every other on its own
+ * card.
+ */
 function Digest({ id, author, approvalIds }: { id: string; author: Agent | undefined; approvalIds: string[] }) {
+  const { t } = useTranslation();
   const { org } = useOrg();
   const list = useApprovals(org.id).data;
   // The person asked to read them one by one: the group is gone for as long as the card stays on screen.
@@ -46,20 +51,23 @@ function Digest({ id, author, approvalIds }: { id: string; author: Agent | undef
   const items = approvalIds.flatMap((approvalId) => list?.find((a) => a.id === approvalId) ?? []);
   const routine = each ? [] : digestGroups(items).routine;
   const grouped = new Set(routine.map((a) => a.id));
+  const counted = digestLine(t, digestCounts(items));
   return (
     <>
+      {counted && <p>{counted}</p>}
       {routine.length > 0 && <RoutineGroup id={id} author={author} routine={routine} onEach={() => setEach(true)} />}
       {approvalIds.map((approvalId) =>
-        grouped.has(approvalId) ? null : <CardApproval key={approvalId} id={approvalId} />,
+        grouped.has(approvalId) ? null : <CardApproval key={approvalId} id={approvalId} summary />,
       )}
     </>
   );
 }
 
 /**
- * The routine requests of a digest as one request: what each is, one button that approves them all as whoever clicks,
- * and the way to read them one by one. The server decides only the ones it still calls routine (`only`). It is the
- * card's author who asks (`author`): out of view, the conversation's bar names them.
+ * The routine requests of a digest as one request: what each is (the ones of one agent that read the same on one row
+ * with how many, the first rows only until "Ver os outros"), one button that approves them all as whoever clicks, and
+ * the way to read them one by one. The server decides only the ones it still calls routine (`only`). It is the card's
+ * author who asks (`author`): out of view, the conversation's bar names them.
  */
 function RoutineGroup({
   id,
@@ -78,6 +86,13 @@ function RoutineGroup({
   const decide = useDecideApprovals(org.id);
   const count = routine.length;
   const title = t("rightHand.digest.routine", { count });
+  const [all, setAll] = useState(false);
+  const { rows, hidden } = digestRows(
+    routine,
+    (a) => approvalTitle(t, a),
+    (a) => approvalDetail(a, i18n.language),
+    all,
+  );
   return (
     <RequestCard
       id={`digest-${id}`}
@@ -85,6 +100,7 @@ function RoutineGroup({
       agent={author}
       label={title}
       mine
+      headless
       lead={
         <HintLine name={t("common.about", { label: title })} hint={t("rightHand.digest.help")}>
           {title}
@@ -94,22 +110,28 @@ function RoutineGroup({
       locked={decide.isPending}
       body={
         <ul className="rq__items">
-          {routine.map((a) => {
-            const under = [dir.anyAgent(a.agentId)?.name, approvalDetail(a, i18n.language)].filter(Boolean).join(" · ");
+          {rows.map((row) => {
+            const under = [dir.anyAgent(row.agentId)?.name, row.detail].filter(Boolean).join(" · ");
+            const first = routine.find((a) => a.id === row.id);
             return (
-              <li key={a.id} className="rq__item">
+              <li key={row.id} className="rq__item">
                 <div className="rq__well">
-                  <span className="rq__logo">
-                    <ConnectorMark approval={a} />
-                  </span>
+                  <span className="rq__logo">{first && <ConnectorMark approval={first} />}</span>
                   <span className="rq__wt">
-                    <b>{approvalTitle(t, a)}</b>
+                    <b>{row.count > 1 ? `${row.title} × ${row.count}` : row.title}</b>
                     {under && <small>{inlineWords(under, "dg")}</small>}
                   </span>
                 </div>
               </li>
             );
           })}
+          {hidden > 0 && (
+            <li className="rq__item">
+              <RequestMore open={false} onClick={() => setAll(true)}>
+                {t("rightHand.digest.more", { count: hidden })}
+              </RequestMore>
+            </li>
+          )}
         </ul>
       }
       actions={
@@ -133,7 +155,8 @@ function RoutineGroup({
   );
 }
 
-export function CardApproval({ id }: { id: string }) {
+/** `summary`: one of a digest's cards, under the line that counts them. */
+export function CardApproval({ id, summary = false }: { id: string; summary?: boolean }) {
   const { org } = useOrg();
   const dir = useDirectory(org.id);
   const list = useApprovals(org.id);
@@ -144,5 +167,5 @@ export function CardApproval({ id }: { id: string }) {
   const approval = listed ?? one.data;
   if (!approval) return null;
   const agent = dir.anyAgent(approval.agentId);
-  return <ApprovalAsk approval={approval} agent={agent} members={members} />;
+  return <ApprovalAsk approval={approval} agent={agent} members={members} summary={summary} />;
 }

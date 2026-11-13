@@ -2390,12 +2390,6 @@
       "other": "{{model}} left {{plan}}. {{names}} is using {{runs}} for now"
     }
   },
-  "activity.kind.team_watch": {
-    "value": {
-      "one": "{{names}} found something to fix",
-      "other": "{{names}} found something to fix"
-    }
-  },
   "activity.kind.computer_disk_full": {
     "value": {
       "one": "A computer's disk is almost full",

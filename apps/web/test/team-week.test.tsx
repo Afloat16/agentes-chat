@@ -81,6 +81,8 @@ test("the week's card: its numbers, what worked, a row per fix and the schedule;
   const week = screen.getAllByRole("article").find((a) => a.contains(group)) as HTMLElement;
   expect(week.querySelector(".ac-msg__text")?.textContent).toContain("Como foi a semana do time");
   expect(group.textContent).not.toContain("Como foi a semana do time");
+  // Two rows to apply: the footer's one button applies both.
+  expect(group.querySelector(".rq__foot .ac-btn--primary")?.textContent).toBe("Aplicar as 2");
 
   await act(async () => {
     fireEvent.click(screen.getByRole("button", { name: "Criar rotina" }));
@@ -174,14 +176,18 @@ test("suggestions: archiving is its own tap, never in the bulk one, and each can
   await settle(8);
   const group = screen.getByRole("group", { name: "Semana da equipe" });
   expect(group.textContent).toContain("Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.");
-  expect(group.textContent).toContain("com mid-1 em vez de big-1");
+  expect(group.textContent).toContain("pode usar o mid-1.");
+  expect(group.textContent).toContain("Hoje usa o big-1.");
   // The one already put away says so and has no button left.
   expect(group.textContent).toContain("Dispensada");
   expect(screen.queryByRole("button", { name: "Propor um agente" })).toBeNull();
   expect(group.textContent).toContain("2 sugestões");
-  // "Aplicar" in bulk covers the model alone: an agent is archived by its own button.
+  // An agent is archived by its own button, never in bulk. The model is the one row to apply and has its own
+  // Aplicar: the footer has no button that would only repeat it.
   expect(screen.getByRole("button", { name: "Arquivar" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Aplicar a sugestão" })).toBeTruthy();
+  expect(screen.getAllByRole("button", { name: "Aplicar" })).toHaveLength(1);
+  expect(screen.queryByRole("button", { name: "Aplicar a sugestão" })).toBeNull();
+  expect(group.querySelector(".rq__foot .ac-btn--primary")).toBeNull();
   const skips = screen.getAllByRole("button", { name: "Dispensar" });
   expect(skips).toHaveLength(2);
   await act(async () => {

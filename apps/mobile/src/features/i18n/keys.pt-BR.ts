@@ -1023,9 +1023,6 @@ export const featureKeysPtBR = {
       /** An agent's model left its plan's list (`plan_model_dropped`): `runs` the model it uses now. */
       plan_model_dropped_one: "O {{model}} saiu do {{plan}}. {{names}} está usando o {{runs}} por enquanto",
       plan_model_dropped_other: "O {{model}} saiu do {{plan}}. {{names}} está usando o {{runs}} por enquanto",
-      /** The right hand found something wrong (`team_watch`): what and how to fix it go under it. */
-      team_watch_one: "{{names}} encontrou algo para resolver",
-      team_watch_other: "{{names}} encontrou algo para resolver",
       computer_disk_full_one: "O disco de um computador está quase cheio",
       computer_disk_full_other: "O disco de um computador está quase cheio",
       computer_no_chrome_one: "Um computador precisa do Google Chrome. Baixe em google.com/chrome",

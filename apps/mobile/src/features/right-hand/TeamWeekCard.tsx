@@ -136,10 +136,10 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
     }
   };
   const { stats } = card;
-  // Flat on the card, two by two. Amber only for what waits on the person; "stuck" counts the week's failed runs
-  // (the server's `failed`), errors, so red.
+  // Flat on the card: three on one line, or two by two with the workspace's money. Amber only for what waits on the
+  // person; "stuck" counts the week's failed runs (the server's `failed`), errors, so red.
   const stat = (value: string, label: string, color?: string) => (
-    <View key={label} style={styles.stat}>
+    <View key={label} style={[styles.stat, stats.budgetNanoUsd > 0 ? styles.statOfFour : styles.statOfThree]}>
       <Text variant="title" style={[styles.statValue, color ? { color } : null]} numberOfLines={1}>
         {value}
       </Text>
@@ -225,7 +225,8 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
           </View>
         ) : null}
         <View style={[styles.foot, { borderTopColor: c.line2 }]}>
-          {!dismissed && bulk.length > 0 ? (
+          {/* One row to apply has its own button for it: the footer's would only repeat it. */}
+          {!dismissed && bulk.length > 1 ? (
             <Button
               variant="primary"
               wide
@@ -414,7 +415,9 @@ const styles = StyleSheet.create({
   head: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 },
   semibold: { fontWeight: "600" },
   stats: { flexDirection: "row", flexWrap: "wrap", rowGap: 12, columnGap: 8, marginTop: 12 },
-  stat: { flexBasis: "47%", flexGrow: 1, gap: 2 },
+  stat: { flexGrow: 1, gap: 2 },
+  statOfFour: { flexBasis: "47%" },
+  statOfThree: { flexBasis: "30%" },
   statValue: { fontVariant: ["tabular-nums"] },
   section: { marginTop: 16, gap: 8 },
   // An icon on the first line of the words beside it.

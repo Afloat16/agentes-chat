@@ -677,6 +677,7 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
       names: names.slice(0, MAX_NAMES),
       text: serverText(await personLocale(db, g.userId), `notifications.teamWatch.${g.cause}`, {
         names: teamWatchNames(names),
+        count: String(names.length),
       }),
     };
     const row = open.find((r) => r.userId === g.userId && causeOf(r) === g.cause);

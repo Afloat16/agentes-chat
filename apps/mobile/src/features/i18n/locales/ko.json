@@ -917,7 +917,6 @@
       "plan_lent_female_other": "{{names}} 님이 내 {{plan}} 플랜을 {{agent}}에 연결했어요",
       "plan_serves_other": "내 {{plan}}이(가) 이제 workspace 전체를 지원해요",
       "plan_model_dropped_other": "{{model}} 모델이 {{plan}}에서 빠졌어요. {{names}}은(는) 당분간 {{runs}}을(를) 써요",
-      "team_watch_other": "{{names}}님이 해결할 일을 찾았어요",
       "computer_disk_full_other": "컴퓨터 디스크가 거의 찼어요",
       "computer_no_chrome_other": "컴퓨터에 Google Chrome이 필요해요. google.com/chrome에서 받으세요",
       "app_created_other": "AI 앱이 나를 위해 항목을 만들었어요"

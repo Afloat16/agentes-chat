@@ -985,8 +985,6 @@
       "plan_serves_other": "Je {{plan}} bedient nu de hele workspace",
       "plan_model_dropped_one": "{{model}} is uit {{plan}} gehaald. {{names}} gebruikt voorlopig {{runs}}",
       "plan_model_dropped_other": "{{model}} is uit {{plan}} gehaald. {{names}} gebruikt voorlopig {{runs}}",
-      "team_watch_one": "{{names}} heeft iets gevonden om op te lossen",
-      "team_watch_other": "{{names}} heeft iets gevonden om op te lossen",
       "computer_disk_full_one": "De schijf van een computer is bijna vol",
       "computer_disk_full_other": "Schijven van computers zijn bijna vol",
       "computer_no_chrome_one": "Een computer heeft Google Chrome nodig. Download het op google.com/chrome",

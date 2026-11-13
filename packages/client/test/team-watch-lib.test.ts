@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
+import { resources } from "@agenteschat/i18n";
+import i18next from "i18next";
 import type { AppNotification } from "../src/api/types";
-import { openTarget, sortWaiting, teamWatchOf, waitingCardOf } from "../src/lib/notifications";
+import { openTarget, sortWaiting, TEAM_WATCH_CAUSES, teamWatchOf, waitingCardOf } from "../src/lib/notifications";
 import { soundForNotification } from "../src/lib/sounds";
 
 const notice = (latest: AppNotification["latest"], extra: Partial<AppNotification> = {}): AppNotification => ({
@@ -19,15 +21,53 @@ const notice = (latest: AppNotification["latest"], extra: Partial<AppNotificatio
   ...extra,
 });
 
-test("the right hand's notice is worded by its cause, with the first names and how many more", () => {
+test("the right hand's notice is worded by its cause, with the first names, how many more and how many in all", () => {
   const n = notice({ reason: "connector", names: ["Slack", "Notion", "Linear"], text: "stored" }, { count: 5 });
   expect(teamWatchOf(n)).toEqual({
     cause: "connector",
-    words: { key: "notifications.teamWatch.connector", values: { names: "Slack, Notion, Linear +2" } },
+    words: { key: "notifications.teamWatch.connector", values: { names: "Slack, Notion, Linear +2", count: 5 } },
     text: "stored",
+    act: "notifications.teamWatch.act.reconnect",
   });
-  expect(teamWatchOf(notice({ reason: "sign_in", names: ["Work"] }))?.words?.values).toEqual({ names: "Work" });
+  expect(teamWatchOf(notice({ reason: "sign_in", names: ["Work"] }))?.words?.values).toEqual({
+    names: "Work",
+    count: 1,
+  });
   expect(teamWatchOf({ ...n, kind: "approval" })).toBeNull();
+});
+
+test("its one button names the way out of its cause, and every cause's sentence and button have words", () => {
+  const act = (reason: string) => teamWatchOf(notice({ reason, names: ["X"] }))?.act;
+  expect(act("sign_in")).toBe("notifications.teamWatch.act.sign_in");
+  for (const reason of ["connector", "mailbox", "database"])
+    expect(act(reason)).toBe("notifications.teamWatch.act.reconnect");
+  for (const reason of ["budget_out", "budget_low"]) expect(act(reason)).toBe("notifications.teamWatch.act.budget");
+  expect(act("computer")).toBe("notifications.teamWatch.act.computer");
+
+  const t = i18next.createInstance();
+  void t.init({ lng: "pt-BR", fallbackLng: "en", resources, initAsync: false });
+  const say = (reason: string, names: string[]) => {
+    const words = teamWatchOf(notice({ reason, names }, { count: names.length }))?.words;
+    return words ? t.t(words.key, words.values) : "";
+  };
+  expect(say("sign_in", ["Claude da Ana"])).toBe("O login de Claude da Ana acabou.");
+  expect(say("connector", ["Notion"])).toBe("Notion precisa ser reconectado.");
+  expect(say("connector", ["Slack", "Notion"])).toBe("Slack, Notion precisam ser reconectados.");
+  expect(say("budget_out", ["Ada"])).toBe("O orçamento de Ada acabou.");
+  expect(t.t(act("sign_in") ?? "")).toBe("Entrar de novo");
+  expect(t.t(act("connector") ?? "")).toBe("Reconectar");
+  expect(t.t(act("budget_out") ?? "")).toBe("Aumentar orçamento");
+  expect(t.t(act("computer") ?? "")).toBe("Trocar computador");
+  // A sentence, never a label with a colon: a full stop ends it, in every language.
+  for (const lng of Object.keys(resources)) {
+    const tl = i18next.createInstance();
+    void tl.init({ lng, fallbackLng: "en", resources, initAsync: false });
+    for (const cause of TEAM_WATCH_CAUSES)
+      for (const count of [1, 3]) {
+        const said = tl.t(`notifications.teamWatch.${cause}`, { names: "X", count });
+        expect([lng, cause, said, /[:;—]/.test(said), /[.。]$/.test(said)]).toEqual([lng, cause, said, false, true]);
+      }
+  }
 });
 
 test("a cause this build does not know keeps the server's own sentence", () => {
@@ -36,6 +76,8 @@ test("a cause this build does not know keeps the server's own sentence", () => {
     cause: null,
     words: null,
     text: "Something new is wrong. Fix it in Settings",
+    // Its button only opens.
+    act: null,
   });
   expect(openTarget(n)).toBeNull();
   expect(waitingCardOf(n)).toMatchObject({ title: "Something new is wrong. Fix it in Settings", action: "open" });
@@ -70,9 +112,9 @@ test("it waits after what an agent asks, sounds once when it waits, and a budget
 test("a build from before the kind shows the stored sentence and opens nothing", () => {
   // What `waitingCardOf` and `openTarget` do for any kind they have no case for, as installed builds run them.
   const unknown = {
-    ...notice({ reason: "sign_in", names: ["Work"], text: "AI sign-in ended: Work. Sign in again in Settings" }),
+    ...notice({ reason: "sign_in", names: ["Work"], text: "The sign-in for Work ended." }),
     kind: "kind_of_a_newer_server",
   } as unknown as AppNotification;
-  expect(waitingCardOf(unknown).title).toBe("AI sign-in ended: Work. Sign in again in Settings");
+  expect(waitingCardOf(unknown).title).toBe("The sign-in for Work ended.");
   expect(openTarget(unknown)).toBeNull();
 });

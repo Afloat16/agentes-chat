@@ -2703,6 +2703,14 @@ export const ptBR = {
     approvals: { title: "Aprovações esperando você", done: "Decididas" },
     /** Its summary of what waits on a person: the routine requests together, one tap for all of them. */
     digest: {
+      /** The summary's first line: how many wait, then how they split (`split`) or that all are routine. */
+      waiting_one: "{{count}} aprovação esperando.",
+      waiting_other: "{{count}} aprovações esperando.",
+      split: "{{routine}} de rotina, {{careful}} para olhar com calma.",
+      allRoutine: "Todas de rotina.",
+      /** Under the first rows of a long routine group: shows the rest in place. `count`: the requests it hides. */
+      more_one: "Ver mais {{count}}",
+      more_other: "Ver os outros {{count}}",
       routine_one: "{{count}} pedido de rotina",
       routine_other: "{{count}} pedidos de rotina",
       /** Behind the ⓘ beside `routine`. */
@@ -2746,7 +2754,10 @@ export const ptBR = {
       set_action_check_on: "Ligar a conferência do que o time já fez",
       set_action_check_off: "Desligar a conferência do que o time já fez",
       invite_people: "Convidar <b>{{emails}}</b> para o workspace",
-      remove_ai_key: "Apagar a chave de API <b>{{name}}</b> de vez",
+      /** The same card once applied: who got an invitation ("ana@example.com e caio@example.com"). */
+      invite_people_sent_one: "Convite enviado para <b>{{emails}}</b>.",
+      invite_people_sent_other: "Convites enviados para <b>{{emails}}</b>.",
+      remove_ai_key: "Apagar a chave de API «{{name}}».",
     },
   },
   teamWeek: {
@@ -2847,8 +2858,8 @@ export const ptBR = {
       action: "Arquivar",
     },
     model: {
-      title: "{{name}} com {{to}} em vez de {{from}}",
-      line: "O trabalho é leve: respostas curtas em um ou dois passos.",
+      title: "{{name}} pode usar o {{to}}.",
+      line: "Hoje usa o {{from}}.",
     },
     skip: "Dispensar",
     skipped: "Dispensada",
@@ -4812,19 +4823,31 @@ export const ptBR = {
     /** Under `plan_serves`: the person's plan serves only them again. */
     planServes: { onlyMe: "Mudar para Só eu", done: "Agora só você usa este plano." },
     /**
-     * What the right hand found wrong and the one way out (`team_watch`), by cause. `names`: what it is about, the
-     * first few by name and "+2" for the rest. Also the notice's stored text and its push.
+     * What the right hand found wrong (`team_watch`), by cause: the notice's headline, its stored text and its push.
+     * `names`: what it is about, the first few by name and "+2" for the rest. `count`: how many things in all.
      */
     teamWatch: {
-      /** The notice's headline, the right hand's name bold. The sentence under it says what and how to fix it. */
-      found: "<b>{{name}}</b> encontrou algo para resolver",
-      sign_in: "O login de IA acabou: {{names}}. Entre de novo em Configurações",
-      connector: "Precisa reconectar: {{names}}. Reconecte em Configurações",
-      mailbox: "A caixa de email precisa reconectar: {{names}}. Reconecte em Configurações",
-      database: "O banco de dados precisa reconectar: {{names}}. Reconecte em Configurações",
-      budget_out: "O orçamento do mês acabou: {{names}}. Aumente o orçamento na página do agente",
-      budget_low: "O orçamento do mês está quase no fim: {{names}}. Aumente na página do agente",
-      computer: "Computador offline com agentes esperando: {{names}}. Ligue o computador ou confira a conexão",
+      sign_in_one: "O login de {{names}} acabou.",
+      sign_in_other: "Os logins de {{names}} acabaram.",
+      connector_one: "{{names}} precisa ser reconectado.",
+      connector_other: "{{names}} precisam ser reconectados.",
+      mailbox_one: "A caixa de email {{names}} precisa ser reconectada.",
+      mailbox_other: "As caixas de email {{names}} precisam ser reconectadas.",
+      database_one: "O banco de dados {{names}} precisa ser reconectado.",
+      database_other: "Os bancos de dados {{names}} precisam ser reconectados.",
+      budget_out_one: "O orçamento de {{names}} acabou.",
+      budget_out_other: "Os orçamentos de {{names}} acabaram.",
+      budget_low_one: "O orçamento de {{names}} está quase no fim.",
+      budget_low_other: "Os orçamentos de {{names}} estão quase no fim.",
+      computer_one: "O computador {{names}} está offline com agentes esperando.",
+      computer_other: "Os computadores {{names}} estão offline com agentes esperando.",
+      /** The notice's one button: the way out, where the notice opens. */
+      act: {
+        sign_in: "Entrar de novo",
+        reconnect: "Reconectar",
+        budget: "Aumentar orçamento",
+        computer: "Trocar computador",
+      },
     },
     docTitleUnread: "({{count}}) Notificações",
     summaryWaiting_one: "{{count}} coisa esperando você",
@@ -7396,6 +7419,8 @@ export const ptBR = {
     batch: {
       already_member: "{{email}} já faz parte do workspace.",
       already_invited: "{{email}} já tem um convite pendente. Use Reenviar.",
+      /** On an invite card already applied, where nothing resends: an address that was left out. */
+      had_invite: "{{email}} já tinha um convite pendente.",
       invalid_email: "{{email}} não parece um e-mail válido.",
     },
     activeNow: "Ativo agora",

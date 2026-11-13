@@ -89,16 +89,7 @@ import { useConnectAi } from "@/components/ConnectAi";
 import { DeviceNoticeActions, deviceNoticeLine } from "@/components/devices/DeviceNotice";
 import { ErrorState, LoadingCards } from "@/components/Loading";
 import { useNotificationHref, useNotificationOpener } from "@/components/NotificationOpen";
-import {
-  type Dir,
-  Face,
-  Headline,
-  joinerOf,
-  nameOf,
-  SystemFace,
-  sayWords,
-  teamWatchLine,
-} from "@/components/NotificationParts";
+import { type Dir, Face, Headline, joinerOf, nameOf, SystemFace, sayWords } from "@/components/NotificationParts";
 import { useOrg } from "@/components/org-context";
 import { UsageLimitActions } from "@/components/PeopleUsage";
 import { AllowTalkButton } from "@/components/ReachLines";
@@ -757,8 +748,6 @@ function Row({
   const restriction = restrictionOf(n);
   // A board's notice says what the agent saw, why the widget stopped, or whom it would show the board to (ADR 0135).
   const widgetLine = widgetNoticeLine(t, n, dir);
-  // What the right hand found, and how to fix it, in the reader's language.
-  const found = teamWatchLine(t, n);
   // A GIF or a sticker has no words: its word stands for it (ADR 0091).
   const media = mediaKindOf(l.media);
   const text = restriction
@@ -767,8 +756,9 @@ function Row({
       ? usageLimitLine(t, n)
       : widgetLine
         ? widgetLine
-        : found !== null
-          ? found
+        : // What the right hand found is the headline itself: nothing under it says it again.
+          n.kind === "team_watch"
+          ? null
           : why
             ? sayWords(t, why, l.text ?? "")
             : media === "voice"
@@ -1263,10 +1253,11 @@ function WaitRow({
 }) {
   const { t, i18n } = useTranslation();
   const unread = n.readAt === null;
-  // A request to join says it all in its headline; an agent's hand and an approval add what they are about, a
-  // secret its name and what it is for.
+  // A request to join and what the right hand found say it all in their headline; an agent's hand and an approval
+  // add what they are about, a secret its name and what it is for.
+  const found = teamWatchOf(n);
   const sub =
-    n.kind === "join_request"
+    n.kind === "join_request" || found
       ? null
       : n.kind === "secret_request"
         ? secretNoticeLine(n)
@@ -1274,7 +1265,7 @@ function WaitRow({
           ? usageLimitLine(t, n)
           : deviceNoticeOf(n)
             ? deviceNoticeLine(t, n)
-            : (teamWatchLine(t, n) ?? widgetNoticeLine(t, n, dir) ?? n.latest.title ?? n.latest.text);
+            : (widgetNoticeLine(t, n, dir) ?? n.latest.title ?? n.latest.text);
   const source = sourceOf(t, n, channelName);
   const when = whenText(t, i18n.language, n.createdAt);
   return (
@@ -1326,8 +1317,9 @@ function WaitRow({
           <WidgetNoticeActions n={n} onOpen={() => h.onOpen(n)} open={false} />
           <DeviceNoticeActions n={n} inline />
           <AdminAskActions n={n} inline />
+          {/* What the right hand found names its way out on the button; anything else only opens. */}
           <Button size="sm" className="nt-wr__open" title={t("notifications.openTip")} onClick={() => h.onOpen(n)}>
-            {t("notifications.open")}
+            {found?.act ? (t as unknown as (key: string) => string)(found.act) : t("notifications.open")}
           </Button>
           <span className="rq__end">{tail}</span>
         </div>

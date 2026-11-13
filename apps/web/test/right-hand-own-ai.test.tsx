@@ -65,14 +65,13 @@ test("Lodi's old settings address opens Lodi's page: three groups, the face open
   expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/agents/${LODI_ID}`);
   expect(groups()).toEqual(["Só para você", "O que o Lodi faz por conta própria", "Para todo o workspace· só admins"]);
   expect(screen().queryByRole("button", { name: "Mudar visual" })).toBeNull();
-  // Each card's button stands on a plate like the selects beside it: wrapped under them on a phone, it starts on
-  // their edge, never a padding further in as bare words would.
-  const stops = screen().getAllByRole("button", { name: "Parar de receber" });
-  expect(stops.map((b) => b.closest("[role=group]")?.getAttribute("aria-label"))).toEqual([
-    "Resumo do dia",
-    "Semana da equipe",
-  ]);
-  expect(stops.some((b) => b.classList.contains("ac-btn--ghost"))).toBe(false);
+  // Each card stops and starts with the switch at its row's end, its selects in a group named after it: no button
+  // of words beside them.
+  expect(screen().queryByRole("button", { name: "Parar de receber" })).toBeNull();
+  for (const name of ["Resumo do dia", "Semana da equipe"]) {
+    const selects = screen().getByRole("group", { name });
+    expect(within(selects.closest(".settings-row") as HTMLElement).getByRole("switch", { name })).toBeTruthy();
+  }
   await act(async () => fireEvent.click(screen().getByRole("button", { name: "Mudar o visual do Lodi" })));
   await settle(4);
   expect(screen().getByRole("dialog", { name: "Mudar visual" })).toBeTruthy();

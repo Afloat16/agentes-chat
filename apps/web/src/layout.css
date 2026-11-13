@@ -14370,7 +14370,7 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   position: absolute;
   inset: 0;
 }
-.settings-row--toggle :is(.ac-hint, .settings-row__status, .settings-row__end) {
+.settings-row--toggle :is(.ac-hint, .settings-row__status, .settings-row__value, .settings-row__end) {
   position: relative;
   z-index: 1;
 }
@@ -14415,6 +14415,14 @@ html:not([data-pointer]) .settings-row--open:focus-visible {
     flex-basis: 100%;
     box-sizing: border-box;
     min-width: 0;
+    padding-left: calc(28px + var(--space-3));
+  }
+  /* A line with a switch and a value before it (a card's day and hour, who a switch is for): the icon, the name and
+     the switch keep the first line, the value goes under the name, from its edge. */
+  .settings-row--toggle > .settings-row__value {
+    order: 1;
+    flex-basis: 100%;
+    box-sizing: border-box;
     padding-left: calc(28px + var(--space-3));
   }
   /* A line with a status under its name and a switch or nothing at its end: the icon, the name and the switch on one

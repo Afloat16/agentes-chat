@@ -252,10 +252,22 @@ export const TEAM_WATCH_CAUSES = [
 ] as const;
 export type TeamWatchCause = (typeof TEAM_WATCH_CAUSES)[number];
 
+/** The way out of each cause, the notice's one button (`notifications.teamWatch.act.<act>`). */
+const TEAM_WATCH_ACT = {
+  sign_in: "sign_in",
+  connector: "reconnect",
+  mailbox: "reconnect",
+  database: "reconnect",
+  budget_out: "budget",
+  budget_low: "budget",
+  computer: "computer",
+} as const satisfies Record<TeamWatchCause, string>;
+
 /**
- * What the right hand found wrong (ADR 0177 §1): its cause and the sentence saying it with the one way out, as words
- * in the reader's language (`names`: the first things it is about, then how many more). A cause this build doesn't
- * know has no words: `text`, the server's own sentence, stands for it. Null for any other notice.
+ * What the right hand found wrong (ADR 0177 §1): its cause, the sentence saying it as words in the reader's language
+ * (`names`: the first things it is about, then how many more; `count`: all of them, for the sentence's number) and
+ * the name of its one button (`act`). A cause this build doesn't know has neither: `text`, the server's own sentence,
+ * stands for it and its button only opens. Null for any other notice.
  */
 export function teamWatchOf(n: Pick<AppNotification, "kind" | "count" | "latest">) {
   if (n.kind !== "team_watch") return null;
@@ -266,10 +278,15 @@ export function teamWatchOf(n: Pick<AppNotification, "kind" | "count" | "latest"
     cause && names.length > 0
       ? {
           key: `notifications.teamWatch.${cause}`,
-          values: { names: names.join(", ") + (more > 0 ? ` +${more}` : "") },
+          values: { names: names.join(", ") + (more > 0 ? ` +${more}` : ""), count: Math.max(n.count, names.length) },
         }
       : null;
-  return { cause, words, text: n.latest.text ?? "" };
+  return {
+    cause,
+    words,
+    text: n.latest.text ?? "",
+    act: cause ? `notifications.teamWatch.act.${TEAM_WATCH_ACT[cause]}` : null,
+  };
 }
 
 /**

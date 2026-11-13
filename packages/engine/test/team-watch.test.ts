@@ -350,7 +350,7 @@ describe("what it tells", () => {
       latest: {
         reason: "sign_in",
         names: ["Trabalho"],
-        text: "O login de IA acabou: Trabalho. Entre de novo em Configurações",
+        text: "O login de Trabalho acabou.",
       },
     });
     // A plan is its owner's alone.
@@ -388,7 +388,8 @@ describe("what it tells", () => {
     expect(await rows()).toHaveLength(1);
     expect((await rows())[0]).toMatchObject({
       count: 2,
-      latest: { text: "Precisa reconectar: Slack, Notion. Reconecte em Configurações" },
+      // Two of them: the sentence is said in the plural.
+      latest: { text: "Slack, Notion precisam ser reconectados." },
     });
 
     await connector("Linear", { updatedAt: ago(HOUR) });
@@ -1173,8 +1174,8 @@ describe("what it reminds of", () => {
         waiting: true,
         actorName: "Lodi",
         actorType: "agent",
-        text: "AI sign-in ended: Work. Sign in again in Settings",
+        text: "The sign-in for Work ended.",
       }),
-    ).toEqual({ title: "Lodi", body: "AI sign-in ended: Work. Sign in again in Settings" });
+    ).toEqual({ title: "Lodi", body: "The sign-in for Work ended." });
   });
 });

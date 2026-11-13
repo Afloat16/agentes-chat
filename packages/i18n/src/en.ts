@@ -2789,6 +2789,14 @@ export const en = {
     approvals: { title: "Approvals waiting for you", done: "Decided" },
     /** Its summary of what waits on a person: the routine requests together, one tap for all of them. */
     digest: {
+      /** The summary's first line: how many wait, then how they split (`split`) or that all are routine. */
+      waiting_one: "{{count}} approval waiting.",
+      waiting_other: "{{count}} approvals waiting.",
+      split: "{{routine}} routine, {{careful}} to look at with care.",
+      allRoutine: "All routine.",
+      /** Under the first rows of a long routine group: shows the rest in place. `count`: the requests it hides. */
+      more_one: "See {{count}} more",
+      more_other: "See the other {{count}}",
       routine_one: "{{count}} routine request",
       routine_other: "{{count}} routine requests",
       /** Behind the ⓘ beside `routine`. */
@@ -2836,7 +2844,10 @@ export const en = {
       set_action_check_off: "Turn off the check of what the team already did",
       /** `emails`: every address on the card, in a list ("ana@example.com, bia@example.com"). */
       invite_people: "Invite <b>{{emails}}</b> to the workspace",
-      remove_ai_key: "Delete the API key <b>{{name}}</b> for good",
+      /** The same card once applied: who got an invitation ("ana@example.com and caio@example.com"). */
+      invite_people_sent_one: "Invitation sent to <b>{{emails}}</b>.",
+      invite_people_sent_other: "Invitations sent to <b>{{emails}}</b>.",
+      remove_ai_key: 'Delete the API key "{{name}}".',
     },
   },
   /** Lodi's weekly card in an admin's DM with it (ADR 0137 §9). */
@@ -2944,8 +2955,8 @@ export const en = {
     },
     /** An agent on a large model whose work is light. `{{from}}` and `{{to}}` are model names. */
     model: {
-      title: "{{name}} on {{to}} in place of {{from}}",
-      line: "Its work is light: short answers in one or two steps.",
+      title: "{{name}} can use {{to}}.",
+      line: "It uses {{from}} today.",
     },
     /** Puts one suggestion away for good, and what its row says once it was. */
     skip: "Dismiss",
@@ -4912,19 +4923,31 @@ export const en = {
     planModelDropped: { choose: "Choose another model" },
     planServes: { onlyMe: "Switch to Only me", done: "Only you use this plan now." },
     /**
-     * What the right hand found wrong and the one way out (`team_watch`), by cause. `names`: what it is about, the
-     * first few by name and "+2" for the rest. Also the notice's stored text and its push.
+     * What the right hand found wrong (`team_watch`), by cause: the notice's headline, its stored text and its push.
+     * `names`: what it is about, the first few by name and "+2" for the rest. `count`: how many things in all.
      */
     teamWatch: {
-      /** The notice's headline, the right hand's name bold. The sentence under it says what and how to fix it. */
-      found: "<b>{{name}}</b> found something to fix",
-      sign_in: "AI sign-in ended: {{names}}. Sign in again in Settings",
-      connector: "Needs reconnecting: {{names}}. Reconnect it in Settings",
-      mailbox: "Mailbox needs reconnecting: {{names}}. Reconnect it in Settings",
-      database: "Database needs reconnecting: {{names}}. Reconnect it in Settings",
-      budget_out: "Out of budget this month: {{names}}. Raise the budget on the agent's page",
-      budget_low: "Budget about to run out this month: {{names}}. Raise it on the agent's page",
-      computer: "Computer offline with agents waiting: {{names}}. Turn it on or check its connection",
+      sign_in_one: "The sign-in for {{names}} ended.",
+      sign_in_other: "The sign-ins for {{names}} ended.",
+      connector_one: "{{names}} needs reconnecting.",
+      connector_other: "{{names}} need reconnecting.",
+      mailbox_one: "The mailbox {{names}} needs reconnecting.",
+      mailbox_other: "The mailboxes {{names}} need reconnecting.",
+      database_one: "The database {{names}} needs reconnecting.",
+      database_other: "The databases {{names}} need reconnecting.",
+      budget_out_one: "{{names}} is out of budget.",
+      budget_out_other: "{{names}} are out of budget.",
+      budget_low_one: "{{names}} is about to run out of budget.",
+      budget_low_other: "{{names}} are about to run out of budget.",
+      computer_one: "The computer {{names}} is offline with agents waiting.",
+      computer_other: "The computers {{names}} are offline with agents waiting.",
+      /** The notice's one button: the way out, where the notice opens. */
+      act: {
+        sign_in: "Sign in again",
+        reconnect: "Reconnect",
+        budget: "Raise budget",
+        computer: "Switch computer",
+      },
     },
     docTitleUnread: "({{count}}) Notifications",
     summaryWaiting_one: "{{count}} thing waiting on you",
@@ -7401,6 +7424,8 @@ export const en = {
     batch: {
       already_member: "{{email}} is already in the workspace.",
       already_invited: "{{email}} already has a pending invitation. Use Resend.",
+      /** On an invite card already applied, where nothing resends: an address that was left out. */
+      had_invite: "{{email}} already had a pending invitation.",
       invalid_email: "{{email}} doesn't look like a valid email.",
     },
     activeNow: "Active now",

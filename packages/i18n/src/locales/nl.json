@@ -2615,6 +2615,12 @@
       "done": "Besloten"
     },
     "digest": {
+      "waiting_one": "{{count}} goedkeuring wacht.",
+      "waiting_other": "{{count}} goedkeuringen wachten.",
+      "split": "{{routine}} routine, {{careful}} om rustig te bekijken.",
+      "allRoutine": "Allemaal routine.",
+      "more_one": "Nog {{count}} tonen",
+      "more_other": "De andere {{count}} tonen",
       "routine_one": "{{count}} routineverzoek",
       "routine_other": "{{count}} routineverzoeken",
       "help": "Een actie in een gekoppelde app die niets verstuurt, verwijdert, betaalt, merget of deployt. Elk ander verzoek houdt zijn eigen kaart.",
@@ -2659,7 +2665,9 @@
       "set_action_check_on": "De check van wat het team al deed aanzetten",
       "set_action_check_off": "De check van wat het team al deed uitzetten",
       "invite_people": "<b>{{emails}}</b> uitnodigen voor de werkruimte",
-      "remove_ai_key": "API-sleutel <b>{{name}}</b> definitief verwijderen"
+      "invite_people_sent_one": "Uitnodiging verstuurd naar <b>{{emails}}</b>.",
+      "invite_people_sent_other": "Uitnodigingen verstuurd naar <b>{{emails}}</b>.",
+      "remove_ai_key": "API-sleutel \"{{name}}\" verwijderen."
     }
   },
   "teamWeek": {
@@ -2754,8 +2762,8 @@
       "action": "Archiveren"
     },
     "model": {
-      "title": "{{name}} op {{to}} in plaats van {{from}}",
-      "line": "Het werk is licht: korte antwoorden in een of twee stappen."
+      "title": "{{name}} kan {{to}} gebruiken.",
+      "line": "Gebruikt nu {{from}}."
     },
     "skip": "Negeren",
     "skipped": "Genegeerd",
@@ -4611,14 +4619,26 @@
       "done": "Nu gebruik alleen jij dit abonnement."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> heeft iets gevonden om op te lossen",
-      "sign_in": "AI-aanmelding beëindigd: {{names}}. Meld je opnieuw aan in Instellingen",
-      "connector": "Moet opnieuw verbonden worden: {{names}}. Verbind het opnieuw in Instellingen",
-      "mailbox": "Mailbox moet opnieuw verbonden worden: {{names}}. Verbind hem opnieuw in Instellingen",
-      "database": "Database moet opnieuw verbonden worden: {{names}}. Verbind hem opnieuw in Instellingen",
-      "budget_out": "Budget van deze maand is op: {{names}}. Verhoog het budget op de pagina van de agent",
-      "budget_low": "Budget van deze maand is bijna op: {{names}}. Verhoog het op de pagina van de agent",
-      "computer": "Computer offline terwijl agents wachten: {{names}}. Zet hem aan of controleer de verbinding"
+      "sign_in_one": "De aanmelding van {{names}} is beëindigd.",
+      "sign_in_other": "De aanmeldingen van {{names}} zijn beëindigd.",
+      "connector_one": "{{names}} moet opnieuw verbonden worden.",
+      "connector_other": "{{names}} moeten opnieuw verbonden worden.",
+      "mailbox_one": "De mailbox {{names}} moet opnieuw verbonden worden.",
+      "mailbox_other": "De mailboxen {{names}} moeten opnieuw verbonden worden.",
+      "database_one": "De database {{names}} moet opnieuw verbonden worden.",
+      "database_other": "De databases {{names}} moeten opnieuw verbonden worden.",
+      "budget_out_one": "Het budget van {{names}} is op.",
+      "budget_out_other": "De budgetten van {{names}} zijn op.",
+      "budget_low_one": "Het budget van {{names}} is bijna op.",
+      "budget_low_other": "De budgetten van {{names}} zijn bijna op.",
+      "computer_one": "De computer {{names}} is offline terwijl agents wachten.",
+      "computer_other": "De computers {{names}} zijn offline terwijl agents wachten.",
+      "act": {
+        "sign_in": "Opnieuw aanmelden",
+        "reconnect": "Opnieuw verbinden",
+        "budget": "Budget verhogen",
+        "computer": "Van computer wisselen"
+      }
     },
     "docTitleUnread": "({{count}}) Meldingen",
     "summaryWaiting_one": "{{count}} ding wacht op jou",
@@ -7075,6 +7095,7 @@
     "batch": {
       "already_member": "{{email}} zit al in de werkruimte.",
       "already_invited": "{{email}} heeft al een openstaande uitnodiging. Gebruik Opnieuw versturen.",
+      "had_invite": "{{email}} had al een openstaande uitnodiging.",
       "invalid_email": "{{email}} lijkt geen geldig e-mailadres."
     },
     "activeNow": "Nu actief",

@@ -10,8 +10,17 @@ test("the one tap approves only what the server calls routine, and the card work
   expect(source).toContain("digestGroups(");
   // The group shows on a digest only, never on a card an agent posted when asked.
   expect(source).toContain("card.digest ? digestGroups(");
-  // Under each name, the agent that asked and what the call holds, as the web's card says them.
-  expect(source).toContain("[dir.anyAgent(a.agentId)?.name, approvalDetail(a, i18n.language)]");
+  // One summary: the pill's words count what waits, as the web's first line does.
+  expect(source).toContain("words={digestLine(t, digestCounts(listed))}");
+  // Its rows are the web's (the same requests of one agent on one row, the first three until asked for the rest),
+  // with the agent that asked and what the calls hold under each name.
+  expect(source).toContain("digestRows(");
+  expect(source).toContain("(a) => approvalDetail(a, i18n.language),");
+  expect(source).toContain("[dir.anyAgent(row.agentId)?.name, row.detail]");
+  expect(source).toContain("{row.count > 1 ? `");
+  expect(source).toContain(" × ");
+  expect(source).toContain('t("rightHand.digest.more", { count: group.hidden })');
+  expect(source).toContain("onPress={() => setAll(true)}");
   // No risk is judged on the phone: the words that would do it never appear.
   expect(source).not.toMatch(/approvalRisk|approvalAction|highRisk/);
   // Approved, the phone says so as the conversation's "Aprovar tudo" does. A failure says its cause.

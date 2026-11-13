@@ -2616,6 +2616,12 @@
       "done": "Entschieden"
     },
     "digest": {
+      "waiting_one": "{{count}} Freigabe wartet.",
+      "waiting_other": "{{count}} Freigaben warten.",
+      "split": "{{routine}} Routine, {{careful}} zum genauen Hinsehen.",
+      "allRoutine": "Alles Routine.",
+      "more_one": "{{count}} weitere anzeigen",
+      "more_other": "Die anderen {{count}} anzeigen",
       "routine_one": "{{count}} Routineanfrage",
       "routine_other": "{{count}} Routineanfragen",
       "help": "Eine Aktion in einer verbundenen App, die nichts sendet, löscht, bezahlt, mergt oder deployt. Jede andere Anfrage behält ihre eigene Karte.",
@@ -2660,7 +2666,9 @@
       "set_action_check_on": "Die Prüfung, was das Team schon getan hat, einschalten",
       "set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausschalten",
       "invite_people": "<b>{{emails}}</b> in den Workspace einladen",
-      "remove_ai_key": "API-Schlüssel <b>{{name}}</b> endgültig löschen"
+      "invite_people_sent_one": "Einladung an <b>{{emails}}</b> gesendet.",
+      "invite_people_sent_other": "Einladungen an <b>{{emails}}</b> gesendet.",
+      "remove_ai_key": "API-Schlüssel „{{name}}“ löschen."
     }
   },
   "teamWeek": {
@@ -2755,8 +2763,8 @@
       "action": "Archivieren"
     },
     "model": {
-      "title": "{{name}} mit {{to}} statt {{from}}",
-      "line": "Die Arbeit ist leicht: kurze Antworten in ein oder zwei Schritten."
+      "title": "{{name}} kann {{to}} nutzen.",
+      "line": "Nutzt heute {{from}}."
     },
     "skip": "Verwerfen",
     "skipped": "Verworfen",
@@ -4608,14 +4616,26 @@
       "done": "Jetzt nutzt nur du dieses Abo."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> hat etwas gefunden, das zu beheben ist",
-      "sign_in": "KI-Anmeldung beendet: {{names}}. Melde dich in den Einstellungen wieder an",
-      "connector": "Muss neu verbunden werden: {{names}}. Verbinde es in den Einstellungen neu",
-      "mailbox": "Postfach muss neu verbunden werden: {{names}}. Verbinde es in den Einstellungen neu",
-      "database": "Datenbank muss neu verbunden werden: {{names}}. Verbinde sie in den Einstellungen neu",
-      "budget_out": "Budget für diesen Monat aufgebraucht: {{names}}. Erhöhe das Budget auf der Seite des Agenten",
-      "budget_low": "Budget für diesen Monat fast aufgebraucht: {{names}}. Erhöhe es auf der Seite des Agenten",
-      "computer": "Computer offline, Agenten warten: {{names}}. Schalte ihn ein oder prüfe die Verbindung"
+      "sign_in_one": "Die Anmeldung von {{names}} ist abgelaufen.",
+      "sign_in_other": "Die Anmeldungen von {{names}} sind abgelaufen.",
+      "connector_one": "{{names}} muss neu verbunden werden.",
+      "connector_other": "{{names}} müssen neu verbunden werden.",
+      "mailbox_one": "Das Postfach {{names}} muss neu verbunden werden.",
+      "mailbox_other": "Die Postfächer {{names}} müssen neu verbunden werden.",
+      "database_one": "Die Datenbank {{names}} muss neu verbunden werden.",
+      "database_other": "Die Datenbanken {{names}} müssen neu verbunden werden.",
+      "budget_out_one": "Das Budget von {{names}} ist aufgebraucht.",
+      "budget_out_other": "Die Budgets von {{names}} sind aufgebraucht.",
+      "budget_low_one": "Das Budget von {{names}} ist fast aufgebraucht.",
+      "budget_low_other": "Die Budgets von {{names}} sind fast aufgebraucht.",
+      "computer_one": "Der Computer {{names}} ist offline, Agenten warten.",
+      "computer_other": "Die Computer {{names}} sind offline, Agenten warten.",
+      "act": {
+        "sign_in": "Erneut anmelden",
+        "reconnect": "Neu verbinden",
+        "budget": "Budget erhöhen",
+        "computer": "Computer wechseln"
+      }
     },
     "docTitleUnread": "({{count}}) Benachrichtigungen",
     "summaryWaiting_one": "{{count}} Sache wartet auf dich",
@@ -7035,6 +7055,7 @@
     "batch": {
       "already_member": "{{email}} ist schon im Workspace.",
       "already_invited": "Für {{email}} gibt es schon eine offene Einladung. Nutze Erneut senden.",
+      "had_invite": "Für {{email}} gab es schon eine offene Einladung.",
       "invalid_email": "{{email}} sieht nicht nach einer gültigen E-Mail-Adresse aus."
     },
     "activeNow": "Gerade aktiv",

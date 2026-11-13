@@ -2709,6 +2709,14 @@
       "done": "Décidées"
     },
     "digest": {
+      "waiting_one": "{{count}} approbation en attente.",
+      "waiting_many": "{{count}} approbations en attente.",
+      "waiting_other": "{{count}} approbations en attente.",
+      "split": "{{routine}} de routine, {{careful}} à regarder de près.",
+      "allRoutine": "Toutes de routine.",
+      "more_one": "Voir {{count}} de plus",
+      "more_many": "Voir les {{count}} autres",
+      "more_other": "Voir les {{count}} autres",
       "routine_one": "{{count}} demande de routine",
       "routine_many": "{{count}} demandes de routine",
       "routine_other": "{{count}} demandes de routine",
@@ -2755,7 +2763,10 @@
       "set_action_check_on": "Activer la vérification de ce que l'équipe a déjà fait",
       "set_action_check_off": "Désactiver la vérification de ce que l'équipe a déjà fait",
       "invite_people": "Inviter <b>{{emails}}</b> dans l'espace de travail",
-      "remove_ai_key": "Supprimer définitivement la clé API <b>{{name}}</b>"
+      "invite_people_sent_one": "Invitation envoyée à <b>{{emails}}</b>.",
+      "invite_people_sent_many": "Invitations envoyées à <b>{{emails}}</b>.",
+      "invite_people_sent_other": "Invitations envoyées à <b>{{emails}}</b>.",
+      "remove_ai_key": "Supprimer la clé API « {{name}} »."
     }
   },
   "teamWeek": {
@@ -2861,8 +2872,8 @@
       "action": "Archiver"
     },
     "model": {
-      "title": "{{name}} avec {{to}} à la place de {{from}}",
-      "line": "Son travail est léger : des réponses courtes en une ou deux étapes."
+      "title": "{{name}} peut utiliser {{to}}.",
+      "line": "Utilise {{from}} aujourd'hui."
     },
     "skip": "Ignorer",
     "skipped": "Ignorée",
@@ -4738,14 +4749,33 @@
       "done": "Vous êtes désormais seul à utiliser ce forfait."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> a trouvé quelque chose à régler",
-      "sign_in": "La connexion à l'IA a pris fin : {{names}}. Reconnectez-vous dans les Paramètres",
-      "connector": "À reconnecter : {{names}}. Reconnectez-le dans les Paramètres",
-      "mailbox": "Boîte mail à reconnecter : {{names}}. Reconnectez-la dans les Paramètres",
-      "database": "Base de données à reconnecter : {{names}}. Reconnectez-la dans les Paramètres",
-      "budget_out": "Budget du mois épuisé : {{names}}. Augmentez le budget sur la page de l'agent",
-      "budget_low": "Budget du mois bientôt épuisé : {{names}}. Augmentez-le sur la page de l'agent",
-      "computer": "Ordinateur hors ligne, des agents attendent : {{names}}. Allumez-le ou vérifiez sa connexion"
+      "sign_in_one": "La connexion de {{names}} a pris fin.",
+      "sign_in_many": "Les connexions de {{names}} ont pris fin.",
+      "sign_in_other": "Les connexions de {{names}} ont pris fin.",
+      "connector_one": "{{names}} doit être reconnecté.",
+      "connector_many": "{{names}} doivent être reconnectés.",
+      "connector_other": "{{names}} doivent être reconnectés.",
+      "mailbox_one": "La boîte mail {{names}} doit être reconnectée.",
+      "mailbox_many": "Les boîtes mail {{names}} doivent être reconnectées.",
+      "mailbox_other": "Les boîtes mail {{names}} doivent être reconnectées.",
+      "database_one": "La base de données {{names}} doit être reconnectée.",
+      "database_many": "Les bases de données {{names}} doivent être reconnectées.",
+      "database_other": "Les bases de données {{names}} doivent être reconnectées.",
+      "budget_out_one": "Le budget de {{names}} est épuisé.",
+      "budget_out_many": "Les budgets de {{names}} sont épuisés.",
+      "budget_out_other": "Les budgets de {{names}} sont épuisés.",
+      "budget_low_one": "Le budget de {{names}} est bientôt épuisé.",
+      "budget_low_many": "Les budgets de {{names}} sont bientôt épuisés.",
+      "budget_low_other": "Les budgets de {{names}} sont bientôt épuisés.",
+      "computer_one": "L'ordinateur {{names}} est hors ligne et des agents attendent.",
+      "computer_many": "Les ordinateurs {{names}} sont hors ligne et des agents attendent.",
+      "computer_other": "Les ordinateurs {{names}} sont hors ligne et des agents attendent.",
+      "act": {
+        "sign_in": "Se reconnecter",
+        "reconnect": "Reconnecter",
+        "budget": "Augmenter le budget",
+        "computer": "Changer d'ordinateur"
+      }
     },
     "docTitleUnread": "({{count}}) Notifications",
     "summaryWaiting_one": "{{count}} chose vous attend",
@@ -7276,6 +7306,7 @@
     "batch": {
       "already_member": "{{email}} est déjà dans l'espace de travail.",
       "already_invited": "{{email}} a déjà une invitation en attente. Utilisez Renvoyer.",
+      "had_invite": "{{email}} avait déjà une invitation en attente.",
       "invalid_email": "{{email}} ne ressemble pas à un e-mail valide."
     },
     "activeNow": "Actif maintenant",

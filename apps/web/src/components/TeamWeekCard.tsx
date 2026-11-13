@@ -212,7 +212,8 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
           )
         )}
         <div className="rq__foot">
-          {!dismissed && bulk.length > 0 && (
+          {/* One row to apply has its own button for it: the footer's would only repeat it. */}
+          {!dismissed && bulk.length > 1 && (
             <Button
               size="sm"
               variant="primary"

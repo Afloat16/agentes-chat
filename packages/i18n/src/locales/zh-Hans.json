@@ -2526,6 +2526,10 @@
       "done": "已决定"
     },
     "digest": {
+      "waiting_other": "有 {{count}} 个审批在等待。",
+      "split": "其中 {{routine}} 个是常规请求，{{careful}} 个需要仔细查看。",
+      "allRoutine": "全部是常规请求。",
+      "more_other": "查看其余 {{count}} 个",
       "routine_other": "{{count}} 个常规请求",
       "help": "在已连接的应用中执行的操作，不发送、不删除、不付款，也不合并或部署。其他请求仍各自保留一张卡片。",
       "approve_other": "批准这 {{count}} 个",
@@ -2568,7 +2572,8 @@
       "set_action_check_on": "开启对团队已做之事的检查",
       "set_action_check_off": "关闭对团队已做之事的检查",
       "invite_people": "邀请 <b>{{emails}}</b> 加入工作区",
-      "remove_ai_key": "永久删除 API 密钥 <b>{{name}}</b>"
+      "invite_people_sent_other": "已向 <b>{{emails}}</b> 发送邀请。",
+      "remove_ai_key": "删除 API 密钥“{{name}}”。"
     }
   },
   "teamWeek": {
@@ -2652,8 +2657,8 @@
       "action": "归档"
     },
     "model": {
-      "title": "{{name}} 用 {{to}} 代替 {{from}}",
-      "line": "它的工作很轻：一两步就能给出的简短回答。"
+      "title": "{{name}} 可以使用 {{to}}。",
+      "line": "目前使用 {{from}}。"
     },
     "skip": "忽略",
     "skipped": "已忽略",
@@ -4458,14 +4463,19 @@
       "done": "现在只有你使用这个套餐。"
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> 发现了需要处理的问题",
-      "sign_in": "AI 登录已失效：{{names}}。请在设置中重新登录",
-      "connector": "需要重新连接：{{names}}。请在设置中重新连接",
-      "mailbox": "邮箱需要重新连接：{{names}}。请在设置中重新连接",
-      "database": "数据库需要重新连接：{{names}}。请在设置中重新连接",
-      "budget_out": "本月预算已用完：{{names}}。请在智能体页面提高预算",
-      "budget_low": "本月预算即将用完：{{names}}。请在智能体页面提高预算",
-      "computer": "电脑离线，有智能体在等待：{{names}}。请开机或检查网络连接"
+      "sign_in_other": "{{names}} 的登录已失效。",
+      "connector_other": "{{names}} 需要重新连接。",
+      "mailbox_other": "邮箱 {{names}} 需要重新连接。",
+      "database_other": "数据库 {{names}} 需要重新连接。",
+      "budget_out_other": "{{names}} 的预算已用完。",
+      "budget_low_other": "{{names}} 的预算即将用完。",
+      "computer_other": "电脑 {{names}} 已离线，有智能体在等待。",
+      "act": {
+        "sign_in": "重新登录",
+        "reconnect": "重新连接",
+        "budget": "提高预算",
+        "computer": "更换电脑"
+      }
     },
     "docTitleUnread": "({{count}}) 通知",
     "summaryWaiting_other": "{{count}} 件事等你处理",
@@ -6825,6 +6835,7 @@
     "batch": {
       "already_member": "{{email}} 已在工作区中。",
       "already_invited": "{{email}} 已有一份待接受的邀请。请使用“重新发送”。",
+      "had_invite": "{{email}} 之前已有一份待接受的邀请。",
       "invalid_email": "{{email}} 看起来不是有效的邮箱。"
     },
     "activeNow": "当前活跃",

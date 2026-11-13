@@ -698,21 +698,34 @@ export function workspaceActionCardOf(raw: unknown): WorkspaceActionCard | null 
   };
 }
 
-/** The card's sentence: `rightHand.action.{action}`, or the plain one for an action this build doesn't know. */
+/** The addresses an applied invite card sent an invitation to: its sentence then says what happened. */
+const invitedBy = (card: WorkspaceActionCard) =>
+  card.params.action === "invite_people" && card.state === "applied" ? listed(card.params.words.invited) : [];
+
+/**
+ * The card's sentence: `rightHand.action.{action}`, or the plain one for an action this build doesn't know. An invite
+ * card that was applied says who got an invitation instead of what it would do.
+ */
 export const actionCardKey = (card: WorkspaceActionCard) =>
-  (WORKSPACE_ACTION_IDS as readonly string[]).includes(card.params.action)
-    ? `rightHand.action.${workspaceActionContext(card.params.action, card.params.words)}`
-    : "rightHand.action.other";
+  invitedBy(card).length > 0
+    ? "rightHand.action.invite_people_sent"
+    : (WORKSPACE_ACTION_IDS as readonly string[]).includes(card.params.action)
+      ? `rightHand.action.${workspaceActionContext(card.params.action, card.params.words)}`
+      : "rightHand.action.other";
 
 /** The values of the card's sentence, in the reader's language (`workspaceActionWords`). */
-export const actionCardWords = (card: WorkspaceActionCard, t: TFunction) =>
-  workspaceActionWords(card.params.action, card.params.words, t);
+export const actionCardWords = (card: WorkspaceActionCard, t: TFunction): Record<string, string | number> => {
+  const invited = invitedBy(card);
+  return invited.length > 0
+    ? { emails: joinNames(invited, t), count: invited.length }
+    : workspaceActionWords(card.params.action, card.params.words, t);
+};
 
 /**
  * Everything else the card changes, under its sentence, so whoever applies it from their inbox sees all of it: what a
  * role or a channel's exception gives or takes in the permissions' own words ("conversar, dar missões e editar a wiki";
  * "+ editar a wiki, − aprovar ações"), a new name, where a role moves, a channel turned private, a new budget. Empty when
- * the sentence says it all.
+ * the sentence says it all. An invite card's lines are each their own (a line break between them).
  */
 export function actionCardDetail(card: WorkspaceActionCard, t: TFunction, locale = "en"): string {
   const input = card.params.input;
@@ -755,15 +768,20 @@ export function actionCardDetail(card: WorkspaceActionCard, t: TFunction, locale
             .join(", ")
         : text(input.reason);
     case "invite_people":
-      // The roles every address gets and, once sent, each address left out with why.
-      return parts(
+      // The roles every address gets and, once sent, each address left out with why, a line each. Nothing on the
+      // card resends: an address that held an invitation is only said.
+      return [
         keys(input.roleNames)
           .map((n) => `+ ${n}`)
           .join(", "),
-        INVITE_LEFT_OUT.flatMap((status) =>
-          listed(card.params.words[status]).map((email) => t(`members.batch.${status}`, { email }) as string),
-        ).join(" "),
-      );
+        ...INVITE_LEFT_OUT.flatMap((status) =>
+          listed(card.params.words[status]).map(
+            (email) => t(`members.batch.${status === "already_invited" ? "had_invite" : status}`, { email }) as string,
+          ),
+        ),
+      ]
+        .filter(Boolean)
+        .join("\n");
     case "remove_ai_key":
       return text(card.params.words.provider);
     default:

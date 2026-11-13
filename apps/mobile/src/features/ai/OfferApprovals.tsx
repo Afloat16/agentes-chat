@@ -1,10 +1,11 @@
 import { useApprovals, useDecideApprovals } from "@agenteschat/client";
 import type { ApprovalsCard } from "@agenteschat/client/lib/action-cards";
-import { digestGroups } from "@agenteschat/client/lib/approval-card";
-import { approvalDetail } from "@agenteschat/client/lib/approval-words";
+import { digestCounts, digestGroups, digestRows } from "@agenteschat/client/lib/approval-card";
+import { approvalDetail, digestLine } from "@agenteschat/client/lib/approval-words";
 import { errorText } from "@agenteschat/client/lib/errors";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
 import { EventPillAction, EventPillText, Text, useToast } from "@/ui";
 import { router } from "@/ui/navigation";
@@ -18,9 +19,10 @@ import { OfferShell } from "./OfferShell";
 
 /**
  * The right hand's approvals card (ADR 0137 §4) as a waiting pill that opens the next one still waiting. Its digest
- * (ADR 0177 §4), while the server calls two or more of them routine: each by name, with the agent that asked and what
- * it holds under it as on the web (two requests of one kind never read the same), one action that approves them all as
- * whoever taps (the server decides only the ones it still calls routine), and the way to read each.
+ * (ADR 0177 §4), while the server calls two or more of them routine, is one summary: the line that counts what waits,
+ * the routine ones by name with the agent that asked and what they hold under it as on the web (the ones of one agent
+ * that read the same on one row with how many, the first rows only until "Ver os outros"), one action that approves
+ * them all as whoever taps (the server decides only the ones it still calls routine), and the way to read each.
  */
 export function OfferApprovals({ card }: { card: ApprovalsCard }) {
   const { t, i18n } = useTranslation();
@@ -29,17 +31,25 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
   const dir = useDirectory();
   const approvals = useApprovals(orgId);
   const decide = useDecideApprovals(orgId);
+  const [all, setAll] = useState(false);
   const rows = card.approvalIds.map((id) => approvals.data?.find((a) => a.id === id));
-  const routine = card.digest ? digestGroups(rows.flatMap((a) => a ?? [])).routine : [];
+  const listed = rows.flatMap((a) => a ?? []);
+  const routine = card.digest ? digestGroups(listed).routine : [];
   const next = rows.find((a) => a?.status === "pending");
   const open = () => router.push(`/approval/${next?.id ?? ""}` as never);
   if (routine.length > 0) {
     const count = routine.length;
+    const group = digestRows(
+      routine,
+      (a) => approvalTitleText(t, a),
+      (a) => approvalDetail(a, i18n.language),
+      all,
+    );
     return (
       <AskWaiting
         forMe
         mark="shield"
-        words={t("rightHand.digest.routine", { count })}
+        words={digestLine(t, digestCounts(listed))}
         actions={
           <>
             <EventPillAction
@@ -66,13 +76,11 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
         below={
           <EventPillText>
             <View style={styles.items}>
-              {routine.map((a) => {
-                const under = [dir.anyAgent(a.agentId)?.name, approvalDetail(a, i18n.language)]
-                  .filter(Boolean)
-                  .join(" · ");
+              {group.rows.map((row) => {
+                const under = [dir.anyAgent(row.agentId)?.name, row.detail].filter(Boolean).join(" · ");
                 return (
-                  <View key={a.id}>
-                    <Text variant="footnote">{approvalTitleText(t, a)}</Text>
+                  <View key={row.id}>
+                    <Text variant="footnote">{row.count > 1 ? `${row.title} × ${row.count}` : row.title}</Text>
                     {under ? (
                       <Text variant="footnote" tone="muted">
                         <Spans inline={parseInline(under)} />
@@ -81,6 +89,18 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
                   </View>
                 );
               })}
+              {group.hidden > 0 ? (
+                <Pressable
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() => setAll(true)}
+                  style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+                >
+                  <Text variant="footnote" style={styles.semibold}>
+                    {t("rightHand.digest.more", { count: group.hidden })}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
             <Text variant="footnote" tone="muted">
               {t("rightHand.digest.help")}
@@ -111,4 +131,7 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
 const styles = StyleSheet.create({
   // Each request and its line read as one, apart from the next.
   items: { gap: 4 },
+  more: { alignSelf: "flex-start", minHeight: 28, justifyContent: "center" },
+  semibold: { fontWeight: "600" },
+  pressed: { opacity: 0.6 },
 });

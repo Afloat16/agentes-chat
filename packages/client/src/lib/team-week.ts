@@ -288,12 +288,8 @@ export function teamWeekRowText(t: TFunction, locale: string, row: TeamWeekRow, 
       };
     case "model":
       return {
-        title: say("teamWeek.model.title", {
-          name: n.agent(row.agentId),
-          from: n.model?.(row.from) ?? row.from,
-          to: n.model?.(row.to) ?? row.to,
-        }),
-        line: say("teamWeek.model.line"),
+        title: say("teamWeek.model.title", { name: n.agent(row.agentId), to: n.model?.(row.to) ?? row.to }),
+        line: say("teamWeek.model.line", { from: n.model?.(row.from) ?? row.from }),
         action: say("rightHand.card.apply"),
       };
     case "waiting":

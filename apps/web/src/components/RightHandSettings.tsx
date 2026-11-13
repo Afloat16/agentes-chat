@@ -23,7 +23,13 @@ import { can } from "@agenteschat/client/lib/permissions";
 import { brainPlan } from "@agenteschat/client/lib/plans";
 import { AUTO, modelChoices } from "@agenteschat/client/lib/providers";
 import { mineStatus, RIGHT_HAND_POWERS } from "@agenteschat/client/lib/right-hand";
-import type { LodiPrefs, LodiPrefsPatch, LodiSwitch, TeamWeekPeriod } from "@agenteschat/client/lib/right-hand-prefs";
+import {
+  type LodiPrefs,
+  type LodiPrefsPatch,
+  type LodiSwitch,
+  type TeamWeekPeriod,
+  teamWeekOn,
+} from "@agenteschat/client/lib/right-hand-prefs";
 import {
   AffixInput,
   BrainLogo,
@@ -654,10 +660,10 @@ function RightHandForm({ agent }: { agent: Agent }) {
 }
 
 /**
- * What the right hand does without being asked, each with its switch (ADR 0177): the daily card and its hour for
- * everyone, the weekly card with its day and hour for admins, then the switches of whatever else this server has
- * built. The person's own come first. The workspace's, for who configures it, say under their name that they are for
- * everyone.
+ * What the right hand does without being asked, each a row with its switch (ADR 0177): the daily card with its hour
+ * for everyone, the weekly card with its day and hour for admins (the selects beside the name while the card is on),
+ * then the switches of whatever else this server has built. The person's own come first. The workspace's, for who
+ * configures it, say before their switch that they are for everyone.
  */
 function RightHandOwn({ name }: { name: string }) {
   const { t } = useTranslation();
@@ -685,21 +691,43 @@ function OwnRows({ name, prefs }: { name: string; prefs: LodiPrefs }) {
   const failed = (e: unknown) => toast.show(errorText(t, e), "error");
   const save = (patch: LodiPrefsPatch) => set.mutate(patch, { onError: failed });
   const shows = (s: LodiSwitch) => prefs.switches.includes(s);
-  // A group by its card's name: the two rows hold the same selects and button, told apart by it when read aloud.
-  const schedule = (period: TeamWeekPeriod, label: string) => (
-    // biome-ignore lint/a11y/useSemanticElements: a labelled group inside a settings row, not a fieldset
-    <span className="rh-set__week" role="group" aria-label={label}>
-      <TeamWeekSchedule
-        period={period}
-        prefs={prefs}
-        admin={admin}
-        locale={i18n.language}
-        plated
-        busy={set.isPending}
-        onChange={save}
+  // One of the two cards: its row's switch stops and starts it, and while it is on its day and hour stand beside its
+  // name. A group by the card's name: the two rows hold the same selects, told apart by it when read aloud.
+  const card = (period: TeamWeekPeriod, id: string, icon: "clock" | "calendar", label: string, hint: string) => {
+    const on = teamWeekOn(prefs, period, admin);
+    return (
+      <PrefRow
+        id={id}
+        icon={icon}
+        label={label}
+        hint={hint}
+        value={
+          on && (
+            // biome-ignore lint/a11y/useSemanticElements: a labelled group inside a settings row, not a fieldset
+            <span className="rh-set__week" role="group" aria-label={label}>
+              <TeamWeekSchedule
+                period={period}
+                prefs={prefs}
+                admin={admin}
+                locale={i18n.language}
+                stop={false}
+                busy={set.isPending}
+                onChange={save}
+              />
+            </span>
+          )
+        }
+        control={
+          <Switch
+            aria-label={label}
+            checked={on}
+            disabled={set.isPending}
+            onCheckedChange={(next) => save(period === "week" ? { weekOff: !next } : { dayOff: !next })}
+          />
+        }
       />
-    </span>
-  );
+    );
+  };
   const mine = (id: "digest" | "reminders", icon: "shield" | "bell", off: "digestOff" | "remindOff") =>
     shows(id) && (
       <PrefRow
@@ -726,7 +754,7 @@ function OwnRows({ name, prefs }: { name: string; prefs: LodiPrefs }) {
         icon={icon}
         label={t(`rightHand.settings.own.${words}`)}
         hint={t(`rightHand.settings.own.${words}Help`, g)}
-        status={t("rightHand.settings.groupWorkspace")}
+        value={t("rightHand.settings.groupWorkspace")}
         control={
           <Switch
             aria-label={t(`rightHand.settings.own.${words}`)}
@@ -739,22 +767,8 @@ function OwnRows({ name, prefs }: { name: string; prefs: LodiPrefs }) {
     );
   return (
     <div className="settings-rows">
-      <PrefRow
-        id="rh-day"
-        icon="clock"
-        label={t("teamWeek.settings.dayLabel")}
-        hint={t("teamWeek.settings.dayHelp", g)}
-        actions={schedule("day", t("teamWeek.settings.dayLabel"))}
-      />
-      {admin && (
-        <PrefRow
-          id="rh-team-week"
-          icon="calendar"
-          label={t("teamWeek.settings.label")}
-          hint={t("teamWeek.settings.help", g)}
-          actions={schedule("week", t("teamWeek.settings.label"))}
-        />
-      )}
+      {card("day", "rh-day", "clock", t("teamWeek.settings.dayLabel"), t("teamWeek.settings.dayHelp", g))}
+      {admin && card("week", "rh-team-week", "calendar", t("teamWeek.settings.label"), t("teamWeek.settings.help", g))}
       {mine("digest", "shield", "digestOff")}
       {mine("reminders", "bell", "remindOff")}
       {everyones("teamWatch", "eye", "teamWatch")}

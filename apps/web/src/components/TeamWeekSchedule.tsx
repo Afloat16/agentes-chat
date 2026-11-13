@@ -9,8 +9,8 @@ import { Button, Select } from "@agenteschat/ui";
 import { useTranslation } from "react-i18next";
 
 /**
- * When one of Lodi's cards comes, and "Parar de receber": the weekly card's day and hour, or the daily card's hour
- * (the card's footer and Lodi's page).
+ * When one of Lodi's cards comes: the weekly card's day and hour, or the daily card's hour, and "Parar de receber" on
+ * the card's footer. Lodi's page has a switch at its row's end instead (`stop={false}`).
  */
 export function TeamWeekSchedule({
   period,
@@ -19,7 +19,7 @@ export function TeamWeekSchedule({
   locale,
   onChange,
   busy = false,
-  plated = false,
+  stop = true,
 }: {
   period: TeamWeekPeriod;
   prefs: Pick<LodiPrefs, "weekOff" | "dayOff" | "day" | "weekHour" | "dayHour">;
@@ -29,11 +29,8 @@ export function TeamWeekSchedule({
   onChange: (patch: LodiPrefsPatch) => void;
   /** A change is being saved: nothing here takes another until it lands. */
   busy?: boolean;
-  /**
-   * The button on a plate like the selects: where it can wrap under them (a settings row on a phone), a plate starts
-   * on their edge, while bare words would start a padding further in.
-   */
-  plated?: boolean;
+  /** "Parar de receber" (or "Receber") after the selects. Without it, whatever turns the card off stands beside them. */
+  stop?: boolean;
 }) {
   const { t } = useTranslation();
   const on = teamWeekOn(prefs, period, admin);
@@ -60,14 +57,16 @@ export function TeamWeekSchedule({
         disabled={!on || busy}
         onValueChange={(v) => onChange(week ? { weekHour: Number(v) } : { dayHour: Number(v) })}
       />
-      <Button
-        size="sm"
-        {...(plated ? {} : { variant: "ghost" as const })}
-        disabled={busy}
-        onClick={() => onChange(week ? { weekOff: on } : { dayOff: on })}
-      >
-        {t(on ? "teamWeek.schedule.stop" : "teamWeek.schedule.start")}
-      </Button>
+      {stop && (
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={busy}
+          onClick={() => onChange(week ? { weekOff: on } : { dayOff: on })}
+        >
+          {t(on ? "teamWeek.schedule.stop" : "teamWeek.schedule.start")}
+        </Button>
+      )}
     </>
   );
 }

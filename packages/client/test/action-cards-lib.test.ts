@@ -7,6 +7,7 @@ import {
   actionCardKey,
   actionCardMark,
   actionCardOf,
+  actionCardWords,
   agentProposalEnd,
   agentProposalOf,
   cardInstallAgent,
@@ -480,9 +481,23 @@ test("an invite card says every address in its sentence, its roles under it and,
     already_member: "caio@example.com",
     invalid_email: "",
   });
+  // Each address left out is a line of its own. Nothing on the card resends, so the open invitation is only said.
   expect(actionCardDetail(sent, t)).toBe(
-    "+ Vendas, + Admin · members.batch.already_invited(bia@example.com) members.batch.already_member(caio@example.com)",
+    "+ Vendas, + Admin\nmembers.batch.had_invite(bia@example.com)\nmembers.batch.already_member(caio@example.com)",
   );
+  // Still to apply, the sentence says what it would do. Applied, what happened: who got an invitation.
+  expect(actionCardKey(sent)).toBe("rightHand.action.invite_people");
+  const applied: WorkspaceActionCard = {
+    ...card({ invited: "ana@example.com, caio@example.com" }),
+    state: "applied",
+  };
+  expect(actionCardKey(applied)).toBe("rightHand.action.invite_people_sent");
+  expect(actionCardWords(applied, ((key: string) => key) as unknown as TFunction)).toEqual({
+    emails: "format.list",
+    count: 2,
+  });
+  // Applied by a server that names nobody invited: the card's own sentence stands.
+  expect(actionCardKey({ ...card(), state: "applied" })).toBe("rightHand.action.invite_people");
   expect(actionCardMark(card())).toBe("members");
   expect(actionCardDestroys(card())).toBe(false);
   // Its receipt names who got an invitation.

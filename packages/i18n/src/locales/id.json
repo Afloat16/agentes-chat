@@ -2527,6 +2527,10 @@
       "done": "Sudah diputuskan"
     },
     "digest": {
+      "waiting_other": "{{count}} persetujuan menunggu.",
+      "split": "{{routine}} rutin, {{careful}} perlu dicermati.",
+      "allRoutine": "Semuanya rutin.",
+      "more_other": "Lihat {{count}} lainnya",
       "routine_other": "{{count}} permintaan rutin",
       "help": "Tindakan di aplikasi terhubung yang tidak mengirim, menghapus, membayar, melakukan merge, atau deploy apa pun. Permintaan lain tetap di kartunya masing-masing.",
       "approve_other": "Setujui {{count}} ini",
@@ -2569,7 +2573,8 @@
       "set_action_check_on": "Nyalakan pemeriksaan atas apa yang sudah dilakukan tim",
       "set_action_check_off": "Matikan pemeriksaan atas apa yang sudah dilakukan tim",
       "invite_people": "Undang <b>{{emails}}</b> ke ruang kerja",
-      "remove_ai_key": "Hapus kunci API <b>{{name}}</b> selamanya"
+      "invite_people_sent_other": "Undangan terkirim ke <b>{{emails}}</b>.",
+      "remove_ai_key": "Hapus kunci API \"{{name}}\"."
     }
   },
   "teamWeek": {
@@ -2653,8 +2658,8 @@
       "action": "Arsipkan"
     },
     "model": {
-      "title": "{{name}} dengan {{to}} sebagai ganti {{from}}",
-      "line": "Pekerjaannya ringan: jawaban singkat dalam satu atau dua langkah."
+      "title": "{{name}} bisa memakai {{to}}.",
+      "line": "Sekarang memakai {{from}}."
     },
     "skip": "Abaikan",
     "skipped": "Diabaikan",
@@ -4468,14 +4473,19 @@
       "done": "Sekarang hanya kamu yang memakai paket ini."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> menemukan sesuatu yang perlu diperbaiki",
-      "sign_in": "Login AI berakhir: {{names}}. Masuk lagi di Pengaturan",
-      "connector": "Perlu dihubungkan ulang: {{names}}. Hubungkan ulang di Pengaturan",
-      "mailbox": "Kotak surat perlu dihubungkan ulang: {{names}}. Hubungkan ulang di Pengaturan",
-      "database": "Database perlu dihubungkan ulang: {{names}}. Hubungkan ulang di Pengaturan",
-      "budget_out": "Anggaran bulan ini habis: {{names}}. Naikkan anggaran di halaman agen",
-      "budget_low": "Anggaran bulan ini hampir habis: {{names}}. Naikkan di halaman agen",
-      "computer": "Komputer offline dan agen menunggu: {{names}}. Nyalakan atau periksa koneksinya"
+      "sign_in_other": "Login {{names}} sudah berakhir.",
+      "connector_other": "{{names}} perlu dihubungkan ulang.",
+      "mailbox_other": "Kotak surat {{names}} perlu dihubungkan ulang.",
+      "database_other": "Database {{names}} perlu dihubungkan ulang.",
+      "budget_out_other": "Anggaran {{names}} sudah habis.",
+      "budget_low_other": "Anggaran {{names}} hampir habis.",
+      "computer_other": "Komputer {{names}} offline dan agen menunggu.",
+      "act": {
+        "sign_in": "Masuk lagi",
+        "reconnect": "Hubungkan ulang",
+        "budget": "Naikkan anggaran",
+        "computer": "Ganti komputer"
+      }
     },
     "docTitleUnread": "({{count}}) Notifikasi",
     "summaryWaiting_other": "{{count}} hal menunggumu",
@@ -6814,6 +6824,7 @@
     "batch": {
       "already_member": "{{email}} sudah ada di ruang kerja.",
       "already_invited": "{{email}} sudah punya undangan tertunda. Pakai Kirim ulang.",
+      "had_invite": "{{email}} sudah punya undangan tertunda sebelumnya.",
       "invalid_email": "{{email}} sepertinya bukan email yang valid."
     },
     "activeNow": "Aktif sekarang",

@@ -75,7 +75,18 @@ test("the routine ones share one button, sent as routine only with the card for 
   ask(state, "ap-c", "Time de vendas", true);
   await go(withDigest(state, ["ap-a", "ap-merge", "ap-b", "ap-c"]));
 
+  // One summary: its first line counts what waits and how it splits.
+  expect(card().firstElementChild?.textContent).toBe("4 aprovações esperando. 3 de rotina, 1 para olhar com calma.");
+  // No card inside it says again that it asks for an approval, the group's and the merge's alike.
+  expect(card().querySelector(".rq__head")).toBeNull();
+  expect(card().textContent).not.toContain("Pede sua aprovação");
+  expect(card().textContent).not.toContain("Preciso do seu ok");
+
   const group = within(card()).getByRole("group", { name: "3 pedidos de rotina" });
+  // Ada's three requests read the same: one row with how many, and what each holds under it.
+  const rows = [...group.querySelectorAll(".rq__item")];
+  expect(rows).toHaveLength(1);
+  expect(rows[0]?.querySelector("b")?.textContent).toEndWith(" × 3");
   expect(group.textContent).toContain("Metas do trimestre");
   expect(group.textContent).toContain("Time de vendas");
   // What routine means, behind the ⓘ.
@@ -97,6 +108,34 @@ test("the routine ones share one button, sent as routine only with the card for 
   expect(within(card()).queryByRole("group", { name: /pedidos de rotina/ })).toBeNull();
   expect(card().textContent).toContain("Aprovado por você");
   expect(within(card()).getByRole("button", { name: "Aprovar merge" })).toBeTruthy();
+});
+
+test("a long routine group shows its first three rows, the rest behind one button, and Aprovar stays in reach", async () => {
+  const state = seedState();
+  const ids = Array.from({ length: 10 }, (_, i) => {
+    const a = ask(state, `ap-${i}`, `Nota ${i}`, true);
+    // Each reads differently: ten rows.
+    a.tool = `notes_create_page_${i}`;
+    a.title = `Notes: create page ${i}`;
+    return a.id;
+  });
+  await go(withDigest(state, ids));
+  expect(card().firstElementChild?.textContent).toBe("10 aprovações esperando. Todas de rotina.");
+  const group = within(card()).getByRole("group", { name: "10 pedidos de rotina" });
+  const rows = () => [...group.querySelectorAll(".rq__item")];
+  // Three rows and the button's own.
+  expect(rows()).toHaveLength(4);
+  expect(within(group).getByRole("button", { name: "Aprovar os 10" })).toBeTruthy();
+  await click(within(group).getByRole("button", { name: "Ver os outros 7" }));
+  // In place: every row, the button gone, and the one tap still approves all ten.
+  expect(rows()).toHaveLength(10);
+  expect(within(group).queryByRole("button", { name: /Ver os outros/ })).toBeNull();
+  await click(within(group).getByRole("button", { name: "Aprovar os 10" }));
+  expect(state.calls.find((c) => c.method === "approvals.decideMany")?.args.slice(1)).toEqual([
+    ids,
+    "approve",
+    "routine",
+  ]);
 });
 
 test("one by one shows each routine request on its own card, and nothing is sent", async () => {

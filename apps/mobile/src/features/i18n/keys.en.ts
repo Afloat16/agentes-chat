@@ -1044,9 +1044,6 @@ export const featureKeysEn = {
       /** An agent's model left its plan's list (`plan_model_dropped`): `runs` the model it uses now. */
       plan_model_dropped_one: "{{model}} left {{plan}}. {{names}} is using {{runs}} for now",
       plan_model_dropped_other: "{{model}} left {{plan}}. {{names}} is using {{runs}} for now",
-      /** The right hand found something wrong (`team_watch`): what and how to fix it go under it. */
-      team_watch_one: "{{names}} found something to fix",
-      team_watch_other: "{{names}} found something to fix",
       computer_disk_full_one: "A computer's disk is almost full",
       computer_disk_full_other: "A computer's disk is almost full",
       computer_no_chrome_one: "A computer needs Google Chrome. Get it at google.com/chrome",

@@ -265,8 +265,10 @@ describe("a change in the workspace that names all it does", () => {
     ]);
     const over = cardGroup();
     expect(over.textContent).toContain("Aplicado por você");
+    // Applied, the card says what happened, and the address left out is a line of its own that points to no button.
+    expect(over.querySelector(".rq__wt b")?.textContent).toBe("Convite enviado para ana@example.com.");
     expect(over.querySelector(".rq__wt small")?.textContent).toBe(
-      "+ Vendas · bia@example.com já tem um convite pendente. Use Reenviar.",
+      "+ Vendas\nbia@example.com já tinha um convite pendente.",
     );
     expect(within(over).queryByRole("button", { name: "Aplicar" })).toBeNull();
   });
@@ -306,7 +308,7 @@ describe("a change in the workspace that names all it does", () => {
     await settle(2);
     expect(cardGroup().textContent).toContain("Aplicado por você");
     expect(cardGroup().querySelector(".rq__wt small")?.textContent).toBe(
-      "+ Vendas · bia@example.com já tem um convite pendente. Use Reenviar.",
+      "+ Vendas\nbia@example.com já tinha um convite pendente.",
     );
   });
 
@@ -314,7 +316,7 @@ describe("a change in the workspace that names all it does", () => {
     const state = withLodiCard(seedState(), removeKey);
     await goWith(state, removeKey);
     const c = cardGroup();
-    expect(c.querySelector(".rq__wt b")?.textContent).toBe("Apagar a chave de API Chave antiga de vez");
+    expect(c.querySelector(".rq__wt b")?.textContent).toBe("Apagar a chave de API «Chave antiga».");
     expect(c.querySelector(".rq__wt small")?.textContent).toBe("DeepSeek");
     const apply = within(c).getByRole("button", { name: "Aplicar" });
     await click(apply);

@@ -2612,6 +2612,12 @@
       "done": "Karar verildi"
     },
     "digest": {
+      "waiting_one": "{{count}} onay bekliyor.",
+      "waiting_other": "{{count}} onay bekliyor.",
+      "split": "{{routine}} rutin, {{careful}} dikkatle bakılacak.",
+      "allRoutine": "Hepsi rutin.",
+      "more_one": "{{count}} tane daha göster",
+      "more_other": "Diğer {{count}} taneyi göster",
       "routine_one": "{{count}} rutin istek",
       "routine_other": "{{count}} rutin istek",
       "help": "Bağlı bir uygulamada hiçbir şey göndermeyen, silmeyen, ödemeyen, merge veya deploy yapmayan bir işlem. Diğer her istek kendi kartında kalır.",
@@ -2656,7 +2662,9 @@
       "set_action_check_on": "Ekibin zaten yaptıklarının kontrolünü aç",
       "set_action_check_off": "Ekibin zaten yaptıklarının kontrolünü kapat",
       "invite_people": "Çalışma alanına davet et: <b>{{emails}}</b>",
-      "remove_ai_key": "<b>{{name}}</b> API anahtarını kalıcı olarak sil"
+      "invite_people_sent_one": "<b>{{emails}}</b> adresine davet gönderildi.",
+      "invite_people_sent_other": "<b>{{emails}}</b> adreslerine davet gönderildi.",
+      "remove_ai_key": "\"{{name}}\" API anahtarını sil."
     }
   },
   "teamWeek": {
@@ -2751,8 +2759,8 @@
       "action": "Arşivle"
     },
     "model": {
-      "title": "{{name}} için {{from}} yerine {{to}}",
-      "line": "İşi hafif: bir iki adımda kısa yanıtlar."
+      "title": "{{name}}, {{to}} kullanabilir.",
+      "line": "Bugün {{from}} kullanıyor."
     },
     "skip": "Yok say",
     "skipped": "Yok sayıldı",
@@ -4593,14 +4601,26 @@
       "done": "Artık bu planı yalnızca sen kullanıyorsun."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> çözülmesi gereken bir şey buldu",
-      "sign_in": "Yapay zekâ oturumu sona erdi: {{names}}. Ayarlar'dan yeniden oturum aç",
-      "connector": "Yeniden bağlanması gerekiyor: {{names}}. Ayarlar'dan yeniden bağla",
-      "mailbox": "Posta kutusunun yeniden bağlanması gerekiyor: {{names}}. Ayarlar'dan yeniden bağla",
-      "database": "Veritabanının yeniden bağlanması gerekiyor: {{names}}. Ayarlar'dan yeniden bağla",
-      "budget_out": "Bu ayın bütçesi bitti: {{names}}. Ajanın sayfasından bütçeyi artır",
-      "budget_low": "Bu ayın bütçesi bitmek üzere: {{names}}. Ajanın sayfasından artır",
-      "computer": "Bilgisayar çevrimdışı ve ajanlar bekliyor: {{names}}. Bilgisayarı aç veya bağlantısını kontrol et"
+      "sign_in_one": "{{names}} oturumu sona erdi.",
+      "sign_in_other": "{{names}} oturumları sona erdi.",
+      "connector_one": "{{names}} yeniden bağlanmalı.",
+      "connector_other": "{{names}} yeniden bağlanmalı.",
+      "mailbox_one": "{{names}} posta kutusu yeniden bağlanmalı.",
+      "mailbox_other": "{{names}} posta kutuları yeniden bağlanmalı.",
+      "database_one": "{{names}} veritabanı yeniden bağlanmalı.",
+      "database_other": "{{names}} veritabanları yeniden bağlanmalı.",
+      "budget_out_one": "{{names}} için bütçe bitti.",
+      "budget_out_other": "{{names}} için bütçeler bitti.",
+      "budget_low_one": "{{names}} için bütçe bitmek üzere.",
+      "budget_low_other": "{{names}} için bütçeler bitmek üzere.",
+      "computer_one": "{{names}} bilgisayarı çevrimdışı ve ajanlar bekliyor.",
+      "computer_other": "{{names}} bilgisayarları çevrimdışı ve ajanlar bekliyor.",
+      "act": {
+        "sign_in": "Yeniden oturum aç",
+        "reconnect": "Yeniden bağla",
+        "budget": "Bütçeyi artır",
+        "computer": "Bilgisayarı değiştir"
+      }
     },
     "docTitleUnread": "({{count}}) Bildirimler",
     "summaryWaiting_one": "Sizi bekleyen {{count}} şey var",
@@ -6996,6 +7016,7 @@
     "batch": {
       "already_member": "{{email}} zaten çalışma alanında.",
       "already_invited": "{{email}} için bekleyen bir davet zaten var. Tekrar gönder'i kullanın.",
+      "had_invite": "{{email}} için bekleyen bir davet zaten vardı.",
       "invalid_email": "{{email}} geçerli bir e-postaya benzemiyor."
     },
     "activeNow": "Şu an etkin",

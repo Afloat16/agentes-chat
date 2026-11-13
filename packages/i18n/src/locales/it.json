@@ -2704,6 +2704,14 @@
       "done": "Decise"
     },
     "digest": {
+      "waiting_one": "{{count}} approvazione in attesa.",
+      "waiting_many": "{{count}} approvazioni in attesa.",
+      "waiting_other": "{{count}} approvazioni in attesa.",
+      "split": "{{routine}} di routine, {{careful}} da guardare con calma.",
+      "allRoutine": "Tutte di routine.",
+      "more_one": "Mostra {{count}} in più",
+      "more_many": "Mostra le altre {{count}}",
+      "more_other": "Mostra le altre {{count}}",
       "routine_one": "{{count}} richiesta di routine",
       "routine_many": "{{count}} richieste di routine",
       "routine_other": "{{count}} richieste di routine",
@@ -2750,7 +2758,10 @@
       "set_action_check_on": "Attiva il controllo di cosa ha già fatto il team",
       "set_action_check_off": "Disattiva il controllo di cosa ha già fatto il team",
       "invite_people": "Invita <b>{{emails}}</b> nello spazio di lavoro",
-      "remove_ai_key": "Elimina per sempre la chiave API <b>{{name}}</b>"
+      "invite_people_sent_one": "Invito inviato a <b>{{emails}}</b>.",
+      "invite_people_sent_many": "Inviti inviati a <b>{{emails}}</b>.",
+      "invite_people_sent_other": "Inviti inviati a <b>{{emails}}</b>.",
+      "remove_ai_key": "Elimina la chiave API «{{name}}»."
     }
   },
   "teamWeek": {
@@ -2856,8 +2867,8 @@
       "action": "Archivia"
     },
     "model": {
-      "title": "{{name}} con {{to}} al posto di {{from}}",
-      "line": "Il suo lavoro è leggero: risposte brevi in uno o due passaggi."
+      "title": "{{name}} può usare {{to}}.",
+      "line": "Oggi usa {{from}}."
     },
     "skip": "Ignora",
     "skipped": "Ignorata",
@@ -4738,14 +4749,33 @@
       "done": "Ora solo tu usi questo piano."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> ha trovato qualcosa da sistemare",
-      "sign_in": "L'accesso all'IA è terminato: {{names}}. Accedi di nuovo nelle Impostazioni",
-      "connector": "Da ricollegare: {{names}}. Ricollegalo nelle Impostazioni",
-      "mailbox": "Casella di posta da ricollegare: {{names}}. Ricollegala nelle Impostazioni",
-      "database": "Database da ricollegare: {{names}}. Ricollegalo nelle Impostazioni",
-      "budget_out": "Budget del mese esaurito: {{names}}. Aumenta il budget nella pagina dell'agente",
-      "budget_low": "Budget del mese quasi esaurito: {{names}}. Aumentalo nella pagina dell'agente",
-      "computer": "Computer offline con agenti in attesa: {{names}}. Accendilo o controlla la connessione"
+      "sign_in_one": "L'accesso di {{names}} è terminato.",
+      "sign_in_many": "Gli accessi di {{names}} sono terminati.",
+      "sign_in_other": "Gli accessi di {{names}} sono terminati.",
+      "connector_one": "{{names}} va ricollegato.",
+      "connector_many": "{{names}} vanno ricollegati.",
+      "connector_other": "{{names}} vanno ricollegati.",
+      "mailbox_one": "La casella di posta {{names}} va ricollegata.",
+      "mailbox_many": "Le caselle di posta {{names}} vanno ricollegate.",
+      "mailbox_other": "Le caselle di posta {{names}} vanno ricollegate.",
+      "database_one": "Il database {{names}} va ricollegato.",
+      "database_many": "I database {{names}} vanno ricollegati.",
+      "database_other": "I database {{names}} vanno ricollegati.",
+      "budget_out_one": "Il budget di {{names}} è esaurito.",
+      "budget_out_many": "I budget di {{names}} sono esauriti.",
+      "budget_out_other": "I budget di {{names}} sono esauriti.",
+      "budget_low_one": "Il budget di {{names}} è quasi esaurito.",
+      "budget_low_many": "I budget di {{names}} sono quasi esauriti.",
+      "budget_low_other": "I budget di {{names}} sono quasi esauriti.",
+      "computer_one": "Il computer {{names}} è offline con agenti in attesa.",
+      "computer_many": "I computer {{names}} sono offline con agenti in attesa.",
+      "computer_other": "I computer {{names}} sono offline con agenti in attesa.",
+      "act": {
+        "sign_in": "Accedi di nuovo",
+        "reconnect": "Ricollega",
+        "budget": "Aumenta il budget",
+        "computer": "Cambia computer"
+      }
     },
     "docTitleUnread": "({{count}}) Notifiche",
     "summaryWaiting_one": "{{count}} cosa ti aspetta",
@@ -7283,6 +7313,7 @@
     "batch": {
       "already_member": "{{email}} è già nello spazio di lavoro.",
       "already_invited": "{{email}} ha già un invito in sospeso. Usa Invia di nuovo.",
+      "had_invite": "{{email}} aveva già un invito in sospeso.",
       "invalid_email": "{{email}} non sembra un'email valida."
     },
     "activeNow": "Attivo ora",

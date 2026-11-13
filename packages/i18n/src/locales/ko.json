@@ -2527,6 +2527,10 @@
       "done": "결정됨"
     },
     "digest": {
+      "waiting_other": "승인 {{count}}개가 기다리고 있어요.",
+      "split": "일상적인 요청 {{routine}}개, 꼼꼼히 볼 요청 {{careful}}개예요.",
+      "allRoutine": "모두 일상적인 요청이에요.",
+      "more_other": "나머지 {{count}}개 보기",
       "routine_other": "일상적인 요청 {{count}}개",
       "help": "연결된 앱에서 보내기, 삭제, 결제, 머지, 배포를 하지 않는 작업이에요. 그 밖의 요청은 각자 카드에 그대로 있어요.",
       "approve_other": "이 {{count}}개 승인",
@@ -2569,7 +2573,8 @@
       "set_action_check_on": "팀이 이미 한 일 확인 켜기",
       "set_action_check_off": "팀이 이미 한 일 확인 끄기",
       "invite_people": "<b>{{emails}}</b>을(를) 워크스페이스에 초대하기",
-      "remove_ai_key": "API 키 <b>{{name}}</b> 영구 삭제"
+      "invite_people_sent_other": "<b>{{emails}}</b>에게 초대를 보냈어요.",
+      "remove_ai_key": "API 키 \"{{name}}\"을(를) 삭제합니다."
     }
   },
   "teamWeek": {
@@ -2653,8 +2658,8 @@
       "action": "보관"
     },
     "model": {
-      "title": "{{name}} 님을 {{from}} 대신 {{to}}(으)로",
-      "line": "작업이 가벼워요: 한두 단계의 짧은 답변이에요."
+      "title": "{{name}} 님은 {{to}}을(를) 쓸 수 있어요.",
+      "line": "지금은 {{from}}을(를) 써요."
     },
     "skip": "무시",
     "skipped": "무시함",
@@ -4453,14 +4458,19 @@
       "done": "이제 이 플랜은 나만 사용해요."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b>님이 해결할 일을 찾았어요",
-      "sign_in": "AI 로그인이 끝났어요: {{names}}. 설정에서 다시 로그인하세요",
-      "connector": "다시 연결해야 해요: {{names}}. 설정에서 다시 연결하세요",
-      "mailbox": "메일함을 다시 연결해야 해요: {{names}}. 설정에서 다시 연결하세요",
-      "database": "데이터베이스를 다시 연결해야 해요: {{names}}. 설정에서 다시 연결하세요",
-      "budget_out": "이번 달 예산을 다 썼어요: {{names}}. 에이전트 페이지에서 예산을 늘리세요",
-      "budget_low": "이번 달 예산이 곧 바닥나요: {{names}}. 에이전트 페이지에서 늘리세요",
-      "computer": "컴퓨터가 오프라인이고 에이전트가 기다리고 있어요: {{names}}. 컴퓨터를 켜거나 연결을 확인하세요"
+      "sign_in_other": "{{names}} 로그인이 끝났어요.",
+      "connector_other": "{{names}}을(를) 다시 연결해야 해요.",
+      "mailbox_other": "메일함 {{names}}을(를) 다시 연결해야 해요.",
+      "database_other": "데이터베이스 {{names}}을(를) 다시 연결해야 해요.",
+      "budget_out_other": "{{names}}의 예산을 다 썼어요.",
+      "budget_low_other": "{{names}}의 예산이 곧 바닥나요.",
+      "computer_other": "컴퓨터 {{names}}이(가) 오프라인이고 에이전트가 기다리고 있어요.",
+      "act": {
+        "sign_in": "다시 로그인",
+        "reconnect": "다시 연결",
+        "budget": "예산 늘리기",
+        "computer": "컴퓨터 바꾸기"
+      }
     },
     "docTitleUnread": "({{count}}) 알림",
     "summaryWaiting_other": "내 확인을 기다리는 항목 {{count}}개",
@@ -6783,6 +6793,7 @@
     "batch": {
       "already_member": "{{email}}은(는) 이미 워크스페이스에 있어요.",
       "already_invited": "{{email}}에게는 이미 대기 중인 초대가 있어요. 다시 보내기를 사용하세요.",
+      "had_invite": "{{email}}에게는 이미 대기 중인 초대가 있었어요.",
       "invalid_email": "{{email}}은(는) 올바른 이메일이 아닌 것 같아요."
     },
     "activeNow": "지금 활동 중",

@@ -352,12 +352,15 @@ test("suggestions: archive an idle agent, a smaller model for light work, each p
     "Arquivar a Ada",
   );
   expect(teamWeekRowText(t, "pt-BR", model as never, named)).toEqual({
-    title: "Ada com Médio em vez de Grande",
-    line: "O trabalho é leve: respostas curtas em um ou dois passos.",
+    title: "Ada pode usar o Médio.",
+    line: "Hoje usa o Grande.",
     action: "Aplicar",
   });
   // Without a model list the ids stand in.
-  expect(teamWeekRowText(t, "pt-BR", model as never, names).title).toBe("Ada com mid-1 em vez de big-1");
+  expect(teamWeekRowText(t, "pt-BR", model as never, names)).toMatchObject({
+    title: "Ada pode usar o mid-1.",
+    line: "Hoje usa o big-1.",
+  });
 
   // Both follow their proposal, like the budget's. Archiving is never part of "Aplicar as N".
   const proposal = (id: string, status: Proposal["status"]) => ({ id, status, stale: false }) as Proposal;

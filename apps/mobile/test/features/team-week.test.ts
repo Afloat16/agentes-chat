@@ -29,6 +29,10 @@ test("stacked rows: every fix's button under its words, full width, and the foot
   const card = src("right-hand/TeamWeekCard.tsx");
   expect(card).toMatch(/variant="secondary"\s+size="sm"\s+wide/);
   expect(card).toContain('t("teamWeek.applyAll", { count: bulk.length })');
+  // One row to apply has its own button: the footer's shows from two on, as on the web.
+  expect(card).toContain("{!dismissed && bulk.length > 1 ? (");
+  // Three numbers share one line. With the workspace's money they are four, two by two.
+  expect(card).toContain("stats.budgetNanoUsd > 0 ? styles.statOfFour : styles.statOfThree");
   expect(card).toContain("onPress={openRightHandSettings}");
   // Approvals open the phone's own approval screen, as the approvals card does.
   expect(card).toContain("router.push(`/approval/");
@@ -43,6 +47,10 @@ test("Configurações › Lodi: Resumo do dia and its hour for anyone, the week'
   expect(screen).toContain("onPress={() => save({ dayOff: dayOn })}");
   expect(screen).toContain("{admin ? (");
   expect(screen).toContain("toggle={weekOn}");
+  expect(screen).toContain("onPress={() => save({ weekOff: weekOn })}");
+  // One list of switch rows, as the web's card: no header repeats a row's name over it.
+  expect(screen).not.toContain("<GroupedHeader>{dayLabel}</GroupedHeader>");
+  expect(screen).not.toContain("<GroupedHeader>{weekLabel}</GroupedHeader>");
   expect(screen).toContain("onPick={(weekHour) => save({ weekHour })}");
   expect(screen).toContain('t("teamWeek.settings.dayLabel")');
 });

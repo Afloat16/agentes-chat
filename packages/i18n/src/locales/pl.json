@@ -2798,6 +2798,16 @@
       "done": "Rozstrzygnięte"
     },
     "digest": {
+      "waiting_one": "{{count}} zatwierdzenie czeka.",
+      "waiting_few": "{{count}} zatwierdzenia czekają.",
+      "waiting_many": "{{count}} zatwierdzeń czeka.",
+      "waiting_other": "{{count}} zatwierdzenia czeka.",
+      "split": "W tym rutynowych {{routine}}, do spokojnego przejrzenia {{careful}}.",
+      "allRoutine": "Wszystkie rutynowe.",
+      "more_one": "Pokaż jeszcze {{count}}",
+      "more_few": "Pokaż pozostałe {{count}}",
+      "more_many": "Pokaż pozostałe {{count}}",
+      "more_other": "Pokaż pozostałe {{count}}",
       "routine_one": "{{count}} rutynowa prośba",
       "routine_few": "{{count}} rutynowe prośby",
       "routine_many": "{{count}} rutynowych próśb",
@@ -2846,7 +2856,11 @@
       "set_action_check_on": "Włącz sprawdzanie, co zespół już zrobił",
       "set_action_check_off": "Wyłącz sprawdzanie, co zespół już zrobił",
       "invite_people": "Zaproś <b>{{emails}}</b> do przestrzeni roboczej",
-      "remove_ai_key": "Usuń klucz API <b>{{name}}</b> na zawsze"
+      "invite_people_sent_one": "Zaproszenie wysłane do <b>{{emails}}</b>.",
+      "invite_people_sent_few": "Zaproszenia wysłane do <b>{{emails}}</b>.",
+      "invite_people_sent_many": "Zaproszenia wysłane do <b>{{emails}}</b>.",
+      "invite_people_sent_other": "Zaproszenia wysłane do <b>{{emails}}</b>.",
+      "remove_ai_key": "Usuń klucz API „{{name}}”."
     }
   },
   "teamWeek": {
@@ -2963,8 +2977,8 @@
       "action": "Archiwizuj"
     },
     "model": {
-      "title": "{{name}}: {{to}} zamiast {{from}}",
-      "line": "Praca jest lekka: krótkie odpowiedzi w jednym lub dwóch krokach."
+      "title": "{{name}} może używać {{to}}.",
+      "line": "Dziś używa {{from}}."
     },
     "skip": "Odrzuć",
     "skipped": "Odrzucono",
@@ -4893,14 +4907,40 @@
       "done": "Teraz tylko Ty używasz tego planu."
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b> znajduje coś do naprawienia",
-      "sign_in": "Logowanie do AI wygasło: {{names}}. Zaloguj się ponownie w Ustawieniach",
-      "connector": "Wymaga ponownego połączenia: {{names}}. Połącz ponownie w Ustawieniach",
-      "mailbox": "Skrzynka wymaga ponownego połączenia: {{names}}. Połącz ją ponownie w Ustawieniach",
-      "database": "Baza danych wymaga ponownego połączenia: {{names}}. Połącz ją ponownie w Ustawieniach",
-      "budget_out": "Budżet na ten miesiąc się skończył: {{names}}. Zwiększ budżet na stronie agenta",
-      "budget_low": "Budżet na ten miesiąc zaraz się skończy: {{names}}. Zwiększ go na stronie agenta",
-      "computer": "Komputer offline, agenci czekają: {{names}}. Włącz go lub sprawdź połączenie"
+      "sign_in_one": "Logowanie do {{names}} wygasło.",
+      "sign_in_few": "Logowania do {{names}} wygasły.",
+      "sign_in_many": "Logowania do {{names}} wygasły.",
+      "sign_in_other": "Logowania do {{names}} wygasły.",
+      "connector_one": "{{names}} wymaga ponownego połączenia.",
+      "connector_few": "{{names}} wymagają ponownego połączenia.",
+      "connector_many": "{{names}} wymagają ponownego połączenia.",
+      "connector_other": "{{names}} wymagają ponownego połączenia.",
+      "mailbox_one": "Skrzynka {{names}} wymaga ponownego połączenia.",
+      "mailbox_few": "Skrzynki {{names}} wymagają ponownego połączenia.",
+      "mailbox_many": "Skrzynki {{names}} wymagają ponownego połączenia.",
+      "mailbox_other": "Skrzynki {{names}} wymagają ponownego połączenia.",
+      "database_one": "Baza danych {{names}} wymaga ponownego połączenia.",
+      "database_few": "Bazy danych {{names}} wymagają ponownego połączenia.",
+      "database_many": "Bazy danych {{names}} wymagają ponownego połączenia.",
+      "database_other": "Bazy danych {{names}} wymagają ponownego połączenia.",
+      "budget_out_one": "Budżet agenta {{names}} się skończył.",
+      "budget_out_few": "Budżety agentów {{names}} się skończyły.",
+      "budget_out_many": "Budżety agentów {{names}} się skończyły.",
+      "budget_out_other": "Budżety agentów {{names}} się skończyły.",
+      "budget_low_one": "Budżet agenta {{names}} zaraz się skończy.",
+      "budget_low_few": "Budżety agentów {{names}} zaraz się skończą.",
+      "budget_low_many": "Budżety agentów {{names}} zaraz się skończą.",
+      "budget_low_other": "Budżety agentów {{names}} zaraz się skończą.",
+      "computer_one": "Komputer {{names}} jest offline, a agenci czekają.",
+      "computer_few": "Komputery {{names}} są offline, a agenci czekają.",
+      "computer_many": "Komputery {{names}} są offline, a agenci czekają.",
+      "computer_other": "Komputery {{names}} są offline, a agenci czekają.",
+      "act": {
+        "sign_in": "Zaloguj się ponownie",
+        "reconnect": "Połącz ponownie",
+        "budget": "Zwiększ budżet",
+        "computer": "Zmień komputer"
+      }
     },
     "docTitleUnread": "({{count}}) Powiadomienia",
     "summaryWaiting_one": "{{count}} rzecz czeka na ciebie",
@@ -7500,6 +7540,7 @@
     "batch": {
       "already_member": "{{email}} jest już w przestrzeni roboczej.",
       "already_invited": "{{email}} ma już oczekujące zaproszenie. Użyj opcji Wyślij ponownie.",
+      "had_invite": "Adres {{email}} miał już oczekujące zaproszenie.",
       "invalid_email": "{{email}} nie wygląda na prawidłowy adres e-mail."
     },
     "activeNow": "Aktywność teraz",

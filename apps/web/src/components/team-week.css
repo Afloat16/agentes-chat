@@ -1,4 +1,4 @@
-/* Lodi's weekly card (TeamWeekCard): four numbers, what worked, a row per fix, the footer with the schedule. */
+/* Lodi's weekly card (TeamWeekCard): its numbers, what worked, a row per fix, the footer with the schedule. */
 .tw {
   max-width: var(--msg-card-w);
   container-type: inline-size;
@@ -6,17 +6,19 @@
 .tw__card {
   max-width: none;
 }
+/* As many equal columns as tiles (three, or four with the workspace's money): none leaves a hole beside the last. */
 .tw__stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 .tw__stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
+  flex: 1 1 88px;
+  gap: var(--space-1);
+  padding: var(--space-3);
   border-radius: 12px 12px 12px 4px;
   background: var(--card-well);
   box-shadow: var(--card-well-shadow);
@@ -36,22 +38,23 @@
   font-size: 12px;
   line-height: 16px;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 .tw__stat[data-warn] b {
   color: var(--attention);
 }
 .tw__sec {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 .tw__sec-t {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-2);
   color: var(--muted);
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.02em;
 }
 .tw__worked {
-  gap: 6px;
+  gap: var(--space-2);
   font-size: 13px;
 }
 .tw__worked .ac-icon {
@@ -61,10 +64,10 @@
 .tw__rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .tw__fix {
-  padding: 10px 12px;
+  padding: var(--space-3);
   border-radius: 12px 12px 12px 4px;
   background: var(--card-well);
   box-shadow: var(--card-well-shadow);
@@ -77,7 +80,7 @@
 .tw__fix-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .tw__fix-row > .ac-avatar,
 .tw__tile {
@@ -97,7 +100,7 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  gap: 1px;
+  gap: var(--space-1);
 }
 .tw__fix-t b {
   font-weight: 650;
@@ -118,13 +121,13 @@
   display: flex;
   align-self: center;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex: none;
 }
 .tw__done {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--icon-gap);
   color: var(--ok);
   font-size: 13px;
   font-weight: 600;
@@ -138,11 +141,11 @@
 .tw__approvals {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 .tw__dismissed {
-  margin: 16px 0 0;
+  margin: var(--space-4) 0 0;
   color: var(--muted);
   font-size: 13px;
 }
@@ -162,13 +165,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--space-2);
+  padding: var(--space-2);
 }
-/* A narrow column (the phone's browser, a side panel): two numbers a line, the button under its words. */
+/* A narrow column (the phone's browser, a side panel): four numbers go two a line, three stay on one line while each
+   keeps its 88 and else the third takes the next line whole. A row's button goes under its words at the row's width
+   (rule 23), a quiet one beside it keeping its own. */
 @container (max-width: 520px) {
-  .tw__stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .tw__stat:first-child:nth-last-child(4),
+  .tw__stat:first-child:nth-last-child(4) ~ .tw__stat {
+    flex-basis: calc(50% - var(--space-2));
   }
   .tw__fix-row {
     flex-wrap: wrap;
@@ -177,16 +183,19 @@
     width: 100%;
     justify-content: flex-end;
   }
+  .tw__fix-side > .ac-btn:not(.ac-btn--ghost) {
+    flex: 1;
+  }
   .tw__when.tw__when {
     margin-left: 0;
     white-space: normal;
   }
 }
-/* Settings › Lodi: the same selects and switch as the card's "Mudar". */
+/* Settings › Lodi: the card's day and hour beside its name, before the row's switch. */
 .rh-set__week {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   max-width: 100%;
 }

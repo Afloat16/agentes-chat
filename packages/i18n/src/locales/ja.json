@@ -2527,6 +2527,10 @@
       "done": "決定済み"
     },
     "digest": {
+      "waiting_other": "承認待ちが {{count}} 件あります。",
+      "split": "定型的なものが {{routine}} 件、じっくり確認するものが {{careful}} 件です。",
+      "allRoutine": "すべて定型的なものです。",
+      "more_other": "残りの {{count}} 件を表示",
       "routine_other": "定型的なリクエスト {{count}} 件",
       "help": "連携アプリでの操作のうち、送信、削除、支払い、マージ、デプロイを行わないものです。それ以外のリクエストは個別のカードのままです。",
       "approve_other": "この {{count}} 件を承認",
@@ -2569,7 +2573,8 @@
       "set_action_check_on": "チームの過去の対応の確認をオンにする",
       "set_action_check_off": "チームの過去の対応の確認をオフにする",
       "invite_people": "<b>{{emails}}</b>をワークスペースに招待",
-      "remove_ai_key": "APIキー<b>{{name}}</b>を完全に削除"
+      "invite_people_sent_other": "<b>{{emails}}</b>に招待を送信しました。",
+      "remove_ai_key": "APIキー「{{name}}」を削除します。"
     }
   },
   "teamWeek": {
@@ -2653,8 +2658,8 @@
       "action": "アーカイブ"
     },
     "model": {
-      "title": "{{name}} を {{from}} から {{to}} に",
-      "line": "仕事は軽めです。1〜2 ステップの短い返答が中心です。"
+      "title": "{{name}} は {{to}} を使えます。",
+      "line": "現在は {{from}} を使っています。"
     },
     "skip": "却下",
     "skipped": "却下済み",
@@ -4455,14 +4460,19 @@
       "done": "このプランは今あなただけが使います。"
     },
     "teamWatch": {
-      "found": "<b>{{name}}</b>が対応の必要なことを見つけました",
-      "sign_in": "AIのサインインが切れました：{{names}}。設定からもう一度サインインしてください",
-      "connector": "再接続が必要です：{{names}}。設定から再接続してください",
-      "mailbox": "メールボックスの再接続が必要です：{{names}}。設定から再接続してください",
-      "database": "データベースの再接続が必要です：{{names}}。設定から再接続してください",
-      "budget_out": "今月の予算を使い切りました：{{names}}。エージェントのページで予算を増やしてください",
-      "budget_low": "今月の予算がまもなくなくなります：{{names}}。エージェントのページで増やしてください",
-      "computer": "コンピューターがオフラインで、エージェントが待っています：{{names}}。電源を入れるか接続を確認してください"
+      "sign_in_other": "{{names}}のサインインが切れました。",
+      "connector_other": "{{names}}の再接続が必要です。",
+      "mailbox_other": "メールボックス {{names}} の再接続が必要です。",
+      "database_other": "データベース {{names}} の再接続が必要です。",
+      "budget_out_other": "{{names}}の予算を使い切りました。",
+      "budget_low_other": "{{names}}の予算がまもなくなくなります。",
+      "computer_other": "コンピューター {{names}} がオフラインで、エージェントが待っています。",
+      "act": {
+        "sign_in": "もう一度サインイン",
+        "reconnect": "再接続",
+        "budget": "予算を増やす",
+        "computer": "コンピューターを切り替える"
+      }
     },
     "docTitleUnread": "（{{count}}）通知",
     "summaryWaiting_other": "あなたの対応待ち{{count}}件",
@@ -6786,6 +6796,7 @@
     "batch": {
       "already_member": "{{email}}はすでにワークスペースにいます。",
       "already_invited": "{{email}}にはすでに保留中の招待があります。「再送信」を使ってください。",
+      "had_invite": "{{email}}にはすでに保留中の招待がありました。",
       "invalid_email": "{{email}}は有効なメールアドレスではないようです。"
     },
     "activeNow": "アクティブ",
