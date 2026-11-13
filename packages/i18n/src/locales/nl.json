@@ -486,6 +486,7 @@
       "nameLead": "Hoe noemt je team je?",
       "namePlaceholder": "Je naam",
       "nameIsPassword": "Is dit je naam? Hij is gelijk aan het wachtwoord dat je typte.",
+      "emailHeld": "Dit e-mailadres heeft net een account hier verlaten en blijft 7 dagen gereserveerd. Is dat account van jou? Druk dan op “Dit was ik niet” in de e-mail die we ernaar stuurden.",
       "nameLooksLikePassword": "Dat lijkt op een wachtwoord. Hier komt je naam.",
       "newPassword": "Nu een wachtwoord.",
       "newPasswordNamed": "Mooi, {{name}}. Nu een wachtwoord.",
@@ -1800,7 +1801,12 @@
       "sent": "We hebben een link naar {{email}} gestuurd. Je e-mailadres verandert zodra je hem opent.",
       "changed": "Klaar: je logt nu in met {{email}}.",
       "same": "Dat is al je e-mailadres.",
-      "noMail": "Deze server verstuurt geen e-mail, dus het nieuwe adres kan niet worden bevestigd. Vraag wie de server beheert om e-mail in te stellen."
+      "noMail": "Deze server verstuurt geen e-mail, dus het nieuwe adres kan niet worden bevestigd. Vraag wie de server beheert om e-mail in te stellen.",
+      "held": "Dit e-mailadres heeft net een ander account verlaten en blijft 7 dagen voor dat account gereserveerd. Gebruik een ander.",
+      "taken": "Een ander account gebruikt dit e-mailadres al. Gebruik een ander.",
+      "cantOpen": "Kun je die inbox niet openen?",
+      "signInInstead": "Log opnieuw in en wijzig het zonder de code. Daarna kom je hier terug.",
+      "useCode": "De code gebruiken"
     },
     "openOnPhone": "Openen op je telefoon",
     "openOnPhoneHint": "Log in op de app met een QR-code",
@@ -17298,6 +17304,17 @@
     "plan": "Het abonnement wordt niet meer verlengd. Er wordt niets terugbetaald.",
     "type": "Typ {{name}} om te bevestigen",
     "submit": "Werkruimte verwijderen"
+  },
+  "emailUndo": {
+    "title": "Haal je e-mailadres terug",
+    "lead": "Het adres waar deze link naartoe ging, wordt weer het e-mailadres van je account. Alle sessies worden uitgelogd, de AI-apps ontkoppeld en inlogmethoden die sinds de wijziging zijn toegevoegd, werken niet meer. Ook het wachtwoord wordt gewist, en met “Wachtwoord vergeten” stel je het volgende in.",
+    "button": "Dit was ik niet",
+    "done": "Je e-mailadres is terug",
+    "doneLead": "{{email}} is weer het e-mailadres van je account, en alle sessies zijn uitgelogd. Inlogmethoden die sinds de wijziging zijn toegevoegd, werken niet meer, en het wachtwoord is gewist: met “Wachtwoord vergeten” stel je bij het inloggen het volgende in.",
+    "gone": "Deze link werkt niet meer",
+    "goneLead": "Hij is al gebruikt, of zijn 7 dagen zijn voorbij.",
+    "taken": "Een ander account gebruikt dit e-mailadres",
+    "takenLead": "{{email}} is nu het e-mailadres van een ander account, dus het kan niet terugkomen. Er is niets veranderd."
   },
   "proof": {
     "willSend": "We mailen een code naar {{email}} om te bevestigen dat jij het bent.",

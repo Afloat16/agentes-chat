@@ -124,7 +124,7 @@ import { useToast } from "@/lib/toast";
 import { offersNewWorkspace } from "@/lib/workspaces";
 import type { SettingsSection } from "@/pages/settings-sections";
 import { useStreams } from "@/realtime/context";
-import { ProfileDialog } from "./AccountSettings";
+import { EmailDialog, ProfileDialog } from "./AccountSettings";
 import { AddPasswordDialog } from "./AddPassword";
 import { AgentAvatar } from "./AgentAvatar";
 import {
@@ -2188,6 +2188,7 @@ function AccountMenu({ personal = false }: { personal?: boolean }) {
       <ChangeAvatarDialog open={photo} onClose={() => setPhoto(false)} />
       <SetStatusDialog open={statusOpen} onClose={() => setStatusOpen(false)} />
       <OpenOnPhoneDialog open={phone} onClose={() => setPhone(false)} />
+      <EmailDialog open={account === "email"} onClose={() => setAccount(null)} />
       <AddPasswordDialog open={account === "password"} onClose={() => setAccount(null)} />
       <DeleteAccountDialog open={account === "delete"} onClose={() => setAccount(null)} />
     </>

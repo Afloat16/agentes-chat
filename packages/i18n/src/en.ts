@@ -496,6 +496,9 @@ export const en = {
       nameLead: "What does your team call you?",
       namePlaceholder: "Your name",
       nameIsPassword: "Is this your name? It's the same as the password you typed.",
+      /** A sign-up with an address an account just left: held while that account's “This wasn't me” works. */
+      emailHeld:
+        "This email just left an account here and is held for 7 days. If that account is yours, press “This wasn't me” in the email we sent to it.",
       nameLooksLikePassword: "That looks like a password. Your name goes here.",
       newPassword: "Now a password.",
       newPasswordNamed: "Great, {{name}}. Now a password.",
@@ -1914,6 +1917,12 @@ export const en = {
       same: "That's already your email.",
       noMail:
         "This server sends no email, so the new address can't be confirmed. Ask whoever runs the server to set up email.",
+      held: "This email just left another account and is held for it for 7 days. Use another one.",
+      taken: "Another account already uses this email. Use another one.",
+      /** Under the code sent to the current address: a fresh sign-in instead. */
+      cantOpen: "Can't open that inbox?",
+      signInInstead: "Sign in again and change it without the code. You'll come back here.",
+      useCode: "Use the code",
     },
     openOnPhone: "Open on your phone",
     openOnPhoneHint: "Sign in to the app with a QR code",
@@ -17473,6 +17482,20 @@ export const en = {
     plan: "Its plan stops renewing. Nothing is refunded.",
     type: "Type {{name}} to confirm",
     submit: "Delete workspace",
+  },
+  /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
+  emailUndo: {
+    title: "Bring your email back",
+    lead: "The address this link went to becomes your account's email again. Every session is signed out, the AI apps are disconnected and ways to sign in added since the change stop working. The password is cleared too, and “Forgot my password” sets the next one.",
+    button: "This wasn't me",
+    done: "Your email is back",
+    /** `{{email}}`: the address the account has again. Then: Sign in. */
+    doneLead:
+      "{{email}} is your account's email again. Every session is signed out, ways to sign in added since the change no longer work, and the password was cleared: “Forgot my password” sets the next one when you sign in.",
+    gone: "This link no longer works",
+    goneLead: "It was already used, or its 7 days are over.",
+    taken: "Another account has this email",
+    takenLead: "{{email}} is another account's email now, so it can't come back. Nothing changed.",
   },
   /** Proof that it's the person, before deleting (ADR 0088 §2): a code emailed to them, or their password. */
   proof: {

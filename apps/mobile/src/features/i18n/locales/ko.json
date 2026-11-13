@@ -1078,6 +1078,8 @@
       "name": "이름",
       "namePlaceholder": "내 이름",
       "email": "이메일",
+      "emailWebLead": "웹사이트에서 다시 로그인하고, 코드 없이 거기서 바꾸세요.",
+      "emailWeb": "웹사이트에서 다시 로그인",
       "inWorkspace": "이 워크스페이스에서 · {{org}}",
       "handle": "내 @",
       "timezone": "시간대",
