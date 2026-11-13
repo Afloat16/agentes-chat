@@ -65,8 +65,16 @@ that person's card of that day is not sent.
 **Helpers** (`right-hand-proactive.ts`): `lodiFor` (the right hand, or null in a closed workspace, when it is archived,
 or when it may not talk to that person), `postFromLodi` (one message in a person's DM, in their language, ringing only
 when asked, said once), `saidOnce` (a finished outbox row whose dedupe key is the memory, stored with the workspace
-and a prefix no job uses), `setCardOnMessage`, `lodiSwitches`. No new table: what was done once is an outbox key, what was told once is an inbox group key, what was
-put away is on the card's message.
+and a prefix no job uses), `setCardOnMessage`, `lodiSwitches`. No new table: what was done once is an outbox key,
+what was told once is an inbox group key, what was put away is on the card's message. The one migration (0262) adds
+the two workspace switches and an index on `agent_consultations (org_id, channel_id)`, which finds the hand-over of a
+task by the task's conversation (§5).
+
+**One thing tells one thing.** Where two of the seven, or one of them and a notice from before, would say the same,
+one yields, and which is written with the feature: the watch keeps no row for what another notice already says of
+that very thing (§1), its reminder leaves approvals to the approvals summary (§1, §4), a handed task's end is told
+in the DM with its inbox row read and is left out of the day's card (§2, §5), and a failed run is on the day's card
+without a second ring (§2).
 
 **Lanes.** Each feature below that runs by itself is one file that calls `defineLodiLane` (`right-hand-lane.ts`) with
 its switch, whether it is built (`live`), its outbox jobs, its sweep and its block of the right hand's prompt. The
@@ -77,7 +85,7 @@ still answers.
 
 **Switches.** On the right hand's page, web and phone, one group "O que o Lodi faz por conta própria": the day's card
 with its hour (everyone), the week's card with its day and hour (administrators), then one switch per live lane. Two
-are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0259, on by default and on
+are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0262, on by default and on
 with no settings row), saved by who configures the workspace, and say so under their name. The right hand flips the
 person's own when asked (`set_team_week`: `card`, `off`, `day`, `hour`, and `digest`, `reminders` once live) and the
 workspace's through `update_workspace`.
@@ -113,15 +121,17 @@ A sweep with no model call (`team-watch.ts`). It fixes what is safe and tells th
 - An episode, and the 20 minutes, are read from a time that a write leaving the thing as wrong as it was cannot
   move, where its row keeps one: a plan's last turn (its row is rewritten by every usage report of its computer), a
   computer's last contact, a budget's month and amount. An app, a mailbox and a database keep no such time, so the
-  last change of their row stands for it: renaming one that still needs reconnecting reads as a new episode, which
-  changes nothing while its row is open and tells it once more after a "Feito". A column with the time it broke
-  would make that exact.
+  last change of their row stands for it. A mark repeated on an app or a mailbox that already waits to be
+  reconnected moves nothing (`markToReconnect`, `markNeedsReconnect`: the first refusal's text stays in
+  `last_error`), so a provider saying it twice is one episode. Renaming one that still needs reconnecting reads as a
+  new episode, which changes nothing while its row is open and tells it once more after a "Feito". A column with the
+  time it broke would make that exact.
 - No row for what another notice of that person says of the same thing since the problem began, whichever came
   first (a row of the right hand's leaves when the other notice arrives):
 
   | Cause | Kinds that already say it | Tied to the thing by |
   |---|---|---|
-  | `sign_in` | `run_failed` with the reason `not_logged_in` | an agent it names thinks with that plan |
+  | `sign_in` | `run_failed`, `routine_failed` or `widget_failed` with the reason `not_logged_in` | an agent it names thinks with that plan |
   | `budget_out` | `run_failed`, `routine_failed` or `widget_failed` with the reason `budget_exceeded` | it names that agent |
   | `computer` | `routine_stalled`, `device.waiting`, or `run_failed` with the reason `machine_offline` | its computer, or an agent it names works on it |
 
@@ -142,7 +152,7 @@ A sweep with no model call (`team-watch.ts`). It fixes what is safe and tells th
     the routine's next failure is told as any first failure: the fix did not hold.
 - Reminds: once a day per person, in their own daytime (9 to 18 in their time zone), of the approvals, questions and
   secret requests they left unread for over four hours. The oldest comes back on top with one push that says how
-  many still wait, and all of them are marked reminded, so none is reminded twice. Approvals are left out for who has
+  many still wait (`latest.still`, read by `push.ts`), and all of them are marked reminded, so none is reminded twice. Approvals are left out for who has
   the approvals summary (§4) on with three or more waiting.
 - The sweep queues a check only for what the check would act on, every 10 minutes while something is new (it
   began or its row moved within a day, or a person is due their reminder) and once an hour while everything only
@@ -182,7 +192,9 @@ The day's card for everyone, from stored data.
   counts on the day it ended, so one still working at the slot is on the next card (one that began more than three
   days before the window is on none). Its job is found again by the slot kept on the card, whatever the window was.
 - A task counts as closed by an agent when its last change of status in the window is an agent's, to done, on both
-  cards. A person closing it, or a comment on a closed task, is not.
+  cards. A person closing it, or a comment on a closed task, is not. On the day's card a task whose end the right
+  hand already holds for the reader (§5: the notice in their DM with it, `taskEndToldSql`) is not counted: that end
+  is told there, once. What it holds for one person hides nothing on anyone else's card.
 - Nothing from a conversation the reader cannot read: an administrator reads every channel and never another
   person's DM.
 
@@ -231,7 +243,7 @@ turned off, one our rules or the judge would have ask, one marked sensitive and 
 their own card whatever their name. At the default level a person's run asks a connected app's call only when its
 tool is marked to ask, so nothing there is routine but proven SQL reads: the group is for work nobody watched and for
 agents that always ask. Composio's executor is never routine, since no record vouches for the actions its input
-names. Every tool of ours stays on its own card, whatever it does: a command on the agent's computer, the browser,
+names. On the web and on the phone the group's tap is recorded as made from the card (`CardVia`). Every tool of ours stays on its own card, whatever it does: a command on the agent's computer, the browser,
 tasks, the workspace's people, keys and settings. Fewer than two routine ones make no group. The older card is not
 marked when a new one is posted: it keeps showing what it listed, each approval in its present state. A card lists 50
 at most, and a full one lets go of what was decided first, never of what still waits.
@@ -243,8 +255,9 @@ at most, and a full one lets go of what was decided first, never of what still w
   change themselves, asked the run that made it in their own words, it did so for them or asked the agent that did in
   a later turn of theirs, and not while the hand-over's own report is still to come, or came after the change or
   within five minutes before it (that report tells the end). An agent's background work that ends the task counts
-  too. The inbox row of the same change is marked read for them when a turn starts: it sends no push and counts in no
-  badge, so one thing tells them, and it stays in their list, so a turn that fails or passes still leaves the news.
+  too. The inbox row of the same change (`issueStatusGroup`) is marked read for them when a turn starts: it sends no
+  push and counts in no badge, so one thing tells them, and it stays in their list, so a turn that fails or passes
+  still leaves the news. The next day's card does not count that task again (§2).
 - A handed task is looked at a day after the hand-over, then daily, seven looks in all. One that has not changed and
   whose conversation was quiet for four hours is said once per task with what it waits on, read from the task's own
   conversation: the people something there waits on (also while the hand-over is still out), else its agent's run
@@ -295,7 +308,9 @@ row as on the web. There is no switch: nothing happens without a tap.
   receipt names who was invited and the card says who was already a member. An address that already held an
   invitation is said only in the answer to the tap of whoever applied it, who may invite: the card and receipt the
   conversation reads never say it. With nobody new at the tap it is refused (`action_card.nobody_new`) and the card
-  stays for a dismiss.
+  stays for a dismiss. The inbox row of a card sent on says that its person asks for a change in the workspace
+  (`notifications.what.changeRequestAction`), never that they ask for a new agent. Once a card is applied the apps
+  read the invitations and the keys again.
 - **What the card names, at the tap.** A role renamed or deleted since the card was posted refuses the tap
   (`action_card.changed`) and the card, still pending, takes the roles as they are now, to be read again. Only the
   name is compared: what a role may do is not on the card. A workspace on hold or being deleted refuses the tap
@@ -311,5 +326,8 @@ row as on the web. There is no switch: nothing happens without a tap.
   days with something of the reader's own.
 - A person's worst day is bounded per feature (one day's card, one week's card, two digests, three watch rows, one
   reminder push, three follow-through wakes, one welcome ever).
+- Something a person was asked can still reach their devices three times: when it is asked, in the watch's one
+  reminder of the day if they left it unread for four hours, and on the next morning's card if it still waits. Each
+  is once, and the last two have a switch.
 - No model call anywhere except §5's wakes and turns a person starts.
 - `team_week` holds more than the weekly card. Renaming the column would be a migration that buys nothing.
