@@ -183,7 +183,19 @@ export async function returnToInbox(db: Database, pubsub: PubSub | undefined, ru
     // then hands on the rest (the executor's `stopCanceled`). Handing them on here would answer in a run that
     // knows nothing of this one.
     if (!row.background && (await stoppedToSend(db, { ...run, createdAt: row.createdAt }))) return;
-    await releaseInbox(db, pubsub, run, { reason: "interrupted" });
+    // The "stop" that ended it needs no answer (`stopRun` marks it).
+    const stops = await db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.orgId, run.orgId),
+          inArray(messages.id, ids),
+          sql`${messages.meta}->'stopOfRunIds' @> to_jsonb(${run.id}::text)`,
+        ),
+      );
+    const exclude = stops.map((m) => m.id);
+    await releaseInbox(db, pubsub, run, { reason: "interrupted", ...(exclude.length ? { exclude } : {}) });
   }
 }
 

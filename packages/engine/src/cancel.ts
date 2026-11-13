@@ -300,6 +300,13 @@ export async function stopRun(
           .update(agentRuns)
           .set({ pendingMessageIds: sql`array_remove(${agentRuns.pendingMessageIds}, ${options.stopMessageId}::uuid)` })
           .where(eq(agentRuns.id, run.id));
+        // A turn that took it live gives it back when it ends: marked, so it is not handed on then (`returnToInbox`).
+        await tx
+          .update(messages)
+          .set({
+            meta: sql`jsonb_set(${messages.meta}, '{stopOfRunIds}', coalesce(${messages.meta}->'stopOfRunIds', '[]'::jsonb) || to_jsonb(${run.id}::text))`,
+          })
+          .where(and(eq(messages.orgId, orgId), eq(messages.id, options.stopMessageId)));
       }
       // Stopped to read this message: the message says so, and the run's end posts no stop (`stoppedToSend`).
       if (options.sendMessageId) {

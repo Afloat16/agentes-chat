@@ -36,6 +36,13 @@ const ask = (body: string, extra: { threadId?: string; steer?: "now" } = {}) =>
 const runs = () => f.db.select().from(schema.agentRuns);
 const runById = async (id: string) => (await runs()).find((r) => r.id === id);
 
+/** Only a plain "para" is a stop. */
+const judge: Judge = {
+  name: "fake",
+  ask: async (request): Promise<Record<string, JudgeAnswer>> =>
+    request.kind === "stop_request" ? { stop: { noul: request.state.message === "para" ? 0.95 : 0.05 } } : {},
+};
+
 /** Runs `fn` once, the first time an event of `type` reaches the channel. */
 function onFirst(type: string, fn: (event: Record<string, unknown>) => void) {
   let seen = false;
@@ -95,6 +102,62 @@ describe('"Leu": a message sent while it works', () => {
 });
 
 describe('"Parar e mandar" (steer: "now")', () => {
+  /** A task at work on a computer brain, in a turn that takes no message; `meanwhile` runs while the judge thinks. */
+  async function judgedSend(body: string, meanwhile: (runId: string) => Promise<unknown>) {
+    f = await setup();
+    const question = await ask("@dev analisa os logs");
+    const [run] = await runs();
+    if (!run) throw new Error("no run");
+    await f.db
+      .update(schema.agentRuns)
+      .set({ status: "running", brain: "claude_code" })
+      .where(eq(schema.agentRuns.id, run.id));
+    const slow: Judge = {
+      name: "slow",
+      ask: async (request) => {
+        await meanwhile(run.id);
+        return judge.ask(request);
+      },
+    };
+    const said = await postPersonMessage({ ...deps(), judge: slow }, f.owner.id, f.org.id, f.general.id, {
+      body,
+      threadId: question.id,
+      steer: "now",
+    });
+    await stopChecksSettled();
+    const [shown] = (await listMessages(f.db, f.owner.id, f.org.id, f.general.id, { threadId: question.id })).filter(
+      (m) => m.id === said.id,
+    );
+    return { run, said, meta: shown?.meta };
+  }
+
+  test("a task that parked on its plan while the judge thought keeps its wait", async () => {
+    const { run, meta } = await judgedSend("na verdade só os 3 primeiros", (runId) =>
+      f.db
+        .update(schema.agentRuns)
+        .set({ status: "waiting_input", transcript: { waitingForBrain: { code: "plan_limit" } } })
+        .where(eq(schema.agentRuns.id, runId)),
+    );
+    expect((await runById(run.id))?.status).toBe("waiting_input");
+    expect(meta?.stoppedRunIds).toBeUndefined();
+  });
+
+  test("a task that read the message while the judge thought is not stopped for it", async () => {
+    const { run, meta } = await judgedSend("na verdade só os 3 primeiros", (runId) =>
+      f.db.update(schema.agentRuns).set({ pendingMessageIds: [] }).where(eq(schema.agentRuns.id, runId)),
+    );
+    expect((await runById(run.id))?.status).toBe("running");
+    expect(meta?.stoppedRunIds).toBeUndefined();
+    expect(await runs()).toHaveLength(1);
+  });
+
+  test("a plain 'stop' the turn had taken is not handed to a new run when the turn gives it back", async () => {
+    const { run, said } = await judgedSend("para", async () => undefined);
+    expect((await runById(run.id))?.status).toBe("canceled");
+    await returnToInbox(f.db, f.pubsub, run, [said.id]);
+    expect(await runs()).toHaveLength(1);
+  });
+
   test("cuts the current model call (not the run): the text so far stays, the message is read at once", async () => {
     const { hold, release } = holdFirstCall();
     f = await setup({
@@ -354,7 +417,14 @@ describe('"Continuar" after a stop', () => {
             .update(schema.agentRuns)
             .set({ brain: "claude_code" })
             .where(eq(schema.agentRuns.id, String(e.runId)));
-          saidId = (await ask("na verdade só os 3 primeiros", { threadId: question.id, steer: "now" })).id;
+          // As the server does it: the judge says first that this is no plain "stop", then the task stops.
+          const said = await postPersonMessage({ ...deps(), judge }, f.owner.id, f.org.id, f.general.id, {
+            body: "na verdade só os 3 primeiros",
+            threadId: question.id,
+            steer: "now",
+          });
+          saidId = said.id;
+          await stopChecksSettled();
         } finally {
           release();
         }
@@ -453,11 +523,6 @@ describe('"Continuar" after a stop', () => {
 
   test("a plain 'stop' sent with 'Parar e mandar' to a computer brain is a stop: it says so and starts nothing", async () => {
     const { hold, release } = holdFirstCall();
-    const judge: Judge = {
-      name: "fake",
-      ask: async (request): Promise<Record<string, JudgeAnswer>> =>
-        request.kind === "stop_request" ? { stop: { noul: request.state.message === "para" ? 0.95 : 0.05 } } : {},
-    };
     f = await setup({
       reply: (_req: ModelRequest, call: number) =>
         call > 1 ? { chunks: ["Certo."] } : { chunks: ["Analisando o log. ", "nunca chega"], hold },
