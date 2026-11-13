@@ -88,4 +88,8 @@ work; "Ausente" told people an agent due back later was gone.
     "esperando aprovação", "na fila"; chips "Trabalhando · 22 min"; the profile card "Trabalhando · ajudando a Ada". Work
     counts from the hand-off, or the run's start; a wait from when it began (`formatLineTime`); lists tick once a minute
     and show no time in the first one.
+21. **The right hand is each person's own** (ADR 0137). Its face, its busy state and its work come only from the
+    viewer's own talk with it (`rightHandFor`). Its line never shows: it is one value for the whole agent, written by
+    whichever run spoke last (`set_status` included), so it could carry someone else's private conversation. Out of
+    office still says so to everyone.
 

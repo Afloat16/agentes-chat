@@ -176,14 +176,16 @@ function laterWork(returns: PendingReturn[]): Map<string, AgentWork> {
 }
 
 /**
- * The right hand as one person sees it (ADR 0137: each person's own): at work, busy and with its line only on their
- * work, never on someone else's talk with it. Out of office says so to everyone, and held stays held.
+ * The right hand as one person sees it (ADR 0137: each person's own): at work and busy only on their work, never on
+ * someone else's talk with it. Its line is one for the whole agent, written by whichever run spoke last (its own words
+ * with `set_status` included), so it never shows: each person's own work shows through `work`. Out of office says so to
+ * everyone, and held stays held.
  */
 const rightHandFor = (s: AgentStatusView, w: AgentWork | null): AgentStatusView => ({
   ...s,
   working: w?.state === "working",
   presence: s.presence === "busy" && w?.state !== "working" ? "online" : s.presence,
-  status: w || s.presence === "out" ? s.status : null,
+  status: s.status?.kind === "out_of_plan" || s.status?.kind === "out_of_budget" ? s.status : null,
 });
 
 /**
