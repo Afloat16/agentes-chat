@@ -39,20 +39,31 @@ export interface OperatorDeps {
 
 /**
  * The operator API (ADR 0056): what the people who run this instance need from their own services,
- * behind one bearer token. Served only by its own listener (`serveOperatorApi`), never by `createApp`.
+ * behind a bearer token, `token` for everything or `readToken` for reads alone. Served only by its own
+ * listener (`serveOperatorApi`), never by `createApp`.
  */
-export function createOperatorApp(deps: OperatorDeps, token: string) {
+export function createOperatorApp(deps: OperatorDeps, token: string, readToken?: string) {
   const api = new OpenAPIHono({ defaultHook: validationHook() });
   api.openAPIRegistry.registerComponent("securitySchemes", "operator", {
     type: "http",
     scheme: "bearer",
-    description: "This server's `OPERATOR_API_TOKEN`.",
+    description:
+      "This server's `OPERATOR_API_TOKEN`. Or its `OPERATOR_API_READ_TOKEN`, accepted only for `GET` and `HEAD` and never under `/review/`: anything else answers 403 `forbidden`.",
   });
   // Every path under the prefix, unknown ones and the document included, so nothing answers without it.
   api.use("*", async (c, next) => {
     const header = c.req.header("authorization") ?? "";
-    if (!safeEqual(header.startsWith("Bearer ") ? header.slice(7).trim() : "", token)) {
-      return apiError(c, 401, "unauthorized", "Missing or wrong operator token");
+    const given = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
+    if (!safeEqual(given, token)) {
+      if (!readToken || !safeEqual(given, readToken)) {
+        return apiError(c, 401, "unauthorized", "Missing or wrong operator token");
+      }
+      // Decided here by method and path, never per route: a GET added later is readable with this token
+      // from the start, so no GET outside the review blocks may change anything or return content.
+      const reads = c.req.method === "GET" || c.req.method === "HEAD";
+      if (!reads || c.req.path.startsWith(`${OPERATOR_API_PREFIX}/review/`)) {
+        return apiError(c, 403, "forbidden", "The read-only operator token can't do this");
+      }
     }
     await next();
   });
@@ -100,6 +111,6 @@ export function createOperatorApp(deps: OperatorDeps, token: string) {
 export function serveOperatorApi(deps: OperatorDeps, port = deps.config.OPERATOR_API_PORT) {
   const token = deps.config.OPERATOR_API_TOKEN;
   if (!token) return null;
-  const app = createOperatorApp(deps, token);
+  const app = createOperatorApp(deps, token, deps.config.OPERATOR_API_READ_TOKEN);
   return Bun.serve({ hostname: deps.config.HOST, port, fetch: (req) => app.fetch(req) });
 }

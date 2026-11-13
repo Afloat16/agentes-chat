@@ -20,7 +20,7 @@
       "operator": {
         "type": "http",
         "scheme": "bearer",
-        "description": "This server's `OPERATOR_API_TOKEN`."
+        "description": "This server's `OPERATOR_API_TOKEN`. Or its `OPERATOR_API_READ_TOKEN`, accepted only for `GET` and `HEAD` and never under `/review/`: anything else answers 403 `forbidden`."
       }
     },
     "schemas": {

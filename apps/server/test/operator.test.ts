@@ -114,6 +114,87 @@ test("401 without the right bearer token, on every path under the prefix", async
   expect((await op("/nope")).status).toBe(404);
 });
 
+test("the read-only token: GET and HEAD outside /review; 403 for a write or a review block; the full token as ever", async () => {
+  const READ = "operator-read-token-".padEnd(48, "x");
+  const app = createOperatorApp(deps, TOKEN, READ);
+  const as = (token: string, path: string, method = "GET", json?: unknown) =>
+    app.request(`/api/operator/v1${path}`, {
+      method,
+      headers: { authorization: `Bearer ${token}`, ...(json ? { "content-type": "application/json" } : {}) },
+      body: json ? JSON.stringify(json) : undefined,
+    });
+  const refusal = async (res: Response) => [res.status, ((await res.json()) as { error: { code: string } }).error.code];
+  const state = async () => [
+    (await body<{ standing: unknown }>(await op(`/orgs/${acme.orgId}`))).standing,
+    (await body<{ blockedAt: unknown }>(await op(`/users/${acme.ownerId}`))).blockedAt,
+  ];
+  const before = await state();
+
+  for (const path of [
+    "/health",
+    "/orgs",
+    `/orgs/${acme.orgId}`,
+    `/users/${acme.ownerId}`,
+    "/events",
+    "/openapi.json",
+  ]) {
+    expect({ path, status: (await as(READ, path)).status }).toEqual({ path, status: 200 });
+  }
+  const head = await as(READ, "/health", "HEAD");
+  expect([head.status, await head.text()]).toEqual([200, ""]);
+  // What isn't there is its own 404, as with the full token: only what it may not do is a 403.
+  expect(await refusal(await as(READ, `/orgs/${crypto.randomUUID()}`))).toEqual([404, "not_found"]);
+
+  const review = `/review/run/${crypto.randomUUID()}?reason=check&operator=someone`;
+  const refused: [method: string, path: string, json?: unknown][] = [
+    ["PUT", `/orgs/${acme.orgId}/standing`, { state: "suspended", reason: "review", notice: "shown" }],
+    ["PUT", `/users/${acme.ownerId}/block`, { blocked: true }],
+    ["PUT", `/orgs/${acme.orgId}/agents/${acme.agentId}/hold`, { held: true }],
+    ["POST", `/orgs/${acme.orgId}/machines`, {}],
+    ["DELETE", `/orgs/${acme.orgId}/machines/${crypto.randomUUID()}`],
+    ["POST", "/nope"],
+    ["GET", review],
+    ["GET", "/review/nope"],
+  ];
+  for (const [method, path, json] of refused) {
+    expect({ method, path, answer: await refusal(await as(READ, path, method, json)) }).toEqual({
+      method,
+      path,
+      answer: [403, "forbidden"],
+    });
+  }
+  expect((await as(READ, review, "HEAD")).status).toBe(403);
+  expect(await state()).toEqual(before);
+
+  // The full token beside it: the review door opens (no such run), and a write goes through.
+  expect(await refusal(await as(TOKEN, review))).toEqual([404, "not_found"]);
+  const released = await as(TOKEN, `/orgs/${acme.orgId}/deletion-hold`, "PUT", { held: false });
+  expect(await body(released)).toEqual({ held: false, heldAt: null, reason: null });
+
+  // Neither token: 401 still, and the read-only one opens nothing on a server that didn't set it.
+  for (const token of ["", "wrong", `${READ}x`, READ.slice(0, -1)]) {
+    expect({ token, answer: await refusal(await as(token, "/health")) }).toEqual({
+      token,
+      answer: [401, "unauthorized"],
+    });
+  }
+  expect(await refusal(await op("/health", `Bearer ${READ}`))).toEqual([401, "unauthorized"]);
+
+  // The listener takes it from the configuration.
+  const config = testConfig({ OPERATOR_API_TOKEN: TOKEN, OPERATOR_API_READ_TOKEN: READ, HOST: "127.0.0.1" });
+  const server = serveOperatorApi({ ...deps, config }, 0);
+  if (!server) throw new Error("no operator listener");
+  try {
+    const url = `http://127.0.0.1:${server.port}/api/operator/v1/orgs/${acme.orgId}`;
+    const headers = { authorization: `Bearer ${READ}`, "content-type": "application/json" };
+    expect((await fetch(url, { headers })).status).toBe(200);
+    const write = await fetch(`${url}/deletion-hold`, { method: "PUT", headers, body: '{"held":true}' });
+    expect(await refusal(write)).toEqual([403, "forbidden"]);
+  } finally {
+    await server.stop(true);
+  }
+});
+
 test("health, with the bot check: off without its keys, else its state, since when, the networks it refused and the tokens it passed", async () => {
   const off = await body<{ ok: boolean; version: string; botCheck: Record<string, unknown> & { since: string } }>(
     await op("/health"),

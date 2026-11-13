@@ -1,6 +1,6 @@
 # 0056. Operator API and external provisioning
 
-- Status: Accepted (2026-10-24). Amended 2026-10-25 by ADR 0065 (§10: the ready time and when the wait began, the ready email, no pairing with external provisioning, no approval step), 2026-10-26 (§10: a workspace on hold or suspended waits for no computer), 2026-10-27 by ADR 0079 (§4: limits and meters; §5: `platform_ai.threshold`; §8: billing holds, limits and the create refusal) and ADR 0076 (§5, §6: screened sessions), 2026-10-29 by ADR 0078 (the sign-up mode, the waiting list and early-access invitations), 2026-10-30 by ADR 0082 (§5: `agent.deleted`) and ADR 0088 (§4: a workspace's deletion and deletion hold; §5: the deletion's events; §8: a deletion is no standing; §9: the deletion hold; §10: a workspace being deleted waits for no computer), and 2026-10-31 by ADR 0089 (§5: `run.hop_limit`) and ADR 0103 (§4: the analytics reads), and 2026-11-02 by ADR 0127 (§4: the work analytics reads), and 2026-11-05 by ADR 0150 (§4: the Claude sign-in policy and the AI-accounts reads; §5: `account.failure` and a failed `run.finished`'s `failure`), and 2026-11-09 by ADR 0161 (§5: `machine.wake_wanted`; §10: the workspace's computer in standby, `busy` and `lastUsedAt`)
+- Status: Accepted (2026-10-24). Amended 2026-10-25 by ADR 0065 (§10: the ready time and when the wait began, the ready email, no pairing with external provisioning, no approval step), 2026-10-26 (§10: a workspace on hold or suspended waits for no computer), 2026-10-27 by ADR 0079 (§4: limits and meters; §5: `platform_ai.threshold`; §8: billing holds, limits and the create refusal) and ADR 0076 (§5, §6: screened sessions), 2026-10-29 by ADR 0078 (the sign-up mode, the waiting list and early-access invitations), 2026-10-30 by ADR 0082 (§5: `agent.deleted`) and ADR 0088 (§4: a workspace's deletion and deletion hold; §5: the deletion's events; §8: a deletion is no standing; §9: the deletion hold; §10: a workspace being deleted waits for no computer), and 2026-10-31 by ADR 0089 (§5: `run.hop_limit`) and ADR 0103 (§4: the analytics reads), and 2026-11-02 by ADR 0127 (§4: the work analytics reads), and 2026-11-05 by ADR 0150 (§4: the Claude sign-in policy and the AI-accounts reads; §5: `account.failure` and a failed `run.finished`'s `failure`), and 2026-11-09 by ADR 0161 (§5: `machine.wake_wanted`; §10: the workspace's computer in standby, `busy` and `lastUsedAt`), and 2026-11-13 (§2: a second, read-only token; the addendum below)
 - Date: 2026-10-24
 - Extends: ADR 0002 (nothing private runs in the server process), ADR 0004 (configuration), ADR 0025 (connected computers)
 
@@ -21,6 +21,7 @@ The app API (`/api/app/*`) is the wrong door for them: it acts as one person (co
 ### 2. One bearer token
 
 - Every request carries `Authorization: Bearer <OPERATOR_API_TOKEN>`, compared in constant time. Anything else is a 401, on every path under the prefix (unknown ones and the OpenAPI document too), so nothing about the API answers without it.
+- A second token that only reads may be set beside it (added 2026-11-13, the addendum below).
 - No cookies and no CORS headers, so a web page can't call it on a visitor's behalf.
 - The token reaches every workspace and account on the instance. It lives only in the server's environment and the caller's, is never logged (`secret: true` in the schema), and is rotated by hand.
 
@@ -152,8 +153,18 @@ Nothing is lost while those services are down, and the server needs no delivery,
 ## Consequences
 
 - A self-hosted instance gets no new surface unless its admin sets the token; with it, the same API serves their own automation.
-- One token holds every operator power. Splitting it (read-only, per caller) waits for a second caller.
+- One token holds every operator power. Splitting it (read-only, per caller) waits for a second caller. (The read-only split came 2026-11-13, the addendum below; a token per caller still waits.)
 - Answers carry personal data (names, emails, IP addresses), and with the token set the server keeps 90 days of events about people who may have deleted their account since. Callers keep what they copy under their own retention rules.
 - The feed can lag behind by as long as the longest transaction running on the database.
 - A change to the contract fails the test until the committed document is regenerated (`UPDATE_OPERATOR_OPENAPI=1` on `apps/server/test/operator.test.ts`), so it is always a deliberate diff.
 - With external provisioning a workspace waits for its computer as long as the provisioner takes: nothing in the server times out or falls back to pairing, and its people can't connect computers of their own (`machine.pairing_off`, ADR 0065 §5); the server refuses to start with `HOST_COMPUTER_TOKEN` too.
+
+## Addendum (2026-11-13): a read-only token
+
+The second caller came: tooling that only looks things up, to answer a report or fill a dashboard, has no reason to hold the token that suspends workspaces, blocks accounts and opens review blocks.
+
+- **`OPERATOR_API_READ_TOKEN`** (optional, at least 32 characters, `secret: true`) is a second bearer token on the same listener. The listener still exists only with `OPERATOR_API_TOKEN`: the server refuses to start with the read token alone, which would open nothing, and with the two equal, since the token that should only read would then hold every power.
+- **What it may do.** `GET` and `HEAD`, and nothing under `/review/`: a review block is content, and reading one writes an event (§6). Anything else answers 403 `forbidden`, known route or not. No token or a wrong one is still 401 `unauthorized` on every path, and a server that didn't set the read token answers it 401 like any wrong one. Both are compared in constant time.
+- **Decided in one place.** The middleware every request passes (`apps/server/src/operator/app.ts`) decides by method and path, never route by route. So a `GET` added to this API is readable with the read token from the day it ships: outside `/review/`, a `GET` never changes anything and never returns content.
+- **Narrower, not harmless.** It reads everything §4, §5 and §10 answer to a `GET`: names, emails and IP addresses of every workspace and account on the instance. It is kept and rotated like the other token.
+- A token per caller still waits for the need.
