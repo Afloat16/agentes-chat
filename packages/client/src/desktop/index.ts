@@ -232,7 +232,7 @@ export const useDesktopStatus = (
   options: { enabled?: boolean; poll?: number | false } = {},
 ) => {
   const api = useApi();
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   return useQuery({
     queryKey: keys.agentDesktop(orgId, screenId(agentId, seat)),
     queryFn: () => api.desktop.status(orgId, agentId, seat),
@@ -285,7 +285,7 @@ export const pictureRefreshMs = (working: boolean, last: DesktopPictureView | un
 /** A recent picture of the agent's screen, never a stream: see `asksPicture` for `enabled`. */
 export const useDesktopPicture = (orgId: string, agentId: string, options: { enabled: boolean; working: boolean }) => {
   const api = useApi();
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   return useQuery({
     queryKey: keys.agentDesktopPicture(orgId, screenId(agentId, seat)),
     queryFn: () => api.desktop.picture(orgId, agentId, seat),

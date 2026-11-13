@@ -26,7 +26,16 @@ import { SeatContext, useSeat } from "@agenteschat/client/lib/seat-context";
 import { isPersonal } from "@agenteschat/client/lib/workspace-mode";
 import { Button, ComputerPortrait, cx, Dialog, gradientOf, Icon, SkyStrip } from "@agenteschat/ui";
 import { useNavigate } from "@tanstack/react-router";
-import { type CSSProperties, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { type EntrySignal, QueueButton, useAgentMachineId } from "@/components/ComputerQueue";
@@ -195,7 +204,7 @@ export function ComputerDialog({ agent, open, onClose }: { agent: Agent; open: b
   const picture = useRef<KeptPicture | null>(null);
   useFullScreen(full, setFull);
   // Its shared place says so wherever the dialog names whose computer it is.
-  const name = useSeat() ? t("rightHand.sharedName", { name: agent.name }) : agent.name;
+  const name = useSeat(agent.id) ? t("rightHand.sharedName", { name: agent.name }) : agent.name;
   const g = agentGrammar(agent.name, name);
   const who = { name, appearance: lookOf(agent) };
   const handoff = view.facts?.handoff ?? null;
@@ -721,13 +730,17 @@ export function ComputerDialogProvider({ children }: { children: ReactNode }) {
   const agent = opened ? dir.agentById.get(opened.agentId) : undefined;
   const open = useCallback<OpenComputer>((agentId, seat) => setOpened({ agentId, ...(seat ? { seat } : {}) }), []);
   const close = useCallback(() => setOpened(null), []);
+  const seatOf = useMemo(
+    () => (opened?.seat ? { agentId: opened.agentId, seat: opened.seat } : undefined),
+    [opened?.agentId, opened?.seat],
+  );
   return (
     <OpenComputerContext.Provider value={open}>
       <OpenedComputerContext.Provider value={agent ? agent.id : null}>{children}</OpenedComputerContext.Provider>
       {agent && (
         // The right hand's shared place is another screen than the viewer's own: everything the dialog reads and does
         // goes to the one it was opened for.
-        <SeatContext.Provider value={opened?.seat}>
+        <SeatContext.Provider value={seatOf}>
           <ComputerDialog key={screenId(agent.id, opened?.seat)} agent={agent} open onClose={close} />
         </SeatContext.Provider>
       )}

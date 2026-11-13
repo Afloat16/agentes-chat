@@ -290,7 +290,7 @@ export async function withConnectedMachine<T>(
       `The runner on the computer ${status.name} is out of date (it can't give each agent its own folder). ${runnerUpdateWay(status)}`,
     );
   }
-  // The right hand's requests go to the seat of the person behind the run, or nowhere (ADR 0175).
+  // The right hand's requests go to the seat its run works in (a person's own, the shared one), or nowhere (ADR 0175).
   const provider = createMachineSandboxProvider(hub, await machineScope(hub, ctx, machineId), device);
   return fn({ id: machineId, provider, ref: `machine:${machineId}`, machineId });
 }

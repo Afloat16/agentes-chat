@@ -522,8 +522,8 @@ seat (a stored id the computer takes for an agent's), with its own Linux user, h
   and `request_permission` treat them like any agent's. This replaces "a row for one gives it nothing", the access
   tree leaving them out and the refusal of a card that asks.
 - **A person's own seat only in that person's own DM.** Amended 2026-11-13 (ADR 0175's amendment): everywhere else (a
-  channel, a widget, a run nobody is behind) it works in one shared seat of the workspace, and a routine a person made
-  that reports in their own DM works in that person's.
+  channel, a widget, a routine that reports where others read) it works in one shared seat of the workspace, and a
+  run nobody asked for in a person's own DM (a routine that reports there included) has no seat.
 - **The locked turn on a plan is unchanged.** The CLI still gets our bridge and nothing else. The computer's tools are
   ours, and the server sends them to the seat. The hub refuses the agent's own id for anything but that turn.
 - **Its prompt** says which of the three it has: this person's own seat, the workspace's shared one, or none yet.

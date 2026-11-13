@@ -80,15 +80,16 @@ export const RIGHT_HAND_GRANTS: readonly string[] = [
 /**
  * Tools it is never offered, whatever its grants: each acts on a computer under the agent's own id, which reaches
  * none (ADR 0175 §2), so offering it would only end in a refusal. A folder outside its own, its browser's own hand-off
- * (its browser shows on the seat's desktop, asked for there) and missions.
+ * (its browser shows on the seat's desktop, asked for there), missions, and keeping something running after the run.
  */
 export const RIGHT_HAND_NOT_OFFERED: ReadonlySet<string> = new Set([
   "request_folder_access",
   "browser_ask_person",
   "propose_mission",
+  "keep_running",
 ]);
 
-/** The grant rows it is made with: its computer's scopes, each a person's own seat there (ADR 0175). */
+/** The grant rows it is made with: its computer's scopes, used in a seat there, a person's own or the shared one (ADR 0175). */
 export const RIGHT_HAND_COMPUTER_GRANTS = ["sandbox:run", "browser:use", "desktop:use"] as const;
 
 /**
@@ -273,22 +274,23 @@ export async function rightHandReader(
 }
 
 /**
- * Whether `person` is the one person who reads `channelId`: their own DM with an agent, where nobody else reads a
- * reply. With `agentId`, no other agent is in it either.
+ * The one person who reads `channelId`: their own DM with an agent, where nobody else reads a reply. Null where no
+ * person or more than one reads, and with `agentId` where another agent is in it too.
  */
-export async function readsAlone(db: Executor, channelId: string, person: string, agentId?: string) {
+export async function soleReader(db: Executor, channelId: string, agentId?: string): Promise<string | null> {
   const members = await db
     .select({ userId: channelMembers.userId, agentId: channelMembers.agentId })
     .from(channelMembers)
     .innerJoin(channels, eq(channels.id, channelMembers.channelId))
     .where(and(eq(channelMembers.channelId, channelId), eq(channels.kind, "dm")));
   const people = members.filter((m) => m.userId);
-  return (
-    people.length === 1 &&
-    people[0]?.userId === person &&
-    (!agentId || members.every((m) => !m.agentId || m.agentId === agentId))
-  );
+  const alone = people.length === 1 && (!agentId || members.every((m) => !m.agentId || m.agentId === agentId));
+  return alone ? (people[0]?.userId ?? null) : null;
 }
+
+/** Whether `person` is the one person who reads `channelId` (`soleReader`). */
+export const readsAlone = async (db: Executor, channelId: string, person: string, agentId?: string) =>
+  (await soleReader(db, channelId, agentId)) === person;
 
 /** The right hand anywhere but a person's own DM with it: what only reads or writes for that person stays out. */
 export async function rightHandAway(

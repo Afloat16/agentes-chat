@@ -450,10 +450,11 @@ export const rightHandBrains = pgTable(
 );
 
 /**
- * A person's own place on the workspace's computer for the team's right hand (ADR 0175): one row answers everyone,
- * so each person's files, browser and sign-ins there live under this row's id, which the computer takes for an
- * agent's (its OS user is named from the first 8 of it). Made on first use. `removedAt`: the person left; the row
- * stays so the computer hears that id is gone, and coming back gives them a new one.
+ * A place of the team's right hand on the workspace's computer (ADR 0175): one agents row answers everyone, so each
+ * person's files, browser and sign-ins there live under a row's id here, which the computer takes for an agent's
+ * (its OS user is named from the first 8 of it), and one more row is the place it works in where others read
+ * (`userId` is then the word `shared`, no person's id). Made on first use. `removedAt`: the person left, or the
+ * shared place ended; the row stays so the computer hears that id is gone, and the next use makes a new one.
  */
 export const rightHandSeats = pgTable(
   "right_hand_seats",

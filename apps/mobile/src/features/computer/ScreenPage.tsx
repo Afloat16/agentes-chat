@@ -44,7 +44,7 @@ export function ScreenPage({
 }) {
   const web = useRef<WebView<object>>(null);
   // The right hand's shared place, inside a view of it.
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   useImperativeHandle(
     ref,
     () => ({

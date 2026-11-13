@@ -476,8 +476,8 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
         // The agents' order everywhere else (the sidebar, the team): who came first.
         .orderBy(agents.createdAt)
     : [];
-  // The right hand uses the workspace's own computer, as each person's own seat there (ADR 0175): listed on it where
-  // seats can be kept apart, so the apps show whoever looks their own.
+  // The right hand uses the workspace's own computer, as each person's own seat there and a shared one (ADR 0175):
+  // listed on it where seats can be kept apart, so the apps show whoever looks their own.
   const home = await workspaceHomeId(db, orgId);
   const homeRow = rows.find((r) => r.machine.id === home)?.machine;
   const [rightHand] =

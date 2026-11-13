@@ -54,7 +54,7 @@ import {
 } from "@agenteschat/ui";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useOpenComputer } from "@/components/computer/open";
@@ -695,7 +695,7 @@ function OpenComputerButton({ agentId, name, shown }: { agentId: string; name: s
   const { org } = useOrg();
   const openComputer = useOpenComputer();
   // Inside the row of the right hand's shared place (`SeatContext`), it is that place this asks about and opens.
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   if (!useDesktopStatus(org.id, agentId).isSuccess) return null;
   return (
     <Button
@@ -728,6 +728,7 @@ function MachineAgentRow({
   const { t } = useTranslation();
   const { org } = useOrg();
   const name = seat ? t("rightHand.sharedName", { name: a.name }) : a.name;
+  const seatOf = useMemo(() => (seat ? { agentId: a.id, seat } : undefined), [a.id, seat]);
   return (
     <div className="machine-page__agent-row">
       <Link
@@ -747,7 +748,7 @@ function MachineAgentRow({
         </span>
         {body && <span className="ac-mediarow__body small muted">{body}</span>}
       </Link>
-      <SeatContext.Provider value={seat}>
+      <SeatContext.Provider value={seatOf}>
         <OpenComputerButton agentId={a.id} name={a.name} shown={name} />
       </SeatContext.Provider>
     </div>

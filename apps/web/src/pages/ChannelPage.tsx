@@ -144,8 +144,10 @@ import { brainUnavailableOf, isOfflineNotice } from "@agenteschat/client/lib/out
 import { can, leavesChannel, makesAgents, managesChannel, setsAutoReply } from "@agenteschat/client/lib/permissions";
 import { reachHandoffs } from "@agenteschat/client/lib/reach";
 import { localMeta, replyOf } from "@agenteschat/client/lib/reply";
+import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import { isReminderMessage, reminderBody, routineReplyOf } from "@agenteschat/client/lib/routines";
 import { picksForMe, replyAloneKey } from "@agenteschat/client/lib/routing";
+import { ConversationSeat } from "@agenteschat/client/lib/seat-context";
 import { seenMessageId } from "@agenteschat/client/lib/seen";
 import { hiddenCount, tasksOf, todayStart } from "@agenteschat/client/lib/task-manager";
 import { contextMarks, hiddenByThreads, rangeCandidates, threadStartOf } from "@agenteschat/client/lib/threads";
@@ -782,6 +784,7 @@ function ChannelView({
   const { org, me } = useOrg();
   const dir = useDirectory(org.id);
   const rightHandLook = useRightHandLook();
+  const rightHandId = useMemo(() => dir.agents.find(isRightHand)?.id, [dir.agents]);
   const isMember = channel.isMember;
   // An administrator reads every channel without joining it (ADR 0151): only what needs being in it waits for Entrar.
   const readable = isMember || (!chrome && can(org, "administrator"));
@@ -2485,7 +2488,17 @@ function ChannelView({
                           </div>
                         )}
                         {olderState !== "loading" && <DatePill scroller={scroller} ref={datePill} />}
-                        <RowsProvider asks={askRegistry} stop={stopTarget?.runId} drawn={rowDrawn}>
+                        <RowsProvider
+                          asks={askRegistry}
+                          stop={stopTarget?.runId}
+                          drawn={rowDrawn}
+                          seat={{
+                            orgId: org.id,
+                            channelId: channel.id,
+                            rightHandId,
+                            dm: Boolean(chrome?.dmAgentId || chrome?.dmPersonId || thread?.channelKind === "dm"),
+                          }}
+                        >
                           <section
                             ref={scroller}
                             className="channel__messages"
@@ -3496,24 +3509,31 @@ const RowStopContext = createContext<string | undefined>(undefined);
 /** Told when a run's live row is drawn, so the view measures which blocks are in view again. */
 const RowDrawnContext = createContext<(() => void) | undefined>(undefined);
 
-/** What the conversation's rows read from their view: the requests' registry, which row stops, and "a row drew". */
+/**
+ * What the conversation's rows read from their view: the requests' registry, which row stops, "a row drew", and
+ * which place the right hand's cards in them show (`seat`: its work here is on that one, not on the viewer's own).
+ */
 function RowsProvider({
   asks,
   stop,
   drawn,
+  seat,
   children,
 }: {
   asks: AskRegistry;
   stop: string | undefined;
   drawn: () => void;
+  seat: Omit<Parameters<typeof ConversationSeat>[0], "children">;
   children: ReactNode;
 }) {
   return (
-    <AskRegistryProvider value={asks}>
-      <RowDrawnContext.Provider value={drawn}>
-        <RowStopContext.Provider value={stop}>{children}</RowStopContext.Provider>
-      </RowDrawnContext.Provider>
-    </AskRegistryProvider>
+    <ConversationSeat {...seat}>
+      <AskRegistryProvider value={asks}>
+        <RowDrawnContext.Provider value={drawn}>
+          <RowStopContext.Provider value={stop}>{children}</RowStopContext.Provider>
+        </RowDrawnContext.Provider>
+      </AskRegistryProvider>
+    </ConversationSeat>
   );
 }
 

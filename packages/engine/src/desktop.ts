@@ -79,19 +79,24 @@ export async function desktopTarget(
   /** The right hand's shared seat, not the viewer's own. */
   shared = false,
 ): Promise<StreamTarget> {
-  const agent = await viewerScope(db, orgId, agentId, viewerId, told, make, shared);
+  // A kind that is off for the agent is refused below without making the right hand's seat: one that ended with its
+  // last grant stays ended, and the computer makes no user for a refusal. A seat's terminal is the right hand's
+  // computer too: off with its commands (its grant, the workspace's switch).
+  const off =
+    kind === "desktop"
+      ? !(await agentUsesScreen(db, orgId, agentId, "desktop"))
+      : (await isRightHandId(db, orgId, agentId)) && !(await runsCommands(db, orgId, agentId));
+  const agent = await viewerScope(db, orgId, agentId, viewerId, told, make && !off, shared);
   if (!agent) return refused(STREAM_CLOSE.notFound, "no_agent");
   // Why the right hand has no seat here, for the apps to say: no computer of the workspace's own, or one that runs
   // every agent as one user.
   if ("reason" in agent) {
     return refused(STREAM_CLOSE.notFound, agent.reason === "not_system" ? "not_system" : "no_home");
   }
-  if (kind === "desktop" && !(await agentUsesScreen(db, orgId, agentId, "desktop"))) {
-    return refused(STREAM_CLOSE.notFound, "no_desktop");
-  }
-  // A seat's terminal is the right hand's computer too: off with its commands (its grant, the workspace's switch).
-  if (kind === "terminal" && agent.seat && !(await runsCommands(db, orgId, agentId))) {
-    return refused(STREAM_CLOSE.refused, "not_allowed");
+  if (off) {
+    return kind === "desktop"
+      ? refused(STREAM_CLOSE.notFound, "no_desktop")
+      : refused(STREAM_CLOSE.refused, "not_allowed");
   }
   const machine = agent.machineId ? await getMachine(db, orgId, agent.machineId) : null;
   if (!machine) return refused(STREAM_CLOSE.notFound, "no_computer");
@@ -255,6 +260,13 @@ export async function streamClosed(db: Database, s: Stream) {
   await auditStream(db, s);
 }
 
+/**
+ * In an audit row's details: the right hand's shared seat was opened, where every channel's work is, not the person's
+ * own. `scope`: who the computer took the agent for, a seat's id only for the right hand.
+ */
+const sharedSeatDetail = (opened: { shared?: boolean; agentId: string; scope?: { id: string } | undefined }) =>
+  opened.shared && opened.scope && opened.scope.id !== opened.agentId ? { seat: SHARED_SEAT } : {};
+
 /** A stream that ran, in the org's audit log (ADR 0058 §12): who, which agent and computer, how long, how many bytes. */
 export async function auditStream(db: Database, s: Stream) {
   if (s.request.kind === "phone") return auditPhoneStream(db, s);
@@ -276,6 +288,7 @@ export async function auditStream(db: Database, s: Stream) {
       bytesOut: s.bytesOut,
       // A browser card's view of this screen (ADR 0058 §7): watch only.
       ...(s.preview ? { preview: true } : {}),
+      ...sharedSeatDetail(s),
     },
   });
 }
@@ -484,14 +497,17 @@ export async function desktopPicture(
     }
     view = await capture;
   }
-  if (view.picture && !pictureAudits.get(`${userId}:${agentId}`)) {
-    pictureAudits.set(`${userId}:${agentId}`, true);
+  // Once an hour per person and screen: the shared seat's picture is another screen than the person's own seat's.
+  const audited = `${userId}:${served.agent.id}`;
+  const scopeDetail = sharedSeatDetail({ shared, agentId, scope: served.agent });
+  if (view.picture && !pictureAudits.get(audited)) {
+    pictureAudits.set(audited, true);
     await recordAudit(db, {
       orgId,
       actor: { type: "person", id: userId },
       action: "desktop.watched",
       target: { type: "agent", id: agentId },
-      details: { machineId: served.machineId, picture: true, seconds: 0 },
+      details: { machineId: served.machineId, picture: true, seconds: 0, ...scopeDetail },
     });
   }
   return view;

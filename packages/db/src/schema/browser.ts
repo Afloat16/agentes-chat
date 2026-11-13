@@ -54,7 +54,7 @@ export const browserHandoffs = pgTable(
     controllerUserId: text().references(() => users.id, { onDelete: "set null" }),
     /**
      * On the right hand, whose seat's screen this is (ADR 0175): each person's seat is another screen, so its handoffs
-     * are kept and read per person. Null for every other agent, whose screen is one.
+     * are kept and read per person. Null for its shared seat's screen, and for every other agent, whose screen is one.
      */
     seatUserId: text().references(() => users.id, { onDelete: "cascade" }),
     /** The person's note when it failed ("it asked for Ana's phone code"). */
@@ -78,8 +78,8 @@ export const browserHandoffs = pgTable(
     foreignKey({ columns: [t.orgId, t.machineId], foreignColumns: [machines.orgId, machines.id] }),
     index().on(t.orgId, t.status),
     index().on(t.agentId, t.status),
-    // One open handoff per screen (an agent's, or on the right hand each person's seat's): two people (or a person
-    // and the agent) can't race in.
+    // One open handoff per screen (an agent's, or on the right hand each person's seat's and its shared seat's): two
+    // people (or a person and the agent) can't race in.
     uniqueIndex("browser_handoffs_one_open_screen")
       .on(t.agentId, t.screen, sql`coalesce(${t.seatUserId}, '')`)
       .where(sql`${t.status} in ('pending', 'active')`),

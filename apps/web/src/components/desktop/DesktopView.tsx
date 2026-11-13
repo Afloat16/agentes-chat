@@ -134,7 +134,7 @@ export function DesktopView({
   // Nothing says when a screen is handed back: asked often while it may change any moment.
   const [poll, setPoll] = useState(5_000);
   // The right hand's shared place when the view is inside one of it (the dialog opened for it).
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   const status = useDesktopStatus(org.id, agentId, { poll: preview ? 30_000 : poll });
   // Access lost: React Query keeps the last good status, which would still say who may watch.
   const lost = status.error instanceof ApiError && status.error.status === 403;

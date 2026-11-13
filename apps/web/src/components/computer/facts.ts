@@ -83,7 +83,7 @@ export function useAgentComputer(
   });
   // In a view of the right hand's shared place, the runs this person sees going on may be in their own: none is
   // shown as this screen's work.
-  const shared = useSeat() !== undefined;
+  const shared = useSeat(agent.id) !== undefined;
   const ownRun = useScreenRun(agent.id);
   const run = shared ? undefined : ownRun;
   const desktop = desktopQ.data ?? null;

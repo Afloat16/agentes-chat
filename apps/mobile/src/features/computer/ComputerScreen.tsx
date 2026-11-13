@@ -120,7 +120,7 @@ function ComputerView({ agentId, onLeave }: { agentId: string; onLeave: (held: B
   const now = useNow(15_000);
   const agent = dir.agentById.get(agentId);
   // Its shared place says so wherever the screen names whose computer it is.
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   const name = seat && agent ? t("rightHand.sharedName", { name: agent.name }) : (agent?.name ?? "");
   const g = agentGrammar(agent?.name ?? "", name);
   const machine = view.machine;

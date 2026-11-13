@@ -359,7 +359,7 @@ describe("the computer dialog, live", () => {
     const b = await backend();
     const ada = b.state.agents.find((a) => a.id === ADA_ID) as Agent;
     await renderPage(
-      <SeatContext.Provider value={SHARED_SEAT}>
+      <SeatContext.Provider value={{ agentId: ADA_ID, seat: SHARED_SEAT }}>
         <ComputerDialog agent={ada} open onClose={() => {}} />
       </SeatContext.Provider>,
       { api: b.api, org: true, createSocket: b.sockets.factory },

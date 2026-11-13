@@ -7,7 +7,7 @@ import type { AgentBrowserSettings, BrowserHandoff, DesktopStatus, PageTarget, S
 import { timeLeft } from "../lib/format";
 import { can } from "../lib/permissions";
 import { screenId } from "../lib/seat";
-import { useSeat } from "../lib/seat-context";
+import { useSeat, useSeatFor } from "../lib/seat-context";
 import { isBlankPage } from "../lib/sites";
 import type { LiveWork } from "../realtime/streams";
 import { noteHandoffPlace } from "./held";
@@ -268,7 +268,7 @@ export const useAgentBrowserHandoff = (
   screen: ScreenKind = "browser",
 ) => {
   const api = useApi();
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   return useQuery({
     queryKey: keys.agentBrowserHandoff(orgId, screenId(agentId, seat), screen),
     queryFn: () => api.browser.agentHandoff(orgId, agentId, screen, seat),
@@ -289,7 +289,7 @@ export const useAgentScreenControl = (
   screen: ScreenKind = "browser",
 ) => {
   const api = useApi();
-  const seat = useSeat();
+  const seat = useSeat(agentId);
   return useQuery({
     queryKey: keys.agentBrowserControl(orgId, screenId(agentId, seat), screen),
     queryFn: () => api.browser.agentControl(orgId, agentId, screen, seat),
@@ -340,8 +340,8 @@ export const HANDOFF_OVER = "browser.handoff_over";
 export function useBrowserHandoffMutations(orgId: string) {
   const api = useApi();
   const qc = useQueryClient();
-  // A take over started inside a view of the right hand's shared place takes that place.
-  const seat = useSeat();
+  // A take over or a stop inside a view of the right hand's shared place acts on that place.
+  const seatOf = useSeatFor();
   const apply = (h: BrowserHandoff) => applyBrowserHandoff(qc, orgId, h);
   // It ended meanwhile: the card settles now, even if the event that said so never came.
   const settle = (error: unknown, handoffId: string) => {
@@ -383,13 +383,13 @@ export function useBrowserHandoffMutations(orgId: string) {
     takeover: useMutation({
       mutationFn: (v: string | TakeoverInput) =>
         typeof v === "string"
-          ? api.browser.takeover(orgId, v, undefined, undefined, seat)
-          : api.browser.takeover(orgId, v.agentId, v.runId, v.screen, seat),
+          ? api.browser.takeover(orgId, v, undefined, undefined, seatOf(v))
+          : api.browser.takeover(orgId, v.agentId, v.runId, v.screen, seatOf(v.agentId)),
       meta: { silent: true },
       onSuccess: apply,
     }),
     stop: useMutation({
-      mutationFn: (agentId: string) => api.browser.stop(orgId, agentId, seat),
+      mutationFn: (agentId: string) => api.browser.stop(orgId, agentId, seatOf(agentId)),
       meta: { silent: true },
     }),
     /** "Tentar de novo" on a page that never came (who may drive it). */

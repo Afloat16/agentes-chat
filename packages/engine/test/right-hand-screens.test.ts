@@ -523,6 +523,8 @@ test("a tool that can't act in a seat is not offered, and a CLI job says what to
   expect(offered).toContain("run_code");
   expect(offered).toContain("start_task");
   expect(offered).not.toContain("request_folder_access");
+  // Keeping something running goes out under the agent's own id, which reaches no computer.
+  expect(offered).not.toContain("keep_running");
   const before = requests().length;
   const outcome = await f.tools?.invoke(mine, {
     toolUseId: crypto.randomUUID(),

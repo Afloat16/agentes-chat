@@ -74,6 +74,7 @@ import { pinsIn } from "@agenteschat/client/lib/pins";
 import { localMeta } from "@agenteschat/client/lib/reply";
 import { retryAnswer } from "@agenteschat/client/lib/retry-answer";
 import { isRightHand, rightHandSeenKey } from "@agenteschat/client/lib/right-hand";
+import { ConversationSeat } from "@agenteschat/client/lib/seat-context";
 import { seenMessageId } from "@agenteschat/client/lib/seen";
 import { lastPostedId } from "@agenteschat/client/lib/timeline";
 import { voiceOf } from "@agenteschat/client/lib/voice";
@@ -385,6 +386,7 @@ function Chat({
   const mission = missionQ.data ?? null;
   const dmAgentId = dm?.with.type === "agent" ? dm.with.id : null;
   const dmAgent = dmAgentId ? dir.agentById.get(dmAgentId) : undefined;
+  const rightHandId = useMemo(() => dir.agents.find(isRightHand)?.id, [dir.agents]);
   const rowLook = useConversationLook(
     Boolean(dm) || thread.data?.channelKind === "dm",
     dmAgent ? agentLook(dmAgent).color : undefined,
@@ -2246,93 +2248,101 @@ function Chat({
               <Animated.View style={[styles.grow, listFade]}>
                 {/* The list's frame, where the waiting requests' cards are measured from (never flattened away). */}
                 <View ref={listFrame} collapsable={false} style={styles.grow} onLayout={watchList}>
-                  <StickerStageContext.Provider value={stickers}>
-                    <JumpToMessageContext.Provider value={jumpToMessage}>
-                      <RowLookContext.Provider value={rowLook}>
-                        <StoppedRunsContext.Provider value={stoppedRuns}>
-                          <StopsMovedOnContext.Provider value={stopsMoved}>
-                            <KeyboardAwareLegendList
-                              ref={listRef}
-                              style={styles.grow}
-                              data={shownRows}
-                              keyExtractor={rowKey}
-                              getItemType={rowType}
-                              renderItem={renderItem}
-                              // The list redraws mounted rows only when this changes: what a row shows beyond its
-                              // message (the thread link that loads after it, a held state) lives in `renderItem`'s
-                              // dependencies.
-                              extraData={renderItem}
-                              estimatedItemSize={72}
-                              // Opens at the latest message, short conversations sit at the bottom like any chat.
-                              initialScrollAtEnd
-                              alignItemsAtEnd
-                              // New messages, a reply growing word by word and the working line keep the end in view,
-                              // but only while the person is near it.
-                              maintainScrollAtEnd={!readHold}
-                              maintainScrollAtEndThreshold={STICK_TO_END_THRESHOLD}
-                              // Older pages above and rows changing size keep what is on screen still.
-                              maintainVisibleContentPosition
-                              // Our own insets, never the system's (the keyboard library's advice for chat lists): the
-                              // bar's room is the content's top padding, the indicator kept below the bar.
-                              contentInsetAdjustmentBehavior="never"
-                              automaticallyAdjustContentInsets={false}
-                              scrollIndicatorInsets={{ top: headerHeight }}
-                              // Still while a sheet or the agent's computer covers the conversation.
-                              freeze={freeze}
-                              onReady={revealList}
-                              onStartReached={loadOlder}
-                              // A look at the waiting requests' cards and the live rows, once a frame and only while
-                              // there is one.
-                              onScroll={onListScroll}
-                              onViewableItemsChanged={onViewable}
-                              viewabilityConfig={STICKER_VIEW}
-                              onScrollBeginDrag={() => {
-                                dragging.current = true;
-                                showDay();
-                              }}
-                              onScrollEndDrag={() => {
-                                releaseAtEnd();
-                                hideDay();
-                              }}
-                              onMomentumScrollBegin={showDay}
-                              onMomentumScrollEnd={() => {
-                                releaseAtEnd();
-                                hideDay();
-                              }}
-                              onStartReachedThreshold={0.5}
-                              keyboardDismissMode="interactive"
-                              keyboardShouldPersistTaps="handled"
-                              keyboardOffset={lift}
-                              contentInsetEndAdjustment={contentInsetEndAdjustment}
-                              contentContainerStyle={listPad}
-                              // At the conversation's start, once it is loaded: the pinned messages (pulling down past
-                              // the first message reveals them), then the right hand's greeting or a new agent's
-                              // checklist.
-                              ListHeaderComponent={
-                                atStart && (hasPins || (dmAgent && (rightHand || setupIntro))) ? (
-                                  <>
-                                    {hasPins ? (
-                                      <PinnedLines
-                                        channelId={channelId}
-                                        threadId={threadId}
-                                        onOpen={openPins}
-                                        onPick={goToPin}
-                                      />
-                                    ) : null}
-                                    {dmAgent && rightHand ? (
-                                      <RightHandIntro agent={dmAgent} channelId={channelId} waveFrom={waveFrom} />
-                                    ) : dmAgent && setupIntro ? (
-                                      <AgentSetupIntro agent={dmAgent} channelId={channelId} />
-                                    ) : null}
-                                  </>
-                                ) : undefined
-                              }
-                            />
-                          </StopsMovedOnContext.Provider>
-                        </StoppedRunsContext.Provider>
-                      </RowLookContext.Provider>
-                    </JumpToMessageContext.Provider>
-                  </StickerStageContext.Provider>
+                  {/* The right hand's cards here show the place its work in this conversation is on. */}
+                  <ConversationSeat
+                    orgId={orgId}
+                    channelId={channelId}
+                    rightHandId={rightHandId}
+                    dm={Boolean(dm) || thread.data?.channelKind === "dm"}
+                  >
+                    <StickerStageContext.Provider value={stickers}>
+                      <JumpToMessageContext.Provider value={jumpToMessage}>
+                        <RowLookContext.Provider value={rowLook}>
+                          <StoppedRunsContext.Provider value={stoppedRuns}>
+                            <StopsMovedOnContext.Provider value={stopsMoved}>
+                              <KeyboardAwareLegendList
+                                ref={listRef}
+                                style={styles.grow}
+                                data={shownRows}
+                                keyExtractor={rowKey}
+                                getItemType={rowType}
+                                renderItem={renderItem}
+                                // The list redraws mounted rows only when this changes: what a row shows beyond its
+                                // message (the thread link that loads after it, a held state) lives in `renderItem`'s
+                                // dependencies.
+                                extraData={renderItem}
+                                estimatedItemSize={72}
+                                // Opens at the latest message, short conversations sit at the bottom like any chat.
+                                initialScrollAtEnd
+                                alignItemsAtEnd
+                                // New messages, a reply growing word by word and the working line keep the end in view,
+                                // but only while the person is near it.
+                                maintainScrollAtEnd={!readHold}
+                                maintainScrollAtEndThreshold={STICK_TO_END_THRESHOLD}
+                                // Older pages above and rows changing size keep what is on screen still.
+                                maintainVisibleContentPosition
+                                // Our own insets, never the system's (the keyboard library's advice for chat lists): the
+                                // bar's room is the content's top padding, the indicator kept below the bar.
+                                contentInsetAdjustmentBehavior="never"
+                                automaticallyAdjustContentInsets={false}
+                                scrollIndicatorInsets={{ top: headerHeight }}
+                                // Still while a sheet or the agent's computer covers the conversation.
+                                freeze={freeze}
+                                onReady={revealList}
+                                onStartReached={loadOlder}
+                                // A look at the waiting requests' cards and the live rows, once a frame and only while
+                                // there is one.
+                                onScroll={onListScroll}
+                                onViewableItemsChanged={onViewable}
+                                viewabilityConfig={STICKER_VIEW}
+                                onScrollBeginDrag={() => {
+                                  dragging.current = true;
+                                  showDay();
+                                }}
+                                onScrollEndDrag={() => {
+                                  releaseAtEnd();
+                                  hideDay();
+                                }}
+                                onMomentumScrollBegin={showDay}
+                                onMomentumScrollEnd={() => {
+                                  releaseAtEnd();
+                                  hideDay();
+                                }}
+                                onStartReachedThreshold={0.5}
+                                keyboardDismissMode="interactive"
+                                keyboardShouldPersistTaps="handled"
+                                keyboardOffset={lift}
+                                contentInsetEndAdjustment={contentInsetEndAdjustment}
+                                contentContainerStyle={listPad}
+                                // At the conversation's start, once it is loaded: the pinned messages (pulling down past
+                                // the first message reveals them), then the right hand's greeting or a new agent's
+                                // checklist.
+                                ListHeaderComponent={
+                                  atStart && (hasPins || (dmAgent && (rightHand || setupIntro))) ? (
+                                    <>
+                                      {hasPins ? (
+                                        <PinnedLines
+                                          channelId={channelId}
+                                          threadId={threadId}
+                                          onOpen={openPins}
+                                          onPick={goToPin}
+                                        />
+                                      ) : null}
+                                      {dmAgent && rightHand ? (
+                                        <RightHandIntro agent={dmAgent} channelId={channelId} waveFrom={waveFrom} />
+                                      ) : dmAgent && setupIntro ? (
+                                        <AgentSetupIntro agent={dmAgent} channelId={channelId} />
+                                      ) : null}
+                                    </>
+                                  ) : undefined
+                                }
+                              />
+                            </StopsMovedOnContext.Provider>
+                          </StoppedRunsContext.Provider>
+                        </RowLookContext.Provider>
+                      </JumpToMessageContext.Provider>
+                    </StickerStageContext.Provider>
+                  </ConversationSeat>
                   <DatePill day={topDay} shown={dayShown} top={hasPin ? 8 : headerHeight + 8} />
                 </View>
               </Animated.View>

@@ -2,6 +2,7 @@ import { afterEach, expect, test } from "bun:test";
 import type { MachineRequest, ServerFrame } from "@agenteschat/adapters";
 import { and, eq, schema } from "@agenteschat/db";
 import {
+  auditStream,
   authorizeStream,
   claimHandoff,
   deletedAgentIds,
@@ -18,15 +19,18 @@ import {
   openPersonAgentDm,
   RIGHT_HAND,
   removeMachine,
+  rightHandPrompt,
   rightHandTools,
   runSeat,
   SHARED_SEAT,
+  type Stream,
   seatOf,
   seatState,
   setAgentAccess,
   startTakeover,
   stopAgentBrowser,
   type ToolContext,
+  UNASKED_SEAT_MESSAGE,
   viewerScope,
   waitIfPersonInControl,
 } from "../src";
@@ -36,8 +40,9 @@ import { fakeRunner, pairMachine } from "./machine-fixtures";
 
 /**
  * The right hand's shared seat (ADR 0175, amended): where others read what it does (a channel, a widget, a routine
- * that reports outside its creator's own conversation) it works in one seat of the workspace's, with its own id, and
- * a person's own seat is reached only where that person alone reads.
+ * that reports outside its creator's own conversation) it works in one seat of the workspace's, with its own id. A
+ * person's own seat is reached only in their own DM with it by a run they asked for, and a run nobody asked for there
+ * has no seat at all.
  */
 
 let f: Fixture;
@@ -106,7 +111,13 @@ async function runOn(
  * A routine's own run as it fires: in the routine's room, which nobody reads, on a brief its creator wrote that
  * reports in `reportsTo`. `widget`: it redoes a dashboard widget instead.
  */
-async function routineRun(lodiId: string, creatorId: string, reportsTo: string, widget = false): Promise<ToolContext> {
+async function routineRun(
+  lodiId: string,
+  creatorId: string,
+  reportsTo: string,
+  widget = false,
+  toDrive = false,
+): Promise<ToolContext> {
   const routineId = crypto.randomUUID();
   const room = await openRoutineRoom(f.db, f.org.id, lodiId, routineId);
   const routineBrief = {
@@ -120,6 +131,7 @@ async function routineRun(lodiId: string, creatorId: string, reportsTo: string, 
     trigger: "schedule",
     dueAt: new Date().toISOString(),
     ...(widget ? { widget: { widgetId: crypto.randomUUID(), dashboardId: crypto.randomUUID() } } : {}),
+    ...(toDrive ? { toDrive: true } : {}),
   };
   const trigger = await insertMessage(f.db, {
     orgId: f.org.id,
@@ -195,8 +207,8 @@ const stream = (
     { userId, orgId: f.org.id, agentId: lodiId, request, ...(shared ? { shared } : {}) },
   );
 
-test("which seat a run works in: a person's own only where they alone read, the shared one everywhere else", async () => {
-  const { lodi } = await home();
+test("which seat a run works in: a person's own only for what they ask in their own DM, none for the rest there, the shared one where others read", async () => {
+  const { lodi, requests } = await home();
   const bia = await addMember(f.db, f.org.id, "member", "Bia");
   const mine = await dmOf(lodi.id, f.owner.id);
   const hers = await dmOf(lodi.id, bia.id);
@@ -213,16 +225,34 @@ test("which seat a run works in: a person's own only where they alone read, the 
     body: "a thread of mine",
   });
   expect(await runSeat(await runOn(lodi.id, f.general.id, { userId: bia.id }, root.id))).toBe(SHARED_SEAT);
-  // A routine a person made that reports in their own DM: theirs. One that reports in a channel: shared.
-  expect(await runSeat(await routineRun(lodi.id, bia.id, hers))).toBe(bia.id);
+  // A routine a person made that reports in their own DM has no seat: what it read may come from outside, so it
+  // gets no hold of her files and sign-ins, and her routine's work does not go where the workspace reads either.
+  // The same when its files go to the Drive. One that reports in a channel: shared.
+  const routine = await routineRun(lodi.id, bia.id, hers);
+  expect(await runSeat(routine)).toBeNull();
+  expect(await runSeat(await routineRun(lodi.id, bia.id, hers, false, true))).toBeNull();
   expect(await runSeat(await routineRun(lodi.id, bia.id, f.general.id))).toBe(SHARED_SEAT);
   // A widget is opened by others, wherever its routine was set up.
   expect(await runSeat(await routineRun(lodi.id, bia.id, hers, true))).toBe(SHARED_SEAT);
-  // A run nobody is behind (another agent's message), even in a person's own DM: never that person's seat.
-  expect(await runSeat(await runOn(lodi.id, hers, { agentId: f.agent.id }))).toBe(SHARED_SEAT);
-  // A routine's brief elsewhere than its own room proves nothing: only its room and where it reports count.
-  const stray = await routineRun(lodi.id, bia.id, hers);
-  expect(await runSeat({ ...stray, channelId: f.general.id })).toBe(SHARED_SEAT);
+  // A run nobody is behind in a person's own DM (another agent's message, an event, a routine's report): no seat,
+  // neither hers nor the shared one.
+  const unasked = await runOn(lodi.id, hers, { agentId: f.agent.id });
+  expect(await runSeat(unasked)).toBeNull();
+  // Someone else behind a run there is not her either.
+  expect(await runSeat(await runOn(lodi.id, hers, { userId: f.owner.id }))).toBeNull();
+  // A private routine's brief gets no seat wherever its run is.
+  expect(await runSeat({ ...routine, channelId: f.general.id })).toBeNull();
+
+  // With no seat nothing reaches the computer, no seat is made, and the run reads why.
+  const before = requests().length;
+  for (const run of [routine, unasked]) {
+    const refused = await runCode(run);
+    expect(refused.isError).toBe(true);
+    expect(refused.content).toContain(UNASKED_SEAT_MESSAGE);
+    expect(await seatState(f.db, { ...run, id: run.runId })).toBe("none");
+  }
+  expect(requests().length).toBe(before);
+  expect(await f.db.select().from(schema.rightHandSeats)).toEqual([]);
 
   // Its prompt follows the same choice.
   const channel = await runOn(lodi.id, f.general.id, { userId: bia.id });
@@ -231,6 +261,18 @@ test("which seat a run works in: a person's own only where they alone read, the 
   expect(await seatState(f.db, { ...own, id: own.runId })).toBe("seat");
   expect(rightHandTools("shared")).toContain("shared with the whole workspace");
   expect(rightHandTools("shared")).toContain("nothing private belongs there");
+  // Only a run with no computer is told to hand on the work that needs one.
+  const said = (computer?: "seat" | "shared" | "none") =>
+    rightHandPrompt(
+      { db: f.db },
+      { orgId: f.org.id, agent: lodi, personId: bia.id, inDm: true, ...(computer ? { computer } : {}) },
+    );
+  for (const computer of ["seat", "shared"] as const) {
+    expect(await said(computer)).toContain("you have a computer");
+    expect(await said(computer)).not.toContain("or needs a computer");
+  }
+  expect(await said("none")).toContain("job or needs a computer: hand it on");
+  expect(await said()).toContain("job or needs a computer: hand it on");
 });
 
 test("the shared seat is one row with its own id, however many first uses come at once", async () => {
@@ -266,7 +308,7 @@ test("a channel run goes out under the shared seat's id: never a person's, never
   expect(ran.at(-1)).toBe(own[1]);
 });
 
-test("a run in the shared seat never reads or stops a task of a person's seat", async () => {
+test("a run nobody asked for never reads or stops a task of a person's seat", async () => {
   const { lodi, runner, requests } = await home();
   const mine = await dmOf(lodi.id, f.owner.id);
   const asked = await runOn(lodi.id, mine, { userId: f.owner.id });
@@ -283,7 +325,7 @@ test("a run in the shared seat never reads or stops a task of a person's seat", 
   expect((await starting).isError).toBeFalsy();
   expect(start?.agent?.id).toBe(await seatId(f.owner.id, false));
 
-  // Another agent's message there starts a run nobody is behind: it works in the shared seat, not this person's.
+  // Another agent's message there starts a run nobody is behind: it has no seat, so nothing of this person's.
   const unattended = await runOn(lodi.id, mine, { agentId: f.agent.id });
   const said = await call(unattended, "cancel_task", { task_id: taskId });
   expect(said.isError).toBe(true);
@@ -307,8 +349,28 @@ test("the shared seat goes with its last computer grant and with the workspace's
     scopes: [{ connectionId: null, scope: "browser:use" }],
   });
   expect(await seatId(SHARED_SEAT, false)).toBe(first);
+  // So does one tool of a computer left on by name with its scope off: it still runs there.
+  await setAgentAccess(f.db, f.owner.id, f.org.id, lodi.id, {
+    ...noGrants,
+    tools: { allow: [{ connectionId: null, name: "run_code" }], deny: [] },
+  });
+  expect(await seatId(SHARED_SEAT, false)).toBe(first);
   await setAgentAccess(f.db, f.owner.id, f.org.id, lodi.id, noGrants);
   expect(await seatOf(f.db, f.org.id, SHARED_SEAT, false)).toBeNull();
+  // Opening it now is refused without making it again: no screen and no terminal, for it or for a person's own.
+  const bia = await addMember(f.db, f.org.id, "member", "Bia");
+  const off = [
+    await stream(lodi.id, f.owner.id, { kind: "desktop", mode: "watch" }, true),
+    await stream(lodi.id, f.owner.id, { kind: "terminal", cols: 80, rows: 24 }, true),
+    await stream(lodi.id, bia.id, { kind: "terminal", cols: 80, rows: 24 }),
+  ];
+  expect(off.map((refused) => "reason" in refused && refused.reason)).toEqual([
+    "no_desktop",
+    "not_allowed",
+    "not_allowed",
+  ]);
+  expect(await seatOf(f.db, f.org.id, SHARED_SEAT, false)).toBeNull();
+  expect(await seatOf(f.db, f.org.id, bia.id, false)).toBeNull();
   // The computer hears its id is gone (its processes are killed there), and no longer lists it.
   expect(await deletedAgentIds(f.db, f.org.id)).toContain(first);
   expect((await machineAgents(f.db, f.org.id, machineId)).map((a) => a.id)).toEqual([mine]);
@@ -411,6 +473,40 @@ test("the shared seat opens for whoever may open an agent's computer, and each p
   const channel = await runOn(lodi.id, f.general.id, { userId: bia.id });
   const waits = await waitIfPersonInControl(f.db, { ...channel, runId: channel.runId as string }, f.pubsub, "desktop");
   expect(waits?.data).toMatchObject({ handoffId: taken.id });
+  // The handoff is now bound to her run, and still she neither watches the shared seat nor reads its handoff.
+  const [bound] = await f.db.select().from(schema.browserHandoffs).where(eq(schema.browserHandoffs.id, taken.id));
+  expect(bound?.runId).toBe(channel.runId as string);
+  expect(await stream(lodi.id, bia.id, WATCH, true)).toMatchObject({ reason: "forbidden" });
+  expect(await refusal(desktopStatus(deps, bia.id, f.org.id, lodi.id, true))).toBeInstanceOf(ForbiddenError);
+  expect(await refusal(getHandoff(f.db, bia.id, f.org.id, taken.id))).toBeInstanceOf(ForbiddenError);
   const own = await runOn(lodi.id, await dmOf(lodi.id, f.owner.id), { userId: f.owner.id });
   expect(await waitIfPersonInControl(f.db, { ...own, runId: own.runId as string }, f.pubsub, "desktop")).toBeNull();
+});
+
+test("the audit log says when it was the shared seat that was opened", async () => {
+  const { lodi, machineId } = await home();
+  const shared = await seatId(SHARED_SEAT);
+  const own = await seatId(f.owner.id);
+  const ran = (agentId: string, scopeId: string, sharedAsked: boolean) =>
+    auditStream(f.db, {
+      orgId: f.org.id,
+      userId: f.owner.id,
+      agentId,
+      machineId,
+      request: { kind: "terminal", cols: 80, rows: 24 },
+      scope: { id: scopeId, handle: "lodi" },
+      openedAt: Date.now(),
+      bytesIn: 0,
+      bytesOut: 0,
+      ...(sharedAsked ? { shared: true } : {}),
+    } as unknown as Stream);
+  await ran(lodi.id, shared, true);
+  await ran(lodi.id, own, false);
+  // The flag means nothing for an agent with one screen.
+  await ran(f.agent.id, f.agent.id, true);
+  const rows = await f.db.select().from(schema.auditLog).where(eq(schema.auditLog.action, "terminal.session"));
+  const seatOfRow = (agentId: string) =>
+    rows.filter((row) => row.targetId === agentId).map((row) => (row.details as { seat?: string }).seat);
+  expect(seatOfRow(lodi.id).sort()).toEqual([SHARED_SEAT, undefined].sort());
+  expect(seatOfRow(f.agent.id)).toEqual([undefined]);
 });

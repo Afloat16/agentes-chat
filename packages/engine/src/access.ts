@@ -20,6 +20,7 @@ import {
   freshGrantedKeys,
   grantKey,
   impliedByWrite,
+  isAllowed,
   isBuiltinScope,
   mailConnectionIds,
   NOT_IN_ALL,
@@ -99,6 +100,15 @@ const UNLISTED_TOOLS: Record<string, string[]> = {
   "context:read": ["read_conversation"],
   "schedule:write": ["delete_routine", "run_routine_now"],
 };
+
+/**
+ * Whether any tool of a computer (commands, the browser, the desktop) is on with these grants: through its scope, or
+ * turned on by name with the rest of its scope off.
+ */
+const usesComputer = (granted: Set<string>) =>
+  RIGHT_HAND_COMPUTER_GRANTS.some((scope) =>
+    (BUILTIN_TOOLS[scope] ?? []).some((name) => isAllowed(toolAccess(granted, { name, scope }))),
+  );
 
 /** Setting the workspace up is the right hand's job (ADR 0137): never an area to turn off, so its page has no row for it. */
 const RIGHT_HAND_ALWAYS = "setup:write";
@@ -550,8 +560,8 @@ export async function setAgentAccess(
   }
   await db.transaction(async (tx) => {
     // The right hand's shared seat on the workspace's computer (ADR 0175) goes with its last computer grant: the
-    // computer stops what runs there, and a grant given again starts an empty one.
-    if (isRightHand(agent) && !RIGHT_HAND_COMPUTER_GRANTS.some((scope) => unique.has(grantKey(null, scope)))) {
+    // computer stops what runs there, and a grant given again starts an empty one. A tool left on by name is a grant.
+    if (isRightHand(agent) && !usesComputer(new Set(unique.keys()))) {
       const { removeSeat, SHARED_SEAT } = await import("./right-hand-seats");
       await removeSeat(tx, orgId, SHARED_SEAT);
     }

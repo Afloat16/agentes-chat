@@ -66,7 +66,7 @@ export interface Stream extends StreamInput {
   readonly viewer: StreamSocket;
   /** The computer, once `authorize` let it open. */
   machineId: string | null;
-  /** Who the computer takes its agent for, once it opened: the agent, or a person's seat of the right hand. */
+  /** Who the computer takes its agent for, once it opened: the agent, or a seat of the right hand (ADR 0175). */
   scope?: AgentScope;
   /** The runner's data socket, once its hello named this stream. */
   runner: StreamSocket | null;

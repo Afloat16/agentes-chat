@@ -1261,9 +1261,12 @@ still shared: every agent and every person's Lodi reads and writes it.
 
 Where others read what Lodi does (a channel, a dashboard widget, a routine that reports to a channel) it works in
 one more place, shared by the whole workspace: one more user on that computer, "Lodi (shared)". Nothing of a
-person's own place reaches it. Whoever may open any agent's computer (the admins of computers) opens it from the
-computer's page in Settings, Computers. Turning all three of Lodi's computer permissions off ends that place and
-stops what runs there, and turning one back on starts an empty one.
+person's own place reaches it. A person's own place is used only for what that person asks Lodi in their own
+conversation with it: a routine that reports there, or anything else nobody asked for there, has no computer.
+Whoever may open any agent's computer (the admins of computers) opens it from the computer's page in Settings,
+Computers. Turning all three of Lodi's computer permissions off ends that place and stops what runs there, and
+turning one back on starts an empty one. The ended place's files stay on the computer's disk under a user nothing
+runs as, until you delete that user.
 
 **What an agent reaches on its computer (`--system`).** Each agent reaches the local ports its own
 processes open (any port, port 0 included, on 127.0.0.1, ::1 or the computer's own addresses), and

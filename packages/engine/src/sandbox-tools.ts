@@ -770,7 +770,7 @@ export function createSandboxToolSource(
           const { item, kept } = await restoreMadePassword(vault, runIds, undo);
           return { content: undoneText(vaultItemName(item), kept) };
         }
-        // Made where the agent's work is: for the right hand, the seat of the person behind the run (ADR 0175).
+        // Made where the agent's work is: for the right hand, the seat its run works in (ADR 0175).
         const value = await run(ctx, async (computer) =>
           requestMadePassword(
             hub,

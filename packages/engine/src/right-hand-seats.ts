@@ -1,24 +1,24 @@
 import type { AgentScope } from "@agenteschat/adapters";
 import { and, type Database, desc, type Executor, eq, isNotNull, isNull, schema, sql } from "@agenteschat/db";
 import { getAgentCached, workspaceHomeId } from "./agents";
-import { UUID } from "./authority";
+import { fedByRoutine, runAuthorityById, UUID } from "./authority";
 import { BROWSER_SCOPE, DESKTOP_SCOPE } from "./browser/types";
 import type { MachineCaller } from "./machine-hub";
-import { actingRoutineOfCall, personBehindCall } from "./requester";
-import { isRightHand, isRightHandId, RIGHT_HAND, readsAlone } from "./right-hand";
-import { routineRoomKey } from "./routine-brief";
+import { personBehindCall } from "./requester";
+import { isRightHand, isRightHandId, RIGHT_HAND, soleReader } from "./right-hand";
 import { SANDBOX_SCOPE } from "./sandbox-scope";
 import { grantedScopeKeys, grantKey } from "./tools/scopes";
 import type { ToolContext } from "./tools/types";
 
-const { agents, channels, organizationMembers, rightHandSeats, users } = schema;
+const { agents, organizationMembers, rightHandSeats, users } = schema;
 
 /**
  * The right hand's computer (ADR 0175). One agents row answers everyone, so on the workspace's own computer each
  * person has a seat: a stored random id the computer takes for an agent's, which gives that person's right hand its
  * own OS user, home, browser profile and sign-ins there. Where others read what it does (a channel, a widget, a
  * routine that reports outside its creator's own conversation) it works in one more seat, the workspace's shared one,
- * with an id, a user and a home of its own. The agent's own id never goes to a computer for anything but its locked
+ * with an id, a user and a home of its own. A run nobody asked for in a person's own conversation has neither
+ * (`runSeat`). The agent's own id never goes to a computer for anything but its locked
  * chat turn (the hub refuses it), so a request built without a seat fails instead of landing every member in one home.
  */
 
@@ -46,6 +46,16 @@ const sandbox = () => import("./sandbox");
 /** A call with no place on the workspace's computer: no conversation behind it, or a person who is not a member. */
 export const NO_SEAT_MESSAGE =
   "You have no computer for this: the person behind it is not a member of this workspace, or the call belongs to no conversation. Hand this to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it), and never ask the person to try again here.";
+
+/**
+ * A run whose work one person alone reads and that this person did not ask for (`runSeat`): a routine's, or one an
+ * event or another agent woke in their own conversation.
+ */
+export const UNASKED_SEAT_MESSAGE =
+  "You have no computer for this: a person's place on the computer is used only for what that person asks you themselves in their private conversation with you, and nobody asked for this run (a routine's, or one an event or another agent woke). Hand the work to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it), or say what is waiting so the person can ask you for it in that conversation.";
+
+/** Why a run has no seat, as it reads it: nobody asked for it where one person alone reads, or it has no conversation. */
+export const noSeatMessage = (ctx: { channelId?: string }) => (ctx.channelId ? UNASKED_SEAT_MESSAGE : NO_SEAT_MESSAGE);
 
 /** The workspace has no computer of its own connected: the right hand has none either. */
 export const NO_HOME_MESSAGE =
@@ -259,19 +269,22 @@ async function seatOn(
 type SeatRun = Pick<ToolContext, "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId"> & { db: Executor };
 
 /**
- * Whose seat a run of the right hand works in: a person's user id, or `SHARED_SEAT`. The one place it is decided,
- * from who is behind the run and where its work is read, never from what the model says.
+ * Whose seat a run of the right hand works in: a person's user id, `SHARED_SEAT`, or null for none at all. The one
+ * place it is decided, from who is behind the run and where its work is read, never from what the model says.
  *
- * - A person's own seat only where that person alone reads: their own DM with it, when they are the person behind the
- *   run, and a routine they made that reports there (its own run, the run its report wakes there, and the run the end
- *   of a task it started wakes in its room).
+ * - A person's own seat only in their own DM with it, where they alone read, and only when they are the person behind
+ *   the run.
+ * - No seat where one person alone reads and that person is not behind the run: a run nobody is behind in their DM
+ *   (another agent's message, an event from a connected app, a routine's report), and a routine's own run that reports
+ *   there. Such a run may carry text from outside, so it gets no hold of that person's files and sign-ins; and its
+ *   work is that person's alone, so it does not go where the workspace reads either.
  * - The shared seat everywhere else: a channel and any thread in one, whoever started it, since others read there; a
- *   widget, which others open; a routine that reports where others read; a run nobody is behind.
+ *   widget, which others open; a routine that reports where others read.
  *
- * So what one person's seat holds is never worked on where another person reads, and a run in the shared seat is
- * never given a person's.
+ * So what one person's seat holds is never worked on where another person reads or by a run they did not ask for, and
+ * a run in the shared seat is never given a person's.
  */
-export async function runSeat(ctx: SeatRun): Promise<string> {
+export async function runSeat(ctx: SeatRun): Promise<string | null> {
   // Ids the database would refuse are no run's: nobody is behind them, and a failed read fails the call instead of
   // choosing a seat.
   const run = {
@@ -280,24 +293,21 @@ export async function runSeat(ctx: SeatRun): Promise<string> {
     triggerMessageId: UUID.test(ctx.triggerMessageId ?? "") ? ctx.triggerMessageId : "",
   };
   const person = await personBehindCall(run);
-  if (person) return (await readsAlone(ctx.db, ctx.channelId, person, ctx.agentId)) ? person : SHARED_SEAT;
-  const brief = await actingRoutineOfCall(run);
-  const creator = brief?.creatorUserId;
-  if (!brief || !creator || brief.widget) return SHARED_SEAT;
-  const reportsTo = brief.deliverTo.channelId;
-  if (!(await readsAlone(ctx.db, reportsTo, creator, ctx.agentId))) return SHARED_SEAT;
-  // The routine's own run works in its room, which nobody reads; a run its report woke works where it reports.
-  if (ctx.channelId === reportsTo) return creator;
-  const [room] = await ctx.db
-    .select({ dmKey: channels.dmKey })
-    .from(channels)
-    .where(and(eq(channels.orgId, ctx.orgId), eq(channels.id, ctx.channelId)));
-  return room?.dmKey === routineRoomKey(ctx.agentId, brief.routineId) ? creator : SHARED_SEAT;
+  const reader = await soleReader(ctx.db, ctx.channelId, ctx.agentId);
+  if (reader) return person === reader ? reader : null;
+  if (person) return SHARED_SEAT;
+  // A routine's own run works in its room, which nobody reads: where it reports decides. The brief counts whether or
+  // not its creator is still a member.
+  const authority = run.runId ? await runAuthorityById(ctx.db, ctx.orgId, run.runId) : null;
+  const brief = authority && authority.kind !== "person" && fedByRoutine(authority) ? authority.brief : null;
+  if (brief && !brief.widget && (await soleReader(ctx.db, brief.deliverTo.channelId, ctx.agentId))) return null;
+  return SHARED_SEAT;
 }
 
 /** The id of the seat a run works in, when it exists (nothing is made): what a row kept for a seat is checked against. */
 export async function runSeatId(ctx: SeatRun): Promise<string | null> {
-  return (await seatOf(ctx.db, ctx.orgId, await runSeat(ctx), false))?.id ?? null;
+  const owner = await runSeat(ctx);
+  return owner ? ((await seatOf(ctx.db, ctx.orgId, owner, false))?.id ?? null) : null;
 }
 
 /**
@@ -322,13 +332,14 @@ export async function seatState(
   const has = (scope: string) => keys.has(grantKey(null, scope));
   const commands = has(SANDBOX_SCOPE) && (await (await sandbox()).getSandboxSettings(db, run.orgId)).enabled;
   if (!commands && !has(BROWSER_SCOPE) && !has(DESKTOP_SCOPE)) return "none";
-  return (await runSeat({ db, ...run, runId: run.id })) === SHARED_SEAT ? "shared" : "seat";
+  const owner = await runSeat({ db, ...run, runId: run.id });
+  return owner === SHARED_SEAT ? "shared" : owner ? "seat" : "none";
 }
 
 /**
  * Whose screen a run's tools act on: nobody's in particular for an agent (its screen is one), and for the right hand
- * the owner of the seat the run uses (a person, or `SHARED_SEAT`), or `false` for a call with no conversation, which
- * has no screen at all.
+ * the owner of the seat the run uses (a person, or `SHARED_SEAT`), or `false` for a run with no seat (`runSeat`) and a
+ * call with no conversation, which have no screen at all.
  */
 export async function screenPersonOf(
   db: Executor,
@@ -336,7 +347,7 @@ export async function screenPersonOf(
 ): Promise<string | null | false> {
   if (!(await isRightHandId(db, ctx.orgId, ctx.agentId))) return null;
   if (!ctx.channelId) return false;
-  return runSeat({
+  const owner = await runSeat({
     db,
     orgId: ctx.orgId,
     agentId: ctx.agentId,
@@ -344,6 +355,8 @@ export async function screenPersonOf(
     runId: ctx.runId ?? "",
     triggerMessageId: ctx.triggerMessageId ?? "",
   });
+  // Never null for a run with no seat: null is an ordinary agent's one screen, which the shared seat's rows match.
+  return owner ?? false;
 }
 
 export type ScopeContext = Pick<ToolContext, "orgId" | "agentId"> &
@@ -364,8 +377,8 @@ export async function toolMachineId(
 /**
  * The agent a request to `machineId` is for, built from a tool call: the agent itself, or for the right hand the seat
  * its run works in (`runSeat`: a person's own, or the shared one). Throws what the agent reads when the right hand
- * has no seat there: a call with no conversation, a computer that isn't the workspace's own or runs every agent as
- * one user.
+ * has no seat there: a run with none, a call with no conversation, a computer that isn't the workspace's own or runs
+ * every agent as one user.
  */
 export async function machineScope(
   hub: Pick<MachineCaller, "status" | "agentsChanged">,
@@ -385,7 +398,7 @@ export async function machineScope(
           triggerMessageId: ctx.triggerMessageId ?? "",
         })
       : null;
-  if (!agent || !owner) throw new (await sandbox()).SandboxUnavailableError(NO_SEAT_MESSAGE);
+  if (!agent || !owner) throw new (await sandbox()).SandboxUnavailableError(noSeatMessage(agent ? ctx : {}));
   const status = await hub.status(machineId);
   const seat = await seatOn(
     ctx.db,
@@ -407,7 +420,9 @@ export async function screenKey(
   ctx: Pick<ToolContext, "db" | "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId">,
 ) {
   const key = `${ctx.orgId}:${ctx.agentId}`;
-  return isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId)) ? `${key}:${await runSeat(ctx)}` : key;
+  return isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId))
+    ? `${key}:${(await runSeat(ctx)) ?? "none"}`
+    : key;
 }
 
 /** A scope's id when it is a seat, for rows that keep which seat their work runs in; null for the agent's own. */

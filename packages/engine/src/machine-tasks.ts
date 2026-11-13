@@ -230,7 +230,7 @@ export const taskScope = (task: { agentId: string; scopeId?: string | null }, ha
 export interface StartTaskInput {
   orgId: string;
   agent: { id: string; handle: string };
-  /** The id the computer knows the agent by when it isn't its own: a person's seat of the right hand (ADR 0175). */
+  /** The id the computer knows the agent by when it isn't its own: a seat of the right hand (ADR 0175). */
   scopeId?: string | null;
   machineId: string;
   /** The runner's protocol (from the machine's last hello): older than 4 can't run tasks. */

@@ -9,7 +9,7 @@
   containers service)
 - Code: `packages/db/src/schema/agents.ts` (`right_hand_seats`), `packages/db/src/schema/runtime.ts`
   (`machine_tasks.scope_id`), `packages/db/src/schema/browser.ts` (`browser_handoffs.seat_user_id`), migration
-  `0259_right_hand_seats`, `packages/engine/src/right-hand-seats.ts` (`seatOf`, `seatPerson`,
+  `0259_right_hand_seats`, `packages/engine/src/right-hand-seats.ts` (`seatOf`, `runSeat`,
   `machineScope`, `viewerScope`, `toolMachineId`, `seatState`, `screenPersonOf`, `seatScopes`, `seatLive`,
   `screenKey`), `packages/engine/src/machine-hub.ts` (`outgoing`, `isLockedTurn`, `agentsChanged`,
   `MachineStatus.mode`), `packages/engine/src/machines.ts` (`machineAgents`, `deletedAgentIds`, `machineViews`,
@@ -57,8 +57,8 @@ agent can't be read (the database is away), nothing is sent.
 
 ### 3. Who gets a seat
 
-- **A run** gets the seat of the person behind it, in that person's own DM with it (`seatPerson`: `personBehindCall`
-  and `readsAlone`). Stricter than `rightHandReader`: a routine's own run does not count as its creator here, since
+- **A run** gets the seat of the person behind it, in that person's own DM with it (`runSeat`: `personBehindCall`
+  and `soleReader`). Stricter than `rightHandReader`: a routine's own run does not count as its creator here, since
   what a routine read may come from outside. A channel mention, a routine's run, a run a routine or an agent woke and
   a run with nobody behind it get no seat, and a computer tool answers with a plain line saying so and what to do
   instead (`NO_SEAT_MESSAGE`). Nothing is sent to the computer.
@@ -205,15 +205,23 @@ agent, everywhere.
   seat. It is made on first use and only where a person's seat is (the workspace's own computer, in system mode).
 - **Which seat a run works in is decided in one place** (`runSeat`), from who is behind the run and where its work
   is read, never from what the model says:
-  - a person's own seat only where that person alone reads: their own DM with it, when they are the person behind the
-    run, and a routine they made that reports in that DM (its own run in its room, the run its report wakes there,
-    and the run the end of a task it started wakes);
+  - a person's own seat only in their own DM with it, where they alone read, and only when they are the person
+    behind the run;
+  - no seat where one person alone reads and that person is not behind the run: a run nobody is behind in their DM
+    (another agent's message, an event from a connected app, a routine's report) and a routine's own run that
+    reports there, whoever made it and with or without `toDrive`. Its computer tools answer with a plain line
+    (`UNASKED_SEAT_MESSAGE`) and nothing is sent to the computer;
   - the shared seat everywhere else: a channel and any thread in one, whoever started it; a widget's refresh, wherever
-    its routine was set up; a routine that reports where others read; a run nobody is behind, even in a person's DM.
+    its routine was set up; a routine that reports where others read.
   Work in the background is the same run going on, so it stays in the seat that run had. This replaces §3's "a
-  channel mention, a routine's run... get no seat" and the background item of "What is not in this change". **A routine a person made that reports in their own DM now works in that person's seat**, where
-  §3 gave it none: its work is read by that person alone, the same rule their Vault items, mailbox and memory already
-  follow (`rightHandReader`), and the shared seat would have put a private routine's work where the workspace reads.
+  channel mention... get no seat" and the background item of "What is not in this change". **A routine that reports
+  in its creator's own DM keeps §3's answer: no seat.** Its run may carry text from outside (inbound mail, a webhook,
+  the web), and whoever manages routines may change its trigger without taking it over, so a seat there would put a
+  person's files and signed-in browser behind a run nobody watches. `rightHandReader` gives such a run nothing of that
+  person's either (it answers null in the routine's room and for the run its report wakes), and the Vault already
+  refuses it keys. The shared seat is not the answer for it: a private routine's work would then sit where the
+  workspace reads. The same holds for any run nobody is behind in a person's own DM: it reads that person's private
+  conversation, so it gets neither their seat nor the shared one.
 - **Nothing crosses.** A run's request to the computer is built from `runSeat` alone (`machineScope`), so a run in
   the shared seat never carries a person's seat id, and the reverse. That covers commands and files, background
   tasks, `git_clone`, the browser, the desktop, a Vault key sealed to the seat, and the screen's look memory
@@ -229,11 +237,14 @@ agent, everywhere.
   apart from a person's own.
 - **Who opens it.** Whoever may open any agent's computer there, by the same rule (`screenAccess`, `computerDriving`
   with `shared`): the admins of computers (`control_computers`) and the right hand's owner, plus the person an open
-  handoff was asked of. A person who only has a run of their own going on with it does not: that run is in their own
-  conversation and shows nothing there. A person's own request still names nobody's seat: the routes take
+  handoff was asked of. A person who only has a run of their own going on with it does not, the run an open handoff
+  is bound to included (`seesScreenAsTheirs`): the seat holds every channel's work, not only theirs. The audit rows
+  of a terminal, a watched or controlled screen and a picture say `seat: "shared"` when it was this seat. A person's own request still names nobody's seat: the routes take
   `seat=shared` or nothing, and nothing opens another person's.
-- **Its end.** It is tombstoned when the right hand loses its last computer grant (`setAgentAccess`) and when the
-  workspace's own computer is removed (`detachMachine`). The `deleted` list then names it, so the computer kills its
+- **Its end.** It is tombstoned when the right hand loses its last computer grant (`setAgentAccess`: a scope, or one
+  of its tools left on by name) and when the workspace's own computer is removed (`detachMachine`). Opening a screen
+  or a terminal whose kind is off for it is refused before any seat is made (`desktopTarget`), so an ended seat stays
+  ended. The `deleted` list then names it, so the computer kills its
   processes and stops its worker like a removed member's, and the next use starts another one with an empty home. It
   has no membership to lose, so the membership rule of `removedSeatIds` leaves it alone.
 - **Lists.** The `agents` frame lists it with the others. `GET …/machines` says where it is (`sharedSeatOf`) only to
@@ -244,7 +255,10 @@ agent, everywhere.
 - **Screens.** The row on its page and its dialog still show the viewer's own seat. On the computer's page, where
   admins open each agent's computer, the shared seat is a row of its own ("Lodi (shared)", with what it is for) with
   Open beside it, on the web and the phone. The dialog and the phone's screen opened from it say so in their title,
-  and everything they read and do goes there (`SeatContext`).
+  and everything they read and do goes there (`SeatContext`). In a conversation, the cards of its work (its browser,
+  its screen, a request for help) read and act on the place that work is on: the shared one anywhere but the viewer's
+  own DM with it (`ConversationSeat`, the client's mirror of `runSeat`), so a card in a channel never shows or stops
+  the viewer's own place.
 
 ### Consequences
 
@@ -253,9 +267,16 @@ agent, everywhere.
   channel.
 - The shared seat's browser is signed in for everyone who can reach the right hand in a channel: a sign-in made there
   is used by whoever asks next.
-- A routine's run in its creator's seat acts on what the routine read from outside with that person's files and
-  sign-ins at hand, as their own conversation's runs already do (see "Consequences" above).
-- `keep_running` (ADR 0176) still sends the agent's own id, so the hub refuses it for the right hand in any seat.
+- A routine that reports in its creator's own DM, and any run nobody asked for there, has no computer: work that
+  needs one is handed to another agent, or waits for the person to ask in that conversation.
+- The shared seat is used by every member who can mention the right hand, by agents that ask it and by runs fed from
+  outside (a routine that reports in a channel, a widget's refresh), like any agent's computer.
+- `keep_running` (ADR 0176) sends the agent's own id, which reaches no computer, so the right hand is not offered it
+  (`RIGHT_HAND_NOT_OFFERED`) until holds know seats.
+- A seat that is gone is no longer used, but its home stays on the computer's disk under an OS user nothing runs as:
+  no seat reads it, root on that computer can.
+- Removing the workspace's own computer ends the shared seat in the database, but that computer's socket is closed
+  as revoked and never hears the list: its processes there are swept only if the same computer is paired again.
 - A grant taken away through a card ends the seat in the database at once, and the computer hears with its next
   `agents` frame; the access page's own save sends that frame at once.
 

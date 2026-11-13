@@ -54,7 +54,7 @@ import { enqueue } from "../outbox";
 import { isRightHand, isRightHandId } from "../right-hand";
 import {
   machineScope,
-  NO_SEAT_MESSAGE,
+  noSeatMessage,
   SHARED_SEAT,
   screenPersonOf,
   seatUserOf,
@@ -530,17 +530,19 @@ async function seesScreenAsTheirs(
   agent: { owner: string | null; machineId: string | null },
   handoff: BrowserHandoffRow | null | undefined,
   screen: ScreenKind,
-  /** The right hand's shared seat's screen: its other runs are people's own conversations, which show nothing there. */
+  /** The right hand's shared seat's screen. */
   shared = false,
 ) {
   if (agent.owner === userId) return true;
   const open =
     handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, shared ? SHARED_SEAT : userId) : handoff;
   if (open?.requestedForUserId === userId) return true;
-  const runs = open?.runId
-    ? [open.runId]
-    : shared
-      ? []
+  // On the shared seat a run of one's own opens nothing, the run an open handoff is bound to included: only its
+  // owner, the person asked and whoever may open an agent's computer do.
+  const runs = shared
+    ? []
+    : open?.runId
+      ? [open.runId]
       : (
           await db
             .select({ id: agentRuns.id })
@@ -972,7 +974,7 @@ export function createBrowserHandoffToolSource(
     const person = await screenPersonOf(ctx.db, ctx);
     /** The person whose own seat it is: only they are asked onto it. Null for an agent's screen and the shared seat's. */
     const own = seatUserOf(person);
-    if (person === false) return { content: NO_SEAT_MESSAGE, isError: true };
+    if (person === false) return { content: noSeatMessage(ctx), isError: true };
     if (person && screen === "browser") {
       return {
         content: `Nothing was asked: your browser here shows on your desktop, so ask there with ${DESKTOP_ASK_PERSON_TOOL}.`,

@@ -21,7 +21,7 @@ import {
   previewGivesUp,
   screenRefusalMs,
 } from "../src/index";
-import { SHARED_SEAT, screenId } from "../src/lib/seat";
+import { conversationSeat, SHARED_SEAT, screenId } from "../src/lib/seat";
 
 const handoff = (over: Partial<BrowserHandoff> = {}): BrowserHandoff => ({
   id: "h1",
@@ -161,6 +161,12 @@ describe("the agent's screen", () => {
     expect(desktopSocketUrl(base, { orgId: "o1", agentId: "a1", mode: "watch", seat: SHARED_SEAT })).toBe(
       "wss://agentes.chat/api/desktop?orgId=o1&agentId=a1&seat=shared&mode=watch",
     );
+  });
+
+  test("the built-in agent's work in a conversation is on its shared place, except in the viewer's own DM with it", () => {
+    expect(conversationSeat("lodi", false)).toEqual({ agentId: "lodi", seat: SHARED_SEAT });
+    expect(conversationSeat("lodi", true)).toBeUndefined();
+    expect(conversationSeat(undefined, false)).toBeUndefined();
   });
 
   test("a handoff of the right hand's shared place never changes what is kept of a person's own", () => {
