@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { and, currentQueryCount, eq, schema } from "@agenteschat/db";
+import { currentQueryCount, eq, schema } from "@agenteschat/db";
 import {
   createChannel,
   createJobHandlers,
@@ -122,13 +122,19 @@ test("with tools, as every production run has them (find_agent among them): with
   expect(run.total).toBeLessThanOrEqual(46);
 });
 
-test("the run keeps its stage profile as a step, for the operator's analytics", async () => {
+test("the run keeps its stage profile in its transcript, for the operator's analytics, and adds no step", async () => {
   const run = await mentionRun();
-  const { agentRunSteps } = schema;
+  const [row] = await f.db
+    .select({ transcript: schema.agentRuns.transcript })
+    .from(schema.agentRuns)
+    .where(eq(schema.agentRuns.id, run.runId));
+  const kept = row?.transcript?.profiles as { stages: StageTiming[] }[] | undefined;
+  expect(kept?.map((p) => p.stages.map((s) => s.stage))).toEqual([
+    ["claim", "context", "model#1", "persist", "events"],
+  ]);
   const steps = await f.db
-    .select({ data: agentRunSteps.data })
-    .from(agentRunSteps)
-    .where(and(eq(agentRunSteps.runId, run.runId), eq(agentRunSteps.kind, "context")));
-  const kept = steps.map((s) => s.data.profile).find(Boolean) as { stages: StageTiming[] } | undefined;
-  expect(kept?.stages.map((s) => s.stage)).toEqual(["claim", "context", "model#1", "persist", "events"]);
+    .select({ data: schema.agentRunSteps.data })
+    .from(schema.agentRunSteps)
+    .where(eq(schema.agentRunSteps.runId, run.runId));
+  expect(steps.some((s) => "profile" in s.data)).toBe(false);
 });

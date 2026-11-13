@@ -98,9 +98,9 @@ async function workAnalytics(db: Database, query: { from: string; to: string }, 
   // (`roomFound` when the computer takes the turn), its end or now.
   const busyStep = sql`s.kind = 'error' and s.data->>'reason' = 'brain_unavailable' and s.data->>'code' = 'busy'`;
 
-  // The run's stage profile and its computer turns' starts, kept as a step when the run ends (`executeRun`).
-  const profiles = sql`select s.data->'profile' as p from agent_runs ar join agent_run_steps s on s.run_id = ar.id
-    where ${runsIn} and s.kind = 'context' and s.data ? 'profile'`;
+  // Each claim's stage profile and its computer turns' starts, kept in the run's transcript when it ends (`executeRun`).
+  const profiles = sql`select pr.value as p from agent_runs ar,
+    jsonb_array_elements(coalesce(ar.transcript->'profiles', '[]'::jsonb)) pr where ${runsIn}`;
   const pct = (q: number, column: string, filter = "") =>
     sql.raw(`percentile_cont(${q}) within group (order by ${column})${filter ? ` filter (where ${filter})` : ""}`);
 

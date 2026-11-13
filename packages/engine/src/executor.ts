@@ -806,6 +806,8 @@ const CONTEXT_TOOLS: readonly string[] = [
 
 /** How long the first call waits for its pre-warm once the quiet window is over. */
 const PREWARM_WAIT_MS = 4000;
+/** A run's last claims whose stage profiles its transcript keeps (`profiles`): long work claims many times. */
+const RUN_PROFILES_KEPT = 10;
 /** How soon a quiet window that ends at once is told from one still running (no pre-warm then). */
 const PREWARM_PROBE_MS = 50;
 /** A pre-warm started less than this before the window ended isn't waited for (token-trim B10). */
@@ -1036,12 +1038,20 @@ export async function executeRun(deps: EngineDeps, runId: string, options: RunJo
     unregisterRunAbort(runId, abort);
     if (prof.stages.length > 0) {
       deps.onRunProfile?.({ runId, stages: prof.stages, total: prof.total() });
-      // Kept with the run, so the operator's work analytics can say where time went (`work-analytics.ts`).
+      // Kept with the run, so the operator's work analytics can say where time went (`work-analytics.ts`). In its
+      // transcript, not as a step: steps are the run's trail, and its last one marks where a pause began (`whileHeld`).
       if (prof.run) {
         const brain = prof.brain.length > 0 ? { brain: prof.brain } : {};
-        await addRunStep(deps.db, prof.run, "context", {
-          profile: { stages: prof.stages, total: prof.total(), ...brain },
-        }).catch(() => {});
+        const kept = JSON.stringify([{ stages: prof.stages, total: prof.total(), ...brain }]);
+        const list = sql`coalesce(${agentRuns.transcript}->'profiles', '[]'::jsonb) || ${kept}::jsonb`;
+        await deps.db
+          .update(agentRuns)
+          .set({
+            transcript: sql`jsonb_set(coalesce(${agentRuns.transcript}, '{}'::jsonb), '{profiles}',
+              case when jsonb_array_length(${list}) > ${RUN_PROFILES_KEPT} then (${list}) - 0 else ${list} end)`,
+          })
+          .where(and(eq(agentRuns.orgId, prof.run.orgId), eq(agentRuns.id, prof.run.id)))
+          .catch(() => {});
       }
     }
     if (prof.run) await kickParkedWakes(deps.db, prof.run.orgId, prof.run.agentId).catch(() => {});
