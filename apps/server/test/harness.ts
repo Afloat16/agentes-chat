@@ -115,6 +115,11 @@ export async function createTestServer(
     speechFetch?: typeof fetch;
     /** AI apps (ADR 0119): a fake fetch of apps' metadata documents (CIMD); absent = none answers. */
     appsFetchDocument?: FetchAppDocument;
+    /**
+     * `false`: a server that sends no email from its start, as Better Auth reads it then (no confirmation links, no
+     * password reset). Flipping `t.email.delivers` later reaches only the routes that read it on each request.
+     */
+    emailDelivers?: boolean;
   } = {},
 ) {
   const { db, close } = await createTestDatabase();
@@ -126,7 +131,7 @@ export async function createTestServer(
     ...options.env,
   });
   const log = createLogger("error", options.errors);
-  const email = createFakeEmailSender();
+  const email = createFakeEmailSender({ delivers: options.emailDelivers ?? true });
   const push = createFakePushSender();
   const webPush = options.webPush === undefined ? createFakeWebPushSender() : options.webPush;
   const platformBlobs = createMemoryBlobStore({ kind: options.platformKind, sign: options.signedBlobs });
@@ -191,7 +196,7 @@ export async function createTestServer(
     db,
     config,
     log,
-    emailDelivers: true,
+    emailDelivers: options.emailDelivers ?? true,
     rateLimiter: adapters.rateLimiter,
     humanCheck: adapters.humanCheck,
     pubsub: adapters.pubsub,

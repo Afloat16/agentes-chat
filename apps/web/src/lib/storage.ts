@@ -56,6 +56,11 @@ export const STORAGE_KEYS = {
    * "Create a new password" (ADR 0158).
    */
   newPasswordAsk: "agentes.newPasswordAsk",
+  /**
+   * sessionStorage: the new address typed in Sua conta › E-mail before signing in again instead of typing the code,
+   * filled in again when the dialog comes back.
+   */
+  emailChangeAsk: "agentes.emailChangeAsk",
   /** "0" when the person switched off the picture viewer's hover lens (on by default). */
   imageLens: "agentes.image.lens",
   /** The Drive's view: "grid" (default) or "list". */

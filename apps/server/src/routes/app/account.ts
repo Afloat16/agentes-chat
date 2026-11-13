@@ -62,6 +62,7 @@ import {
   soleOwnerRefusal,
   toldReason,
   USER_LOCALES,
+  undoEmailChange,
   unfinishedWorkspaces,
   updateMyProfile,
   updateOrganization,
@@ -74,6 +75,7 @@ import {
 import { createRoute, z } from "@hono/zod-openapi";
 import {
   authUiConfig,
+  changeAccountEmail,
   deletionProof,
   mintPhoneSignIn,
   replacePassword,
@@ -126,6 +128,8 @@ const Sent = json(
   }),
   "Sent",
 );
+/** "This wasn't me" from one address: room for a few retries, never for guessing a link's token. */
+const EMAIL_UNDO_PER_IP = { limit: 10, windowMs: 10 * 60_000 };
 /** A join page loads its logo once (cached for good): room for an office opening a link at once, not for hosting it. */
 const INVITE_LOGO_PER_IP = { limit: 60, windowMs: 60_000 };
 const Name = z.string().trim().min(1).max(100);
@@ -897,6 +901,92 @@ export function accountRoutes(deps: AppDeps) {
       const sent = await sendDeletionCode(codes, user.id, null);
       deps.wakeWorkers?.();
       return c.json(sent, 202);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/account/email",
+      tags,
+      security,
+      summary: "Change your account's email address",
+      description:
+        "The same account under `newEmail` (ADR 0088 §2, addendum 2026-11-13), the only way to change it: Better Auth's `/api/auth/change-email` is off. Refused for the address it has (400 `email.same`) and for one another account just left (409 `email.held`, held 7 days for its “This wasn't me”). On a server that sends email it takes the 6-digit `code` emailed to the account's current address for this new one, with every emailed code's rules (`reauth.code_wrong`, `reauth.code_expired`, `reauth.code_tries`, 429 `reauth.code_wait` with `retryIn` and `reauth.code_limit`), or a sign-in in the last 10 minutes instead. Without either it emails that code and answers 202 `code`. With the proof, 200 `sent`: a link goes to `newEmail` and the address changes once it is opened, when the old one gets a notice with “This wasn't me” (`POST /email-undo`). 5 links an hour and 10 a day per account (429 `rate_limited`). On a server that sends no email, 200 `changed` at once, as an unconfirmed address only (409 `email.no_mail` for a confirmed one, 409 `email.taken` when another account has it).",
+      request: {
+        body: body(
+          z.object({
+            newEmail: z.email().max(254),
+            code: z
+              .string()
+              .regex(new RegExp(`^\\d{${CODE_LENGTH}}$`))
+              .optional(),
+          }),
+        ),
+      },
+      responses: {
+        200: json(
+          z.object({
+            status: z.enum(["sent", "changed"]),
+            email: z.string().openapi({ description: "The new address." }),
+          }),
+          "Sent, or changed at once",
+        ),
+        202: json(
+          z.object({
+            status: z.literal("code"),
+            email: z.string().openapi({ description: "Where the code went: the account's current address." }),
+            resendIn: z.number().int().openapi({ description: "Seconds before another can go." }),
+          }),
+          "A code went to the current address",
+        ),
+        400: errorResponse("The address it has (`email.same`), or a wrong code (`reauth.code_wrong`)"),
+        401: errors[401],
+        403: errors[403],
+        409: errorResponse(
+          "Held for another account (`email.held`), a code refused (`reauth.code_expired`, `reauth.code_tries`), or on a server that sends no email `email.no_mail` and `email.taken`",
+        ),
+        429: errorResponse("Too many codes (`reauth.code_wait`, `reauth.code_limit`) or links (`rate_limited`)"),
+      },
+    }),
+    async (c) => {
+      const result = await changeAccountEmail(
+        deps.auth,
+        { ...codes, emailDelivers: deps.adapters.email.delivers === true },
+        c.req.raw.headers,
+        c.get("user").id,
+        c.req.valid("json"),
+      );
+      deps.wakeWorkers?.();
+      return result.status === "code" ? c.json(result, 202) : c.json(result, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/email-undo",
+      tags,
+      summary: "“This wasn't me”: put the account's old email address back",
+      description:
+        "Public, from the page the notice to an account's old address links to (`/email-undo?token=`), never from the link itself: mail scanners open links. Within 7 days of the change and once, it puts that address back (confirmed), ends every session and cuts off every AI app and token, as a new password does. It voids the newer ones of the same account, never the older. 404 `email.undo_gone` once used, run out or its account gone; 409 `email.undo_taken` (`params.email`) when another account has the address, which changes nothing. 10 tries per 10 minutes per IP address (429 `rate_limited`).",
+      request: { body: body(z.object({ token: z.string().min(16).max(200) })) },
+      responses: {
+        ...errors,
+        200: json(z.object({ email: z.string().openapi({ description: "The address the account has again." }) })),
+        404: errorResponse("Used, run out, or its account is gone (`email.undo_gone`)"),
+        409: errorResponse("Another account has the address (`email.undo_taken`)"),
+        429: errorResponse("Too many tries (`rate_limited`)"),
+      },
+    }),
+    async (c) => {
+      const ip = requestLimitIp(c.req.raw.headers, config.TRUSTED_PROXIES);
+      const limit = await deps.adapters.rateLimiter.consume(`email-undo:${ip}`, EMAIL_UNDO_PER_IP);
+      if (!limit.allowed) return apiError(c, 429, "rate_limited", "Too many requests. Try again later.");
+      const back = await undoEmailChange(db, c.req.valid("json").token);
+      // Every session ended: this browser's too.
+      for (const cookie of expiredSessionCookies()) c.header("set-cookie", cookie, { append: true });
+      return c.json(back, 200);
     },
   );
 

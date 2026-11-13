@@ -6,7 +6,11 @@ import type { Config } from "@agenteschat/config";
 import { and, type Database, eq, ne, schema } from "@agenteschat/db";
 import {
   accountBlock,
+  addressHeld,
   announceProfile,
+  askEmailChange,
+  CODE_LIMITS,
+  ConflictError,
   countUsers,
   deriveSecret,
   EARLY_ACCESS_HEADER,
@@ -16,6 +20,7 @@ import {
   enqueueAccountContact,
   ForbiddenError,
   feedbackDestination,
+  finishEmailChange,
   holdsInvitation,
   INVITATION_MAIL_HEADER,
   INVITATION_TOKEN_HEADER,
@@ -28,12 +33,16 @@ import {
   requestLocale,
   revokeUserApps,
   type SignupPolicy,
+  sendProofCode,
   sha256,
   signupAdmission,
   signupOpenToAll,
   spendDeletionCode,
+  spendProofCode,
   TooManyError,
+  UnauthorizedError,
   useEarlyAccess,
+  ValidationError,
   type WorkspacePolicy,
 } from "@agenteschat/engine";
 import { expo } from "@better-auth/expo";
@@ -94,7 +103,13 @@ export function createAuth(deps: {
   // link sent to it (ADR 0078), does.
   const assertSignupAllowed = async (email: string, access: string | null) => {
     const admission = await signupAdmission(db, email, policy, { access });
-    if (admission) return admission;
+    if (admission) {
+      // An address an account just left stays held for it, so "This wasn't me" can put it back (`email-change.ts`).
+      if (await addressHeld(db, email)) {
+        throw new APIError("FORBIDDEN", { code: EMAIL_HELD, message: EMAIL_HELD_MESSAGE });
+      }
+      return admission;
+    }
     if (policy.ownerByLink && (await countUsers(db)) === 0) {
       throw new APIError("FORBIDDEN", {
         code: OWNER_CLAIM_REQUIRED,
@@ -128,8 +143,9 @@ export function createAuth(deps: {
     // Over HTTP each would tell any session whether a password is right, with none of the limit `deletionProof` keeps:
     // a stolen session could guess the account's password there, then sign in with it anywhere, or delete with it on
     // a server that sends no email. No app calls them, `deletionProof` calls `verifyPassword` in this process (which
-    // this leaves open), and a forgotten password is reset by email.
-    disabledPaths: ["/verify-password", "/change-password"],
+    // this leaves open), and a forgotten password is reset by email. A new address goes only through
+    // `changeAccountEmail`, which takes a code or a fresh sign-in first and calls `/change-email` in this process.
+    disabledPaths: ["/verify-password", "/change-password", "/change-email"],
     // Derived from AGENTES_SECRET so self-hosters manage a single secret.
     secret: deriveSecret(config.AGENTES_SECRET, "sessions"),
     // Apple posts the sign-in result back from its own origin (`response_mode=form_post`).
@@ -152,8 +168,8 @@ export function createAuth(deps: {
     }),
     user: {
       additionalFields: { locale: { type: "string", required: false, input: false } },
-      // The same account under a new address (Sua conta › Perfil): a link to the new one confirms it; a server that
-      // sends no e-mail can't, so the address changes at once there.
+      // The same account under a new address (Sua conta › Perfil), only through `changeAccountEmail`: a link to the new
+      // one confirms it, and a server that sends no e-mail can't, so the address changes at once there.
       changeEmail: { enabled: true, updateEmailWithoutVerification: !emailEnabled },
     },
     session: {
@@ -223,7 +239,7 @@ export function createAuth(deps: {
                 url,
                 token,
               }: {
-                user: { email: string; locale?: string | null };
+                user: { id: string; email: string; locale?: string | null };
                 url: string;
                 token: string;
               },
@@ -239,11 +255,19 @@ export function createAuth(deps: {
               if (signingUp && invitation && (await holdsInvitation(db, user.email, invitation, mail))) return;
               if (!(await emailAllowed("verify-email", user.email))) return;
               const locale = emailLocale(user.locale ?? requestLocale(request?.headers.get("accept-language")));
+              // A new address (`changeAccountEmail`): the account still has its old one until this link is opened.
+              const [stored] = await db
+                .select({ email: schema.users.email })
+                .from(schema.users)
+                .where(eq(schema.users.id, user.id));
+              const change = stored !== undefined && stored.email !== user.email.toLowerCase();
               await queueEmail(db, {
                 orgId: null,
                 key: `verify-email:${sha256(token)}`,
                 to: [user.email],
-                template: { kind: "verify_email", locale, url: confirmationLanding(url) },
+                template: change
+                  ? { kind: "email_change_link", locale, url: confirmationLanding(url) }
+                  : { kind: "verify_email", locale, url: confirmationLanding(url) },
               });
             },
           },
@@ -369,11 +393,17 @@ export function createAuth(deps: {
           },
         },
         update: {
-          // Their name (`/update-user`, from the web or the phone): open apps show the new one at once.
+          // Their name (`/update-user`, from the web or the phone): open apps show the new one at once. A new address
+          // (its link opened): the one it left is told, with "This wasn't me".
           after: async (user) => {
             await announceProfile(db, deps.pubsub, user.id).catch((error) =>
               log.error("profile change not announced", { userId: user.id, error }),
             );
+            const locale = typeof user.locale === "string" ? user.locale : null;
+            await finishEmailChange(
+              { db, publicUrl: config.PUBLIC_URL },
+              { id: user.id, email: user.email, locale },
+            ).catch((error) => log.error("email change notice not queued", { userId: user.id, error }));
           },
         },
       },
@@ -479,6 +509,94 @@ export async function signedInLately(auth: Auth, headers: Headers, userId: strin
   return Date.now() - new Date(current.session.createdAt).getTime() < FRESH_SIGN_IN_MS;
 }
 
+/** Links to a new address an account may ask for, after its proof, in an hour and in a day. */
+const EMAIL_LINKS = [
+  ["hour", CODE_LIMITS.hour, 3_600_000],
+  ["day", CODE_LIMITS.day, 86_400_000],
+] as const;
+
+/**
+ * A new address for the signed-in account `userId` (Sua conta › E-mail; ADR 0088 §2, addendum 2026-11-13): the only way
+ * to one, since `/change-email` is off over HTTP. Refused for the address it has (`email.same`) and one another account
+ * just left (`email.held`). On a server that sends email, it takes the code emailed to the account's current address
+ * (`code`, bound to `newEmail`) or a sign-in in the last 10 minutes: without either it emails that code and answers
+ * `code`. Then Better Auth's link goes to the new address, which changes once it is opened (`sent`), and the old one is
+ * told then (`finishEmailChange`). On a server that sends none, Better Auth changes it at once, as before (`changed`):
+ * an unconfirmed address only (`email.no_mail` for a confirmed one), and `email.taken` when another account has it.
+ */
+export async function changeAccountEmail(
+  auth: Auth,
+  deps: {
+    db: Database;
+    rateLimiter: RateLimiter;
+    emailDelivers: boolean;
+    emails: { publicUrl: string; support?: string | null };
+  },
+  headers: Headers,
+  userId: string,
+  input: { newEmail: string; code?: string },
+): Promise<{ status: "changed" | "sent"; email: string } | { status: "code"; email: string; resendIn: number }> {
+  const { db } = deps;
+  const newEmail = input.newEmail.trim().toLowerCase();
+  const current = async () =>
+    (
+      await db
+        .select({ email: schema.users.email, verified: schema.users.emailVerified })
+        .from(schema.users)
+        .where(eq(schema.users.id, userId))
+    )[0];
+  const account = await current();
+  if (!account) throw new UnauthorizedError();
+  const from = account.email;
+  if (from === newEmail) throw new ValidationError("That's already your email", "email.same");
+  if (await addressHeld(db, newEmail, { except: userId })) {
+    throw new ConflictError("This address left another account a moment ago", "email.held");
+  }
+  const noMail = () => new ConflictError("This server sends no email to confirm the new address", "email.no_mail");
+  const change = () =>
+    auth.api.changeEmail({ body: { newEmail, callbackURL: "/" }, headers }).catch((error: unknown) => {
+      if (!isAPIError(error)) throw error;
+      if (error.statusCode === 401) throw new UnauthorizedError();
+      if (/verification email isn't enabled|change email is disabled/i.test(error.message)) throw noMail();
+      if (/email is the same/i.test(error.message))
+        throw new ValidationError("That's already your email", "email.same");
+      throw error;
+    });
+  if (!deps.emailDelivers) {
+    // Better Auth changes only an unconfirmed address at once: a confirmed one waits for a link that can't go.
+    if (account.verified) throw noMail();
+    await change();
+    // Better Auth answers the same when the address is another account's: only the account says whether it changed.
+    if ((await current())?.email !== newEmail)
+      throw new ConflictError("Another account has this address", "email.taken");
+    return { status: "changed", email: newEmail };
+  }
+  if (input.code) await spendProofCode({ db }, userId, "email", input.code, newEmail);
+  else if (!(await signedInLately(auth, headers, userId))) {
+    const sent = await sendProofCode(deps, userId, "email", {
+      bound: newEmail,
+      template: (code, account) => ({
+        kind: "email_change_code",
+        locale: account.locale,
+        code,
+        email: account.email,
+        newEmail,
+        support: deps.emails.support ?? null,
+        url: deps.emails.publicUrl.replace(/\/$/, ""),
+      }),
+    });
+    return { status: "code", ...sent };
+  }
+  for (const [span, limit, windowMs] of EMAIL_LINKS) {
+    if (!(await deps.rateLimiter.consume(`email-link:${span}:${userId}`, { limit, windowMs })).allowed) {
+      throw new TooManyError("Too many new addresses. Try again later.");
+    }
+  }
+  await askEmailChange(db, { userId, from });
+  await change();
+  return { status: "sent", email: newEmail };
+}
+
 /** Passwords an account may try in 15 minutes to prove it's them. */
 const PROOF_TRIES = { limit: 5, windowMs: 15 * 60_000 };
 
@@ -582,6 +700,12 @@ const HUMAN_ACTIONS: Record<string, HumanAction> = {
 /** Reset and confirmation emails to one address in an hour. */
 const EMAILS_PER_ADDRESS = { limit: 3, windowMs: 3600_000 };
 
+/**
+ * `APIError` code of a sign-up with an address an account just left, held for it while its "This wasn't me" works
+ * (mirrored in packages/client errors.ts).
+ */
+export const EMAIL_HELD = "EMAIL_HELD";
+const EMAIL_HELD_MESSAGE = "This address just left an account here, and stays its own for 7 days.";
 /** A sign-up whose name is its password: the name step got the password (mirrored in packages/client errors.ts). */
 export const NAME_IS_PASSWORD = "NAME_IS_PASSWORD";
 export const NAME_IS_PASSWORD_MESSAGE = "Is this your name? It's the same as the password you typed.";

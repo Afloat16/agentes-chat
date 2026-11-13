@@ -308,6 +308,48 @@ export const ptBR: Words = {
       ],
     },
   },
+  emailChange: {
+    code: {
+      subject: (code) => `${code} é seu código para mudar seu e-mail`,
+      preheader: "Digite no agentes.chat para confirmar. Vale por 10 minutos.",
+      headline: "Seu código",
+      body: (email, newEmail) => [
+        "Digite este código para mudar o e-mail da conta ",
+        { b: email },
+        " para ",
+        { b: newEmail },
+        ".",
+      ],
+      support: (address) => [
+        "Vale por 10 minutos, e o seu e-mail não muda sem ele. Se não foi você, não passe para ninguém e escreva para ",
+        { mail: address },
+        ".",
+      ],
+      noSupport:
+        "Vale por 10 minutos, e o seu e-mail não muda sem ele. Se não foi você, não passe para ninguém e avise quem cuida deste servidor.",
+      why: "Você recebeu este e-mail porque sua conta pediu para mudar o e-mail no agentes.chat.",
+    },
+    link: {
+      subject: "Confirme seu novo e-mail no agentes.chat",
+      preheader: "Um clique para entrar com este endereço daqui em diante. O link vale por uma hora.",
+      headline: "Confirme seu novo e-mail",
+      body: "Falta um passo: confirmar que este endereço é seu. Daí em diante, sua conta entra com ele.",
+      button: "Confirmar novo e-mail",
+      small: "O link vale por uma hora. Se não foi você que pediu, pode ignorar este e-mail.",
+      why: "Você recebeu este e-mail porque alguém pediu para usar este endereço numa conta do agentes.chat.",
+    },
+    changed: {
+      subject: "O e-mail da sua conta do agentes.chat mudou",
+      preheader: "Se não foi você, dá para trazer este endereço de volta por 7 dias.",
+      headline: "Seu e-mail mudou",
+      body: (email, newEmail) => ["A conta ", { b: email }, " agora entra com ", { b: newEmail }, "."],
+      notYou:
+        "Não foi você? Aperte o botão em até 7 dias. Este endereço volta, todas as sessões são encerradas e os apps de IA, desconectados.",
+      button: "Não fui eu",
+      small: "Se foi você, não precisa fazer nada.",
+      why: "Você recebeu este e-mail porque este endereço era o e-mail de uma conta do agentes.chat.",
+    },
+  },
   deleting: {
     subject: (day) => `Um workspace em que você está vai ser apagado em ${day}`,
     preheader: "Ele está só para leitura agora. Um dono ainda pode restaurar até lá.",

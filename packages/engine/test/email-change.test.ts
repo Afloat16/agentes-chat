@@ -1,0 +1,245 @@
+import { afterEach, describe, expect, test } from "bun:test";
+import { createMemoryRateLimiter } from "@agenteschat/adapters";
+import { eq, like, schema } from "@agenteschat/db";
+import {
+  addressHeld,
+  askEmailChange,
+  finishEmailChange,
+  pruneEmailChanges,
+  sendDeletionCode,
+  sendProofCode,
+  spendDeletionCode,
+  spendProofCode,
+  undoEmailChange,
+} from "../src";
+import { addUser, type Fixture, setup } from "./fixtures";
+
+let f: Fixture;
+afterEach(async () => {
+  const current = f;
+  f = undefined as unknown as Fixture;
+  await current?.close();
+});
+
+const SERVER = "https://chat.example.com";
+const T0 = Date.parse("2026-11-13T12:00:00Z");
+const at = (ms = 0) => new Date(T0 + ms);
+const DAY = 86_400_000;
+
+/** The notices to old addresses queued so far, oldest first. */
+async function notices() {
+  const jobs = await f.db.select().from(schema.outbox).where(like(schema.outbox.dedupeKey, "email:email-changed:%"));
+  return jobs
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    .map((job) => job.payload as { to: string[]; template: Record<string, string> });
+}
+const tokenOf = (notice: { template: Record<string, string> } | undefined) =>
+  new URL(notice?.template.url ?? `${SERVER}/`).searchParams.get("token") ?? "";
+const emailOf = async (userId: string) =>
+  (await f.db.select().from(schema.users).where(eq(schema.users.id, userId)))[0];
+/** The error code a call is refused with, or "ok". */
+const answer = (p: Promise<unknown>) =>
+  p.then(
+    () => "ok",
+    (e: { code?: string }) => e.code ?? String(e),
+  );
+
+/** `userId` moves to `to` as Better Auth's link does it, after the change was asked; then the notice's token. */
+async function moveTo(userId: string, to: string, now: Date) {
+  const user = await emailOf(userId);
+  await askEmailChange(f.db, { userId, from: user?.email ?? "" }, now);
+  await f.db.update(schema.users).set({ email: to }).where(eq(schema.users.id, userId));
+  const told = await finishEmailChange({ db: f.db, publicUrl: `${SERVER}/` }, { ...user, id: userId, email: to }, now);
+  return { told, token: tokenOf((await notices()).at(-1)) };
+}
+
+describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () => {
+  test("the address it left is told once, in the person's language, with “This wasn't me”", async () => {
+    f = await setup();
+    const from = f.owner.email;
+    // Nothing asked: an update of the account tells nobody.
+    expect(await finishEmailChange({ db: f.db, publicUrl: SERVER }, { ...f.owner, locale: "pt-BR" }, at())).toBe(false);
+    const { told, token } = await moveTo(f.owner.id, "ana.nova@example.com", at());
+    expect(told).toBe(true);
+    const [notice] = await notices();
+    expect(notice?.to).toEqual([from]);
+    expect(notice?.template).toMatchObject({
+      kind: "email_changed",
+      locale: "pt-BR",
+      email: from,
+      newEmail: "ana.nova@example.com",
+    });
+    expect(notice?.template.url).toBe(`${SERVER}/email-undo?token=${token}`);
+    expect(token.length).toBeGreaterThanOrEqual(40);
+    // Kept as a hash only.
+    const rows = await f.db.select().from(schema.verifications);
+    expect(rows.some((r) => r.identifier.includes(token) || r.value.includes(token))).toBe(false);
+    // Another update of the account (its name) is no change.
+    expect(
+      await finishEmailChange({ db: f.db, publicUrl: SERVER }, { ...f.owner, email: "ana.nova@example.com" }, at(1)),
+    ).toBe(false);
+    expect(await notices()).toHaveLength(1);
+  });
+
+  test("the address it left is held for it while its undo works: nobody else takes it", async () => {
+    f = await setup();
+    const from = f.owner.email;
+    // Asked, not changed yet: the account still has it, so it's no hold.
+    await askEmailChange(f.db, { userId: f.owner.id, from }, at());
+    expect(await addressHeld(f.db, from, { now: at() })).toBe(false);
+    await moveTo(f.owner.id, "ana.nova@example.com", at());
+    expect(await addressHeld(f.db, from, { now: at(1) })).toBe(true);
+    expect(await addressHeld(f.db, from.toUpperCase(), { now: at(1) })).toBe(true);
+    // Not against the account that left it.
+    expect(await addressHeld(f.db, from, { now: at(1), except: f.owner.id })).toBe(false);
+    expect(await addressHeld(f.db, from, { now: at(7 * DAY + 1) })).toBe(false);
+  });
+
+  test("“This wasn't me”: the address comes back confirmed, every session ends and every app is cut off, once", async () => {
+    f = await setup();
+    const from = f.owner.email;
+    const { token } = await moveTo(f.owner.id, "thief@example.com", at());
+    for (const n of [1, 2]) {
+      await f.db.insert(schema.sessions).values({
+        id: `s${n}`,
+        token: `t${n}`,
+        userId: f.owner.id,
+        expiresAt: at(DAY),
+      });
+    }
+    const [grant] = await f.db
+      .insert(schema.appGrants)
+      .values({
+        orgId: f.org.id,
+        userId: f.owner.id,
+        kind: "token",
+        displayKind: "token",
+        displayName: "Laptop",
+        scopes: ["read"],
+      })
+      .returning();
+    await f.db.insert(schema.appTokens).values({
+      orgId: f.org.id,
+      grantId: grant?.id ?? "",
+      kind: "personal",
+      tokenHash: "h1",
+      familyId: crypto.randomUUID(),
+    });
+    expect(await undoEmailChange(f.db, token, at(DAY))).toEqual({ email: from });
+    expect(await emailOf(f.owner.id)).toMatchObject({ email: from, emailVerified: true });
+    expect(await f.db.select().from(schema.sessions).where(eq(schema.sessions.userId, f.owner.id))).toEqual([]);
+    const [revoked] = await f.db.select().from(schema.appGrants).where(eq(schema.appGrants.userId, f.owner.id));
+    expect(revoked?.revokedAt).not.toBeNull();
+    const [tokenRow] = await f.db.select().from(schema.appTokens);
+    expect(tokenRow?.revokedAt).not.toBeNull();
+    // Once: the same link again, or a made-up one, is gone.
+    expect(await answer(undoEmailChange(f.db, token, at(DAY + 1)))).toBe("email.undo_gone");
+    expect(await answer(undoEmailChange(f.db, "x".repeat(43), at(DAY + 1)))).toBe("email.undo_gone");
+    // Back on the account, the address needs no hold.
+    expect(await addressHeld(f.db, from, { now: at(DAY + 1) })).toBe(false);
+  });
+
+  test("it works for 7 days", async () => {
+    f = await setup();
+    const { token } = await moveTo(f.owner.id, "ana.nova@example.com", at());
+    expect(await answer(undoEmailChange(f.db, token, at(7 * DAY + 1)))).toBe("email.undo_gone");
+    expect((await emailOf(f.owner.id))?.email).toBe("ana.nova@example.com");
+  });
+
+  test("an older undo voids the newer ones, a newer one never voids the older", async () => {
+    f = await setup();
+    const a = f.owner.email;
+    const first = await moveTo(f.owner.id, "x@example.com", at());
+    const second = await moveTo(f.owner.id, "y@example.com", at(1000));
+    // Whoever holds x@ (the second's undo) gets x@ back, and a@'s owner still gets a@ back after.
+    expect(await undoEmailChange(f.db, second.token, at(2000))).toEqual({ email: "x@example.com" });
+    expect(await undoEmailChange(f.db, first.token, at(3000))).toEqual({ email: a });
+
+    const third = await moveTo(f.owner.id, "x@example.com", at(4000));
+    const fourth = await moveTo(f.owner.id, "y@example.com", at(5000));
+    expect(await undoEmailChange(f.db, third.token, at(6000))).toEqual({ email: a });
+    // The later change's undo would hand x@ back: it's gone with it.
+    expect(await answer(undoEmailChange(f.db, fourth.token, at(7000)))).toBe("email.undo_gone");
+    expect((await emailOf(f.owner.id))?.email).toBe(a);
+    expect(await addressHeld(f.db, "x@example.com", { now: at(8000) })).toBe(false);
+  });
+
+  test("an address another account has now changes nothing, and the link still works once it's free", async () => {
+    f = await setup();
+    const a = f.owner.email;
+    const bia = await addUser(f.db, "bia");
+    const { token } = await moveTo(f.owner.id, "x@example.com", at());
+    await f.db.insert(schema.sessions).values({ id: "s1", token: "t1", userId: f.owner.id, expiresAt: at(DAY) });
+    await f.db.update(schema.users).set({ email: a }).where(eq(schema.users.id, bia.id));
+    expect(await answer(undoEmailChange(f.db, token, at(1000)))).toBe("email.undo_taken");
+    expect((await emailOf(f.owner.id))?.email).toBe("x@example.com");
+    expect(await f.db.select().from(schema.sessions)).toHaveLength(1);
+    await f.db.update(schema.users).set({ email: bia.email }).where(eq(schema.users.id, bia.id));
+    expect(await undoEmailChange(f.db, token, at(2000))).toEqual({ email: a });
+  });
+
+  test("the code for a new address goes to the current one, and is bound to that address and to nothing else", async () => {
+    f = await setup();
+    let now = T0;
+    const deps = { db: f.db, rateLimiter: createMemoryRateLimiter(() => now) };
+    const sent = await sendProofCode(
+      deps,
+      f.owner.id,
+      "email",
+      {
+        bound: "ana.nova@example.com",
+        template: (code, account) => ({
+          kind: "email_change_code",
+          locale: account.locale,
+          code,
+          email: account.email,
+          newEmail: "ana.nova@example.com",
+          support: null,
+          url: SERVER,
+        }),
+      },
+      at(),
+    );
+    expect(sent).toEqual({ email: f.owner.email, resendIn: 60 });
+    const [mail] = await f.db.select().from(schema.outbox).where(like(schema.outbox.dedupeKey, "email:email-code:%"));
+    const payload = mail?.payload as { to: string[]; template: Record<string, string> };
+    expect(payload.to).toEqual([f.owner.email]);
+    expect(payload.template).toMatchObject({ kind: "email_change_code", newEmail: "ana.nova@example.com" });
+    const code = payload.template.code ?? "";
+    // The same digits for another address, or for a deletion, are wrong (and count as wrong tries).
+    expect(await answer(spendProofCode(deps, f.owner.id, "email", code, "other@example.com", at(1)))).toBe(
+      "reauth.code_wrong",
+    );
+    expect(await answer(spendDeletionCode(deps, f.owner.id, null, code, at(2)))).toBe("reauth.code_wrong");
+    expect(await answer(spendProofCode(deps, f.owner.id, "email", code, "ana.nova@example.com", at(3)))).toBe("ok");
+    expect(await answer(spendProofCode(deps, f.owner.id, "email", code, "ana.nova@example.com", at(4)))).toBe(
+      "reauth.code_wrong",
+    );
+    // A deletion's code proves no new address.
+    now = T0 + 120_000;
+    await sendDeletionCode({ ...deps, emails: { publicUrl: SERVER } }, f.owner.id, null, at(120_000));
+    const [deletion] = await f.db
+      .select()
+      .from(schema.outbox)
+      .where(like(schema.outbox.dedupeKey, "email:deletion-code:%"));
+    const deletionCode = String((deletion?.payload as { template?: { code?: string } } | undefined)?.template?.code);
+    expect(await answer(spendProofCode(deps, f.owner.id, "email", deletionCode, "", at(120_001)))).toBe(
+      "reauth.code_wrong",
+    );
+    expect(await answer(spendDeletionCode(deps, f.owner.id, null, deletionCode, at(120_002)))).toBe("ok");
+  });
+
+  test("rows past their end go", async () => {
+    f = await setup();
+    await moveTo(f.owner.id, "ana.nova@example.com", at());
+    await askEmailChange(f.db, { userId: f.owner.id, from: "ana.nova@example.com" }, at());
+    const ours = async () =>
+      (await f.db.select().from(schema.verifications)).filter((r) => /^email-(change|held|undo):/.test(r.identifier));
+    expect((await ours()).length).toBeGreaterThanOrEqual(3);
+    await pruneEmailChanges(f.db, at(DAY));
+    // The change asked (2 h) goes; the undo and its hold (7 days) stay.
+    expect((await ours()).map((r) => r.identifier.split(":")[0]).sort()).toEqual(["email-held", "email-undo"]);
+    await pruneEmailChanges(f.db, at(8 * DAY));
+    expect(await ours()).toEqual([]);
+  });
+});

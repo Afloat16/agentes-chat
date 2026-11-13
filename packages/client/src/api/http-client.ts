@@ -101,6 +101,7 @@ import type {
   DevicesList,
   DirectMessage,
   DmRead,
+  EmailChange,
   EndpointCheck,
   EndpointModel,
   FeedbackFile,
@@ -597,6 +598,8 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
       deletionCode: () => request<CodeSent>("/api/app/account/deletion/code", { json: {} }),
       delete: (input = {}) => request<void>("/api/app/account", { method: "DELETE", json: input }),
       restore: () => request<void>("/api/app/account/deletion", { method: "DELETE" }),
+      changeEmail: (input) => request<EmailChange>("/api/app/account/email", { json: input }),
+      undoEmailChange: (token) => request<{ email: string }>("/api/app/email-undo", { json: { token } }),
     },
     push: {
       webKey: async () =>

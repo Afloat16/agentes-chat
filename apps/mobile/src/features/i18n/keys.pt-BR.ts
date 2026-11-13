@@ -1198,6 +1198,9 @@ export const featureKeysPtBR = {
       name: "Nome",
       namePlaceholder: "Seu nome",
       email: "E-mail",
+      /** E-mail, under the code: someone who can't open that inbox signs in again on the website instead. */
+      emailWebLead: "Entre de novo no site e troque por lá, sem o código.",
+      emailWeb: "Entrar de novo no site",
       inWorkspace: "Neste workspace · {{org}}",
       handle: "Seu @",
       timezone: "Fuso",

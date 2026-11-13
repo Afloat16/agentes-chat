@@ -492,6 +492,7 @@
       "nameLead": "Comment votre équipe vous appelle-t-elle ?",
       "namePlaceholder": "Votre nom",
       "nameIsPassword": "C’est bien votre nom ? C’est le même que le mot de passe que vous avez saisi.",
+      "emailHeld": "Cet e-mail vient de quitter un compte ici et reste réservé 7 jours. Si ce compte est le vôtre, appuyez sur « Ce n’était pas moi » dans l’e-mail que nous lui avons envoyé.",
       "nameLooksLikePassword": "Ça ressemble à un mot de passe. Ici, c’est votre nom.",
       "newPassword": "Maintenant, un mot de passe.",
       "newPasswordNamed": "Parfait, {{name}}. Maintenant, un mot de passe.",
@@ -1827,7 +1828,12 @@
       "sent": "Nous avons envoyé un lien à {{email}}. Votre e-mail change quand vous l'ouvrez.",
       "changed": "C'est fait : vous vous connectez désormais avec {{email}}.",
       "same": "C'est déjà votre e-mail.",
-      "noMail": "Ce serveur n'envoie pas d'e-mails, donc la nouvelle adresse ne peut pas être confirmée. Demandez à la personne qui gère le serveur de configurer l'envoi d'e-mails."
+      "noMail": "Ce serveur n'envoie pas d'e-mails, donc la nouvelle adresse ne peut pas être confirmée. Demandez à la personne qui gère le serveur de configurer l'envoi d'e-mails.",
+      "held": "Cet e-mail vient de quitter un autre compte et lui reste réservé 7 jours. Utilisez-en un autre.",
+      "taken": "Un autre compte utilise déjà cet e-mail. Utilisez-en un autre.",
+      "cantOpen": "Impossible d’ouvrir cette boîte mail ?",
+      "signInInstead": "Reconnectez-vous et changez-le sans le code. Vous revenez ici ensuite.",
+      "useCode": "Utiliser le code"
     },
     "openOnPhone": "Ouvrir sur votre téléphone",
     "openOnPhoneHint": "Se connecter à l'app avec un QR code",
@@ -17617,6 +17623,17 @@
     "plan": "Son abonnement n'est plus renouvelé. Rien n'est remboursé.",
     "type": "Saisissez {{name}} pour confirmer",
     "submit": "Supprimer l'espace de travail"
+  },
+  "emailUndo": {
+    "title": "Récupérer votre e-mail",
+    "lead": "L’adresse qui a reçu ce lien redevient l’e-mail de votre compte. Toutes les sessions sont fermées et les apps d’IA déconnectées.",
+    "button": "Ce n’était pas moi",
+    "done": "Votre e-mail est revenu",
+    "doneLead": "{{email}} est de nouveau l’e-mail de votre compte, et toutes les sessions sont fermées. Si quelqu’un connaît votre mot de passe, appuyez sur « Mot de passe oublié » en vous connectant.",
+    "gone": "Ce lien ne marche plus",
+    "goneLead": "Il a déjà servi, ou ses 7 jours sont passés.",
+    "taken": "Un autre compte utilise cet e-mail",
+    "takenLead": "{{email}} est maintenant l’e-mail d’un autre compte, il ne peut donc pas revenir. Rien n’a changé."
   },
   "proof": {
     "willSend": "Nous enverrons un code à {{email}} pour confirmer que c'est bien vous.",

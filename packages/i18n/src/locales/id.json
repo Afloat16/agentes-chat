@@ -480,6 +480,7 @@
       "nameLead": "Tim kamu memanggilmu apa?",
       "namePlaceholder": "Namamu",
       "nameIsPassword": "Ini namamu? Sama dengan kata sandi yang kamu ketik.",
+      "emailHeld": "Email ini baru saja keluar dari sebuah akun di sini dan dicadangkan selama 7 hari. Kalau akun itu milikmu, tekan “Ini bukan saya” di email yang kami kirim ke alamat ini.",
       "nameLooksLikePassword": "Itu terlihat seperti kata sandi. Di sini tulis namamu.",
       "newPassword": "Sekarang kata sandi.",
       "newPasswordNamed": "Bagus, {{name}}. Sekarang kata sandi.",
@@ -1743,7 +1744,12 @@
       "sent": "Kami mengirim tautan ke {{email}}. Email kamu berubah saat kamu membukanya.",
       "changed": "Selesai: sekarang kamu masuk dengan {{email}}.",
       "same": "Itu sudah email kamu.",
-      "noMail": "Server ini tidak mengirim email, jadi alamat baru tidak bisa dikonfirmasi. Minta pengelola server untuk mengatur pengiriman email."
+      "noMail": "Server ini tidak mengirim email, jadi alamat baru tidak bisa dikonfirmasi. Minta pengelola server untuk mengatur pengiriman email.",
+      "held": "Email ini baru saja keluar dari akun lain dan dicadangkan untuk akun itu selama 7 hari. Pakai email lain.",
+      "taken": "Akun lain sudah memakai email ini. Pakai email lain.",
+      "cantOpen": "Tidak bisa membuka kotak masuk itu?",
+      "signInInstead": "Masuk lagi dan ganti tanpa kode. Setelah itu kamu kembali ke sini.",
+      "useCode": "Pakai kode"
     },
     "openOnPhone": "Buka di ponselmu",
     "openOnPhoneHint": "Masuk ke aplikasi dengan kode QR",
@@ -16556,6 +16562,17 @@
     "plan": "Paketnya berhenti diperpanjang. Tidak ada pengembalian dana.",
     "type": "Ketik {{name}} untuk konfirmasi",
     "submit": "Hapus ruang kerja"
+  },
+  "emailUndo": {
+    "title": "Kembalikan emailmu",
+    "lead": "Alamat yang menerima tautan ini kembali menjadi email akunmu. Semua sesi dikeluarkan dan aplikasi AI diputuskan.",
+    "button": "Ini bukan saya",
+    "done": "Emailmu sudah kembali",
+    "doneLead": "{{email}} kembali menjadi email akunmu, dan semua sesi sudah dikeluarkan. Kalau ada yang tahu kata sandimu, tekan “Lupa kata sandi” saat masuk.",
+    "gone": "Tautan ini sudah tidak berlaku",
+    "goneLead": "Tautan ini sudah dipakai, atau 7 harinya sudah lewat.",
+    "taken": "Akun lain memakai email ini",
+    "takenLead": "{{email}} sekarang adalah email akun lain, jadi tidak bisa kembali. Tidak ada yang berubah."
   },
   "proof": {
     "willSend": "Kami akan mengirim kode ke {{email}} untuk memastikan ini kamu.",
