@@ -2040,7 +2040,7 @@ html:not([data-pointer]) .ac-eventpill__action:focus-visible {
 }
 .ac-chip--info {
   background: var(--agent-soft);
-  color: var(--agent);
+  color: var(--info);
 }
 .ac-chip .ac-icon {
   flex: none;
