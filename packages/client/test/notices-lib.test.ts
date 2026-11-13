@@ -231,7 +231,10 @@ describe("events over once they happened", () => {
     expect(isReturnLine({ notice: { kind: "work_follow_up", text: "x" } })).toBe(false);
     // Alone on a day, it opens no day of its own.
     const days = (list: Message[]) => buildTimeline(list, [], []).filter((i) => i.kind === "day").length;
-    const tomorrow = { ...msg("next-day", 0, rex, follow({ state: "pending" })), createdAt: "2026-10-15T10:00:00.000Z" };
+    const tomorrow = {
+      ...msg("next-day", 0, rex, follow({ state: "pending" })),
+      createdAt: "2026-10-15T10:00:00.000Z",
+    };
     expect(days([msg("said", 0, rex), tomorrow])).toBe(1);
   });
 
