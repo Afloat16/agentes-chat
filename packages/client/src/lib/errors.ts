@@ -415,6 +415,8 @@ const KNOWN = {
   "secret.closed": "errors.said.alreadyDone",
   "team_week.done": "errors.said.alreadyDone",
   "upload.not_pending": "errors.said.alreadyDone",
+  // What an invite card names (a role) moved since: the server rewrote the card, so a refresh shows it as it is.
+  "action_card.changed": "errors.said.changed",
   "agent.mail_loss_changed": "errors.said.changed",
   "mission.plan_conflict": "errors.said.changed",
   "run.state_changed": "errors.said.changed",

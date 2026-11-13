@@ -771,7 +771,10 @@ export function actionCardDetail(card: WorkspaceActionCard, t: TFunction, locale
   }
 }
 
-/** Why an address on an applied invite card got no invitation, as the server's words name it (`words.{status}`). */
+/**
+ * Why an address on an applied invite card got no invitation, as the server's words name it (`words.{status}`).
+ * `already_invited` comes only in the answer to the tap of whoever applied it: the stored card never says it.
+ */
 const INVITE_LEFT_OUT = ["already_invited", "already_member", "invalid_email"] as const;
 /** The addresses of one of the server's words ("a@example.com, b@example.com"). */
 const listed = (word: string | undefined) => (word ? word.split(", ").filter(Boolean) : []);

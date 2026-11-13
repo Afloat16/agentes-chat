@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { channelTopic } from "@agenteschat/adapters";
 import { and, eq, schema } from "@agenteschat/db";
 import {
   actionsFor,
@@ -16,6 +17,7 @@ import {
   createToolGateway,
   createWikiToolSource,
   decideWorkspaceAction,
+  deleteRole,
   drainOutbox,
   getOrgSettings,
   getWorkspaceActionCard,
@@ -925,6 +927,8 @@ describe("cards that must be read: inviting people and removing an API key", () 
     (await fx.db.select().from(schema.outbox).where(eq(schema.outbox.orgId, fx.org.id))).filter(
       (j) => j.kind === "email.send",
     );
+  const jobKinds = async (fx: Fixture) =>
+    (await fx.db.select().from(schema.outbox).where(eq(schema.outbox.orgId, fx.org.id))).map((j) => j.kind).sort();
   const cardNow = async (fx: Fixture, id: string) =>
     (await fx.db.select().from(schema.messages).where(eq(schema.messages.id, id)))[0]?.meta
       .actionCard as WorkspaceActionCard;
@@ -988,7 +992,7 @@ describe("cards that must be read: inviting people and removing an API key", () 
     expect(await emailJobs(f)).toHaveLength(2);
     const card = await cardNow(f, posted.id);
     expect(card).toMatchObject({ state: "applied", decidedByUserId: f.owner.id });
-    expect(card.params.words).toMatchObject({ invited: "ana@example.com, bia@example.com", already_invited: "" });
+    expect(card.params.words).toMatchObject({ invited: "ana@example.com, bia@example.com" });
     // Its receipt says who was invited, and nothing undoes an email that went out.
     const [receipt] = (await actionsFor(f.db, f.org.id, [posted.id])).get(posted.id) ?? [];
     expect(receipt).toMatchObject({
@@ -1068,6 +1072,7 @@ describe("cards that must be read: inviting people and removing an API key", () 
     await setMemberRoles(f.db, f.owner.id, f.org.id, caio.id, [leads.id]);
     const admin = await roleNamed(f, "Admin");
     const deps = SERVER_DEPS(f);
+    const runs = async () => (await f.db.select().from(schema.agentRuns)).length;
     // She learns nothing of who is here already: her card names the owner's address like any other.
     const [owner] = await f.db.select().from(schema.users).where(eq(schema.users.id, f.owner.id));
     const ctx = await lodiRun(f, bia.id, "convida a nova chefe como admin");
@@ -1080,6 +1085,7 @@ describe("cards that must be read: inviting people and removing an API key", () 
     expect(out.content).not.toContain("already");
     const posted = await lastCard(f);
     if (!posted) throw new Error("no card");
+    const [runsBefore, jobsBefore] = [await runs(), await jobKinds(f)];
     // Her own tap is refused by the invite screen's own check, and the card then sends it on.
     await expect(
       decideWorkspaceAction(deps, bia.id, f.org.id, posted.id, "apply", "invite_people"),
@@ -1116,8 +1122,156 @@ describe("cards that must be read: inviting people and removing an API key", () 
     ]);
     expect(await emailJobs(f)).toHaveLength(1);
     expect((await inbox(f)).every((n) => n.doneAt)).toBe(true);
-    // Sending it on, the refusals and the tap ask no model anything.
+    // Sending it on, the refusals and the tap ask no model anything: no run, and no job but the one email.
     expect(f.provider.calls).toHaveLength(0);
+    expect(await runs()).toBe(runsBefore);
+    expect(await jobKinds(f)).toEqual([...jobsBefore, "email.send"].sort());
+  });
+
+  test("an address that already held an invitation is told to whoever applied it, never to the conversation", async () => {
+    f = await setup({ rightHand: true });
+    const bia = await addMember(f.db, f.org.id, "member", "Bia Teste");
+    await createInvitation(f.db, f.owner.id, f.org.id, { email: "segredo@example.com" });
+    const ctx = await lodiRun(f, bia.id, "convida as duas");
+    const out = await act(f, ctx, {
+      action: "invite_people",
+      input: { emails: ["segredo@example.com", "nova@example.com"] },
+    });
+    expect(out.content).not.toContain("already");
+    const posted = await lastCard(f);
+    if (!posted) throw new Error("no card");
+    const deps = SERVER_DEPS(f);
+    await expect(decideWorkspaceAction(deps, bia.id, f.org.id, posted.id, "apply", "invite_people")).rejects.toThrow();
+    await askWorkspaceAction(deps, bia.id, f.org.id, posted.id);
+    const announced: unknown[] = [];
+    const stop = f.pubsub.subscribe(channelTopic(ctx.channelId), (e) => void announced.push(e));
+    // The owner, who may invite, reads it in the answer to the tap.
+    const mine = await decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "invite_people");
+    stop();
+    expect(mine.params.words).toMatchObject({ invited: "nova@example.com", already_invited: "segredo@example.com" });
+    // Bia, and anyone else who reads the conversation, reads who was invited and no more.
+    const hers = (await getWorkspaceActionCard(f.db, bia.id, f.org.id, posted.id)).card.params.words;
+    expect(hers).toMatchObject({ invited: "nova@example.com" });
+    expect(hers).not.toHaveProperty("already_invited");
+    const [receipt] = (await actionsFor(f.db, f.org.id, [posted.id])).get(posted.id) ?? [];
+    expect(receipt?.params).not.toHaveProperty("already_invited");
+    expect(announced.length).toBeGreaterThan(0);
+    expect(JSON.stringify(announced)).not.toContain("already_invited");
+  });
+
+  test("a workspace on hold at the tap says so and leaves the card as it was: applied once the hold lifts", async () => {
+    f = await setup({ rightHand: true });
+    await act(f, await lodiRun(f, f.owner.id, "convida a ana"), {
+      action: "invite_people",
+      input: { emails: ["ana@example.com"] },
+    });
+    const posted = await lastCard(f);
+    if (!posted) throw new Error("no card");
+    const deps = SERVER_DEPS(f);
+    const stand = (standing: "hold" | "active") =>
+      f.db
+        .update(schema.organizations)
+        .set({ standing, standingReason: standing === "hold" ? "payment" : null })
+        .where(eq(schema.organizations.id, f.org.id));
+    await stand("hold");
+    await expect(
+      decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "invite_people"),
+    ).rejects.toMatchObject({ code: "org.paused" });
+    // Not a refusal of the person: the card doesn't turn into one that can only be sent on.
+    const held = await cardNow(f, posted.id);
+    expect(held.state).toBe("pending");
+    expect(held.params.refused).toBeUndefined();
+    await stand("active");
+    await expect(askWorkspaceAction(deps, f.owner.id, f.org.id, posted.id)).rejects.toMatchObject({
+      code: "action_card.yours",
+    });
+    expect(await decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "invite_people")).toMatchObject({
+      state: "applied",
+    });
+    expect((await invitations(f)).map((i) => i.email)).toEqual(["ana@example.com"]);
+  });
+
+  test("a full workspace at the tap invites nobody and leaves the card to apply once there is room", async () => {
+    f = await setup({ rightHand: true });
+    await act(f, await lodiRun(f, f.owner.id, "convida a ana"), {
+      action: "invite_people",
+      input: { emails: ["ana@example.com"] },
+    });
+    const posted = await lastCard(f);
+    if (!posted) throw new Error("no card");
+    await f.db.update(schema.organizations).set({ limitMembers: 1 }).where(eq(schema.organizations.id, f.org.id));
+    await expect(
+      decideWorkspaceAction(SERVER_DEPS(f), f.owner.id, f.org.id, posted.id, "apply", "invite_people"),
+    ).rejects.toMatchObject({ code: "org.members_full" });
+    const card = await cardNow(f, posted.id);
+    expect(card.state).toBe("pending");
+    expect(card.params.refused).toBeUndefined();
+    expect(await invitations(f)).toEqual([]);
+    expect(await emailJobs(f)).toEqual([]);
+  });
+
+  test("a role renamed or deleted since the card was posted: the tap is refused and the card says it as it is now", async () => {
+    f = await setup({ rightHand: true });
+    const estagio = await createRole(f.db, f.owner.id, f.org.id, { name: "Estagio" });
+    const vendas = await createRole(f.db, f.owner.id, f.org.id, { name: "Vendas" });
+    await act(f, await lodiRun(f, f.owner.id, "convida a ana como Estagio e Vendas"), {
+      action: "invite_people",
+      input: { emails: ["ana@example.com"], roles: ["Estagio", "Vendas"] },
+    });
+    const posted = await lastCard(f);
+    if (!posted) throw new Error("no card");
+    const deps = SERVER_DEPS(f);
+    const tap = () => decideWorkspaceAction(deps, f.owner.id, f.org.id, posted.id, "apply", "invite_people");
+    // Renamed and given the billing key: no longer the role the card names.
+    await updateRole(f.db, f.owner.id, f.org.id, estagio.id, {
+      name: "Financeiro",
+      permissions: ["manage_billing"],
+    });
+    await expect(tap()).rejects.toMatchObject({ code: "action_card.changed" });
+    expect(await invitations(f)).toEqual([]);
+    expect(await emailJobs(f)).toEqual([]);
+    expect(await cardNow(f, posted.id)).toMatchObject({
+      state: "pending",
+      params: {
+        input: { emails: ["ana@example.com"], roleIds: [estagio.id, vendas.id], roleNames: ["Financeiro", "Vendas"] },
+        words: { emails: "ana@example.com", roles: "Financeiro, Vendas" },
+      },
+    });
+    // A role deleted leaves the card too.
+    await deleteRole(f.db, f.owner.id, f.org.id, vendas.id);
+    await expect(tap()).rejects.toMatchObject({ code: "action_card.changed" });
+    expect((await cardNow(f, posted.id)).params).toMatchObject({
+      input: { roleIds: [estagio.id], roleNames: ["Financeiro"] },
+      words: { roles: "Financeiro" },
+    });
+    // Read again as it is, it applies.
+    expect(await tap()).toMatchObject({ state: "applied" });
+    expect(await invitations(f)).toMatchObject([{ email: "ana@example.com", roleIds: [estagio.id] }]);
+  });
+
+  test("an address the invite screen would refuse never reaches a card, and one found at the tap is named", async () => {
+    f = await setup({ rightHand: true });
+    const ctx = await lodiRun(f, f.owner.id, "convida");
+    const out = await act(f, ctx, { action: "invite_people", input: { emails: ["a[1]@example.com"] } });
+    expect(out).toMatchObject({ isError: true, content: "Not an email address: a[1]@example.com." });
+    expect(await lastCard(f)).toBeNull();
+    // A card that holds one all the same says the real cause at the tap, not "already here".
+    const id = await postCard(f, ctx.channelId, ctx.agentId, {
+      ...pending,
+      forUserId: f.owner.id,
+      params: {
+        action: "invite_people",
+        input: { emails: ["a[1]@example.com"], roleIds: [], roleNames: [] },
+        words: { emails: "a[1]@example.com", roles: "" },
+        needs: "invite_people",
+        why: "",
+      },
+    });
+    await expect(
+      decideWorkspaceAction(SERVER_DEPS(f), f.owner.id, f.org.id, id, "apply", "invite_people"),
+    ).rejects.toMatchObject({ code: "invalid_email", message: expect.stringContaining("a[1]@example.com") });
+    expect((await cardNow(f, id)).state).toBe("pending");
+    expect(await invitations(f)).toEqual([]);
   });
 
   test("who may invite hears at once who is already here; with nobody new at the tap, the card says so and stays", async () => {

@@ -17,6 +17,9 @@ test("the people card applies each row as the web does: the shared words and key
   expect(src("members/MembersPage.tsx")).toContain("export function useRemoveFlow()");
   // With its message, each change is audited as made from the card.
   expect(card).toContain("<CardVia messageId={message.id}>");
+  // Without it, the card's id is still its own: two cards about one person never share one.
+  expect(card).toContain("const own = useId();");
+  expect(card).not.toContain("card.rows[0]?.userId");
   // Nothing takes a second press while a change is on its way, and nothing shows before the members list.
   expect(card).toContain("disabled={busy}");
   expect(card).toContain("if (!people) return null;");
@@ -27,4 +30,6 @@ test("a workspace change's card says who asked, and its tap says which action th
   expect(card).toContain("useDecideActionCard(orgId, { ...where, action: card.params.action })");
   expect(card).toContain('kindNote={asker ? t("audit.behind.person", { name: asker }) : undefined}');
   expect(card).toContain("const asker = mine ? undefined : dir.memberById.get(card.forUserId)?.name;");
+  // What only whoever applied it reads (an address that already held an invitation) comes from their tap's answer.
+  expect(card).toContain('actionCardDetail(own?.state === "applied" ? own : card, t, i18n.language)');
 });

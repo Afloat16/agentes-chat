@@ -70,6 +70,7 @@ import {
   updateRole,
 } from "./roles";
 import { bodyCode } from "./run-tools";
+import { AgentHeldError, OrgDeletingError, OrgPausedError } from "./standing";
 import { rankTools } from "./tools/directory";
 import { canonicalJson, type JsonSchema, validateJson } from "./tools/json-schema";
 import type { ToolContext, ToolDefinition, ToolOutput } from "./tools/types";
@@ -132,6 +133,24 @@ export interface ActionDone {
   after?: Record<string, unknown> | null;
   /** Nothing undoes it: its receipt is plain history. */
   final?: boolean;
+  /**
+   * Words only whoever applied it reads, in the answer to their own tap: never stored on the card or its receipt,
+   * which everyone in the conversation reads.
+   */
+  own?: Record<string, string>;
+}
+
+/**
+ * What a card names moved since it was posted (a role renamed or deleted). The tap is refused and the card, still
+ * pending, takes `input` and `words` as they are now: whoever applies it reads it again first.
+ */
+class CardChangedError extends ConflictError {
+  constructor(
+    readonly input: Input,
+    readonly words: Record<string, string>,
+  ) {
+    super("What this card names changed since it was written. Read it again, then apply it.", "action_card.changed");
+  }
 }
 
 type ActionRow = typeof agentActions.$inferSelect;
@@ -1348,7 +1367,8 @@ const invitePeopleAction: WorkspaceAction = {
   mustBeRead: true,
   async resolve(ctx, person, input) {
     const emails = [...new Set(list(input.emails).map((e) => e.toLowerCase()))];
-    const bad = emails.filter((e) => !isEmailAddress(e));
+    // Brackets too: `inviteMany` refuses them, and an address it would leave out never reaches a card.
+    const bad = emails.filter((e) => !isEmailAddress(e) || /[[\]]/.test(e));
     if (bad.length > 0) return `Not an email address: ${bad.join(", ")}.`;
     const roles = new Map<string, string>();
     for (const n of list(input.roles)) {
@@ -1374,13 +1394,30 @@ const invitePeopleAction: WorkspaceAction = {
   async run(deps, actorId, orgId, input) {
     if (!deps.server) throw new Error("Sending an invitation needs the server's address");
     const { publicUrl, secret } = deps.server;
+    // The card is what was read: a role renamed or deleted since is not the role it names.
+    const roleIds = list(input.roleIds);
+    const names = await roleNames(deps.db, orgId, roleIds);
+    const kept = roleIds.filter((id) => names.has(id));
+    const now = kept.map((id) => names.get(id) ?? "");
+    if (now.join("\n") !== list(input.roleNames).join("\n"))
+      throw new CardChangedError({ ...input, roleIds: kept, roleNames: now }, { roles: now.join(", ") });
     const results = await inviteMany(deps.db, actorId, orgId, {
       emails: list(input.emails),
-      roleIds: list(input.roleIds),
+      roleIds,
       ...(secret ? { secret } : {}),
     });
+    const left = (status: (typeof results)[number]["status"]) =>
+      results
+        .filter((r) => r.status === status)
+        .map((r) => r.email)
+        .join(", ");
     const invited = results.flatMap((r) => (r.status === "invited" ? [r] : []));
     const [first] = invited;
+    if (!first && left("invalid_email"))
+      throw new ValidationError(
+        `Not an email address: ${left("invalid_email")}. Dismiss this card and ask again with the right one.`,
+        "invalid_email",
+      );
     if (!first)
       throw new ConflictError(
         "Everyone on this card is already in the workspace or already invited. Dismiss it, or resend an invitation in People.",
@@ -1397,20 +1434,16 @@ const invitePeopleAction: WorkspaceAction = {
         ...(secret ? { secret } : {}),
       });
     }
-    const left = (status: (typeof results)[number]["status"]) =>
-      results
-        .filter((r) => r.status === status)
-        .map((r) => r.email)
-        .join(", ");
     return {
       target: { type: "person", id: first.invitationId, title: first.email },
       // Each address's outcome: who was invited, and who was left out and why.
       words: {
         invited: left("invited"),
-        already_invited: left("already_invited"),
         already_member: left("already_member"),
         invalid_email: left("invalid_email"),
       },
+      // Open invitations are for who may invite: the conversation's other readers never learn an address holds one.
+      own: { already_invited: left("already_invited") },
       final: true,
     };
   },
@@ -2059,6 +2092,7 @@ export async function decideWorkspaceAction(
   if (decision === "apply" && a.self && found.card.forUserId !== userId)
     throw new ForbiddenError("Only the person it was for applies it", "action_card.not_requester");
   const events = holdEvents(deps.pubsub);
+  let own: Record<string, string> = {};
   const deciding = deps.db.transaction(async (tx) => {
     const db = tx as unknown as Database;
     // Locked: two clicks at once never apply it twice.
@@ -2103,6 +2137,7 @@ export async function decideWorkspaceAction(
         undoableUntil: new Date(now.getTime() + (record.final ? 0 : UNDO_WINDOW_MS)),
       });
       card.params = { ...card.params, words: { ...card.params.words, ...done.words } };
+      own = done.own ?? {};
     }
     await db
       .update(messages)
@@ -2118,12 +2153,23 @@ export async function decideWorkspaceAction(
     return card;
   });
   const next = await deciding.catch(async (error: unknown) => {
-    // The screen's own rule refused the person it was for (a role above theirs): from now on the card sends it on.
-    if (error instanceof ForbiddenError && decision === "apply" && found.card.forUserId === userId) {
-      const refused: WorkspaceActionCard = { ...found.card, params: { ...found.card.params, refused: true } };
+    // A hold on the workspace or the agent refuses everyone alike and lifts: no reason to send the card on.
+    const held =
+      error instanceof OrgPausedError || error instanceof OrgDeletingError || error instanceof AgentHeldError;
+    // What the refusal leaves on the card, still pending. What it names moved: the card as it is now. The screen's
+    // own rule refused the person it was for (a role above theirs): from now on the card sends it on.
+    const patch =
+      error instanceof CardChangedError
+        ? { input: error.input, words: { ...found.card.params.words, ...error.words } }
+        : error instanceof ForbiddenError && !held && decision === "apply" && found.card.forUserId === userId
+          ? { refused: true }
+          : null;
+    if (patch) {
       const [row] = await deps.db
         .update(messages)
-        .set({ meta: sql`jsonb_set(${messages.meta}, '{actionCard,params,refused}', 'true'::jsonb)` })
+        .set({
+          meta: sql`jsonb_set(${messages.meta}, '{actionCard,params}', ${messages.meta}->'actionCard'->'params' || ${JSON.stringify(patch)}::jsonb)`,
+        })
         .where(
           and(
             eq(messages.orgId, orgId),
@@ -2132,7 +2178,7 @@ export async function decideWorkspaceAction(
           ),
         )
         .returning({ id: messages.id });
-      if (row) await announceCard(deps, found.message, refused);
+      if (row) await announceCard(deps, found.message, { ...found.card, params: { ...found.card.params, ...patch } });
     }
     throw error;
   });
@@ -2140,7 +2186,8 @@ export async function decideWorkspaceAction(
   await resolveNotifications(deps, orgId, { groupKey: `${ASK_GROUP}${messageId}` }).catch(() => 0);
   await announceCard(deps, { ...found.message }, next);
   if (decision === "apply") await publishMessageActions(deps, orgId, messageId);
-  return next;
+  // Their own tap's answer, and only it, carries the words kept from the conversation.
+  return { ...next, params: { ...next.params, words: { ...next.params.words, ...own } } };
 }
 
 /**

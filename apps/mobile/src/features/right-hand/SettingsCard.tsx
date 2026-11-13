@@ -364,7 +364,9 @@ function WorkspaceActionView({
   const say = t as unknown as (key: string, values: Record<string, string>) => string;
   const sentence = say(actionCardKey(card), actionCardWords(card, t));
   const plain = sentence.replace(/<\/?b>/g, "");
-  const detail = actionCardDetail(card, t, i18n.language);
+  // The answer to their own tap says more than the card everyone reads (an address that already held an invitation).
+  const own = decide.data?.card;
+  const detail = actionCardDetail(own?.state === "applied" ? own : card, t, i18n.language);
   const may = mayApplyCard(card, { userId: meId ?? "", may: (key) => can(org, key) });
   const mine = card.forUserId === meId;
   // Whoever applies it for someone else reads who asked, in the conversation and in their inbox.

@@ -715,7 +715,9 @@ export function WorkspaceActionCardView({
       components={{ b: <b /> }}
     />
   );
-  const detail = actionCardDetail(card, t, i18n.language);
+  // The answer to their own tap says more than the card everyone reads (an address that already held an invitation).
+  const own = decide.data?.card;
+  const detail = actionCardDetail(own?.state === "applied" ? own : card, t, i18n.language);
   const may = mayApplyCard(card, { userId: me.user.id, may: (key) => can(org, key) });
   const mine = card.forUserId === me.user.id;
   // Whoever applies it for someone else reads who asked, in the conversation and in their inbox.

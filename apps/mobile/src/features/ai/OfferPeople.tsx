@@ -9,7 +9,7 @@ import {
   rolesAfter,
 } from "@agenteschat/client/lib/action-cards";
 import { can } from "@agenteschat/client/lib/permissions";
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
@@ -26,9 +26,9 @@ import { OfferShell } from "./OfferShell";
  * from it.
  */
 export function OfferPeople({ card, message }: { card: MemberChangesCard; message?: Message }) {
-  const rows = (
-    <People card={card} id={message?.id ?? `people:${card.rows[0]?.userId}`} agentId={message?.author.id ?? ""} />
-  );
+  // Without its message a card still gets an id of its own: two cards about one person never share one.
+  const own = useId();
+  const rows = <People card={card} id={message?.id ?? `people:${own}`} agentId={message?.author.id ?? ""} />;
   return message ? <CardVia messageId={message.id}>{rows}</CardVia> : rows;
 }
 

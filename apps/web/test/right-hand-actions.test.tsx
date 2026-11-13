@@ -270,6 +270,45 @@ describe("a change in the workspace that names all it does", () => {
     expect(within(over).queryByRole("button", { name: "Aplicar" })).toBeNull();
   });
 
+  test("who was already invited is read from the answer to their own tap, and stays when the card everyone reads arrives", async () => {
+    const state = withLodiCard(seedState(), invite());
+    const done = { state: "applied", decidedByUserId: "u-walter", decidedAt: new Date().toISOString() } as const;
+    const api: ApiClient = {
+      ...createFakeApi(state),
+      actionCards: {
+        get: async (_orgId, messageId) => ({ messageId, channelId: DM, threadId: null, card: invite() }),
+        decide: async () => ({
+          card: { ...invite({ invited: "ana@example.com", already_invited: "bia@example.com" }), ...done },
+        }),
+      },
+    };
+    const { sockets } = await renderApp(`/org/${ORG_ID}/dm/agent/${LODI_ID}`, { api });
+    await settle(8);
+    const socket = sockets.last();
+    await act(async () => socket.open());
+    await settle(2);
+    await click(within(cardGroup()).getByRole("button", { name: "Aplicar" }));
+    // The card as the server stores and announces it: who was invited, and no word of the open invitation.
+    await act(async () =>
+      socket.push({
+        type: "event",
+        channelId: DM,
+        event: {
+          type: "action_card.updated",
+          channelId: DM,
+          threadId: null,
+          messageId: "m-card",
+          card: { ...invite({ invited: "ana@example.com" }), ...done },
+        },
+      }),
+    );
+    await settle(2);
+    expect(cardGroup().textContent).toContain("Aplicado por você");
+    expect(cardGroup().querySelector(".rq__wt small")?.textContent).toBe(
+      "+ Vendas · bia@example.com já tem um convite pendente. Use Reenviar.",
+    );
+  });
+
   test("removing an API key names the key and its provider, on a danger button", async () => {
     const state = withLodiCard(seedState(), removeKey);
     await goWith(state, removeKey);
