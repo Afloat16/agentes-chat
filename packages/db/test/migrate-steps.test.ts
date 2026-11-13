@@ -11,6 +11,8 @@ const migrations = readMigrationFiles({ migrationsFolder });
 const beforeTask = migrations.findIndex((m) => m.sql.some((s) => s.includes("ADD VALUE 'task'")));
 /** The migration that builds the outbox's indexes, and so must not hold the queue's writes while it does. */
 const beforeBusy = migrations.findIndex((m) => m.sql.some((s) => s.includes('"outbox_created_idx"')));
+/** The indexes it builds concurrently. */
+const BUSY = "array['outbox_created_idx', 'outbox_run_jobs_idx', 'agent_run_steps_tool_calls_idx']::regclass[]";
 
 /** Why Postgres refuses the pending migrations as Drizzle's own migrate runs them: all in one transaction. */
 const refusal = (db: Parameters<typeof migrate>[0]) =>
@@ -41,7 +43,7 @@ test("an index of a busy table is built in no transaction, and again when a buil
   const state = async () => {
     const { rows } = await pg.query(
       `select (select count(*)::int from drizzle.__drizzle_migrations) as applied,
-              (select indisvalid from pg_index where indexrelid = 'outbox_created_idx'::regclass) as valid`,
+              (select count(*)::int from pg_index where indexrelid = any (${BUSY}) and indisvalid) as valid`,
     );
     return rows[0];
   };
@@ -49,14 +51,14 @@ test("an index of a busy table is built in no transaction, and again when a buil
     await migrateInSteps(db, migrationsFolder, beforeBusy);
     expect(await refusal(db)).toContain("CONCURRENTLY cannot run inside a transaction block");
     await migrateInSteps(db, migrationsFolder, beforeBusy + 1);
-    expect(await state()).toEqual({ applied: beforeBusy + 1, valid: true });
-    // A build that was cut short: its index is there, invalid, and the migration unrecorded.
+    expect(await state()).toEqual({ applied: beforeBusy + 1, valid: 3 });
+    // Builds that were cut short: their indexes are there, invalid, and the migration unrecorded.
     await pg.exec(
-      `update pg_index set indisvalid = false where indexrelid = 'outbox_created_idx'::regclass;
+      `update pg_index set indisvalid = false where indexrelid = any (${BUSY});
        delete from drizzle.__drizzle_migrations where created_at = ${migrations[beforeBusy]?.folderMillis}`,
     );
     await migrateInSteps(db, migrationsFolder);
-    expect(await state()).toEqual({ applied: migrations.length, valid: true });
+    expect(await state()).toEqual({ applied: migrations.length, valid: 3 });
   } finally {
     await pg.close();
   }

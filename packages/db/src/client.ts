@@ -99,18 +99,23 @@ export function createDatabase(options: DatabaseOptions): DatabaseHandle {
     db: db as unknown as Database,
     client,
     migrate: async () => {
-      // On a connection of its own: with a pool of one, the migrations need that one.
-      const lock = postgres(options.url, { max: 1, onnotice: () => {} });
+      // On a connection of its own: with a pool of one, the migrations need that one. Never closed for its age, as
+      // postgres.js closes an idle connection after 30 to 60 minutes: the lock is its session's, and a migration that
+      // builds an index concurrently can wait that long behind a dump.
+      const lock = postgres(options.url, { max: 1, max_lifetime: null, onnotice: () => {} });
       try {
         // Asked for again and again, never waited for: a session waiting inside `pg_advisory_lock` holds a snapshot
         // until the lock is its own, and a concurrent index build, in the process that has the lock, ends only when
         // every snapshot older than its own is gone. Each would wait for the other, and Postgres sees no deadlock in
-        // it, the lock's holder being an idle session.
+        // it, the lock's holder being an idle session. A process of a version that still waits there can stall a
+        // build the same way (SELF_HOSTING.md, Upgrades).
         while (!(await lock`select pg_try_advisory_lock(${MIGRATIONS_LOCK}::bigint) as ok`)[0]?.ok)
           await Bun.sleep(500);
         await assertMigrationsMatch(db as unknown as Database, migrationsFolder);
         await migrateInSteps(db, migrationsFolder);
-        await lock`select pg_advisory_unlock(${MIGRATIONS_LOCK}::bigint)`;
+        const [unlocked] = await lock`select pg_advisory_unlock(${MIGRATIONS_LOCK}::bigint) as ok`;
+        // Not held any more: the lock's session ended on the way, and another process may have migrated meanwhile.
+        if (!unlocked?.ok) throw new Error("the migrations lock was lost while migrating");
       } finally {
         // Closing the session releases the lock too, when the migrations failed.
         await lock.end({ timeout: 5 });
