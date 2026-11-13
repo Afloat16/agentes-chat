@@ -1,4 +1,5 @@
 import {
+  CardVia,
   type Message,
   useAgents,
   useAllInvitations,
@@ -54,7 +55,12 @@ export function OfferCard({ message: m }: { message: Message }) {
   if (card.kind === "invite_people") return <Invite card={card} />;
   if (card.kind === "install_skill") return <InstallSkill card={card} agentId={m.author.id} />;
   if (card.kind === "update_skills") return <UpdateSkills card={card} postedAt={m.createdAt} />;
-  if (card.kind === "approvals") return <OfferApprovals card={card} />;
+  if (card.kind === "approvals")
+    return (
+      <CardVia messageId={m.id}>
+        <OfferApprovals card={card} />
+      </CardVia>
+    );
   if (card.kind === "member_changes") return <OfferPeople card={card} message={m} />;
   if (card.kind === "open_page") return <OpenScreen card={card} />;
   if (card.kind === "person_limit") return <PersonLimitNote card={card} />;
