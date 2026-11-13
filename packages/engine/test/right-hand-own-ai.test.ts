@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { ACCOUNTS_PROTOCOL, MACHINE_PROTOCOL_VERSION } from "@agenteschat/adapters";
-import { and, eq, ne, schema } from "@agenteschat/db";
+import { and, eq, inArray, ne, schema } from "@agenteschat/db";
 import {
   askWidgetChange,
   createDashboard,
@@ -482,9 +482,16 @@ test("a widget's build thinks with its creator's AI, else its routine's creator'
   expect(await pick(await widget({ createdByUserId: null }))).toBe(bia.id);
   expect(await build()).toMatchObject({ account: { id: BIAS } });
 
-  // Neither chose an AI of their own: the workspace's, which answers its plan's owner and nobody else.
+  // Neither has an AI of their own (none chosen, their plans signed out): the workspace's, kept to its plan's owner,
+  // which answers nobody else.
+  await setAccountServes(deps, fx.owner.id, fx.org.id, ANAS, "owner");
   await fx.db.delete(schema.rightHandBrains).where(ne(schema.rightHandBrains.userId, fx.owner.id));
-  expect(await pick(await widget())).toBe("plan_not_shared");
+  await fx.db
+    .update(schema.machineAccounts)
+    .set({ status: "signed_out" })
+    .where(inArray(schema.machineAccounts.id, [BIAS, CAIOS]));
+  // Bia, the first of its people, hears whose the plan is.
+  expect(await pick(await widget())).toBe("plans_not_yours");
   expect((await build()).unavailable).toMatchObject({ code: "plan_not_shared" });
   expect(await pick(await widget({ createdByUserId: fx.owner.id }))).toBe(fx.owner.id);
   expect((await build()).unavailable).toBeUndefined();
@@ -502,7 +509,7 @@ test("a widget's build thinks with its creator's AI, else its routine's creator'
   await fx.db.update(schema.dashboards).set({ audience: "workspace" }).where(eq(schema.dashboards.id, board.id));
   await fx.db.update(schema.routines).set({ createdByUserId: bia.id });
   await widget({ createdByUserId: null, status: "ok", failureCode: null });
-  await setAgentBrain(deps, fx.owner.id, fx.org.id, lodi.id, { onlyOwner: false });
+  await setAccountServes(deps, fx.owner.id, fx.org.id, ANAS, "everyone");
   expect(await pick(nobody)).toBe("workspace");
   expect(await pick(await widget())).toBe(bia.id);
   expect(await build()).toMatchObject({ kind: "claude_code", account: { id: ANAS } });
@@ -560,16 +567,17 @@ test("a creator whose own AI can't think: the build takes the next AI that can, 
   const w = await world();
   const { fx, deps, bia, caio, lodi } = w;
   // The workspace's plan answers everyone; Bia chose her own, which is signed out.
-  await setAgentBrain(deps, fx.owner.id, fx.org.id, lodi.id, { brain: "claude_code", account: ANAS, onlyOwner: false });
+  await setAgentBrain(deps, fx.owner.id, fx.org.id, lodi.id, { brain: "claude_code", account: ANAS });
   await setAgentBrain(deps, bia.id, fx.org.id, lodi.id, { scope: "mine", brain: "claude_code", account: BIAS });
   await fx.db.update(schema.machineAccounts).set({ status: "signed_out" }).where(eq(schema.machineAccounts.id, BIAS));
   const { build, end, made } = await sharedWidget(w, bia.id);
   expect(await build()).toMatchObject({ pick: null, account: ANAS, unavailable: undefined });
   await end();
-  // The workspace's plan serves only its owner, and nobody chose their own: a widget of Caio's whose routine is the
-  // owner's builds for the owner, whom that plan answers.
+  // The workspace's plan serves only its owner, and nobody else has an AI that thinks: a widget of Caio's whose routine
+  // is the owner's builds for the owner, whom that plan answers.
   await fx.db.delete(schema.rightHandBrains).where(ne(schema.rightHandBrains.userId, fx.owner.id));
-  await setAgentBrain(deps, fx.owner.id, fx.org.id, lodi.id, { onlyOwner: true });
+  await fx.db.update(schema.machineAccounts).set({ status: "signed_out" }).where(eq(schema.machineAccounts.id, CAIOS));
+  await setAccountServes(deps, fx.owner.id, fx.org.id, ANAS, "owner");
   await fx.db.update(schema.dashboardWidgets).set({ createdByUserId: caio.id });
   await fx.db.update(schema.routines).set({ createdByUserId: fx.owner.id });
   await refreshWidgetNow(await sharedDeps(w), fx.owner.id, fx.org.id, made.id);
