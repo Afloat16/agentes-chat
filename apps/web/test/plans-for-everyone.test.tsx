@@ -243,9 +243,18 @@ describe("“Não fui eu”: the page the old address's notice opens", () => {
 
   test("worst case: a long address with nothing to break at, in German, back and taken", async () => {
     const back = "aleksandra.wisniewskakowalczyk@northwindindustriesholdings.example.com";
+    // Back first: the geometry check measures one screen of each shape, and this one has the page's longest words.
+    const done = seedState({ me: null });
+    done.undoBack = back;
+    const first = await renderApp("/email-undo?token=tok-worst", { api: createFakeApi(done) });
+    await showIn(first.services, "de");
+    await click(screen().getByRole("button", { name: /Das war ich nicht/ }));
+    expect(document.body.textContent).toContain(`${back} ist wieder die E-Mail-Adresse deines Kontos`);
+    expect(document.body.textContent).toContain("Anmeldewege, die seit der Änderung hinzugekommen sind");
+    cleanup();
     const state = seedState({ me: null });
     state.undoError = new ApiError(409, "email.undo_taken", "Another account has this address now", { email: back });
-    const { services } = await renderApp("/email-undo?token=tok-worst", { api: createFakeApi(state) });
+    const { services } = await renderApp("/email-undo?token=tok-worst-2", { api: createFakeApi(state) });
     await showIn(services, "de");
     await click(screen().getByRole("button", { name: /Das war ich nicht/ }));
     expect(document.body.textContent).toContain(back);

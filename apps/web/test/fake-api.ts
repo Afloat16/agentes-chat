@@ -444,6 +444,8 @@ export interface FakeState {
   emailChangeError?: ApiError;
   /** Make `account.undoEmailChange` fail with this error (`email.undo_gone`…). */
   undoError?: ApiError;
+  /** The address `account.undoEmailChange` brings back; unset: walter@example.com. */
+  undoBack?: string;
   /** The workspace's roles (ADR 0085, `roles.*`); unset: a new workspace's (`seedRoles`). */
   roles?: OrgRole[];
   /** Where I put the sidebar's tools (`orgs.sidebarItems`); unset = none moved. */
@@ -1507,7 +1509,7 @@ export function createFakeHttpApi(state: FakeState): Omit<HttpApi, FakedParts> {
       undoEmailChange: async (token) => {
         log("account.undoEmailChange", token);
         if (state.undoError) throw state.undoError;
-        return { email: "walter@example.com" };
+        return { email: state.undoBack ?? "walter@example.com" };
       },
       unread: async () =>
         state.me
