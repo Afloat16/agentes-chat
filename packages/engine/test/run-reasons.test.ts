@@ -252,3 +252,17 @@ test("a computer brain's failure under a code the apps don't word reads as its p
   expect(brainFailureText({ code: "account_missing", message: "x" }, "opencode")).toBeNull();
   expect(brainFailureText({ code: "model_refused", message: "x" }, "opencode")).toBeNull();
 });
+
+test("a key from another provider's model reads in linear time, whatever the stored text", () => {
+  expect(runErrorDetail("This agent's model is from Claude, but the chosen key is from OpenAI")).toEqual({
+    errorCode: "run.credential_wrong_provider",
+    errorParams: { modelProvider: "Claude", keyProvider: "OpenAI" },
+  });
+  expect(runErrorDetail("O modelo deste agente é da Claude, mas a chave escolhida é da OpenAI")).toMatchObject({
+    errorCode: "run.credential_wrong_provider",
+  });
+  const started = performance.now();
+  runErrorDetail(`This agent's model is from a${", but the chosen key is from a".repeat(20_000)}`);
+  runErrorDetail(`O modelo deste agente é da a${", mas a chave escolhida é da a".repeat(20_000)}`);
+  expect(performance.now() - started).toBeLessThan(1000);
+});

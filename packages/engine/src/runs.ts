@@ -379,8 +379,9 @@ export function runErrorDetail(error: string | null | undefined): {
   )
     return { errorCode: "run.credential_revoked" };
   const wrong =
-    /^This agent's model is from (.+), but the chosen key is from (.+)$/.exec(error) ??
-    /^O modelo deste agente é da (.+), mas a chave escolhida é da (.+)$/.exec(error);
+    // A provider's name has no comma: one way to split the sentence, never a quadratic search for it.
+    /^This agent's model is from ([^,]+), but the chosen key is from (.+)$/.exec(error) ??
+    /^O modelo deste agente é da ([^,]+), mas a chave escolhida é da (.+)$/.exec(error);
   if (wrong) {
     return {
       errorCode: "run.credential_wrong_provider",
