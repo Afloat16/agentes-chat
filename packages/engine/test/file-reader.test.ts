@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { deflateSync } from "node:zlib";
 import { PDF_MEDIA_TYPE } from "@agenteschat/providers";
-import { markdownToDocx, markdownToPdf, pdfPages, readForModel, zip } from "../src";
+import { docxText, markdownToDocx, markdownToPdf, pdfPages, pptxText, readForModel, xlsxText, zip } from "../src";
 import { decodeXmlEntities } from "../src/format";
 import { PNG, pptxFixture, xlsxFixture } from "./file-fixtures";
 
@@ -99,5 +99,44 @@ describe("readForModel", () => {
 
   test("XML entities decode, numeric ones too", () => {
     expect(decodeXmlEntities("a &amp; b &lt;c&gt; &#233; &#xE9; &bogus;")).toBe("a & b <c> é é &bogus;");
+  });
+
+  // Uploads are untrusted: a file built to make a pattern backtrack must still read in linear time.
+  test("files crafted against the parsers read fast (no super-linear pattern)", () => {
+    const MB = 2_000_000;
+    const fast = (run: () => unknown) => {
+      const t = performance.now();
+      run();
+      expect(performance.now() - t).toBeLessThan(500);
+    };
+    const pdf = (body: string) => bytesOf(`%PDF-1.7\n${body}`);
+    fast(() => pdfPages(pdf("/Type/ObjStm".repeat(MB / 12))));
+    fast(() => pdfPages(pdf(`${"/Type/ObjStm".repeat(MB / 12)}>>`)));
+    fast(() => pdfPages(pdf(`/Count 0${"0".repeat(MB)}`)));
+    fast(() => pdfPages(pdf("/Count 1 ".repeat(MB / 9))));
+    fast(() => pdfPages(pdf(`${"/Type/ObjStm>>stream\n".repeat(MB / 20)}endstream`)));
+    fast(() => docxText("<w:t ".repeat(MB / 5)));
+    fast(() => docxText(`${"<w:t ".repeat(MB / 5)}>`));
+    fast(() => pptxText("<a:t ".repeat(MB / 5)));
+    const sheet = (files: Record<string, string>) => () => xlsxText((path) => files[path] ?? null);
+    fast(sheet({ "xl/sharedStrings.xml": "<si>a".repeat(MB / 5) }));
+    fast(sheet({ "xl/sharedStrings.xml": `<si>${"<t ".repeat(MB / 3)}></si>` }));
+    fast(sheet({ "xl/_rels/workbook.xml.rels": "<Relationship ".repeat(MB / 14) }));
+    fast(sheet({ "xl/workbook.xml": "<sheet ".repeat(MB / 7) }));
+    fast(sheet({ "xl/workbook.xml": "<sheet/>", "xl/worksheets/sheet1.xml": "<c ".repeat(MB / 3) }));
+    fast(sheet({ "xl/workbook.xml": "<sheet/>", "xl/worksheets/sheet1.xml": '<c r="A1">'.repeat(MB / 10) }));
+    fast(sheet({ "xl/workbook.xml": "<sheet/>", "xl/worksheets/sheet1.xml": '<c r="ZZZZZZZZ1"><v>1</v></c>' }));
+  });
+
+  test("the linear readers keep what the patterns read: page trees, cells that close themselves, a cell left open", () => {
+    expect(pdfPages(bytesOf("%PDF-1.7\n<< /Count 7 /Kids [] /Type /Pages >>"))).toBe(7);
+    expect(pdfPages(bytesOf("%PDF-1.7\n<< /Type /Pages /Count 3 >> << /Count 9 >>"))).toBe(3);
+    const files: Record<string, string> = {
+      "xl/workbook.xml": '<sheet name="S"/>',
+      "xl/sharedStrings.xml": '<si><t>um</t></si>x</si><si><r><t>do</t></r><r><t xml:space="preserve">is</t></r></si>',
+      "xl/worksheets/sheet1.xml":
+        '<c r="A1" t="s"><v>0</v></c><c r="B1"/><c r="C1" t="s"><v>1</v></c><c r="A2"><v>5</v><c r="B2" t="b"/>',
+    };
+    expect(xlsxText((path) => files[path] ?? null)).toBe("## Sheet: S\num,,dois\r\n,FALSE,");
   });
 });

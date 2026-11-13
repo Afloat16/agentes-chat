@@ -24,6 +24,8 @@ const TEXT_TYPE = /^text\/|json|xml|yaml/;
 const OFFICE_PART_BYTES = 40_000_000;
 const ZIP_LIST_MAX = 300;
 const SHEET_ROWS_MAX = 5000;
+/** Excel's last column (XFD): a cell past it is no real cell, and would make every row that wide. */
+const SHEET_COLUMNS_MAX = 16_384;
 
 export interface ModelFile {
   /** What the AI reads as text (the file's own text, or what was read out of it). */
@@ -52,9 +54,37 @@ const isVideoFile = (name: string, contentType: string) =>
 const isZip = (b: Uint8Array) => b[0] === 0x50 && b[1] === 0x4b && (b[2] === 0x03 || b[2] === 0x05);
 const isPdf = (b: Uint8Array) => b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
 
+// Uploaded files are untrusted: every pattern here runs in linear time (no quantifier that can re-scan what another
+// start already scanned), so a crafted file can't stall the server.
 const PAGE_OBJECT = /\/Type\s*\/Page(?![a-zA-Z])/g;
-const PAGE_COUNT = /\/Type\s*\/Pages\b[^>]*?\/Count\s+(\d+)|\/Count\s+(\d+)[^>]*?\/Type\s*\/Pages\b/g;
-const OBJECT_STREAM = /\/Type\s*\/ObjStm[^>]*>>\s*stream\r?\n/g;
+const PAGES_TYPE = /\/Type\s*\/Pages\b/;
+const COUNT = /\/Count\s+(\d+)/g;
+const OBJECT_STREAM = /\/Type\s*\/ObjStm/g;
+const STREAM_START = />>\s*stream\r?\n/y;
+/** What one compressed object stream may inflate to: past it, its pages go uncounted. */
+const OBJECT_STREAM_BYTES = 64_000_000;
+
+/** Where each `/Type /ObjStm` dictionary's stream starts and ends (`endstream`), in one pass. */
+function objectStreams(latin1: string): [number, number][] {
+  const found: [number, number][] = [];
+  OBJECT_STREAM.lastIndex = 0;
+  for (let m = OBJECT_STREAM.exec(latin1); m; m = OBJECT_STREAM.exec(latin1)) {
+    const close = latin1.indexOf(">", m.index + m[0].length);
+    if (close < 0) break;
+    STREAM_START.lastIndex = close;
+    const head = STREAM_START.exec(latin1);
+    if (!head) {
+      OBJECT_STREAM.lastIndex = close;
+      continue;
+    }
+    const start = close + head[0].length;
+    const end = latin1.indexOf("endstream", start);
+    if (end < 0) break;
+    found.push([start, end]);
+    OBJECT_STREAM.lastIndex = end;
+  }
+  return found;
+}
 
 /**
  * A PDF's pages (at least one): its page objects or its page tree's `/Count`, whichever says more, read in the
@@ -63,20 +93,21 @@ const OBJECT_STREAM = /\/Type\s*\/ObjStm[^>]*>>\s*stream\r?\n/g;
 export function pdfPages(bytes: Uint8Array): number {
   const latin1 = new TextDecoder("latin1").decode(bytes);
   const parts = [latin1];
-  for (const m of latin1.matchAll(OBJECT_STREAM)) {
-    const start = (m.index ?? 0) + m[0].length;
-    const end = latin1.indexOf("endstream", start);
-    if (end < 0) continue;
+  for (const [start, end] of objectStreams(latin1)) {
     try {
-      parts.push(inflateSync(bytes.subarray(start, end)).toString("latin1"));
+      parts.push(inflateSync(bytes.subarray(start, end), { maxOutputLength: OBJECT_STREAM_BYTES }).toString("latin1"));
     } catch {
-      // Not Flate, or cut: its pages go uncounted.
+      // Not Flate, cut, or too big: its pages go uncounted.
     }
   }
   let pages = 1;
   for (const part of parts) {
     pages = Math.max(pages, part.match(PAGE_OBJECT)?.length ?? 0);
-    for (const m of part.matchAll(PAGE_COUNT)) pages = Math.max(pages, Number(m[1] ?? m[2]));
+    // A page tree's `/Count` sits in the same dictionary as its `/Type /Pages`, with no `>` between them.
+    for (const dict of part.split(">")) {
+      if (!PAGES_TYPE.test(dict)) continue;
+      for (const m of dict.matchAll(COUNT)) pages = Math.max(pages, Number(m[1]));
+    }
   }
   return pages;
 }
@@ -206,26 +237,63 @@ function runsText(xml: string, paragraph: RegExp, run: RegExp): string {
 }
 
 export const docxText = (xml: string) =>
-  runsText(xml, /<\/w:p>/, /<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>|<w:tab\/>|<\/w:tc>/g);
+  runsText(xml, /<\/w:p>/, /<w:t(?:\s[^<>]*)?>([^<]*)<\/w:t>|<w:tab\/>|<\/w:tc>/g);
 
-export const pptxText = (xml: string) => runsText(xml, /<\/a:p>/, /<a:t(?:\s[^>]*)?>([^<]*)<\/a:t>/g);
+export const pptxText = (xml: string) => runsText(xml, /<\/a:p>/, /<a:t(?:\s[^<>]*)?>([^<]*)<\/a:t>/g);
+
+const TEXT_RUN = /<t(?:\s[^<>]*)?>([^<]*)<\/t>/g;
+const runText = (xml: string) => [...xml.matchAll(TEXT_RUN)].map((t) => decodeXmlEntities(t[1] ?? "")).join("");
+
+/** What each `<open>…</close>` holds, in order: the first `open` before each `close` (a lazy match, in one pass). */
+const bodiesOf = (xml: string, open: string, close: string) =>
+  xml
+    .split(close)
+    .slice(0, -1)
+    .flatMap((chunk) => {
+      const at = chunk.indexOf(open);
+      return at < 0 ? [] : [chunk.slice(at + open.length)];
+    });
+
+const CELL_HEAD = /<c\b([^<>]*?)(\/?)>/g;
+
+/** Each `<c …>` of a sheet: its attributes and what it holds (empty when it closes itself). */
+function cellsOf(xml: string): { attrs: string; body: string }[] {
+  const cells: { attrs: string; body: string }[] = [];
+  // Once no `</c>` is left, only the cells that close themselves can still be read.
+  let closes = true;
+  CELL_HEAD.lastIndex = 0;
+  for (let m = CELL_HEAD.exec(xml); m; m = CELL_HEAD.exec(xml)) {
+    if (m[2]) {
+      cells.push({ attrs: m[1] ?? "", body: "" });
+      continue;
+    }
+    if (!closes) continue;
+    const start = m.index + m[0].length;
+    const end = xml.indexOf("</c>", start);
+    if (end < 0) {
+      closes = false;
+      continue;
+    }
+    cells.push({ attrs: m[1] ?? "", body: xml.slice(start, end) });
+    CELL_HEAD.lastIndex = end + 4;
+  }
+  return cells;
+}
 
 /** A column's letters as its index (`A` → 0, `AB` → 27). */
 const columnIndex = (letters: string) => [...letters].reduce((n, c) => n * 26 + c.charCodeAt(0) - 64, 0) - 1;
 
 /** Every sheet of a workbook as CSV under its name (shared strings, inline strings, numbers and booleans). */
 export function xlsxText(part: (path: string) => string | null): string {
-  const strings = [...(part("xl/sharedStrings.xml") ?? "").matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) =>
-    [...(m[1] ?? "").matchAll(/<t(?:\s[^>]*)?>([^<]*)<\/t>/g)].map((t) => decodeXmlEntities(t[1] ?? "")).join(""),
-  );
+  const strings = bodiesOf(part("xl/sharedStrings.xml") ?? "", "<si>", "</si>").map(runText);
   const rels = new Map(
-    [...(part("xl/_rels/workbook.xml.rels") ?? "").matchAll(/<Relationship\b[^>]*>/g)].flatMap((m) => {
+    [...(part("xl/_rels/workbook.xml.rels") ?? "").matchAll(/<Relationship\b[^<>]*>/g)].flatMap((m) => {
       const id = /\bId="([^"]+)"/.exec(m[0])?.[1];
       const target = /\bTarget="([^"]+)"/.exec(m[0])?.[1];
       return id && target ? [[id, target.replace(/^\/?xl\//, "")] as const] : [];
     }),
   );
-  const sheets = [...(part("xl/workbook.xml") ?? "").matchAll(/<sheet\b[^>]*>/g)].map((m, i) => ({
+  const sheets = [...(part("xl/workbook.xml") ?? "").matchAll(/<sheet\b[^<>]*>/g)].map((m, i) => ({
     name: decodeXmlEntities(/\bname="([^"]*)"/.exec(m[0])?.[1] ?? `Sheet${i + 1}`),
     target: rels.get(/\br:id="([^"]+)"/.exec(m[0])?.[1] ?? "") ?? `worksheets/sheet${i + 1}.xml`,
   }));
@@ -233,22 +301,23 @@ export function xlsxText(part: (path: string) => string | null): string {
     .map(({ name, target }) => {
       const grid: string[][] = [];
       let cut = false;
-      for (const c of (part(`xl/${target}`) ?? "").matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
-        const ref = /\br="([A-Z]+)(\d+)"/.exec(c[1] ?? "");
+      for (const { attrs, body } of cellsOf(part(`xl/${target}`) ?? "")) {
+        const ref = /\br="([A-Z]+)(\d+)"/.exec(attrs);
         if (!ref) continue;
         const row = Number(ref[2]) - 1;
         if (row >= SHEET_ROWS_MAX) {
           cut = true;
           continue;
         }
-        const type = /\bt="(\w+)"/.exec(c[1] ?? "")?.[1];
-        const body = c[2] ?? "";
+        const column = columnIndex(ref[1] ?? "A");
+        if (column >= SHEET_COLUMNS_MAX) continue;
+        const type = /\bt="(\w+)"/.exec(attrs)?.[1];
         const v = /<v>([^<]*)<\/v>/.exec(body)?.[1];
         const value =
           type === "s"
             ? (strings[Number(v)] ?? "")
             : type === "inlineStr"
-              ? [...body.matchAll(/<t(?:\s[^>]*)?>([^<]*)<\/t>/g)].map((t) => decodeXmlEntities(t[1] ?? "")).join("")
+              ? runText(body)
               : type === "b"
                 ? v === "1"
                   ? "TRUE"
@@ -256,7 +325,7 @@ export function xlsxText(part: (path: string) => string | null): string {
                 : decodeXmlEntities(v ?? "");
         const cells = grid[row] ?? [];
         grid[row] = cells;
-        cells[columnIndex(ref[1] ?? "A")] = value;
+        cells[column] = value;
       }
       const width = Math.max(0, ...grid.map((r) => r?.length ?? 0));
       const rows = Array.from(grid, (r) => Array.from({ length: width }, (_, i) => r?.[i] ?? ""));
