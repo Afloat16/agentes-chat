@@ -322,7 +322,7 @@ export function createConnectorToolSource(
     }
     if (typeof given !== "string") return input;
     const lines = await runCoAuthors({ db: at.db, http: github, token: at.token }, at);
-    return lines.length > 0 ? { ...input, message: creditedMessage(given, ...lines) } : input;
+    return lines.length > 0 ? { ...input, [sign.field]: creditedMessage(given, ...lines) } : input;
   }
 
   /** Which of a connection's tools are watched for changes (ADR 0117): not Composio's (pinned by toolkit version), not ours. */

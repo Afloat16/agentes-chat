@@ -20,7 +20,10 @@ export function fakeGithubMcp(options: { issueWrite?: boolean; writes?: boolean 
     });
     server.registerTool(
       "merge_pull_request",
-      { description: "Merge a pull request", inputSchema: { ...pr, merge_method: z.string().optional() } },
+      {
+        description: "Merge a pull request",
+        inputSchema: { ...pr, merge_method: z.string().optional(), commit_message: z.string().optional() },
+      },
       async (args) => {
         calls.push({ tool: "merge_pull_request", args });
         return { content: [{ type: "text", text: `Merged PR #${args.pullNumber}` }] };
