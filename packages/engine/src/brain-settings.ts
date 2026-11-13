@@ -10,6 +10,7 @@ import {
   GROK_PROTOCOL,
   isBrainEffort,
   isBrainSpeed,
+  OPENCODE_ACP_PROTOCOL,
   OPENCODE_PROTOCOL,
   type OwnPlanUsage,
   PLAN_KEYS_PROTOCOL,
@@ -388,6 +389,9 @@ function cliOption(machine: MachineLike | null, kind: "cursor" | "opencode" | "g
       antigravity: ANTIGRAVITY_PROTOCOL,
     }[kind]
   )
+    reason = "runner_old";
+  // On Windows a runner before `OPENCODE_ACP_PROTOCOL` refuses every OpenCode turn.
+  else if (kind === "opencode" && machine.os === "windows" && machine.protocol < OPENCODE_ACP_PROTOCOL)
     reason = "runner_old";
   else if (tools && (tools[kind] ?? tools.codex) !== true) reason = "tool_off";
   else if (!machine.executors?.[kind]) reason = missingCli(machine);
