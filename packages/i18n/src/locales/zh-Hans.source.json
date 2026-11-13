@@ -6826,6 +6826,9 @@
   "connectAi.chat.keys": {
     "value": "Workspace key"
   },
+  "connectAi.chat.apiKeys": {
+    "value": "API keys"
+  },
   "connectAi.chat.best": {
     "value": "Most room right now"
   },
@@ -37688,6 +37691,12 @@
   },
   "chat.modelStandIn.text": {
     "value": "{{plan}} refused {{from}} with this key. I answered with {{to}}, which works with it."
+  },
+  "chat.modelStandIn.useAll": {
+    "value": "Use {{model}} for all"
+  },
+  "chat.modelStandIn.pick": {
+    "value": "Choose model"
   },
   "chat.usageWhen.at": {
     "value": "at {{time}}"

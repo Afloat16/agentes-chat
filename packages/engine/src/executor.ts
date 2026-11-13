@@ -620,9 +620,10 @@ export interface Transcript {
   speedFallback?: boolean;
   /**
    * The plan refused the model "Automático" mapped to, and the turn went again on one the key serves
-   * (`meta.modelStandIn`): labels for the line under the reply, and the id that answered.
+   * (`meta.modelStandIn`): labels for the line under the reply, the id that answered, and the computer and account
+   * of the key, for its "Usar o <modelo> em todos".
    */
-  modelStandIn?: { plan: string; from: string; to: string; model?: string };
+  modelStandIn?: { plan: string; from: string; to: string; model?: string; machineId?: string; account?: string };
   /**
    * The computer brain is unavailable and nothing can stand in: the run waits for the computer. A usage wait
    * (`USAGE_WAIT_CODES`: the plan's limit, the agent's budget) has no computer to wait for: `machineId` is empty,
@@ -4551,6 +4552,8 @@ async function executeRunInner(
                 from: fromModel?.label ?? from ?? "",
                 to: toModel?.label ?? to,
                 ...(toModel ? { model: toModel.id } : {}),
+                machineId,
+                ...(turnPlan.account?.id ? { account: turnPlan.account.id } : {}),
               };
               later(() => addRunStep(db, run, "context", { autoModelStandIn: { from: from ?? null, to } }));
               continue;

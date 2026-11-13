@@ -131,6 +131,24 @@ export function modelStandInText(t: TFunction, meta: Record<string, unknown> | n
   return t("chat.modelStandIn.text", { plan: s.plan, from: s.from, to: s.to });
 }
 
+/**
+ * The key a stand-in reply ran on and the model that answered (`meta.modelStandIn`), for its "Usar o <modelo> em
+ * todos"; null on any other reply, or one too old to say.
+ */
+export function modelStandInKey(
+  meta: Record<string, unknown> | null | undefined,
+): { machineId: string; account: string; model: string; to: string } | null {
+  const s = meta?.modelStandIn as Record<string, unknown> | undefined;
+  if (!s) return null;
+  const { machineId, account, model, to } = s;
+  return typeof machineId === "string" &&
+    typeof account === "string" &&
+    typeof model === "string" &&
+    typeof to === "string"
+    ? { machineId, account, model, to }
+    : null;
+}
+
 /** When the next month starts (UTC): an agent's monthly budget renews then. */
 export function nextMonthIso(now = new Date()): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();

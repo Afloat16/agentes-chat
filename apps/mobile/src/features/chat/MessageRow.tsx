@@ -850,7 +850,7 @@ export const MessageRow = memo(function MessageRow({
             {media ? <ChatMedia media={media} liveId={m.id} /> : null}
             {voiceOf(meta) ? <VoiceMessage message={m} /> : null}
             {isAgent && meta?.speedFallback === true ? <SpeedFallbackLine message={m} /> : null}
-            {isAgent && standIn ? <ModelStandInLine text={standIn} /> : null}
+            {isAgent && standIn ? <ModelStandInLine message={m} text={standIn} /> : null}
             {(stopped || atLimit || providerCut) && m.agentRunId ? (
               <StoppedLine
                 message={m}

@@ -2861,6 +2861,7 @@
       "mine": "I tuoi",
       "yours": "Il tuo",
       "keys": "Chiave dello spazio di lavoro",
+      "apiKeys": "Chiavi API",
       "best": "Con più margine ora",
       "atLimit": "Al limite",
       "seeAll": "Vedi tutti i {{count}} account",
@@ -15985,7 +15986,9 @@
       "action": "Apri agente"
     },
     "modelStandIn": {
-      "text": "{{plan}} ha rifiutato {{from}} con questa chiave. Ho risposto con {{to}}, che funziona con essa."
+      "text": "{{plan}} ha rifiutato {{from}} con questa chiave. Ho risposto con {{to}}, che funziona con essa.",
+      "useAll": "Usa {{model}} per tutti",
+      "pick": "Scegli modello"
     },
     "usageWhen": {
       "at": "alle {{time}}",

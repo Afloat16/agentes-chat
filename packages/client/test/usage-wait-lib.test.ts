@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import type { TFunction } from "i18next";
 import { waitsForComputer } from "../src/lib/machine-outages";
 import { serverBody } from "../src/lib/message-body";
-import { modelLimitText, modelStandInText, usageWhen } from "../src/lib/plan-usage";
+import { modelLimitText, modelStandInKey, modelStandInText, usageWhen } from "../src/lib/plan-usage";
 import { planLimitNote, usageCheckedText, usageWaitFix } from "../src/lib/usage-pause";
 
 /** Says the key and its values, so a test reads which words were picked. */
@@ -123,6 +123,11 @@ test("a model's own limit: the note names the model and the way out, the brain c
   );
   expect(modelStandInText(t, { modelStandIn: { plan: "x", from: 1, to: "y" } })).toBeNull();
   expect(modelStandInText(t, {})).toBeNull();
+  // Its key, for "Usar o GLM-5.3 em todos": only on a reply that says which computer and account it ran on.
+  expect(modelStandInKey(standIn)).toBeNull();
+  expect(
+    modelStandInKey({ modelStandIn: { ...standIn.modelStandIn, model: "glm-5.3", machineId: "m1", account: "a1" } }),
+  ).toEqual({ machineId: "m1", account: "a1", model: "glm-5.3", to: "GLM-5.3" });
 });
 
 test("a wait's way out: another model for its owner or an admin, a higher budget for an admin, none for a plan's limit", () => {

@@ -2663,6 +2663,7 @@
       "mine": "你的账号",
       "yours": "你的",
       "keys": "工作区密钥",
+      "apiKeys": "API 密钥",
       "best": "当前余量最多",
       "atLimit": "已达上限",
       "seeAll": "查看全部 {{count}} 个账号",
@@ -15014,7 +15015,9 @@
       "action": "打开智能体"
     },
     "modelStandIn": {
-      "text": "{{plan}} 用此密钥拒绝了 {{from}}。我改用可用的 {{to}} 回复了。"
+      "text": "{{plan}} 用此密钥拒绝了 {{from}}。我改用可用的 {{to}} 回复了。",
+      "useAll": "全部使用 {{model}}",
+      "pick": "选择模型"
     },
     "usageWhen": {
       "at": "{{time}}",

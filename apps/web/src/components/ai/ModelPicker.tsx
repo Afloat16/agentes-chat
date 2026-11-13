@@ -1,7 +1,8 @@
-import type { Agent, AgentBrain } from "@agenteschat/client";
+import type { Agent, AgentBrain, Message } from "@agenteschat/client";
 import {
   keys,
   useAgentBrain,
+  useAiAccounts,
   useApi,
   useCredentials,
   useModels,
@@ -10,6 +11,7 @@ import {
 } from "@agenteschat/client";
 import { EFFORT_LEVELS, type EffortLevel } from "@agenteschat/client/lib/brain-advanced";
 import {
+  mayPickModel,
   modelPickerModels,
   modelPickerSave,
   modelPickerTiles,
@@ -18,7 +20,8 @@ import {
   type PickerModel,
 } from "@agenteschat/client/lib/brain-picker";
 import { can } from "@agenteschat/client/lib/permissions";
-import { planMeterText } from "@agenteschat/client/lib/plan-usage";
+import { modelStandInKey, planMeterText } from "@agenteschat/client/lib/plan-usage";
+import { planOf } from "@agenteschat/client/lib/plans";
 import { modelChoices } from "@agenteschat/client/lib/providers";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import {
@@ -27,6 +30,7 @@ import {
   cx,
   EffortPixels,
   EventPill,
+  EventPillAction,
   Icon,
   Input,
   Popover,
@@ -34,7 +38,7 @@ import {
   planLine,
 } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, type ReactElement, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOpenAgentPanel } from "@/components/agent-panel-context";
 import { TeamScene } from "@/components/arrival/TeamScene";
@@ -43,6 +47,7 @@ import { useOrg } from "@/components/org-context";
 import { useAgentThinks } from "@/hooks/useAgentThinks";
 import { fullLook, lookOf } from "@/lib/look";
 import { useToast } from "@/lib/toast";
+import { UseKeyForAll } from "./UseKeyForAll";
 import "./model-picker.css";
 
 /** Past this many models the list gets a search field. */
@@ -65,32 +70,24 @@ export function ModelPickerButton({
   const { t } = useTranslation();
   const { org, me } = useOrg();
   const thinks = useAgentThinks(agent);
-  const [open, setOpen] = useState(false);
   if (!thinks?.text) return null;
   const mark = thinks.mark ? <ProviderLogo id={thinks.mark} size="xs" /> : <BrainIcon kind={thinks.kind} size={14} />;
   // The team's right hand thinks with each person's own AI ("Sua IA"), set where that is: never picked here.
-  const rightHand = isRightHand(agent);
-  const may = !rightHand && (can(org, "manage_agents") || agent.ownerUserId === me.user.id);
-  if (!may)
+  if (!mayPickModel(agent, me.user.id, can(org, "manage_agents")))
     return (
       <span
         className={cx("mp-label", className)}
         data-size={size}
-        title={rightHand ? undefined : t("brain.picker.readOnly")}
+        title={isRightHand(agent) ? undefined : t("brain.picker.readOnly")}
       >
         {mark}
         <span className="mp-label__text">{thinks.text}</span>
       </span>
     );
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
-      side="bottom"
-      align="end"
-      label={t("brain.picker.open", { agent: agent.name })}
-      className="mp"
-      trigger={
+    <ModelPickerPopover
+      agent={agent}
+      trigger={(open) => (
         <button
           type="button"
           className={cx("mp-trigger", className)}
@@ -102,19 +99,81 @@ export function ModelPickerButton({
           <span className="mp-label__text">{thinks.text}</span>
           <Icon name="chevronDown" size={14} className="mp-trigger__chevron" />
         </button>
-      }
+      )}
+    />
+  );
+}
+
+/** The picker, opened from `trigger` (the header's button, a reply's "Escolher modelo"). */
+function ModelPickerPopover({ agent, trigger }: { agent: Agent; trigger: (open: boolean) => ReactElement }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+      side="bottom"
+      align="end"
+      label={t("brain.picker.open", { agent: agent.name })}
+      className="mp"
+      trigger={trigger(open)}
     >
       {open && <ModelPickerPanel agent={agent} onClose={() => setOpen(false)} />}
     </Popover>
   );
 }
 
-/** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
-export function ModelStandInLine({ text }: { text: string }) {
+/**
+ * Under a reply "Automático" gave with another model because the plan refused the one it maps to
+ * (`meta.modelStandIn`). Whoever may change the agent gets "Usar o <modelo> em todos" (the key's dialog, on that
+ * model) when the key is theirs to share, and "Escolher modelo" (the picker).
+ */
+export function ModelStandInLine({
+  text,
+  agent,
+  meta,
+}: {
+  text: string;
+  agent?: Agent | undefined;
+  meta: Message["meta"];
+}) {
+  const { t } = useTranslation();
+  const { org, me } = useOrg();
+  const may = mayPickModel(agent, me.user.id, can(org, "manage_agents"));
+  const key = may ? modelStandInKey(meta) : null;
+  const ai = useAiAccounts(org.id, Boolean(key));
+  const account = key
+    ? ai.data?.accounts.find((a) => a.id === key.account && a.machineId === key.machineId && a.status === "active")
+    : undefined;
+  const [all, setAll] = useState(false);
   return (
-    <EventPill className="cn-pill cn-pill--part" mark={<Icon name="info" size={14} />}>
-      {text}
-    </EventPill>
+    <>
+      <EventPill
+        className="cn-pill cn-pill--part"
+        mark={<Icon name="info" size={14} />}
+        actions={
+          may &&
+          agent && (
+            <>
+              {key && account && planOf(account.provider) && (
+                <EventPillAction onClick={() => setAll(true)}>
+                  {t("chat.modelStandIn.useAll", { model: key.to })}
+                </EventPillAction>
+              )}
+              <ModelPickerPopover
+                agent={agent}
+                trigger={(open) => (
+                  <EventPillAction aria-expanded={open}>{t("chat.modelStandIn.pick")}</EventPillAction>
+                )}
+              />
+            </>
+          )
+        }
+      >
+        {text}
+      </EventPill>
+      {all && account && key && <UseKeyForAll account={account} model={key.model} onClose={() => setAll(false)} />}
+    </>
   );
 }
 

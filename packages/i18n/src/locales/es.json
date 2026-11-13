@@ -2855,6 +2855,7 @@
       "mine": "Tuyas",
       "yours": "Tuya",
       "keys": "Clave del espacio de trabajo",
+      "apiKeys": "Claves de API",
       "best": "Con más margen ahora",
       "atLimit": "En su límite",
       "seeAll": "Ver las {{count}} cuentas",
@@ -15910,7 +15911,9 @@
       "action": "Abrir agente"
     },
     "modelStandIn": {
-      "text": "{{plan}} rechazó {{from}} con esta clave. Respondí con {{to}}, que funciona con ella."
+      "text": "{{plan}} rechazó {{from}} con esta clave. Respondí con {{to}}, que funciona con ella.",
+      "useAll": "Usar {{model}} en todos",
+      "pick": "Elegir modelo"
     },
     "usageWhen": {
       "at": "a las {{time}}",

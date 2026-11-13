@@ -64,7 +64,7 @@ import {
 } from "@/ui";
 import { CoverParallax, useCoverScroll, useScrollFade } from "@/ui/cover";
 import { router } from "@/ui/navigation";
-import { openAgentAi } from "../ai/AgentAiScreen";
+import { ModelPickerSheet } from "../ai/ModelPickerSheet";
 import { openConnectAi } from "../ai/NoAiCard";
 import { usePlanHold } from "../ai/parts";
 import { LetMeTalkButton } from "../chat/ReachLines";
@@ -552,12 +552,15 @@ function Profile({ id }: { id: string }) {
         <>
           <GroupedHeader>{t("mobile.intentAgents.thinks")}</GroupedHeader>
           <GroupedList>
-            {/* Its owner and admins open its AI: the account, the plan's usage, who it replies to. */}
+            {/* Its owner and admins change its AI and model in place (the DM header's sheet); its "Mais opções" opens
+                the AI screen. Anyone else reads it. */}
             <GroupedRow
               leading={thinks.mark ? <ProviderLogo id={thinks.mark} size="sm" /> : undefined}
               label={thinksPlan ?? thinks.text}
               {...(thinksUnder ? { sub: thinksUnder, subLines: 2 } : {})}
-              {...(decides ? { chevron: true, onPress: () => openAgentAi(id) } : {})}
+              {...(decides && agent
+                ? { chevron: true, onPress: () => sheet.open(<ModelPickerSheet agent={agent} />) }
+                : {})}
             />
           </GroupedList>
         </>

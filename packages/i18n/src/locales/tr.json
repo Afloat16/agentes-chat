@@ -2754,6 +2754,7 @@
       "mine": "Sizinkiler",
       "yours": "Sizin",
       "keys": "Çalışma alanı anahtarı",
+      "apiKeys": "API anahtarları",
       "best": "Şu an en müsait olan",
       "atLimit": "Sınıra ulaşanlar",
       "seeAll": "Tüm {{count}} hesabı gör",
@@ -15416,7 +15417,9 @@
       "action": "Ajanı aç"
     },
     "modelStandIn": {
-      "text": "{{plan}} bu anahtarla {{from}} modelini reddetti. Onunla çalışan {{to}} ile yanıt verdim."
+      "text": "{{plan}} bu anahtarla {{from}} modelini reddetti. Onunla çalışan {{to}} ile yanıt verdim.",
+      "useAll": "Hepsinde {{model}} kullan",
+      "pick": "Model seç"
     },
     "usageWhen": {
       "at": "saat {{time}}",

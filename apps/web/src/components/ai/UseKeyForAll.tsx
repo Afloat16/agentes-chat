@@ -1,7 +1,7 @@
 import type { AgentSetup, AiAccounts as AiAccountsView } from "@agenteschat/client";
 import { keys, useApi, useSetupPreview } from "@agenteschat/client";
 import { setupOutcome, takers } from "@agenteschat/client/lib/agent-setup";
-import { type KeyModel, keyModelGroups } from "@agenteschat/client/lib/brain-picker";
+import { type KeyModel, keyModelFirst, keyModelGroups } from "@agenteschat/client/lib/brain-picker";
 import { type CodingPlan, planOf } from "@agenteschat/client/lib/plans";
 import { providerLabel } from "@agenteschat/client/lib/providers";
 import {
@@ -34,14 +34,25 @@ const FACES = 5;
 /**
  * "Usar em todos os agentes" on a coding plan key's row: one of the key's models, in runs by what the key did with
  * each (`keyModelGroups`), for every agent that may take it (the server's preview), saved like "Usar em outros
- * agentes" (`applySetup`), which also makes it what new agents start with.
+ * agentes" (`applySetup`), which also makes it what new agents start with. `model`: the one it starts on (a reply's
+ * stand-in), when the key may run it.
  */
-export function UseKeyForAll({ account, onClose }: { account: Row; onClose: () => void }) {
+export function UseKeyForAll({ account, model, onClose }: { account: Row; model?: string; onClose: () => void }) {
   const plan = planOf(account.provider);
-  return plan ? <KeyForAllDialog account={account} plan={plan} onClose={onClose} /> : null;
+  return plan ? <KeyForAllDialog account={account} plan={plan} preferred={model} onClose={onClose} /> : null;
 }
 
-function KeyForAllDialog({ account, plan, onClose }: { account: Row; plan: CodingPlan; onClose: () => void }) {
+function KeyForAllDialog({
+  account,
+  plan,
+  preferred,
+  onClose,
+}: {
+  account: Row;
+  plan: CodingPlan;
+  preferred: string | undefined;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const api = useApi();
@@ -49,11 +60,10 @@ function KeyForAllDialog({ account, plan, onClose }: { account: Row; plan: Codin
   const toast = useToast();
   const dir = useDirectory(org.id);
   const groups = keyModelGroups(plan, account.usage);
-  const first = groups.works[0] ?? groups.untested[0];
-  const [model, setModel] = useState(first?.value ?? "");
+  const [model, setModel] = useState(() => keyModelFirst(groups, preferred));
   const [all, setAll] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(groups.works.length === 0);
+  const [moreOpen, setMoreOpen] = useState(groups.works.length === 0 || groups.untested.some((m) => m.value === model));
   const chosen = [...groups.works, ...groups.untested].find((m) => m.value === model);
   const setup: AgentSetup = {
     brain: account.kind,

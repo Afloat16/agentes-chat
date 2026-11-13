@@ -1,5 +1,6 @@
 import type { TFunction } from "i18next";
 import type {
+  Agent,
   AgentBrain,
   AgentBrainInput,
   AiAccounts,
@@ -34,6 +35,7 @@ import {
   planOf,
 } from "./plans";
 import { AUTO, apiProviderOf, isAuto, type ModelChoice, providerLabel } from "./providers";
+import { isRightHand } from "./right-hand";
 
 /*
  * "Quem pensa" as one searchable list (web and phone): the new agent's step offers what the agent's page offers,
@@ -465,6 +467,8 @@ export const modelRowOptions = (rows: readonly ModelRow[]) =>
 export interface KeyModel {
   /** What an agent stores (`planModelValue`). */
   value: string;
+  /** The plan's id for it, by which its limits are kept. */
+  id: string;
   label: string;
   maker?: string;
   /** It reads text only (no images or PDFs). */
@@ -488,6 +492,7 @@ export function keyModelGroups(
     const limit = modelLimitOf(usage?.models, m.id, now);
     const row: KeyModel = {
       value: planModelValue(m),
+      id: m.id,
       label: m.label,
       ...(m.maker ? { maker: m.maker } : {}),
       textOnly: m.images === false,
@@ -498,6 +503,12 @@ export function keyModelGroups(
     else out.untested.push(row);
   }
   return out;
+}
+
+/** The model "Usar em todos os agentes" starts on: `preferred` (a value or id) when the key may run it, else the first that works or is untested. */
+export function keyModelFirst(groups: ReturnType<typeof keyModelGroups>, preferred?: string | null): string {
+  const usable = [...groups.works, ...groups.untested];
+  return (usable.find((m) => preferred && (m.value === preferred || m.id === preferred)) ?? usable[0])?.value ?? "";
 }
 
 // ── The model picker (the agent's AI in place: the DM's header, its profile card, its side panel) ──
@@ -732,4 +743,13 @@ export function modelPickerUndo(
       ? { brain: "model" }
       : { brain: before.brain, account: before.account, model: before.model, effort: before.effort };
   return saved.model !== undefined && saved.model !== before.apiModel ? { brain, model: before.apiModel } : { brain };
+}
+
+/** Whether the viewer changes this agent's AI and model in place: an admin or its owner, never for the team's right hand. */
+export function mayPickModel(
+  agent: Pick<Agent, "builtin" | "ownerUserId"> | undefined,
+  meId: string | null | undefined,
+  admin: boolean,
+): boolean {
+  return Boolean(agent && !isRightHand(agent) && (admin || (meId && agent.ownerUserId === meId)));
 }

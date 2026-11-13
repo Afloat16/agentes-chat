@@ -2873,6 +2873,8 @@ export const ptBR = {
       mine: "Suas",
       yours: "Sua",
       keys: "Chave do workspace",
+      /** A group of the switch screen's accounts by AI: the workspace's API keys. */
+      apiKeys: "Chaves de API",
       best: "Com mais folga agora",
       atLimit: "No limite",
       seeAll: "Ver as {{count}} contas",
@@ -15551,6 +15553,8 @@ export const ptBR = {
     /** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
     modelStandIn: {
       text: "O {{plan}} recusou o {{from}} com esta chave. Respondi com o {{to}}, que funciona nela.",
+      useAll: "Usar o {{model}} em todos",
+      pick: "Escolher modelo",
     },
     /** When a waiting agent goes on (`usageWhen`). */
     usageWhen: { at: "às {{time}}", on: "{{day}} às {{time}}", date: "em {{date}}" },

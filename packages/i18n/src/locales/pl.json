@@ -2954,6 +2954,7 @@
       "mine": "Twoje",
       "yours": "Twoje",
       "keys": "Klucz przestrzeni roboczej",
+      "apiKeys": "Klucze API",
       "best": "Teraz z największym zapasem",
       "atLimit": "Na limicie",
       "seeAll": "Pokaż wszystkie konta ({{count}})",
@@ -16475,7 +16476,9 @@
       "action": "Otwórz agenta"
     },
     "modelStandIn": {
-      "text": "{{plan}} odrzucił {{from}} z tym kluczem. Odpowiedziałem przez {{to}}, który z nim działa."
+      "text": "{{plan}} odrzucił {{from}} z tym kluczem. Odpowiedziałem przez {{to}}, który z nim działa.",
+      "useAll": "Użyj {{model}} dla wszystkich",
+      "pick": "Wybierz model"
     },
     "usageWhen": {
       "at": "o {{time}}",

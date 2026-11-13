@@ -2765,6 +2765,7 @@
       "mine": "Van jou",
       "yours": "Van jou",
       "keys": "Werkruimtesleutel",
+      "apiKeys": "API-sleutels",
       "best": "Nu met de meeste ruimte",
       "atLimit": "Op hun limiet",
       "seeAll": "Alle {{count}} accounts bekijken",
@@ -15543,7 +15544,9 @@
       "action": "Agent openen"
     },
     "modelStandIn": {
-      "text": "{{plan}} heeft {{from}} met deze sleutel geweigerd. Ik heb geantwoord met {{to}}, dat er wel mee werkt."
+      "text": "{{plan}} heeft {{from}} met deze sleutel geweigerd. Ik heb geantwoord met {{to}}, dat er wel mee werkt.",
+      "useAll": "{{model}} voor iedereen gebruiken",
+      "pick": "Model kiezen"
     },
     "usageWhen": {
       "at": "om {{time}}",

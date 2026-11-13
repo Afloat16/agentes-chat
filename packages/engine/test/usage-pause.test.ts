@@ -1921,11 +1921,12 @@ describe("a model OpenCode refuses for the key (a 403: the model or the account 
     const replies = (await listMessages(f.db, f.owner.id, f.org.id, f.general.id, {})).filter(
       (m) => m.author.type === "agent" && m.body === "feito",
     );
-    expect(replies[0]?.meta.modelStandIn).toEqual({
+    expect(replies[0]?.meta.modelStandIn).toMatchObject({
       plan: "OpenCode Go",
       from: "MiniMax M3",
       to: "GLM-5.3",
       model: "glm-5.3",
+      account: accountId,
     });
     // A day later MiniMax M3 is still held: the next run starts on the model that answers, and says nothing.
     setSystemTime(new Date(Date.now() + 86_400_000));

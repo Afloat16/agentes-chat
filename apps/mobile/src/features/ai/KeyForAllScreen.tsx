@@ -1,7 +1,7 @@
 import type { AgentSetup } from "@agenteschat/client";
 import { keys, useAiAccounts, useApi, useSetupPreview } from "@agenteschat/client";
 import { setupOutcome, takers } from "@agenteschat/client/lib/agent-setup";
-import { type KeyModel, keyModelGroups } from "@agenteschat/client/lib/brain-picker";
+import { type KeyModel, keyModelFirst, keyModelGroups } from "@agenteschat/client/lib/brain-picker";
 import { planOf } from "@agenteschat/client/lib/plans";
 import { providerLabel } from "@agenteschat/client/lib/providers";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,11 +22,21 @@ import { Note } from "./parts";
  * may take it (the server's preview). "Usar" saves it like "Usar em outros agentes" (`applySetup`).
  */
 
-/** Opens "Usar em todos os agentes" for a coding plan key account. */
-export const openKeyForAll = (machineId: string, accountId: string) =>
-  router.push(`/key-for-all/${accountId}?machineId=${encodeURIComponent(machineId)}` as never);
+/** Opens "Usar em todos os agentes" for a coding plan key account, on `model` when the key may run it. */
+export const openKeyForAll = (machineId: string, accountId: string, model?: string) =>
+  router.push(
+    `/key-for-all/${accountId}?machineId=${encodeURIComponent(machineId)}${model ? `&model=${encodeURIComponent(model)}` : ""}` as never,
+  );
 
-export function KeyForAllScreen({ accountId, machineId }: { accountId: string; machineId: string }) {
+export function KeyForAllScreen({
+  accountId,
+  machineId,
+  model: preferred,
+}: {
+  accountId: string;
+  machineId: string;
+  model?: string | undefined;
+}) {
   const { t } = useTranslation();
   const { orgId } = useOrg();
   const api = useApi();
@@ -43,7 +53,7 @@ export function KeyForAllScreen({ accountId, machineId }: { accountId: string; m
   const [moreOpen, setMoreOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const usable = groups ? [...groups.works, ...groups.untested] : [];
-  const model = picked ?? groups?.works[0]?.value ?? groups?.untested[0]?.value ?? "";
+  const model = picked ?? (groups ? keyModelFirst(groups, preferred) : "");
   const chosen = usable.find((m) => m.value === model);
   const setup: AgentSetup | null = account
     ? { brain: account.kind, machineId: account.machineId, account: account.id, model: model || null }
@@ -133,7 +143,7 @@ export function KeyForAllScreen({ accountId, machineId }: { accountId: string; m
                     onPress={() => setMoreOpen((o) => !o)}
                   />
                 </GroupedList>
-                {moreOpen || groups.works.length === 0 ? (
+                {moreOpen || groups.works.length === 0 || groups.untested.some((m) => m.value === model) ? (
                   <View style={styles.gap}>
                     <GroupedList>
                       {groups.untested.map((m) => row(m, m.maker ? providerLabel(m.maker) : maker))}

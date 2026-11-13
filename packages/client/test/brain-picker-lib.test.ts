@@ -9,7 +9,9 @@ import {
   brainPickOptions,
   brainPickText,
   brainPickValue,
+  keyModelFirst,
   keyModelGroups,
+  mayPickModel,
   modelPickerModels,
   modelPickerSave,
   modelPickerTiles,
@@ -352,7 +354,13 @@ test("a key's models for every agent: the one that answered, the refused ones an
     },
   });
   expect(groups.works).toEqual([
-    { value: "deepseek-v4.1-flash", label: "DeepSeek V4.1 Flash", maker: "deepseek", textOnly: true },
+    {
+      value: "deepseek-v4.1-flash",
+      id: "deepseek-v4.1-flash",
+      label: "DeepSeek V4.1 Flash",
+      maker: "deepseek",
+      textOnly: true,
+    },
   ]);
   expect(groups.refused.map((m) => [m.value, m.refused])).toEqual([
     ["sonnet", "off"],
@@ -362,6 +370,19 @@ test("a key's models for every agent: the one that answered, the refused ones an
   const total = groups.works.length + groups.refused.length + groups.untested.length;
   expect(total).toBe(CODING_PLANS.opencode.claudeCode.models.length);
   expect(keyModelGroups(CODING_PLANS.opencode, null).works).toEqual([]);
+  // Where it starts: the model asked for by value or by the plan's id, unless refused, else the one that works.
+  expect(keyModelFirst(groups, "glm-5.3")).toBe("glm-5.3");
+  expect(keyModelFirst(groups, "minimax-m3")).toBe("deepseek-v4.1-flash");
+  expect(keyModelFirst(groups)).toBe("deepseek-v4.1-flash");
+});
+
+test("who changes an agent's model in place: an admin or its owner, never on the right hand", () => {
+  const agent = { builtin: null, ownerUserId: "u1" };
+  expect(mayPickModel(agent, "u1", false)).toBe(true);
+  expect(mayPickModel(agent, "u2", false)).toBe(false);
+  expect(mayPickModel(agent, "u2", true)).toBe(true);
+  expect(mayPickModel({ builtin: "right_hand", ownerUserId: "u1" }, "u1", true)).toBe(false);
+  expect(mayPickModel(undefined, "u1", true)).toBe(false);
 });
 
 describe("the model picker: the agent's AI changed in place", () => {

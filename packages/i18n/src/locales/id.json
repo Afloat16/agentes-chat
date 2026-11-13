@@ -2670,6 +2670,7 @@
       "mine": "Milikmu",
       "yours": "Milikmu",
       "keys": "Kunci ruang kerja",
+      "apiKeys": "Kunci API",
       "best": "Paling longgar saat ini",
       "atLimit": "Mencapai batas",
       "seeAll": "Lihat semua {{count}} akun",
@@ -15012,7 +15013,9 @@
       "action": "Buka agen"
     },
     "modelStandIn": {
-      "text": "{{plan}} menolak {{from}} dengan kunci ini. Aku menjawab dengan {{to}}, yang berfungsi dengannya."
+      "text": "{{plan}} menolak {{from}} dengan kunci ini. Aku menjawab dengan {{to}}, yang berfungsi dengannya.",
+      "useAll": "Gunakan {{model}} untuk semua",
+      "pick": "Pilih model"
     },
     "usageWhen": {
       "at": "pukul {{time}}",

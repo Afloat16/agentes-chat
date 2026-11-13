@@ -134,7 +134,7 @@ import {
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { AgentSetupIntro, useSetupSteps } from "../agents/setup/SetupCard";
-import { DmModelButton, mayPickModel } from "../ai/ModelPickerSheet";
+import { DmModelButton } from "../ai/ModelPickerSheet";
 import { usePlanHold } from "../ai/parts";
 import { BrowserCard, BrowserRunCard } from "../browser/BrowserCard";
 import { OpenHandoffProvider } from "../browser/open";
@@ -1378,9 +1378,9 @@ function Chat({
         ? // People and agents counted apart: "1 pessoa · 3 agentes", never "4 membros · 3 agentes".
           `${t("mobile.chat.people", { count: roster.data.length - agentsHere })} · ${t("mobile.chat.agentsHere", { count: agentsHere })}`
         : undefined;
-  // Its AI and model, changed in place from the header (an admin or its owner; never the right hand's).
+  // Its AI and model in the header: changed in place by an admin or its owner, read by anyone else; never the right hand's.
   const dmModelAgent = dmAgentId && !isThread ? dir.agentById.get(dmAgentId) : undefined;
-  const dmModel = mayPickModel(dmModelAgent, meId, can(org, "manage_agents")) ? dmModelAgent : undefined;
+  const dmModel = dmModelAgent && !isRightHand(dmModelAgent) ? dmModelAgent : undefined;
   // An agent's DM while it works: the pill's quiet line says what it does ("Consultando o GitHub").
   const dmDoing = useMemo(() => {
     if (!dmAgentId || isThread) return null;

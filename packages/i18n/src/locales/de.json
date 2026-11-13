@@ -2764,6 +2764,7 @@
       "mine": "Deine",
       "yours": "Deins",
       "keys": "Workspace-Schlüssel",
+      "apiKeys": "API-Schlüssel",
       "best": "Gerade mit dem meisten Spielraum",
       "atLimit": "Am Limit",
       "seeAll": "Alle {{count}} Konten ansehen",
@@ -15487,7 +15488,9 @@
       "action": "Agent öffnen"
     },
     "modelStandIn": {
-      "text": "{{plan}} hat {{from}} mit diesem Schlüssel abgelehnt. Ich habe mit {{to}} geantwortet, das damit funktioniert."
+      "text": "{{plan}} hat {{from}} mit diesem Schlüssel abgelehnt. Ich habe mit {{to}} geantwortet, das damit funktioniert.",
+      "useAll": "{{model}} für alle verwenden",
+      "pick": "Modell wählen"
     },
     "usageWhen": {
       "at": "um {{time}}",

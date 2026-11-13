@@ -2955,6 +2955,8 @@ export const en = {
       mine: "Yours",
       yours: "Yours",
       keys: "Workspace key",
+      /** A group of the switch screen's accounts by AI: the workspace's API keys. */
+      apiKeys: "API keys",
       best: "Most room right now",
       atLimit: "At their limit",
       seeAll: "See all {{count}} accounts",
@@ -15566,6 +15568,8 @@ export const en = {
     /** Under a reply "Automático" gave with another model because the plan refused the one it maps to (`meta.modelStandIn`). */
     modelStandIn: {
       text: "{{plan}} refused {{from}} with this key. I answered with {{to}}, which works with it.",
+      useAll: "Use {{model}} for all",
+      pick: "Choose model",
     },
     /** When a waiting agent goes on (`usageWhen`). */
     usageWhen: { at: "at {{time}}", on: "{{day}} at {{time}}", date: "on {{date}}" },

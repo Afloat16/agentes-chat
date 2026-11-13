@@ -2,14 +2,17 @@ import type { Agent, AgentBrain, AgentBrainInput } from "@agenteschat/client";
 import {
   keys,
   useAgentBrain,
+  useAiStatus,
   useApi,
   useCredentials,
   useModels,
   usePlatformKey,
   useUpdateAgent,
 } from "@agenteschat/client";
+import { agentThinks } from "@agenteschat/client/lib/brain";
 import { EFFORT_LEVELS, type EffortLevel } from "@agenteschat/client/lib/brain-advanced";
 import {
+  mayPickModel,
   modelPickerModels,
   modelPickerSave,
   modelPickerTiles,
@@ -28,7 +31,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { useOrg } from "@/providers/org";
 import { Sky } from "@/sky/Sky";
 import { GroupedList, GroupedRow, IconButton, ProviderLogo, Text, useToast } from "@/ui";
-import { useColors, useMeId } from "../shared/hooks";
+import { useColors, useDirectory, useMeId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
 import { useSheetIfAny } from "../shared/SheetHost";
 import { openAgentAi } from "./AgentAiScreen";
@@ -40,21 +43,49 @@ import { EffortRamp } from "./EffortRamp";
  * one dimmed), the effort ramp, and "Mais opções" to the agent's AI screen. A pick saves at once, with Desfazer.
  */
 
-/** Whether the viewer changes this agent's model here: an admin or its owner, never for the team's right hand. */
-export function mayPickModel(agent: Agent | undefined, meId: string | null, admin: boolean) {
-  return Boolean(agent && !isRightHand(agent) && (admin || (meId !== null && agent.ownerUserId === meId)));
+/** Who thinks for the agent (`agentThinks`), from the workspace's directory, models and AI status. */
+export function useAgentThinks(agent: Agent | undefined) {
+  const { t } = useTranslation();
+  const { orgId } = useOrg();
+  const dir = useDirectory();
+  const models = useModels();
+  const status = useAiStatus(orgId).data;
+  if (!agent) return null;
+  const owner = agent.ownerUserId ? dir.memberById.get(agent.ownerUserId) : undefined;
+  return agentThinks(t, agent, {
+    owner: owner?.name.split(" ")[0],
+    agents: dir.agents,
+    models: models.data?.models ?? [],
+    ...(status ? { status } : {}),
+  });
 }
 
-/** The DM header's button: the agent's AI's mark, opening the picker. Nothing for who can't change it. */
+/**
+ * The DM header's button: the agent's AI's logo, opening the picker. Whoever can't change it gets the same logo, and a
+ * press says who can.
+ */
 export function DmModelButton({ agent }: { agent: Agent }) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const meId = useMeId();
   const sheet = useSheetIfAny();
-  if (!sheet || !mayPickModel(agent, meId, can(org, "manage_agents"))) return null;
+  const toast = useToast();
+  const thinks = useAgentThinks(agent);
+  if (!thinks?.text || isRightHand(agent)) return null;
+  const mark = thinks.mark ? <ProviderLogo id={thinks.mark} size="sm" /> : undefined;
+  if (!sheet || !mayPickModel(agent, meId, can(org, "manage_agents")))
+    return (
+      <IconButton
+        icon="sparkle"
+        {...(mark ? { mark } : {})}
+        label={`${thinks.text}. ${t("brain.picker.readOnly")}`}
+        onPress={() => toast({ title: thinks.text, subtitle: t("brain.picker.readOnly"), icon: "lock" })}
+      />
+    );
   return (
     <IconButton
       icon="sparkle"
+      {...(mark ? { mark } : {})}
       label={t("brain.picker.open", { agent: agent.name })}
       onPress={() => sheet.open(<ModelPickerSheet agent={agent} />)}
     />
