@@ -15856,7 +15856,7 @@ export const ptBR = {
       answered: "{{to}} respondeu. {{from}} está escrevendo",
       writing: "{{from}} está escrevendo",
       clock: "Esperando há {{time}}",
-      /** One agent at work on what another handed it: its name, then its step in lowercase ("mexendo nos arquivos"). */
+      /** One agent at work on what another handed it: its name, then its step (`chat.activity.*`: "lendo o Drive"). */
       doing: "{{name}} {{doing}}",
       yourApproval: "{{name}} espera sua aprovação",
       yourAnswer: "{{name}} espera sua resposta",

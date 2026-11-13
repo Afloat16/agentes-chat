@@ -2,7 +2,7 @@ import type { TFunction } from "i18next";
 import type { AgentStatusLine, ConsultationWait, RunConsultation } from "../api/types";
 import type { LiveConsult, LiveConsultStatus } from "../realtime/consults";
 import type { LiveRun } from "../realtime/streams";
-import { formatLineTime, joinNames, lowerFirst } from "./format";
+import { formatLineTime, joinNames } from "./format";
 import { agentGrammar } from "./grammar";
 import { MAIL_BRANDS } from "./mail";
 
@@ -426,26 +426,29 @@ export interface EntryConsult {
   waitSince?: number | null;
   /** It waits on the person reading: their card from it is here (it wins over the list). */
   yours?: "approval" | "answer" | null;
-  /** The consulted agent's step in lowercase, from its line ("mexendo nos arquivos"), while it works. */
+  /** The consulted agent's step in the bar's words, from its line ("lendo o Drive"), while it works. */
   step?: string | null;
 }
 
-/** Lines that name an activity: the bar says them as the consulted agent's step ("Atlas mexendo nos arquivos"). */
-const STEP_KINDS: ReadonlySet<string> = new Set([
-  "files",
-  "coding",
-  "browsing",
-  "wiki",
-  "data",
-  "mail",
-  "connector",
-  "computer",
-]);
+/**
+ * Lines that name an activity, as the bar's own verbs say them (each language's words, never a line's case changed,
+ * ADR 0122): the consulted agent's step ("Atlas lendo o Drive").
+ */
+const STEP_VERBS: Partial<Record<NonNullable<AgentStatusLine["kind"]>, ActivityKind>> = {
+  files: "readingDrive",
+  coding: "runningCode",
+  browsing: "browsing",
+  wiki: "writingWiki",
+  data: "queryingDatabase",
+  connector: "consulting",
+  computer: "usingScreen",
+};
 
-/** An agent's step from its line (ADR 0084), lowercase, when the line names an activity; else null. */
-export function lineStep(t: TFunction, line: AgentStatusLine | null | undefined, locale?: string): string | null {
-  if (!line?.kind || line.text || !STEP_KINDS.has(line.kind)) return null;
-  return lowerFirst(t(`presence.agent.${line.kind}`, { subject: line.subject ?? "" }), locale);
+/** An agent's step from its line (ADR 0084), in the bar's words, when the line names an activity; else null. */
+export function lineStep(t: TFunction, line: AgentStatusLine | null | undefined): string | null {
+  const kind = line?.kind && !line.text ? STEP_VERBS[line.kind] : undefined;
+  if (!kind) return null;
+  return activityVerb(t, kind === "consulting" ? { kind, app: line?.subject ?? "" } : { kind });
 }
 
 /**
@@ -692,7 +695,7 @@ const WAIT_PHRASE = {
 
 /**
  * One consultation's phrase: "Dev está perguntando ao Infra", "Infra respondeu. Dev está escrevendo". Work handed off
- * says the other agent's state: "Atlas mexendo nos arquivos", "Atlas está trabalhando", "Atlas terminou. Ada está
+ * says the other agent's state: "Atlas lendo o Drive", "Atlas está trabalhando", "Atlas terminou. Ada está
  * escrevendo". Either way, what waits on the person reading ("Atlas espera sua aprovação") or on someone else ("O Atlas
  * espera uma aprovação") takes the phrase.
  */

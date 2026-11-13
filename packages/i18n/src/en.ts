@@ -15877,7 +15877,7 @@ export const en = {
       answered: "{{to}} answered. {{from}} is writing",
       writing: "{{from}} is writing",
       clock: "Waiting for {{time}}",
-      /** One agent at work on what another handed it: its name, then its step in lowercase ("working on files"). */
+      /** One agent at work on what another handed it: its name, then its step (`chat.activity.*`: "reading the Drive"). */
       doing: "{{name}} {{doing}}",
       yourApproval: "{{name}} is waiting for your approval",
       yourAnswer: "{{name}} is waiting for your answer",

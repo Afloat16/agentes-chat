@@ -720,7 +720,7 @@ function Chat({
             const work = presence.agent(id)?.work;
             return work?.state === "you" ? work.ask : null;
           },
-          (id) => lineStep(t, presence.agent(id)?.status?.status, i18n.language),
+          (id) => lineStep(t, presence.agent(id)?.status?.status),
         ),
       })),
     [consults, shownMessages, consultList, consultData, presence, t, i18n.language],

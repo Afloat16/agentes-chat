@@ -196,7 +196,7 @@ describe("the bar's hand-off (ADR 0095 addendum)", () => {
     );
 
   test("the other agent's step, its wait, or what waits on you, with the lists' clock", () => {
-    expect(sentence({ step: "mexendo nos arquivos" })).toBe("Atlas mexendo nos arquivos…");
+    expect(sentence({ step: "lendo o Drive" })).toBe("Atlas lendo o Drive…");
     expect(sentence({})).toBe("Atlas está trabalhando…");
     expect(sentence({ yours: "approval" })).toBe("Atlas espera sua aprovação…");
     expect(sentence({ wait: "approval" })).toBe("O Atlas espera uma aprovação…");
@@ -231,9 +231,13 @@ describe("the bar's hand-off (ADR 0095 addendum)", () => {
         () => "x",
       ),
     ).toMatchObject({ yours: "approval", step: null });
+    // The bar's own verbs: no case changed on a translated line (ADR 0122).
     expect(lineStep(t, { by: "auto", text: null, kind: "files", subject: null, emoji: null, until: null })).toBe(
-      "mexendo nos arquivos",
+      "lendo o Drive",
     );
+    expect(
+      lineStep(t, { by: "auto", text: null, kind: "connector", subject: "Linear", emoji: null, until: null }),
+    ).toBe("consultando o Linear");
     expect(lineStep(t, { by: "auto", text: null, kind: "task", subject: "x", emoji: null, until: null })).toBeNull();
   });
 

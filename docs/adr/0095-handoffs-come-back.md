@@ -76,7 +76,7 @@ A few questions and notes between the same two agents within minutes drew one ro
 
 - **The bar above the composer speaks for a hand-off.** An open hand-off (or question) asked from this view (the asking
   run's reply thread is this thread, or the main timeline in the channel's own view) takes the bar like a run here,
-  for as long as it is out: "Ada → Atlas", then "**Atlas** mexendo nos arquivos · 22 min" (the other agent's step from its
+  for as long as it is out: "Ada → Atlas", then "**Atlas** lendo o Drive · 22 min" (the other agent's step from its
   line, ADR 0084), "**Atlas** espera sua aprovação" in amber when its card waits on you ("Ver" goes to the card), "O
   **Atlas** espera uma aprovação · 3 min" when it waits on someone else, "**Atlas** está na fila", then "**Atlas**
   terminou. **Ada** está escrevendo". "Ver" opens the two agents' talk. No stop: that is in the talk, Agora and the task

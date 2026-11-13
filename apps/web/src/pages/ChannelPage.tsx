@@ -3904,7 +3904,7 @@ function ActivityBar({
       c,
       consultList ?? [],
       (id) => askOf(pendingAsks, id)?.on ?? null,
-      (id) => lineStep(t, agentLines.get(id), i18n.language),
+      (id) => lineStep(t, agentLines.get(id)),
     ),
   }));
   asking.current = consults.length > 0;
