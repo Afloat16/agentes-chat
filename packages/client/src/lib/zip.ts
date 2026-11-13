@@ -97,23 +97,32 @@ export async function readZip(file: Blob): Promise<ZipEntry[]> {
     // zip64: the real sizes and offset sit in the extra field 0x0001, in this order, when maxed out.
     let at = offset + 46 + nameLen;
     const extraEnd = at + extraLen;
+    const needsZip64 = size === MAX32 || compressed === MAX32 || local === MAX32;
+    let hasZip64 = false;
     while (at + 4 <= extraEnd) {
       const id = view.getUint16(at, true);
       const len = view.getUint16(at + 2, true);
       if (id === 0x0001) {
+        hasZip64 = true;
         let p = at + 4;
-        if (size === MAX32) {
-          size = Number(view.getBigUint64(p, true));
+        const wide = () => {
+          if (p + 8 > at + 4 + len || p + 8 > extraEnd || p + 8 > buf.length) throw new ZipError("corrupt");
+          const value = Number(view.getBigUint64(p, true));
+          if (!Number.isSafeInteger(value)) throw new ZipError("corrupt");
           p += 8;
+          return value;
+        };
+        if (size === MAX32) {
+          size = wide();
         }
         if (compressed === MAX32) {
-          compressed = Number(view.getBigUint64(p, true));
-          p += 8;
+          compressed = wide();
         }
-        if (local === MAX32) local = Number(view.getBigUint64(p, true));
+        if (local === MAX32) local = wide();
       }
       at += 4 + len;
     }
+    if (needsZip64 && !hasZip64) throw new ZipError("corrupt");
     offset = extraEnd + commentLen;
     if (name.endsWith("/")) continue;
     const encrypted = (flags & 1) === 1;
@@ -129,9 +138,14 @@ export async function readZip(file: Blob): Promise<ZipEntry[]> {
         const data = buf.subarray(from, from + length);
         if (method === 0) {
           if (data.length > size) throw new ZipError("too_large");
+          if (data.length !== size) throw new ZipError("corrupt");
           return data;
         }
-        if (method === 8) return inflate(data, size);
+        if (method === 8) {
+          const inflated = await inflate(data, size);
+          if (inflated.length !== size) throw new ZipError("corrupt");
+          return inflated;
+        }
         throw new ZipError("method");
       },
     });
