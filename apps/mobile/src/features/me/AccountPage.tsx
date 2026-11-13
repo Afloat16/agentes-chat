@@ -325,7 +325,9 @@ export function EmailPage() {
                 keyboardType="email-address"
                 textContentType="emailAddress"
                 returnKeyType="done"
-                onSubmitEditing={() => void ask(false)}
+                onSubmitEditing={() => {
+                  if (isEmail(newEmail)) void ask(false);
+                }}
                 accessibilityLabel={t("shell.email.new")}
                 style={input}
               />
@@ -343,7 +345,9 @@ export function EmailPage() {
                   textContentType="oneTimeCode"
                   autoComplete="one-time-code"
                   returnKeyType="done"
-                  onSubmitEditing={() => void ask(true)}
+                  onSubmitEditing={() => {
+                    if (code.length === CODE_LENGTH) void ask(true);
+                  }}
                   accessibilityLabel={t("proof.code")}
                   style={input}
                 />
