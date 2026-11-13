@@ -2647,6 +2647,8 @@ export const ptBR = {
       update_workspace: "Mudar o workspace <b>{{name}}</b>",
       set_action_check_on: "Ligar a conferência do que o time já fez",
       set_action_check_off: "Desligar a conferência do que o time já fez",
+      invite_people: "Convidar <b>{{emails}}</b> para o workspace",
+      remove_ai_key: "Apagar a chave de API <b>{{name}}</b> de vez",
     },
   },
   teamWeek: {
@@ -3465,6 +3467,8 @@ export const ptBR = {
       changed_update_workspace: "Mudei o workspace <b>{{name}}</b>",
       changed_set_action_check_on: "Liguei a conferência do que o time já fez",
       changed_set_action_check_off: "Desliguei a conferência do que o time já fez",
+      changed_invite_people: "Convidei <b>{{invited}}</b> para o workspace",
+      changed_remove_ai_key: "Apaguei a chave de API <b>{{name}}</b>",
     },
     /** A kind this app doesn't know yet (a newer server's). */
     other: "Fiz uma mudança",
@@ -13486,6 +13490,9 @@ export const ptBR = {
     rightHand: {
       permanent:
         "O braço direito faz parte do workspace e fica fora dos canais. Uma @menção o chama em qualquer um deles.",
+      updateApp: "Este app é antigo demais para aplicar este card. Atualize o app ou faça a mudança nas Configurações.",
+      nobodyNew:
+        "Todo mundo deste card já está aqui ou já foi convidado. Descarte o card ou reenvie um convite em Membros e convites.",
     },
     agent: {
       ownerOrAdmin: "Só o dono do agente ou um admin pode fazer isso.",

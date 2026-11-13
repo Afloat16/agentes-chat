@@ -2484,7 +2484,9 @@
       "continue_work": "让 <b>{{agent}}</b> 继续",
       "update_workspace": "更改工作区 <b>{{name}}</b>",
       "set_action_check_on": "开启对团队已做之事的检查",
-      "set_action_check_off": "关闭对团队已做之事的检查"
+      "set_action_check_off": "关闭对团队已做之事的检查",
+      "invite_people": "邀请 <b>{{emails}}</b> 加入工作区",
+      "remove_ai_key": "永久删除 API 密钥 <b>{{name}}</b>"
     }
   },
   "teamWeek": {
@@ -3207,7 +3209,9 @@
       "changed_continue_work": "让 <b>{{agent}}</b> 继续",
       "changed_update_workspace": "更改了工作区 <b>{{name}}</b>",
       "changed_set_action_check_on": "开启了对团队已做之事的检查",
-      "changed_set_action_check_off": "关闭了对团队已做之事的检查"
+      "changed_set_action_check_off": "关闭了对团队已做之事的检查",
+      "changed_invite_people": "邀请了 <b>{{invited}}</b> 加入工作区",
+      "changed_remove_ai_key": "删除了 API 密钥 <b>{{name}}</b>"
     },
     "other": "做了一项更改",
     "copyWebhook": "复制 Webhook 地址",
@@ -12998,7 +13002,9 @@
       "tooMany": "这个工作区已有 {{max}} 个部门。请先删除一个。"
     },
     "rightHand": {
-      "permanent": "得力助手属于整个工作区，不加入频道。在任何频道 @提及它即可叫到它。"
+      "permanent": "得力助手属于整个工作区，不加入频道。在任何频道 @提及它即可叫到它。",
+      "updateApp": "此应用版本太旧，无法应用这张卡片。请更新应用，或在设置中进行更改。",
+      "nobodyNew": "这张卡片上的人都已加入或已收到邀请。请放弃这张卡片，或在“成员和邀请”中重新发送邀请。"
     },
     "agent": {
       "ownerOrAdmin": "只有智能体负责人或管理员可以执行此操作。",

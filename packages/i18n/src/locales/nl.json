@@ -2571,7 +2571,9 @@
       "continue_work": "<b>{{agent}}</b> laten doorgaan",
       "update_workspace": "Werkruimte <b>{{name}}</b> wijzigen",
       "set_action_check_on": "De check van wat het team al deed aanzetten",
-      "set_action_check_off": "De check van wat het team al deed uitzetten"
+      "set_action_check_off": "De check van wat het team al deed uitzetten",
+      "invite_people": "<b>{{emails}}</b> uitnodigen voor de werkruimte",
+      "remove_ai_key": "API-sleutel <b>{{name}}</b> definitief verwijderen"
     }
   },
   "teamWeek": {
@@ -3321,7 +3323,9 @@
       "changed_continue_work": "<b>{{agent}}</b> laten doorgaan",
       "changed_update_workspace": "Werkruimte <b>{{name}}</b> gewijzigd",
       "changed_set_action_check_on": "De check van wat het team al deed aangezet",
-      "changed_set_action_check_off": "De check van wat het team al deed uitgezet"
+      "changed_set_action_check_off": "De check van wat het team al deed uitgezet",
+      "changed_invite_people": "<b>{{invited}}</b> uitgenodigd voor de werkruimte",
+      "changed_remove_ai_key": "API-sleutel <b>{{name}}</b> verwijderd"
     },
     "other": "Iets gewijzigd",
     "copyWebhook": "Webhookadres kopiëren",
@@ -13491,7 +13495,9 @@
       "tooMany": "Deze werkruimte heeft al {{max}} afdelingen. Verwijder er eerst een."
     },
     "rightHand": {
-      "permanent": "De rechterhand hoort bij de werkruimte en blijft buiten de kanalen. Een @vermelding bereikt hem in elk kanaal."
+      "permanent": "De rechterhand hoort bij de werkruimte en blijft buiten de kanalen. Een @vermelding bereikt hem in elk kanaal.",
+      "updateApp": "Deze app is te oud om deze kaart toe te passen. Werk de app bij of maak de wijziging in Instellingen.",
+      "nobodyNew": "Iedereen op deze kaart is er al of is al uitgenodigd. Negeer de kaart of stuur een uitnodiging opnieuw in Leden en uitnodigingen."
     },
     "agent": {
       "ownerOrAdmin": "Alleen de eigenaar van de agent of een beheerder kan dit doen.",

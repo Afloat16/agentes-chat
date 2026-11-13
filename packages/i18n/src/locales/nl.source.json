@@ -6419,6 +6419,12 @@
   "rightHand.action.set_action_check_off": {
     "value": "Turn off the check of what the team already did"
   },
+  "rightHand.action.invite_people": {
+    "value": "Invite <b>{{emails}}</b> to the workspace"
+  },
+  "rightHand.action.remove_ai_key": {
+    "value": "Delete the API key <b>{{name}}</b> for good"
+  },
   "teamWeek.title": {
     "value": "Team week"
   },
@@ -8094,6 +8100,12 @@
   },
   "agentActions.workspace.changed_set_action_check_off": {
     "value": "Turned off the check of what the team already did"
+  },
+  "agentActions.workspace.changed_invite_people": {
+    "value": "Invited <b>{{invited}}</b> to the workspace"
+  },
+  "agentActions.workspace.changed_remove_ai_key": {
+    "value": "Deleted the API key <b>{{name}}</b>"
   },
   "agentActions.other": {
     "value": "Made a change"
@@ -32550,6 +32562,12 @@
   },
   "errors.rightHand.permanent": {
     "value": "The right hand is part of the workspace and stays out of channels. An @mention reaches it in any of them."
+  },
+  "errors.rightHand.updateApp": {
+    "value": "This app is too old to apply this card. Update it, or make the change in Settings."
+  },
+  "errors.rightHand.nobodyNew": {
+    "value": "Everyone on this card is already here or already invited. Dismiss it, or resend an invitation in Members and invitations."
   },
   "errors.agent.ownerOrAdmin": {
     "value": "Only the agent's owner or an admin can do this."

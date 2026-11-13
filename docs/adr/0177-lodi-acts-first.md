@@ -155,11 +155,21 @@ thing at a time. The greeting calls no model.
 ### 7. Action cards
 
 Two more changes the right hand starts as a card, only on a person's request: inviting people (every address and role
-on the card, sent as whoever applies it, each address's outcome on the receipt) and removing an API key (refused
-while agents use it). Neither applies at once, and a build that does not word such a card may not apply it: the click
-says which action it knows (`knows`), and the server refuses without it. A plan's sign-in is removed on its own
-screen. On the phone the people card applies each row as on the web. There is no switch: nothing happens without a
-tap.
+on the card, sent as whoever applies it) and removing an API key. Neither applies at once, and a build that does not
+word such a card may not apply it: the click says which action it knows (`knows`), and the server refuses without it
+(`action_card.update_app`). A plan's sign-in is removed on its own screen. On the phone the people card applies each
+row as on the web. There is no switch: nothing happens without a tap.
+
+- **Invites.** The right hand's `offer_invites` posts this card (every other agent's still opens the invite dialog),
+  and it is the turn's one ask. Someone who may invite hears before any card which addresses already belong to a
+  member or hold an open invitation. Someone who may not learns nothing of it and sends the card on: its inbox row
+  names who asked, every address and every role, and whoever applies it gives only roles they may give. Applied, the
+  receipt names who was invited and the card says who was left out and why. With nobody new at the tap it is refused
+  (`action_card.nobody_new`) and the card stays for a dismiss.
+- **API keys.** Only someone who manages keys gets the card, and only in their own conversation with the right hand:
+  a key's name stays out of conversations others read. A key an agent thinks with, or the workspace's default key, is
+  refused before any card, and again at the tap if an agent came to think with it since. The card never releases
+  agents from a key, as the key's screen can.
 
 ## Consequences
 

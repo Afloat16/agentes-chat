@@ -2975,6 +2975,8 @@ export const WORKSPACE_ACTION_IDS = [
   "continue_work",
   "update_workspace",
   "set_action_check",
+  "invite_people",
+  "remove_ai_key",
 ] as const;
 
 /** What the change was made to (link it: issue → Issues, wiki_page → Wiki, routine → Rotinas…). */

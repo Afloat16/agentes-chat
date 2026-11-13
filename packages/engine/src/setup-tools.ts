@@ -49,7 +49,10 @@ import type { ToolContext, ToolDefinition, ToolOutput, ToolSource } from "./tool
 import {
   actNow,
   changesThisRun,
+  INVITE_ACTION,
   MAX_ACTIONS_PER_RUN,
+  MAX_INVITES_PER_CARD,
+  offerWorkspaceAction,
   type ServerLinks,
   workspaceAction,
   workspaceActionTool,
@@ -155,8 +158,6 @@ export const CONNECT_APP_CARD = "action_connect_app";
 export const ADD_MCP_CARD = "action_add_mcp";
 /** An invite card's `bodyCode` (`chat.body.action_invite_people`). */
 export const INVITE_CARD = "action_invite_people";
-/** Addresses one invite card fills in. */
-export const MAX_INVITES_PER_CARD = 20;
 
 export type ConnectAiStep = "claude" | "chatgpt" | "api_key";
 
@@ -307,7 +308,10 @@ export async function hopOf(ctx: ToolContext) {
   return run?.hop ?? 0;
 }
 
-/** What the right hand puts to the person for an answer: one a turn (`cardsLeft`). */
+/**
+ * What the right hand puts to the person for an answer: one a turn (`cardsLeft`). Its own invite card is a catalog
+ * action's (`INVITE_ACTION`), counted beside these.
+ */
 const ASKING_CARDS = ["connect_ai", "connect_app", "invite_people", "team_proposal"];
 
 /**
@@ -328,7 +332,14 @@ export async function cardsLeft(ctx: ToolContext, asks = false): Promise<ToolOut
       .where(
         and(
           here,
-          or(sql`${messages.meta} ? 'replyChips'`, inArray(sql`${messages.meta}->'actionCard'->>'kind'`, ASKING_CARDS)),
+          or(
+            sql`${messages.meta} ? 'replyChips'`,
+            inArray(sql`${messages.meta}->'actionCard'->>'kind'`, ASKING_CARDS),
+            and(
+              sql`${messages.meta}->'actionCard'->>'kind' = 'workspace_action'`,
+              sql`${messages.meta}->'actionCard'->'params'->>'action' = ${INVITE_ACTION}`,
+            ),
+          ),
         ),
       ),
     getAgentCached(ctx.db, ctx.orgId, ctx.agentId),
@@ -906,35 +917,17 @@ export function createSetupToolSource(deps: {
       scope: SETUP_SCOPE,
       inputSchema: {
         type: "object",
-        properties: {
-          emails: {
-            type: "array",
-            items: { type: "string", minLength: 3, maxLength: 254 },
-            minItems: 1,
-            maxItems: MAX_INVITES_PER_CARD,
-          },
-          why: {
-            type: "string",
-            minLength: 1,
-            maxLength: 300,
-            description:
-              "One short line on the card for the person, in their language: who they are or why invite them.",
-          },
-        },
+        properties: { emails: inviteEmails(), why: INVITE_WHY },
         required: ["emails", "why"],
         additionalProperties: false,
       },
       async execute(input, ctx) {
         try {
-          const why = str(input.why).trim();
-          if (!why) return { content: "Say in `why` why to invite them: one short line.", isError: true };
-          const emails = [
-            ...new Set((Array.isArray(input.emails) ? input.emails : []).map((e) => str(e).trim().toLowerCase())),
-          ];
-          const bad = emails.filter((e) => !EMAIL.test(e));
-          if (bad.length > 0) return { content: `Not an email address: ${bad.join(", ")}.`, isError: true };
+          const asked = inviteInput(input);
+          if ("content" in asked) return asked;
+          const { why, emails } = asked;
           const forUserId = await personBehindCall(ctx);
-          if (!forUserId) return { content: "Only a person's request can lead to invitations.", isError: true };
+          if (!forUserId) return ONLY_A_PERSON_INVITES;
           const at = await cardPlace(ctx);
           if (!at) return NOBODY_READS;
           const acts = await whoActs(ctx, forUserId, "invite_people", at.channelId);
@@ -971,8 +964,10 @@ export function createSetupToolSource(deps: {
   const all = [...tools, settingsTool(deps)];
   // The right hand changes its own settings with the card above; every other agent asks for its own here.
   const others = [...all, settingsTool(deps, true)];
+  // The right hand's own invite card takes the place of the dialog's.
+  const lodiInvites = rightHandInvites(deps);
   const rightHand = [
-    ...all,
+    ...all.map((t) => (t.name === OFFER_INVITES_TOOL ? lodiInvites : t)),
     ...rightHandCards(deps),
     ...teamTools({ ...deps, cardsLeft, hopOf }),
     workspaceActionTool({ ...deps, cardsLeft, hopOf }),
@@ -983,14 +978,98 @@ export function createSetupToolSource(deps: {
     // words (ADR 0159): the same tools, for one person and their agents, whose team card may leave an agent's channel
     // out (it lives in its DM with the person). Only words and that one field: a read that fails keeps the team's.
     tools: async (ctx) => {
-      const listed = isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId)) ? rightHand : others;
+      const lodi = isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId));
+      const listed = lodi ? rightHand : others;
       if (!(await isPersonalWorkspace(ctx.db, ctx.orgId).catch(() => false))) return listed;
       return listed.map((t) => {
         const description =
-          t.name === SET_TEAM_WEEK_TOOL ? setTeamWeekDoes(true, liveOwnSwitches()) : SETUP_TOOLS_PERSONAL[t.name];
+          t.name === SET_TEAM_WEEK_TOOL
+            ? setTeamWeekDoes(true, liveOwnSwitches())
+            : lodi && t.name === OFFER_INVITES_TOOL
+              ? RIGHT_HAND_INVITES_PERSONAL
+              : SETUP_TOOLS_PERSONAL[t.name];
         const worded = description ? { ...t, description } : t;
         return t.name === PROPOSE_TEAM_TOOL ? { ...worded, inputSchema: PROPOSE_TEAM_SCHEMA_PERSONAL } : worded;
       });
+    },
+  };
+}
+
+/**
+ * `offer_invites`' addresses and line as its two cards take them. A function: the catalog's file and this one import
+ * each other, so its constant is read once both are loaded.
+ */
+const inviteEmails = () =>
+  ({
+    type: "array",
+    items: { type: "string", minLength: 3, maxLength: 254 },
+    minItems: 1,
+    maxItems: MAX_INVITES_PER_CARD,
+  }) as const;
+const INVITE_WHY = {
+  type: "string",
+  minLength: 1,
+  maxLength: 300,
+  description: "One short line on the card for the person, in their language: who they are or why invite them.",
+} as const;
+const ONLY_A_PERSON_INVITES: ToolOutput = {
+  content: "Only a person's request can lead to invitations.",
+  isError: true,
+};
+
+/** What `offer_invites` was given, each address once in lowercase, or what is wrong with it. */
+function inviteInput(input: Record<string, unknown>): { why: string; emails: string[] } | ToolOutput {
+  const why = str(input.why).trim();
+  if (!why) return { content: "Say in `why` why to invite them: one short line.", isError: true };
+  const emails = [
+    ...new Set((Array.isArray(input.emails) ? input.emails : []).map((e) => str(e).trim().toLowerCase())),
+  ];
+  const bad = emails.filter((e) => !EMAIL.test(e));
+  return bad.length > 0 ? { content: `Not an email address: ${bad.join(", ")}.`, isError: true } : { why, emails };
+}
+
+const RIGHT_HAND_INVITES_PERSONAL =
+  "Offer to invite someone the person trusts (family, a partner, someone who helps them) to this workspace with a card in this conversation that lists every address: a person who may invite sends them with one tap on the card, as themselves. You send nothing. Use it when they ask to invite or add someone by email, never on your own.";
+
+/**
+ * The right hand's `offer_invites`: the catalog's invite card (`INVITE_ACTION`), with every address and role on it,
+ * sent in one tap by whoever may invite, as themselves. Every other agent's card opens the invite dialog.
+ */
+function rightHandInvites(deps: { pubsub?: PubSub }): ToolDefinition {
+  return {
+    name: OFFER_INVITES_TOOL,
+    description:
+      "Offer to invite people to the workspace with a card in this conversation that lists every address and the roles each gets (`roles`, only when the person named them). A person who may invite sends them with one tap on the card, as themselves, and one who can't sends the card on to whoever may. You send nothing. Use it when someone asks to invite or add people by email.",
+    scope: SETUP_SCOPE,
+    inputSchema: {
+      type: "object",
+      properties: {
+        emails: inviteEmails(),
+        roles: {
+          type: "array",
+          items: { type: "string", minLength: 1, maxLength: 80 },
+          maxItems: 20,
+          description: "Role names every address gets. Leave it out for plain members.",
+        },
+        why: INVITE_WHY,
+      },
+      required: ["emails", "why"],
+      additionalProperties: false,
+    },
+    async execute(input, ctx) {
+      try {
+        const asked = inviteInput(input);
+        if ("content" in asked) return asked;
+        const person = await personBehindCall(ctx);
+        const a = workspaceAction(INVITE_ACTION);
+        if (!person || !a) return ONLY_A_PERSON_INVITES;
+        const resolved = await a.resolve(ctx, person, { emails: asked.emails, roles: input.roles ?? [] });
+        if (typeof resolved === "string") return { content: resolved, isError: true };
+        const out = await offerWorkspaceAction({ ...deps, cardsLeft, hopOf }, ctx, person, a, resolved, asked.why);
+        return { ...out, content: out.content.replace(`Posted a card to ${INVITE_ACTION}`, "Posted the invite card") };
+      } catch (error) {
+        return failed(error);
+      }
     },
   };
 }

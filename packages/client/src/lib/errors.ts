@@ -392,6 +392,9 @@ const KNOWN = {
   "action.not_undone": "errors.said.alreadyDone",
   "action_card.asked": "errors.said.alreadyDone",
   "action_card.decided": "errors.said.alreadyDone",
+  // A card that names all it does (an invite's addresses, a key) is applied only by an app that words it.
+  "action_card.update_app": "errors.rightHand.updateApp",
+  "action_card.nobody_new": "errors.rightHand.nobodyNew",
   "agent_proposal.asked": "errors.said.alreadyDone",
   "approval.not_ahead": "errors.said.alreadyDone",
   "approval.not_cancelable": "errors.said.alreadyDone",

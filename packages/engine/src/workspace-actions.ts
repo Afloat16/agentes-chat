@@ -1,5 +1,6 @@
 import { holdEvents, type PubSub } from "@agenteschat/adapters";
-import { and, asc, type Database, desc, eq, inArray, isNotNull, isNull, schema, sql } from "@agenteschat/db";
+import { and, asc, type Database, desc, eq, gt, inArray, isNotNull, isNull, schema, sql } from "@agenteschat/db";
+import { isKnownProvider, PROVIDERS } from "@agenteschat/providers";
 import {
   type ActionRecord,
   type AgentActionTarget,
@@ -25,10 +26,13 @@ import { findMember } from "./chat-tools";
 import { cardPlace, NO_PERSON_READS } from "./consultations";
 import { ownWords } from "./context/learn";
 import { continueRun } from "./continue-run";
+import { deleteCredential, listCredentials } from "./credentials";
+import { personAgentDmKey } from "./dms";
 import { queueInvitationEmail } from "./email";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import { publishChannelEvent, publishMessageCreated } from "./events";
 import { approveJoinRequest, denyJoinRequest } from "./invite-requests";
+import { isEmailAddress } from "./mail/text";
 import { getOrgSettings, updateChannel, updateOrgSettings } from "./management";
 import { AVAILABILITIES, type Availability, setMyStatus } from "./member-status";
 import { getMessage, insertMessage, messageView } from "./messages";
@@ -38,6 +42,7 @@ import {
   announceMembers,
   can,
   getMembership,
+  inviteMany,
   requirePermission,
   resendInvitation,
   revokeInvitation,
@@ -81,6 +86,7 @@ const {
   organizationMembers,
   organizationMemberRoles,
   orgRoles,
+  users,
 } = schema;
 
 /**
@@ -97,6 +103,10 @@ export const WORKSPACE_ACTION_KIND = "workspace.changed";
 export const WORKSPACE_ACTION_CARD = "action_workspace";
 /** At most this many changes at once in one turn: enough for a request, never a flood. */
 export const MAX_ACTIONS_PER_RUN = 10;
+/** Addresses one invite card holds. */
+export const MAX_INVITES_PER_CARD = 20;
+/** The right hand's invite card (`offer_invites` posts it too): one of the cards that wait on the person's answer. */
+export const INVITE_ACTION = "invite_people";
 
 export interface ActionDeps {
   db: Database;
@@ -142,6 +152,11 @@ export interface WorkspaceAction {
   needs: Permission | null;
   /** It changes whoever runs it (their status…): on a card, only the person it was for applies it. */
   self?: true;
+  /**
+   * Its card names everything it does (every address and role, the key), and only an app that says so may apply it:
+   * one that doesn't know the action reads "a change in the workspace", so its click is refused (`knows`).
+   */
+  mustBeRead?: true;
   /** Names read as ids for `person`, or why not (English). What a card keeps and its click runs. */
   resolve(
     ctx: ToolContext,
@@ -1282,6 +1297,198 @@ const joinRequestAction: WorkspaceAction = {
   },
 };
 
+/** Which of `emails` (lowercase) already belong to a member, and which hold an invitation still open. */
+async function knownAddresses(db: Database, orgId: string, emails: string[]) {
+  const [members, invited] = await Promise.all([
+    db
+      .select({ email: sql<string>`lower(${users.email})` })
+      .from(organizationMembers)
+      .innerJoin(users, eq(users.id, organizationMembers.userId))
+      .where(and(eq(organizationMembers.orgId, orgId), inArray(sql`lower(${users.email})`, emails))),
+    db
+      .select({ email: sql<string>`lower(${organizationInvitations.email})` })
+      .from(organizationInvitations)
+      .where(
+        and(
+          eq(organizationInvitations.orgId, orgId),
+          inArray(sql`lower(${organizationInvitations.email})`, emails),
+          isNull(organizationInvitations.acceptedAt),
+          gt(organizationInvitations.expiresAt, new Date()),
+        ),
+      ),
+  ]);
+  return { members: members.map((r) => r.email), invited: invited.map((r) => r.email) };
+}
+
+const invitePeopleAction: WorkspaceAction = {
+  id: INVITE_ACTION,
+  does: "Invite people to the workspace by email, each with the roles named (none: plain members). Always a card that lists every address and role: nobody is invited until someone who may invite sends it from there.",
+  input: {
+    type: "object",
+    properties: {
+      emails: {
+        type: "array",
+        items: { type: "string", minLength: 3, maxLength: 254 },
+        minItems: 1,
+        maxItems: MAX_INVITES_PER_CARD,
+      },
+      roles: {
+        type: "array",
+        items: { type: "string", minLength: 1, maxLength: 80 },
+        maxItems: 20,
+        description: "Role names every address gets, only when the person named them.",
+      },
+    },
+    required: ["emails"],
+    additionalProperties: false,
+  },
+  // Invitations go out by email and people get in: always a card someone reads and sends.
+  mode: "card",
+  needs: "invite_people",
+  mustBeRead: true,
+  async resolve(ctx, person, input) {
+    const emails = [...new Set(list(input.emails).map((e) => e.toLowerCase()))];
+    const bad = emails.filter((e) => !isEmailAddress(e));
+    if (bad.length > 0) return `Not an email address: ${bad.join(", ")}.`;
+    const roles = new Map<string, string>();
+    for (const n of list(input.roles)) {
+      const role = await roleNamed(ctx, n);
+      if (typeof role === "string") return role;
+      // Everyone gets the base role anyway.
+      if (role.kind === "custom") roles.set(role.id, role.name);
+    }
+    // Told only to who may invite: anyone else learns nothing of who is here or was invited.
+    if (can(await getMembership(ctx.db, person, ctx.orgId), "invite_people")) {
+      const known = await knownAddresses(ctx.db, ctx.orgId, emails);
+      const said = [
+        known.members.length ? `already in the workspace: ${known.members.join(", ")}` : "",
+        known.invited.length ? `already invited (resend_invitation sends it again): ${known.invited.join(", ")}` : "",
+      ].filter(Boolean);
+      if (said.length > 0) return `Nothing was posted. ${said.join("; ")}. Leave them out and tell the person.`;
+    }
+    return {
+      input: { emails, roleIds: [...roles.keys()], roleNames: [...roles.values()] },
+      words: { emails: emails.join(", "), roles: [...roles.values()].join(", ") },
+    };
+  },
+  async run(deps, actorId, orgId, input) {
+    if (!deps.server) throw new Error("Sending an invitation needs the server's address");
+    const { publicUrl, secret } = deps.server;
+    const results = await inviteMany(deps.db, actorId, orgId, {
+      emails: list(input.emails),
+      roleIds: list(input.roleIds),
+      ...(secret ? { secret } : {}),
+    });
+    const invited = results.flatMap((r) => (r.status === "invited" ? [r] : []));
+    const [first] = invited;
+    if (!first)
+      throw new ConflictError(
+        "Everyone on this card is already in the workspace or already invited. Dismiss it, or resend an invitation in People.",
+        "action_card.nobody_new",
+      );
+    for (const r of invited) {
+      await queueInvitationEmail(deps.db, {
+        orgId,
+        invitationId: r.invitationId,
+        email: r.email,
+        role: "member",
+        url: `${publicUrl.replace(/\/$/, "")}/invite/${r.token}`,
+        inviterId: actorId,
+        ...(secret ? { secret } : {}),
+      });
+    }
+    const left = (status: (typeof results)[number]["status"]) =>
+      results
+        .filter((r) => r.status === status)
+        .map((r) => r.email)
+        .join(", ");
+    return {
+      target: { type: "person", id: first.invitationId, title: first.email },
+      // Each address's outcome: who was invited, and who was left out and why.
+      words: {
+        invited: left("invited"),
+        already_invited: left("already_invited"),
+        already_member: left("already_member"),
+        invalid_email: left("invalid_email"),
+      },
+      final: true,
+    };
+  },
+};
+
+// ── AI keys ──────────────────────────────────────────────────────────────────
+
+const providerName = (provider: string) => (isKnownProvider(provider) ? PROVIDERS[provider].label : provider);
+
+const removeAiKeyAction: WorkspaceAction = {
+  id: "remove_ai_key",
+  does: "Remove one of the workspace's API keys for good, when no agent thinks with it. A plan's sign-in (Claude, ChatGPT) is not an API key: offer_open_page ai_accounts.",
+  input: {
+    type: "object",
+    properties: {
+      key: {
+        type: "string",
+        minLength: 1,
+        maxLength: 120,
+        description: "Its label, or its provider when the workspace has one key of it.",
+      },
+    },
+    required: ["key"],
+    additionalProperties: false,
+  },
+  // The sealed key is gone for good: always a card someone reads and confirms.
+  mode: "card",
+  needs: "manage_credentials",
+  mustBeRead: true,
+  async resolve(ctx, person, input) {
+    // A key's name is for who manages keys: nobody else gets a card that names one.
+    if (!can(await getMembership(ctx.db, person, ctx.orgId), "manage_credentials"))
+      return "Nothing was posted: their roles don't let them manage AI keys. Tell them someone who may removes it in Settings › AI and usage.";
+    const [here] = await ctx.db
+      .select({ dmKey: channels.dmKey })
+      .from(channels)
+      .where(and(eq(channels.orgId, ctx.orgId), eq(channels.id, ctx.channelId)));
+    if (here?.dmKey !== personAgentDmKey(person, ctx.agentId))
+      return "Nothing was posted: a key's name stays out of conversations others read. Ask them to write to you directly, and offer it there.";
+    const keys = await listCredentials(ctx.db, person, ctx.orgId);
+    const say = (k: (typeof keys)[number]) => `${k.label} (${providerName(k.provider)})`;
+    const wanted = str(input.key).toLowerCase();
+    const named = keys.filter((k) => k.label.toLowerCase() === wanted);
+    const hits = named.length
+      ? named
+      : keys.filter((k) => k.provider === wanted || providerName(k.provider).toLowerCase() === wanted);
+    const [key] = hits;
+    if (!key)
+      return `No API key "${str(input.key)}". ${
+        keys.length ? `Keys here: ${keys.map(say).join(", ")}.` : "The workspace has no API key."
+      } A plan's sign-in is not an API key: offer_open_page ai_accounts.`;
+    if (hits.length > 1) return `Several keys match "${str(input.key)}": ${hits.map(say).join(", ")}. Ask which one.`;
+    if (key.usedBy?.length)
+      return `Nothing was posted: ${key.usedBy.map((a) => a.name).join(", ")} still think${key.usedBy.length > 1 ? "" : "s"} with ${say(key)}. They move to another key or AI first (propose_settings_change), then it can be removed.`;
+    if (key.isDefault)
+      return `Nothing was posted: ${say(key)} is the workspace's default key. They make another key the default first (offer_open_page ai_accounts).`;
+    return { input: { credentialId: key.id }, words: { name: key.label, provider: providerName(key.provider) } };
+  },
+  async run(deps, actorId, orgId, input) {
+    const id = str(input.credentialId);
+    const key = (await listCredentials(deps.db, actorId, orgId)).find((k) => k.id === id);
+    if (!key) throw new NotFoundError("That key is gone already", "action.target_gone");
+    // Agents that came to think with it since the card was posted: the same refusal as its screen's.
+    if (key.usedBy?.length)
+      throw new ConflictError(
+        `In use by ${key.usedBy.map((a) => a.name).join(", ")}. Point them at another key first.`,
+        "credential.in_use",
+        { agents: key.usedBy.map((a) => a.name).join(", ") },
+      );
+    await deleteCredential(deps.db, actorId, orgId, id);
+    return {
+      target: { type: "workspace", id: orgId, title: key.label },
+      words: { name: key.label, provider: providerName(key.provider) },
+      final: true,
+    };
+  },
+};
+
 // ── Work ─────────────────────────────────────────────────────────────────────
 
 const LIVE = ["queued", "running", "waiting_approval", "waiting_input"] as const;
@@ -1524,6 +1731,8 @@ export const WORKSPACE_ACTIONS: readonly WorkspaceAction[] = [
   continueWorkAction,
   updateWorkspaceAction,
   actionCheckAction,
+  invitePeopleAction,
+  removeAiKeyAction,
 ];
 
 export const workspaceAction = (id: unknown) => WORKSPACE_ACTIONS.find((a) => a.id === id) ?? null;
@@ -1550,7 +1759,7 @@ export async function findWorkspaceActions(ctx: ToolContext, person: string | nu
     .slice(0, 5)
     .map((t) => workspaceAction(t.name) as WorkspaceAction);
   if (best.length === 0)
-    return `No action matches. The actions: ${WORKSPACE_ACTIONS.map((a) => a.id).join(", ")}. Tasks: update_issue. Routines: update_routine, delete_routine, run_routine_now. Billing, deleting the workspace or an account, passwords and keys: offer_open_page.`;
+    return `No action matches. The actions: ${WORKSPACE_ACTIONS.map((a) => a.id).join(", ")}. Tasks: update_issue. Routines: update_routine, delete_routine, run_routine_now. Billing, deleting the workspace or an account, passwords and adding a key: offer_open_page.`;
   return best
     .map(
       (a) =>
@@ -1654,7 +1863,7 @@ export function workspaceActionTool(deps: { pubsub?: PubSub; server?: ServerLink
   return {
     name: WORKSPACE_ACTION_TOOL,
     description:
-      "Do anything else the app lets this person do, as them and never more: roles and what each may do, people's roles, a channel's settings, people and permissions, their own status, notifications and time zone, invitations and requests to join, the workspace's settings, stopping or continuing an agent's work. First call it with `find` (what they want, in a few words), then with `action`, its `input` and `why`. A change they may make, asked in their own words, applies at once with Undo; anything else becomes a card for whoever may. The result says which: never say it is done before it does.",
+      "Do anything else the app lets this person do, as them and never more: roles and what each may do, people's roles, a channel's settings, people and permissions, their own status, notifications and time zone, inviting people, invitations and requests to join, removing an API key, the workspace's settings, stopping or continuing an agent's work. First call it with `find` (what they want, in a few words), then with `action`, its `input` and `why`. A change they may make, asked in their own words, applies at once with Undo; anything else, and always an invite or a key's removal, becomes a card for whoever may. The result says which: never say it is done before it does.",
     scope: "setup:write",
     inputSchema: {
       type: "object",
@@ -1690,8 +1899,6 @@ export function workspaceActionTool(deps: { pubsub?: PubSub; server?: ServerLink
           return { content: `Wrong input: ${errors.join("; ")}. Input: ${JSON.stringify(a.input)}`, isError: true };
         const resolved = await a.resolve(ctx, person, given);
         if (typeof resolved === "string") return { content: resolved, isError: true };
-        const membership = await getMembership(ctx.db, person, ctx.orgId);
-        let may = mayDo(membership, a);
         let refused = "";
         // Tried even without the key: the screen's own rules decide (a channel's creator manages it too).
         if (a.mode === "now" && (await ownWords(ctx)) === person) {
@@ -1703,42 +1910,58 @@ export function workspaceActionTool(deps: { pubsub?: PubSub; server?: ServerLink
               content: `Done at once${a.revert ? ", with Undo under your reply" : " (it can't be undone)"}: ${a.id} (${describe(done.words)}). Say it is done.`,
             };
           // Refused by the engine's own rules (a role above theirs, a key they don't hold): someone who may decides.
-          may = false;
           refused = done.refused;
         }
-        const full = await deps.cardsLeft(ctx);
-        if (full) return full;
-        const at = await cardPlace(ctx);
-        if (!at) return { content: NO_PERSON_READS, isError: true };
-        const card: WorkspaceActionCard = {
-          kind: "workspace_action",
-          forUserId: person,
-          params: {
-            action: a.id,
-            input: resolved.input,
-            words: resolved.words,
-            needs: a.needs,
-            why: str(raw.why),
-            ...(refused ? { refused: true } : {}),
-            ...(a.self ? { self: true } : {}),
-          },
-          state: "pending",
-          decidedByUserId: null,
-          decidedAt: null,
-        };
-        const message = await postActionCard(deps, ctx, at, card);
-        return {
-          content: `Posted a card to ${a.id} (${describe(resolved.words)}). ${
-            may
-              ? "They apply it there."
-              : `They can't make this change${refused ? ` (the app says: ${refused})` : ""}: the card lets them send it to whoever may. Say so.`
-          } Nothing has changed yet.`,
-          data: { actionCard: { messageId: message } },
-        };
+        return await offerWorkspaceAction(deps, ctx, person, a, resolved, str(raw.why), refused);
       } catch (error) {
         return { content: `Failed: ${error instanceof Error ? error.message : String(error)}`, isError: true };
       }
     },
+  };
+}
+
+/**
+ * Posts the card of `a` (already resolved for `person`) where they asked, for whoever may to apply as themselves.
+ * `refused`: the screen's own rule already turned the person down, in its words.
+ */
+export async function offerWorkspaceAction(
+  deps: { pubsub?: PubSub } & CardTools,
+  ctx: ToolContext,
+  person: string,
+  a: WorkspaceAction,
+  resolved: { input: Input; words: Record<string, string> },
+  why: string,
+  refused = "",
+): Promise<ToolOutput> {
+  const may = !refused && mayDo(await getMembership(ctx.db, person, ctx.orgId), a);
+  const full = await deps.cardsLeft(ctx, a.id === INVITE_ACTION);
+  if (full) return full;
+  const at = await cardPlace(ctx);
+  if (!at) return { content: NO_PERSON_READS, isError: true };
+  const card: WorkspaceActionCard = {
+    kind: "workspace_action",
+    forUserId: person,
+    params: {
+      action: a.id,
+      input: resolved.input,
+      words: resolved.words,
+      needs: a.needs,
+      why,
+      ...(refused ? { refused: true } : {}),
+      ...(a.self ? { self: true } : {}),
+    },
+    state: "pending",
+    decidedByUserId: null,
+    decidedAt: null,
+  };
+  const message = await postActionCard(deps, ctx, at, card);
+  return {
+    content: `Posted a card to ${a.id} (${describe(resolved.words)}). ${
+      may
+        ? "They apply it there."
+        : `They can't make this change${refused ? ` (the app says: ${refused})` : ""}: the card lets them send it to whoever may. Say so.`
+    } Nothing has changed yet.`,
+    data: { actionCard: { messageId: message } },
   };
 }
 
@@ -1810,7 +2033,8 @@ async function announceCard(
 /**
  * Aplicar or Descartar on the card, as whoever clicks: Aplicar runs the action with their permissions (the engine call
  * refuses what they can't do) and puts its receipt, with Undo, on the card; Descartar is for the person it was for or
- * anyone who may. Once: a card already decided is refused.
+ * anyone who may. Once: a card already decided is refused. A card that must be read (`mustBeRead`) is applied only
+ * by an app that words it (`knows`).
  */
 export async function decideWorkspaceAction(
   deps: ActionDeps,
@@ -1818,10 +2042,15 @@ export async function decideWorkspaceAction(
   orgId: string,
   messageId: string,
   decision: "apply" | "dismiss",
+  /** The action the app that sent the click words on this card: its catalog id, or nothing from an app that doesn't. */
+  knows?: string,
 ) {
   const found = await cardMessage(deps.db, userId, orgId, messageId);
   const a = workspaceAction(found.card.params.action);
   if (!a) throw new ValidationError("This build doesn't know that action", "action_card.unknown");
+  // An app that reads this card as "a change in the workspace" showed neither the addresses nor the key.
+  if (decision === "apply" && a.mustBeRead && knows !== a.id)
+    throw new ConflictError("Update the app to apply this card, or do it in Settings", "action_card.update_app");
   const decided = () => new ConflictError("This card was already decided", "action_card.decided");
   if (found.card.state !== "pending") throw decided();
   if (decision === "dismiss" && found.card.forUserId !== userId && !mayDo(found.membership, a))
@@ -1943,6 +2172,13 @@ export async function askWorkspaceAction(deps: ActionDeps, userId: string, orgId
     )
     .returning({ id: messages.id });
   if (!row) throw new ConflictError("It was already sent", "action_card.asked");
+  // A card that must be read says all of it in the inbox too (every address and role), in no language's own words.
+  // By key: the stored card keeps no order, and this puts an invite's addresses before its roles.
+  const all = a.mustBeRead
+    ? Object.keys(card.params.words)
+        .sort()
+        .flatMap((k) => card.params.words[k] || [])
+    : null;
   const deciders = await deps.db
     .select({ userId: organizationMembers.userId })
     .from(organizationMembers)
@@ -1965,9 +2201,13 @@ export async function askWorkspaceAction(deps: ActionDeps, userId: string, orgId
       messageId: message.id,
       action: a.id,
       ...(message.authorAgentId ? { agentId: message.authorAgentId } : {}),
-      label: Object.values(card.params.words)[0] ?? a.id,
+      label: (all ?? Object.values(card.params.words))[0] ?? a.id,
     },
-    latest: { text: card.params.why || describe(card.params.words) },
+    latest: {
+      text: all
+        ? [card.params.why, all.join(" · ")].filter(Boolean).join(": ")
+        : card.params.why || describe(card.params.words),
+    },
   }).catch(() => {});
   await announceCard(deps, message, next);
   return next;

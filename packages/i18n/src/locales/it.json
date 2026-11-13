@@ -2658,7 +2658,9 @@
       "continue_work": "Lascia continuare <b>{{agent}}</b>",
       "update_workspace": "Modifica lo spazio di lavoro <b>{{name}}</b>",
       "set_action_check_on": "Attiva il controllo di cosa ha già fatto il team",
-      "set_action_check_off": "Disattiva il controllo di cosa ha già fatto il team"
+      "set_action_check_off": "Disattiva il controllo di cosa ha già fatto il team",
+      "invite_people": "Invita <b>{{emails}}</b> nello spazio di lavoro",
+      "remove_ai_key": "Elimina per sempre la chiave API <b>{{name}}</b>"
     }
   },
   "teamWeek": {
@@ -3427,7 +3429,9 @@
       "changed_continue_work": "Ho lasciato continuare <b>{{agent}}</b>",
       "changed_update_workspace": "Ho modificato lo spazio di lavoro <b>{{name}}</b>",
       "changed_set_action_check_on": "Ho attivato il controllo di cosa ha già fatto il team",
-      "changed_set_action_check_off": "Ho disattivato il controllo di cosa ha già fatto il team"
+      "changed_set_action_check_off": "Ho disattivato il controllo di cosa ha già fatto il team",
+      "changed_invite_people": "Ho invitato <b>{{invited}}</b> nello spazio di lavoro",
+      "changed_remove_ai_key": "Ho eliminato la chiave API <b>{{name}}</b>"
     },
     "other": "Ho fatto una modifica",
     "copyWebhook": "Copia indirizzo del webhook",
@@ -13897,7 +13901,9 @@
       "tooMany": "Questo spazio di lavoro ha già {{max}} reparti. Eliminane prima uno."
     },
     "rightHand": {
-      "permanent": "Il braccio destro fa parte dello spazio di lavoro e resta fuori dai canali. Una @menzione lo raggiunge in qualsiasi canale."
+      "permanent": "Il braccio destro fa parte dello spazio di lavoro e resta fuori dai canali. Una @menzione lo raggiunge in qualsiasi canale.",
+      "updateApp": "Questa app è troppo vecchia per applicare questa scheda. Aggiornala o fai la modifica nelle Impostazioni.",
+      "nobodyNew": "Tutte le persone di questa scheda sono già qui o già invitate. Scarta la scheda o invia di nuovo un invito in Membri e inviti."
     },
     "agent": {
       "ownerOrAdmin": "Solo il responsabile dell'agente o un admin può farlo.",

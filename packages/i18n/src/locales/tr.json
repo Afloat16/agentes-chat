@@ -2568,7 +2568,9 @@
       "continue_work": "<b>{{agent}}</b> ajanının devam etmesine izin ver",
       "update_workspace": "<b>{{name}}</b> çalışma alanını değiştir",
       "set_action_check_on": "Ekibin zaten yaptıklarının kontrolünü aç",
-      "set_action_check_off": "Ekibin zaten yaptıklarının kontrolünü kapat"
+      "set_action_check_off": "Ekibin zaten yaptıklarının kontrolünü kapat",
+      "invite_people": "Çalışma alanına davet et: <b>{{emails}}</b>",
+      "remove_ai_key": "<b>{{name}}</b> API anahtarını kalıcı olarak sil"
     }
   },
   "teamWeek": {
@@ -3306,7 +3308,9 @@
       "changed_continue_work": "<b>{{agent}}</b> ajanının devam etmesine izin verdim",
       "changed_update_workspace": "<b>{{name}}</b> çalışma alanını değiştirdim",
       "changed_set_action_check_on": "Ekibin zaten yaptıklarının kontrolünü açtım",
-      "changed_set_action_check_off": "Ekibin zaten yaptıklarının kontrolünü kapattım"
+      "changed_set_action_check_off": "Ekibin zaten yaptıklarının kontrolünü kapattım",
+      "changed_invite_people": "Çalışma alanına davet ettim: <b>{{invited}}</b>",
+      "changed_remove_ai_key": "<b>{{name}}</b> API anahtarını sildim"
     },
     "other": "Bir değişiklik yaptım",
     "copyWebhook": "Webhook adresini kopyala",
@@ -13364,7 +13368,9 @@
       "tooMany": "Bu çalışma alanında zaten {{max}} departman var. Önce birini silin."
     },
     "rightHand": {
-      "permanent": "Sağ kol çalışma alanının bir parçasıdır ve kanalların dışında kalır. Bir @bahsetme onu herhangi bir kanalda çağırır."
+      "permanent": "Sağ kol çalışma alanının bir parçasıdır ve kanalların dışında kalır. Bir @bahsetme onu herhangi bir kanalda çağırır.",
+      "updateApp": "Bu uygulama bu kartı uygulamak için çok eski. Uygulamayı güncelleyin veya değişikliği Ayarlar'dan yapın.",
+      "nobodyNew": "Bu karttaki herkes zaten burada ya da zaten davet edilmiş. Karttan vazgeçin veya Üyeler ve davetler bölümünden daveti yeniden gönderin."
     },
     "agent": {
       "ownerOrAdmin": "Bunu yalnızca ajanın sahibi veya bir yönetici yapabilir.",

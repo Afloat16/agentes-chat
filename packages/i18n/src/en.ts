@@ -2732,6 +2732,9 @@ export const en = {
       update_workspace: "Change the workspace <b>{{name}}</b>",
       set_action_check_on: "Turn on the check of what the team already did",
       set_action_check_off: "Turn off the check of what the team already did",
+      /** `emails`: every address on the card, in a list ("ana@example.com, bia@example.com"). */
+      invite_people: "Invite <b>{{emails}}</b> to the workspace",
+      remove_ai_key: "Delete the API key <b>{{name}}</b> for good",
     },
   },
   /** Lodi's weekly card in an admin's DM with it (ADR 0137 §9). */
@@ -3541,6 +3544,9 @@ export const en = {
       changed_update_workspace: "Changed the workspace <b>{{name}}</b>",
       changed_set_action_check_on: "Turned on the check of what the team already did",
       changed_set_action_check_off: "Turned off the check of what the team already did",
+      /** `invited`: the addresses that got an invitation, in a list. */
+      changed_invite_people: "Invited <b>{{invited}}</b> to the workspace",
+      changed_remove_ai_key: "Deleted the API key <b>{{name}}</b>",
     },
     other: "Made a change",
     /** On the line of a webhook routine the agent created: copies its secret address (only for who manages it). */
@@ -13447,6 +13453,11 @@ export const en = {
     rightHand: {
       permanent:
         "The right hand is part of the workspace and stays out of channels. An @mention reaches it in any of them.",
+      /** `action_card.update_app`: a card this app shows without saying all it changes. */
+      updateApp: "This app is too old to apply this card. Update it, or make the change in Settings.",
+      /** `action_card.nobody_new`: an invite card whose addresses all belong to members or hold an invitation. */
+      nobodyNew:
+        "Everyone on this card is already here or already invited. Dismiss it, or resend an invitation in Members and invitations.",
     },
     agent: {
       ownerOrAdmin: "Only the agent's owner or an admin can do this.",

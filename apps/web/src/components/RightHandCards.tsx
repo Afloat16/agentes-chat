@@ -27,13 +27,18 @@ import {
   useSetMemberRoles,
 } from "@agenteschat/client";
 import {
+  actionCardDestroys,
   actionCardDetail,
   actionCardKey,
+  actionCardMark,
   actionCardWords,
   type MemberChangeRow,
   type MemberChangesCard,
   mayApplyCard,
   memberRowDone,
+  memberRowNeeds,
+  memberRowsBlocked,
+  memberRowText,
   type OpenPageCard,
   rolesAfter,
   type SettingsProposalCard,
@@ -546,27 +551,8 @@ function MemberChanges({ message, card }: { message: Message; card: MemberChange
   const [removing, setRemoving] = useState<{ userId: string; name: string } | null>(null);
   const people = members.data ?? [];
   const title = t("rightHand.people.title");
-  const roleNames = (ids: string[]) =>
-    ids
-      .map((id) => roles.find((r) => r.id === id)?.name ?? "")
-      .filter(Boolean)
-      .join(", ");
-  const owner = t("roles.owner");
-  const what = (r: MemberChangeRow) =>
-    "remove" in r
-      ? t("members.remove.item")
-      : "role" in r
-        ? t(r.role === "owner" ? "rightHand.people.gets" : "rightHand.people.loses", { roles: owner })
-        : [
-            r.addRoleIds.length ? t("rightHand.people.gets", { roles: roleNames(r.addRoleIds) }) : "",
-            r.removeRoleIds.length ? t("rightHand.people.loses", { roles: roleNames(r.removeRoleIds) }) : "",
-          ]
-            .filter(Boolean)
-            .join(" · ");
-  const may = (r: MemberChangeRow) =>
-    "role" in r || ("remove" in r && people.find((p) => p.userId === r.userId)?.role === "owner")
-      ? can(org, "manage_owners")
-      : can(org, "manage_members");
+  const what = (r: MemberChangeRow) => memberRowText(t, r, (id) => roles.find((x) => x.id === id)?.name);
+  const may = (r: MemberChangeRow) => can(org, memberRowNeeds(r, people));
   const done = (r: MemberChangeRow) => members.isSuccess && memberRowDone(r, people);
   const failed = (e: unknown) => toast.show(errorText(t, e), "error");
   const apply = (r: MemberChangeRow) => {
@@ -580,9 +566,7 @@ function MemberChanges({ message, card }: { message: Message; card: MemberChange
   const over = members.isSuccess && card.rows.every(done);
   const open = card.rows.filter((r) => !done(r));
   const mine = open.some(may);
-  const blocked = open.some((r) => "role" in r && !may(r))
-    ? "rightHand.people.onlyOwners"
-    : "rightHand.people.onlyAdmins";
+  const blocked = memberRowsBlocked(open, may);
   return (
     <>
       <RemoveMemberDialog person={removing} onClose={() => setRemoving(null)} />
@@ -734,6 +718,8 @@ export function WorkspaceActionCardView({
   const detail = actionCardDetail(card, t, i18n.language);
   const may = mayApplyCard(card, { userId: me.user.id, may: (key) => can(org, key) });
   const mine = card.forUserId === me.user.id;
+  // Whoever applies it for someone else reads who asked, in the conversation and in their inbox.
+  const asker = mine ? undefined : dir.memberById.get(card.forUserId)?.name;
   // Decided: the same card, and who did it, when and Desfazer where the buttons were.
   let answer: RequestAnswer | undefined;
   if (card.state !== "pending") {
@@ -769,7 +755,7 @@ export function WorkspaceActionCardView({
     <>
       <Button
         size="sm"
-        variant={card.params.action.startsWith("delete_") ? "danger" : "primary"}
+        variant={actionCardDestroys(card) ? "danger" : "primary"}
         disabled={decide.isPending}
         loading={decide.isPending && decide.variables === "apply"}
         onClick={() => decide.mutate("apply", { onError: failed })}
@@ -812,10 +798,11 @@ export function WorkspaceActionCardView({
       label={label}
       mine={may}
       waitingFor={may ? undefined : t("rightHand.action.only")}
+      source={asker ? t("audit.behind.person", { name: asker }) : undefined}
       answer={answer}
       lead={card.params.why || sentence}
       object={{
-        logo: <Icon name={card.params.action.includes("channel") ? "channel" : "shield"} size={20} />,
+        logo: <Icon name={actionCardMark(card)} size={20} />,
         title: sentence,
         ...(detail ? { detail } : {}),
       }}
