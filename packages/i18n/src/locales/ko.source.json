@@ -6035,6 +6035,12 @@
   "rightHand.computerYours": {
     "value": "Your own place on the workspace's computer. Only you can watch or control it."
   },
+  "rightHand.sharedName": {
+    "value": "{{name}} (shared)"
+  },
+  "rightHand.sharedPlace": {
+    "value": "Used in channels and in work that runs on its own. The whole workspace shares this place. Keep nothing private here."
+  },
   "rightHand.computerNoHome": {
     "value": "No computer yet. It gets one when this workspace has a computer of its own, added in Settings, Computers."
   },

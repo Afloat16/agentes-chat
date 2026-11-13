@@ -2576,6 +2576,9 @@ export const en = {
     },
     /** Its "Computador" row: the computer is the viewer's own seat (ADR 0175). */
     computerYours: "Your own place on the workspace's computer. Only you can watch or control it.",
+    sharedName: "{{name}} (shared)",
+    sharedPlace:
+      "Used in channels and in work that runs on its own. The whole workspace shares this place. Keep nothing private here.",
     /** The row where it has none for anyone: the workspace has no computer of its own. */
     computerNoHome:
       "No computer yet. It gets one when this workspace has a computer of its own, added in Settings, Computers.",

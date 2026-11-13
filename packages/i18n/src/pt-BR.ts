@@ -2489,6 +2489,9 @@ export const ptBR = {
     },
     /** Its "Computador" row: the computer is the viewer's own seat (ADR 0175). */
     computerYours: "Seu espaço próprio no computador do workspace. Só você pode ver ou controlar.",
+    sharedName: "{{name}} (compartilhado)",
+    sharedPlace:
+      "Usado em canais e em trabalhos que rodam sozinhos. Todo o workspace compartilha este espaço. Não guarde nada privado aqui.",
     /** The row where it has none for anyone: the workspace has no computer of its own. */
     computerNoHome:
       "Ainda sem computador. Passa a ter um quando este workspace tiver um computador próprio, adicionado em Configurações, Computadores.",

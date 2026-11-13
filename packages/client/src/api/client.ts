@@ -3,6 +3,7 @@ import type { PlanModel } from "@agenteschat/providers/plans";
 import type { DashboardsApi } from "../dashboards/api";
 import type { ChatPrefs } from "../lib/chat-look";
 import type { OnboardingStepId } from "../lib/onboarding";
+import type { Seat } from "../lib/seat";
 import type { TeamWeekAct, TeamWeekPrefs } from "../lib/team-week";
 import type { AudienceChoice } from "../lib/who-sees";
 import type { WikiAccess } from "../lib/wiki";
@@ -1886,9 +1887,9 @@ export interface ApiClient {
     /** The sites (owner or admins); null or empty = any site. */
     setDomains(orgId: string, agentId: string, allowedDomains: string[] | null): Promise<AgentBrowserSettings>;
     /** The agent's open request or take over on that screen (the browser by default), if any. */
-    agentHandoff(orgId: string, agentId: string, screen?: ScreenKind): Promise<BrowserHandoff | null>;
+    agentHandoff(orgId: string, agentId: string, screen?: ScreenKind, seat?: Seat): Promise<BrowserHandoff | null>;
     /** Whether this person may drive that screen (take over, open a page, type); watching needs less (ADR 0040). */
-    agentControl(orgId: string, agentId: string, screen?: ScreenKind): Promise<boolean>;
+    agentControl(orgId: string, agentId: string, screen?: ScreenKind, seat?: Seat): Promise<boolean>;
     handoff(orgId: string, handoffId: string): Promise<BrowserHandoff>;
     /** Take control of a request (one person at a time; 409 when someone else has it). */
     takeControl(orgId: string, handoffId: string): Promise<BrowserHandoff>;
@@ -1904,7 +1905,7 @@ export interface ApiClient {
      * Take over while watching; the agent waits until handed back. `runId`: the run whose card it
      * was taken from (the take over is bound to it, so its card stays in that conversation).
      */
-    takeover(orgId: string, agentId: string, runId?: string, screen?: ScreenKind): Promise<BrowserHandoff>;
+    takeover(orgId: string, agentId: string, runId?: string, screen?: ScreenKind, seat?: Seat): Promise<BrowserHandoff>;
     /**
      * The person in control opens a site (a bare host gets https://), or goes back, forward or reloads; a closed
      * browser opens. 409 `browser.not_in_control`, 403 `browser.not_allowed` (outside the agent's sites), 400
@@ -1912,7 +1913,7 @@ export interface ApiClient {
      */
     open(orgId: string, agentId: string, to: PageTarget): Promise<void>;
     /** "Parar": closes the agent's browser now (its logins stay). Its screen has no stop: it stays on. */
-    stop(orgId: string, agentId: string): Promise<void>;
+    stop(orgId: string, agentId: string, seat?: Seat): Promise<void>;
     /**
      * "Tentar de novo" on a page that never came: the browser closes and opens again where it was (its logins
      * stay), and every live view gets it again. Resolves once it closed. Only who may drive it (403 otherwise).
@@ -1973,9 +1974,9 @@ export interface ApiClient {
    * starts it when it isn't running; control and "Devolver" are the browser's screen routes with `desktop`.
    */
   desktop: {
-    status(orgId: string, agentId: string): Promise<DesktopStatus>;
+    status(orgId: string, agentId: string, seat?: Seat): Promise<DesktopStatus>;
     /** A recent picture of the agent's screen; never starts a stopped one. 403 for who may not watch it. */
-    picture(orgId: string, agentId: string): Promise<DesktopPictureView>;
+    picture(orgId: string, agentId: string, seat?: Seat): Promise<DesktopPictureView>;
     /** What the agent keeps running there (ADR 0176); 403 for who may not watch its computer. */
     holds(orgId: string, agentId: string): Promise<AgentHolds>;
     /** Stop: the hold ends, and its program stops or its browser closes. 403 for who may not (`canStop`). */
