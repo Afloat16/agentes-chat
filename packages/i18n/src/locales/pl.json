@@ -720,6 +720,7 @@
       "steps": {
         "name": "Nazwa przestrzeni roboczej",
         "business": "Czym się zajmujecie",
+        "you": "O tobie",
         "team": "Twój zespół",
         "plan": "Włącz zespół",
         "ai": "Połącz AI",
@@ -738,8 +739,8 @@
         "teamMadePersonal": "Twoi agenci już tu są. Ruszamy dalej, kiedy chcesz.",
         "plan": "Po planie zostaje tylko podłączyć AI. Pokażę ci, gdzie.",
         "planThen": "Gdy plan będzie włączony, na następnym ekranie połączysz swoją AI.",
-        "area": "Jeszcze jedno pytanie przed zespołem.",
-        "areaPersonal": "Jeszcze jedno pytanie przed twoimi agentami.",
+        "you": "Zanim zajmiemy się zespołem, trochę o tobie.",
+        "youPersonal": "Zanim zajmiemy się agentami, trochę o tobie.",
         "ask": "Masz już zespół gdzie indziej? Przeniosę go tu w całości.",
         "start": "Mam zespół gotowy do tego, czym się zajmujecie. Albo zaczynamy we dwoje.",
         "askPersonal": "Używasz już agentów gdzie indziej? Przeniosę ich tu wszystkich.",
@@ -757,10 +758,18 @@
         "people": "Teraz ludzie. Podaj mi ich adresy e-mail, a wyślę zaproszenia.",
         "peopleLink": "Teraz ludzie. Wyślij im link, a pokażę ci każdą prośbę."
       },
+      "you": {
+        "title": "Teraz o tobie",
+        "lead": "Twoje imię i zdjęcie widzą zespół i agenci.",
+        "leadPersonal": "Twoje imię i zdjęcie widzą twoi agenci.",
+        "photo": "Twoje zdjęcie",
+        "build": "Stwórz awatar",
+        "edit": "Edytuj awatar",
+        "upload": "Prześlij zdjęcie",
+        "area": "Czym się zajmujesz?",
+        "areaHint": "Opcjonalnie. Tylko po to, żebyśmy wiedzieli, kto używa agentes.chat."
+      },
       "area": {
-        "title": "A ty, czym się zajmujesz?",
-        "lead": "Tylko po to, żebyśmy wiedzieli, kto używa agentes.chat.",
-        "skip": "Pomiń ten krok",
         "options": {
           "dev": "Programowanie",
           "marketing": "Marketing",
@@ -2556,6 +2565,8 @@
       "planOwner": "konto: {{owner}}",
       "planName": "Plan {{name}}",
       "mine": "Twoja AI",
+      "mineTitle": "Kto myśli za agenta {{name}} w rozmowie z tobą",
+      "mineOnly": "Tylko dla twojej rozmowy z agentem {{name}}.",
       "mineHelp": "Twoja rozmowa z {{name}} myśli z Twoim planem lub udostępnionym Ci planem, i tylko Twoja.",
       "connectMine": "Połącz mój plan",
       "useWorkspace": "Użyj AI workspace'u",
@@ -2573,6 +2584,8 @@
       "fallbackYours": "Bez innego planu korzysta z planu workspace'u, który jest Twój.",
       "fallbackNone": "Bez własnego planu {{name}} nie może Ci odpowiedzieć: plan workspace'u odpowiada tylko użytkownikowi {{owner}}.",
       "workspace": "AI dla osób bez własnego planu",
+      "workspaceTitle": "Kto myśli za agenta {{name}} w workspace",
+      "workspaceOnly": "Dla osób bez własnego planu.",
       "workspaceHelp": "Osoby bez własnego planu rozmawiają z {{name}} przez tę AI.",
       "noPlans": "Połącz plan w sekcji AI i zużycie, aby użyć go tutaj.",
       "lend": "Użycz tego planu osobom, które go nie mają",
@@ -15902,8 +15915,8 @@
       "personal": "Osobista",
       "teamHelp": "Kanały, osoby i role do wspólnej pracy. Zmiana zmienia tylko to, co widać.",
       "personalHelp": "Prostsza, dla ciebie i twojej rodziny, jeśli ją zaprosisz. Zmiana zmienia tylko to, co widać.",
-      "toTeam": "Przełącz na zespół…",
-      "toPersonal": "Przełącz na osobistą…"
+      "toTeam": "Przełącz na zespół",
+      "toPersonal": "Przełącz na osobistą"
     },
     "telemetry": {
       "title": "Statystyki użycia",
