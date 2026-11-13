@@ -233,18 +233,22 @@ describe("work one agent handed another (ADR 0084 addendum)", () => {
       body: "monta o time de vendas",
     });
     // Going for five minutes: heavy work, busy to the server.
-    await f.db.insert(schema.agentRuns).values({
-      orgId: f.org.id,
-      agentId: lodi,
-      channelId: dm.id,
-      threadRootId: trigger.id,
-      triggerMessageId: trigger.id,
-      trigger: "dm",
-      hop: 1,
-      status: "running",
-      startedAt: new Date(Date.now() - 300_000),
-      heartbeatAt: new Date(),
-    });
+    const [ownerRun] = await f.db
+      .insert(schema.agentRuns)
+      .values({
+        orgId: f.org.id,
+        agentId: lodi,
+        channelId: dm.id,
+        threadRootId: trigger.id,
+        triggerMessageId: trigger.id,
+        trigger: "dm",
+        hop: 1,
+        status: "running",
+        startedAt: new Date(Date.now() - 300_000),
+        heartbeatAt: new Date(),
+      })
+      .returning();
+    if (!ownerRun) throw new Error("no run");
     const of = async (userId: string) => (await agentStatuses(f.db, userId, f.org.id)).find((s) => s.agentId === lodi);
     expect(await of(f.owner.id)).toMatchObject({
       presence: "busy",
@@ -253,6 +257,41 @@ describe("work one agent handed another (ADR 0084 addendum)", () => {
     });
     // Bia's own right hand is free: nothing of the owner's talk, how long it has gone or what it does.
     expect(await of(bia.id)).toMatchObject({ presence: "online", working: false, status: null, work: null });
+    // The owner's run writes its line in its own words. Bia talks to it in her DM meanwhile: her work shows, that line
+    // never does.
+    await f.db
+      .update(schema.agents)
+      .set({
+        statusText: "Escrevendo a carta de demissão da Ana",
+        statusSource: "self",
+        statusRunId: ownerRun.id,
+        statusAt: new Date(),
+      })
+      .where(eq(schema.agents.id, lodi));
+    const biaDm = await openPersonAgentDm(f.db, f.org.id, bia.id, lodi);
+    const asked = await insertMessage(f.db, {
+      orgId: f.org.id,
+      channelId: biaDm.id,
+      author: { type: "person", userId: bia.id },
+      body: "resume a reunião de ontem",
+    });
+    await f.db.insert(schema.agentRuns).values({
+      orgId: f.org.id,
+      agentId: lodi,
+      channelId: biaDm.id,
+      threadRootId: asked.id,
+      triggerMessageId: asked.id,
+      trigger: "dm",
+      hop: 1,
+      status: "running",
+      startedAt: new Date(),
+      heartbeatAt: new Date(),
+    });
+    expect(await of(bia.id)).toMatchObject({
+      working: true,
+      status: null,
+      work: { state: "working", channelId: biaDm.id },
+    });
   });
 
   test("a thread counts what its runs handed off as its own work, and says what holds it", async () => {
