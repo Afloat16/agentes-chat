@@ -90,12 +90,18 @@ export const ASKED_IN_CONVERSATION = "Asked in conversation.";
 /** The team week's reasons for a settings row. */
 export const OVER_BUDGET_REASON = "It stopped at its monthly budget this week.";
 export const NO_CHANNEL_REASON = "It is in no channel.";
+export const IDLE_REASON = "It has not worked in four weeks, has no routine and no open task.";
+export const LIGHT_WORK_REASON = "Its work is light enough for a smaller model.";
 /** The reasons the server writes itself: the agent reads them as they are, people through `whyCode`, in their language. */
-export const SERVER_REASONS: Record<string, "asked" | "budget" | "no_channel"> = {
+export const SERVER_REASONS: Record<string, "asked" | "budget" | "no_channel" | "idle" | "light_work"> = {
   [ASKED_IN_CONVERSATION]: "asked",
   [OVER_BUDGET_REASON]: "budget",
   [NO_CHANNEL_REASON]: "no_channel",
+  [IDLE_REASON]: "idle",
+  [LIGHT_WORK_REASON]: "light_work",
 };
+/** Reasons added after the first app builds: those builds have no words for the code, so they get the sentence too. */
+export const LATER_REASONS: ReadonlySet<string> = new Set(["idle", "light_work"]);
 
 /** When an item is strong enough to propose turning it into instructions or org context. */
 export const PROMOTION = { minRecurrence: 2, minConfidence: 0.8, minRelevance: 0.7 };

@@ -2693,6 +2693,7 @@
     "workedTasks_many": "{{name}} ha chiuso {{count}} attività",
     "workedTasks_other": "{{name}} ha chiuso {{count}} attività",
     "improve": "Da migliorare",
+    "needsYou": "Ha bisogno di te",
     "approvals": {
       "title_one": "{{count}} richiesta di {{name}} ti aspetta",
       "title_many": "{{count}} richieste di {{name}} ti aspettano",
@@ -2743,6 +2744,46 @@
       "message": "@{{handle}} i passi {{steps}} non devono aspettare #{{on}}. Vai avanti con loro in parallelo.",
       "messageNoAgent": "I passi {{steps}} non devono aspettare #{{on}}. Possono andare avanti in parallelo.",
       "done": "Messaggio inviato"
+    },
+    "waiting": {
+      "title_one": "{{count}} cosa ti aspetta",
+      "title_many": "{{count}} cose ti aspettano",
+      "title_other": "{{count}} cose ti aspettano",
+      "line_one": "In attesa da {{since}}.",
+      "line_many": "La più vecchia da {{since}}.",
+      "line_other": "La più vecchia da {{since}}.",
+      "action": "Apri",
+      "done": "Niente più in attesa"
+    },
+    "stuck": {
+      "title_one": "{{name}}: arresto per un errore",
+      "title_many": "{{name}}: {{count}} arresti per un errore",
+      "title_other": "{{name}}: {{count}} arresti per un errore",
+      "heldTitle": "{{name}}: in pausa, aspetta di riprendere",
+      "why": {
+        "budget": "Il budget mensile è esaurito.",
+        "plan": "Il piano ha raggiunto il limite.",
+        "computer": "Il computer non ha risposto.",
+        "key": "La chiave o l’accesso dell’IA è stato rifiutato.",
+        "ai": "L’IA non ha risposto.",
+        "other": "Qualcosa è andato storto. La conversazione mostra cosa."
+      },
+      "action": "Apri conversazione"
+    },
+    "retire": {
+      "title": "Archiviare {{name}}",
+      "line": "Nessun lavoro da 4 settimane, nessuna routine e nessuna attività aperta.",
+      "action": "Archivia"
+    },
+    "model": {
+      "title": "{{name}} con {{to}} al posto di {{from}}",
+      "line": "Il suo lavoro è leggero: risposte brevi in uno o due passaggi."
+    },
+    "skip": "Ignora",
+    "skipped": "Ignorata",
+    "why": {
+      "idle": "Nessun lavoro da 4 settimane, nessuna routine e nessuna attività aperta.",
+      "lightWork": "Il suo lavoro è abbastanza leggero per un modello più piccolo."
     },
     "applied": "Applicato",
     "undo": "Annulla",

@@ -2509,6 +2509,7 @@
     "workedRuns_other": "{{name}} 在 #{{channel}} 完成了 {{count}} 项工作",
     "workedTasks_other": "{{name}} 关闭了 {{count}} 个任务",
     "improve": "可以改进的",
+    "needsYou": "需要你处理",
     "approvals": {
       "title_other": "{{name}} 的 {{count}} 个请求在等你",
       "line": "从 {{since}} 起在等。",
@@ -2549,6 +2550,40 @@
       "message": "@{{handle}} 步骤 {{steps}} 不需要等 #{{on}}。请并行推进它们。",
       "messageNoAgent": "步骤 {{steps}} 不需要等 #{{on}}。可以并行推进。",
       "done": "消息已发送"
+    },
+    "waiting": {
+      "title_other": "有 {{count}} 件事在等你",
+      "line_other": "从 {{since}} 起在等。",
+      "action": "打开",
+      "done": "没有在等的了"
+    },
+    "stuck": {
+      "title_other": "{{name}} 因出错停了 {{count}} 次",
+      "heldTitle": "{{name}} 停下了，等着继续",
+      "why": {
+        "budget": "每月预算已用完。",
+        "plan": "套餐已达到上限。",
+        "computer": "电脑没有响应。",
+        "key": "AI 的密钥或登录被拒绝。",
+        "ai": "AI 没有响应。",
+        "other": "出了点问题。对话里能看到是什么。"
+      },
+      "action": "打开对话"
+    },
+    "retire": {
+      "title": "归档 {{name}}",
+      "line": "4 周没有工作，没有例行任务，也没有未完成的任务。",
+      "action": "归档"
+    },
+    "model": {
+      "title": "{{name}} 用 {{to}} 代替 {{from}}",
+      "line": "它的工作很轻：一两步就能给出的简短回答。"
+    },
+    "skip": "忽略",
+    "skipped": "已忽略",
+    "why": {
+      "idle": "4 周没有工作，没有例行任务，也没有未完成的任务。",
+      "lightWork": "它的工作很轻，用更小的模型就够了。"
     },
     "applied": "已应用",
     "undo": "撤销",

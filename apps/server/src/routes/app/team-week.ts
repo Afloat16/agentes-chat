@@ -53,15 +53,22 @@ const TeamWeekPrefs = TeamWeekSaved.extend({
   }),
 }).openapi("TeamWeekPrefs");
 
+// Each member takes its own keys and no other: a row sent with `dismiss` would otherwise be read as the whole card's.
 const TeamWeekAct = z
   .union([
-    z.object({ dismiss: z.literal(true) }),
-    z.object({
-      rowId: z.string().min(1).max(200),
-      text: z.string().max(2000).optional().openapi({
-        description: "`unanswered` and `stalled`: the person's message, in their words.",
-      }),
-    }),
+    z
+      .object({
+        rowId: z.string().min(1).max(200),
+        text: z.string().max(2000).optional().openapi({
+          description: "`unanswered` and `stalled`: the person's message, in their words.",
+        }),
+        skip: z.literal(true).optional().openapi({
+          description:
+            "Puts this one suggestion away and leaves the card: `retire` and `model` are refused for every administrator, `unanswered` is muted for me.",
+        }),
+      })
+      .strict(),
+    z.object({ dismiss: z.literal(true) }).strict(),
   ])
   .openapi("TeamWeekAct");
 
@@ -126,7 +133,7 @@ export function teamWeekRoutes(deps: AppDeps) {
       path: "/organizations/{orgId}/team-week/{messageId}",
       tags,
       security,
-      summary: "Apply a row of my weekly card, or put it away",
+      summary: "Apply a row of my daily or weekly card, put that row away, or put the card away",
       request: { params: OrgParams.extend({ messageId: z.uuid() }), body: body(TeamWeekAct) },
       responses: { ...noContent, ...errors },
     }),

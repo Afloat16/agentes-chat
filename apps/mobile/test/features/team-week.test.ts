@@ -105,3 +105,60 @@ test("the phone reads the same card and says its rows in the person's language",
   );
   expect(teamWeekWhen(tOf("en"), "en", { day: 5, weekHour: 17, dayHour: 9 }, "day")).toMatch(/^Every day at 9:00\sAM$/);
 });
+
+test("the day's card: what waits opens Atividade, what is stuck its conversation or task, and neither is applied", () => {
+  const card = src("right-hand/TeamWeekCard.tsx");
+  expect(card).toContain("const place = teamWeekRowPlace(row);");
+  expect(card).toContain('? "/activity"');
+  expect(card).toContain("? `/issues/");
+  expect(card).toContain(": chatHref(place.channelId)) as never,");
+  // Still open only while the inbox says so, and the head counts suggestions alone.
+  expect(card).toContain("waiting: waiting.data?.items.map((i) => i.id),");
+  expect(card).toContain('t("teamWeek.suggestions", { count: suggested.length })');
+  expect(card).toContain('t(card.period === "day" ? "teamWeek.needsYou" : "teamWeek.improve")');
+  const meta = {
+    actionCard: {
+      kind: "team_week",
+      forUserId: "u1",
+      period: "day",
+      from: "2026-11-05",
+      to: "2026-11-06",
+      timezone: "UTC",
+      stats: { done: 0, stuck: 1, waiting: 1, spentNanoUsd: 0, budgetNanoUsd: 0 },
+      rows: [],
+      moreRows: [
+        { id: "s", kind: "stuck", agentId: "a", channelId: "c", dm: true, code: "computer", count: 2, held: false },
+        { id: "waiting", kind: "waiting", count: 3, ids: ["n"], agentId: null, since: "2026-11-05T12:00:00Z" },
+      ],
+    },
+  };
+  const parsed = teamWeekCardOf(meta);
+  expect(parsed?.rows.map((r) => r.kind)).toEqual(["waiting", "stuck"]);
+  const names = {
+    agent: () => "Ada",
+    handle: () => null,
+    channel: () => "geral",
+    usd: () => "",
+    join: (l: string[]) => l.join(", "),
+    since: () => "qui., 09:00",
+  };
+  expect(teamWeekRowText(tOf("pt-BR"), "pt-BR", parsed?.rows[1] as never, names)).toEqual({
+    title: "Ada parou com erro 2 vezes",
+    line: "O computador não respondeu.",
+    action: "Abrir conversa",
+  });
+});
+
+test("suggestions: a row with a proposal applies it, and the ones that can be put away alone have Dispensar", () => {
+  const card = src("right-hand/TeamWeekCard.tsx");
+  expect(card).toContain(
+    'else if ("proposalId" in row) await decide.mutateAsync({ id: row.proposalId, decision: "accept" });',
+  );
+  expect(card).toContain("skipsAlone(row)");
+  expect(card).toContain("act: { rowId: row.id, skip: true }");
+  expect(card).toContain('label={t("teamWeek.skip")}');
+  expect(card).toContain('t(state === "gone" ? "teamWeek.gone" : "teamWeek.skipped")');
+  // Nothing takes a second tap while one is on its way.
+  expect(card).toContain("disabled={busy || skipping}");
+  expect(card).toContain("disabled={busy || pending}");
+});

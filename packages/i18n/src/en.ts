@@ -2768,6 +2768,8 @@ export const en = {
     workedTasks_one: "{{name}} closed {{count}} task",
     workedTasks_other: "{{name}} closed {{count}} tasks",
     improve: "To improve",
+    /** The same heading on the day's card, over what waits on the reader and what is stuck. */
+    needsYou: "Needs you",
     approvals: {
       title_one: "{{count}} request from {{name}} waits for you",
       title_other: "{{count}} requests from {{name}} wait for you",
@@ -2817,6 +2819,50 @@ export const en = {
       message: "@{{handle}} steps {{steps}} don't need to wait for #{{on}}. Go on with them in parallel.",
       messageNoAgent: "Steps {{steps}} don't need to wait for #{{on}}. They can go on in parallel.",
       done: "Message sent",
+    },
+    /** What waits on the reader besides approvals: `{{count}}` items, `{{since}}` when the oldest began ("Mon, 9:41"). */
+    waiting: {
+      title_one: "{{count}} thing waits for you",
+      title_other: "{{count}} things wait for you",
+      line_one: "Waiting since {{since}}.",
+      line_other: "The oldest since {{since}}.",
+      action: "Open",
+      done: "Nothing left waiting",
+    },
+    /** An agent's work that failed, or that stopped and waits (`heldTitle`). `{{name}}` is the agent. */
+    stuck: {
+      title_one: "{{name}} stopped on an error",
+      title_other: "{{name}} stopped on an error {{count}} times",
+      heldTitle: "{{name}} stopped and waits to go on",
+      /** The cause, one short sentence under the title. */
+      why: {
+        budget: "The monthly budget ran out.",
+        plan: "The plan reached its limit.",
+        computer: "The computer did not answer.",
+        key: "The AI key or sign-in was refused.",
+        ai: "The AI did not answer.",
+        other: "Something went wrong. The conversation shows what.",
+      },
+      action: "Open conversation",
+    },
+    /** An agent with no work in four weeks, offered for archiving. `{{name}}` is the agent. */
+    retire: {
+      title: "Archive {{name}}",
+      line: "No work in 4 weeks, no routine and no open task.",
+      action: "Archive",
+    },
+    /** An agent on a large model whose work is light. `{{from}}` and `{{to}}` are model names. */
+    model: {
+      title: "{{name}} on {{to}} in place of {{from}}",
+      line: "Its work is light: short answers in one or two steps.",
+    },
+    /** Puts one suggestion away for good, and what its row says once it was. */
+    skip: "Dismiss",
+    skipped: "Dismissed",
+    /** Why the week's review proposes a change, where the proposal shows by itself. */
+    why: {
+      idle: "No work in 4 weeks, no routine and no open task.",
+      lightWork: "Its work is light enough for a smaller model.",
     },
     applied: "Applied",
     undo: "Undo",

@@ -2598,6 +2598,7 @@
     "workedTasks_one": "{{name}} {{count}} görevi kapattı",
     "workedTasks_other": "{{name}} {{count}} görevi kapattı",
     "improve": "İyileştirilecekler",
+    "needsYou": "Sana ihtiyaç var",
     "approvals": {
       "title_one": "{{name}} için {{count}} istek seni bekliyor",
       "title_other": "{{name}} için {{count}} istek seni bekliyor",
@@ -2643,6 +2644,43 @@
       "message": "@{{handle}} {{steps}} adımlarının #{{on}} için beklemesi gerekmiyor. Onlarla paralel devam et.",
       "messageNoAgent": "{{steps}} adımlarının #{{on}} için beklemesi gerekmiyor. Paralel ilerleyebilirler.",
       "done": "Mesaj gönderildi"
+    },
+    "waiting": {
+      "title_one": "{{count}} şey seni bekliyor",
+      "title_other": "{{count}} şey seni bekliyor",
+      "line_one": "{{since}} tarihinden beri bekliyor.",
+      "line_other": "En eskisi {{since}} tarihinden beri bekliyor.",
+      "action": "Aç",
+      "done": "Bekleyen bir şey kalmadı"
+    },
+    "stuck": {
+      "title_one": "{{name}} bir hatayla durdu",
+      "title_other": "{{name}} hatayla {{count}} kez durdu",
+      "heldTitle": "{{name}} durdu ve devam etmeyi bekliyor",
+      "why": {
+        "budget": "Aylık bütçe bitti.",
+        "plan": "Plan sınırına ulaştı.",
+        "computer": "Bilgisayar yanıt vermedi.",
+        "key": "Yapay zekâ anahtarı veya oturumu reddedildi.",
+        "ai": "Yapay zekâ yanıt vermedi.",
+        "other": "Bir şeyler ters gitti. Ne olduğu sohbette görünüyor."
+      },
+      "action": "Sohbeti aç"
+    },
+    "retire": {
+      "title": "{{name}} ajanını arşivle",
+      "line": "4 haftadır iş yok, rutin yok, açık görev yok.",
+      "action": "Arşivle"
+    },
+    "model": {
+      "title": "{{name}} için {{from}} yerine {{to}}",
+      "line": "İşi hafif: bir iki adımda kısa yanıtlar."
+    },
+    "skip": "Yok say",
+    "skipped": "Yok sayıldı",
+    "why": {
+      "idle": "4 haftadır iş yok, rutin yok, açık görev yok.",
+      "lightWork": "İşi daha küçük bir model için yeterince hafif."
     },
     "applied": "Uygulandı",
     "undo": "Geri al",

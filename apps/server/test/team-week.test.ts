@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { and, eq, schema } from "@agenteschat/db";
-import { liveLodiSwitches, openPersonAgentDm, RIGHT_HAND } from "@agenteschat/engine";
+import {
+  IDLE_REASON,
+  liveLodiSwitches,
+  openPersonAgentDm,
+  proposeSettings,
+  RIGHT_HAND,
+  readLodiPrefs,
+} from "@agenteschat/engine";
 import { browser, createTestServer, joinByInvitation, seedOrg, signUp, type TestServer } from "./harness";
 
 /** Lodi's weekly card (ADR 0137 §9) over HTTP: my own schedule, and a row applied as me, never as someone else. */
@@ -148,4 +155,104 @@ test("the workspace's two switches are saved by who configures it, and read by e
   const nina = await joinByInvitation(t, owner, orgId, "nina@example.com");
   expect(await (await nina(settings)).json()).toMatchObject({ teamWatch: false });
   expect((await nina(settings, { method: "PATCH", json: { welcomePeople: false } })).status).toBe(403);
+});
+
+test("one suggestion put away alone is not the card put away, and its proposal says why in words every build has", async () => {
+  const owner = browser(t);
+  await signUp(owner, "owner@example.com");
+  const ownerId = ((await (await owner("/api/app/me")).json()) as { user: { id: string } }).user.id;
+  const { orgId, agentId, channelId: generalChannelId } = await seedOrg(owner);
+  const base = `/api/app/organizations/${orgId}`;
+  const [lodi] = await t.db
+    .select()
+    .from(schema.agents)
+    .where(and(eq(schema.agents.orgId, orgId), eq(schema.agents.builtin, RIGHT_HAND)));
+  if (!lodi) throw new Error("no right hand");
+  const dm = await openPersonAgentDm(t.db, orgId, ownerId, lodi.id);
+  const { proposals } = await proposeSettings(
+    { db: t.db },
+    {
+      orgId,
+      agentId: lodi.id,
+      targets: [{ agentId, lines: [{ field: "archive", to: true }] }],
+      rationale: IDLE_REASON,
+      requesterId: ownerId,
+    },
+  );
+  const proposalId = proposals[0]?.id ?? "";
+  const unanswered = `unanswered:${generalChannelId}`;
+  const card = {
+    kind: "team_week",
+    forUserId: ownerId,
+    period: "week",
+    from: "2026-10-30",
+    to: "2026-11-06",
+    timezone: "UTC",
+    stats: { done: 0, stuck: 0, waiting: 0, spentNanoUsd: 0, budgetNanoUsd: 0 },
+    worked: [],
+    rows: [{ id: unanswered, kind: "unanswered", channelId: generalChannelId, count: 4 }],
+    moreRows: [
+      { id: `retire:${agentId}`, kind: "retire", agentId, proposalId },
+      { id: "waiting", kind: "waiting", count: 1, ids: ["n1"], agentId: null, since: "2026-11-05T12:00:00Z" },
+    ],
+    proposalIds: [proposalId],
+    done: {},
+    dismissedAt: null,
+  };
+  const [m] = await t.db
+    .insert(schema.messages)
+    .values({
+      orgId,
+      channelId: dm.id,
+      authorType: "agent",
+      authorAgentId: lodi.id,
+      body: "card",
+      meta: { actionCard: card },
+    })
+    .returning();
+  const row = `${base}/team-week/${m?.id}`;
+  const saved = async () => {
+    const [after] = await t.db
+      .select()
+      .from(schema.messages)
+      .where(eq(schema.messages.id, m?.id ?? ""));
+    return after?.meta.actionCard as {
+      dismissedAt: string | null;
+      done: Record<string, unknown>;
+      skipped: Record<string, unknown>;
+    };
+  };
+
+  // The proposal, read by its requester: its code, and the sentence for a build that has no words for the code.
+  const listed = (await (await owner(`${base}/proposals?ids=${proposalId}`)).json()) as {
+    proposals: { whyCode: string; why: string; canDecide: boolean }[];
+  };
+  expect(listed.proposals[0]).toMatchObject({ whyCode: "idle", why: IDLE_REASON, canDecide: true });
+
+  // A row sent with the card's own word is refused whole: it is never read as "Agora não".
+  expect((await owner(row, { json: { rowId: unanswered, dismiss: true } })).status).toBe(400);
+  expect((await owner(row, { json: { dismiss: true, skip: true } })).status).toBe(400);
+  expect((await saved()).dismissedAt).toBeNull();
+  // Another person skips nothing here. A row of a later kind is found, and what only opens a screen is not applied.
+  const nina = await joinByInvitation(t, owner, orgId, "nina@example.com");
+  expect((await nina(row, { json: { rowId: unanswered, skip: true } })).status).toBe(403);
+  expect((await owner(row, { json: { rowId: "waiting" } })).status).toBe(400);
+  expect((await owner(row, { json: { rowId: "waiting", skip: true } })).status).toBe(400);
+
+  expect((await owner(row, { json: { rowId: unanswered, skip: true } })).status).toBe(204);
+  expect((await readLodiPrefs(t.db, orgId, ownerId)).prefs.muted).toEqual([unanswered]);
+  expect((await owner(row, { json: { rowId: `retire:${agentId}`, skip: true } })).status).toBe(204);
+  const [refused] = await t.db.select().from(schema.contextProposals).where(eq(schema.contextProposals.id, proposalId));
+  expect(refused).toMatchObject({ status: "rejected", decidedByUserId: ownerId });
+  const [agent] = await t.db.select().from(schema.agents).where(eq(schema.agents.id, agentId));
+  expect(agent?.archivedAt).toBeNull();
+  const after = await saved();
+  expect(after.dismissedAt).toBeNull();
+  // Put away is kept apart from applied: a build from before reads any row in `done` as applied ("Asked Lodi").
+  expect(Object.keys(after.skipped).sort()).toEqual([`retire:${agentId}`, unanswered].sort());
+  expect(after.done).toEqual({});
+  // And it is not applied afterwards, from a build that still draws its button.
+  expect((await owner(row, { json: { rowId: unanswered, text: "An agent for #general, please" } })).status).toBe(409);
+  // What I muted is not a setting of the screen: the prefs the apps read do not list it.
+  expect(await (await owner(`${base}/team-week`)).json()).not.toHaveProperty("muted");
 });

@@ -2790,6 +2790,7 @@
     "workedTasks_many": "{{name}}: {{count}} zamkniętych zadań",
     "workedTasks_other": "{{name}}: {{count}} zamkniętych zadań",
     "improve": "Do poprawy",
+    "needsYou": "Potrzebuje ciebie",
     "approvals": {
       "title_one": "{{count}} prośba od {{name}} czeka na ciebie",
       "title_few": "{{count}} prośby od {{name}} czekają na ciebie",
@@ -2845,6 +2846,49 @@
       "message": "@{{handle}} kroki {{steps}} nie muszą czekać na #{{on}}. Kontynuuj je równolegle.",
       "messageNoAgent": "Kroki {{steps}} nie muszą czekać na #{{on}}. Mogą iść równolegle.",
       "done": "Wiadomość wysłana"
+    },
+    "waiting": {
+      "title_one": "{{count}} rzecz czeka na ciebie",
+      "title_few": "{{count}} rzeczy czekają na ciebie",
+      "title_many": "{{count}} rzeczy czeka na ciebie",
+      "title_other": "{{count}} rzeczy czeka na ciebie",
+      "line_one": "Czeka od {{since}}.",
+      "line_few": "Najstarsza od {{since}}.",
+      "line_many": "Najstarsza od {{since}}.",
+      "line_other": "Najstarsza od {{since}}.",
+      "action": "Otwórz",
+      "done": "Nic już nie czeka"
+    },
+    "stuck": {
+      "title_one": "{{name}}: zatrzymanie z błędem",
+      "title_few": "{{name}}: {{count}} zatrzymania z błędem",
+      "title_many": "{{name}}: {{count}} zatrzymań z błędem",
+      "title_other": "{{name}}: {{count}} zatrzymania z błędem",
+      "heldTitle": "{{name}}: przerwa, czeka na wznowienie",
+      "why": {
+        "budget": "Skończył się miesięczny budżet.",
+        "plan": "Plan osiągnął limit.",
+        "computer": "Komputer nie odpowiedział.",
+        "key": "Klucz lub logowanie AI zostało odrzucone.",
+        "ai": "AI nie odpowiada.",
+        "other": "Coś poszło nie tak. Rozmowa pokazuje, co."
+      },
+      "action": "Otwórz rozmowę"
+    },
+    "retire": {
+      "title": "Zarchiwizuj {{name}}",
+      "line": "Od 4 tygodni bez pracy, bez rutyny i bez otwartego zadania.",
+      "action": "Archiwizuj"
+    },
+    "model": {
+      "title": "{{name}}: {{to}} zamiast {{from}}",
+      "line": "Praca jest lekka: krótkie odpowiedzi w jednym lub dwóch krokach."
+    },
+    "skip": "Odrzuć",
+    "skipped": "Odrzucono",
+    "why": {
+      "idle": "Od 4 tygodni bez pracy, bez rutyny i bez otwartego zadania.",
+      "lightWork": "Praca jest na tyle lekka, że wystarczy mniejszy model."
     },
     "applied": "Zastosowano",
     "undo": "Cofnij",

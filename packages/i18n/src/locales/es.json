@@ -2693,6 +2693,7 @@
     "workedTasks_many": "{{name}} cerró {{count}} tareas",
     "workedTasks_other": "{{name}} cerró {{count}} tareas",
     "improve": "Para mejorar",
+    "needsYou": "Te necesita",
     "approvals": {
       "title_one": "{{count}} pedido de {{name}} te espera",
       "title_many": "{{count}} pedidos de {{name}} te esperan",
@@ -2743,6 +2744,46 @@
       "message": "@{{handle}} los pasos {{steps}} no necesitan esperar a #{{on}}. Sigue con ellos en paralelo.",
       "messageNoAgent": "Los pasos {{steps}} no necesitan esperar a #{{on}}. Pueden seguir en paralelo.",
       "done": "Mensaje enviado"
+    },
+    "waiting": {
+      "title_one": "{{count}} cosa te espera",
+      "title_many": "{{count}} cosas te esperan",
+      "title_other": "{{count}} cosas te esperan",
+      "line_one": "Esperando desde {{since}}.",
+      "line_many": "La más antigua desde {{since}}.",
+      "line_other": "La más antigua desde {{since}}.",
+      "action": "Abrir",
+      "done": "Ya no hay nada esperando"
+    },
+    "stuck": {
+      "title_one": "{{name}} se detuvo con un error",
+      "title_many": "{{name}} se detuvo con un error {{count}} veces",
+      "title_other": "{{name}} se detuvo con un error {{count}} veces",
+      "heldTitle": "{{name}} se detuvo y espera para continuar",
+      "why": {
+        "budget": "Se agotó el presupuesto mensual.",
+        "plan": "El plan llegó a su límite.",
+        "computer": "La computadora no respondió.",
+        "key": "La clave o el inicio de sesión de la IA fue rechazado.",
+        "ai": "La IA no respondió.",
+        "other": "Algo salió mal. La conversación muestra qué."
+      },
+      "action": "Abrir conversación"
+    },
+    "retire": {
+      "title": "Archivar a {{name}}",
+      "line": "Sin trabajo desde hace 4 semanas, sin rutina y sin tarea abierta.",
+      "action": "Archivar"
+    },
+    "model": {
+      "title": "{{name}} con {{to}} en lugar de {{from}}",
+      "line": "Su trabajo es ligero: respuestas cortas en uno o dos pasos."
+    },
+    "skip": "Descartar",
+    "skipped": "Descartada",
+    "why": {
+      "idle": "Sin trabajo desde hace 4 semanas, sin rutina y sin tarea abierta.",
+      "lightWork": "Su trabajo es lo bastante ligero para un modelo más pequeño."
     },
     "applied": "Aplicado",
     "undo": "Deshacer",

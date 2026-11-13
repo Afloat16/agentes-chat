@@ -6485,6 +6485,9 @@
   "teamWeek.improve": {
     "value": "To improve"
   },
+  "teamWeek.needsYou": {
+    "value": "Needs you"
+  },
   "teamWeek.approvals.title": {
     "value": {
       "one": "{{count}} request from {{name}} waits for you",
@@ -6580,6 +6583,81 @@
   },
   "teamWeek.stalled.done": {
     "value": "Message sent"
+  },
+  "teamWeek.waiting.title": {
+    "value": {
+      "one": "{{count}} thing waits for you",
+      "other": "{{count}} things wait for you"
+    }
+  },
+  "teamWeek.waiting.line": {
+    "value": {
+      "one": "Waiting since {{since}}.",
+      "other": "The oldest since {{since}}."
+    }
+  },
+  "teamWeek.waiting.action": {
+    "value": "Open"
+  },
+  "teamWeek.waiting.done": {
+    "value": "Nothing left waiting"
+  },
+  "teamWeek.stuck.title": {
+    "value": {
+      "one": "{{name}} stopped on an error",
+      "other": "{{name}} stopped on an error {{count}} times"
+    }
+  },
+  "teamWeek.stuck.heldTitle": {
+    "value": "{{name}} stopped and waits to go on"
+  },
+  "teamWeek.stuck.why.budget": {
+    "value": "The monthly budget ran out."
+  },
+  "teamWeek.stuck.why.plan": {
+    "value": "The plan reached its limit."
+  },
+  "teamWeek.stuck.why.computer": {
+    "value": "The computer did not answer."
+  },
+  "teamWeek.stuck.why.key": {
+    "value": "The AI key or sign-in was refused."
+  },
+  "teamWeek.stuck.why.ai": {
+    "value": "The AI did not answer."
+  },
+  "teamWeek.stuck.why.other": {
+    "value": "Something went wrong. The conversation shows what."
+  },
+  "teamWeek.stuck.action": {
+    "value": "Open conversation"
+  },
+  "teamWeek.retire.title": {
+    "value": "Archive {{name}}"
+  },
+  "teamWeek.retire.line": {
+    "value": "No work in 4 weeks, no routine and no open task."
+  },
+  "teamWeek.retire.action": {
+    "value": "Archive"
+  },
+  "teamWeek.model.title": {
+    "value": "{{name}} on {{to}} in place of {{from}}"
+  },
+  "teamWeek.model.line": {
+    "value": "Its work is light: short answers in one or two steps."
+  },
+  "teamWeek.skip": {
+    "value": "Dismiss"
+  },
+  "teamWeek.skipped": {
+    "value": "Dismissed"
+  },
+  "teamWeek.why.idle": {
+    "value": "No work in 4 weeks, no routine and no open task."
+  },
+  "teamWeek.why.lightWork": {
+    "value": "Its work is light enough for a smaller model."
   },
   "teamWeek.applied": {
     "value": "Applied"

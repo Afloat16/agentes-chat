@@ -7,8 +7,10 @@ import {
   useCardProposals,
   useChannels,
   useDecideProposal,
+  useModelLabel,
   useSetTeamWeekPrefs,
   useTeamWeekPrefs,
+  useWaitingOnMe,
 } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { clockAt, formatUsd, joinNames } from "@agenteschat/client/lib/format";
@@ -17,17 +19,22 @@ import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import { type TeamWeekPeriod, teamWeekOn, teamWeekWhen } from "@agenteschat/client/lib/right-hand-prefs";
 import {
   appliesInBulk,
+  skipsAlone,
   type TeamWeekCard,
   type TeamWeekNames,
+  type TeamWeekPlace,
   type TeamWeekRow,
+  type TeamWeekRowState,
   teamWeekDoneText,
   teamWeekRowMessage,
+  teamWeekRowPlace,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
 } from "@agenteschat/client/lib/team-week";
 import { Button, Icon, Popover } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -47,6 +54,7 @@ export function useTeamWeekNames(): TeamWeekNames {
   const { org } = useOrg();
   const dir = useDirectory(org.id);
   const channels = useChannels(org.id).data ?? [];
+  const modelLabel = useModelLabel();
   return {
     agent: (id) => (id ? dir.anyAgent(id)?.name : undefined) ?? t("channel.unknownAgent"),
     handle: (id) => (id ? (dir.anyAgent(id)?.handle ?? null) : null),
@@ -54,13 +62,15 @@ export function useTeamWeekNames(): TeamWeekNames {
     usd: (n) => formatUsd(i18n.language, Math.round(n / NANO)),
     join: (names) => joinNames(names, t),
     since: (iso) => clockAt(i18n.language, iso),
+    model: (id) => modelLabel(id) ?? id,
   };
 }
 
 /**
  * Lodi's weekly card (ADR 0137 §9) in the admin's DM: four numbers, what worked, then a row per fix, each applied as
  * whoever clicks through its own card's path (the settings proposal with Undo, the approvals as the conversation
- * draws them, a routine, a message), "Aplicar as N" for the open ones and the day and hour in the footer.
+ * draws them, a routine, a message), "Aplicar as N" for the open ones and the day and hour in the footer. The day's
+ * card (ADR 0177 §2) is the same, led by what waits on its reader and what is stuck, each opened where it is.
  */
 export function TeamWeekCardView({ message, card }: { message: Message; card: TeamWeekCard }) {
   const { t, i18n } = useTranslation();
@@ -71,21 +81,39 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
   const approvals = useApprovals(org.id);
   const decide = useDecideProposal(org.id);
   const act = useActOnTeamWeek(org.id);
+  const waiting = useWaitingOnMe(org.id);
+  const navigate = useNavigate();
   const toast = useToast();
   const [applying, setApplying] = useState(false);
   const locale = i18n.language;
   const lodi = dir.agents.find(isRightHand);
   const rows = card.rows.map((row) => ({
     row,
-    state: teamWeekRowState(card, row, { proposals, approvals: approvals.data }),
+    state: teamWeekRowState(card, row, {
+      proposals,
+      approvals: approvals.data,
+      waiting: waiting.data?.items.map((i) => i.id),
+    }),
     text: teamWeekRowText(t, locale, row, names),
   }));
   const open = rows.filter((r) => r.state === "open");
   const bulk = open.filter((r) => appliesInBulk(r.row));
+  // What waits or is stuck is opened, not applied: the head counts only what the card suggests.
+  const suggested = open.filter((r) => !teamWeekRowPlace(r.row));
   const failed = (e: unknown) => toast.show(errorText(t, e), "error");
+  const params = { orgId: org.id };
+  const go = (place: TeamWeekPlace) =>
+    place.to === "waiting"
+      ? navigate({ to: "/org/$orgId/waiting", params })
+      : place.to === "task"
+        ? navigate({ to: "/org/$orgId/issues/$number", params: { ...params, number: String(place.number) } })
+        : place.to === "dm"
+          ? navigate({ to: "/org/$orgId/dm/agent/$agentId", params: { ...params, agentId: place.agentId } })
+          : navigate({ to: "/org/$orgId/c/$channelId", params: { ...params, channelId: place.channelId } });
   const apply = async (row: TeamWeekRow) => {
-    if (row.kind === "budget" || row.kind === "channel")
-      await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
+    const place = teamWeekRowPlace(row);
+    if (place) await go(place);
+    else if ("proposalId" in row) await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
     else if (row.kind !== "approvals")
       await act.mutateAsync({
         messageId: message.id,
@@ -111,10 +139,10 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
       <div className="rq tw__card" role="group" aria-label={t(teamWeekTitleKey(card))}>
         <div className="rq__head">
           <span className="rq__kind">{t(teamWeekTitleKey(card))}</span>
-          {open.length > 0 && !dismissed && (
+          {suggested.length > 0 && !dismissed && (
             <span className="rq__state">
               <WaitMark />
-              {t("teamWeek.suggestions", { count: open.length })}
+              {t("teamWeek.suggestions", { count: suggested.length })}
             </span>
           )}
         </div>
@@ -156,7 +184,7 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
         ) : (
           rows.length > 0 && (
             <section className="tw__sec">
-              <h4 className="tw__sec-t">{t("teamWeek.improve")}</h4>
+              <h4 className="tw__sec-t">{t(card.period === "day" ? "teamWeek.needsYou" : "teamWeek.improve")}</h4>
               <div className="tw__rows">
                 {rows.map(({ row, state, text }) => (
                   <FixRow
@@ -170,6 +198,12 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
                     proposal={proposals.find((p) => "proposalId" in row && p.id === row.proposalId)}
                     doneText={teamWeekDoneText(t, row, lodi?.name ?? "Lodi")}
                     onApply={() => apply(row).catch(failed)}
+                    onSkip={
+                      skipsAlone(row)
+                        ? () =>
+                            act.mutateAsync({ messageId: message.id, act: { rowId: row.id, skip: true } }).catch(failed)
+                        : undefined
+                    }
                     busy={applying || act.isPending}
                   />
                 ))}
@@ -229,17 +263,20 @@ function FixRow({
   proposal,
   doneText,
   onApply,
+  onSkip,
   busy,
 }: {
   message: Message;
   row: TeamWeekRow;
-  state: "open" | "done" | "gone";
+  state: TeamWeekRowState;
   title: string;
   line: string;
   action: string;
   proposal: Proposal | undefined;
   doneText: string;
   onApply: () => Promise<void>;
+  /** "Dispensar": puts this one suggestion away for good. Absent on a row that has none. */
+  onSkip?: () => Promise<unknown>;
   busy: boolean;
 }) {
   const { t } = useTranslation();
@@ -249,6 +286,7 @@ function FixRow({
   const qc = useQueryClient();
   const toast = useToast();
   const [pending, setPending] = useState(false);
+  const [skipping, setSkipping] = useState(false);
   const [showing, setShowing] = useState(false);
   const agentId = "agentId" in row ? row.agentId : null;
   const lead: ReactNode = agentId ? (
@@ -257,7 +295,7 @@ function FixRow({
     <span className="tw__tile" aria-hidden="true">
       <Icon
         name={
-          row.kind === "unanswered"
+          row.kind === "unanswered" || row.kind === "waiting"
             ? "question"
             : row.kind === "stalled"
               ? "issues"
@@ -295,24 +333,40 @@ function FixRow({
           </Button>
         )}
       </>
-    ) : state === "gone" ? (
-      <span className="tw__gone">{t("teamWeek.gone")}</span>
+    ) : state === "gone" || state === "skipped" ? (
+      <span className="tw__gone">{t(state === "gone" ? "teamWeek.gone" : "teamWeek.skipped")}</span>
     ) : row.kind === "approvals" ? (
       <Button size="sm" onClick={() => setShowing((v) => !v)} aria-expanded={showing}>
         {showing ? t("teamWeek.approvals.hide") : action}
       </Button>
     ) : (
-      <Button
-        size="sm"
-        loading={pending}
-        disabled={busy}
-        onClick={() => {
-          setPending(true);
-          void onApply().finally(() => setPending(false));
-        }}
-      >
-        {action}
-      </Button>
+      <>
+        <Button
+          size="sm"
+          loading={pending}
+          disabled={busy || skipping}
+          onClick={() => {
+            setPending(true);
+            void onApply().finally(() => setPending(false));
+          }}
+        >
+          {action}
+        </Button>
+        {onSkip && (
+          <Button
+            size="sm"
+            variant="ghost"
+            loading={skipping}
+            disabled={busy || pending}
+            onClick={() => {
+              setSkipping(true);
+              void onSkip().finally(() => setSkipping(false));
+            }}
+          >
+            {t("teamWeek.skip")}
+          </Button>
+        )}
+      </>
     );
   return (
     <div className="tw__fix" data-done={state !== "open" || undefined}>

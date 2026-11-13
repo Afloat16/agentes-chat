@@ -157,12 +157,34 @@ A sweep with no model call (`team-watch.ts`). It fixes what is safe and tells th
 
 The day's card for everyone, from stored data.
 
-- It posts only when something is the reader's: something waits on them, a run they asked for or of an agent they own
-  finished or is stuck, a task they made or follow was closed by an agent. Counts across the workspace never post it.
-- Rows: what waits on them (up to three, opening "Esperando você"), what is stuck and why (a cause code and one button
-  to its conversation, never run text), then the rest, five at most. Money and channel rows stay on the week's card.
-- It rings only with something waiting or stuck. The same items as the day before, and nothing else, post nothing.
-- Nothing from a channel the reader cannot read, administrators included.
+- It posts only when something is the reader's and new: something waits on them, a run they asked for or of an agent
+  they own is stuck, their agent finished work they did not ask for themselves, a task they made was closed by an
+  agent, a how-to of their agent is ready to become a skill. Counts across the workspace never post it, an
+  administrator's included: the team's view is the week's card. What they asked for themselves answered them where
+  they asked, so it is counted on a card that goes out and never posts one.
+- A run is the reader's when its agent is theirs, or when they wrote the message that started it or the first message
+  of its thread. That is one statement for all their runs. Work one agent passed to another outside that thread shows
+  on its owner's card only.
+- Rows: approvals of the agents their inbox says are asking, one row that counts what else waits on them (it opens
+  "Esperando você" and stores inbox ids, never a question's words), what is stuck and why (up to three, one of six
+  causes and one button to its conversation or task, never run text), then their agents' how-tos and stalled steps of
+  a task they made. Five at most. Money, channel, routine and unanswered rows stay on the week's card.
+- Stuck is a run that failed with no good run after it in the same conversation, or one parked for four hours or more
+  on a plan, a budget or a computer. A run a person stopped or a restart cut is neither. A held run's cause is what
+  it waits on: a budget (a long work paused on the agent's budget included), a plan's limit, a sign-in that ended,
+  a computer away or full. Any other wait (a computer a person paused, a plan its owner did not share) reads as
+  "the conversation shows what".
+- The card keeps what was still open when it went out (`seen`). The next day's card posts only for something not in
+  it, so what waits or is held is said once, and it rings only for a new thing waiting or held. A run that failed
+  told its person when it did (the inbox's `run_failed`), so it is on the card without a second ring. What only
+  finished posts without ringing.
+- It covers from the last day's card to its slot, three days back at most, so a day with no card is not lost. A run
+  counts on the day it ended, so one still working at the slot is on the next card (one that began more than three
+  days before the window is on none). Its job is found again by the slot kept on the card, whatever the window was.
+- A task counts as closed by an agent when its last change of status in the window is an agent's, to done, on both
+  cards. A person closing it, or a comment on a closed task, is not.
+- Nothing from a conversation the reader cannot read: an administrator reads every channel and never another
+  person's DM.
 
 ### 3. Suggestions on "Semana da equipe"
 
@@ -172,6 +194,24 @@ each per card, applied as the admin who clicks, with Undo. A row can be put away
 on those two, per person on unanswered questions. One left alone returns after four weeks at most. Both are counted
 over all runs, private conversations included, so these rows never name a channel or link a run. Archiving is never
 part of "Aplicar as N".
+
+- A suggestion rides a card that goes out anyway. A week with nothing else to say posts no card and makes no
+  proposal, so a dormant workspace hears nothing. While one suggestion of a kind from the reader's last four weeks
+  of cards is undecided, no other agent is offered the same: at most one proposal of each kind waits on a person.
+
+- Light work: 20 or more finished runs in four weeks, nine in ten of them with two model calls and 800 output tokens
+  at most. A run with no recorded usage never counts as light. The next model down is the provider's middle one (for
+  Claude Code, `sonnet` in place of `opus`).
+- Each administrator's card carries a proposal of its own: a settings proposal the right hand makes for a person is
+  shown to nobody else until that person sends it on, so one shared row would be hidden from the others. Putting a
+  row away refuses the reader's proposal as them and closes the copies on the other cards. An agent is never offered
+  the same suggestion again once anyone decided it, applied and undone included.
+- Unanswered questions in a team take two people asking. Put away, that channel is muted for that person
+  (`muted`). On the wire a row is put away with `{ rowId, skip: true }`, and a body that mixes a row with the card's
+  own `dismiss` is refused, so it is never read as "Agora não". The card keeps rows put away in `skipped`, apart
+  from `done`: builds from before read any row in `done` as applied. A row put away is not applied afterwards.
+- The two reasons reach the apps as `whyCode` `idle` and `light_work`, with the English sentence in `why` for builds
+  from before them.
 
 ### 4. Approvals digest ("Resumir aprovações esperando")
 

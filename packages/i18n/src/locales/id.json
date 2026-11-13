@@ -2510,6 +2510,7 @@
     "workedRuns_other": "{{name}} mengerjakan {{count}} pekerjaan di #{{channel}}",
     "workedTasks_other": "{{name}} menutup {{count}} tugas",
     "improve": "Untuk diperbaiki",
+    "needsYou": "Butuh kamu",
     "approvals": {
       "title_other": "{{count}} permintaan dari {{name}} menunggumu",
       "line": "Menunggu sejak {{since}}.",
@@ -2550,6 +2551,40 @@
       "message": "@{{handle}} langkah {{steps}} tidak perlu menunggu #{{on}}. Lanjutkan secara paralel.",
       "messageNoAgent": "Langkah {{steps}} tidak perlu menunggu #{{on}}. Bisa berjalan paralel.",
       "done": "Pesan terkirim"
+    },
+    "waiting": {
+      "title_other": "{{count}} hal menunggumu",
+      "line_other": "Menunggu sejak {{since}}.",
+      "action": "Buka",
+      "done": "Tidak ada lagi yang menunggu"
+    },
+    "stuck": {
+      "title_other": "{{name}} berhenti karena error {{count}} kali",
+      "heldTitle": "{{name}} berhenti dan menunggu untuk lanjut",
+      "why": {
+        "budget": "Anggaran bulanan sudah habis.",
+        "plan": "Paket sudah mencapai batas.",
+        "computer": "Komputer tidak merespons.",
+        "key": "Kunci atau login AI ditolak.",
+        "ai": "AI tidak merespons.",
+        "other": "Ada yang salah. Percakapan menunjukkan apa."
+      },
+      "action": "Buka percakapan"
+    },
+    "retire": {
+      "title": "Arsipkan {{name}}",
+      "line": "Tidak ada pekerjaan selama 4 minggu, tanpa rutinitas dan tanpa tugas terbuka.",
+      "action": "Arsipkan"
+    },
+    "model": {
+      "title": "{{name}} dengan {{to}} sebagai ganti {{from}}",
+      "line": "Pekerjaannya ringan: jawaban singkat dalam satu atau dua langkah."
+    },
+    "skip": "Abaikan",
+    "skipped": "Diabaikan",
+    "why": {
+      "idle": "Tidak ada pekerjaan selama 4 minggu, tanpa rutinitas dan tanpa tugas terbuka.",
+      "lightWork": "Pekerjaannya cukup ringan untuk model yang lebih kecil."
     },
     "applied": "Diterapkan",
     "undo": "Urungkan",

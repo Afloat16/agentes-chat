@@ -2602,6 +2602,7 @@
     "workedTasks_one": "{{name}} hat {{count}} Aufgabe geschlossen",
     "workedTasks_other": "{{name}} hat {{count}} Aufgaben geschlossen",
     "improve": "Zu verbessern",
+    "needsYou": "Braucht dich",
     "approvals": {
       "title_one": "{{count}} Anfrage von {{name}} wartet auf dich",
       "title_other": "{{count}} Anfragen von {{name}} warten auf dich",
@@ -2647,6 +2648,43 @@
       "message": "@{{handle}} die Schritte {{steps}} müssen nicht auf #{{on}} warten. Mach parallel mit ihnen weiter.",
       "messageNoAgent": "Die Schritte {{steps}} müssen nicht auf #{{on}} warten. Sie können parallel weiterlaufen.",
       "done": "Nachricht gesendet"
+    },
+    "waiting": {
+      "title_one": "{{count}} Sache wartet auf dich",
+      "title_other": "{{count}} Sachen warten auf dich",
+      "line_one": "Wartet seit {{since}}.",
+      "line_other": "Die älteste seit {{since}}.",
+      "action": "Öffnen",
+      "done": "Nichts wartet mehr"
+    },
+    "stuck": {
+      "title_one": "{{name}} hat mit einem Fehler gestoppt",
+      "title_other": "{{name}} hat {{count}}-mal mit einem Fehler gestoppt",
+      "heldTitle": "{{name}} hat gestoppt und wartet auf die Fortsetzung",
+      "why": {
+        "budget": "Das Monatsbudget ist aufgebraucht.",
+        "plan": "Das Abo hat sein Limit erreicht.",
+        "computer": "Der Computer hat nicht geantwortet.",
+        "key": "Der KI-Schlüssel oder die Anmeldung wurde abgelehnt.",
+        "ai": "Die KI hat nicht geantwortet.",
+        "other": "Etwas ist schiefgelaufen. Die Unterhaltung zeigt, was."
+      },
+      "action": "Unterhaltung öffnen"
+    },
+    "retire": {
+      "title": "{{name}} archivieren",
+      "line": "Seit 4 Wochen keine Arbeit, keine Routine und keine offene Aufgabe.",
+      "action": "Archivieren"
+    },
+    "model": {
+      "title": "{{name}} mit {{to}} statt {{from}}",
+      "line": "Die Arbeit ist leicht: kurze Antworten in ein oder zwei Schritten."
+    },
+    "skip": "Verwerfen",
+    "skipped": "Verworfen",
+    "why": {
+      "idle": "Seit 4 Wochen keine Arbeit, keine Routine und keine offene Aufgabe.",
+      "lightWork": "Die Arbeit ist leicht genug für ein kleineres Modell."
     },
     "applied": "Angewendet",
     "undo": "Rückgängig",

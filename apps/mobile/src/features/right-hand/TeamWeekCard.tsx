@@ -8,7 +8,9 @@ import {
   useCardProposals,
   useChannels,
   useDecideProposal,
+  useModelLabel,
   useTeamWeekPrefs,
+  useWaitingOnMe,
 } from "@agenteschat/client";
 import { clockAt, formatUsd, joinNames } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
@@ -16,12 +18,15 @@ import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import { teamWeekOn, teamWeekWhen } from "@agenteschat/client/lib/right-hand-prefs";
 import {
   appliesInBulk,
+  skipsAlone,
   type TeamWeekCard,
   type TeamWeekNames,
   type TeamWeekRow,
+  type TeamWeekRowState,
   teamWeekCardOf,
   teamWeekDoneText,
   teamWeekRowMessage,
+  teamWeekRowPlace,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
@@ -35,6 +40,7 @@ import { useOrg } from "@/providers/org";
 import { Button, LineIcon, Text, useReducedMotion } from "@/ui";
 import { router } from "@/ui/navigation";
 import { useCardTop } from "../chat/look";
+import { chatHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
 import { AgentFace } from "../shared/Face";
 import { useColors, useDirectory } from "../shared/hooks";
@@ -45,7 +51,8 @@ const NANO = 1_000_000_000;
 /**
  * Lodi's weekly card (ADR 0137 §9), as on the web: the four numbers two by two, what worked, then each fix stacked
  * with its button under its words, applied as whoever taps; "Aplicar as N", "Agora não", and the day and hour,
- * changed in Configurações › Lodi.
+ * changed in Configurações › Lodi. The day's card (ADR 0177 §2) is led by what waits on its reader and what is stuck,
+ * each opened where it is.
  */
 export function TeamWeek({ message: m }: { message: Message }) {
   const card = m.author.type === "agent" ? teamWeekCardOf(m.meta) : null;
@@ -69,10 +76,12 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
   const decide = useDecideProposal(orgId);
   const act = useActOnTeamWeek(orgId);
   const prefs = useTeamWeekPrefs(orgId).data;
+  const waiting = useWaitingOnMe(orgId);
   const admin = can(org, "administrator");
   // A weekly card kept by someone who no longer administers: the daily one is what they get now.
   const period = admin ? (card.period ?? "week") : "day";
   const failed = useFailed();
+  const modelLabel = useModelLabel();
   const [applying, setApplying] = useState(false);
   const locale = i18n.language;
   const names: TeamWeekNames = {
@@ -82,19 +91,34 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
     usd: (n) => formatUsd(locale, Math.round(n / NANO)),
     join: (list) => joinNames(list, t),
     since: (iso) => clockAt(locale, iso),
+    model: (id) => modelLabel(id) ?? id,
   };
   const rows = card.rows.map((row) => ({
     row,
-    state: teamWeekRowState(card, row, { proposals, approvals: approvals.data }),
+    state: teamWeekRowState(card, row, {
+      proposals,
+      approvals: approvals.data,
+      waiting: waiting.data?.items.map((i) => i.id),
+    }),
     text: teamWeekRowText(t, locale, row, names),
   }));
   const open = rows.filter((r) => r.state === "open");
   const bulk = open.filter((r) => appliesInBulk(r.row));
+  // What waits or is stuck is opened, not applied: the head counts only what the card suggests.
+  const suggested = open.filter((r) => !teamWeekRowPlace(r.row));
   const dismissed = !!card.dismissedAt;
   const lodi = dir.agents.find(isRightHand);
   const apply = async (row: TeamWeekRow) => {
-    if (row.kind === "budget" || row.kind === "channel")
-      await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
+    const place = teamWeekRowPlace(row);
+    if (place)
+      router.push(
+        (place.to === "waiting"
+          ? "/activity"
+          : place.to === "task"
+            ? `/issues/${place.number}`
+            : chatHref(place.channelId)) as never,
+      );
+    else if ("proposalId" in row) await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
     else if (row.kind === "approvals") {
       const next = row.approvalIds.find((id) => approvals.data?.find((a) => a.id === id)?.status === "pending");
       router.push(`/approval/${next ?? row.approvalIds[0]}` as never);
@@ -132,9 +156,9 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
           <Text variant="footnote" tone="muted" style={styles.semibold}>
             {t(teamWeekTitleKey(card))}
           </Text>
-          {open.length > 0 && !dismissed ? (
+          {suggested.length > 0 && !dismissed ? (
             <Text variant="caption" style={[styles.semibold, { color: c.amber }]}>
-              {t("teamWeek.suggestions", { count: open.length })}
+              {t("teamWeek.suggestions", { count: suggested.length })}
             </Text>
           ) : null}
         </View>
@@ -175,7 +199,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
         ) : rows.length > 0 ? (
           <View style={styles.section}>
             <Text variant="caption" tone="muted" style={styles.semibold}>
-              {t("teamWeek.improve")}
+              {t(card.period === "day" ? "teamWeek.needsYou" : "teamWeek.improve")}
             </Text>
             {rows.map(({ row, state, text }, i) => (
               <Fix
@@ -189,8 +213,13 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
                 action={text.action}
                 proposal={proposals.find((p) => "proposalId" in row && p.id === row.proposalId)}
                 doneText={teamWeekDoneText(t, row, lodi?.name ?? "Lodi")}
-                busy={applying}
+                busy={applying || act.isPending}
                 onApply={() => apply(row).catch(failed)}
+                onSkip={
+                  skipsAlone(row)
+                    ? () => act.mutateAsync({ messageId: message.id, act: { rowId: row.id, skip: true } }).catch(failed)
+                    : undefined
+                }
               />
             ))}
           </View>
@@ -248,12 +277,13 @@ function Fix({
   doneText,
   busy,
   onApply,
+  onSkip,
 }: {
   /** A hairline above it: every fix but the first. */
   divider: boolean;
   message: Message;
   row: TeamWeekRow;
-  state: "open" | "done" | "gone";
+  state: TeamWeekRowState;
   title: string;
   line: string;
   action: string;
@@ -261,6 +291,8 @@ function Fix({
   doneText: string;
   busy: boolean;
   onApply: () => Promise<void>;
+  /** "Dispensar": puts this one suggestion away for good. Absent on a row that has none. */
+  onSkip?: () => Promise<unknown>;
 }) {
   const { t } = useTranslation();
   const { orgId } = useOrg();
@@ -270,6 +302,7 @@ function Fix({
   const failed = useFailed();
   const actions = useAgentActions(orgId, message.channelId);
   const [pending, setPending] = useState(false);
+  const [skipping, setSkipping] = useState(false);
   const agentId = "agentId" in row ? row.agentId : null;
   const receipt = proposal?.undoActionId ? message.actions?.find((a) => a.id === proposal.undoActionId) : undefined;
   const undoable =
@@ -285,7 +318,7 @@ function Fix({
           ) : (
             <LineIcon
               name={
-                row.kind === "unanswered"
+                row.kind === "unanswered" || row.kind === "waiting"
                   ? "help"
                   : row.kind === "stalled"
                     ? "issue"
@@ -331,23 +364,39 @@ function Fix({
             />
           ) : null}
         </Animated.View>
-      ) : state === "gone" ? (
+      ) : state === "gone" || state === "skipped" ? (
         <Text variant="footnote" tone="muted">
-          {t("teamWeek.gone")}
+          {t(state === "gone" ? "teamWeek.gone" : "teamWeek.skipped")}
         </Text>
       ) : (
-        <Button
-          variant="secondary"
-          size="sm"
-          wide
-          label={action}
-          loading={pending}
-          disabled={busy}
-          onPress={() => {
-            setPending(true);
-            void onApply().finally(() => setPending(false));
-          }}
-        />
+        <>
+          <Button
+            variant="secondary"
+            size="sm"
+            wide
+            label={action}
+            loading={pending}
+            disabled={busy || skipping}
+            onPress={() => {
+              setPending(true);
+              void onApply().finally(() => setPending(false));
+            }}
+          />
+          {onSkip ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              wide
+              label={t("teamWeek.skip")}
+              loading={skipping}
+              disabled={busy || pending}
+              onPress={() => {
+                setSkipping(true);
+                void onSkip().finally(() => setSkipping(false));
+              }}
+            />
+          ) : null}
+        </>
       )}
     </View>
   );
