@@ -25,7 +25,7 @@ import type { Spawn } from "./scope-gate";
 import { agentSecrets } from "./secrets";
 
 /**
- * The OpenCode branch of `brain.turn` (protocol 39, ADR 0132; over the Agent Client Protocol since protocol 62): one
+ * The OpenCode branch of `brain.turn` (protocol 39, ADR 0132; over the Agent Client Protocol since protocol 64): one
  * agent turn as one `opencode acp` process, driven through `acp.ts`. OpenCode 1.x and 2.x both serve it (read in
  * their sources at 1.19.5 and 2.2.7, `packages/opencode/src/acp` and `packages/cli/src/acp`, and run against both,
  * 2026-11-13); 2.x always runs it on a private server of its own, never on the person's background service.

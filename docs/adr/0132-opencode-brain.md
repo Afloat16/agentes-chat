@@ -36,7 +36,7 @@ Until 2026-11-13 each turn was one `opencode run --format json`. OpenCode 2 chan
 - Live steering on OpenCode 2 (`_session/steering`, its extension until ACP has one): `brain.steer` hands the messages to the turn, which reads them at its next model step (`steer_read`). OpenCode 1.x reads messages only between turns (`unsupported`, with its version), as does an urgent message (no interrupt-and-send).
 - Silence: OpenCode 1.x waits out a provider's limit by itself (a `retry-after` of hours) and says nothing over ACP; a turn that hears nothing for 5 minutes with no tool running asks it to stop and says why.
 - Stopping: `session/cancel`, then the process tree is killed after a grace.
-- Windows (runner protocol 62, `OPENCODE_ACP_PROTOCOL`): the CLI starts by its full path, never from the current folder; npm's `.cmd` launcher is skipped for the native binary it runs (`npmNativeLauncher`), in no new console, stopped with its whole tree (`taskkill /T`). A Windows runner before protocol 62 refused every OpenCode turn, so the server reads it as too old for OpenCode there ("Update the agentes.chat program").
+- Windows (runner protocol 64, `OPENCODE_ACP_PROTOCOL`): the CLI starts by its full path, never from the current folder; npm's `.cmd` launcher is skipped for the native binary it runs (`npmNativeLauncher`), in no new console, stopped with its whole tree (`taskkill /T`). A Windows runner before protocol 64 refused every OpenCode turn, so the server reads it as too old for OpenCode there ("Update the agentes.chat program").
 - Detection: `opencode --version` (semver, behind its name since 2.2, else it isn't OpenCode's) and `opencode models`, with `--standalone` on 2.x so it never starts the person's background service; at most 60, `free` on the free tier (§7).
 
 ### 3. Usage and limits (Model Gateway, ADR 0118)
@@ -84,7 +84,7 @@ Nothing installs a coding CLI in the core: whoever runs a computer installs Open
 
 ## Consequences
 
-- Runner protocol 39; the server never sends `kind: "opencode"` (turns or accounts) to an older runner, which shows OpenCode as "Update the agentes.chat program"; on Windows, protocol 62.
+- Runner protocol 39; the server never sends `kind: "opencode"` (turns or accounts) to an older runner, which shows OpenCode as "Update the agentes.chat program"; on Windows, protocol 64.
 - Tests: a fake OpenCode speaking ACP as 1.19.5 or 2.2.7 does (`apps/server/test/runner/fake-opencode.mjs`) for the runner's turns, sessions, keys, limits, refused requests, cancel, steering, the chat lock and redaction; the ACP connection (`acp.test.ts`); the engine's brain, availability, options and free tier; the clients' plan choice and picker.
 
 ## Alternatives considered

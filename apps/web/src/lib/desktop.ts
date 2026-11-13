@@ -3,6 +3,7 @@ import { deviceNoticeOf } from "@agenteschat/client/lib/devices";
 import { firstName } from "@agenteschat/client/lib/format";
 import { noticeLine } from "@agenteschat/client/lib/island";
 import { mediaWord } from "@agenteschat/client/lib/media";
+import { openTarget, targetPath } from "@agenteschat/client/lib/notifications";
 import type { i18n as I18n, TFunction } from "i18next";
 import { useEffect } from "react";
 import type { DesktopServerWorkspaces } from "./workspaces";
@@ -67,14 +68,15 @@ const oneLine = (text: string, max: number) => {
 
 /**
  * The desktop app's notification for one that just arrived (`notification.upserted`): new and unread, of a
- * kind a phone would get pushed, or waiting on the person. Its page is the inbox, where it is on top. Merged
+ * kind a phone would get pushed, or waiting on the person. Its page, which its click opens, is where the inbox
+ * opens it (the message itself, in its conversation or thread), or the inbox when it has no page of its own. Merged
  * into one already there, read, or done: none. Someone's agent using a phone of the person's: "Lia is using Pixel 8",
  * what it does for whom, the phone's page, and `phoneId` for the notification's Stop (`agentName` names the agent).
  */
 export function desktopNotice(
   t: TFunction,
   orgId: string,
-  n: Pick<AppNotification, "kind" | "waiting" | "count" | "readAt" | "doneAt" | "latest" | "source" | "actors">,
+  n: AppNotification,
   agentName?: (agentId: string) => string | undefined,
 ): { title: string; body: string; path: string; phoneId?: string } | null {
   if (n.readAt || n.doneAt || n.count > 1) return null;
@@ -105,6 +107,7 @@ export function desktopNotice(
   }
   const kind = isNoticeKind(n.kind) ? n.kind : n.waiting ? "waiting" : null;
   if (!kind) return null;
+  const target = openTarget(n);
   return {
     title: oneLine(t(`desktopNotice.${kind}`), NOTICE_TITLE_MAX),
     // The snippet, an approval's action, or the word for a GIF, a sticker or a voice message (ADR 0091, 0100).
@@ -112,7 +115,7 @@ export function desktopNotice(
       noticeLine(n, (media) => mediaWord(t, media)),
       NOTICE_BODY_MAX,
     ),
-    path: `/org/${encodeURIComponent(orgId)}/notifications`,
+    path: target ? targetPath(orgId, target) : `/org/${encodeURIComponent(orgId)}/notifications`,
   };
 }
 
@@ -224,6 +227,8 @@ export const thisMac = {
   openPrefs: (tab: "folders" | "tools" | "updates") => invoke<unknown>({ kind: "prefs", tab }),
   /** The menu bar's popover, where access requests are answered. */
   showRequests: () => invoke<unknown>({ kind: "requests" }),
+  /** System Settings on the microphone's list (a voice message macOS refused); an older app refuses it. */
+  openMicrophoneSettings: () => invoke<unknown>({ kind: "privacy", pane: "microphone" }),
   /** The Dock's badge: how many wait on the person, and unread (a dot when nothing waits). */
   badge: (waiting: number, unread: number) => invoke<unknown>({ kind: "badge", waiting, unread }),
   /** The Mac's Go menu: the person's organizations (⌘⌥1–9). */

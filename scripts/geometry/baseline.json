@@ -29,6 +29,7 @@
   "captop@1280 span.mi-ok in div.mi-decided",
   "captop@1280 span.tm-computer__icon in li.tm-computer",
   "captop@320 canvas.ac-computer in div.connect-page__computer",
+  "captop@320 canvas.ac-computer.agp-pc__logo in div.agp-pc__now",
   "captop@320 canvas.ac-computer.machine-page__icon in div.row.machine-page__head",
   "captop@320 canvas.ac-toolpx-agent.tr-done__agent in section.tr-done",
   "captop@320 div.newag__pv-cover in div.newag__pv",
@@ -278,7 +279,9 @@
   "midword@320 span in p.nac__hi",
   "midword@320 span.ac-diff__text in div.artifact-split__row",
   "midword@320 span.ac-field__example",
+  "midword@320 span.rq-mail__to in div.rq-mail",
   "midword@390 span in p.nac__hi",
+  "midword@390 span.rq-mail__to in div.rq-mail",
   "overlap@1280 div.wg__body in div.wg__foot",
   "overlap@1280 div.wg__head in div.wg__body",
   "overlap@320 div.wg__body in div.wg__foot",
@@ -473,6 +476,7 @@
   "wordwrap@320 span in div.isc-row",
   "wordwrap@320 span in p.nac__hi",
   "wordwrap@320 span in span.nac__similar",
+  "wordwrap@320 span.ac-eventpill__text in span.ac-eventpill__main at div.ac-eventpill.rq-done",
   "wordwrap@320 span.ac-hint__bubble.ac-glass.ac-menu__tip in body",
   "wordwrap@320 span.ac-option__title in span.chat-look__foot",
   "wordwrap@390 button.ac-link in span.nac__similar",
@@ -480,5 +484,6 @@
   "wordwrap@390 span in div.isc-row",
   "wordwrap@390 span in p.nac__hi",
   "wordwrap@390 span in span.nac__similar",
+  "wordwrap@390 span.ac-eventpill__text in span.ac-eventpill__main at div.ac-eventpill.rq-done",
   "wordwrap@390 span.ac-hint__bubble.ac-glass.ac-menu__tip in body"
 ]

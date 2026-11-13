@@ -163,6 +163,7 @@ export const OP_ROUTES: Readonly<Record<MachineOp, "machine" | "agent">> = {
   "mission.worktree": "agent",
   "access.request": "machine",
   "access.reduce": "machine",
+  "access.allow": "machine",
   "browser.act": "agent",
   "browser.stop": "agent",
   "browser.stream.start": "agent",
@@ -213,10 +214,13 @@ export const OP_ROUTES: Readonly<Record<MachineOp, "machine" | "agent">> = {
   // Root takes each hold in the agent's slice (`holds.ts`), and checks its program is the agent's.
   "keep.start": "machine",
   "keep.end": "machine",
+  // The person's own session: macOS's password window opens on their screen (a system-mode runner answers unsupported).
+  "xcode.fix": "machine",
 };
 
 type AccessRequestOp = Extract<MachineRequest, { op: "access.request" }>;
 type AccessReduceOp = Extract<MachineRequest, { op: "access.reduce" }>;
+type AccessAllowOp = Extract<MachineRequest, { op: "access.allow" }>;
 
 export interface HandlerContext {
   /** Real path of the workspace folder. */
@@ -252,7 +256,8 @@ export interface HandlerContext {
   /**
    * A brain turn found no room: closes one idle warm CLI on this computer (any agent's in system mode), least
    * recently used first, `spare` (the waiting turn's own session, `brainKey`) last, never one mid-turn or
-   * holding the agent's work; false when none could close.
+   * holding the agent's work; with none left, an agent's browser idle for `BROWSER_RECLAIM_IDLE_MS`; false when
+   * nothing could close.
    */
   reclaimBrains?: (spare: string) => Promise<boolean>;
   /** Whether the session `spare` (`brainKey`) has an open CLI: a turn on it takes no new process's memory. */
@@ -298,6 +303,8 @@ export interface HandlerContext {
   accessOps?: {
     request(agent: AgentScope, req: AccessRequestOp): Promise<MachineReplies["access.request"]>;
     reduce(req: AccessReduceOp): Promise<MachineReplies["access.reduce"]>;
+    /** `ACCESS_ALLOW_PROTOCOL`: the owner turned a tool on from the apps; absent: refused. */
+    allow?(req: AccessAllowOp): Promise<MachineReplies["access.allow"]>;
   };
   /** Set per request (protocol 10): the folders allowed for the request's agent, as real paths. */
   grants?: string[];
@@ -328,6 +335,8 @@ export interface HandlerContext {
     start(agent: AgentScope, req: Extract<MachineRequest, { op: "keep.start" }>): Promise<MachineReplies["keep.start"]>;
     end(req: Extract<MachineRequest, { op: "keep.end" }>): Promise<MachineReplies["keep.end"]>;
   };
+  /** `XCODE_FIX_PROTOCOL`: fixing this Mac's own Xcode; without it the op answers `unsupported`. */
+  xcodeFix?: (req: Extract<MachineRequest, { op: "xcode.fix" }>) => MachineReplies["xcode.fix"];
 }
 
 export interface RequestScope {
@@ -376,7 +385,8 @@ function requireTool(ctx: HandlerContext, tool: keyof RunnerTools) {
       "Commands are turned off on this computer (the runner was paired with --no-exec)",
     );
   }
-  const how = `its owner can turn it on in the agentes app (Preferences > Tools) or with agentes-runner tools enable ${tool}`;
+  // The apps match "<Tool> is turned off" (`browserOffMessage`) to offer the one-click switch: keep those words.
+  const how = "its owner can turn it on from agentes.chat";
   if (tool === "commands") throw new RunnerError("exec_disabled", `Commands are turned off on this computer (${how})`);
   throw new RunnerError("not_allowed", `${TOOL_LABEL[tool]} is turned off on this computer (${how})`);
 }
@@ -656,7 +666,9 @@ async function routeRequest(ctx: HandlerContext, req: MachineRequest, scope: Req
     if (req.op === "brain.turn") signedOut(ctx, req, (out as Partial<MachineReplies["brain.turn"]> | null)?.final);
     return out;
   }
-  if (req.op === "access.request" || req.op === "access.reduce") return handleAccess(ctx, req);
+  if (req.op === "access.request" || req.op === "access.reduce" || req.op === "access.allow") {
+    return handleAccess(ctx, req);
+  }
   if (req.op === "keep.start" || req.op === "keep.end") {
     if (!ctx.keep) throw new RunnerError("unsupported", KEEP_UNSUPPORTED);
     if (req.op === "keep.end") return ctx.keep.end(req);
@@ -698,6 +710,13 @@ async function routeRequest(ctx: HandlerContext, req: MachineRequest, scope: Req
   if (req.op === "phone.look") return { looking: ctx.phones?.look() ?? false } satisfies MachineReplies["phone.look"];
   if (req.op === "phone.wifi")
     return ctx.phones ? ctx.phones.wifi(req) : ({ available: [] } satisfies MachineReplies["phone.wifi"]);
+  if (req.op === "xcode.fix") {
+    return (
+      ctx.xcodeFix?.(req) ?? {
+        fix: { kind: req.kind === "update" ? "update" : "select", state: "unsupported", step: 0 },
+      }
+    );
+  }
   if (isPhoneOp(req)) return handlePhone(ctx, req, scope);
   // Each agent works in its own folder: that folder is its workspace.
   if (req.agent) ctx = { ...ctx, workspaceReal: await agentWorkspace(ctx.workspaceReal, req.agent) };
@@ -1149,7 +1168,13 @@ async function handleAccount(
       return {};
     case "list":
       // Protocol 19: usage looked up in the background; what it finds comes as `accounts.changed`.
-      if (Array.isArray(req.fresh)) accounts.probeUsage(req.fresh.filter((id) => typeof id === "string"));
+      if (Array.isArray(req.fresh)) {
+        const recheck = Array.isArray(req.recheck) ? req.recheck.filter((id) => typeof id === "string") : [];
+        accounts.probeUsage(
+          req.fresh.filter((id) => typeof id === "string"),
+          recheck,
+        );
+      }
       return { accounts: await accounts.list() };
     case "remove":
       await accounts.remove(req.kind, requireString(req.accountId, "accountId"));
@@ -1160,11 +1185,15 @@ async function handleAccount(
 }
 
 /** Protocol 10: the agent asks for a folder, or the site reduces what the machine allows. */
-async function handleAccess(ctx: HandlerContext, req: AccessRequestOp | AccessReduceOp) {
+async function handleAccess(ctx: HandlerContext, req: AccessRequestOp | AccessReduceOp | AccessAllowOp) {
   if (!ctx.accessOps) throw new RunnerError("bad_request", "This runner keeps no access settings");
   if (req.op === "access.request") {
     if (!req.agent) throw new RunnerError("bad_request", "A folder request belongs to an agent");
     return ctx.accessOps.request(req.agent, req);
+  }
+  if (req.op === "access.allow") {
+    if (!ctx.accessOps.allow) throw new RunnerError("bad_request", "This runner can't turn tools on from the apps");
+    return ctx.accessOps.allow(req);
   }
   return ctx.accessOps.reduce(req);
 }
@@ -1571,6 +1600,8 @@ function describeOp(req: MachineRequest): string {
     case "phone.logs":
       // The phone and the app; never the flow's text or its variables.
       return `${req.op} ${String(req.platform)}/${String(req.serial)}${"app" in req && req.app ? ` ${String(req.app)}` : ""}`;
+    case "access.allow":
+      return `access.allow tool ${String(req.tool)}`;
     case "access.reduce":
       return `access.reduce${req.removeFolder ? ` folder ${String(req.removeFolder.path ?? "")}` : ""}${req.disableTool ? ` tool ${String(req.disableTool)}` : ""}`;
     default:
@@ -1678,7 +1709,7 @@ export class RequestRunner {
   }
 
   /**
-   * No room for a turn: idle warm CLIs close, one at a time, until there is, for up to `RECLAIM_MS`. Not where
+   * No room for a turn: idle warm CLIs, then idle browsers, close one at a time until there is, for up to `RECLAIM_MS`. Not where
    * memory isn't known: room there is a count of turns, which closing idle CLIs doesn't change.
    */
   private async reclaim(

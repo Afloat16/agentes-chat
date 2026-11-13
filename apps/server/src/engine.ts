@@ -37,6 +37,7 @@ import {
   createCalendarToolSource,
   createChatToolSource,
   createClaudeCodeBrain,
+  createCoAuthorToolSource,
   createConnectorToolSource,
   createContextToolSource,
   createDashboardToolSource,
@@ -419,6 +420,8 @@ export function buildEngine(o: EngineOptions) {
       createSetStatusToolSource({ pubsub: adapters.pubsub }),
       // How the person asked agents to talk to them (ADR 0147).
       createAgentStyleToolSource(),
+      // The agents' own line on their commits, off or on again when a person asks any agent (ADR 0156).
+      createCoAuthorToolSource(),
       // A person's feedback, sent by the agent they asked or offered by it when the app fails, where the server takes
       // feedback (ADR 0160 §11, §12).
       createFeedbackToolSource({
@@ -728,6 +731,8 @@ export function buildEngine(o: EngineOptions) {
       { fetch: o.speechFetch },
     ),
   });
+  // An audio file an agent opens is heard by the same engines as a voice message.
+  artifacts.speech = speech.chain;
   const voice: VoiceDeps = {
     db,
     pubsub: adapters.pubsub,

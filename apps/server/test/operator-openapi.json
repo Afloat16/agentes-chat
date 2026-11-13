@@ -1698,9 +1698,72 @@
                 },
                 "required": ["input", "output", "cacheRead", "cacheWrite"],
                 "description": "Tokens over `turnsWithUsage`."
+              },
+              "waitsByCause": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "cause": {
+                      "type": "string",
+                      "description": "`brain_unavailable:<code>` (a wait for its computer: `busy` for room, `offline`, `standby`, …) or `provider_outage`. Ignore values you don't know."
+                    },
+                    "waits": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "medianSec": {
+                      "type": ["integer", "null"]
+                    },
+                    "p90Sec": {
+                      "type": ["integer", "null"]
+                    }
+                  },
+                  "required": ["cause", "waits", "medianSec", "p90Sec"]
+                },
+                "description": "Waits of turns created in the dates, most first: each lasts until the run's next step, its end or now."
+              },
+              "computerStarts": {
+                "$ref": "#/components/schemas/OperatorWorkComputerStarts"
+              },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stage": {
+                      "type": "string",
+                      "description": "`claim`, `context`, `model` (each turn), `persist`, `events`, …"
+                    },
+                    "runs": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Stages measured (a run has one `model` per turn)."
+                    },
+                    "medianMs": {
+                      "type": ["integer", "null"]
+                    },
+                    "p90Ms": {
+                      "type": ["integer", "null"]
+                    }
+                  },
+                  "required": ["stage", "runs", "medianMs", "p90Ms"]
+                },
+                "description": "Where the runs' own time went (waits for room excluded), slowest median first."
               }
             },
-            "required": ["turns", "waits", "tokens", "agentShare", "byPayer", "turnsWithUsage", "perTurn"]
+            "required": [
+              "turns",
+              "waits",
+              "tokens",
+              "agentShare",
+              "byPayer",
+              "turnsWithUsage",
+              "perTurn",
+              "waitsByCause",
+              "computerStarts",
+              "stages"
+            ]
           },
           "series": {
             "type": "array",
@@ -1961,6 +2024,51 @@
         },
         "required": ["input", "output", "cacheRead", "cacheWrite", "costUsd", "apiEquivalentUsd"]
       },
+      "OperatorWorkComputerStarts": {
+        "type": "object",
+        "properties": {
+          "turns": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Computer brain turns that said how they started (newer runners)."
+          },
+          "warm": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Of them, on a process already open."
+          },
+          "initMedianMs": {
+            "type": ["integer", "null"],
+            "description": "A new process until it said it was ready."
+          },
+          "initP90Ms": {
+            "type": ["integer", "null"]
+          },
+          "warmFirstEventMedianMs": {
+            "type": ["integer", "null"],
+            "description": "Turn start to its first event."
+          },
+          "warmFirstEventP90Ms": {
+            "type": ["integer", "null"]
+          },
+          "coldFirstEventMedianMs": {
+            "type": ["integer", "null"]
+          },
+          "coldFirstEventP90Ms": {
+            "type": ["integer", "null"]
+          }
+        },
+        "required": [
+          "turns",
+          "warm",
+          "initMedianMs",
+          "initP90Ms",
+          "warmFirstEventMedianMs",
+          "warmFirstEventP90Ms",
+          "coldFirstEventMedianMs",
+          "coldFirstEventP90Ms"
+        ]
+      },
       "OperatorOrgWorkAnalytics": {
         "type": "object",
         "properties": {
@@ -2063,9 +2171,72 @@
                 },
                 "required": ["input", "output", "cacheRead", "cacheWrite"],
                 "description": "Tokens over `turnsWithUsage`."
+              },
+              "waitsByCause": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "cause": {
+                      "type": "string",
+                      "description": "`brain_unavailable:<code>` (a wait for its computer: `busy` for room, `offline`, `standby`, …) or `provider_outage`. Ignore values you don't know."
+                    },
+                    "waits": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "medianSec": {
+                      "type": ["integer", "null"]
+                    },
+                    "p90Sec": {
+                      "type": ["integer", "null"]
+                    }
+                  },
+                  "required": ["cause", "waits", "medianSec", "p90Sec"]
+                },
+                "description": "Waits of turns created in the dates, most first: each lasts until the run's next step, its end or now."
+              },
+              "computerStarts": {
+                "$ref": "#/components/schemas/OperatorWorkComputerStarts"
+              },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stage": {
+                      "type": "string",
+                      "description": "`claim`, `context`, `model` (each turn), `persist`, `events`, …"
+                    },
+                    "runs": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Stages measured (a run has one `model` per turn)."
+                    },
+                    "medianMs": {
+                      "type": ["integer", "null"]
+                    },
+                    "p90Ms": {
+                      "type": ["integer", "null"]
+                    }
+                  },
+                  "required": ["stage", "runs", "medianMs", "p90Ms"]
+                },
+                "description": "Where the runs' own time went (waits for room excluded), slowest median first."
               }
             },
-            "required": ["turns", "waits", "tokens", "agentShare", "byPayer", "turnsWithUsage", "perTurn"]
+            "required": [
+              "turns",
+              "waits",
+              "tokens",
+              "agentShare",
+              "byPayer",
+              "turnsWithUsage",
+              "perTurn",
+              "waitsByCause",
+              "computerStarts",
+              "stages"
+            ]
           },
           "series": {
             "type": "array",

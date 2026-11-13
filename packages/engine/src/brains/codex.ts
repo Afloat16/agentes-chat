@@ -501,7 +501,7 @@ export class CursorBrain extends CodexBrain {
 /**
  * The OpenCode brain (ADR 0132): OpenCode's CLI on the agent's computer, on OpenCode's free tier or a person's OpenCode
  * key, through the same `brain.turn` as Codex (`kind: "opencode"`, runner protocol 39, `brain-opencode.ts` there; over
- * ACP and on Windows since protocol 62). OpenCode 2 takes a person's messages mid-turn (`brain.steer`); with 1.x they
+ * ACP and on Windows since protocol 64). OpenCode 2 takes a person's messages mid-turn (`brain.steer`); with 1.x they
  * wait for the turn's end (the runner answers `unsupported`).
  */
 export class OpencodeBrain extends CodexBrain {

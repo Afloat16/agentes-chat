@@ -1,4 +1,11 @@
-import type { BrainEffort, BrainSpeed, BrainTurnRequest, ProviderFailureCause } from "@agenteschat/adapters";
+import type {
+  BrainEffort,
+  BrainSpeed,
+  BrainTurnRequest,
+  BrainTurnTimings,
+  ProviderFailureCause,
+} from "@agenteschat/adapters";
+import type { ToolImage } from "@agenteschat/providers";
 import { planOf } from "@agenteschat/providers/plans";
 import type { CodeSetup } from "../git/machine";
 
@@ -151,6 +158,8 @@ export interface BrainTurn {
 export interface ToolResult {
   content: string;
   isError?: boolean;
+  /** Pictures and PDFs the tool returned, for the CLI to show (`MCP_IMAGES_PROTOCOL`). */
+  images?: ToolImage[];
   /** The call is gated: the run pauses until a person decides (ADR 0015 approval or ask_user). */
   pause?: { kind: "approval" | "input"; id: string };
 }
@@ -205,7 +214,7 @@ export type BrainEvent =
       maxUncached?: number;
     }
   | { type: "limit"; resetsAt?: string }
-  | { type: "done"; text: string; session?: { id: string } }
+  | { type: "done"; text: string; session?: { id: string }; timings?: BrainTurnTimings }
   | {
       type: "error";
       code: string;
