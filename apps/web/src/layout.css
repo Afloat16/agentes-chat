@@ -4450,7 +4450,7 @@ html:not([data-pointer]) .settings__link:focus-visible {
 .settings-row:first-child {
   border-top: 0;
 }
-/* A group's heading among a card's rows (Limites' Por papel): on the rows' words, the hairline above it. */
+/* A group's heading among a card's rows (Limites' Por cargo): on the rows' words, the hairline above it. */
 .settings-rows > .ac-grouphead {
   margin: 0;
   padding: var(--space-4) var(--card-pad) var(--space-2);
@@ -9291,7 +9291,7 @@ html:not([data-pointer]) .onb__step:focus-visible {
   width: var(--option-face);
   height: var(--option-face);
 }
-/* The role step: "Do zero" first (its Cargo field right under it, one card's gap apart), then the groups of presets
+/* The role step: "Do zero" first (its Função field right under it, one card's gap apart), then the groups of presets
    under small headings. */
 .newag__role-groups {
   display: flex;
