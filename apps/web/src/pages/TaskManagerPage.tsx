@@ -503,7 +503,12 @@ export function TaskManagerPage({
       )}
       {hidden?.total ? <p className="tm-none">{t("taskManager.hiddenLine", { count: hidden.total })}</p> : null}
 
-      {view.data && all.length === 0 && returnsSection && <TaskTable>{returnsSection}</TaskTable>}
+      {/* No task on: the returns still list, in the same table (and its width's rules). */}
+      {view.data && all.length === 0 && returnsSection && (
+        <section className="tm-now" aria-label={t("taskManager.sections.returns")}>
+          <TaskTable>{returnsSection}</TaskTable>
+        </section>
+      )}
 
       {view.data && all.length > 0 && (
         <section className="tm-now" aria-label={heading}>
