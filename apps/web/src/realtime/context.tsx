@@ -83,6 +83,7 @@ import {
   staleProvisional,
   startThreadCache,
   stopTyping,
+  type TypingKind,
   type TypingState,
   touchRun,
   typingThrottle,
@@ -233,7 +234,7 @@ export function createStreamsStore(
     apply: (event: ChannelEvent) => {
       let typing = state.typing;
       if (event.type === "user.typing")
-        typing = applyTyping(typing, event.channelId, event.userId, now(), event.ttlMs, event.threadId);
+        typing = applyTyping(typing, event.channelId, event.userId, now(), event.ttlMs, event.threadId, event.kind);
       const memory =
         event.type === "memory.updated"
           ? {
@@ -981,12 +982,12 @@ export function useLiveStore() {
   return useRealtime().streams;
 }
 
-/** Throttled "I'm typing" for a channel, or for one of its threads. */
+/** Throttled "I'm typing" for a channel, or for one of its threads; `voice` while recording a voice message. */
 export function useTypingSender(channelId: string, threadId?: string) {
   const { connection } = useRealtime();
   const throttle = useMemo(() => typingThrottle(), []);
-  return (text?: string) => {
-    if (connection && throttle(Date.now(), text)) connection.sendTyping(channelId, threadId);
+  return (text?: string, kind?: TypingKind) => {
+    if (connection && throttle(Date.now(), text, kind)) connection.sendTyping(channelId, threadId, kind);
   };
 }
 

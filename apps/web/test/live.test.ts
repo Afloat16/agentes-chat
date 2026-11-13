@@ -69,9 +69,11 @@ describe("agent activity: thinking → typing → idle", () => {
 });
 
 describe("typing", () => {
+  const ids = (who: { id: string }[]) => who.map((w) => w.id);
+
   test("people typing expire after a few seconds and stop when their message arrives", () => {
     let s = applyTyping({}, "c1", "marina", 1000);
-    expect(typingIn(s, "c1", 1000 + TYPING_TTL_MS - 1)).toEqual(["marina"]);
+    expect(typingIn(s, "c1", 1000 + TYPING_TTL_MS - 1)).toEqual([{ id: "marina", kind: "typing" }]);
     expect(typingIn(s, "c1", 1000 + TYPING_TTL_MS + 1)).toEqual([]);
     expect(typingIn(s, "c1", 1000, "marina")).toEqual([]);
     s = stopTyping(s, "c1", "marina");
@@ -81,13 +83,30 @@ describe("typing", () => {
   test("typing in a thread shows in that thread only; the latest frame says where", () => {
     let s = applyTyping({}, "c1", "marina", 1000, TYPING_TTL_MS, "t1");
     s = applyTyping(s, "c1", "joao", 1000);
-    expect(typingIn(s, "c1", 1000)).toEqual(["joao"]);
-    expect(typingIn(s, "c1", 1000, undefined, "t1")).toEqual(["marina"]);
+    expect(ids(typingIn(s, "c1", 1000))).toEqual(["joao"]);
+    expect(ids(typingIn(s, "c1", 1000, undefined, "t1"))).toEqual(["marina"]);
     expect(typingIn(s, "c1", 1000, undefined, "t2")).toEqual([]);
     // She moved to the conversation itself.
     s = applyTyping(s, "c1", "marina", 2000);
-    expect(typingIn(s, "c1", 2000)).toEqual(["marina", "joao"]);
+    expect(ids(typingIn(s, "c1", 2000))).toEqual(["marina", "joao"]);
     expect(typingIn(s, "c1", 2000, undefined, "t1")).toEqual([]);
+  });
+
+  test("recording a voice message is a kind of its own; the latest frame per person wins, and her message ends it", () => {
+    let s = applyTyping({}, "c1", "marina", 1000, 5000, null, "voice");
+    s = applyTyping(s, "c1", "joao", 1000);
+    expect(typingIn(s, "c1", 1000)).toEqual([
+      { id: "marina", kind: "voice" },
+      { id: "joao", kind: "typing" },
+    ]);
+    // She started writing: only that shows now.
+    s = applyTyping(s, "c1", "marina", 2000);
+    expect(typingIn(s, "c1", 2000)[0]).toEqual({ id: "marina", kind: "typing" });
+    s = applyTyping(s, "c1", "marina", 3000, 5000, null, "voice");
+    expect(typingIn(s, "c1", 3000)[0]).toEqual({ id: "marina", kind: "voice" });
+    // Gone 5 s after her last frame (paused, deleted), or at once when her voice message arrives.
+    expect(ids(typingIn(s, "c1", 8001))).toEqual([]);
+    expect(ids(typingIn(stopTyping(s, "c1", "marina"), "c1", 3000))).toEqual(["joao"]);
   });
 
   test("what ran out is dropped on time (a store sweeping it re-renders); nothing ran out, the same state", () => {
@@ -113,6 +132,28 @@ describe("typing", () => {
     // Pasted into an emptied field.
     expect(send(1800, "")).toBe(false);
     expect(send(1900, "olha o relatório de ontem")).toBe(true);
+  });
+
+  test("voice frames go through the same throttle: the switch at once, then one every 3 s, and writing takes over", () => {
+    const send = typingThrottle(3000);
+    // Recording: one frame at once, then every 3 s.
+    expect([0, 1000, 2999, 3000, 4000, 6000].map((t) => send(t, undefined, "voice"))).toEqual([
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+    ]);
+    // Sent: writing right after shows at once, and the take still uploading waits while she writes.
+    expect(send(6500, "e mais")).toBe(true);
+    expect(send(7000, undefined, "voice")).toBe(false);
+    expect(send(9000, "e mais uma coisa", "typing")).toBe(false);
+    expect(send(11_000, undefined, "voice")).toBe(false);
+    // Three seconds without writing: it shows again, at once.
+    expect(send(12_000, undefined, "voice")).toBe(true);
+    // Writing again takes over at once.
+    expect(send(12_100, "e mais uma coisa!")).toBe(true);
   });
 });
 

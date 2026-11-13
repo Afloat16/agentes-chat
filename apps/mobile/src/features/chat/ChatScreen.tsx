@@ -1088,7 +1088,27 @@ function Chat({
       setQuote(null);
       toEnd();
     },
+    onRecording: () => sendTyping(threadId, undefined, "voice"),
   });
+  // "gravando áudio…" goes on for the others while my recording uploads here; the server keeps it from then until the
+  // message comes.
+  const uploading = useMemo(
+    () =>
+      list.some(
+        (m) =>
+          m.local === "pending" &&
+          m.author.id === meId &&
+          voiceOf(m.meta) &&
+          !m.meta?.voiceAccepted &&
+          (m.threadId ?? null) === (threadId ?? null),
+      ),
+    [list, meId, threadId],
+  );
+  useEffect(() => {
+    if (!uploading) return;
+    const timer = setInterval(() => sendTyping(threadId, undefined, "voice"), 1000);
+    return () => clearInterval(timer);
+  }, [uploading, sendTyping, threadId]);
   const sendMedia = (media: MessageMedia) => {
     send("", threadId, { ...takeQuote(), media });
     toEnd();

@@ -15617,6 +15617,7 @@
         "usingTool": "Memakai alat {{tool}}",
         "thinking": "Berpikir",
         "typing": "Menulis",
+        "recordingVoice": "Merekam audio",
         "writing": "Menulis"
       }
     },
@@ -15626,6 +15627,7 @@
       "updatingRoutine": "mengubah rutinitas",
       "thinking": "bekerja",
       "typing": "mengetik",
+      "recordingVoice": "merekam audio",
       "writing": "menulis",
       "consulting": "memeriksa {{app}}",
       "creatingIssue": "membuat tugas",

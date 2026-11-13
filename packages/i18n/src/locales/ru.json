@@ -17113,6 +17113,7 @@
         "usingTool": "Использовал инструмент {{tool}}",
         "thinking": "Подумал",
         "typing": "Написал",
+        "recordingVoice": "Записал аудио",
         "writing": "Написал"
       }
     },
@@ -17122,6 +17123,7 @@
       "updatingRoutine": "меняет регулярную задачу",
       "thinking": "работает",
       "typing": "печатает",
+      "recordingVoice": "записывает аудио",
       "writing": "пишет",
       "consulting": "заглядывает в {{app}}",
       "creatingIssue": "создаёт задачу",

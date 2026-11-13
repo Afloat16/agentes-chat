@@ -1,4 +1,4 @@
-import { channelTopic, chatActivityTopic, orgTopic, type PubSub, userTopic } from "@agenteschat/adapters";
+import { channelTopic, chatActivityTopic, orgTopic, type PubSub, typingTopic, userTopic } from "@agenteschat/adapters";
 import { modelProvider } from "@agenteschat/providers";
 import { plainLines } from "@agenteschat/ui/markdown";
 import type { AgentActionView } from "./agent-actions";
@@ -425,8 +425,11 @@ export type ChannelEvent =
       runId: string;
       byUserId: string;
     }
-  /** A person is typing (client frame `typing`). Clients drop it after `ttlMs`. */
-  | { type: "user.typing"; channelId: string; threadId: string | null; userId: string; ttlMs: number }
+  /**
+   * A person is typing (client frame `typing`), or recording a voice message (`kind: "voice"`, also while its words
+   * are made out). Clients drop it after `ttlMs`.
+   */
+  | { type: "user.typing"; channelId: string; threadId: string | null; userId: string; ttlMs: number; kind?: "voice" }
   /** Who saw a message and who will answer (receipts). No router scores here. */
   | {
       type: "message.routed";
@@ -687,6 +690,23 @@ export async function publishChannelEvent(pubsub: PubSub | undefined, event: Cha
   } catch {
     // Real-time is best effort: clients catch up from the API on reconnect.
   }
+}
+
+/** How long "está digitando…" or "gravando áudio…" lasts without another frame. */
+export const TYPING_TTL_MS = 5000;
+
+/**
+ * "Marina está digitando…", or "Marina está gravando áudio…" with `kind: "voice"`: to the conversation's apps for
+ * `TYPING_TTL_MS`, and on `typingTopic` for an agent's quiet window (ADR 0112), which counts both alike.
+ */
+export async function publishTyping(
+  pubsub: PubSub,
+  { kind, ...where }: { channelId: string; threadId: string | null; userId: string; kind?: "voice" },
+) {
+  const event: ChannelEvent = { type: "user.typing", ...where, ttlMs: TYPING_TTL_MS, ...(kind ? { kind } : {}) };
+  await Promise.all(
+    [channelTopic(where.channelId), typingTopic].map((topic) => pubsub.publish(topic, event).catch(() => {})),
+  );
 }
 
 export async function publishMessageCreated(pubsub: PubSub, message: MessageView) {

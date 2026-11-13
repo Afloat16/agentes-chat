@@ -15555,6 +15555,7 @@
         "usingTool": "{{tool}} 도구를 사용했어요",
         "thinking": "생각했어요",
         "typing": "작성했어요",
+        "recordingVoice": "오디오를 녹음했어요",
         "writing": "작성했어요"
       }
     },
@@ -15564,6 +15565,7 @@
       "updatingRoutine": "루틴을 변경하는 중",
       "thinking": "작업 중",
       "typing": "입력 중",
+      "recordingVoice": "오디오 녹음 중",
       "writing": "작성 중",
       "consulting": "{{app}} 확인 중",
       "creatingIssue": "작업을 만드는 중",

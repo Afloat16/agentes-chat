@@ -16335,6 +16335,7 @@ export const en = {
         usingTool: "Used the {{tool}} tool",
         thinking: "Thought",
         typing: "Wrote",
+        recordingVoice: "Recorded audio",
         writing: "Wrote",
       },
     },
@@ -16344,6 +16345,8 @@ export const en = {
       updatingRoutine: "changing a routine",
       thinking: "working",
       typing: "typing",
+      /** A person recording a voice message, after their name: "Marina is recording audio…". */
+      recordingVoice: "recording audio",
       writing: "writing",
       consulting: "checking {{app}}",
       creatingIssue: "creating a task",

@@ -7315,9 +7315,35 @@ html:not([data-pointer]) .run-continue:focus-visible {
   text-overflow: ellipsis;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .ac-typing__people {
+  .ac-typing__people,
+  .ac-typing__group {
     animation: ac-fade-in 160ms ease-out both;
   }
+}
+/* Who records a voice message comes last, as a group: their mark and their faces, then their words, keeping their
+   width as who types does (the agents' words give way first), the names alone ending in "…". While both are at it,
+   who types is a group too, and the second goes on a line of its own when one is short of room: every verb stays
+   whole, and each line starts with its own mark. */
+.ac-typing__group {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+.ac-typing__group > .ac-typing__people {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* After words, a mark keeps the room a mark has before words, inside each piece's own width. */
+.ac-typing__agents + .ac-typing__group {
+  padding-left: var(--space-1);
+}
+.ac-typing__group:has(+ .ac-typing__group) {
+  padding-right: var(--space-1);
+}
+.ac-typing[data-active="true"] .ac-typing__text:has(> .ac-typing__group + .ac-typing__group) {
+  flex-wrap: wrap;
 }
 
 /* ── Calendário: pages/calendar.css ── */
@@ -13501,6 +13527,10 @@ html:not([data-pointer]) .channel__latest-btn.ac-btn:focus-visible {
 .ac-typing__also {
   flex: 0 1 auto;
   margin-right: auto;
+}
+/* Who types, then who records: what is left over goes after the last. */
+.ac-typing__also:has(+ .ac-typing__also) {
+  margin-right: 0;
 }
 .ac-typing__also::before {
   content: "· ";

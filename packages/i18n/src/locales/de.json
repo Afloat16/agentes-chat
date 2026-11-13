@@ -16120,6 +16120,7 @@
         "usingTool": "Das Tool {{tool}} genutzt",
         "thinking": "Nachgedacht",
         "typing": "Geschrieben",
+        "recordingVoice": "Audio aufgenommen",
         "writing": "Geschrieben"
       }
     },
@@ -16129,6 +16130,7 @@
       "updatingRoutine": "Ändern einer Routine",
       "thinking": "Arbeiten",
       "typing": "Tippen",
+      "recordingVoice": "Aufnehmen einer Audionachricht",
       "writing": "Schreiben",
       "consulting": "Nachsehen in {{app}}",
       "creatingIssue": "Erstellen einer Aufgabe",

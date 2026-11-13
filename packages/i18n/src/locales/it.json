@@ -16657,6 +16657,7 @@
         "usingTool": "Ha usato lo strumento {{tool}}",
         "thinking": "Ha pensato",
         "typing": "Ha scritto",
+        "recordingVoice": "Ha registrato un audio",
         "writing": "Ha scritto"
       }
     },
@@ -16666,6 +16667,7 @@
       "updatingRoutine": "cambiando una routine",
       "thinking": "lavorando",
       "typing": "digitando",
+      "recordingVoice": "registrando un audio",
       "writing": "scrivendo",
       "consulting": "consultando {{app}}",
       "creatingIssue": "creando un'attività",

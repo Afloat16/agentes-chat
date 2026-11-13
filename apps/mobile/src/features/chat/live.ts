@@ -54,6 +54,7 @@ import {
   staleProvisional,
   startThreadCache,
   stopTyping,
+  type TypingKind,
   type TypingState,
   typingThrottle,
   unmarkStopping,
@@ -116,7 +117,7 @@ function reduce(state: LiveState, action: Action): LiveState {
       const receipts = applyReceiptEvent(seeded, event);
       const typing =
         event.type === "user.typing"
-          ? applyTyping(state.typing, event.channelId, event.userId, action.at, event.ttlMs, event.threadId)
+          ? applyTyping(state.typing, event.channelId, event.userId, action.at, event.ttlMs, event.threadId, event.kind)
           : event.type === "message.created" && event.message?.author?.type === "person" && event.message.author.id
             ? stopTyping(state.typing, event.channelId, event.message.author.id)
             : state.typing;
@@ -382,10 +383,10 @@ export interface ChatLive {
   picking: (messageId: string) => void;
   /** "Parar" (as on the web): "Parando…" until the run's event; a run that already ended just leaves. */
   stop: (runId: string, byUserId: string) => void;
-  /** Who is typing now (`typingIn` reads it for the conversation or one of its threads). */
+  /** Who is typing or recording now (`typingIn` reads it for the conversation or one of its threads). */
   typing: TypingState;
-  /** "I'm typing" here or in a thread, throttled (at most one frame every 3 s). */
-  sendTyping: (threadId: string | null, text?: string) => void;
+  /** "I'm typing" (or `voice`: recording) here or in a thread, throttled (at most one frame every 3 s). */
+  sendTyping: (threadId: string | null, text?: string, kind?: TypingKind) => void;
   /** Agents I named here that won't answer me, newest last (`agent.unavailable`). */
   notices: AgentUnavailableEvent[];
 }
@@ -509,8 +510,8 @@ export function useChatLive(orgId: string, channelId: string, enabled: boolean):
   }, [typingEnds]);
   const throttle = useMemo(() => typingThrottle(), []);
   const sendTyping = useCallback(
-    (threadId: string | null, text?: string) => {
-      if (connection && throttle(Date.now(), text)) connection.sendTyping(channelId, threadId);
+    (threadId: string | null, text?: string, kind?: TypingKind) => {
+      if (connection && throttle(Date.now(), text, kind)) connection.sendTyping(channelId, threadId, kind);
     },
     [connection, channelId, throttle],
   );

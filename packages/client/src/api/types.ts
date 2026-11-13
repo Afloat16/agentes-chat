@@ -1788,8 +1788,15 @@ export type ChannelEvent =
       waitKind: string;
       outcome: WaitMessageOutcome;
     }
-  /** A person is typing; drop it after `ttlMs`. */
-  | { type: "user.typing"; channelId: string; threadId: string | null; userId: string; ttlMs: number }
+  /** A person is typing, or recording a voice message (`kind: "voice"`); drop it after `ttlMs`. */
+  | {
+      type: "user.typing";
+      channelId: string;
+      threadId: string | null;
+      userId: string;
+      ttlMs: number;
+      kind?: "voice";
+    }
   /** Who saw a message and who will answer. */
   | {
       type: "message.routed";
