@@ -270,3 +270,29 @@ What it cannot see:
 - **The events feed's `data` (§5)** is returned whole, so it is on the list whole. What goes into an event is decided where the event is written, and stays the rule of §5.
 - **Text changed before it leaves.** The test looks for the canary as written. A value encoded, or cut to a few characters, would pass unseen.
 - **A credential inside an error** is covered for one shape (an address with a password, in a run's, a job's and a routing decision's error). The masking is `redactCredentials` (`packages/engine/src/tool-detail.ts`): a credential of a shape it doesn't know leaves with the error's first characters.
+
+## Addendum (2026-11-13): whose tool, and tool calls
+
+"Which tool keeps failing" and "what did it call" were read step by step in one run's trace, or with a database shell across runs. And a tool's name alone doesn't say whose it is: `ask_user` is the server's own word, while a connected server's tool is named by that server and by the workspace that connected it. A caller that shows the first and masks the second had no way to tell them apart. One mark and one read answer both, additive in `v1`, open to the read-only token, under every rule of the addenda above.
+
+| Method, path | Answer |
+| --- | --- |
+| `GET /runs/{runId}/trace` | As above, and each tool call's and tool result's step now says `builtIn` |
+| `GET /orgs/{orgId}/tool-calls?agentId&runId&tool&outcome&from&to&limit&cursor` | The tools the workspace's agents called, newest first, in keyset pages of up to 200: `{ from, to, calls, next }`. Each call: `at`, `runId`, `agentId`, `seq` (its step in the run's trace), `tool`, `builtIn`, `connector` (the connection's label) and `connectorKind` (the service it works in, from the server's catalog: `github`, `gmail`, `postgres`), `outcome` (`ok`, `error`, `refused` or `pending`), `refusal` and `code`, `durationMs` from the call to its result, `inputChars` and `resultChars`. `tool` is part of a name, any case; the dates are the last 7 days unless said, 31 days apart at most, and one run's start when it began with no such limit. With `groupBy=tool`, `agent` or `outcome`: `{ from, to, groups: [{ group, builtIn, calls, errors, refused, pending }], more }` instead, most calls first |
+
+What these add to the rules above:
+
+- **`builtIn` is what the Tool Gateway resolved the name to, kept when it did.** Every call goes through the gateway (ADR 0015), which looks the name up among the run's tools before anything else. When what it finds is one of the server's own tools (no connection behind it, or one of the server's Git tools, which carry a connection only for its credential), the call's step is marked. A connected app's tool is never marked, whatever it is called: a connector's, a mailbox's or a database's name is made of what the workspace named the connection and of what the connected server calls its tools. A name the gateway could not resolve is not marked either, since those are the model's own words. A result's step reads the mark from the call it answers.
+- **The mark is stored, not worked out later.** The tools a run has are put together for that run, from its agent's grants and connections at that moment. The same name can be the server's tool in one run and a connected server's in another, so nothing read afterwards could say which it was.
+- **A call's outcome is its result's step.** `refused` is a result the gateway itself marked as its refusal (`policy`, `noAccess`, `credential`, `repo`); `error` is any other result that says it failed, a tool's own failure or a call the gateway turned down in words alone (an unknown name, a bad input); `pending` is a call with no result yet, which waits for a person, still runs, or was cut off. A call is paired with the first result after it, in its run, that answers its id.
+- **Never the input or the result.** Both are measured in the database, as in a trace. The connection's label is the one text a workspace wrote that comes back, as a trace already returns it; `connectorKind` is the server's own id for the service.
+- **Counted by name, a tool is the server's own when any call of that name was.** The same word names the same tool, so one marked call is enough to say the name is the server's.
+
+Known limits:
+
+- A step written before the gateway kept the mark has none: its tool reads as not `builtIn`, the server's own tools included. Nothing stored says what those names were resolved to.
+- No index is on a step's time. The read goes through the workspace's runs that were at work in the range (begun before it ends, not ended before it starts) and reads their steps. That holds every call because a call is recorded only while its run is at work: in the run's own turn, or through the runner's bridge, which refuses a run in any other state. A run that waits on a person for weeks is read whole each time.
+- Every call in the range is paired with its result before a page or a count is kept, so a long range on a busy workspace is for an occasional look. A call's outcome stored on its own step would let a page read only its own rows.
+- Groups have no cursor: past `limit` groups `more` is true and the dates or the filters are to be narrowed.
+
+The mark is written in `packages/engine/src/tools/gateway.ts`, the reads are in `packages/engine/src/operator-runs.ts`, the route in `apps/server/src/operator/runs.ts`, the tests in `apps/server/test/operator-runs.test.ts`.

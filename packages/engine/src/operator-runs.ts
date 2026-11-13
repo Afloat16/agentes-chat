@@ -9,6 +9,7 @@ import {
   gte,
   inArray,
   isNotNull,
+  isNull,
   lt,
   or,
   type SQL,
@@ -80,6 +81,7 @@ const namesOf = (v: unknown) => stringsOf(typeof v === "string" ? JSON.parse(v) 
 // "id" would be the subquery's own: the outer row is named in full.
 const RUN_ID = sql.raw(`"agent_runs"."id"`);
 const AGENT_ID = sql.raw(`"agents"."id"`);
+const STEP = sql.raw(`"agent_run_steps"`);
 
 // ── Runs ─────────────────────────────────────────────────────────────────────
 
@@ -378,6 +380,9 @@ export const OPERATOR_TRACE_ASKS = 100;
 const DATA = agentRunSteps.data;
 const KIND = agentRunSteps.kind;
 
+/** A tool call's step says its tool is the server's own (the Tool Gateway's mark): absent, it isn't known to be. */
+const builtInSql = (data: SQL) => sql<boolean>`coalesce(${data}->'builtIn' = 'true'::jsonb, false)`;
+
 // Each fact is read only from the kind of step that writes it: on another kind the same name may hold text.
 const stepColumns = {
   seq: agentRunSteps.seq,
@@ -385,6 +390,12 @@ const stepColumns = {
   at: agentRunSteps.createdAt,
   toolUseId: sql<string | null>`case when ${KIND} in ('tool_call', 'tool_result') then ${DATA}->>'toolUseId' end`,
   tool: sql<string | null>`case when ${KIND} in ('tool_call', 'tool_result') then ${DATA}->>'name' end`,
+  // Only the call's step holds the mark: a result reads it from the call it answers.
+  builtIn: sql<boolean | null>`case when ${KIND} = 'tool_call' then ${builtInSql(sql`${DATA}`)}
+    when ${KIND} = 'tool_result' then coalesce((select ${builtInSql(sql`c.data`)} from ${agentRunSteps} c
+      where c.run_id = ${STEP}.run_id and c.kind = 'tool_call' and c.seq < ${STEP}.seq
+        and c.data->>'toolUseId' = ${STEP}.data->>'toolUseId'
+      order by c.seq desc limit 1), false) end`,
   connector: sql<string | null>`case when ${KIND} = 'tool_call' then ${DATA}->>'connector' end`,
   isError: sql<
     boolean | null
@@ -523,6 +534,191 @@ export async function operatorRunTrace(db: Database, runId: string, query: { lim
             from: tied.from,
           }
         : null,
+  };
+}
+
+// ── A workspace's tool calls ─────────────────────────────────────────────────
+
+export const OPERATOR_TOOL_OUTCOMES = ["ok", "error", "refused", "pending"] as const;
+type ToolOutcome = (typeof OPERATOR_TOOL_OUTCOMES)[number];
+export const OPERATOR_TOOL_CALL_GROUPS = ["tool", "agent", "outcome"] as const;
+
+/** How far back tool calls are read when no start is given, and the longest stretch one read covers. */
+export const OPERATOR_TOOL_CALL_DAYS = 7;
+export const OPERATOR_TOOL_CALL_MAX_DAYS = 31;
+
+// A call's result: the first step after it, in its run, that answers its id.
+// ponytail: every call in the range is paired with its result before a page or a count is kept. A call's outcome
+// stored on its own step (a write in the Tool Gateway when the result lands) lets a page read only its own rows.
+const RESULT = sql`(select r.created_at, r.data from ${agentRunSteps} r
+  where r.run_id = ${STEP}.run_id and r.kind = 'tool_result' and r.seq > ${STEP}.seq
+    and r.data->>'toolUseId' = ${STEP}.data->>'toolUseId'
+  order by r.seq limit 1) res`;
+const OUTCOME = sql<ToolOutcome>`(case when res.data is null then 'pending'
+  when res.data->'data'->>'refusal' is not null then 'refused'
+  when res.data->'isError' = 'true'::jsonb then 'error' else 'ok' end)`;
+const BUILT_IN = builtInSql(sql`${DATA}`);
+const TOOL_NAME = sql<string | null>`${DATA}->>'name'`;
+
+// Never `input` nor a result's `content`: how long each is, measured in the database.
+const toolCallColumns = {
+  id: agentRunSteps.id,
+  at: ms(agentRunSteps.createdAt),
+  runId: agentRunSteps.runId,
+  agentId: agentRuns.agentId,
+  seq: agentRunSteps.seq,
+  tool: TOOL_NAME,
+  builtIn: BUILT_IN,
+  connector: sql<string | null>`${DATA}->>'connector'`,
+  connectorKind: sql<string | null>`${DATA}->>'service'`,
+  outcome: OUTCOME,
+  refusal: sql<string | null>`res.data->'data'->>'refusal'`,
+  code: sql<string | null>`res.data->'data'->>'code'`,
+  // A null never reaches a decoder: the type says it may still come back.
+  resultAt: ms(sql`res.created_at`) as SQL<Date | null>,
+  inputChars: sql<number>`coalesce(length(${DATA}->>'input'), 0)`.mapWith(Number),
+  resultChars: sql<number | null>`length(res.data->>'content')`.mapWith(Number),
+};
+
+const TOOL_CALL_GROUPS: Record<(typeof OPERATOR_TOOL_CALL_GROUPS)[number], SQL<string | null>> = {
+  tool: TOOL_NAME,
+  agent: sql`${agentRuns.agentId}::text`,
+  outcome: OUTCOME,
+};
+
+interface ToolCallFilters {
+  agentId?: string;
+  runId?: string;
+  /** Part of the tool's name; any case, matched literally. */
+  tool?: string;
+  outcome?: ToolOutcome;
+  /** Called at or after. */
+  from?: Date;
+  /** Called before. */
+  to?: Date;
+}
+
+export interface OperatorToolCallQuery extends ToolCallFilters, PageQuery {}
+
+/** The dates a read of tool calls covers and the calls in them; null: no such workspace, or run in it. */
+async function toolCallsIn(db: Database, orgId: string, q: ToolCallFilters, now: Date) {
+  let began: Date | null = null;
+  if (q.runId) {
+    const [run] = await db
+      .select({ createdAt: agentRuns.createdAt })
+      .from(agentRuns)
+      .where(and(eq(agentRuns.orgId, orgId), eq(agentRuns.id, q.runId)));
+    if (!run) return null;
+    began = run.createdAt;
+  } else if (!(await orgExists(db, orgId))) return null;
+
+  const to = q.to ?? now;
+  const from = q.from ?? began ?? new Date(to.getTime() - OPERATOR_TOOL_CALL_DAYS * 86_400_000);
+  if (from >= to) throw new ValidationError("from must be before to");
+  // One run's steps are few however long ago it began; any other read is held to the range.
+  if (!began && to.getTime() - from.getTime() > OPERATOR_TOOL_CALL_MAX_DAYS * 86_400_000)
+    throw new ValidationError(`from and to are ${OPERATOR_TOOL_CALL_MAX_DAYS} days apart at most`);
+
+  const where = and(
+    eq(agentRuns.orgId, orgId),
+    eq(KIND, "tool_call"),
+    gte(agentRunSteps.createdAt, from),
+    lt(agentRunSteps.createdAt, to),
+    // No index is on a step's time. A call is recorded only while its run is at work (its own turn, or the bridge,
+    // which refuses a run in any other state), so the workspace's runs at work in the range hold every call in it:
+    // only their steps are read. The minute is for a call in flight when its run was stopped.
+    lt(agentRuns.createdAt, to),
+    or(isNull(agentRuns.finishedAt), gte(agentRuns.finishedAt, new Date(from.getTime() - 60_000))),
+    q.runId ? eq(agentRunSteps.runId, q.runId) : undefined,
+    q.agentId ? eq(agentRuns.agentId, q.agentId) : undefined,
+    q.tool ? sql`strpos(lower(${TOOL_NAME}), lower(${q.tool}::text)) > 0` : undefined,
+    q.outcome ? sql`${OUTCOME} = ${q.outcome}` : undefined,
+  );
+  return { from, to, where };
+}
+
+/**
+ * The tools a workspace's agents called in a range of dates, newest first, in keyset pages: which tool, whether it
+ * is the server's own or a connected app's, how the call ended and how long it took, with how long its input and
+ * its result are, never either of them. The range is the last 7 days unless said, one run's from when it began.
+ * Null: no such workspace, or no such run in it.
+ */
+export async function operatorToolCalls(db: Database, orgId: string, query: OperatorToolCallQuery, now = new Date()) {
+  const after = query.cursor ? decodeCursor(query.cursor, UuidCursor) : null;
+  const found = await toolCallsIn(db, orgId, query, now);
+  if (!found) return null;
+  const rows = await db
+    .select(toolCallColumns)
+    .from(agentRunSteps)
+    .innerJoin(agentRuns, eq(agentRuns.id, agentRunSteps.runId))
+    .leftJoinLateral(RESULT, sql`true`)
+    .where(
+      and(
+        found.where,
+        after
+          ? sql`(${toolCallColumns.at}, ${agentRunSteps.id}) < (${after[0]}::timestamptz, ${after[1]}::uuid)`
+          : undefined,
+      ),
+    )
+    .orderBy(desc(toolCallColumns.at), desc(agentRunSteps.id))
+    .limit(query.limit + 1);
+  const page = pageOf(rows, query.limit, (r) => [r.at, r.id]);
+  return {
+    from: found.from,
+    to: found.to,
+    calls: page.items.map(({ id, resultAt, ...call }) => ({
+      ...call,
+      tool: codeOf(call.tool),
+      connector: call.connector ? cutText(call.connector, 100) : null,
+      connectorKind: codeOf(call.connectorKind),
+      refusal: codeOf(call.refusal),
+      code: codeOf(call.code),
+      durationMs: resultAt ? resultAt.getTime() - call.at.getTime() : null,
+    })),
+    next: page.next,
+  };
+}
+
+/**
+ * How many tool calls a workspace's agents made in a range of dates, by tool, by agent or by how they ended, most
+ * calls first, with how many of each failed and were refused. Null: no such workspace, or no such run in it.
+ */
+export async function operatorToolCallCounts(
+  db: Database,
+  orgId: string,
+  query: ToolCallFilters & { groupBy: (typeof OPERATOR_TOOL_CALL_GROUPS)[number]; limit: number },
+  now = new Date(),
+) {
+  const found = await toolCallsIn(db, orgId, query, now);
+  if (!found) return null;
+  const group = TOOL_CALL_GROUPS[query.groupBy];
+  const ended = (outcome: ToolOutcome) => sql<number>`count(*) filter (where ${OUTCOME} = ${outcome})`.mapWith(Number);
+  const rows = await db
+    .select({
+      group,
+      // A name is the server's own when any call of it was: the same word names the same tool.
+      builtIn: sql<boolean>`bool_or(${BUILT_IN})`,
+      calls: count(),
+      errors: ended("error"),
+      refused: ended("refused"),
+      pending: ended("pending"),
+    })
+    .from(agentRunSteps)
+    .innerJoin(agentRuns, eq(agentRuns.id, agentRunSteps.runId))
+    .leftJoinLateral(RESULT, sql`true`)
+    .where(found.where)
+    .groupBy(group)
+    .orderBy(desc(count()), asc(group))
+    .limit(query.limit + 1);
+  return {
+    from: found.from,
+    to: found.to,
+    groups: rows.slice(0, query.limit).map(({ builtIn, ...g }) => ({
+      ...g,
+      group: query.groupBy === "agent" ? uuidOf(g.group) : codeOf(g.group),
+      builtIn: query.groupBy === "tool" ? builtIn : null,
+    })),
+    more: rows.length > query.limit,
   };
 }
 

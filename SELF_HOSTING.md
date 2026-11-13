@@ -899,7 +899,8 @@ list who and what is in a workspace, never what was written there.
 `GET /runs/{runId}/trace` shows one run step by step, `GET /orgs/{orgId}/timeline` puts a conversation's
 messages, routing decisions and runs in order, and `GET /messages/{messageId}/explain` says why a message
 did or did not start a run: ids, codes, times and sizes, never a message's text or what a tool was given
-or answered.
+or answered. `GET /orgs/{orgId}/tool-calls` lists the tools a workspace's agents called (`?groupBy=tool`
+for counts): which tool, whether it is the server's own or a connected app's, and how each call ended.
 `GET /jobs` lists the job queue without the jobs' payloads (`?stuck=true` for the ones nobody took,
 `?summary=true` for counts by kind and status), `GET /usage` adds up the tokens and cost of model calls
 for the instance, a workspace, an agent or a run, and `GET /orgs/{orgId}/machines` and

@@ -4121,6 +4121,10 @@
                   "type": ["string", "null"],
                   "description": "A tool call's and its result's."
                 },
+                "builtIn": {
+                  "type": ["boolean", "null"],
+                  "description": "A tool call's and its result's. The Tool Gateway resolved the name to one of the server's own tools, so the name is the server's own word. False for a connected app's tool (a connector's, a mailbox's, a database's), for a name it could not resolve, and for a call made before the server kept this."
+                },
                 "connector": {
                   "type": ["string", "null"],
                   "description": "A tool call's: the connection the tool is of."
@@ -4131,7 +4135,7 @@
                 },
                 "refusal": {
                   "type": ["string", "null"],
-                  "description": "A tool result the server refused: `policy`, `noAccess` or `credential`."
+                  "description": "A tool result's. A call the server refused: `policy`, `noAccess`, `credential` or `repo`."
                 },
                 "code": {
                   "type": ["string", "null"],
@@ -4177,6 +4181,7 @@
                 "kind",
                 "at",
                 "tool",
+                "builtIn",
                 "connector",
                 "isError",
                 "refusal",
@@ -4475,6 +4480,162 @@
           "createdAt",
           "completedAt"
         ]
+      },
+      "OperatorToolCallPage": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "to": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OperatorToolCall"
+            }
+          },
+          "next": {
+            "type": ["string", "null"],
+            "description": "`cursor` for the next page; null on the last one."
+          }
+        },
+        "required": ["from", "to", "calls", "next"]
+      },
+      "OperatorToolCall": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "agentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seq": {
+            "type": "integer",
+            "description": "The call's step in its run's trace."
+          },
+          "tool": {
+            "type": ["string", "null"]
+          },
+          "builtIn": {
+            "type": "boolean",
+            "description": "The Tool Gateway resolved the name to one of the server's own tools, so the name is the server's own word. False for a connected app's tool (a connector's, a mailbox's, a database's), for a name it could not resolve, and for a call made before the server kept this."
+          },
+          "connector": {
+            "type": ["string", "null"],
+            "description": "The connection the tool is of, as its workspace named it."
+          },
+          "connectorKind": {
+            "type": ["string", "null"],
+            "description": "The service a connected app's tool works in, from the server's catalog (`github`, `gmail`, `postgres`…); null for a server connected by address and for the server's own tools."
+          },
+          "outcome": {
+            "type": "string",
+            "enum": ["ok", "error", "refused", "pending"],
+            "description": "`ok`; `error` (the tool failed, or the server turned the call down in words alone); `refused` (see `refusal`); `pending` (no result yet: it waits for a person, still runs, or was cut off)."
+          },
+          "refusal": {
+            "type": ["string", "null"],
+            "description": "A call the server refused: `policy`, `noAccess`, `credential` or `repo`."
+          },
+          "code": {
+            "type": ["string", "null"],
+            "description": "The result's own code, when it has one."
+          },
+          "durationMs": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "description": "From the call to its result."
+          },
+          "inputChars": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "How long its input is: the input is never returned."
+          },
+          "resultChars": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "description": "How long its result is: the result is never returned."
+          }
+        },
+        "required": [
+          "at",
+          "runId",
+          "agentId",
+          "seq",
+          "tool",
+          "builtIn",
+          "connector",
+          "connectorKind",
+          "outcome",
+          "refusal",
+          "code",
+          "durationMs",
+          "inputChars",
+          "resultChars"
+        ]
+      },
+      "OperatorToolCallCounts": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "to": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "group": {
+                  "type": ["string", "null"],
+                  "description": "The tool's name, the agent's id or the outcome."
+                },
+                "builtIn": {
+                  "type": ["boolean", "null"],
+                  "description": "By tool: some call of that name in the range was of the server's own tool. Null otherwise."
+                },
+                "calls": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "errors": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "refused": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "pending": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": ["group", "builtIn", "calls", "errors", "refused", "pending"]
+            },
+            "description": "Most calls first."
+          },
+          "more": {
+            "type": "boolean",
+            "description": "There are more groups than `limit`: narrow the dates or the filters."
+          }
+        },
+        "required": ["from", "to", "groups", "more"]
       },
       "OperatorTimeline": {
         "type": "object",
@@ -8677,7 +8838,7 @@
       "get": {
         "tags": ["Operator"],
         "summary": "One run from start to end: its steps, what it asked, its jobs, what it spent and its computer",
-        "description": "Which tool each step called, whether it failed and how big its input and result were, never either of them. The steps page back from the end with `beforeSeq`.",
+        "description": "Which tool each step called, whether it is the server's own, whether it failed and how big its input and result were, never either of them. The steps page back from the end with `beforeSeq`.",
         "parameters": [
           {
             "schema": {
@@ -8720,6 +8881,167 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OperatorRunTrace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orgs/{orgId}/tool-calls": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "The tools a workspace's agents called, newest first; or how many, by tool, agent or outcome",
+        "description": "Which tool, whether it is the server's own, how the call ended and how long it took, with how long its input and its result are, never either of them.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "orgId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "agentId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "One run's calls: from when it began unless `from` says, however long ago."
+            },
+            "required": false,
+            "description": "One run's calls: from when it began unless `from` says, however long ago.",
+            "name": "runId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 320,
+              "description": "Part of a tool's name; any case, matched literally."
+            },
+            "required": false,
+            "description": "Part of a tool's name; any case, matched literally.",
+            "name": "tool",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["ok", "error", "refused", "pending"]
+            },
+            "required": false,
+            "name": "outcome",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Called at or after. Default: 7 days before `to`."
+            },
+            "required": false,
+            "description": "Called at or after. Default: 7 days before `to`.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Called before. Default: now. At most 31 days after `from`."
+            },
+            "required": false,
+            "description": "Called before. Default: now. At most 31 days after `from`.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["tool", "agent", "outcome"],
+              "description": "Counts by tool, by agent or by outcome instead of calls. `limit` is how many groups; no `cursor`."
+            },
+            "required": false,
+            "description": "Counts by tool, by agent or by outcome instead of calls. `limit` is how many groups; no `cursor`.",
+            "name": "groupBy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/OperatorToolCallPage"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OperatorToolCallCounts"
+                    }
+                  ]
                 }
               }
             }
