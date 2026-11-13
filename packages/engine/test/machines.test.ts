@@ -44,6 +44,7 @@ import {
   SERVER_STOP_TASK_GRACE_MS,
   type SecretRequestView,
   secretSite,
+  setAgentCoAuthor,
   setAgentComputerTarget,
   setMyLocale,
   TASK_OFFLINE_GRACE_MS,
@@ -1107,10 +1108,25 @@ describe("tools on a connected machine", () => {
     expect(runner.sent.find((s) => s.type === "request" && s.op === "push")).toMatchObject({
       url: `http://localhost:3000/api/machines/uploads/${row?.id}`,
     });
-    // Every request says which agent it's for (the runner keeps each agent in its own folder) and its name (protocol 9).
+    // Every request says which agent it's for (the runner keeps each agent in its own folder) and its name (protocol 9);
+    // a command, the agent's own line its commits end with (protocol 63, ADR 0156).
     const requests = runner.sent.filter((s) => s.type === "request");
     expect(requests.length).toBeGreaterThan(3);
-    for (const r of requests) expect(r.agent).toEqual({ id: f.agent.id, handle: "dev", name: "Dev" });
+    expect(requests.some((r) => r.op === "exec")).toBe(true);
+    for (const r of requests) {
+      expect(r.agent).toEqual({
+        id: f.agent.id,
+        handle: "dev",
+        name: "Dev",
+        ...(r.op === "exec" ? { coAuthors: ["Co-authored-by: Dev <noreply@agentes.chat>"] } : {}),
+      });
+    }
+    // A person asked to turn it off: the next command goes without it.
+    await setAgentCoAuthor(f.db, f.org.id, false);
+    await call(ctx, "run_code", { language: "python", code: "print(1)" });
+    const last = runner.sent.filter((s) => s.type === "request" && s.op === "exec").at(-1);
+    expect(last?.agent).toEqual({ id: f.agent.id, handle: "dev", name: "Dev" });
+    await setAgentCoAuthor(f.db, f.org.id, true);
 
     const status = await call(ctx, "computer_status", {});
     expect(status.content).toContain('connected computer "Build box" (Linux), online');

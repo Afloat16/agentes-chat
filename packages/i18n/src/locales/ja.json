@@ -10625,6 +10625,7 @@
       "not_installed": "{{computer}}に{{program}}がインストールされていません。",
       "not_reported": "{{computer}}は、入っているプログラムをまだ確認しています。終わりしだい自動で切り替わります。",
       "outdated": "{{computer}}のバージョンが古くなっています。使うにはCodexをアップデートしてください。",
+      "system": "{{program}}は{{computer}}のシステムではまだ動きません。",
       "no_computerCloud": "{{computer}}の準備ができ次第使えます。"
     },
     "notAvailableNow": "選択済みですが、現在は利用できません。",
@@ -15432,6 +15433,7 @@
         "sendingDm": "ダイレクトメッセージを送りました",
         "settingStatus": "自分のステータスを更新しました",
         "settingReplyStyle": "返信のしかたを調整しました",
+        "settingCommitLine": "コミットのエージェントの行を調整しました",
         "sendingFeedback": "フィードバックの送信を依頼しました",
         "offeringFeedback": "問題の報告を提案しました",
         "deletingRoutine": "ルーティンを削除しました",
@@ -15548,6 +15550,7 @@
       "sendingDm": "ダイレクトメッセージを送信中",
       "settingStatus": "自分のステータスを更新中",
       "settingReplyStyle": "返信のしかたを調整中",
+      "settingCommitLine": "コミットのエージェントの行を調整中",
       "sendingFeedback": "フィードバックを準備中",
       "offeringFeedback": "報告を準備中",
       "deletingRoutine": "ルーティンを削除中",

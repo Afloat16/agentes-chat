@@ -26959,6 +26959,9 @@
   "brain.reasons.outdated": {
     "value": "The version on {{computer}} is old. Update Codex to use it."
   },
+  "brain.reasons.system": {
+    "value": "{{program}} doesn't run on {{computer}}'s system yet."
+  },
   "brain.reasons.no_computerCloud": {
     "value": "Ready as soon as {{computer}} is."
   },
@@ -38936,6 +38939,9 @@
   "chat.work.step.settingReplyStyle": {
     "value": "Adjusted how it replies"
   },
+  "chat.work.step.settingCommitLine": {
+    "value": "Adjusted the agents' line on commits"
+  },
   "chat.work.step.sendingFeedback": {
     "value": "Asked to send feedback"
   },
@@ -39274,6 +39280,9 @@
   },
   "chat.activity.settingReplyStyle": {
     "value": "adjusting how it replies"
+  },
+  "chat.activity.settingCommitLine": {
+    "value": "adjusting the agents' line on commits"
   },
   "chat.activity.sendingFeedback": {
     "value": "preparing feedback"

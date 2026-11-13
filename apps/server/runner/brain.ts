@@ -58,6 +58,7 @@ import {
   withSignIn,
   yieldRoute,
 } from "./accounts";
+import { coAuthorLines } from "./co-authors";
 import { ownBranches } from "./command-gate";
 import { DELEGATED_RESULT_CHARS, type DelegatedBridge } from "./delegated-tools";
 import { RunnerError } from "./errors";
@@ -1935,6 +1936,8 @@ export class BrainManager {
       effort: isBrainEffort(req.effort) ? req.effort : null,
       // Another context limit: a new process (resumed), started with it.
       context: isContextTokens(req.contextTokens) ? req.contextTokens : null,
+      // Its commits' lines are in its env (`co-authors.ts`): turned off or the agent renamed, a new one (resumed).
+      coAuthors: coAuthorLines(ctx.agent),
     });
   }
 

@@ -132,6 +132,7 @@ export * from "./follows";
 export * from "./gateway";
 export * from "./gif-key";
 export * from "./git/branches";
+export * from "./git/co-author-tool";
 export * from "./git/credential";
 export * from "./git/github-app";
 export * from "./git/github-app-installs";
