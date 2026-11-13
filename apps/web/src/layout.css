@@ -8573,7 +8573,7 @@ html:not([data-pointer]) .machine-connect__toggle:focus-visible {
   padding: 0 14px 10px;
   color: var(--muted);
 }
-.pf-line.is-refused > .ac-icon {
+.pf-line.is-refused > .pf-line__text > .ac-icon {
   color: var(--warn);
 }
 .pf-line__text {

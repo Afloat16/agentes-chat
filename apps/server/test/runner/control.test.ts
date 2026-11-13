@@ -593,7 +593,14 @@ test("a tool turned on from the apps: the switch is written, the server and the 
   expect((stored(home).access as { tools: { browser?: boolean } }).tools.browser).toBe(false);
 
   // A tool the runner doesn't know is refused, and nothing changes.
-  s.frame({ type: "request", id: "w3", op: "access.allow", tool: "everything" as never, by: "u-bia", byName: "Bia Rocha" });
+  s.frame({
+    type: "request",
+    id: "w3",
+    op: "access.allow",
+    tool: "everything" as never,
+    by: "u-bia",
+    byName: "Bia Rocha",
+  });
   await waitFor(() => s.sent.some((f) => f.id === "w3"));
   expect(s.sent.find((f) => f.id === "w3")).toMatchObject({ ok: false, error: { code: "bad_request" } });
 });

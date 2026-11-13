@@ -376,8 +376,10 @@ function RefusalLine({
   }
   return (
     <div className={cx("pf-line small", refusal.kind === "refused" && "is-refused")} role="status">
-      {refusal.kind === "turningOn" ? <Icon name="check" size={14} /> : <Icon name="alert" size={14} />}
-      <span className="pf-line__text">{text}</span>
+      <span className="pf-line__text ac-iconline">
+        {refusal.kind === "turningOn" ? <Icon name="check" size={14} /> : <Icon name="alert" size={14} />}
+        <span>{text}</span>
+      </span>
       {action}
     </div>
   );
