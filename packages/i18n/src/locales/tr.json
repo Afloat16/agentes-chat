@@ -2308,7 +2308,7 @@
       "seen_other": "{{count}} ajan gördü",
       "answering": "{{name}} herkes adına yanıtlıyor",
       "answered": "{{name}} herkes adına yanıtladı",
-      "about": "Kimin yanıtladığı hakkında",
+      "who": "kimin yanıtladığı",
       "hintOne": "Tek bir yanıt herkese yetiyordu, bu yüzden yalnızca {{name}} yanıtladı. Diğer ajanlar mesajı okudu.",
       "hintNone": "Mesaj ajanlardan bir şey istemiyordu, bu yüzden hiçbiri yanıtlamadı. Hepsi okudu."
     },

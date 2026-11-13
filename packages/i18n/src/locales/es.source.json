@@ -5756,8 +5756,8 @@
   "receipts.everyone.answered": {
     "value": "{{name}} answered for everyone"
   },
-  "receipts.everyone.about": {
-    "value": "About who answered"
+  "receipts.everyone.who": {
+    "value": "who answered"
   },
   "receipts.everyone.hintOne": {
     "value": "One answer served everyone, so only {{name}} answered. The other agents read the message."

@@ -2432,7 +2432,7 @@ export const en = {
       seen_other: "{{count}} agents saw it",
       answering: "{{name}} answers for everyone",
       answered: "{{name}} answered for everyone",
-      about: "About who answered",
+      who: "who answered",
       /** Behind the ⓘ: why only one agent answered. */
       hintOne: "One answer served everyone, so only {{name}} answered. The other agents read the message.",
       /** Behind the ⓘ: why no agent answered. */

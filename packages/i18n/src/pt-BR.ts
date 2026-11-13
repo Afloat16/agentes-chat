@@ -2342,7 +2342,7 @@ export const ptBR = {
       seen_other: "{{count}} agentes viram",
       answering: "{{name}} responde por todos",
       answered: "{{name}} respondeu por todos",
-      about: "Sobre quem respondeu",
+      who: "quem respondeu",
       hintOne: "Uma resposta servia para todos, então só {{name}} respondeu. Os outros agentes leram a mensagem.",
       hintNone: "A mensagem não pedia nada aos agentes, então nenhum respondeu. Todos leram.",
     },

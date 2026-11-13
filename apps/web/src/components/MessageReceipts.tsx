@@ -192,7 +192,7 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
         ))}
       </AvatarStack>
       <span className="ac-receipt__words">
-        <HintLine name={t("receipts.everyone.about")} hint={everyone.hint}>
+        <HintLine name={t("common.about", { label: t("receipts.everyone.who") })} hint={everyone.hint}>
           {everyone.text}
         </HintLine>
       </span>

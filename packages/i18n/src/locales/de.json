@@ -2308,7 +2308,7 @@
       "seen_other": "{{count}} Agenten haben es gesehen",
       "answering": "{{name}} antwortet für alle",
       "answered": "{{name}} hat für alle geantwortet",
-      "about": "Wer geantwortet hat",
+      "who": "wer geantwortet hat",
       "hintOne": "Eine Antwort reichte für alle, also hat nur {{name}} geantwortet. Die anderen Agenten haben die Nachricht gelesen.",
       "hintNone": "Die Nachricht verlangte nichts von den Agenten, also hat keiner geantwortet. Alle haben sie gelesen."
     },

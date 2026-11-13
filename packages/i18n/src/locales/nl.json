@@ -2311,7 +2311,7 @@
       "seen_other": "{{count}} agents zagen het",
       "answering": "{{name}} antwoordt voor iedereen",
       "answered": "{{name}} antwoordde voor iedereen",
-      "about": "Over wie antwoordde",
+      "who": "wie antwoordde",
       "hintOne": "Eén antwoord was genoeg voor iedereen, dus alleen {{name}} antwoordde. De andere agents lazen het bericht.",
       "hintNone": "Het bericht vroeg niets van de agents, dus niemand antwoordde. Ze hebben het allemaal gelezen."
     },

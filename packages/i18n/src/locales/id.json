@@ -2224,7 +2224,7 @@
       "seen_other": "{{count}} agen melihatnya",
       "answering": "{{name}} menjawab untuk semua",
       "answered": "{{name}} sudah menjawab untuk semua",
-      "about": "Tentang siapa yang menjawab",
+      "who": "siapa yang menjawab",
       "hintOne": "Satu jawaban cukup untuk semua, jadi hanya {{name}} yang menjawab. Agen lain membaca pesannya.",
       "hintNone": "Pesan itu tidak meminta apa pun dari agen, jadi tidak ada yang menjawab. Semua membacanya."
     },

@@ -225,7 +225,7 @@ export const EveryoneLine = memo(function EveryoneLine({
   if (!line) return null;
   return (
     <View style={[styles.line, mine ? styles.end : [styles.start, { paddingLeft: inset }]]}>
-      <InfoHint name={t("receipts.everyone.about")} text={line.hint} variant="caption">
+      <InfoHint name={t("common.about", { label: t("receipts.everyone.who") })} text={line.hint} variant="caption">
         <View style={styles.row}>
           <View style={styles.faces}>
             {line.faces.slice(0, FACES).map((id) => (

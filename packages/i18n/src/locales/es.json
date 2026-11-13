@@ -2391,7 +2391,7 @@
       "seen_other": "{{count}} agentes lo vieron",
       "answering": "{{name}} responde por todos",
       "answered": "{{name}} respondió por todos",
-      "about": "Sobre quién respondió",
+      "who": "quién respondió",
       "hintOne": "Una respuesta servía para todos, así que solo {{name}} respondió. Los demás agentes leyeron el mensaje.",
       "hintNone": "El mensaje no pedía nada a los agentes, así que ninguno respondió. Todos lo leyeron."
     },
