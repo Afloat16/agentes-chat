@@ -319,12 +319,6 @@
       "short": "klucze AI",
       "say": "zarządza kluczami AI"
     },
-    "use_others_plans": {
-      "title": "Używanie planów innych osób",
-      "desc": "Dawanie agentom, których edycja jest dozwolona, planu połączonego przez inną osobę. Właściciel dostaje e-mail i może go odebrać.",
-      "short": "używanie planów innych osób",
-      "say": "używa planów innych osób"
-    },
     "edit_wiki": {
       "title": "Edycja wiki",
       "desc": "Tworzenie i zmiana stron.",

@@ -734,18 +734,6 @@
   "permissions.manage_credentials.say": {
     "value": "looks after AI keys"
   },
-  "permissions.use_others_plans.title": {
-    "value": "Use other people's plans"
-  },
-  "permissions.use_others_plans.desc": {
-    "value": "Give the agents they can edit a plan someone else connected. Its owner gets an email and can take it back."
-  },
-  "permissions.use_others_plans.short": {
-    "value": "use other people's plans"
-  },
-  "permissions.use_others_plans.say": {
-    "value": "uses other people's plans"
-  },
   "permissions.edit_wiki.title": {
     "value": "Edit the wiki"
   },

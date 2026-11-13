@@ -309,12 +309,6 @@
       "short": "yapay zeka anahtarları",
       "say": "yapay zeka anahtarlarıyla ilgilenir"
     },
-    "use_others_plans": {
-      "title": "Başkalarının planlarını kullanma",
-      "desc": "Düzenleyebildiği ajanlara başka birinin bağladığı bir planı verir. Sahibi bir e-posta alır ve geri alabilir.",
-      "short": "başkalarının planlarını kullanma",
-      "say": "başkalarının planlarını kullanır"
-    },
     "edit_wiki": {
       "title": "Wiki'yi düzenleme",
       "desc": "Sayfa oluşturma ve değiştirme.",

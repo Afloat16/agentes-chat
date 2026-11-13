@@ -318,12 +318,6 @@ export const en = {
       short: "AI keys",
       say: "looks after AI keys",
     },
-    use_others_plans: {
-      title: "Use other people's plans",
-      desc: "Give the agents they can edit a plan someone else connected. Its owner gets an email and can take it back.",
-      short: "use other people's plans",
-      say: "uses other people's plans",
-    },
     edit_wiki: {
       title: "Edit the wiki",
       desc: "Create and change pages.",
@@ -5250,7 +5244,7 @@ export const en = {
         accountMove: "In use by {{agents}} · Move it here",
         accountAlso: "Also used by {{agents}}",
         accountOf: "{{name}}'s",
-        /** Under the account for someone who may use other people's plans (`use_others_plans`). */
+        /** Under the accounts when other people's plans are listed (`canUseOthersPlans`). */
         accountOthers: "Plans that serve the whole workspace show whose they are.",
         addAccount: "Add account",
         signInAgain: "Sign in again",

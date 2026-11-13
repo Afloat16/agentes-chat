@@ -304,12 +304,6 @@
       "short": "kunci AI",
       "say": "mengurus kunci AI"
     },
-    "use_others_plans": {
-      "title": "Pakai paket orang lain",
-      "desc": "Memberi agen yang bisa diedit paket yang dihubungkan orang lain. Pemiliknya menerima email dan bisa menariknya kembali.",
-      "short": "pakai paket orang lain",
-      "say": "memakai paket orang lain"
-    },
     "edit_wiki": {
       "title": "Ubah wiki",
       "desc": "Buat dan ubah halaman.",

@@ -309,12 +309,6 @@
       "short": "AI-sleutels",
       "say": "beheert AI-sleutels"
     },
-    "use_others_plans": {
-      "title": "Abonnementen van anderen gebruiken",
-      "desc": "De agents die je mag bewerken een abonnement geven dat iemand anders heeft gekoppeld. De eigenaar krijgt een e-mail en kan het terugnemen.",
-      "short": "abonnementen van anderen gebruiken",
-      "say": "gebruikt abonnementen van anderen"
-    },
     "edit_wiki": {
       "title": "De wiki bewerken",
       "desc": "Pagina's maken en wijzigen.",

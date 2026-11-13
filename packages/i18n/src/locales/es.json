@@ -314,12 +314,6 @@
       "short": "claves de IA",
       "say": "gestiona las claves de IA"
     },
-    "use_others_plans": {
-      "title": "Usar planes de otras personas",
-      "desc": "Dar a los agentes que puede editar un plan que otra persona conectó. Su dueño recibe un correo y puede recuperarlo.",
-      "short": "usar planes de otras personas",
-      "say": "usa planes de otras personas"
-    },
     "edit_wiki": {
       "title": "Editar la wiki",
       "desc": "Crear y cambiar páginas.",

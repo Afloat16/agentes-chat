@@ -5642,8 +5642,8 @@ export interface AgentBrain {
   /** The viewer owns the agent: only they connect its plan and turn its paid extra usage on or off. */
   canUsePlans: boolean;
   /**
-   * The viewer may use other people's plans (`use_others_plans`, ADR 0059 §3): `accounts` has every plan on its
-   * computer, and they may give it any of them. Absent on older servers.
+   * True since plans serve the whole workspace (ADR 0059 §3): `accounts` has every plan on its computer that serves
+   * everyone, and the viewer may give it any of them. Absent on older servers.
    */
   canUseOthersPlans?: boolean;
   /** "Conta deste computador" can think for it: whoever connected the computer owns the agent. */

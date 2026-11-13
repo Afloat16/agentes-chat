@@ -544,7 +544,6 @@ const PERMISSION_AREAS = [
       "control_computers",
       "manage_connectors",
       "manage_credentials",
-      "use_others_plans",
     ],
   },
   {

@@ -314,12 +314,6 @@ export const ptBR = {
       short: "chaves de IA",
       say: "cuida das chaves de IA",
     },
-    use_others_plans: {
-      title: "Usar planos de outras pessoas",
-      desc: "Dar aos agentes que pode editar um plano que outra pessoa conectou. O dono recebe um e-mail e pode tirar de volta.",
-      short: "usar planos de outras pessoas",
-      say: "usa planos de outras pessoas",
-    },
     edit_wiki: { title: "Editar a wiki", desc: "Criar e mudar páginas.", short: "editar a wiki", say: "edita a wiki" },
     upload_files: {
       title: "Subir arquivos no Drive",
@@ -5173,7 +5167,7 @@ export const ptBR = {
         accountMove: "Em uso por {{agents}} · Mover para cá",
         accountAlso: "Também usada por {{agents}}",
         accountOf: "De {{name}}",
-        /** Under the account for someone who may use other people's plans (`use_others_plans`). */
+        /** Under the accounts when other people's plans are listed (`canUseOthersPlans`). */
         accountOthers: "Os planos que atendem o workspace todo mostram de quem são.",
         addAccount: "Adicionar conta",
         signInAgain: "Entrar de novo",

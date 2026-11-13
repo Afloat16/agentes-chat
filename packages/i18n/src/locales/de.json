@@ -309,12 +309,6 @@
       "short": "KI-Schlüssel",
       "say": "verwaltet KI-Schlüssel"
     },
-    "use_others_plans": {
-      "title": "Abos anderer Personen nutzen",
-      "desc": "Den Agenten, die man bearbeiten darf, ein Abo geben, das jemand anderes verbunden hat. Der Inhaber bekommt eine E-Mail und kann es zurücknehmen.",
-      "short": "Abos anderer Personen nutzen",
-      "say": "nutzt Abos anderer Personen"
-    },
     "edit_wiki": {
       "title": "Wiki bearbeiten",
       "desc": "Seiten erstellen und ändern.",

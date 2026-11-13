@@ -314,12 +314,6 @@
       "short": "chiavi IA",
       "say": "gestisce le chiavi IA"
     },
-    "use_others_plans": {
-      "title": "Usare i piani di altre persone",
-      "desc": "Dare agli agenti che può modificare un piano collegato da un’altra persona. Il proprietario riceve un’email e può riprenderlo.",
-      "short": "usare i piani di altre persone",
-      "say": "usa i piani di altre persone"
-    },
     "edit_wiki": {
       "title": "Modificare il wiki",
       "desc": "Creare e modificare pagine.",

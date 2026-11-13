@@ -314,12 +314,6 @@
       "short": "clés d'IA",
       "say": "gère les clés d'IA"
     },
-    "use_others_plans": {
-      "title": "Utiliser les forfaits d’autres personnes",
-      "desc": "Donner aux agents qu’on peut modifier un forfait connecté par quelqu’un d’autre. Son propriétaire reçoit un e-mail et peut le reprendre.",
-      "short": "utiliser les forfaits d’autres personnes",
-      "say": "utilise les forfaits d’autres personnes"
-    },
     "edit_wiki": {
       "title": "Modifier le wiki",
       "desc": "Créer et modifier des pages.",
