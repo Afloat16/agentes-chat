@@ -5,9 +5,9 @@ import path from "node:path";
 import type { MachineRequest } from "@agenteschat/adapters";
 import { accountCodeAad, OPENCODE_KEY_PROVIDER } from "@agenteschat/adapters/machine-protocol";
 import { sealSecret } from "@agenteschat/adapters/secret-box";
-import { AcpError } from "../../runner/acp";
 import { setTool } from "../../runner/access";
 import { AccountManager, accountEnv, opencodeKeyOf } from "../../runner/accounts";
+import { AcpError } from "../../runner/acp";
 import { type CodexBrainEvent, CodexThreads } from "../../runner/brain-codex";
 import {
   acpProblem,
@@ -131,7 +131,14 @@ test("the env: the turn's folder as PWD, gh where it was (AppData on Windows), n
   expect(env.Opencode_Config).toBeUndefined();
   expect(env.OPENCODE_PERMISSION).toBeUndefined();
   expect(env.OPENCODE_DISABLE_CLAUDE_CODE).toBeUndefined();
-  const free = opencodeTurnEnv({ inherited: base, cwd: "/w", configDir: "/c", config: "{}", freeTier: true, chat: true });
+  const free = opencodeTurnEnv({
+    inherited: base,
+    cwd: "/w",
+    configDir: "/c",
+    config: "{}",
+    freeTier: true,
+    chat: true,
+  });
   expect(free.ANTHROPIC_API_KEY).toBeUndefined();
   expect(free.OPENCODE_DISABLE_CLAUDE_CODE).toBe("1");
   const account = opencodeTurnEnv({
@@ -231,7 +238,15 @@ test("the prompt's usage: every input token, cache included, thinking as output"
       "opencode/glm-5.3",
     ),
   ).toEqual([
-    { type: "usage", input: 1005, output: 40, source: "plan", model: "opencode/glm-5.3", cacheRead: 100, cacheWrite: 5 },
+    {
+      type: "usage",
+      input: 1005,
+      output: 40,
+      source: "plan",
+      model: "opencode/glm-5.3",
+      cacheRead: 100,
+      cacheWrite: 5,
+    },
   ]);
   expect(reader.usage({ inputTokens: 0, outputTokens: 0 })).toEqual([]);
   expect(reader.usage(undefined)).toEqual([]);
@@ -538,7 +553,10 @@ for (const version of VERSIONS) {
         retryable: false,
       });
       expect(await final({ runId: run(6), prompt: "BADKEY" })).toMatchObject({ code: "not_logged_in" });
-      const limited = await runTurn(withAccounts(accountDir), turn({ account: ACCOUNT, runId: run(7), prompt: "LIMIT" }));
+      const limited = await runTurn(
+        withAccounts(accountDir),
+        turn({ account: ACCOUNT, runId: run(7), prompt: "LIMIT" }),
+      );
       expect(limited.final).toMatchObject({ code: "plan_limit" });
       expect(limited.events.some((e) => e.type === "limit")).toBe(true);
     },
@@ -763,11 +781,15 @@ test.skipIf(!posix)(
     });
 
     events.length = 0;
-    const nowhere = ((_file, args, options) =>
-      spawn(path.join(root, "no-such-opencode"), args, options)) as Spawn;
+    const nowhere = ((_file, args, options) => spawn(path.join(root, "no-such-opencode"), args, options)) as Spawn;
     await runOpencodeTurn({ ...input, prompt: "hi" }, { ...opts, spawn: nowhere });
     expect(events).toEqual([
-      { type: "error", code: "opencode_missing", message: "OpenCode's CLI is not installed on this computer.", retryable: true },
+      {
+        type: "error",
+        code: "opencode_missing",
+        message: "OpenCode's CLI is not installed on this computer.",
+        retryable: true,
+      },
     ]);
   },
   20_000,

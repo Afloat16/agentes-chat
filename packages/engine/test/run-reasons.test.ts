@@ -239,7 +239,9 @@ test("what a CLI said is safe to show anyone: no secrets, no sign-ins, no folder
 
 test("a computer brain's failure under a code the apps don't word reads as its program's error, never the bare code", () => {
   const unsupported = { code: "unsupported", message: "The Cursor brain isn't supported on Windows yet." };
-  expect(brainFailureText(unsupported, "cursor")).toBe("cli_failed: Cursor: The Cursor brain isn't supported on Windows yet.");
+  expect(brainFailureText(unsupported, "cursor")).toBe(
+    "cli_failed: Cursor: The Cursor brain isn't supported on Windows yet.",
+  );
   expect(runErrorDetail(brainFailureText(unsupported, "cursor"))).toEqual({
     errorCode: "run.cli_failed",
     errorParams: { brain: "Cursor", detail: "The Cursor brain isn't supported on Windows yet." },

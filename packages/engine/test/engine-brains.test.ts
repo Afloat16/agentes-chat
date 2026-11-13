@@ -238,7 +238,11 @@ test("availability: no computer, offline, old runner, not logged in, Codex missi
   expect(computerBrainUnavailable("codex", "m2", windows(CODEX_WINDOWS_PROTOCOL))).toBeNull();
   // The same for OpenCode before OPENCODE_ACP_PROTOCOL.
   const opencodeOn = (os: string, protocol: number) =>
-    statusOf("m2", { os, protocol, executors: { opencode: { version: "1.19.5" }, detectedAt: new Date().toISOString() } });
+    statusOf("m2", {
+      os,
+      protocol,
+      executors: { opencode: { version: "1.19.5" }, detectedAt: new Date().toISOString() },
+    });
   expect(computerBrainUnavailable("opencode", "m2", opencodeOn("windows", OPENCODE_ACP_PROTOCOL - 1))).toMatchObject({
     code: "runner_outdated",
     message: expect.stringContaining("on Windows"),

@@ -166,10 +166,28 @@ test("npm's launcher for a native binary starts that binary directly; a Node scr
   expect(npmNativeLauncher(shim, read, () => false)).toBeNull();
   // Out of its folder, not npm's preamble, a Node script's launcher, not a .cmd: never.
   const outside = NATIVE_SHIM.replace("node_modules\\opencode-ai", "..\\..\\evil");
-  expect(npmNativeLauncher(shim, () => outside, () => true)).toBeNull();
-  expect(npmNativeLauncher(shim, () => NATIVE_SHIM.replace("@ECHO off", "@echo on"), () => true)).toBeNull();
+  expect(
+    npmNativeLauncher(
+      shim,
+      () => outside,
+      () => true,
+    ),
+  ).toBeNull();
+  expect(
+    npmNativeLauncher(
+      shim,
+      () => NATIVE_SHIM.replace("@ECHO off", "@echo on"),
+      () => true,
+    ),
+  ).toBeNull();
   const nodeScript = NATIVE_SHIM.replace(/"%dp0%.*$/m, '"%_prog%"  "%dp0%\\node_modules\\codex\\bin\\codex.js" %*');
-  expect(npmNativeLauncher(shim, () => nodeScript, () => true)).toBeNull();
+  expect(
+    npmNativeLauncher(
+      shim,
+      () => nodeScript,
+      () => true,
+    ),
+  ).toBeNull();
   expect(npmNativeLauncher(`${dir}\\opencode.bat`, read, () => true)).toBeNull();
 
   // On the PATH: OpenCode starts as its binary, its argv as given, no shell between.
@@ -179,7 +197,8 @@ test("npm's launcher for a native binary starts that binary directly; a Node scr
     args: ["acp"],
     env: { NoDefaultCurrentDirectoryInExePath: "1" },
   });
-  expect(cliSpawn(["codex"], ["exec"], path, "win32", { exists: (f) => f === `${dir}\\codex.cmd`, read: () => nodeScript }).file).toBe(
-    windowsShell(),
-  );
+  expect(
+    cliSpawn(["codex"], ["exec"], path, "win32", { exists: (f) => f === `${dir}\\codex.cmd`, read: () => nodeScript })
+      .file,
+  ).toBe(windowsShell());
 });

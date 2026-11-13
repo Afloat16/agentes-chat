@@ -7,9 +7,15 @@ import type { CommandProfile } from "@agenteschat/adapters/command-policy";
 import type { AgentScope, BrainSteerReply } from "@agenteschat/adapters/machine-protocol";
 import { isAccountId } from "@agenteschat/adapters/machine-protocol";
 import { redactSecrets } from "@agenteschat/adapters/secret-box";
-import { ACP_METHOD_NOT_FOUND, ACP_PROTOCOL_VERSION, AcpConnection, AcpError } from "./acp";
 import { ACCOUNT_MISSING_MESSAGE, accountEnv, opencodeKeyOf, withoutSignIns } from "./accounts";
-import { CODEX_TOOL_OUTPUT_MAX, type CodexBrainEvent, CodexThreads, codexProfileOf, codexThreadKey } from "./brain-codex";
+import { ACP_METHOD_NOT_FOUND, ACP_PROTOCOL_VERSION, AcpConnection, AcpError } from "./acp";
+import {
+  CODEX_TOOL_OUTPUT_MAX,
+  type CodexBrainEvent,
+  CodexThreads,
+  codexProfileOf,
+  codexThreadKey,
+} from "./brain-codex";
 import { RunnerError } from "./errors";
 import { killTree } from "./exec";
 import { cliSpawn, envValue, OPENCODE_BIN } from "./executors";
@@ -235,7 +241,8 @@ const USAGE_LIMIT =
 export const OPENCODE_AUTH =
   /unauthori[sz]ed|\b401\b|invalid (?:api )?key|missing api key|authentication (?:failed|required)/i;
 /** OpenCode 2's names (`errorName`) for a provider's limit, and for a refused key. */
-const LIMIT_ERRORS = /^provider\.(?:free-limit|go-limit|rate-limit|quota|budget-limit|model-budget-limit|chatgpt-limit)$/;
+const LIMIT_ERRORS =
+  /^provider\.(?:free-limit|go-limit|rate-limit|quota|budget-limit|model-budget-limit|chatgpt-limit)$/;
 const AUTH_ERRORS = /^provider\.auth$/;
 
 /** How a turn that went wrong ends: `limit` then `plan_limit`, `not_logged_in`, or `opencode_failed`. */
@@ -467,7 +474,12 @@ export function opencodeTurnEnv(input: {
 }): NodeJS.ProcessEnv {
   const platform = input.platform ?? process.platform;
   const inherited: NodeJS.ProcessEnv = { ...input.inherited };
-  const unwanted = new Set(["OPENCODE_PERMISSION", "OPENCODE_CONFIG", "OPENCODE_CONFIG_DIR", "OPENCODE_CONFIG_CONTENT"]);
+  const unwanted = new Set([
+    "OPENCODE_PERMISSION",
+    "OPENCODE_CONFIG",
+    "OPENCODE_CONFIG_DIR",
+    "OPENCODE_CONFIG_CONTENT",
+  ]);
   for (const k of Object.keys(inherited)) if (unwanted.has(k.toUpperCase())) delete inherited[k];
   const home = envValue(inherited, "HOME", platform) || envValue(inherited, "USERPROFILE", platform) || os.homedir();
   const base = input.freeTier && !input.account ? withoutSignIns(inherited) : inherited;
@@ -611,10 +623,13 @@ export async function runOpencodeTurn(input: OpencodeTurnInput, opts: OpencodeTu
     {
       onNotification(method, params) {
         if (method !== "session/update" || !isRecord(params) || params.sessionId !== s.sessionId) return;
+        // A `chat` turn that met a tool of OpenCode's own says nothing more: what that tool did goes nowhere.
+        if (s.stopping === "breach") return;
         admit();
-        for (const event of reader.update(params.update)) emit(event);
+        const events = reader.update(params.update);
+        if (reader.breach) return stop("breach");
+        for (const event of events) emit(event);
         readSteered(false);
-        if (reader.breach) stop("breach");
       },
       onRequest(method, params) {
         if (method !== "session/request_permission") {
@@ -639,7 +654,8 @@ export async function runOpencodeTurn(input: OpencodeTurnInput, opts: OpencodeTu
     proc.on("close", (code: number | null) => resolve({ code }));
   });
   void exited.then(({ code, error }) => {
-    const why = error?.message ?? `OpenCode exited with code ${code ?? "?"}${stderr.trim() ? `: ${stderr.trim()}` : ""}`;
+    const why =
+      error?.message ?? `OpenCode exited with code ${code ?? "?"}${stderr.trim() ? `: ${stderr.trim()}` : ""}`;
     const closed: ExitError = new Error(redact ? redact(why) : why);
     closed.exit = { code, ...(error ? { error } : {}) };
     conn.close(closed);
@@ -711,7 +727,11 @@ export async function runOpencodeTurn(input: OpencodeTurnInput, opts: OpencodeTu
       // A load replays the history as updates: none of them is this turn's.
       s.sessionId = resume === "session/resume" ? stored : null;
       opened = await setup(
-        conn.request<Record<string, unknown> | null>(resume, { sessionId: stored, cwd: input.cwd, mcpServers: [bridge] }),
+        conn.request<Record<string, unknown> | null>(resume, {
+          sessionId: stored,
+          cwd: input.cwd,
+          mcpServers: [bridge],
+        }),
       ).then(
         (r) => r ?? {},
         () => null,

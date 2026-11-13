@@ -4,7 +4,8 @@
 // env that matters to $FAKE_OPENCODE_LOG (one JSON line), and so does each request it gets.
 //
 // Sessions are kept in its data folder (`XDG_DATA_HOME`), as OpenCode's are: one that isn't there fails
-// `session/resume`. What the prompt says decides the turn: by default a paragraph, a shell call of its own, a call to
+// `session/resume`. What the prompt says decides the turn: by default a paragraph, a shell call of its own (none with `*`
+// denied: OpenCode hides its tools then), a call to
 // our bridge and the answer, with tokens. "LIMIT": a provider's limit; "BADKEY": a refused key; "SILENT": no answer at
 // all; "SLEEP": a tool that runs until `session/cancel`; "OWNTOOL": a tool of its own that waits to be stopped; "ASK":
 // a permission request (2.x then ends the turn, 1.x goes on); "STEER": a tool running until `_session/steering` (2.x)
@@ -55,15 +56,16 @@ log({
   ghConfig: env.GH_CONFIG_DIR ?? null,
 });
 
+// Each session with its own model, as OpenCode keeps them.
 const store = path.join(env.XDG_DATA_HOME || env.HOME || ".", "fake-opencode-sessions.json");
-const sessions = () => (existsSync(store) ? JSON.parse(readFileSync(store, "utf8")) : []);
-const keep = (id) => {
+const sessions = () => (existsSync(store) ? JSON.parse(readFileSync(store, "utf8")) : {});
+const keep = (id, model) => {
   mkdirSync(path.dirname(store), { recursive: true });
-  writeFileSync(store, JSON.stringify([...sessions(), id]));
+  writeFileSync(store, JSON.stringify({ ...sessions(), [id]: model }));
 };
 
 const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT ?? "{}");
-let model = config.model ?? "opencode/big-pickle";
+const locked = config.permission?.["*"] === "deny";
 let askId = 0;
 const asked = new Map();
 let running = null;
@@ -75,7 +77,7 @@ const ask = (method, params) =>
     asked.set(id, resolve);
     send({ jsonrpc: "2.0", id, method, params });
   });
-const configOptions = () => [
+const configOptions = (model) => [
   { id: "model", category: "model", type: "select", currentValue: model, options: [{ value: model, name: model }] },
 ];
 const text = (t) => [{ type: "content", content: { type: "text", text: t } }];
@@ -162,8 +164,17 @@ async function prompt(id, params) {
       running.steer = resolve;
       setTimeout(resolve, 3000);
     });
-    update(sid, { sessionUpdate: "tool_call_update", toolCallId: "call_1", status: "completed", content: text("slept") });
-    update(sid, { sessionUpdate: "agent_message_chunk", messageId: "msg_2", content: { type: "text", text: "Steered." } });
+    update(sid, {
+      sessionUpdate: "tool_call_update",
+      toolCallId: "call_1",
+      status: "completed",
+      content: text("slept"),
+    });
+    update(sid, {
+      sessionUpdate: "agent_message_chunk",
+      messageId: "msg_2",
+      content: { type: "text", text: "Steered." },
+    });
     return done("end_turn");
   }
   update(sid, {
@@ -171,17 +182,32 @@ async function prompt(id, params) {
     messageId: "msg_1",
     content: { type: "text", text: "Let me check." },
   });
-  update(sid, { sessionUpdate: "tool_call", toolCallId: "call_1", ...own, kind: "execute", status: "pending", rawInput: {} });
-  const command = said.includes("ENV") ? "echo $OPENCODE_API_KEY" : "ls";
-  update(sid, {
-    sessionUpdate: "tool_call_update",
-    toolCallId: "call_1",
-    status: "in_progress",
-    ...(v2 ? {} : { title: command }),
-    rawInput: { command },
-  });
-  const output = said.includes("ENV") ? `${env.OPENCODE_API_KEY ?? ""}\n` : "a.txt\n";
-  update(sid, { sessionUpdate: "tool_call_update", toolCallId: "call_1", status: "completed", content: text(output) });
+  // With `*` denied OpenCode offers the model none of its own tools: only ours.
+  if (!locked) {
+    update(sid, {
+      sessionUpdate: "tool_call",
+      toolCallId: "call_1",
+      ...own,
+      kind: "execute",
+      status: "pending",
+      rawInput: {},
+    });
+    const command = said.includes("ENV") ? "echo $OPENCODE_API_KEY" : "ls";
+    update(sid, {
+      sessionUpdate: "tool_call_update",
+      toolCallId: "call_1",
+      status: "in_progress",
+      ...(v2 ? {} : { title: command }),
+      rawInput: { command },
+    });
+    const output = said.includes("ENV") ? `${env.OPENCODE_API_KEY ?? ""}\n` : "a.txt\n";
+    update(sid, {
+      sessionUpdate: "tool_call_update",
+      toolCallId: "call_1",
+      status: "completed",
+      content: text(output),
+    });
+  }
   update(sid, {
     sessionUpdate: "tool_call",
     toolCallId: "call_2",
@@ -190,7 +216,12 @@ async function prompt(id, params) {
     kind: "other",
     status: "pending",
   });
-  update(sid, { sessionUpdate: "tool_call_update", toolCallId: "call_2", status: "completed", content: text("posted") });
+  update(sid, {
+    sessionUpdate: "tool_call_update",
+    toolCallId: "call_2",
+    status: "completed",
+    content: text("posted"),
+  });
   update(sid, { sessionUpdate: "agent_message_chunk", messageId: "msg_2", content: { type: "text", text: "All " } });
   update(sid, { sessionUpdate: "agent_message_chunk", messageId: "msg_2", content: { type: "text", text: "good." } });
   update(sid, { sessionUpdate: "usage_update", used: 1040, size: 200000 });
@@ -221,23 +252,24 @@ function handle(m) {
         ...(v2 ? { _meta: { steering: { supported: true } } } : {}),
       });
     case "session/new": {
-      const id = `ses_fake${String(sessions().length + 1).padStart(4, "0")}`;
-      keep(id);
-      return reply({ sessionId: id, configOptions: configOptions() });
+      const id = `ses_fake${String(Object.keys(sessions()).length + 1).padStart(4, "0")}`;
+      const model = config.model ?? "opencode/big-pickle";
+      keep(id, model);
+      return reply({ sessionId: id, configOptions: configOptions(model) });
     }
     case "session/resume":
-      if (!sessions().includes(m.params.sessionId)) {
+      if (!(m.params.sessionId in sessions())) {
         return v2
           ? error(-32602, `Invalid params: session not found: ${m.params.sessionId}`, { sessionId: m.params.sessionId })
           : error(-32603, "Internal error: OpenCode service failure", { service: "session" });
       }
-      return reply({ configOptions: configOptions() });
+      return reply({ configOptions: configOptions(sessions()[m.params.sessionId]) });
     case "session/set_config_option":
       if (m.params.value === "opencode/missing") {
         return error(-32602, `Invalid params: model not found: ${m.params.value}`);
       }
-      model = m.params.value;
-      return reply({ configOptions: configOptions() });
+      keep(m.params.sessionId, m.params.value);
+      return reply({ configOptions: configOptions(m.params.value) });
     case "session/prompt":
       return void prompt(m.id, m.params);
     case "session/cancel":

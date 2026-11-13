@@ -113,8 +113,13 @@ test("on Windows a runner before CODEX_WINDOWS_PROTOCOL refuses every Codex turn
 test("on Windows a runner before OPENCODE_ACP_PROTOCOL refuses every OpenCode turn: too old there, nothing sent", async () => {
   const opencodeLink = (os: string, protocol: number) => {
     const l = link({ os, protocol, events: [{ type: "done", text: "ok" }] });
-    const status = l.status.bind(l);
-    l.status = async (machineId) => ({ ...(await status(machineId)), executors: { opencode: { version: "1.19.5" } } });
+    l.status = async () => ({
+      online: true,
+      execAllowed: true,
+      protocol,
+      os,
+      executors: { opencode: { version: "1.19.5" } },
+    });
     return l;
   };
   const brain = (l: ComputerBrainLink) => new OpencodeBrain({ link: l, mcp: async () => ({ token: "t" }) });

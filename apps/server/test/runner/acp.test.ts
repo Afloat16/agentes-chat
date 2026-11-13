@@ -33,7 +33,11 @@ test("a request gets its own answer by id; an error answer rejects with its code
     { jsonrpc: "2.0", id: 2, method: "session/new", params: { cwd: "/w" } },
   ]);
   // Answers may come in any order.
-  agent({ jsonrpc: "2.0", id: 2, error: { code: -32602, message: "Invalid params: session not found", data: { a: 1 } } });
+  agent({
+    jsonrpc: "2.0",
+    id: 2,
+    error: { code: -32602, message: "Invalid params: session not found", data: { a: 1 } },
+  });
   agent({ jsonrpc: "2.0", id: 1, result: { protocolVersion: 1 } });
   expect(await first).toEqual({ protocolVersion: 1 });
   const refused = await second.catch((e: unknown) => e);
@@ -47,7 +51,8 @@ test("the agent's notifications reach their handler; its requests are answered, 
     onNotification: (method, params) => notes.push({ method, params }),
     onRequest: (method, params) => {
       if (method === "session/request_permission") return { outcome: { outcome: "selected", optionId: "reject" } };
-      if (method === "fs/read_text_file") throw new AcpError(-32001, "No files here", { path: (params as { path: string }).path });
+      if (method === "fs/read_text_file")
+        throw new AcpError(-32001, "No files here", { path: (params as { path: string }).path });
       throw new AcpError(ACP_METHOD_NOT_FOUND, `Method not found: ${method}`);
     },
   });
@@ -57,11 +62,15 @@ test("the agent's notifications reach their handler; its requests are answered, 
   agent({ jsonrpc: "2.0", id: 8, method: "terminal/create", params: {} });
   await tick();
   expect(notes).toEqual([{ method: "session/update", params: { sessionId: "s", update: { sessionUpdate: "plan" } } }]);
-  expect(sent).toEqual([
-    { jsonrpc: "2.0", id: "p1", result: { outcome: { outcome: "selected", optionId: "reject" } } },
-    { jsonrpc: "2.0", id: 7, error: { code: -32001, message: "No files here", data: { path: "/etc/passwd" } } },
-    { jsonrpc: "2.0", id: 8, error: { code: ACP_METHOD_NOT_FOUND, message: "Method not found: terminal/create" } },
-  ]);
+  // Each answer goes out when it's ready, in any order (JSON-RPC matches them by id).
+  expect(sent).toHaveLength(3);
+  expect(sent).toEqual(
+    expect.arrayContaining([
+      { jsonrpc: "2.0", id: "p1", result: { outcome: { outcome: "selected", optionId: "reject" } } },
+      { jsonrpc: "2.0", id: 7, error: { code: -32001, message: "No files here", data: { path: "/etc/passwd" } } },
+      { jsonrpc: "2.0", id: 8, error: { code: ACP_METHOD_NOT_FOUND, message: "Method not found: terminal/create" } },
+    ]),
+  );
 });
 
 test("lines split across chunks are read whole; a stray line that isn't JSON is skipped", async () => {
