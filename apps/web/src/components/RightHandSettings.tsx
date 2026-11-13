@@ -258,6 +258,10 @@ export function RightHandMineRow({ agent }: { agent: Agent }) {
       onClick: connectMine,
     });
   if (own) links.push({ icon: "undo", label: t("rightHand.settings.useWorkspace"), onClick: back });
+  // The AI's mark beside the right hand under the sky: its maker's, a key's, or none while nothing answers.
+  let mineMark: ReactNode;
+  if (logoId) mineMark = <ProviderLogo id={logoId} size="tile" />;
+  else if (current) mineMark = <Icon name="key" />;
   return (
     <>
       <PrefRow
@@ -273,7 +277,7 @@ export function RightHandMineRow({ agent }: { agent: Agent }) {
         onClose={() => setOpen(false)}
         title={t("rightHand.settings.mineTitle", g)}
         note={t("rightHand.settings.mineOnly", g)}
-        mark={logoId ? <ProviderLogo id={logoId} size="tile" /> : current ? <Icon name="key" /> : undefined}
+        mark={mineMark}
         current={current}
         empty={t(held ? "agentSetup.firstRun.afterPlan" : "rightHand.settings.mineNobody")}
         model={own && view ? planModelOf(t, view, (input) => setMine(input)) : null}
