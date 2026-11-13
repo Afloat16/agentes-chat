@@ -54,8 +54,26 @@ export const lodiLanes = (): LodiLane[] =>
 /** The switches whose feature is built: the ones the right hand's page shows and its tools offer. */
 export const liveLodiSwitches = (among = lodiLanes()): LodiSwitch[] => among.filter((l) => l.live).map((l) => l.switch);
 
-/** The blocks the lanes add to the right hand's prompt in its DM with this person, empty ones left out. */
+/** Where a lane's failure is told. The server points it at its log and error reports when it starts. */
+let report: (lane: LodiSwitch, error: unknown) => void = () => {};
+export const reportLodiLaneErrors = (to: typeof report) => {
+  report = to;
+};
+
+/**
+ * The blocks the lanes add to the right hand's prompt in its DM with this person, empty ones left out. A lane whose
+ * block fails adds none and is reported: the right hand still answers.
+ */
 export async function lodiPromptBlocks(db: Database, ctx: LodiPromptContext, among = lodiLanes()): Promise<string[]> {
-  const blocks = await Promise.all(among.map((l) => l.promptBlock?.(db, ctx) ?? ""));
+  const blocks = await Promise.all(
+    among.map(async (lane) => {
+      try {
+        return (await lane.promptBlock?.(db, ctx)) ?? "";
+      } catch (error) {
+        report(lane.switch, error);
+        return "";
+      }
+    }),
+  );
   return blocks.filter(Boolean);
 }

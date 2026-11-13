@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { and, eq, rowsOf, schema, sql } from "@agenteschat/db";
+import { and, eq, inArray, rowsOf, schema, sql } from "@agenteschat/db";
 import {
   createSetupToolSource,
   createToolGateway,
   dueTeamWeeks,
+  enqueue,
   enqueueRightHandChecks,
   enqueueTeamWeeks,
   findWorkspaceActions,
@@ -23,22 +24,29 @@ import {
   lodiPrefsSql,
   lodiPromptBlocks,
   lodiSwitches,
+  nearTeamWeeks,
   openPersonAgentDm,
   ownCardsLine,
   patchLodiPrefs,
   postFromLodi,
   postPersonMessage,
+  postTeamWeek,
   RIGHT_HAND,
   readLodiPrefs,
+  reportLodiLaneErrors,
   rightHandPrompt,
   SET_TEAM_WEEK_TOOL,
+  saidKey,
   saidOnce,
   setCardOnMessage,
   setLodiPrefs,
+  TEAM_DAY_JOB,
   TEAM_WEEK_JOB,
   updateOrgSettings,
   workspaceAction,
 } from "../src";
+import { approvalsDigestLane } from "../src/approvals-digest";
+import { teamWatchLane } from "../src/team-watch";
 import { addMember, type Fixture, setup } from "./fixtures";
 
 let f: Fixture;
@@ -85,9 +93,23 @@ const stored = async (fx: Fixture, userId: string) =>
   )[0]?.teamWeek;
 
 const cardJobs = async (fx: Fixture) =>
-  (await fx.db.select().from(schema.outbox).where(eq(schema.outbox.kind, TEAM_WEEK_JOB))).map(
-    (j) => j.payload as { userId: string; period: string; slot: string },
-  );
+  (
+    await fx.db
+      .select()
+      .from(schema.outbox)
+      .where(inArray(schema.outbox.kind, [TEAM_WEEK_JOB, TEAM_DAY_JOB]))
+  ).map((j) => j.payload as { userId: string; period: string; slot: string });
+
+/** A lane as it is once its feature is built, for the time of `run`. */
+async function built<T>(lane: LodiLane, run: () => Promise<T>): Promise<T> {
+  const was = lane.live;
+  lane.live = true;
+  try {
+    return await run();
+  } finally {
+    lane.live = was;
+  }
+}
 
 /** What rows saved before the day's and the week's cards were told apart may hold, and a few that never were. */
 const SHAPES: Record<string, unknown>[] = [
@@ -145,6 +167,14 @@ describe("a person's choice", () => {
     // Its stop.
     expect(patchLodiPrefs(on, { off: true }, true)).toMatchObject({ weekOff: true, dayOff: true });
     expect(patchLodiPrefs(on, { off: true }, false)).toMatchObject({ weekOff: true, dayOff: true });
+    // Its start brings back the one card it draws, never the other: an admin who only had the week's keeps only that.
+    const stopped = { ...on, weekOff: true, dayOff: true };
+    expect(patchLodiPrefs(stopped, { off: false }, true)).toMatchObject({ weekOff: false, dayOff: true });
+    expect(patchLodiPrefs(stopped, { off: false }, false)).toMatchObject({ weekOff: true, dayOff: false });
+    expect(legacyTeamWeek(patchLodiPrefs(stopped, { off: false }, true), true)).toMatchObject({
+      off: false,
+      daily: false,
+    });
     // "Every day" in its day select: the day's card alone, at the hour it showed.
     expect(patchLodiPrefs(on, { daily: true }, true)).toMatchObject({ weekOff: true, dayOff: false, dayHour: 17 });
     // Back to a weekday from there: the week's alone, as it draws it.
@@ -209,11 +239,26 @@ describe("a person's choice", () => {
       muted: ["unanswered:1"],
       digestOff: true,
     });
+    // What is put away is added to, never replaced.
+    await setLodiPrefs(f.db, f.org.id, f.owner.id, { muted: ["unanswered:2", "unanswered:1"] });
+    expect((await readLodiPrefs(f.db, f.org.id, f.owner.id)).prefs.muted).toEqual(["unanswered:1", "unanswered:2"]);
     expect(await stored(f, f.owner.id)).toMatchObject({ somethingLater: { kept: true } });
     // Theirs only.
     const bia = await addMember(f.db, f.org.id, "member", "bia");
     expect(await getLodiPrefs(f.db, f.org.id, bia.id)).toMatchObject({ digestOff: false, dayOff: false, daily: true });
     await expect(getLodiPrefs(f.db, f.org.id, "nobody")).rejects.toThrow();
+  });
+
+  test("saves made at once all hold: each builds on the one before", async () => {
+    f = await setup({ rightHand: true });
+    await Promise.all([
+      setLodiPrefs(f.db, f.org.id, f.owner.id, { muted: ["unanswered:a"] }),
+      setLodiPrefs(f.db, f.org.id, f.owner.id, { muted: ["unanswered:b"], digestOff: true }),
+      setLodiPrefs(f.db, f.org.id, f.owner.id, { dayHour: 7 }),
+    ]);
+    const { prefs } = await readLodiPrefs(f.db, f.org.id, f.owner.id);
+    expect([...prefs.muted].sort()).toEqual(["unanswered:a", "unanswered:b"]);
+    expect(prefs).toMatchObject({ digestOff: true, dayHour: 7 });
   });
 
   test("the day's hour is in the person's own time zone, the week's in the workspace's", async () => {
@@ -262,14 +307,24 @@ describe("the two slots", () => {
     const bia = await addMember(f.db, f.org.id, "member", "bia");
     const thursday = new Date(NINE.getTime() - DAY + HOUR);
     // Thursday 10h: everyone's day.
+    expect((await nearTeamWeeks(f.db, thursday)).map((n) => n.user_id).sort()).toEqual([f.owner.id, bia.id].sort());
     expect(await enqueueTeamWeeks(f.db, thursday)).toBe(2);
+    // Queued: the statement itself leaves them out for the rest of the day, so a tick reads only who it may queue.
+    expect(await nearTeamWeeks(f.db, new Date(thursday.getTime() + HOUR))).toEqual([]);
     expect(await enqueueTeamWeeks(f.db, new Date(thursday.getTime() + HOUR))).toBe(0);
     expect((await cardJobs(f)).map((j) => j.period)).toEqual(["day", "day"]);
+    // The day's card has its own kind: a server from before the two cards never reads it as a week's.
+    expect(
+      (await f.db.select({ kind: schema.outbox.kind }).from(schema.outbox).where(eq(schema.outbox.kind, TEAM_DAY_JOB)))
+        .length,
+    ).toBe(2);
+    expect(f.handlers[TEAM_DAY_JOB]).toBeDefined();
     // Friday 10h: the member's day, and nothing for the admin, whose week comes at 17h.
     expect(await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + HOUR))).toBe(1);
     expect((await cardJobs(f)).filter((j) => j.userId === bia.id)).toHaveLength(2);
     // Friday 18h: the admin's week.
     expect(await enqueueTeamWeeks(f.db, new Date(FIVE.getTime() + HOUR))).toBe(1);
+    expect(await nearTeamWeeks(f.db, new Date(FIVE.getTime() + 2 * HOUR))).toEqual([]);
     expect(await enqueueTeamWeeks(f.db, new Date(FIVE.getTime() + 2 * HOUR))).toBe(0);
     const all = await cardJobs(f);
     expect(all.filter((j) => j.userId === f.owner.id).map((j) => j.period)).toEqual(["day", "week"]);
@@ -294,6 +349,8 @@ describe("the two slots", () => {
     const tokyoNine = new Date("2026-11-05T00:00:00Z");
     expect(await enqueueTeamWeeks(f.db, new Date(tokyoNine.getTime() + HOUR))).toBe(1);
     expect(await cardJobs(f)).toEqual([{ userId: caio.id, period: "day", slot: tokyoNine.toISOString() }]);
+    // The key the statement looks for is the one the job got, in the person's own zone too.
+    expect(await nearTeamWeeks(f.db, new Date(tokyoNine.getTime() + 2 * HOUR))).toEqual([]);
   });
 
   test("a time zone the database does not know reads as the workspace's, and stops nobody else's card", async () => {
@@ -309,6 +366,33 @@ describe("the two slots", () => {
     // Both at 9h in the workspace's zone.
     const slot = new Date(NINE.getTime() - DAY).toISOString();
     expect((await cardJobs(f)).map((j) => j.slot)).toEqual([slot, slot]);
+  });
+
+  test("more members than one statement queues are all queued, once", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const people = Array.from({ length: 1100 }, (_, i) => ({ id: `u_many_${i}`, n: i }));
+    await f.db
+      .insert(schema.users)
+      .values(people.map((p) => ({ id: p.id, name: `P ${p.n}`, email: `p${p.n}@example.com`, locale: "pt-BR" })));
+    await f.db
+      .insert(schema.organizationMembers)
+      .values(people.map((p) => ({ orgId: f.org.id, userId: p.id, role: "member" as const })));
+    const thursday = new Date(NINE.getTime() - DAY + HOUR);
+    expect(await enqueueTeamWeeks(f.db, thursday)).toBe(1101);
+    expect(await enqueueTeamWeeks(f.db, thursday)).toBe(0);
+  });
+
+  test("a database failure while reading the member is the job's to retry, and someone who left gets nothing", async () => {
+    f = await setup({ rightHand: true });
+    const payload = { userId: f.owner.id, slot: NINE.toISOString(), period: "day" };
+    const down = {
+      execute: async () => {
+        throw new Error("database down");
+      },
+    } as unknown as typeof f.db;
+    await expect(postTeamWeek({ db: down }, f.org.id, payload)).rejects.toThrow("database down");
+    expect(await postTeamWeek({ db: f.db }, f.org.id, { ...payload, userId: "nobody" })).toBeNull();
   });
 
   test("no team or no right hand: nobody is queued", async () => {
@@ -410,9 +494,16 @@ describe("what it says", () => {
     expect(await saidOnce(f.db, f.org.id, "team_watch.resume:r1")).toBe(true);
     expect(await saidOnce(f.db, f.org.id, "team_watch.resume:r1")).toBe(false);
     expect(await saidOnce(f.db, f.org.id, "team_watch.resume:r2")).toBe(true);
-    // Never claimed as a job.
-    const [row] = await f.db.select().from(schema.outbox).where(eq(schema.outbox.dedupeKey, "team_watch.resume:r1"));
+    // Never claimed as a job, and kept under the workspace and a prefix of its own: the same words said in another
+    // workspace, or used as a job's key, meet nothing.
+    const [row] = await f.db
+      .select()
+      .from(schema.outbox)
+      .where(eq(schema.outbox.dedupeKey, saidKey(f.org.id, "team_watch.resume:r1")));
     expect(row?.status).toBe("done");
+    expect(saidKey("other-org", "team_watch.resume:r1")).not.toBe(saidKey(f.org.id, "team_watch.resume:r1"));
+    await enqueue(f.db, { orgId: f.org.id, kind: "fake.job", payload: {}, dedupeKey: "team_watch.resume:r1" });
+    expect(await f.db.select().from(schema.outbox).where(eq(schema.outbox.kind, "fake.job"))).toHaveLength(1);
   });
 
   test("a card is rewritten where it stands", async () => {
@@ -470,9 +561,10 @@ describe("lanes", () => {
     expect(lanes.map((l) => l.switch).sort()).toEqual(["digest", "reminders", "teamWatch", "welcomePeople"]);
     expect(liveLodiSwitches()).toEqual(lanes.filter((l) => l.live).map((l) => l.switch));
     const handlers = lodiLaneHandlers({ db: f.db } as JobDeps);
-    expect(Object.keys(handlers).sort()).toEqual(
-      ["approvals_digest.post", "right_hand.task_check", "right_hand.welcome", "team_watch.check"].sort(),
-    );
+    const kinds = ["approvals_digest.post", "right_hand.task_check", "right_hand.welcome", "team_watch.check"];
+    expect(Object.keys(handlers)).toEqual(expect.arrayContaining(kinds));
+    // And the server's own handlers carry every lane's.
+    expect(Object.keys(f.handlers)).toEqual(expect.arrayContaining(Object.keys(handlers)));
     // A lane that is not built yet: no message, no job, no prompt, no model call.
     for (const lane of lanes.filter((l) => !l.live)) {
       const before = await f.db.select({ id: schema.outbox.id }).from(schema.outbox);
@@ -529,14 +621,44 @@ describe("lanes", () => {
     expect(await lodiPromptBlocks(f.db, ctx, [fake, quiet])).toEqual([`# Fake\nFor ${f.owner.id}.`]);
     expect(liveLodiSwitches([fake, quiet])).toEqual(["teamWatch"]);
     const lodi = await lodiOf(f);
-    const prompt = (inDm: boolean) =>
-      rightHandPrompt({ db: f.db }, { orgId: f.org.id, agent: lodi, personId: f.owner.id, inDm });
-    // The lanes that ship add nothing yet.
+    const prompt = (inDm: boolean, lanes?: LodiLane[]) =>
+      rightHandPrompt({ db: f.db }, { orgId: f.org.id, agent: lodi, personId: f.owner.id, inDm, lanes });
     const dm = await prompt(true);
     expect(dm).toContain("'Resumo do dia'");
     expect(dm).toContain("set_team_week");
     expect(dm).not.toContain("# Fake");
     expect(await prompt(false)).toContain("set_team_week");
+    // A lane's block is in the prompt of its DM with the person, and nowhere else.
+    const digest: LodiLane = { ...quiet, live: true };
+    const withFake = await prompt(true, [fake, digest]);
+    expect(withFake).toContain(`# Fake\nFor ${f.owner.id}.`);
+    expect(withFake).toContain("your summary of approvals waiting on them");
+    expect(dm.includes("your summary of approvals waiting on them")).toBe(liveLodiSwitches().includes("digest"));
+    expect(await prompt(false, [fake, digest])).not.toContain("# Fake");
+  });
+
+  test("a lane whose block fails is left out and reported, and the right hand still answers", async () => {
+    f = await setup({ rightHand: true });
+    const lodi = await lodiOf(f);
+    const told: string[] = [];
+    reportLodiLaneErrors((lane, error) => told.push(`${lane}:${String(error)}`));
+    try {
+      const broken: LodiLane = {
+        ...quiet,
+        promptBlock: async () => {
+          throw new Error("lane down");
+        },
+      };
+      const text = await rightHandPrompt(
+        { db: f.db },
+        { orgId: f.org.id, agent: lodi, personId: f.owner.id, inDm: true, lanes: [broken, fake] },
+      );
+      expect(text).toContain("# Fake");
+      expect(text).toContain("# Where you are");
+      expect(told).toEqual(["digest:Error: lane down"]);
+    } finally {
+      reportLodiLaneErrors(() => {});
+    }
   });
 
   test("the prompt and the tools name a switch only once its feature is built", async () => {
@@ -556,6 +678,28 @@ describe("lanes", () => {
     expect(
       (await findWorkspaceActions({ db: f.db, orgId: f.org.id } as never, f.owner.id, "workspace name")).length,
     ).toBeGreaterThan(0);
+  });
+});
+
+describe("a built lane's switch", () => {
+  test("update_workspace takes the workspace's switch, saves it and undoes it", async () => {
+    f = await setup({ rightHand: true });
+    const deps = { db: f.db, pubsub: f.pubsub } as never;
+    const action = workspaceAction("update_workspace");
+    if (!action?.revert) throw new Error("no update_workspace");
+    await built(teamWatchLane, async () => {
+      expect(Object.keys((action.input.properties ?? {}) as object)).toContain("team_watch");
+      expect(action.does).toContain("watches for what stops the team");
+      const done = await action.run(deps, f.owner.id, f.org.id, { team_watch: false });
+      expect(done).toMatchObject({ before: { teamWatch: true }, after: { teamWatch: false } });
+      expect(await lodiSwitches(f.db, f.org.id)).toEqual({ teamWatch: false, welcomePeople: true });
+      const row = { orgId: f.org.id, before: done.before, after: done.after } as never;
+      await action.revert?.(deps, f.owner.id, row, "undo", () => new Error("changed since"));
+      expect(await lodiSwitches(f.db, f.org.id)).toEqual({ teamWatch: true, welcomePeople: true });
+    });
+    // Not built: the same input changes nothing it knows.
+    if (!teamWatchLane.live)
+      await expect(action.run(deps, f.owner.id, f.org.id, { team_watch: false })).rejects.toThrow();
   });
 });
 
@@ -603,6 +747,23 @@ describe("asked of the right hand", () => {
     // An hour with no card named is not guessed for someone who gets both.
     expect((await call({ hour: 7 })).isError).toBe(true);
     expect(await prefs(f, f.owner.id)).toMatchObject({ dayHour: 8, weekHour: 9 });
+  });
+
+  test("set_team_week flips a person's own switch once its lane is built, and says what it left", async () => {
+    f = await setup({ rightHand: true });
+    await built(approvalsDigestLane, async () => {
+      const call = await tool(f, f.owner.id);
+      const off = await call({ digest: false });
+      expect(off.content).toContain("Summary of approvals waiting: off.");
+      expect(await prefs(f, f.owner.id)).toMatchObject({ digestOff: true, dayOff: false, weekOff: false });
+      expect((await call({ digest: true })).content).toContain("Summary of approvals waiting: on.");
+      expect(await prefs(f, f.owner.id)).toMatchObject({ digestOff: false });
+    });
+    // Not built: asked the same, it turns nothing off.
+    if (!approvalsDigestLane.live) {
+      await (await tool(f, f.owner.id))({ digest: false });
+      expect(await prefs(f, f.owner.id)).toMatchObject({ digestOff: false });
+    }
   });
 
   test("anyone else only has the day's card", async () => {

@@ -1,17 +1,5 @@
 import type { PubSub } from "@agenteschat/adapters";
-import {
-  and,
-  type Database,
-  desc,
-  type Executor,
-  eq,
-  gte,
-  inArray,
-  isNull,
-  rowsOf,
-  schema,
-  sql,
-} from "@agenteschat/db";
+import { and, type Database, desc, type Executor, eq, gte, isNull, rowsOf, schema, sql } from "@agenteschat/db";
 import { listApprovals } from "./approvals";
 import { editContextItem, howToSql } from "./context/items";
 import { LEARN_DEFAULTS } from "./context/learn";
@@ -20,7 +8,6 @@ import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from ".
 import { cutText } from "./format";
 import { commentIssue } from "./issues";
 import { getMessage, postPersonMessage } from "./messages";
-import { enqueue } from "./outbox";
 import { maySql } from "./permissions";
 import { pushStrings } from "./push-messages";
 import { knownZonesSql, type LodiPrefs, lodiPrefsOf, lodiPrefsSql, readLodiPrefs, zoneSql } from "./right-hand-prefs";
@@ -42,6 +29,11 @@ import { taskSeenSql } from "./task-access";
 const { agents, contextItems, contextProposals, organizationSettings, outbox } = schema;
 
 export const TEAM_WEEK_JOB = "team_week.post";
+/**
+ * The day's card is queued under a kind of its own. A server of the version before the two cards has no handler for
+ * it, so while both versions run it fails that job instead of reading it as a week's card.
+ */
+export const TEAM_DAY_JOB = "team_day.post";
 export const TEAM_WEEK_CARD = "team_week";
 /** The tool through which a person tells Lodi to stop the card or move it. */
 export const SET_TEAM_WEEK_TOOL = "set_team_week";
@@ -632,76 +624,95 @@ async function provenHowTos(db: Database, w: Window): Promise<TeamWeekRow[]> {
 
 // --- When it goes out ------------------------------------------------------------------------------------------
 
+/** How many jobs one insert carries: well under the statement's limit of parameters. */
+const ENQUEUE_BATCH = 1000;
+
+interface NearTeamWeek {
+  org_id: string;
+  user_id: string;
+  team_week: unknown;
+  tz: string;
+  day_tz: string;
+  admin: boolean;
+}
+
 /**
- * Queues the cards whose slot just passed, in open workspaces with a team and Lodi: the day's for everyone who has it
- * on, the week's for administrators (dedupe: one per person and day, one per person and week). Returns how many it
- * queued.
- *
- * Every member of every workspace has the day's card on unless they stopped it, so the statement itself keeps only
- * who is within the hours after their slot, and asks who administers only on the day a week's card may be due. A card
- * already queued is skipped before any insert.
+ * The members a card may be due for at `now`, in open workspaces with a team and Lodi: who is within the hours after
+ * their slot and has no job for that card yet (the dedupe keys of `teamWeekJobKey`, rebuilt here, each looked up by the
+ * unique index). So a member comes back on the tick after their slot and not again that day, and a tick reads only
+ * who it may queue. Who administers is asked only for those, on the day a week's card may be due.
  */
-export async function enqueueTeamWeeks(db: Database, now = new Date()) {
+export async function nearTeamWeeks(db: Database, now: Date): Promise<NearTeamWeek[]> {
   const at = sql`${now.toISOString()}::timestamptz`;
   const window = POST_WINDOW_MS / HOUR_MS;
   const tz = sql`z.tz`;
   const dayTz = sql`z.day_tz`;
   const hoursSince = (hour: unknown, zone: unknown) =>
     sql`((extract(hour from ${at} at time zone ${zone})::int - ${hour} + 24) % 24)`;
+  // The slot on that zone's clock: its date is the one in the day's key, its week's Monday the one in the week's.
+  const slotClock = (hour: unknown, zone: unknown) =>
+    sql`((${at} at time zone ${zone}) - make_interval(hours => ${hoursSince(hour, zone)}))`;
+  const queued = (key: unknown) =>
+    sql`exists (select 1 from outbox o
+      where o.dedupe_key = ${TEAM_WEEK_JOB}::text || ':' || m.org_id::text || ':' || m.user_id::text || ':' || ${key})`;
+  const dayKey = sql`'day:' || to_char(${slotClock(lodiPrefsSql.dayHour, dayTz)}, 'YYYY-MM-DD')`;
+  const weekKeySql = sql`to_char(date_trunc('week', ${slotClock(lodiPrefsSql.weekHour, tz)}), 'YYYY-MM-DD')`;
   const weekday = (moment: unknown) => sql`extract(dow from ${moment} at time zone ${tz})::int`;
-  const due = rowsOf<{
-    org_id: string;
-    user_id: string;
-    team_week: unknown;
-    tz: string;
-    day_tz: string;
-    admin: boolean;
-  }>(
-    await db.execute(sql`with ${knownZonesSql} select * from (
-        select m.org_id, m.user_id, m.team_week, ${tz} as tz, ${dayTz} as day_tz,
-          not ${lodiPrefsSql.dayOff} and ${hoursSince(lodiPrefsSql.dayHour, dayTz)} <= ${window} as day_near,
-          ${hoursSince(lodiPrefsSql.weekHour, tz)} <= ${window} as week_near,
-          case when not ${lodiPrefsSql.weekOff}
-              and ${lodiPrefsSql.day} in (${weekday(at)}, ${weekday(sql`(${at} - make_interval(hours => ${window}))`)})
-            then ${maySql(sql`m.org_id`, sql`m.user_id`, "administrator")} else false end as admin
-        from organization_members m
-        join organizations on organizations.id = m.org_id and ${openOrg}
-        left join organization_settings s on s.org_id = m.org_id
-        cross join lateral (select ${zoneSql(sql`s.timezone`, sql`'UTC'`)} as tz,
-          ${zoneSql(sql`m.timezone`, zoneSql(sql`s.timezone`, sql`'UTC'`))} as day_tz) z
-        where exists (select 1 from agents a where a.org_id = m.org_id and a.builtin is null
-            and a.archived_at is null and a.deleted_at is null)
-          and exists (select 1 from agents a where a.org_id = m.org_id and a.builtin = 'right_hand')
-      ) near where day_near or (admin and week_near)`),
+  const weekly = sql`(not ${lodiPrefsSql.weekOff}
+    and ${lodiPrefsSql.day} in (${weekday(at)}, ${weekday(sql`(${at} - make_interval(hours => ${window}))`)}))`;
+  return rowsOf<NearTeamWeek>(
+    await db.execute(sql`with ${knownZonesSql}
+      select org_id, user_id, team_week, tz, day_tz, admin from (
+        select near.*, case when near.weekly
+          then ${maySql(sql`near.org_id`, sql`near.user_id`, "administrator")} else false end as admin
+        from (
+          select m.org_id, m.user_id, m.team_week, ${tz} as tz, ${dayTz} as day_tz, ${weekly} as weekly,
+            not ${lodiPrefsSql.dayOff} and ${hoursSince(lodiPrefsSql.dayHour, dayTz)} <= ${window}
+              and not ${queued(dayKey)} as day_near,
+            ${weekly} and ${hoursSince(lodiPrefsSql.weekHour, tz)} <= ${window}
+              and not ${queued(weekKeySql)} as week_near
+          from organization_members m
+          join organizations on organizations.id = m.org_id and ${openOrg}
+          left join organization_settings s on s.org_id = m.org_id
+          cross join lateral (select ${zoneSql(sql`s.timezone`, sql`'UTC'`)} as tz,
+            ${zoneSql(sql`m.timezone`, zoneSql(sql`s.timezone`, sql`'UTC'`))} as day_tz) z
+          where exists (select 1 from agents a where a.org_id = m.org_id and a.builtin is null
+              and a.archived_at is null and a.deleted_at is null)
+            and exists (select 1 from agents a where a.org_id = m.org_id and a.builtin = 'right_hand')
+        ) near where day_near or week_near
+      ) due where day_near or (admin and week_near)`),
   );
-  const jobs = due.flatMap((d) =>
+}
+
+/**
+ * Queues the cards whose slot just passed: the day's for everyone who has it on, the week's for administrators
+ * (dedupe: one per person and day, one per person and week). Returns how many it queued.
+ *
+ * Every member of every workspace has the day's card on unless they stopped it, so the statement picks who may be due
+ * (`nearTeamWeeks`), the exact slot is worked out here for those alone, and they are queued a batch per statement.
+ */
+export async function enqueueTeamWeeks(db: Database, now = new Date()) {
+  const jobs = (await nearTeamWeeks(db, now)).flatMap((d) =>
     dueTeamWeeks(lodiPrefsOf(d.team_week), { admin: d.admin, timezone: d.tz, dayTimezone: d.day_tz }, now).map(
       ({ period, slot, timezone }) => ({
         orgId: d.org_id,
-        kind: TEAM_WEEK_JOB,
+        kind: period === "day" ? TEAM_DAY_JOB : TEAM_WEEK_JOB,
         payload: { userId: d.user_id, slot: slot.toISOString(), period },
         dedupeKey: teamWeekJobKey(d.org_id, d.user_id, period, slot, timezone),
         maxAttempts: 4,
       }),
     ),
   );
-  if (jobs.length === 0) return 0;
-  const queued = new Set(
-    (
-      await db
-        .select({ key: outbox.dedupeKey })
-        .from(outbox)
-        .where(
-          inArray(
-            outbox.dedupeKey,
-            jobs.map((j) => j.dedupeKey),
-          ),
-        )
-    ).map((r) => r.key),
-  );
-  const fresh = jobs.filter((j) => !queued.has(j.dedupeKey));
-  for (const job of fresh) await enqueue(db, job);
-  return fresh.length;
+  let queued = 0;
+  for (let i = 0; i < jobs.length; i += ENQUEUE_BATCH) {
+    const rows = await db
+      .insert(outbox)
+      .values(jobs.slice(i, i + ENQUEUE_BATCH))
+      .onConflictDoNothing()
+      .returning({ id: outbox.id });
+    queued += rows.length;
+  }
+  return queued;
 }
 
 /**
@@ -717,7 +728,11 @@ export async function postTeamWeek(
   const userId = typeof payload.userId === "string" ? payload.userId : null;
   const slot = typeof payload.slot === "string" ? new Date(payload.slot) : null;
   if (!userId || !slot || Number.isNaN(slot.getTime())) return null;
-  const member = await readLodiPrefs(db, orgId, userId).catch(() => null);
+  // Someone who left gets none. Any other failure is the job's to retry: ending here would spend the day's key.
+  const member = await readLodiPrefs(db, orgId, userId).catch((error) => {
+    if (error instanceof NotFoundError) return null;
+    throw error;
+  });
   if (!member) return null;
   const { prefs, admin } = member;
   // A job queued before cards named their period carries none: the one card that person then got.
@@ -754,6 +769,7 @@ export async function postTeamWeek(
     meta: { actionCard: card },
     push: true,
     posted,
+    lodi,
   });
 }
 

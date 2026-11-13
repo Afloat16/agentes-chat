@@ -25,9 +25,19 @@ export interface LodiPrefs {
   dayTimezone: string;
   /** The switches whose feature the server has. None from an older server. */
   switches: LodiSwitch[];
+  /** The server is from before the two cards were told apart: it keeps one card and is saved with `legacyPatch`. */
+  legacy?: boolean;
 }
 
-export type LodiPrefsPatch = Partial<Omit<LodiPrefs, "timezone" | "dayTimezone" | "switches">>;
+export type LodiPrefsPatch = Partial<Omit<LodiPrefs, "timezone" | "dayTimezone" | "switches" | "legacy">>;
+
+/** What a server from before the two cards takes: one switch, the daily card in place of the weekly, one hour. */
+export interface LegacyPrefsPatch {
+  off?: boolean;
+  daily?: boolean;
+  day?: number;
+  hour?: number;
+}
 
 /** The daily card or the weekly one. */
 export type TeamWeekPeriod = "day" | "week";
@@ -50,6 +60,27 @@ export function lodiPrefsOf(raw: unknown): LodiPrefs {
     timezone,
     dayTimezone: r.dayTimezone ?? timezone,
     switches: Array.isArray(r.switches) ? r.switches : [],
+    ...(r.weekOff === undefined ? { legacy: true } : {}),
+  };
+}
+
+/**
+ * A save as a server from before the two cards takes it. That server would drop the new fields and answer as if it
+ * had saved, so a switch would snap back with no error. It keeps one card: stopping either stops it, starting one
+ * picks which comes, and its one hour is of that card.
+ */
+export function legacyPatch(patch: LodiPrefsPatch): LegacyPrefsPatch {
+  const hour = patch.dayHour ?? patch.weekHour;
+  return {
+    ...(patch.day === undefined ? {} : { day: patch.day }),
+    ...(hour === undefined ? {} : { hour }),
+    ...(patch.weekOff === true || patch.dayOff === true
+      ? { off: true }
+      : patch.dayOff === false
+        ? { off: false, daily: true }
+        : patch.weekOff === false
+          ? { off: false, daily: false }
+          : {}),
   };
 }
 

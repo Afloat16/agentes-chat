@@ -39,7 +39,7 @@ import { setMyReaction } from "../lib/reactions";
 import { recentConversations } from "../lib/recent";
 import { replyOf } from "../lib/reply";
 import { firstVisitOf, teamAnswered } from "../lib/right-hand";
-import type { LodiPrefsPatch } from "../lib/right-hand-prefs";
+import { type LodiPrefs, type LodiPrefsPatch, legacyPatch } from "../lib/right-hand-prefs";
 import { usagePauseRefetchMs } from "../lib/routine-view";
 import { withRead } from "../lib/seen";
 import {
@@ -2037,14 +2037,17 @@ export function useCancelApproval(orgId: string) {
   });
 }
 
-/** A card's "Aprovar tudo" / "Agora não para todos": exactly the ids it listed at the click. */
+/**
+ * A card's "Aprovar tudo" / "Agora não para todos": exactly the ids it listed at the click. `only: "routine"` leaves
+ * to the server which of them one tap may decide: the others come back in `skipped`, still pending.
+ */
 export function useDecideApprovals(orgId: string) {
   const api = useApi();
   const qc = useQueryClient();
   const via = useCardVia();
   return useMutation({
     mutationKey: decidingKey(orgId),
-    mutationFn: (input: { ids: string[]; decision: "approve" | "refuse"; reason?: string }) =>
+    mutationFn: (input: { ids: string[]; decision: "approve" | "refuse"; reason?: string; only?: "routine" }) =>
       api.approvals.decideMany(orgId, via ? { ...input, via } : input),
     onSuccess: (result, { decision }) => {
       playSound(decision === "approve" ? "approved" : "error");
@@ -3001,7 +3004,12 @@ export const useSetTeamWeekPrefs = (orgId: string) => {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (patch: LodiPrefsPatch) => api.orgs.setTeamWeek(orgId, patch),
+    // A server from before the two cards is saved in the words it knows: it would drop these and answer 200.
+    mutationFn: (patch: LodiPrefsPatch) =>
+      api.orgs.setTeamWeek(
+        orgId,
+        qc.getQueryData<LodiPrefs>(keys.teamWeek(orgId))?.legacy ? legacyPatch(patch) : patch,
+      ),
     onSuccess: (prefs) => qc.setQueryData(keys.teamWeek(orgId), prefs),
   });
 };

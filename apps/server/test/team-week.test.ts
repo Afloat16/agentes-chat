@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { and, eq, schema } from "@agenteschat/db";
-import { openPersonAgentDm, RIGHT_HAND } from "@agenteschat/engine";
+import { liveLodiSwitches, openPersonAgentDm, RIGHT_HAND } from "@agenteschat/engine";
 import { browser, createTestServer, joinByInvitation, seedOrg, signUp, type TestServer } from "./harness";
 
 /** Lodi's weekly card (ADR 0137 §9) over HTTP: my own schedule, and a row applied as me, never as someone else. */
@@ -91,7 +91,7 @@ test("builds from before the two cards still read the truth, and their one switc
   const put = async (who: typeof owner, json: Record<string, unknown>) =>
     (await (await who(base, { method: "PUT", json })).json()) as Record<string, unknown>;
 
-  // Nothing stored: both cards on, the daily at 9h, and no switch of a feature this server does not have.
+  // Nothing stored: both cards on, the daily at 9h, and the switches of the features this server has built.
   expect(await (await owner(base)).json()).toMatchObject({
     weekOff: false,
     dayOff: false,
@@ -100,11 +100,12 @@ test("builds from before the two cards still read the truth, and their one switc
     off: false,
     daily: false,
     hour: 17,
-    switches: [],
+    switches: liveLodiSwitches(),
   });
-  // An older build's "Parar de receber" stops both, and its start brings both back.
+  // An older build's "Parar de receber" stops both. Its start brings back the card it draws (an admin's weekly),
+  // not one it has no control for.
   expect(await put(owner, { off: true })).toMatchObject({ weekOff: true, dayOff: true, off: true });
-  expect(await put(owner, { off: false })).toMatchObject({ weekOff: false, dayOff: false, off: false });
+  expect(await put(owner, { off: false })).toMatchObject({ weekOff: false, dayOff: true, off: false, daily: false });
   // Its "every day": the daily card in place of the weekly, at the hour it showed.
   expect(await put(owner, { daily: true })).toMatchObject({
     weekOff: true,

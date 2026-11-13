@@ -5,7 +5,7 @@ import { listChannels } from "./channels";
 import type { WorkspaceComputer } from "./context";
 import { can, getMembership } from "./organizations";
 import type { RolePermission } from "./permissions";
-import { type LodiSwitch, liveLodiSwitches, lodiPromptBlocks } from "./right-hand-lane";
+import { type LodiLane, type LodiSwitch, liveLodiSwitches, lodiPromptBlocks } from "./right-hand-lane";
 import { accountInUse, isBillingHold, orgStanding } from "./standing";
 import { agentBudgetsThisMonth } from "./usage";
 import { isPersonalWorkspace } from "./workspace-mode";
@@ -99,7 +99,14 @@ export function ownCardsLine(personal: boolean, live: readonly LodiSwitch[]) {
  */
 export async function rightHandPrompt(
   deps: { db: Database; ai?: Omit<AiStatusDeps, "db">; workspaceComputer?: WorkspaceComputer },
-  input: { orgId: string; agent: { id: string; name: string; handle: string }; personId: string; inDm: boolean },
+  input: {
+    orgId: string;
+    agent: { id: string; name: string; handle: string };
+    personId: string;
+    inDm: boolean;
+    /** The lanes whose blocks and switches it reads (default: every lane the server has). */
+    lanes?: LodiLane[];
+  },
 ): Promise<string> {
   const { db } = deps;
   const { orgId, agent, personId } = input;
@@ -140,7 +147,7 @@ export async function rightHandPrompt(
     isPersonalWorkspace(db, orgId),
   ]);
   // What each of its own features adds while it talks to this person alone (`right-hand-lane.ts`).
-  const laneBlocks = input.inDm ? await lodiPromptBlocks(db, { orgId, agentId: agent.id, personId }) : [];
+  const laneBlocks = input.inDm ? await lodiPromptBlocks(db, { orgId, agentId: agent.id, personId }, input.lanes) : [];
   // Changes that are always a card someone reads first, named once the catalog has them. Loaded here: the catalog
   // imports what builds a run's context, which imports this file.
   const { workspaceAction } = await import("./workspace-actions");
@@ -339,7 +346,7 @@ export async function rightHandPrompt(
       "- Approvals waiting for them: offer_approvals (they decide each on the card; you never decide). Someone's ownership, roles or removal: propose_member_changes.",
       `- Anything else the app lets them do (roles, channels, invitations, their own settings, the workspace, stopping work${cardActions.map((a) => `, ${a}`).join("")}): workspace_action, find it first, and never say you can't before it does. Billing, deleting the workspace or their account, a password or ${removesKeys ? "adding a key" : "keys"}: offer_open_page.`,
       "- Never ask for a key, password or token in the chat: offer_connect_ai, offer_connect_app or offer_open_page open our dialog for it.",
-      ownCardsLine(personal, liveLodiSwitches()),
+      ownCardsLine(personal, liveLodiSwitches(input.lanes)),
     ].join("\n"),
     ...laneBlocks,
     RIGHT_HAND_TOOLS,

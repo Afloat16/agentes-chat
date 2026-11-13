@@ -90,3 +90,21 @@ test("someone who administers nothing has the daily card and their own switches 
   expect(own.getAllByRole("switch").map((s) => s.getAttribute("aria-label"))).toEqual(["Resumir aprovações esperando"]);
   expect(screen().queryByText("Para todo o workspace")).toBeNull();
 });
+
+test("on a server from before the two cards, a stop and a start are saved in the words it knows", async () => {
+  const state = withRightHand(seedState());
+  // What that server answers: its one card (here the daily, in place of the weekly) and none of the new fields.
+  state.teamWeek = { weekOff: undefined, dayOff: undefined, off: false, daily: true, hour: 9 } as FakeState["teamWeek"];
+  const own = await open(state);
+  const day = own.getByRole("group", { name: "Resumo do dia" });
+  const week = own.getByRole("group", { name: "Semana da equipe" });
+  expect(within(week).getByRole("button", { name: "Voltar a receber" })).toBeTruthy();
+  await act(async () => fireEvent.click(within(day).getByRole("button", { name: "Parar de receber" })));
+  await settle(4);
+  expect(saved(state, "orgs.setTeamWeek")).toEqual([{ off: true }]);
+  expect(within(day).getByRole("button", { name: "Voltar a receber" })).toBeTruthy();
+  await act(async () => fireEvent.click(within(week).getByRole("button", { name: "Voltar a receber" })));
+  await settle(4);
+  expect(saved(state, "orgs.setTeamWeek").at(-1)).toEqual({ off: false, daily: false });
+  expect(within(week).getByRole("button", { name: "Parar de receber" })).toBeTruthy();
+});

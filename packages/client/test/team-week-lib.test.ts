@@ -5,7 +5,7 @@ import i18next, { type TFunction } from "i18next";
 import type { Approval, Proposal } from "../src/api/types";
 import { actionCardOf } from "../src/lib/action-cards";
 import { serverBody } from "../src/lib/message-body";
-import { lodiPrefsOf, teamWeekOn, teamWeekWhen } from "../src/lib/right-hand-prefs";
+import { legacyPatch, lodiPrefsOf, teamWeekOn, teamWeekWhen } from "../src/lib/right-hand-prefs";
 import {
   appliesInBulk,
   type TeamWeekCard,
@@ -192,6 +192,29 @@ test("what a person chose, from this server and from one before the two cards we
     dayHour: 9,
   });
   expect(lodiPrefsOf({ off: true, daily: true, hour: 9 })).toMatchObject({ weekOff: true, dayOff: true });
+  // Which server answered: one from before is saved in its own words.
+  expect(lodiPrefsOf({ off: false, daily: true, hour: 9 }).legacy).toBe(true);
+  expect(lodiPrefsOf({ weekOff: false, dayOff: false, off: false, daily: false, hour: 17 }).legacy).toBeUndefined();
+});
+
+test("a save to a server from before the two cards: a stop stops its one card, a start picks which comes", () => {
+  // It would drop the new fields and answer 200, so a switch would snap back.
+  expect(legacyPatch({ dayOff: true })).toEqual({ off: true });
+  expect(legacyPatch({ weekOff: true })).toEqual({ off: true });
+  expect(legacyPatch({ dayOff: false })).toEqual({ off: false, daily: true });
+  expect(legacyPatch({ weekOff: false })).toEqual({ off: false, daily: false });
+  // Its one hour, and the weekly card's day.
+  expect(legacyPatch({ dayHour: 8 })).toEqual({ hour: 8 });
+  expect(legacyPatch({ weekHour: 16, day: 2 })).toEqual({ day: 2, hour: 16 });
+  // What it has no feature for is not sent.
+  expect(legacyPatch({ digestOff: true, remindOff: true })).toEqual({});
+  // Each save, read back as that server answers it, shows what was asked.
+  const after = (now: Record<string, unknown>, patch: Parameters<typeof legacyPatch>[0]) =>
+    lodiPrefsOf({ ...now, ...legacyPatch(patch) });
+  const weekly = { off: false, daily: false, day: 5, hour: 17 };
+  expect(after(weekly, { weekOff: true })).toMatchObject({ weekOff: true, dayOff: true });
+  expect(after(weekly, { dayOff: false })).toMatchObject({ weekOff: true, dayOff: false });
+  expect(after({ ...weekly, daily: true }, { dayOff: true })).toMatchObject({ weekOff: true, dayOff: true });
 });
 
 test("rows a newer server adds travel in moreRows: known kinds join the card, unknown ones are left off", () => {

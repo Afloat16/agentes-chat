@@ -28,7 +28,10 @@ export interface LodiPrefs {
   digestOff: boolean;
   /** Reminders of what they and the right hand agreed on. */
   remindOff: boolean;
-  /** Suggestions this person put away for good, by key (`unanswered:<channelId>`); the newest `MUTED_MAX`. */
+  /**
+   * Suggestions this person put away for good, by key (`unanswered:<channelId>`); the newest `MUTED_MAX`. In a patch:
+   * the keys to add.
+   */
   muted: string[];
 }
 
@@ -93,11 +96,15 @@ export function legacyTeamWeek(p: LodiPrefs, admin: boolean): LegacyTeamWeek {
 
 /** `now` after a save: the new fields as sent, and an older build's `off`, `daily` and `hour` as it meant them. */
 export function patchLodiPrefs(now: LodiPrefs, patch: LodiPrefsPatch, admin: boolean): LodiPrefs {
-  const { off, daily, hour, ...fields } = patch;
+  const { off, daily, hour, muted, ...fields } = patch;
   const was = legacyTeamWeek(now, admin);
   const next = { ...now, ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) };
-  // Its one switch stops, or starts, everything it gets.
-  if (typeof off === "boolean") next.weekOff = next.dayOff = off;
+  // Put away for good: a save adds its keys, so one made from an older read of the list drops none.
+  if (muted) next.muted = [...new Set([...now.muted, ...muted])];
+  // Its one switch stops everything. Its start brings back the one card that build draws: the other has no
+  // control there, so it never starts by a tap on that screen.
+  if (off === true) next.weekOff = next.dayOff = true;
+  else if (off === false) next[admin ? "weekOff" : "dayOff"] = false;
   if (daily === true) {
     next.weekOff = true;
     next.dayOff = false;
@@ -158,12 +165,18 @@ export interface LodiPrefsOfMember {
   dayTimezone: string;
 }
 
-export async function readLodiPrefs(db: Executor, orgId: string, userId: string): Promise<LodiPrefsOfMember> {
+/** `lock`: inside a transaction, the member's row is held until it ends, so a save reads what the last one wrote. */
+export async function readLodiPrefs(
+  db: Executor,
+  orgId: string,
+  userId: string,
+  lock = false,
+): Promise<LodiPrefsOfMember> {
   const [row] = rowsOf<{ team_week: unknown; admin: boolean; tz: string | null; own_tz: string | null }>(
     await db.execute(sql`select m.team_week, s.timezone as tz, m.timezone as own_tz,
         ${maySql(sql`m.org_id`, sql`m.user_id`, "administrator")} as admin
       from organization_members m left join organization_settings s on s.org_id = m.org_id
-      where m.org_id = ${orgId} and m.user_id = ${userId}`),
+      where m.org_id = ${orgId} and m.user_id = ${userId}${lock ? sql` for update of m` : sql``}`),
   );
   if (!row) throw new NotFoundError("Not a member of this workspace");
   const timezone = row.tz || "UTC";
@@ -189,7 +202,8 @@ export const getLodiPrefs = async (db: Executor, orgId: string, userId: string) 
 
 /**
  * Saves what this person changed, for them only. The row keeps every key it had that is not written here, and gets an
- * older build's three beside the new ones, so a server of the version before reads the same choice.
+ * older build's three beside the new ones, so a server of the version before reads the same choice. Two saves at
+ * once take turns on the row: the second builds on the first.
  */
 export async function setLodiPrefs(
   db: Executor,
@@ -197,12 +211,14 @@ export async function setLodiPrefs(
   userId: string,
   patch: LodiPrefsPatch,
 ): Promise<LodiPrefsView> {
-  const now = await readLodiPrefs(db, orgId, userId);
-  const prefs = patchLodiPrefs(now.prefs, patch, now.admin);
-  const stored = { ...prefs, ...legacyTeamWeek(prefs, now.admin) };
-  await db
-    .update(schema.organizationMembers)
-    .set({ teamWeek: sql`${schema.organizationMembers.teamWeek} || ${JSON.stringify(stored)}::jsonb` })
-    .where(and(eq(schema.organizationMembers.orgId, orgId), eq(schema.organizationMembers.userId, userId)));
-  return viewOf({ ...now, prefs });
+  return db.transaction(async (tx) => {
+    const now = await readLodiPrefs(tx, orgId, userId, true);
+    const prefs = patchLodiPrefs(now.prefs, patch, now.admin);
+    const stored = { ...prefs, ...legacyTeamWeek(prefs, now.admin) };
+    await tx
+      .update(schema.organizationMembers)
+      .set({ teamWeek: sql`${schema.organizationMembers.teamWeek} || ${JSON.stringify(stored)}::jsonb` })
+      .where(and(eq(schema.organizationMembers.orgId, orgId), eq(schema.organizationMembers.userId, userId)));
+    return viewOf({ ...now, prefs });
+  });
 }

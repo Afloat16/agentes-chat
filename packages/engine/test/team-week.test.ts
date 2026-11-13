@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { and, eq, schema, sql } from "@agenteschat/db";
+import { and, eq, inArray, schema, sql } from "@agenteschat/db";
 import { en, STRINGS } from "@agenteschat/i18n";
 import {
   actOnTeamWeek,
@@ -20,6 +20,7 @@ import {
   requestKey,
   SET_TEAM_WEEK_TOOL,
   setLodiPrefs,
+  TEAM_DAY_JOB,
   TEAM_WEEK_JOB,
   type TeamWeekCard,
   teamWeekCardOf,
@@ -56,7 +57,11 @@ async function inZone(fx: Fixture) {
     .onConflictDoUpdate({ target: schema.organizationSettings.orgId, set: { timezone: ZONE } });
 }
 
-const jobs = (fx: Fixture) => fx.db.select().from(schema.outbox).where(eq(schema.outbox.kind, TEAM_WEEK_JOB));
+const jobs = (fx: Fixture) =>
+  fx.db
+    .select()
+    .from(schema.outbox)
+    .where(inArray(schema.outbox.kind, [TEAM_WEEK_JOB, TEAM_DAY_JOB]));
 
 const run = (fx: Fixture, agentId: string, at: Date, status: "done" | "failed", error?: string) =>
   fx.db.insert(schema.agentRuns).values({

@@ -2835,7 +2835,7 @@ export const en = {
     settings: {
       label: "Team week",
       help: "Every week {{name}} tells you in your DM how the team did and what to fix. Only admins get it.",
-      /** "Resumo do dia": the same card every day, which anyone may turn on. */
+      /** "Resumo do dia": the day's card, which everyone gets unless they stop it. */
       dayLabel: "Daily summary",
       dayHelp:
         "Every day {{name}} tells you in your DM what the team did and what waits for you, on days with something to say.",

@@ -51,6 +51,8 @@ export interface LodiPost {
   push: boolean;
   /** True when it was already said: asked once more inside the transaction, so two workers post one message. */
   posted?: (tx: Executor, lodiId: string) => Promise<boolean>;
+  /** What `lodiFor` just answered the caller for this person, so it is not asked twice. */
+  lodi?: Agent;
 }
 
 /**
@@ -64,7 +66,7 @@ export async function postFromLodi(
   post: LodiPost,
 ): Promise<string | null> {
   const { db } = deps;
-  const lodi = await lodiFor(db, orgId, userId);
+  const lodi = post.lodi ?? (await lodiFor(db, orgId, userId));
   if (!lodi) return null;
   const locale = await personLocale(db, userId);
   const vars = Object.fromEntries(Object.entries(post.bodyParams ?? {}).map(([k, v]) => [k, String(v)]));
@@ -94,8 +96,14 @@ export async function postFromLodi(
 }
 
 /**
- * True the first time `key` is said, false for ever after: a finished outbox row that is never claimed, whose dedupe
- * key is the memory. Its payload is cleared with old jobs, the key stays.
+ * How `saidOnce` stores a key. Dedupe keys are one list for every workspace and every job, so it carries the
+ * workspace and a prefix no job uses.
+ */
+export const saidKey = (orgId: string, key: string) => `right_hand.said:${orgId}:${key}`;
+
+/**
+ * True the first time `key` is said in this workspace, false for ever after: a finished outbox row that is never
+ * claimed, whose dedupe key is the memory. Its payload is cleared with old jobs, the key stays.
  */
 export async function saidOnce(db: Executor, orgId: string, key: string): Promise<boolean> {
   const now = new Date();
@@ -108,7 +116,7 @@ export async function saidOnce(db: Executor, orgId: string, key: string): Promis
       status: "done",
       nextAttemptAt: now,
       completedAt: now,
-      dedupeKey: key,
+      dedupeKey: saidKey(orgId, key),
     })
     .onConflictDoNothing()
     .returning({ id: outbox.id });

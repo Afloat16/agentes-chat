@@ -3314,12 +3314,13 @@ export function createFakeHttpApi(state: FakeState): Omit<HttpApi, FakedParts> {
         return { ...a };
       },
       decideMany: async (orgId, input) => {
-        log("approvals.decideMany", orgId, input.ids, input.decision);
+        log("approvals.decideMany", orgId, input.ids, input.decision, ...(input.only ? [input.only] : []));
         const out: Approval[] = [];
         const skipped: string[] = [];
         for (const approvalId of input.ids) {
           const a = state.approvals.find((x) => x.id === approvalId);
-          if (a?.status !== "pending" || !a.canDecide) skipped.push(approvalId);
+          if (a?.status !== "pending" || !a.canDecide || (input.only === "routine" && !a.routine))
+            skipped.push(approvalId);
           else {
             Object.assign(a, {
               status: input.decision === "approve" ? "approved" : "refused",

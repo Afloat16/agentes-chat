@@ -2749,7 +2749,7 @@ export const ptBR = {
       help: "Toda semana o {{name}} conta na sua DM como foi o time e o que dá para melhorar. Só admins recebem.",
       help_female:
         "Toda semana a {{name}} conta na sua DM como foi o time e o que dá para melhorar. Só admins recebem.",
-      /** "Resumo do dia": o mesmo cartão todo dia, que qualquer pessoa pode ligar. */
+      /** "Resumo do dia": o cartão do dia, que todos recebem até pararem. */
       dayLabel: "Resumo do dia",
       dayHelp:
         "Todo dia o {{name}} conta na sua DM o que o time fez e o que espera você, só nos dias com algo a dizer.",

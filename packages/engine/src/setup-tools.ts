@@ -986,7 +986,8 @@ export function createSetupToolSource(deps: {
       const listed = isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId)) ? rightHand : others;
       if (!(await isPersonalWorkspace(ctx.db, ctx.orgId).catch(() => false))) return listed;
       return listed.map((t) => {
-        const description = SETUP_TOOLS_PERSONAL[t.name];
+        const description =
+          t.name === SET_TEAM_WEEK_TOOL ? setTeamWeekDoes(true, liveOwnSwitches()) : SETUP_TOOLS_PERSONAL[t.name];
         const worded = description ? { ...t, description } : t;
         return t.name === PROPOSE_TEAM_TOOL ? { ...worded, inputSchema: PROPOSE_TEAM_SCHEMA_PERSONAL } : worded;
       });
@@ -1005,8 +1006,6 @@ const SETUP_TOOLS_PERSONAL: Record<string, string> = {
     "Propose archiving agents (or deleting them for good) with one card in this conversation that lists them all: whoever may archive or delete agents applies it from the card as themselves, all at once or leaving some out, and archiving has Undo. A person who can't sends it from the card to an admin. Use it when someone asks to remove, archive, delete or start their agents over ('apaga os outros agentes'). Never you or the workspace's assistant. Nothing changes until someone clicks: never say it is done. To set up new agents after, propose them with propose_agent.",
   [OFFER_INVITES_TOOL]:
     "Offer to invite someone the person trusts (family, a partner, someone who helps them) to this workspace with a card in this conversation: its button opens the app's invite dialog with these addresses filled in, as members. A person who may invite sends it there (and may change roles); you send nothing. Use it when they ask to invite or add someone by email, never on your own.",
-  [SET_TEAM_WEEK_TOOL]:
-    "Stop, start again or move the cards you post in this person's DM by yourself: 'Resumo do dia' (`card: day`, every day at an hour in their own time zone, 9h unless they moved it) and the weekly look at how their agents did (`card: week`, Fridays at 17h in the workspace's time zone). Use it when they ask you to stop one, send it again, or on another day or hour ('me manda isso todo dia às 8h'). It changes only what they get.",
   [PROPOSE_SETTINGS_TOOL]:
     "Change agents' settings with one card in this conversation: the model, the AI account it thinks with, its monthly budget, its owner, who may talk to it, the channels it joins or leaves and whether it answers there without a mention, the skills it has on, its name, its look, who it reports to, or archiving it. A change the person who asked may make, with nothing read from outside this turn, applies at once with Undo. Any other waits on the card for who may make it, and one they can't make they send from there. The result says which: never say it is done before it does. Instructions, a role or apps go through propose_instruction_change.",
   [OFFER_ANSWERS_TOOL]:
@@ -1053,8 +1052,7 @@ async function rolesByName(ctx: ToolContext, wanted: string[]): Promise<string[]
  * whoever clicks, checked at the click, with the confirmation that screen asks for; it decides and moves nothing itself.
  */
 function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
-  const live = liveLodiSwitches();
-  const ownSwitches = OWN_SWITCHES.filter((o) => live.includes(o.switch));
+  const ownSwitches = liveOwnSwitches();
   return [
     {
       name: OFFER_APPROVALS_TOOL,
@@ -1284,9 +1282,7 @@ function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
     },
     {
       name: SET_TEAM_WEEK_TOOL,
-      description: `Stop, start again or move the cards you post in this person's DM by yourself: 'Resumo do dia' (\`card: day\`, everyone gets it, every day at an hour in their own time zone, 9h unless they moved it) and the weekly 'Semana da equipe' (\`card: week\`, admins only, Fridays at 17h in the workspace's time zone).${
-        ownSwitches.length ? ` Also turns ${ownSwitches.map((o) => o.does).join(" and ")} off or on.` : ""
-      } Use it when they ask you to stop one, send it again, or on another day or hour ('me manda isso todo dia às 8h'). It changes only what they get.`,
+      description: setTeamWeekDoes(false, ownSwitches),
       scope: SETUP_SCOPE,
       inputSchema: {
         type: "object",
@@ -1354,6 +1350,25 @@ function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
     },
   ];
 }
+
+/** `OWN_SWITCHES` whose feature is built. */
+const liveOwnSwitches = () => {
+  const live = liveLodiSwitches();
+  return OWN_SWITCHES.filter((o) => live.includes(o.switch));
+};
+
+/**
+ * `set_team_week` as the right hand reads it, in a team's workspace or a personal one (ADR 0159): the two cards, then
+ * the switches it also flips.
+ */
+const setTeamWeekDoes = (personal: boolean, own: readonly { does: string }[]) =>
+  `Stop, start again or move the cards you post in this person's DM by yourself: 'Resumo do dia' (\`card: day\`, ${
+    personal ? "" : "everyone gets it, "
+  }every day at an hour in their own time zone, 9h unless they moved it) and the weekly ${
+    personal ? "look at how their agents did (`card: week`" : "'Semana da equipe' (`card: week`, admins only"
+  }, Fridays at 17h in the workspace's time zone).${
+    own.length ? ` Also turns ${own.map((o) => o.does).join(" and ")} off or on.` : ""
+  } Use it when they ask you to stop one, send it again, or on another day or hour ('me manda isso todo dia às 8h'). It changes only what they get.`;
 
 /** The right hand's own switches a person may ask it to flip, as `set_team_week` takes them. */
 const OWN_SWITCHES = [

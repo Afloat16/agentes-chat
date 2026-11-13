@@ -40,29 +40,42 @@ two together.
 
 **App builds from before** still send and read `off`, `daily` and `hour`. `GET …/team-week` answers them beside the new
 fields (`off` only when nothing comes, `daily` when the day's card comes alone, `hour` of the card that build shows),
-and a `PUT` that carries them is applied as that build meant it: `off` stops or starts both cards, so its one switch
-still stops everything. The row keeps those three beside the new keys, so a server of the version before reads the
-same choice.
+and a `PUT` that carries them is applied as that build meant it: `off: true` stops both cards, so its one switch still
+stops everything, and `off: false` starts the one card that build draws (the week's for an administrator, the day's
+for anyone else), never a card the person has no control for there. The row keeps those three beside the new keys, so
+a server of the version before reads the same choice. Two saves at once take turns on the member's row.
 
-**Two slots.** The worker's `rightHand` tick (every 10 minutes) queues `team_week.post` with `period: "day" | "week"`:
-the day's for every member who has it on, the week's for administrators, one job per person and day and one per
-person and week (the dedupe key). On the day an administrator's weekly card is due they get that card alone. The
-statement keeps only members within the six hours after their slot and asks who administers only on a day a weekly
-card may be due, and a card already queued is skipped before any insert.
+**New app builds on a server from before** (a self-hosted server not yet updated) read its `off`, `daily` and `hour`
+and save in the same words (`legacyPatch`, `packages/client/src/lib/right-hand-prefs.ts`): that server keeps one card,
+so a stop stops it and a start picks which one comes.
+
+**Two slots.** The worker's `rightHand` tick (every 10 minutes) queues the week's card as `team_week.post` and the
+day's as `team_day.post`, each with `period` in its payload: the day's for every member who has it on, the week's for
+administrators, one job per person and day and one per person and week (the dedupe key). On the day an
+administrator's weekly card is due they get that card alone. The statement keeps only members within the six hours
+after their slot who have no job for that card yet (it rebuilds the dedupe key and looks it up), and asks who
+administers only for those, on a day a weekly card may be due. So a tick reads who it may queue, and they are queued a
+thousand per statement. Both kinds and `team_watch.check` are long jobs (ADR 0053 §10): a card for every member at the
+same hour never stands in front of a message's routing.
+
+The day's card has a kind of its own because a server of the version before knows `team_week.post` and would read a
+day's job as a week's. While both versions run, that server fails a `team_day.post` job it claims (no handler), and
+that person's card of that day is not sent.
 
 **Helpers** (`right-hand-proactive.ts`): `lodiFor` (the right hand, or null in a closed workspace, when it is archived,
 or when it may not talk to that person), `postFromLodi` (one message in a person's DM, in their language, ringing only
-when asked, said once), `saidOnce` (a finished outbox row whose dedupe key is the memory), `setCardOnMessage`,
-`lodiSwitches`. No new table: what was done once is an outbox key, what was told once is an inbox group key, what was
+when asked, said once), `saidOnce` (a finished outbox row whose dedupe key is the memory, stored with the workspace
+and a prefix no job uses), `setCardOnMessage`, `lodiSwitches`. No new table: what was done once is an outbox key, what was told once is an inbox group key, what was
 put away is on the card's message.
 
 **Lanes.** Each feature below that runs by itself is one file that calls `defineLodiLane` (`right-hand-lane.ts`) with
 its switch, whether it is built (`live`), its outbox jobs, its sweep and its block of the right hand's prompt. The
 server reads the list in four places: the job handlers, the worker's sweep, the prompt, and the switches. A lane that
 is not `live` is wired and does nothing, and its switch shows nowhere: not on the page, not in `set_team_week` or
-`update_workspace`, not in the prompt.
+`update_workspace`, not in the prompt. A lane whose prompt block fails adds none and is reported: the right hand
+still answers.
 
-**Switches.** On the right hand's page, web and phone, one group "O que Lodi faz por conta própria": the day's card
+**Switches.** On the right hand's page, web and phone, one group "O que o Lodi faz por conta própria": the day's card
 with its hour (everyone), the week's card with its day and hour (administrators), then one switch per live lane. Two
 are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0259, on by default and on
 with no settings row), saved by who configures the workspace, and say so under their name. The right hand flips the

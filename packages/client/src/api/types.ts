@@ -1940,6 +1940,12 @@ export interface Approval {
   reason: string | null;
   /** You are the agent's owner or an admin, and it is pending. */
   canDecide: boolean;
+  /**
+   * The server calls it routine: nothing that merges, deploys, deletes, sends, publishes or runs what its input
+   * says. A card's one tap for several decides only these (`decideMany` with `only: "routine"`). Absent from a server
+   * that does not tell them apart: then none is.
+   */
+  routine?: boolean;
   /** The agent's owner (they and admins may decide). */
   ownerUserId?: string | null;
   /** When the approved action ran; null while it runs (or if it never did). */
