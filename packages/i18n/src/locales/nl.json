@@ -10209,6 +10209,7 @@
     "noMic": "Geen microfoon gevonden.",
     "failed": "Kon de microfoon niet openen. Probeer het opnieuw.",
     "noPlayback": "Kan nu niet afspelen. Je kunt het nog steeds versturen of verder opnemen.",
+    "cantPlay": "Kon de audio niet afspelen.",
     "settings": {
       "title": "Spraakberichten",
       "on": "Spraakberichten",

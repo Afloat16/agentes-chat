@@ -24634,6 +24634,9 @@
   "voice.noPlayback": {
     "value": "Can't play it right now. You can still send it or keep recording."
   },
+  "voice.cantPlay": {
+    "value": "Couldn't play the audio."
+  },
   "voice.settings.title": {
     "value": "Voice messages"
   },

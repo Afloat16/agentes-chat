@@ -10888,6 +10888,7 @@
     "noMic": "Nie znaleziono mikrofonu.",
     "failed": "Nie udało się otworzyć mikrofonu. Spróbuj ponownie.",
     "noPlayback": "Nie można teraz odtworzyć. Nadal możesz je wysłać lub nagrywać dalej.",
+    "cantPlay": "Nie udało się odtworzyć nagrania.",
     "settings": {
       "title": "Wiadomości głosowe",
       "on": "Wiadomości głosowe",

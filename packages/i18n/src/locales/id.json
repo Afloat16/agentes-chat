@@ -9793,6 +9793,7 @@
     "noMic": "Mikrofon tidak ditemukan.",
     "failed": "Mikrofon tidak bisa dibuka. Coba lagi.",
     "noPlayback": "Tidak bisa diputar sekarang. Kamu tetap bisa mengirimnya atau lanjut merekam.",
+    "cantPlay": "Audio tidak bisa diputar.",
     "settings": {
       "title": "Pesan suara",
       "on": "Pesan suara",
