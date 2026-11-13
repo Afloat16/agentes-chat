@@ -3735,7 +3735,32 @@
     "here": "burada",
     "routine": "bir rutinde",
     "yourApproval": "onayınız",
-    "yourAnswer": "yanıtınız"
+    "yourAnswer": "yanıtınız",
+    "later": "takip {{when}}",
+    "laterShort": "takip"
+  },
+  "followUps": {
+    "when": {
+      "at": "saat {{time}}",
+      "today": "bugün saat {{time}}",
+      "tomorrow": "yarın saat {{time}}"
+    },
+    "whenLabel": {
+      "at": "Saat {{time}}",
+      "today": "Bugün saat {{time}}",
+      "tomorrow": "Yarın saat {{time}}"
+    },
+    "bar": {
+      "at": "{{name}} {{when}} takip edecek",
+      "short": "{{name}} {{time}}",
+      "heldYou": "{{name}} siz yanıtlayınca takip edecek",
+      "held": "{{name}} bir yanıttan sonra takip edecek"
+    },
+    "title": "Takipler",
+    "see": "Mesajı gör",
+    "cancel": "Takibi iptal et",
+    "cancelOf": "{{name}} için {{when}} takibini iptal et",
+    "inTime": "{{time}} içinde"
   },
   "mentions": {
     "list": "Kişiler ve ajanlar",
@@ -8926,6 +8951,7 @@
       "input": "Yanıt bekliyor",
       "computer": "Bilgisayarını bekliyor",
       "queued": "Sırada",
+      "later": "Takip {{when}}",
       "open": "Açık",
       "closed": "Kapalı",
       "archived": "Arşivlendi"
@@ -13445,6 +13471,9 @@
       "noContext": "Bu ileti dizisi bir konuşma aralığından oluşturulmadı.",
       "notUndoable": "Yalnızca bir aralıktan oluşturulan ileti dizisi geri alınabilir."
     },
+    "followUp": {
+      "notYours": "Bu takibi yalnızca ilgili kişi, agent'ın sahibi veya bir yönetici iptal edebilir."
+    },
     "routine": {
       "tooFrequent": "Bir rutin en sık 15 dakikada bir çalışır. Daha uzun bir aralık seçin.",
       "tooMany": "Bu ajanın zaten 20 etkin rutini var. Önce birini duraklatın veya silin.",
@@ -15745,14 +15774,6 @@
       "agentNote": "{{from}} ajanından not",
       "agentNoteAnon": "Başka bir ajandan not",
       "waitResult": "{{name}} ajanının beklediği şey geldi",
-      "followUp": "{{name}}, «{{about}}» için saat {{time}} geri dönecek",
-      "followUpOn": "{{name}}, «{{about}}» için {{day}}, saat {{time}} geri dönecek",
-      "followUpDone": "{{name}}, «{{about}}» için saat {{time}} geri döndü",
-      "followUpDoneOn": "{{name}}, «{{about}}» için {{day}}, saat {{time}} geri döndü",
-      "followUpCanceled": "{{name}}, «{{about}}» için saat {{time}} geri dönmeyecek",
-      "followUpCanceledOn": "{{name}}, «{{about}}» için {{day}}, saat {{time}} geri dönmeyecek",
-      "followUpWake": "{{name}}, «{{about}}» için geri döndü",
-      "followUpCancel": "İptal et",
       "other": "{{name}} için bildirim",
       "wakeSkipped": "{{name}} ajanının bahsetmesi {{agents}} ajanına ulaşmadı",
       "wakeSkippedAnon": "{{name}} adlı ajanın bahsetmesi başka bir ajana ulaşmadı",
@@ -17479,7 +17500,8 @@
     "sections": {
       "asked": "Kişilerin istedikleri",
       "delegated": "Ajanların istedikleri",
-      "background": "Arka planda rutinler"
+      "background": "Arka planda rutinler",
+      "returns": "Takipler"
     },
     "state": {
       "working": "Çalışıyor",
@@ -17571,6 +17593,9 @@
       "stopped": "Siz durdurdunuz",
       "stoppedBy": "{{name}} durdurdu",
       "failed": "Bitirilemedi",
+      "returnCanceled": "Takip iptal edildi",
+      "returnCanceledYou": "Takibi iptal ettiniz",
+      "returnCanceledBy": "Takibi {{name}} iptal etti",
       "none": "Bugün henüz biten bir şey yok."
     },
     "empty": {

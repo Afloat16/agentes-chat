@@ -111,8 +111,13 @@ export function ThreadReplyLine({ thread, count }: { thread: ThreadInfo; count: 
           state
             ? {
                 state,
-                since: state === "working" && liveAgent && !thread.working ? null : (thread.since ?? null),
+                // A return says when it comes ("Retorno às 00:32"), never for how long.
+                since:
+                  state === "later" || (state === "working" && liveAgent && !thread.working)
+                    ? null
+                    : (thread.since ?? null),
                 agentId: thread.worker ?? liveAgent ?? null,
+                laterAt: thread.laterAt ?? null,
               }
             : null
         }
@@ -122,11 +127,12 @@ export function ThreadReplyLine({ thread, count }: { thread: ThreadInfo; count: 
   );
 }
 
-/** What a thread's work shows in its line: its state, since when, and whose orbit while it works. */
+/** What a thread's work shows in its line: its state, since when, whose orbit while it works, a return's time. */
 export interface ThreadLineWork {
   state: ThreadWorkState;
   since?: string | null;
   agentId?: string | null;
+  laterAt?: string | null;
 }
 
 /**
@@ -147,7 +153,7 @@ export function ThreadLineBody({
   const { t, i18n } = useTranslation();
   const actors = useActors();
   // While a state shows, how long it has held takes the place of the last reply's time: never two clocks.
-  const now = useNow(Boolean(work?.since), WORK_TICK_MS);
+  const now = useNow(Boolean(work?.since || work?.laterAt), WORK_TICK_MS);
   const held = work ? workTime(i18n.language, work.since, now) : null;
   return (
     <>
@@ -168,7 +174,9 @@ export function ThreadLineBody({
           ) : (
             <Icon name="clock" size={14} className="thread-line__clock" />
           )}
-          <span className="thread-line__state-words">{threadWorkWord(t, work.state)}</span>
+          <span className="thread-line__state-words">
+            {threadWorkWord(t, work.state, { at: work.laterAt, locale: i18n.language, now })}
+          </span>
         </span>
       )}
       {(work ? held : at) && (

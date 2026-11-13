@@ -19,6 +19,7 @@ import { secretOutcome } from "@agenteschat/client/lib/secret-words";
 import { toolCalls, toolNow, toolPhrase, toolWhy } from "@agenteschat/client/lib/work";
 import {
   AGENT_WORDS_MIN,
+  aboutFits,
   artifactsOf,
   awayRun,
   buildRows,
@@ -1107,7 +1108,6 @@ describe("automatic lines (notices) and fast replies", () => {
       key: "chat.notice.routineHandoff",
       values: { routine: "Sentry diário" },
       detail: { content: "3 erros novos" },
-      pending: false,
       answer: false,
     });
     const fromOnly = eventLineOf(
@@ -1166,60 +1166,20 @@ describe("automatic lines (notices) and fast replies", () => {
     });
   });
 
-  test("an agent's follow-up: when it will be back and for what (Cancel while it is to come), then the line that woke it", () => {
-    // Today, so the line needs no day.
-    const at = new Date(new Date().setHours(12, 0, 0, 0)).toISOString();
-    const when = { time: (iso: string) => (iso === at ? "12:00" : "?"), locale: "pt-BR" };
-    const refs = { runId: "r1", at, about: "ver o CI" };
-    const set = eventLineOf(
-      agentMsg("n1", { notice: { kind: "follow_up", text: "Check CI run 42", refs: { ...refs, state: "pending" } } }),
-      names,
-      when,
-    );
-    expect(set).toEqual({
-      kind: "notice",
-      icon: "clock",
-      key: "chat.notice.followUp",
-      values: { name: "Ada", about: "ver o CI", time: "12:00", day: "" },
-      // Its note to itself is the agent's: nothing to open.
-      detail: null,
-      pending: true,
-      answer: false,
-    });
-    const canceled = eventLineOf(
-      agentMsg("n2", { notice: { kind: "follow_up", text: "x", refs: { ...refs, state: "canceled" } } }),
-      names,
-      when,
-    );
-    expect(canceled?.key).toBe("chat.notice.followUpCanceled");
-    expect(canceled?.pending).toBe(false);
-    const woke = eventLineOf(
-      agentMsg("n3", { notice: { kind: "follow_up", text: "x", refs: { ...refs, wake: "1", followUpId: "n1" } } }),
-      names,
-      when,
-    );
-    expect(woke).toMatchObject({ key: "chat.notice.followUpWake", values: { name: "Ada", about: "ver o CI" } });
-  });
-
-  test("as on the web, a follow-up that came leaves the conversation once the agent's turn is over", () => {
+  test("as on the web, a return's line never shows (set, come, canceled, the one that woke it): the dock holds it", () => {
     const refs = { runId: "r1", at: "x", about: "ver o CI" };
     const at = (minute: number) => new Date(Date.UTC(2026, 10, 6, 20, minute)).toISOString();
+    const line = (id: string, more: Record<string, string>, minute: number) =>
+      agentMsg(id, { notice: { kind: "follow_up", text: "x", refs: { ...refs, ...more } } }, { createdAt: at(minute) });
     const list = [
-      agentMsg(
-        "set",
-        { notice: { kind: "follow_up", text: "x", refs: { ...refs, state: "done" } } },
-        { createdAt: at(0) },
-      ),
-      agentMsg(
-        "woke",
-        { notice: { kind: "follow_up", text: "x", refs: { ...refs, wake: "1" } } },
-        { createdAt: at(20) },
-      ),
+      line("pending", { state: "pending" }, 0),
+      line("canceled", { state: "canceled", canceledBy: "u1" }, 1),
+      line("done", { state: "done" }, 2),
+      line("woke", { wake: "1", followUpId: "done" }, 20),
     ];
     const ids = (rows: ReturnType<typeof buildRows>) =>
       rows.flatMap((r) => (r.kind === "message" ? [r.message.id] : []));
-    // At work: the line that woke it stays.
-    expect(ids(buildRows(list, undefined, new Set(["ada"])))).toEqual(["woke"]);
+    expect(ids(buildRows(list))).toEqual([]);
     const reply = message({
       id: "reply",
       author: { type: "agent", id: "ada" },
@@ -1227,6 +1187,17 @@ describe("automatic lines (notices) and fast replies", () => {
       createdAt: at(21),
     });
     expect(ids(buildRows([...list, reply]))).toEqual(["reply"]);
+  });
+
+  test("the dock's line shows her words only when they fit whole beside the sentence", () => {
+    // 390 points: the sentence takes most of the line, her words don't fit and leave it.
+    expect(aboutFits(250, 140, 180)).toBe(false);
+    // A wide screen: they fit, whole.
+    expect(aboutFits(600, 140, 180)).toBe(true);
+    expect(aboutFits(320, 140, 180)).toBe(true);
+    // Not laid out yet: nothing but the sentence.
+    expect(aboutFits(0, 140, 180)).toBe(false);
+    expect(aboutFits(600, 0, 180)).toBe(false);
   });
 
   test("a wait's result names the agent that waited, and opens nothing written for the agent", () => {

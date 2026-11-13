@@ -210,6 +210,7 @@ import { endsOnNoAiCard, noAiBanner } from "./no-ai-banner";
 import { PinnedLines, PinsSheet } from "./PinsSheet";
 import { QuoteBar } from "./QuoteLine";
 import { AgentLocked, UnavailableLines } from "./ReachLines";
+import { ReturnLine, ReturnsSheet, useReturnsHere } from "./Returns";
 import { SwipeReply } from "./SwipeReply";
 import {
   appendedKeys,
@@ -583,9 +584,6 @@ function Chat({
   // ── Rows ──
   // One waiting card per agent and computer: an older "my computer is away" gives way to the newer one.
   const superseded = useMemo(() => supersededBrainNotices(list), [list]);
-  const workingKey = runs.map((r) => r.agentId).join(" ");
-  // biome-ignore lint/correctness/useExhaustiveDependencies: new only when who is at work changes
-  const agentsAtWork = useMemo(() => new Set(runs.map((r) => r.agentId)), [workingKey]);
   const waitsNow = conversationWaits(isThread ? list : list.filter((m) => !m.threadId), live.receipts, (id) =>
     live.runs.some((r) => r.runId === id),
   );
@@ -631,7 +629,7 @@ function Chat({
           : [];
       return [
         ...head,
-        ...buildRows(replies, (m) => superseded.has(m.id), agentsAtWork),
+        ...buildRows(replies, (m) => superseded.has(m.id)),
         ...browsing.map((run) => ({ kind: "browser" as const, key: `browser-${run.agentId}`, run })),
         ...held.map((h) => ({ kind: "browser" as const, key: `browser-${h.agentId}`, run: null, handoff: h })),
         ...making.map((run) => ({ kind: "image" as const, key: `image-${run.runId}`, run })),
@@ -641,27 +639,13 @@ function Chat({
     // A thread's replies live in the thread; the channel shows its link.
     const hidden = (m: Message) => superseded.has(m.id) || Boolean(m.threadId);
     return [
-      ...buildRows(list, hidden, agentsAtWork),
+      ...buildRows(list, hidden),
       ...browsing.map((run) => ({ kind: "browser" as const, key: `browser-${run.agentId}`, run })),
       ...held.map((h) => ({ kind: "browser" as const, key: `browser-${h.agentId}`, run: null, handoff: h })),
       ...making.map((run) => ({ kind: "image" as const, key: `image-${run.runId}`, run })),
       ...waitRows,
     ];
-  }, [
-    isThread,
-    threadId,
-    list,
-    thread.data,
-    channel?.name,
-    dm,
-    browsing,
-    held,
-    making,
-    superseded,
-    agentsAtWork,
-    t,
-    waits,
-  ]);
+  }, [isThread, threadId, list, thread.data, channel?.name, dm, browsing, held, making, superseded, t, waits]);
   const shownMessages = useMemo(() => rows.flatMap((r) => (r.kind === "message" ? [r.message] : [])), [rows]);
   // Questions agents asked other agents, in the pair row before the replies that asked (`ConsultGroup`): how each
   // answer's notice draws (hidden under a reply close by, one line to one farther up, and while its asker still works
@@ -1349,6 +1333,15 @@ function Chat({
     setSeek(target.messageId);
   };
   const openPins = () => sheet.open(<PinsSheet channelId={channelId} threadId={threadId} onPick={goToPin} />);
+  // The returns agents set here (ADR 0037 addendum): the dock's line at rest, the sheet behind it; a row goes to the
+  // reply that said it.
+  const returns = useReturnsHere(channelId, threadId);
+  const goToReturn = (messageId: string) => {
+    sheet.close();
+    seekPages.current = 0;
+    setSeek(messageId);
+  };
+  const openReturns = () => sheet.open(<ReturnsSheet channelId={channelId} threadId={threadId} onPick={goToReturn} />);
   // "Buscar nesta conversa" (as the web's header search): on the timeline, not in a thread.
   const searchPlace = isThread
     ? null
@@ -2496,6 +2489,7 @@ function Chat({
                       toEnd();
                     }}
                     stop={lineStop}
+                    rest={returns.length > 0 ? <ReturnLine returns={returns} onOpen={openReturns} /> : null}
                   />
                 ) : null}
                 {org?.deletion ? (

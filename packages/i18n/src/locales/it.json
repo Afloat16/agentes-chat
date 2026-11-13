@@ -3863,7 +3863,32 @@
     "here": "qui",
     "routine": "in una routine",
     "yourApproval": "la tua approvazione",
-    "yourAnswer": "la tua risposta"
+    "yourAnswer": "la tua risposta",
+    "later": "follow-up {{when}}",
+    "laterShort": "follow-up"
+  },
+  "followUps": {
+    "when": {
+      "at": "alle {{time}}",
+      "today": "oggi alle {{time}}",
+      "tomorrow": "domani alle {{time}}"
+    },
+    "whenLabel": {
+      "at": "Alle {{time}}",
+      "today": "Oggi alle {{time}}",
+      "tomorrow": "Domani alle {{time}}"
+    },
+    "bar": {
+      "at": "{{name}} fa un follow-up {{when}}",
+      "short": "{{name}} {{time}}",
+      "heldYou": "{{name}} fa un follow-up quando rispondi",
+      "held": "{{name}} fa un follow-up dopo una risposta"
+    },
+    "title": "Follow-up in arrivo",
+    "see": "Vedi il messaggio",
+    "cancel": "Annulla il follow-up",
+    "cancelOf": "Annulla il follow-up di {{name}} {{when}}",
+    "inTime": "tra {{time}}"
   },
   "mentions": {
     "list": "Persone e agenti",
@@ -9302,6 +9327,7 @@
       "input": "In attesa di una risposta",
       "computer": "In attesa del computer",
       "queued": "In coda",
+      "later": "Follow-up {{when}}",
       "open": "Aperto",
       "closed": "Chiuso",
       "archived": "Archiviato"
@@ -13985,6 +14011,9 @@
       "noContext": "Questo thread non è nato da un intervallo di una conversazione.",
       "notUndoable": "Solo un thread creato da un intervallo si può annullare."
     },
+    "followUp": {
+      "notYours": "Solo la persona a cui è rivolto, il proprietario dell'agente o un admin può annullare questo follow-up."
+    },
     "routine": {
       "tooFrequent": "Una routine si esegue al massimo ogni 15 minuti. Scegli un intervallo più lungo.",
       "tooMany": "Questo agente ha già 20 routine attive. Prima mettine in pausa o eliminane una.",
@@ -16332,14 +16361,6 @@
       "agentNote": "Nota di {{from}}",
       "agentNoteAnon": "Nota di un altro agente",
       "waitResult": "È arrivato ciò che {{name}} aspettava",
-      "followUp": "{{name}} tornerà alle {{time}} per «{{about}}»",
-      "followUpOn": "{{name}} tornerà {{day}} alle {{time}} per «{{about}}»",
-      "followUpDone": "{{name}} è tornato alle {{time}} per «{{about}}»",
-      "followUpDoneOn": "{{name}} è tornato {{day}} alle {{time}} per «{{about}}»",
-      "followUpCanceled": "{{name}} non tornerà alle {{time}} per «{{about}}»",
-      "followUpCanceledOn": "{{name}} non tornerà {{day}} alle {{time}} per «{{about}}»",
-      "followUpWake": "{{name}} è tornato per «{{about}}»",
-      "followUpCancel": "Annulla",
       "other": "Avviso per {{name}}",
       "wakeSkipped": "La menzione di {{name}} non ha raggiunto {{agents}}",
       "wakeSkippedAnon": "La menzione di {{name}} non ha raggiunto un altro agente",
@@ -18197,7 +18218,8 @@
     "sections": {
       "asked": "Chieste da persone",
       "delegated": "Chieste da agenti",
-      "background": "Routine in background"
+      "background": "Routine in background",
+      "returns": "Follow-up in arrivo"
     },
     "state": {
       "working": "Al lavoro",
@@ -18293,6 +18315,9 @@
       "stopped": "L'hai fermata",
       "stoppedBy": "L'ha fermata {{name}}",
       "failed": "Non completata",
+      "returnCanceled": "Follow-up annullato",
+      "returnCanceledYou": "Hai annullato il follow-up",
+      "returnCanceledBy": "Follow-up annullato da {{name}}",
       "none": "Ancora nulla di concluso oggi."
     },
     "empty": {

@@ -85,6 +85,7 @@ export function WorkingLine({
   onOpenBrowser,
   onSeeConsult,
   stop,
+  rest = null,
 }: {
   runs: LiveRun[];
   consults: ConsultWithDetails[];
@@ -99,6 +100,8 @@ export function WorkingLine({
    * (the composer keeps only its send), so the state and its action read together.
    */
   stop?: { runs: LiveRun[]; onStop: (run: LiveRun) => void } | undefined;
+  /** What the line holds while nobody works here: a return (`ReturnLine`). Work comes first. */
+  rest?: ReactNode;
 }) {
   const { t, i18n } = useTranslation();
   const dir = useDirectory();
@@ -115,7 +118,7 @@ export function WorkingLine({
   // phrase turning, an event) reads the same second, so both step evenly; narrowing to one agent changes the pace, and a
   // new pace reads the clock afresh (`useNow`).
   const now = useNow(asking || solo ? 1000 : 60_000);
-  if (entries.length === 0) return null;
+  if (entries.length === 0) return rest;
   // The one agent it speaks for; a question it asks keeps its own phrase.
   const away = awayRun(entries, runs);
   const step = away && lead && !lead.consult ? barStep(t, away, i18n.language, now) : null;

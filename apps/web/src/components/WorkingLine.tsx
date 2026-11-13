@@ -113,7 +113,7 @@ export function BarAlsoTyping({ entries }: { entries: ActivityEntry[] }) {
  * A new phrase comes up from below while the old one leaves upward (just a swap with reduced motion).
  * The one leaving is drawn from an attribute, so the text on the page is only the phrase now.
  */
-function TurnText({ text }: { text: string }) {
+export function TurnText({ text }: { text: string }) {
   const [shown, setShown] = useState({ now: text, was: null as string | null, n: 0 });
   if (shown.now !== text) setShown({ now: text, was: shown.now, n: shown.n + 1 });
   return (

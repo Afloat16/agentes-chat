@@ -1,4 +1,14 @@
-import type { ComputerSummary, EndedTask, ManagedTask } from "@agenteschat/client";
+import {
+  type CanceledReturn,
+  type ComputerSummary,
+  type EndedTask,
+  type ManagedTask,
+  type PendingReturn,
+  useCancelFollowUp,
+} from "@agenteschat/client";
+import { returnClock, returnWhen } from "@agenteschat/client/lib/agent-work";
+import { errorText } from "@agenteschat/client/lib/errors";
+import { formatLineTime } from "@agenteschat/client/lib/format";
 import {
   type AgentTasks,
   agentSummary,
@@ -6,6 +16,8 @@ import {
   groupLead,
   groupTasks,
   hiddenCount,
+  returnCanceledText,
+  returnPlace,
   taskPlace,
   taskState,
   taskTime,
@@ -14,7 +26,7 @@ import {
 } from "@agenteschat/client/lib/task-manager";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, RefreshControl, StyleSheet, View } from "react-native";
+import { ActionSheetIOS, ActivityIndicator, Platform, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -38,18 +50,20 @@ import {
   Text,
   type TextVariant,
   useReducedMotion,
+  useToast,
   weights,
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { CollapsibleSection } from "../chats/HomeSection";
+import { chatHref } from "../links/logic";
 import { useOpenQueue } from "../queue/QueueSheet";
 import { AgentFace, OpensAgent } from "../shared/Face";
 import { useEmptyLook } from "../shared/FirstUse";
 import { useColors, useDirectory, useMeId, useNow, useOrgId, usePullRefresh, useWhen } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
 import { PushedLargeTitle } from "../shared/PushedLargeTitle";
-import { Tile } from "../shared/parts";
-import { SheetHostProvider } from "../shared/SheetHost";
+import { ActionList, Tile } from "../shared/parts";
+import { SheetHostProvider, useSheet } from "../shared/SheetHost";
 import { useStopper, useTasksToday } from "./hooks";
 import {
   computerLine,
@@ -117,6 +131,21 @@ function TaskManager() {
     [view?.tasks, stopping],
   );
   const ended = useMemo(() => endedLatestFirst(view?.ended ?? []), [view?.ended]);
+  // The returns agents set ("Retornos", ADR 0037), and those canceled today among what ended.
+  const followUps = view?.followUps ?? [];
+  const endedRows = useMemo(
+    () =>
+      [
+        ...ended.map((e) => ({ at: e.finishedAt, key: e.runId, task: e, canceled: null })),
+        ...(view?.canceledFollowUps ?? []).map((r) => ({
+          at: r.canceledAt,
+          key: r.messageId,
+          task: null,
+          canceled: r,
+        })),
+      ].sort((a, b) => b.at.localeCompare(a.at)),
+    [ended, view?.canceledFollowUps],
+  );
   const all = view?.tasks ?? [];
   const sum = agentSummary(all);
   // Everyone's work counts here, as on the computers' rows; what the viewer may not see only counts.
@@ -236,18 +265,32 @@ function TaskManager() {
                 ))}
               </Animated.View>
             ) : null}
+            {followUps.length > 0 ? (
+              <Animated.View {...fade} layout={layout}>
+                <SectionHeader title={t("taskManager.sections.returns")} count={followUps.length} />
+                {followUps.map((r, i) => (
+                  <Animated.View key={r.messageId} {...fade} layout={layout}>
+                    <ReturnRow item={r} divider={i > 0} now={now} />
+                  </Animated.View>
+                ))}
+              </Animated.View>
+            ) : null}
             {/* The same folding header as the other lists' sections (title, count, the chevron at the right). */}
             <Animated.View layout={layout}>
               <CollapsibleSection
                 title={t("taskManager.ended.title")}
-                count={ended.length}
+                count={endedRows.length}
                 collapsed={!endedOpen}
                 onToggle={() => setEndedOpen((o) => !o)}
               >
-                {ended.length > 0 ? (
-                  ended.map((e, i) => (
-                    <Animated.View key={e.runId} {...fade} layout={layout}>
-                      <EndedRow task={e} divider={i > 0} meId={meId} />
+                {endedRows.length > 0 ? (
+                  endedRows.map((e, i) => (
+                    <Animated.View key={e.key} {...fade} layout={layout}>
+                      {e.task ? (
+                        <EndedRow task={e.task} divider={i > 0} meId={meId} />
+                      ) : e.canceled ? (
+                        <CanceledReturnRow item={e.canceled} divider={i > 0} meId={meId} />
+                      ) : null}
                     </Animated.View>
                   ))
                 ) : (
@@ -475,6 +518,123 @@ function EndedRow({ task, divider, meId }: { task: EndedTask; divider: boolean; 
       )}
       <Text variant="caption" tone="faint" style={styles.num}>
         {when.time(task.finishedAt)}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
+ * A return an agent set (ADR 0037), one line: the clock, her words and where (the agent, the conversation), when it
+ * comes. A tap opens the conversation at the reply that set it; a long press offers "Abrir na conversa" and, for who
+ * may, "Cancelar retorno" (the system's action sheet on iOS, the app's list on Android). Its spinner while it goes.
+ */
+function ReturnRow({ item, divider, now }: { item: PendingReturn; divider: boolean; now: number }) {
+  const { t, i18n } = useTranslation();
+  const c = useColors();
+  const dir = useDirectory();
+  const toast = useToast();
+  const sheet = useSheet();
+  const cancel = useCancelFollowUp(useOrgId());
+  const agent = dir.nameOf({ type: "agent", id: item.agentId });
+  const line = [agent, returnPlace(t, item)].filter(Boolean).join(" · ");
+  const when = item.held ? t("threads.status.input") : returnWhen(t, i18n.language, item.at, now, true);
+  const soon = item.held
+    ? null
+    : t("followUps.inTime", { time: formatLineTime(i18n.language, Math.max(1000, Date.parse(item.at) - now)) });
+  const openIt = () => router.push(chatHref(item.channelId, item.threadId, item.replyMessageId));
+  const cancelIt = () =>
+    cancel.mutate(
+      { channelId: item.channelId, messageId: item.messageId },
+      { onError: (error) => toast({ title: errorText(t, error), icon: "x" }) },
+    );
+  const items = [
+    { key: "open", icon: "chat" as const, label: t("taskManager.actions.open"), run: openIt },
+    ...(item.canCancel
+      ? [{ key: "cancel", icon: "x" as const, label: t("followUps.cancel"), danger: true, run: cancelIt }]
+      : []),
+  ];
+  const menu = () => {
+    if (Platform.OS === "ios") {
+      const danger = items.findIndex((i) => "danger" in i);
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: item.about,
+          options: [...items.map((i) => i.label), t("mobile.common.cancel")],
+          cancelButtonIndex: items.length,
+          ...(danger >= 0 ? { destructiveButtonIndex: danger } : {}),
+        },
+        (i) => items[i]?.run(),
+      );
+      return;
+    }
+    sheet.open(
+      <ActionList
+        items={items.map((i) => ({
+          key: i.key,
+          icon: i.icon,
+          label: i.label,
+          ...("danger" in i ? { danger: true } : {}),
+          onPress: () => {
+            sheet.close();
+            i.run();
+          },
+        }))}
+      />,
+    );
+  };
+  return (
+    <Pressable
+      onPress={openIt}
+      onLongPress={menu}
+      disabled={cancel.isPending}
+      accessibilityRole="button"
+      accessibilityLabel={[item.about, line, when, soon].filter(Boolean).join(", ")}
+      accessibilityActions={[{ name: "longpress", label: items.map((i) => i.label).join(", ") }]}
+      onAccessibilityAction={menu}
+      style={({ pressed }) => [styles.task, pressed && { backgroundColor: c.sunken }]}
+    >
+      {divider ? <View style={[styles.divider, styles.textDivider, { backgroundColor: c.line2 }]} /> : null}
+      <View style={styles.lead}>
+        <Icon name="clock" size={16} color={c.faint} />
+      </View>
+      <OneLine title={item.about} line={line} />
+      {cancel.isPending ? (
+        <ActivityIndicator size="small" color={c.muted} />
+      ) : (
+        <Text variant="caption" tone="faint" style={styles.num}>
+          {item.held ? when : returnClock(t, i18n.language, item.at, now)}
+        </Text>
+      )}
+      <Icon name="right" size={15} color={c.faint} />
+    </Pressable>
+  );
+}
+
+/** A return that won't come, among what ended today: who canceled it (nobody: its time found it couldn't). */
+function CanceledReturnRow({ item, divider, meId }: { item: CanceledReturn; divider: boolean; meId: string | null }) {
+  const { t, i18n } = useTranslation();
+  const c = useColors();
+  const dir = useDirectory();
+  const agent = dir.nameOf({ type: "agent", id: item.agentId });
+  const how = returnCanceledText(t, item, meId, agent);
+  const at = returnClock(t, i18n.language, item.at, Date.parse(item.canceledAt));
+  // How it ended in words, after whose it was: no screen of its own says it.
+  const line = [agent, how].filter(Boolean).join(" · ");
+  return (
+    <Pressable
+      onPress={() => router.push(chatHref(item.channelId, item.threadId))}
+      accessibilityRole="button"
+      accessibilityLabel={[item.about, line, returnPlace(t, item), at].filter(Boolean).join(", ")}
+      style={({ pressed }) => [styles.task, pressed && { backgroundColor: c.sunken }]}
+    >
+      {divider ? <View style={[styles.divider, styles.textDivider, { backgroundColor: c.line2 }]} /> : null}
+      <OpensAgent agentId={item.agentId}>
+        <AgentFace agentId={item.agentId} size={LEAD} live={false} />
+      </OpensAgent>
+      <OneLine title={item.about} line={line} />
+      <Icon name="clock" size={14} color={c.faint} />
+      <Text variant="caption" tone="faint" style={styles.num}>
+        {at}
       </Text>
     </Pressable>
   );

@@ -3750,7 +3750,32 @@
     "here": "hier",
     "routine": "bij een routine",
     "yourApproval": "je goedkeuring",
-    "yourAnswer": "je antwoord"
+    "yourAnswer": "je antwoord",
+    "later": "opvolging {{when}}",
+    "laterShort": "opvolging"
+  },
+  "followUps": {
+    "when": {
+      "at": "om {{time}}",
+      "today": "vandaag om {{time}}",
+      "tomorrow": "morgen om {{time}}"
+    },
+    "whenLabel": {
+      "at": "Om {{time}}",
+      "today": "Vandaag om {{time}}",
+      "tomorrow": "Morgen om {{time}}"
+    },
+    "bar": {
+      "at": "{{name}} volgt {{when}} op",
+      "short": "{{name}} {{time}}",
+      "heldYou": "{{name}} volgt op zodra je antwoordt",
+      "held": "{{name}} volgt op na een antwoord"
+    },
+    "title": "Opvolgingen",
+    "see": "Bericht bekijken",
+    "cancel": "Opvolging annuleren",
+    "cancelOf": "Opvolging van {{name}} {{when}} annuleren",
+    "inTime": "over {{time}}"
   },
   "mentions": {
     "list": "Mensen en agents",
@@ -9027,6 +9052,7 @@
       "input": "Wacht op een antwoord",
       "computer": "Wacht op de computer",
       "queued": "In de rij",
+      "later": "Opvolging {{when}}",
       "open": "Open",
       "closed": "Gesloten",
       "archived": "Gearchiveerd"
@@ -13572,6 +13598,9 @@
       "noContext": "Deze thread komt niet uit een reeks van een gesprek.",
       "notUndoable": "Alleen een thread die van een reeks is gemaakt, kan ongedaan worden gemaakt."
     },
+    "followUp": {
+      "notYours": "Alleen de persoon voor wie het is, de eigenaar van de agent of een beheerder kan deze opvolging annuleren."
+    },
     "routine": {
       "tooFrequent": "Een routine draait hooguit elke 15 minuten. Kies een langere tussentijd.",
       "tooMany": "Deze agent heeft al 20 actieve routines. Pauzeer of verwijder er eerst een.",
@@ -15883,14 +15912,6 @@
       "agentNote": "Notitie van {{from}}",
       "agentNoteAnon": "Notitie van een andere agent",
       "waitResult": "Waar {{name}} op wachtte, is binnen",
-      "followUp": "{{name}} komt om {{time}} terug voor «{{about}}»",
-      "followUpOn": "{{name}} komt {{day}} om {{time}} terug voor «{{about}}»",
-      "followUpDone": "{{name}} kwam om {{time}} terug voor «{{about}}»",
-      "followUpDoneOn": "{{name}} kwam {{day}} om {{time}} terug voor «{{about}}»",
-      "followUpCanceled": "{{name}} komt niet om {{time}} terug voor «{{about}}»",
-      "followUpCanceledOn": "{{name}} komt niet {{day}} om {{time}} terug voor «{{about}}»",
-      "followUpWake": "{{name}} is terug voor «{{about}}»",
-      "followUpCancel": "Annuleren",
       "other": "Melding voor {{name}}",
       "wakeSkipped": "De vermelding van {{name}} bereikte {{agents}} niet",
       "wakeSkippedAnon": "De vermelding van {{name}} bereikte geen andere agent",
@@ -17726,7 +17747,8 @@
     "sections": {
       "asked": "Gevraagd door mensen",
       "delegated": "Gevraagd door agents",
-      "background": "Routines op de achtergrond"
+      "background": "Routines op de achtergrond",
+      "returns": "Opvolgingen"
     },
     "state": {
       "working": "Bezig",
@@ -17818,6 +17840,9 @@
       "stopped": "Door jou gestopt",
       "stoppedBy": "Door {{name}} gestopt",
       "failed": "Niet afgemaakt",
+      "returnCanceled": "Opvolging geannuleerd",
+      "returnCanceledYou": "Je hebt de opvolging geannuleerd",
+      "returnCanceledBy": "Opvolging geannuleerd door {{name}}",
       "none": "Vandaag is er nog niets afgelopen."
     },
     "empty": {
