@@ -15,6 +15,9 @@ import {
   OPERATOR_TOOL_OUTCOMES,
   OPERATOR_TRACE_ASKS,
   OPERATOR_TRACE_JOBS,
+  OPERATOR_UNANSWERED_DAYS,
+  OPERATOR_UNANSWERED_MAX_DAYS,
+  OPERATOR_UNANSWERED_OUTCOMES,
   type OperatorRun,
   operatorExplainMessage,
   operatorRunErrors,
@@ -23,6 +26,8 @@ import {
   operatorTimeline,
   operatorToolCallCounts,
   operatorToolCalls,
+  operatorUnanswered,
+  operatorUnansweredCounts,
 } from "@agenteschat/engine";
 import { createRoute, type OpenAPIHono, z } from "@hono/zod-openapi";
 import { apiError, errorResponse } from "../http/errors";
@@ -500,6 +505,56 @@ const Explained = z
   })
   .openapi("OperatorMessageExplained");
 
+const UnansweredOutcome = z.enum(OPERATOR_UNANSWERED_OUTCOMES);
+
+const UnansweredQuery = z.object({
+  channelId: z.uuid().optional().openapi({ description: "Only this conversation's." }),
+  outcome: UnansweredOutcome.optional(),
+  from: Instant.optional().openapi({
+    description: `Written at or after. Default: ${OPERATOR_UNANSWERED_DAYS} day before \`to\`.`,
+  }),
+  to: Instant.optional().openapi({
+    description: `Written before. Default: now. At most ${OPERATOR_UNANSWERED_MAX_DAYS} days after \`from\`.`,
+  }),
+  summary: z.stringbool().optional().openapi({
+    description: "`true`: counts by outcome instead of messages. `limit` and `cursor` don't apply.",
+  }),
+  ...paging,
+});
+
+const UNANSWERED =
+  "Why no run answered it, as `GET /messages/{messageId}/explain` tells it (its `verdict`) from what is stored.";
+
+const UnansweredPage = z
+  .object({
+    from: Time,
+    to: Time,
+    messages: z.array(
+      z.object({
+        id: z.uuid(),
+        at: Time,
+        channelId: z.uuid(),
+        threadRootId: z.uuid().nullable().openapi({ description: "The thread it replies in; null outside any." }),
+        authorUserId: z.string().nullable(),
+        outcome: UnansweredOutcome.openapi({ description: UNANSWERED }),
+        strategy: z.string().nullable().openapi({
+          description: "Who decided its routing, as the timeline names it; null: no decision was stored for it.",
+        }),
+      }),
+    ),
+    next: Next,
+  })
+  .openapi("OperatorUnansweredPage");
+const UnansweredCounts = z
+  .object({
+    from: Time,
+    to: Time,
+    counts: z
+      .array(z.object({ outcome: UnansweredOutcome.openapi({ description: UNANSWERED }), messages: Count }))
+      .openapi({ description: "Most messages first." }),
+  })
+  .openapi("OperatorUnansweredCounts");
+
 const runJson = (run: OperatorRun) => ({
   ...run,
   waitResetsAt: iso(run.waitResetsAt),
@@ -685,6 +740,35 @@ export function registerOperatorRuns(api: OpenAPIHono, { db, config }: OperatorD
           routing: found.routing && at(found.routing),
           postedJob: found.postedJob && jobJson(found.postedJob),
         },
+        200,
+      );
+    },
+  );
+
+  api.openapi(
+    createRoute({
+      method: "get",
+      path: "/orgs/{orgId}/unanswered",
+      tags,
+      summary: "People's messages no run answered, newest first; or how many, by why",
+      description:
+        "A person's message that started no run, was taken by none already at work and answered no agent's question, with why. A message people wrote to each other is one too (`not_routed`, or `nobody_picked`). Never what a message says.",
+      request: { params: OrgParams, query: UnansweredQuery },
+      responses: { 200: json(z.union([UnansweredPage, UnansweredCounts])), ...errors },
+    }),
+    async (c) => {
+      const { orgId } = c.req.valid("param");
+      const { summary, from, to, limit, cursor, ...filters } = c.req.valid("query");
+      const range = { ...filters, from: from ? new Date(from) : undefined, to: to ? new Date(to) : undefined };
+      const found = summary
+        ? await operatorUnansweredCounts(db, orgId, range)
+        : await operatorUnanswered(db, orgId, { ...range, limit, cursor });
+      if (!found) return apiError(c, 404, "not_found", "No workspace with this id");
+      const dates = { from: found.from.toISOString(), to: found.to.toISOString() };
+      return c.json(
+        "counts" in found
+          ? { ...dates, counts: found.counts }
+          : { ...dates, messages: found.messages.map(at), next: found.next },
         200,
       );
     },

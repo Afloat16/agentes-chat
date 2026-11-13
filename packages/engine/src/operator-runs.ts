@@ -25,7 +25,18 @@ import { PLATFORM_CAP } from "./limits";
 import { machineOnline } from "./machines";
 import { type Message, parseMentionHandles, receiptsFor } from "./messages";
 import { jobOf, jobsOfRun, OPERATOR_JOB_ERROR_MAX, selectJobs, spentColumns, spentOf } from "./operator-jobs";
-import { CODE, codeOf, errorText, ms, orgExists, type PageQuery, pageOf, UuidCursor, uuidOf } from "./operator-paging";
+import {
+  CODE,
+  codeOf,
+  errorText,
+  ms,
+  olderThan,
+  orgExists,
+  type PageQuery,
+  pageOf,
+  UuidCursor,
+  uuidOf,
+} from "./operator-paging";
 import { rightHandReaches } from "./right-hand";
 import {
   computerWaitSql,
@@ -1100,6 +1111,7 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
   const job = posted[0] ? jobOf(posted[0]) : null;
   const outcomes = new Set(explained.map((a) => a.outcome));
   const flags = flagsOf(meta);
+  // `UNANSWERED` tells the same in SQL, for every message of a range at once: a test holds the two together.
   const verdict: (typeof OPERATOR_EXPLAIN_VERDICTS)[number] = outcomes.has("run")
     ? "run"
     : outcomes.has("joined")
@@ -1186,4 +1198,160 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
     },
     postedJob: job,
   };
+}
+
+// ── People's messages nobody answered ────────────────────────────────────────
+
+/** What an explanation says of a message no run answered: every verdict but the three that name a run. */
+export const OPERATOR_UNANSWERED_OUTCOMES = [
+  "mission_suggestion",
+  "kept_on_hold",
+  "no_ai",
+  "platform_cap",
+  "blocked",
+  "referenced_only",
+  "nobody_picked",
+  "picked_not_started",
+  "job_pending",
+  "job_failed",
+  "not_routed",
+] as const satisfies readonly (typeof OPERATOR_EXPLAIN_VERDICTS)[number][];
+type Unanswered = (typeof OPERATOR_UNANSWERED_OUTCOMES)[number];
+
+/** How far back unanswered messages are read when no start is given, and the longest stretch one read covers. */
+export const OPERATOR_UNANSWERED_DAYS = 1;
+export const OPERATOR_UNANSWERED_MAX_DAYS = 7;
+
+// A code the server owns, written into the statement as it is: an expression rows are grouped by holds no parameter.
+const literal = (code: string) => sql.raw(`'${code}'`);
+/** A list a message's `meta` holds under `name`, empty when it holds none. */
+const listIn = (name: string) => sql`(case when jsonb_typeof(${messages.meta}->${literal(name)}) = 'array'
+  then ${messages.meta}->${literal(name)} else '[]'::jsonb end)`;
+const REFERENCED = listIn("referencedAgentIds");
+
+// `operatorExplainMessage`'s verdict for a message no run answered, in its order and from the same stored facts.
+const UNANSWERED = sql<Unanswered>`(case
+  when ${messages.meta} ? 'missionSuggestion' then 'mission_suggestion'
+  when ${routingDecisions.strategy} = ${literal(KEPT_ON_HOLD)} then 'kept_on_hold'
+  when ${routingDecisions.error} = ${literal(NO_AI)} then 'no_ai'
+  when ${routingDecisions.error} = ${literal(PLATFORM_CAP)} then 'platform_cap'
+  when not (to_jsonb(${messages.mentionedAgentIds}) <@ ${REFERENCED}) then 'blocked'
+  when jsonb_array_length(${REFERENCED}) > 0 then 'referenced_only'
+  when ${routingDecisions.id} is not null then
+    case when cardinality(${routingDecisions.selectedAgentIds}) > 0 then 'picked_not_started' else 'nobody_picked' end
+  when ${outbox.status} in ('pending', 'processing') then 'job_pending'
+  when ${outbox.status} = 'failed' then 'job_failed'
+  else 'not_routed' end)`;
+
+interface UnansweredFilters {
+  channelId?: string;
+  outcome?: Unanswered;
+  /** Written at or after. */
+  from?: Date;
+  /** Written before. */
+  to?: Date;
+}
+
+export interface OperatorUnansweredQuery extends UnansweredFilters, PageQuery {}
+
+/** The dates a read of unanswered messages covers and the messages in them; null: no such workspace. */
+async function unansweredIn(db: Database, orgId: string, q: UnansweredFilters, now: Date) {
+  if (!(await orgExists(db, orgId))) return null;
+  const to = q.to ?? now;
+  const from = q.from ?? new Date(to.getTime() - OPERATOR_UNANSWERED_DAYS * 86_400_000);
+  if (from >= to) throw new ValidationError("from must be before to");
+  if (to.getTime() - from.getTime() > OPERATOR_UNANSWERED_MAX_DAYS * 86_400_000)
+    throw new ValidationError(`from and to are ${OPERATOR_UNANSWERED_MAX_DAYS} days apart at most`);
+  // A run already at work took the message (the router or a hand-on sent it there): it still waits in that run's
+  // inbox, or a step says the run read it. Such a run began in the day before the message, so in the range's too.
+  // ponytail: no index of `agent_runs` starts with the workspace and the conversation; one on
+  // (org_id, channel_id, created_at) (a migration) once this takes long.
+  const taken = sql`exists (select 1 from ${agentRuns} r
+    where r.org_id = ${messages.orgId} and r.channel_id = ${messages.channelId}
+      and r.created_at >= ${messages.createdAt} - interval '1 day' and r.created_at < ${messages.createdAt}
+      and r.created_at >= ${new Date(from.getTime() - 86_400_000).toISOString()}::timestamptz
+      and r.created_at < ${to.toISOString()}::timestamptz
+      and (${messages.id} = any(r.pending_message_ids) or exists (select 1 from ${agentRunSteps} s
+        where s.run_id = r.id and s.kind = 'context' and s.data->'steeredMessageIds' ? ${messages.id}::text)))`;
+  const where = and(
+    eq(messages.orgId, orgId),
+    // The range is on the stored time itself: `messages` is partitioned by it. Its index starts with the conversation,
+    // so the workspace's conversations lead to its messages.
+    gte(messages.createdAt, from),
+    lt(messages.createdAt, to),
+    q.channelId
+      ? eq(messages.channelId, q.channelId)
+      : sql`${messages.channelId} in (select c.id from ${channels} c where c.org_id = ${orgId}::uuid)`,
+    eq(messages.authorType, "person"),
+    isNull(messages.deletedAt),
+    sql`not exists (select 1 from ${agentRuns} t where t.trigger_message_id = ${messages.id})`,
+    sql`jsonb_array_length(${listIn("steeredRunIds")}) = 0`,
+    sql`not (${messages.meta} ? 'answersQuestionId')`,
+    sql`not ${taken}`,
+    q.outcome ? sql`${UNANSWERED} = ${q.outcome}` : undefined,
+  );
+  return { from, to, where };
+}
+
+/** The job that routes a message, by its name. */
+const POSTED_JOB = eq(outbox.dedupeKey, sql`'message.posted:' || ${messages.id}`);
+
+/**
+ * People's messages in a range of dates that no run answered, newest first, in keyset pages: the ones that started
+ * no run, were taken by none already at work and answered no agent's question. Each with why, as
+ * `operatorExplainMessage` tells it from what is stored, never what the message says. The range is the last day
+ * unless said. Null: no such workspace.
+ */
+export async function operatorUnanswered(
+  db: Database,
+  orgId: string,
+  query: OperatorUnansweredQuery,
+  now = new Date(),
+) {
+  const after = query.cursor ? decodeCursor(query.cursor, UuidCursor) : null;
+  const found = await unansweredIn(db, orgId, query, now);
+  if (!found) return null;
+  const rows = await db
+    .select({
+      id: messages.id,
+      at: messageColumns.at,
+      channelId: messages.channelId,
+      threadRootId: messages.threadId,
+      authorUserId: messages.authorUserId,
+      outcome: UNANSWERED,
+      strategy: routingDecisions.strategy,
+    })
+    .from(messages)
+    .leftJoin(routingDecisions, eq(routingDecisions.messageId, messages.id))
+    .leftJoin(outbox, POSTED_JOB)
+    .where(and(found.where, olderThan(messageColumns.at, messages.id, after)))
+    .orderBy(desc(messageColumns.at), desc(messages.id))
+    .limit(query.limit + 1);
+  const page = pageOf(rows, query.limit, (m) => [m.at, m.id]);
+  return {
+    from: found.from,
+    to: found.to,
+    messages: page.items.map((m) => ({ ...m, strategy: m.strategy ? cutText(m.strategy, 100) : null })),
+    next: page.next,
+  };
+}
+
+/** How many of them there are for each reason, most first. Null: no such workspace. */
+export async function operatorUnansweredCounts(
+  db: Database,
+  orgId: string,
+  query: UnansweredFilters,
+  now = new Date(),
+) {
+  const found = await unansweredIn(db, orgId, query, now);
+  if (!found) return null;
+  const counts = await db
+    .select({ outcome: UNANSWERED, messages: count() })
+    .from(messages)
+    .leftJoin(routingDecisions, eq(routingDecisions.messageId, messages.id))
+    .leftJoin(outbox, POSTED_JOB)
+    .where(found.where)
+    .groupBy(UNANSWERED)
+    .orderBy(desc(count()), asc(UNANSWERED));
+  return { from: found.from, to: found.to, counts };
 }

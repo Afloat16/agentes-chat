@@ -906,6 +906,12 @@ one's state and last error, `GET /orgs/{orgId}/audit` its audit log without the 
 `GET /orgs/{orgId}/asks` what its agents asked of people and of each other (`?open=true` for what still
 waits) and `GET /orgs/{orgId}/routines` its routines with their latest firings: never a credential, what
 was asked or answered, or a routine's instructions.
+`GET /orgs/{orgId}/notifications?userId=` lists what one person was notified of and the pushes that
+carried it, never a notification's words; `GET /orgs/{orgId}/access?userId=&targetKind=&targetId=` says
+whether a person reaches an agent, a channel, a task, a file or a computer, and the rule that decides;
+`GET /orgs/{orgId}/unanswered` lists people's messages no run answered, each with why (`?summary=true`
+for counts); and `GET /email-jobs?to=` lists the emails queued to one address with their state, never
+the address, a subject or a link.
 `GET /jobs` lists the job queue without the jobs' payloads (`?stuck=true` for the ones nobody took,
 `?summary=true` for counts by kind and status), `GET /usage` adds up the tokens and cost of model calls
 for the instance, a workspace, an agent or a run, and `GET /orgs/{orgId}/machines` and

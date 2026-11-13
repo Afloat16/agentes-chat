@@ -221,12 +221,14 @@ export {
   OPERATOR_USAGE_DAYS,
   OPERATOR_USAGE_GROUPS,
   OPERATOR_USAGE_MAX_DAYS,
+  operatorEmailJobs,
   operatorJobSummary,
   operatorJobs,
   operatorUsage,
 } from "./operator-jobs";
 export * from "./operator-lookups";
 export * from "./operator-machines";
+export * from "./operator-people";
 export * from "./operator-review";
 export * from "./operator-runs";
 export * from "./operator-workspace";

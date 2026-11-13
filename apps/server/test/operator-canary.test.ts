@@ -106,7 +106,11 @@ const KEPT: Record<string, string[]> = {
   routines: ["name", "trigger_type", "cron", "timezone", "event", "paused_reason", "target.type"],
   routine_runs: ["trigger", "status", "code"],
   routing_decisions: ["strategy", "error"],
-  outbox: ["kind", "locked_by", "last_error"],
+  // Of a payload, only which email a job sends.
+  outbox: ["kind", "locked_by", "last_error", "payload.template.kind"],
+  // What a notification tells of, who caused it and the ids it points at: never its words.
+  notifications: ["kind", "group_key", "actors.type", "actors.id", "source.userId"],
+  push_devices: ["platform"],
   usage_records: ["provider", "model", "billed_to"],
   messages: ["mentioned_user_ids"],
   // The feed's `data` is returned whole: only the server's own code writes it, and never what anyone wrote.
@@ -140,6 +144,7 @@ const PLACES: [what: string, table: string, value: string, where?: string][] = [
   ["a session", "sessions", "token"],
   ["a verification code", "verifications", "value"],
   ["a push token", "push_devices", "token"],
+  ["a notification's words", "notifications", "latest::text"],
 ];
 
 // Every column that holds text (a string, an array of them or JSON), but the ids a foreign key ties at either end.
@@ -463,7 +468,11 @@ beforeAll(async () => {
   await db.insert(schema.outbox).values({
     orgId,
     kind: "email.send",
-    payload: { to: "canary@example.com", template: { kind: "invite", url: "https://example.com/invite/canary-link" } },
+    payload: {
+      key: "canary-email",
+      to: ["canary@example.com"],
+      template: { kind: "invitation", orgName: "canary org", url: "https://example.com/invite/canary-link" },
+    },
     dedupeKey: "email:canary-address",
     lastError: failed,
     nextAttemptAt: soon,
@@ -691,6 +700,23 @@ beforeAll(async () => {
     note: "canary handoff note",
     expiresAt: soon,
   });
+  await db.insert(schema.notifications).values({
+    orgId,
+    userId: ownerId,
+    kind: "mention",
+    groupKey: `mention:${look}`,
+    actors: [{ type: "user", id: ownerId }],
+    source: { channelId, messageId: look, userId: ownerId, label: "canary source label" },
+    latest: { text: "canary notification", title: "canary notification title" },
+  });
+  await db.insert(schema.deviceAccessRequests).values({
+    orgId,
+    machineId,
+    requesterUserId: ownerId,
+    agentId,
+    reason: "canary device reason",
+    expiresAt: soon,
+  });
   await db
     .insert(schema.githubAppInstallations)
     .values({ orgId, installationId: 1, accountLogin: "canary-login", accountType: "Organization" });
@@ -766,6 +792,9 @@ beforeAll(async () => {
     "/jobs?summary=true",
     "/jobs?stuck=true",
     `/jobs?orgId=${orgId}&kind=email.send`,
+    // By the address as it was written, and as it reads once every text column holds a canary.
+    "/email-jobs?to=canary%40example.com",
+    "/email-jobs?to=canary.outbox.payload.to&limit=200",
     "/usage",
     ...["agent", "day", "hour", "model", "provider", "payer"].map((by) => `/usage?orgId=${orgId}&groupBy=${by}`),
     `/usage?agentId=${agentId}`,
@@ -780,9 +809,23 @@ beforeAll(async () => {
       `/orgs/${id}/runs?groupBy=error`,
       `/orgs/${id}/tool-calls?limit=200`,
       ...["tool", "agent", "outcome"].map((by) => `/orgs/${id}/tool-calls?groupBy=${by}`),
-      ...["connections", "audit", "asks", "routines"].map((list) => `/orgs/${id}/${list}?limit=200`),
+      ...["connections", "audit", "asks", "routines", "unanswered"].map((list) => `/orgs/${id}/${list}?limit=200`),
+      `/orgs/${id}/unanswered?summary=true`,
       `/analytics/work/orgs/${id}?${days}`,
     ]),
+    // Each person's notifications, and whether they reach one thing of each kind.
+    ...users.flatMap((id) => [
+      `/orgs/${orgId}/notifications?userId=${id}&limit=200`,
+      ...Object.entries({
+        agent: agentId,
+        channel: channelId,
+        task: task?.id,
+        file: file?.id,
+        computer: machineId,
+      }).map(([kind, target]) => `/orgs/${orgId}/access?userId=${id}&targetKind=${kind}&targetId=${target}`),
+    ]),
+    `/orgs/${orgId}/notifications?userId=${ownerId}&kind=mention&from=2020-01-01T00:00:00Z`,
+    `/orgs/${orgId}/unanswered?channelId=${channelId}&outcome=nobody_picked`,
     ...users.flatMap((id) => [`/users/${id}`, ref(id, false)]),
     ...agents.map((id) => `/agents/${id}`),
     ...machines.map((id) => `/machines/${id}`),
@@ -827,6 +870,14 @@ beforeAll(async () => {
     [`/orgs/${orgId}/audit?from=yesterday`, 400],
     [`/orgs/${orgId}/asks?kind=wish`, 400],
     [`/orgs/${orgId}/routines?agentId=nope`, 400],
+    [`/orgs/${UNKNOWN}/notifications?userId=${ownerId}`, 404],
+    [`/orgs/${orgId}/notifications?userId=nobody`, 404],
+    [`/orgs/${orgId}/notifications`, 400],
+    [`/orgs/${orgId}/access?userId=${ownerId}&targetKind=agent&targetId=${UNKNOWN}`, 404],
+    [`/orgs/${orgId}/access?userId=${ownerId}&targetKind=wiki&targetId=${agentId}`, 400],
+    [`/orgs/${UNKNOWN}/unanswered`, 404],
+    [`/orgs/${orgId}/unanswered?outcome=run`, 400],
+    ["/email-jobs", 400],
     ["/users", 400],
     [ref("two words"), 400],
     [ref("@dev", false), 400],
