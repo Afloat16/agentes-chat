@@ -71,15 +71,17 @@ html:not([data-pointer]) .issues-now__card:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-.issues-now__card.is-stalled {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--line2);
-}
 /* The task and its step read as one: closer than the row's 8. */
 .issues-now__card > .ac-mediarow__body {
   gap: 4px;
 }
+/* Two lines at most: a long title doesn't make every card in the row as tall as it. */
 .issues-now__task {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
   font-size: 13.5px;
   font-weight: 600;
   line-height: 20px;
@@ -114,14 +116,141 @@ html:not([data-pointer]) .issues-now__card:focus-visible {
     animation: none;
   }
 }
-.issues-now__go {
+
+/* The stalled tasks as one line: how many, whose, "See stalled" and "Continue all". Every piece stands on the first
+   line's 32px axis (the buttons' plate), so a line that wraps keeps the icon and the buttons with its first words. */
+.issues-stalled {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 12px;
+  min-height: 48px;
+  padding: 8px 12px 8px 14px;
+  border-radius: 14px 14px 14px 4px;
+  box-shadow: inset 0 0 0 1.5px var(--line2);
+}
+.issues-stalled.is-sent {
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.issues-stalled__icon {
+  flex: none;
+  margin-block: 8px;
+  color: var(--warn);
+}
+.issues-stalled.is-sent .issues-stalled__icon {
+  color: var(--agent);
+}
+.issues-stalled__text {
+  flex: 1 1 240px;
+  min-width: 0;
+  min-height: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.issues-stalled__text > b {
+  font-weight: 650;
+}
+.issues-stalled__who {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 650;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink-muted);
+}
+.issues-stalled__who > .ac-avatar-stack {
+  flex: none;
+}
+.issues-stalled__acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-left: auto;
+}
+
+/* The stalled tasks' dialog: grouped by agent, each task its title, then when it stopped and its last step. */
+.issues-stalled__group + .issues-stalled__group {
+  margin-top: 8px;
+}
+.issues-stalled__grouphead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 0 2px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.issues-stalled__grouphead > span {
+  font-weight: 400;
+}
+.issues-stalled__task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 16px;
+  padding: 12px 0;
+}
+.issues-stalled__task + .issues-stalled__task {
+  border-top: 1px solid var(--line);
+}
+.issues-stalled__tasktext {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.issues-stalled__title {
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
   color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.issues-stalled__title:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--line2);
+  text-underline-offset: 3px;
+}
+html:not([data-pointer]) .issues-stalled__title:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.issues-stalled__title > .ac-mediarow__num {
+  margin-right: 1px;
+}
+.issues-stalled__meta {
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+.issues-stalled__meta > .ac-icon {
+  margin-right: 4px;
+  color: var(--warn);
+  vertical-align: -2px;
+}
+.issues-stalled__task.is-sent .issues-stalled__meta {
+  color: var(--agent);
+}
+/* The 32px button centred on the title's 20px first line, its words ending on the list's edge (the ghost's plate past
+   it). */
+.issues-stalled__task > .ac-btn {
+  margin-top: -6px;
+  margin-right: calc(-1 * var(--ghost-plate));
+  padding-inline: var(--ghost-plate);
 }
 
 /* ── Toolbar end: "Exibição" and "Mais opções" ──────────────────────────── */
