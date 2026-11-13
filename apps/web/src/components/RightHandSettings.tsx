@@ -38,6 +38,7 @@ import {
   Icon,
   Input,
   ProviderLogo,
+  Switch,
 } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
