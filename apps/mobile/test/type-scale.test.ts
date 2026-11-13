@@ -4,6 +4,7 @@ import { join } from "node:path";
 import {
   APP_TEXT_SCALE,
   CHROME_MAX_SCALE,
+  capsMiddle,
   countBadge,
   initialText,
   leadBox,
@@ -109,6 +110,31 @@ test("a line's lead, an icon or a maker's mark in its place, centers on the firs
   }
   // Taller than the line: from its top, the box as tall as the lead.
   expect(leadBox(line, 28)).toEqual({ paddingTop: 0, height: 28 });
+});
+
+test("a mark beside words (an orbit, the waiting mark) centres on the capitals, the line's middle, not lower", () => {
+  // The work line (small: 15/20) with its 12 pt orbit: on the capitals it starts 4 pt down; where the eye reads the
+  // small letters it sat 1.2 pt lower, and the words read higher than it.
+  const line = { height: 20, middle: capsMiddle(20) };
+  const box = leadBox(line, 12);
+  expect(box.paddingTop + 12 / 2).toBe(10);
+  expect(box).toEqual({ paddingTop: 4, height: 20 });
+  expect(readingMiddle(15, 20) - capsMiddle(20)).toBeCloseTo(1.2, 6);
+  // A task's state under a task's screen's head (footnote 13/18) with its 16 pt mark box.
+  expect(leadBox({ height: 18, middle: capsMiddle(18) }, 16)).toEqual({ paddingTop: 1, height: 18 });
+  // Every orbit led by a `LineIcon` is a mark, and a `Note`'s own mark (the work under way) too.
+  const src = (f: string) => readFileSync(join(import.meta.dir, "../src", f), "utf8");
+  expect(src("ui/LineIcon.tsx")).toContain("leadBox(mark ? { ...line, middle: capsMiddle(line.height) } : line, size)");
+  for (const f of [
+    "features/chat/ConsultationScreen.tsx",
+    "features/chat/WorkLine.tsx",
+    "features/auth/AskWaiting.tsx",
+    "features/auth/AuthFlow.tsx",
+    "features/issues/IssueScreen.tsx",
+    "features/task-manager/parts.tsx",
+  ])
+    expect(src(f)).not.toMatch(/<LineIcon(?![^>]*\bmark\b)[^>]*>\s*<(PixelOrbit|TaskMark)/);
+  expect(src("features/ai/parts.tsx")).toContain('<LineIcon variant="small" size={15} mark>');
 });
 
 describe("count badge", () => {

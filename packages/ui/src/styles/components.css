@@ -4891,10 +4891,12 @@ html:not([data-pointer]) .ac-switch:focus-visible {
 /*
  * In a line of text the pixel marks centre on the capitals, as an `.ac-iconline` lead does (a flex or grid item
  * ignores vertical-align): their box's bottom is their baseline (the spinner is a canvas, the others draw in an
- * absolute child), raised by half the capitals' height less half their size (`--mark-size`, set by each).
+ * absolute child or their own boxes), raised by half the capitals' height less half their size (`--mark-size`, set by
+ * each).
  */
 .ac-pixspin,
 .ac-pixdone,
+.ac-pixfail,
 .ac-pixstop {
   vertical-align: calc(var(--cap-top) - var(--cap-mid) - var(--mark-size, 14px) / 2);
 }
@@ -8953,7 +8955,6 @@ html:not([data-pointer]) button.ac-tools__row:focus-visible {
   justify-content: center;
   gap: var(--px-gap, 1px);
   flex: none;
-  vertical-align: middle;
 }
 .ac-pixfail::before,
 .ac-pixfail::after {
