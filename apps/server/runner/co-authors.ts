@@ -77,11 +77,12 @@ LINES
 exit 0
 `;
 
-const written = new Set<string>();
-
-/** The hooks folder, made (once per process, again when a file changed) where this process's agents may read it. */
+/**
+ * The hooks folder where this process's agents may read it, made again on each piece of work: a hook installer run
+ * in an agent's process (lefthook, simple-git-hooks) takes `core.hooksPath` for where to write, and what it left
+ * there would run for every other repository. The agents' computer instructions say to run one without our setting.
+ */
 export function coAuthorHooks(dir: string): string | null {
-  if (written.has(dir)) return dir;
   try {
     mkdirSync(dir, { recursive: true, mode: 0o755 });
     for (const name of GIT_HOOKS) {
@@ -97,7 +98,6 @@ export function coAuthorHooks(dir: string): string | null {
       }
       chmodSync(file, 0o755);
     }
-    written.add(dir);
     return dir;
   } catch {
     // Not written: the agent's commits go without the lines rather than past hooks that aren't there.

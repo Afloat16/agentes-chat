@@ -174,6 +174,23 @@ describe.skipIf(!hasGit)("git in the agent's processes", () => {
     r.run(process.env, ["commit", "-q", "--allow-empty", "-m", "By a person"]);
     expect(r.message()).toBe("By a person");
   });
+
+  test("a hook installer run without our setting installs into the repository; what one left in our folder goes", () => {
+    const r = repo([NICK]);
+    // Where lefthook and simple-git-hooks write: `core.hooksPath` as git says it.
+    const where = (env: NodeJS.ProcessEnv) =>
+      spawnSync("git", ["rev-parse", "--git-path", "hooks"], { cwd: r.dir, env, encoding: "utf8" }).stdout.trim();
+    expect(where(r.agentEnv)).toBe(hooks);
+    const cleared = { ...r.agentEnv, GIT_CONFIG_PARAMETERS: "" };
+    expect(where(cleared)).toBe(".git/hooks");
+    r.hook("pre-commit", "echo installed hook ran >&2", path.join(r.dir, where(cleared)));
+    expect(r.run(r.agentEnv, ["commit", "-q", "--allow-empty", "-m", "Checked"]).out).toContain("installed hook ran");
+    expect(r.message()).toBe(`Checked\n\n${NICK}`);
+    // One run with it wrote into our folder: the next piece of work puts the shim back, for every repository.
+    writeFileSync(path.join(hooks, "pre-commit"), "#!/bin/sh\nexit 1\n");
+    expect(coAuthorHooks(hooks)).toBe(hooks);
+    expect(readFileSync(path.join(hooks, "pre-commit"), "utf8")).toBe(HOOK_SCRIPT);
+  });
 });
 
 describe.skipIf(!hasGit)("what the agent's commands get", () => {

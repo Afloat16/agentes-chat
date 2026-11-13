@@ -287,6 +287,11 @@ capitals). On by default on agentes.chat and on every server.
   too, through the bridge's agent), `run_code` and skill scripts, background tasks and a mission item's commit at its
   end (the task's journal keeps the lines for it and for a start again). A live Claude Code process starts again,
   resumed, when the lines change; Codex's app server already does when its env changes.
+- **Hook installers.** One run in an agent's process (lefthook, simple-git-hooks) writes where `core.hooksPath`
+  points, our folder, and `pre-commit install` refuses while it is set. The computer brains' note
+  (`COMPUTER_TOOLS_NOTE`) says to run them with `GIT_CONFIG_PARAMETERS=` before: the hooks land in the repository,
+  where the shim runs them. What one wrote into our folder anyway is put back at the agent's next piece of work, so it
+  never runs for another repository for long.
 - **The turn's instruction too.** The line next to where a chat turn starts names every line (the agent's and the
   person's): an older runner has no hook, and `--no-verify` skips every hook. The person's credit stays on that line
   alone on computers: it changes from turn to turn, and a live CLI's environment is its first turn's.
