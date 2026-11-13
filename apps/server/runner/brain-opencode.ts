@@ -670,9 +670,11 @@ export async function runOpencodeTurn(input: OpencodeTurnInput, opts: OpencodeTu
     else if (s.stopping === "breach") {
       fail("tools_not_locked", reader.breach ?? "OpenCode called a tool of its own, so the turn stopped.");
     } else if (s.stopping === "silence") {
+      const span =
+        silenceMs >= 60_000 ? `${Math.round(silenceMs / 60_000)} minutes` : `${Math.round(silenceMs / 1000)} seconds`;
       fail(
         "opencode_failed",
-        `OpenCode said nothing for ${Math.round(silenceMs / 60_000)} minutes with no tool running (its provider may be refusing it, as at a usage limit), so the turn stopped.`,
+        `OpenCode said nothing for ${span} with no tool running (its provider may be refusing it, as at a usage limit), so the turn stopped.`,
         true,
       );
     }
