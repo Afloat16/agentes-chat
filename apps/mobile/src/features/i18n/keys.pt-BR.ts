@@ -317,7 +317,7 @@ export const featureKeysPtBR = {
   /** The line over the tab bar that goes with you while an agent does long work or waits on you. */
   along: {
     agent: "Um agente",
-    waits: "{{name}} espera seu ok",
+    waits: "{{name}} · esperando você",
     on: "{{name}} · {{what}}",
     working: "{{name}} está trabalhando",
     more: "+{{count}}",
@@ -816,7 +816,7 @@ export const featureKeysPtBR = {
     managerQuiet: "Nada em andamento",
     /** A row's state, as text in the state's color (amber only for what waits on the person). */
     state: {
-      waitsYou: "espera seu ok",
+      waitsYou: "esperando você",
       routine: "Na rotina · {{time}}",
       routineShort: "na rotina",
       noAi: "Sem IA ligada",
@@ -1472,7 +1472,7 @@ export const featureKeysPtBR = {
       plain: "terminou um trabalho",
     },
     rowWait: {
-      approval: "espera seu ok",
+      approval: "esperando você",
       question: "espera sua resposta",
       mission: "espera sua revisão",
     },
@@ -1512,13 +1512,13 @@ export const featureKeysPtBR = {
   // intentional: agents
   intentAgents: {
     waitingSection: "Esperando você",
-    waitingLine: "{{title}} · espera seu ok",
+    waitingLine: "{{title}} · esperando você",
     waitingMore_one: "{{title}} · e mais {{count}} esperando você",
     waitingMore_other: "{{title}} · e mais {{count}} esperando você",
-    waitingLabel: "{{name}}, espera seu ok",
+    waitingLabel: "{{name}}, esperando você",
     owner: "Responsável: {{name}}",
     ownerYou: "Responsável: você",
-    nowWaiting: "Espera seu ok: {{title}}",
+    nowWaiting: "Esperando você: {{title}}",
     did: {
       title: "O que ele fez por você",
       title_female: "O que ela fez por você",
@@ -1537,7 +1537,7 @@ export const featureKeysPtBR = {
         image: "Imagem",
         file: "Arquivo",
       },
-      waitingOnYou: "Espera seu ok",
+      waitingOnYou: "Esperando você",
       youApproved: "Você aprovou",
       youRefused: "Você recusou",
       action: {

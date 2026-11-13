@@ -44,7 +44,7 @@ import {
   useThreadMission,
   useWaitingOnMe,
 } from "@agenteschat/client";
-import { activityVerb, listNames } from "@agenteschat/client/lib/activity";
+import { activityVerb, consultDetails, lineStep, listNames } from "@agenteschat/client/lib/activity";
 import { canTalk } from "@agenteschat/client/lib/audience";
 import { runPosition, screenAboveEnd } from "@agenteschat/client/lib/chat";
 import { CHAT_RHYTHM, firstUnreadId, opensAtLastRead, unreadThreadRootId } from "@agenteschat/client/lib/chat-look";
@@ -141,7 +141,7 @@ import { BrowserCard, BrowserRunCard } from "../browser/BrowserCard";
 import { OpenHandoffProvider } from "../browser/open";
 import { threadTitle } from "../chats/logic";
 import { ImageMaking } from "../files/ImageMaking";
-import { chatHref, notificationHref } from "../links/logic";
+import { chatHref, consultationHref, notificationHref } from "../links/logic";
 import { MissionCardView } from "../missions/cards";
 import { isOpenMission } from "../missions/logic";
 import { PushOfferLine } from "../push/PushOfferLine";
@@ -158,7 +158,7 @@ import { useColors, useDirectory, useMeId, useMyHandle, useOrgId, useWhen } from
 import { agentLook, previewOf } from "../shared/logic";
 import { FocusLive, PushedHeader, Tile } from "../shared/parts";
 import { SheetHostProvider, useSheet } from "../shared/SheetHost";
-import { useDmStatusLine, usePresenceWord } from "../status/hooks";
+import { useDmStatusLine, usePresenceOf, usePresenceWord } from "../status/hooks";
 import { PersonStatusCard } from "../status/StatusCard";
 import { AgentTasksButton, useDmAgentTasks } from "../task-manager/AgentTasksButton";
 import { agentTasksHref, tasksBadge } from "../task-manager/logic";
@@ -700,9 +700,30 @@ function Chat({
   const movedKey = movedOnKey(movedNow);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `movedKey` stands for the set
   const stopsMoved = useMemo(() => movedNow, [movedKey]);
+  // Work handed off from here stays on the line for as long as it is out (ADR 0095 addendum), with the other agent's
+  // state: its step, what it waits on, or what waits on me (its work for me says so before the list does).
+  const presence = usePresenceOf();
   const lineConsults = useMemo(
-    () => consultsForLine(consults, consultBlocksNearEnd(shownMessages, consultList, undefined, "first")),
-    [consults, shownMessages, consultList],
+    () =>
+      [
+        ...consultsForLine(
+          consults.filter((x) => x.kind !== "note"),
+          consultBlocksNearEnd(shownMessages, consultList, undefined, "first"),
+        ),
+        ...consults.filter((x) => x.kind === "note"),
+      ].map((x) => ({
+        ...x,
+        ...consultDetails(
+          x,
+          consultData ?? [],
+          (id) => {
+            const work = presence.agent(id)?.work;
+            return work?.state === "you" ? work.ask : null;
+          },
+          (id) => lineStep(t, presence.agent(id)?.status?.status, i18n.language),
+        ),
+      })),
+    [consults, shownMessages, consultList, consultData, presence, t, i18n.language],
   );
 
   // ── Following the end ──
@@ -2469,6 +2490,7 @@ function Chat({
                     runs={runs}
                     consults={lineConsults}
                     typing={typing}
+                    onSeeConsult={(id) => router.push(consultationHref(id, channelId))}
                     onOpenBrowser={(agentId) => {
                       // The agent's browser card opens in the conversation (at the end), not another screen.
                       toggleBrowser(agentId, true);

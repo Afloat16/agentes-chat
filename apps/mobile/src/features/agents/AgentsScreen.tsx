@@ -62,7 +62,7 @@ import { successHaptic, Tile } from "../shared/parts";
 import { useWaitingApprovals, useWorkingNow } from "../shared/queries";
 import { SheetHostProvider } from "../shared/SheetHost";
 import { useTabHeader } from "../shared/tabHeader";
-import { usePresenceOf } from "../status/hooks";
+import { useAgentWorkLine, usePresenceOf } from "../status/hooks";
 import { useTasksToday } from "../task-manager/hooks";
 import { useSectorMenu } from "../team/SectorScreen";
 import { TeamEntry } from "../team/TeamEntry";
@@ -427,6 +427,8 @@ function AgentRow({
   // On a billing hold an AI comes after the plan: no "Sem IA" on a team just made.
   const held = usePlanHold(orgId, org) !== null;
   const shown = usePresenceOf().agent(a.id);
+  // Its work for me, workspace-wide (ADR 0084 addendum): whom it helps or where, in the web lists' words.
+  const work = useAgentWorkLine(a.id);
   const onRoutineNow = !approval && !w && routine !== undefined;
   const noAi =
     !held && !approval && !w && !onRoutineNow && computer === undefined && aiStateOf(ai.data, a.id) === "no_ai";
@@ -482,7 +484,7 @@ function AgentRow({
         <>
           <PixelOrbit color={agentLook(a).color} size={16} />
           <Text variant="small" tone="ink2" numberOfLines={1} style={[LIST_PREVIEW, styles.shrink]}>
-            {shown?.line?.text ?? workTitle(t, w)}
+            {work?.tone === "working" ? work.text : (shown?.line?.text ?? workTitle(t, w))}
           </Text>
         </>
       ) : state === "routine" && routine ? (

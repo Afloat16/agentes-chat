@@ -69,7 +69,7 @@ describe("a task's row (ADR 0128)", () => {
       taskStateWords(t, "pt-BR", task({ runId: "r1", ...over }), rowState(task({ runId: "r1", ...over }), stopping), 0)
         .state;
     expect(said({ status: "running" })).toBe("Trabalhando");
-    expect(said({ status: "waiting_approval" })).toBe("Espera seu ok");
+    expect(said({ status: "waiting_approval" })).toBe("Esperando você");
     expect(said({ status: "waiting_input" })).toBe("Espera resposta");
     expect(said({ status: "queued" })).toBe("Na fila");
     expect(said({ status: "waiting_approval" }, new Set(["r1"]))).toBe("Parando…");
