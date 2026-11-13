@@ -1176,12 +1176,16 @@ describe("tools on a connected machine", () => {
     const out = await call(ctx, "run_code", { language: "bash", code: "ls" });
     expect(out).toMatchObject({ isError: true });
     expect(out.content).toContain(
-      "Commands are turned off on the computer Ana's Mac: you can only read, write, list and upload files there. Tell the people: only the person at Ana's Mac can turn commands on, in the agentes.chat app there (Preferences › Tools, Commands).",
+      "Commands are turned off on the computer Ana's Mac: you can only read, write, list and upload files there. Tell the people: whoever connected Ana's Mac turns commands on with the button under your reply, or in the agentes.chat app there (Preferences › Tools, Commands).",
     );
     expect(out.content).not.toContain("--no-exec");
+    // The reply carries the switch: the chat shows its one click under the agent's words.
+    expect(out.data).toEqual({ toolOff: { machineId: paired.machineId, tool: "commands" } });
     await f.db.update(schema.machines).set({ os: "linux" }).where(eq(schema.machines.id, paired.machineId));
     const linux = await call(ctx, "run_code", { language: "bash", code: "ls" });
-    expect(linux.content).toContain("can turn commands on, with `agentes-runner tools enable commands` there.");
+    expect(linux.content).toContain(
+      "with the button under your reply, or with `agentes-runner tools enable commands` there.",
+    );
     expect(linux.content).not.toContain("--no-exec");
   });
 

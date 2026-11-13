@@ -10,6 +10,7 @@ import { recordAudit } from "../audit";
 import { handedBackSince, markPageRead, requirePageRead, waitIfPersonInControl } from "../browser/handoff";
 import { agentFolderPath, MAX_PAGE_TEXT, MAX_PLAN_STEPS } from "../browser/tools";
 import { DESKTOP_SCOPE, DESKTOP_TOOL_INFO } from "../browser/types";
+import { ToolOffError } from "../errors";
 import type { Judge } from "../judge";
 import { callWhenBack, type MachineCaller, MachineRequestError } from "../machine-hub";
 import { MachineOfflineError, MachinePausedError } from "../machines";
@@ -173,13 +174,20 @@ const screenBlock = (text: string) => untrustedBlock("desktop screen", text, MAX
 /** Said when a plan stopped with the agent's browser on the screen: what is in its window is the browser's. */
 const BROWSER_WINDOW = "Your browser's window is on this screen: what is in it is for browser_do, not the desktop.";
 
+/** A failed call as its result, carrying a switch off on the computer for the reply's one-click card. */
+const refusedOutput = (error: unknown): ToolOutput => ({
+  content: error instanceof Error ? error.message : String(error),
+  isError: true,
+  ...(error instanceof ToolOffError ? { data: { toolOff: error.toolOff } } : {}),
+});
+
 /** Runner refusals → what the agent reads. A step's own failure (a stale element, what covers it) stays as said. */
 function explain(error: unknown, machineName: string): string {
   if (error instanceof MachineOfflineError || error instanceof MachinePausedError) return error.message;
   if (!(error instanceof MachineRequestError)) return error instanceof Error ? error.message : String(error);
   switch (error.code) {
     case "not_allowed":
-      return `The desktop or commands are turned off on the computer ${machineName}. Only the person at that computer can turn them on; tell the people.`;
+      return `The desktop or commands are turned off on the computer ${machineName}. Whoever connected it turns them on with the button under your reply; tell the people.`;
     case "desktop_unavailable":
       return `Your desktop isn't available on the computer ${machineName}: ${error.message}`;
     case "desktop_busy":
@@ -305,6 +313,8 @@ export function createDesktopToolSource(deps: DesktopToolDeps): ToolSource {
       try {
         return await callWhenBack(caller, machineId, call, ctx.signal);
       } catch (error) {
+        if (error instanceof MachineRequestError && error.code === "not_allowed")
+          throw new ToolOffError(explain(error, machineName), { machineId, tool: "desktop" }, { cause: error });
         throw new Error(explain(error, machineName));
       }
     };
@@ -474,7 +484,7 @@ export function createDesktopToolSource(deps: DesktopToolDeps): ToolSource {
         try {
           look = await linked.link.look();
         } catch (error) {
-          return { content: error instanceof Error ? error.message : String(error), isError: true };
+          return refusedOutput(error);
         }
         const screen = observationOf(look);
         seen.remember(await seenKey(ctx), screen);
@@ -546,7 +556,7 @@ export function createDesktopToolSource(deps: DesktopToolDeps): ToolSource {
           if (input.share !== true) return { ...saved, content: `${saved.content} ${SHARE_HINT}` };
           return shareSavedFile(deps, ctx, linked.machineId, path, saved);
         } catch (error) {
-          return { content: error instanceof Error ? error.message : String(error), isError: true };
+          return refusedOutput(error);
         }
       },
     ),

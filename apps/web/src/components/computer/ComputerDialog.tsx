@@ -46,6 +46,7 @@ import { lookOf } from "@/lib/look";
 import { useSaid, useToast } from "@/lib/toast";
 import { BrowserCard, Cover, stepText } from "../browser/BrowserCard";
 import { DesktopView } from "../desktop/DesktopView";
+import { MachineToolButton, useToolOneClick } from "../devices/ToolOneClick";
 import { SwitchComputerDialog } from "../MachineOutages";
 import { useOrg } from "../org-context";
 import { colorOf } from "../Sky";
@@ -319,6 +320,8 @@ function ComputerStage({
   const flashing = useReadyFlash(surface);
   const reader = useWaitReader();
   const machine = view.machine;
+  const oneClick = useToolOneClick(machine);
+  const browserOneClick = Boolean(machine && oneClick && oneClick.kind !== "outdated");
   const computer = computerName(t, org.name, machine, isPersonal(org));
   const manages = can(org, "manage_agents") || agent.ownerUserId === me.user.id;
   // Whose role gives no browser here gets Fechar, never "Assumir o navegador" (ADR 0085 §12).
@@ -592,7 +595,8 @@ function ComputerStage({
             color={color}
             icon="globe"
             text={t("agentComputer.state.browserOff", { ...g, computer })}
-            help={t("browser.machine.offHelp")}
+            help={browserOneClick ? undefined : t("browser.machine.offHelp")}
+            action={browserOneClick && machine ? <MachineToolButton machine={machine} tool="browser" /> : undefined}
           />
         </Stage>
       </>

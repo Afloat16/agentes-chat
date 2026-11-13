@@ -18,7 +18,7 @@ import { errorText } from "@agenteschat/client/lib/errors";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
 import { handleAfterRename } from "@agenteschat/client/lib/new-agent";
 import { can } from "@agenteschat/client/lib/permissions";
-import { accountPlan, brainPlan, planReplies } from "@agenteschat/client/lib/plans";
+import { brainPlan } from "@agenteschat/client/lib/plans";
 import { AUTO, modelChoices } from "@agenteschat/client/lib/providers";
 import { mineStatus, RIGHT_HAND_POWERS, rightHandNoComputer } from "@agenteschat/client/lib/right-hand";
 import {
@@ -35,7 +35,6 @@ import {
   Icon,
   Input,
   ProviderLogo,
-  Switch,
 } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -412,9 +411,8 @@ function RightHandForm({ agent }: { agent: Agent }) {
     i18n.language,
     modelChoices(models.data?.models ?? [], credentials.data ?? [], platform.data ?? false),
   );
-  // Plans it may think with for everyone: the admin's own, and everyone's with `use_others_plans`.
+  // Plans it may think with for everyone: the admin's own, and everyone's that serve the whole workspace.
   const plans = (view?.accounts ?? []).filter((a) => a.status === "active");
-  const opened = view ? !view.onlyOwner : false;
   const theirs = (id: string | null | undefined) => (id && id !== me.user.id ? firstOf(id) : undefined);
   // The choice in the dialog: each plan once (its logins grouped, as any agent's accounts are), by owner, then the API
   // key. A plan in use that is no longer active stays listed, so the choice never shows empty.
@@ -543,29 +541,6 @@ function RightHandForm({ agent }: { agent: Agent }) {
             }
             onOpen={() => setChoosing(true)}
           />
-          {kind && view && !solo && (
-            // As for any agent on its owner's plan (ADR 0059 §5): the plan's owner chooses, an admin may override, and
-            // the plan's owner hears it by email. For the right hand it decides who without a plan of their own may
-            // talk to it on this one.
-            <PrefRow
-              id="rh-shares"
-              icon={opened ? "audienceEveryone" : "audienceOwner"}
-              label={t("rightHand.settings.lend")}
-              // The plan's own terms on lending it, as an agent's plan says them everywhere.
-              hint={
-                planReplies(t, { on: false, agent: null, brain: kind, plan: signIn?.plan, coding: accountPlan(signIn) })
-                  .text
-              }
-              control={
-                <Switch
-                  aria-label={t("rightHand.settings.lend")}
-                  checked={opened}
-                  disabled={!view.canEdit || busy}
-                  onCheckedChange={(on) => setWorkspace({ onlyOwner: !on })}
-                />
-              }
-            />
-          )}
           {usesApi && (
             <PrefRow
               id="rh-budget"

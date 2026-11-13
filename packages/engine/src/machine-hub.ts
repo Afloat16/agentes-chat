@@ -10,10 +10,12 @@ import {
   HELLO_TIMEOUT_MS,
   IPHONE_WIFI_PROTOCOL,
   KEEP_RUNNING_PROTOCOL,
+  MAX_FRAME_BYTES,
   type MachineErrorCode,
   type MachineOp,
   type MachineReplies,
   type MachineRequest,
+  MCP_IMAGES_PROTOCOL,
   type McpToolInfo,
   MIN_RUNNER_PROTOCOL,
   machineRpcReplyTopic,
@@ -32,6 +34,7 @@ import {
   type Unsubscribe,
 } from "@agenteschat/adapters";
 import { and, type Database, eq, inArray, lt, schema } from "@agenteschat/db";
+import type { ToolImage } from "@agenteschat/providers";
 import { getAgentCached } from "./agents";
 import { UUID } from "./authority";
 import { type MachinePhoneRow, publishDevicesChanged, syncMachinePhones } from "./devices";
@@ -370,6 +373,8 @@ export function isNewWork(request: MachineRequest) {
     case "task.cancel":
     case "task.output":
     case "access.reduce":
+    // Its owner turning a tool on from the apps changes the computer, not the agents' work on it.
+    case "access.allow":
     // A person's message for a turn already running (live steering).
     case "brain.steer":
     // The owner managing the brains' accounts (ADR 0041) isn't agent work.
@@ -393,6 +398,8 @@ export function isNewWork(request: MachineRequest) {
     case "phone.wifi":
     // Letting go of what an agent kept running (its end, a person's Stop) must reach a paused computer too.
     case "keep.end":
+    // Its owner fixing the Mac's Xcode for an iPhone's setup.
+    case "xcode.fix":
       return false;
     case "secret":
       return request.action !== "discard" && request.action !== "remove" && request.action !== "activate";
@@ -434,7 +441,38 @@ const MCP_REPEAT_WAIT_MS = 30_000;
 const MCP_CUT_OFF =
   "This call was cut off before it finished (the server restarted or lost the connection): it may have run in part. Check before doing it again.";
 
-type McpOutcome = { ok: true; text: string } | { ok: false; error: { code: string; message: string } };
+type McpOutcome =
+  | { ok: true; text: string; images?: ToolImage[] }
+  | { ok: false; error: { code: string; message: string } };
+
+/** What an agent reads where its computer's app is too old to hand it a picture or a PDF the tool returned. */
+export const MCP_IMAGES_TOO_OLD =
+  "[The picture or PDF this tool returned can't reach you: the agentes.chat app on this computer is too old to pass it on. Tell the person exactly that: updating the app on that computer lets it through.]";
+const MCP_IMAGES_TOO_BIG =
+  "[The pictures or PDF this tool returned are too big together to pass to this computer at once. Open them one at a time.]";
+
+/** A bridge answer as a runner at `protocol` takes it: pictures and PDFs only from `MCP_IMAGES_PROTOCOL` on. */
+export function mcpResultFrame(callId: string, out: McpOutcome, protocol: number) {
+  if (!out.ok) return { type: "mcp.result" as const, callId, ok: false as const, error: out.error };
+  const images = out.images?.length ? out.images : null;
+  const note =
+    images && protocol < MCP_IMAGES_PROTOCOL
+      ? MCP_IMAGES_TOO_OLD
+      : // A frame past the runner's limit is dropped there unread: the call would only time out.
+        images && images.reduce((n, i) => n + i.data.length, Buffer.byteLength(out.text)) > MAX_FRAME_BYTES - 64 * 1024
+        ? MCP_IMAGES_TOO_BIG
+        : null;
+  if (note) return { type: "mcp.result" as const, callId, ok: true as const, text: `${out.text}\n${note}` };
+  return {
+    type: "mcp.result" as const,
+    callId,
+    ok: true as const,
+    text: out.text,
+    ...(images
+      ? { images: images.map(({ mediaType, data, name }) => ({ mediaType, data, ...(name ? { name } : {}) })) }
+      : {}),
+  };
+}
 
 /** After our own server stops, a computer still away this long has its running tasks interrupted. */
 export const SERVER_STOP_TASK_GRACE_MS = 10 * 60_000;
@@ -938,14 +976,7 @@ export function createMachineHub(deps: MachineHubDeps) {
         ok: false as const,
         error: { code: "internal", message: error instanceof Error ? error.message : String(error) },
       }))
-      .then((out) =>
-        send(
-          conn,
-          out.ok
-            ? { type: "mcp.result", callId: frame.callId, ok: true, text: out.text }
-            : { type: "mcp.result", callId: frame.callId, ok: false, error: out.error },
-        ),
-      );
+      .then((out) => send(conn, mcpResultFrame(frame.callId, out, conn.protocol)));
   }
 
   /**
@@ -980,7 +1011,7 @@ export function createMachineHub(deps: MachineHubDeps) {
         ok: false as const,
         error: { code: "internal", message: error instanceof Error ? error.message : String(error) },
       }));
-      const kept = out.ok ? { ok: true as const, text: cutText(out.text, 50_000) } : out;
+      const kept: McpOutcome = out.ok ? { ...out, text: cutText(out.text, 50_000) } : out;
       await db
         .update(machineMcpCalls)
         .set({ result: kept })

@@ -17,7 +17,7 @@ import { agentsReach, audienceOf, audiencePatch } from "@agenteschat/client/lib/
 import { modelRows } from "@agenteschat/client/lib/brain-picker";
 import { agentGrammar } from "@agenteschat/client/lib/grammar";
 import { can } from "@agenteschat/client/lib/permissions";
-import { accountPlan, brainPlan, planReplies } from "@agenteschat/client/lib/plans";
+import { brainPlan } from "@agenteschat/client/lib/plans";
 import { AUTO } from "@agenteschat/client/lib/providers";
 import { mineStatus, RIGHT_HAND_POWERS, rightHandNoComputer, rightHandOf } from "@agenteschat/client/lib/right-hand";
 import { dayText, hourText, teamWeekOn } from "@agenteschat/client/lib/team-week";
@@ -290,7 +290,6 @@ function WorkspaceAi({ agent, dir }: { agent: Agent; dir: Directory }) {
   const kind = agent.brain && agent.brain.kind !== "model" ? agent.brain.kind : null;
   const signIn = view?.accounts.find((a) => a.id === view.account);
   const key = view?.workspaceAi?.key;
-  const { solo } = usePersonalView();
   const [busy, setBusy] = useState(false);
   const set = (input: AgentBrainInput) => {
     setBusy(true);
@@ -344,11 +343,7 @@ function WorkspaceAi({ agent, dir }: { agent: Agent; dir: Directory }) {
     if (plan && plan.id !== view?.account) set({ brain: plan.kind, account: plan.id });
   };
   const owner = theirs(signIn?.ownerId);
-  const on = view ? !view.onlyOwner : false;
   const g = agentGrammar(agent.name);
-  const terms = kind
-    ? planReplies(t, { on: false, agent: null, brain: kind, plan: signIn?.plan, coding: accountPlan(signIn) })
-    : null;
   return (
     <>
       <GroupedList>
@@ -398,23 +393,6 @@ function WorkspaceAi({ agent, dir }: { agent: Agent; dir: Directory }) {
         <PlanHoldNote org={org} />
       ) : plans.length === 0 ? (
         <GroupedFooter>{t("rightHand.settings.noPlans", g)}</GroupedFooter>
-      ) : null}
-      {kind && view && !solo ? (
-        <>
-          <Gap />
-          <GroupedList>
-            <GroupedRow
-              icon="members"
-              label={t("rightHand.settings.lend")}
-              labelLines={2}
-              // The plan's own terms on lending it, as an agent's plan says them everywhere.
-              {...(terms ? { hint: { name: terms.about, text: terms.text } } : {})}
-              toggle={on}
-              disabled={!view.canEdit || busy}
-              onPress={() => set({ onlyOwner: on })}
-            />
-          </GroupedList>
-        </>
       ) : null}
     </>
   );

@@ -92,7 +92,7 @@ import { useFocusEffect, useIsFocused, useIsPreview } from "expo-router";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, type LayoutChangeEvent, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Keyboard, type LayoutChangeEvent, Linking, Platform, ScrollView, StyleSheet, View } from "react-native";
 import {
   KeyboardController,
   KeyboardGestureArea,
@@ -136,6 +136,7 @@ import {
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { AgentSetupIntro, useSetupSteps } from "../agents/setup/SetupCard";
+import { DmModelButton } from "../ai/ModelPickerSheet";
 import { usePlanHold } from "../ai/parts";
 import { BrowserCard, BrowserRunCard } from "../browser/BrowserCard";
 import { OpenHandoffProvider } from "../browser/open";
@@ -164,9 +165,9 @@ import { AgentTasksButton, useDmAgentTasks } from "../task-manager/AgentTasksBut
 import { agentTasksHref, tasksBadge } from "../task-manager/logic";
 import { retryVoice, type VoiceRefusal } from "../voice/outbox";
 import { useVoiceComposer } from "../voice/useVoiceComposer";
-import { AgentReceiptLine } from "./AgentReceipts";
+import { AgentReceiptLine, EveryoneLine } from "./AgentReceipts";
 import { AttachmentStrip, MAX_PENDING, type PendingFile } from "./AttachmentStrip";
-import { receiptMessageId, turnHeadId } from "./agent-receipts";
+import { markRowId, receiptMessageId } from "./agent-receipts";
 import { AskStore } from "./ask-store";
 import { AskBar, AskProbes, AskStoreProvider, useAskWatch, useAwayAsk, WaitingHereBar } from "./asks";
 import { ChannelHello } from "./ChannelHello";
@@ -1194,7 +1195,11 @@ function Chat({
       case "camera": {
         const perm = await ImagePicker.requestCameraPermissionsAsync();
         if (!perm.granted) {
-          toast({ title: t("mobile.plus.noCamera"), icon: "camera" });
+          toast({
+            title: t("mobile.plus.noCamera"),
+            icon: "camera",
+            action: { label: t("mobile.common.openSettings"), onPress: () => void Linking.openSettings() },
+          });
           return;
         }
         const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
@@ -1414,6 +1419,9 @@ function Chat({
         ? // People and agents counted apart: "1 pessoa · 3 agentes", never "4 membros · 3 agentes".
           `${t("mobile.chat.people", { count: roster.data.length - agentsHere })} · ${t("mobile.chat.agentsHere", { count: agentsHere })}`
         : undefined;
+  // Its AI and model in the header: changed in place by an admin or its owner, read by anyone else; never the right hand's.
+  const dmModelAgent = dmAgentId && !isThread ? dir.agentById.get(dmAgentId) : undefined;
+  const dmModel = dmModelAgent && !isRightHand(dmModelAgent) ? dmModelAgent : undefined;
   // An agent's DM while it works: the pill's quiet line says what it does ("Consultando o GitHub").
   const dmDoing = useMemo(() => {
     if (!dmAgentId || isThread) return null;
@@ -1634,7 +1642,12 @@ function Chat({
         working={Boolean(dmDoing)}
         // Reading far up, only the face stays (the screen is the messages); a new reply opens it again.
         collapsed={far && unseen.messages === 0}
-        extraActions={(dmAgentId ? 1 : 0) + (queueShown ? 1 : 0) + (agentTasks ? tasksBadge(agentTasks).room : 0)}
+        extraActions={
+          (dmAgentId ? 1 : 0) +
+          (dmModel ? 1 : 0) +
+          (queueShown ? 1 : 0) +
+          (agentTasks ? tasksBadge(agentTasks).room : 0)
+        }
         onPress={dmAgentId ? () => router.push(`/agent/${dmAgentId}`) : openOptions}
         {...hold}
         label={
@@ -1694,6 +1707,7 @@ function Chat({
             }}
           />
         ) : null}
+        {dmModel ? <DmModelButton agent={dmModel} /> : null}
         {queueShown && barQueue && queueMachineId ? (
           dmComputer ? (
             <DmQueueButton
@@ -1752,8 +1766,13 @@ function Chat({
   // Someone else's message sent into a task at work says nothing here (mine wears it: `ReceiptMark`).
   const receiptSteered = useSteerState(orgId, channelId, receiptId && !receiptMine ? receiptId : "") !== null;
   const markAt = useMemo(
-    () => (!receiptId || receiptSteered ? null : receiptMine ? receiptId : turnHeadId(rows, receiptId)),
-    [receiptId, receiptSteered, receiptMine, rows],
+    () =>
+      !receiptId || receiptSteered
+        ? null
+        : receiptMine
+          ? receiptId
+          : markRowId(rows, receiptId, { faces: rowLook.faces, bubbles: rowLook.style === "bubbles" }),
+    [receiptId, receiptSteered, receiptMine, rows, rowLook.faces, rowLook.style],
   );
   // The line redraws when what it shows changes, not on every event that touches the receipt (typing).
   const receiptNow = receiptId ? live.receipts[receiptId] : undefined;
@@ -1772,9 +1791,10 @@ function Chat({
     : "";
   // biome-ignore lint/correctness/useExhaustiveDependencies: `receiptKey` stands for the receipt
   const receipt = useMemo(() => receiptNow, [receiptKey]);
-  // Agents' messages that called several agents: their strip (`FanStrip`). Only their receipts redraw the list.
+  // Agents' messages that called several agents (their strip, `FanStrip`) and a person's mention of everyone one agent
+  // answered for all (`EveryoneLine`). Only their receipts redraw the list.
   const fanNow = shownMessages
-    .filter((m) => m.author.type === "agent" && m.mentionedAgentIds.length > 1)
+    .filter((m) => (m.author.type === "agent" && m.mentionedAgentIds.length > 1) || m.meta?.everyoneShape)
     .map((m) => [m.id, live.receipts[m.id]] as const);
   const fanKey = JSON.stringify(fanNow);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `fanKey` stands for the receipts
@@ -1931,6 +1951,13 @@ function Chat({
               </SwipeReply>
               {item.message.author.type === "agent" && item.message.mentionedAgentIds.length > 1 ? (
                 <FanStrip message={item.message} receipt={receipts[item.message.id]} />
+              ) : null}
+              {item.message.meta?.everyoneShape ? (
+                <EveryoneLine
+                  message={item.message}
+                  receipt={receipts[item.message.id]}
+                  mine={item.message.author.id === meId}
+                />
               ) : null}
               {item.message.id === receiptId ? (
                 <AgentReceiptLine
@@ -2483,7 +2510,6 @@ function Chat({
                     draftKey={threadId ? `${channelId}:${threadId}` : channelId}
                     inputNativeID={COMPOSER_INPUT_ID}
                     {...(suggestions.length > 0 ? { suggestions } : {})}
-                    {...(dmAgentId && !isThread ? { face: <AgentFace agentId={dmAgentId} size={22} /> } : {})}
                     mentionAt={refQuery}
                     insertMention={insertRef}
                     prefill={prefill ?? captionBack}

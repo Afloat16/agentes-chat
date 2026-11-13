@@ -9,7 +9,7 @@
   containers service)
 - Code: `packages/db/src/schema/agents.ts` (`right_hand_seats`), `packages/db/src/schema/runtime.ts`
   (`machine_tasks.scope_id`), `packages/db/src/schema/browser.ts` (`browser_handoffs.seat_user_id`), migration
-  `0259_right_hand_seats`, `packages/engine/src/right-hand-seats.ts` (`seatOf`, `runSeat`,
+  `0262_right_hand_seats`, `packages/engine/src/right-hand-seats.ts` (`seatOf`, `runSeat`,
   `machineScope`, `viewerScope`, `toolMachineId`, `seatState`, `screenPersonOf`, `seatScopes`, `seatLive`,
   `screenKey`), `packages/engine/src/machine-hub.ts` (`outgoing`, `isLockedTurn`, `agentsChanged`,
   `MachineStatus.mode`), `packages/engine/src/machines.ts` (`machineAgents`, `deletedAgentIds`, `machineViews`,

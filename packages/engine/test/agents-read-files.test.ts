@@ -326,7 +326,7 @@ describe("a file sent while the agent works", () => {
       body: "",
       attachments: [file.id],
     });
-    const line = `(attached files: "precos.html" (artifact ${file.id}))`;
+    const line = `(attached files: "precos.html" (artifact ${file.id}); open each with read_artifact before you answer about it; if one is unreadable to you, give the reason and way out the tool gave)`;
     expect((await renderSteered(f.db, f.org.id, [m.id]))[0]?.text).toContain(line);
     expect((await renderSteered(f.db, f.org.id, [m.id], { beforeStart: true }))[0]?.text).toContain(line);
   });
@@ -730,6 +730,14 @@ describe("how a file's bytes become text", () => {
     );
     const run = await runOf(f.agent.id, dm.id, "lê");
     expect((await bridged(run, "read_artifact", { artifact_id: page.id })).content).toContain("<p>preço</p>");
-    expect((await bridged(run, "read_artifact", { artifact_id: junk.id })).content).toContain("Binary");
+    expect((await bridged(run, "read_artifact", { artifact_id: junk.id })).content).toContain(
+      "It is a binary file (.txt",
+    );
+    // Through the runner bridge a picture comes with the result, for the CLI to show.
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const shot = await as("print.png", png);
+    expect((await bridged(run, "read_artifact", { artifact_id: shot.id })).images).toEqual([
+      { mediaType: "image/png", data: Buffer.from(png).toString("base64") },
+    ]);
   });
 });
