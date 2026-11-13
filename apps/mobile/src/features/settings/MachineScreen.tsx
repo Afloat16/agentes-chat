@@ -33,6 +33,7 @@ import {
   isPaused,
   MACHINE_TOOLS,
   machineReasonText,
+  oneClickTerminal,
   PAUSE_CHOICES,
   pauseChoiceText,
   pausedByText,
@@ -81,7 +82,7 @@ import { useColors, useDirectory, useMeId, useOrgId } from "../shared/hooks";
 import { goBack, MONO, successHaptic } from "../shared/parts";
 import { TextArea } from "../shared/TextArea";
 import { DESKTOP_TURN_ON, grantCommand, osOf, pauseText, type Reduce, reduceTexts, seenText } from "./logic";
-import { CommandBlock, chooseAction, confirmAction, Gap, SettingsPage } from "./parts";
+import { CommandBlock, chooseAction, confirmAction, Gap, SettingsPage, TerminalFallback } from "./parts";
 
 /**
  * One computer, as the web's page: its portrait and state (online, paused, who connected it) and what it is; the
@@ -754,6 +755,7 @@ function BrowserSection({ machine: m, onTurnOff }: { machine: Machine; onTurnOff
           </GroupedFooter>
           <Gap />
           <MachineToolButton machine={m} tool="browser" />
+          <TerminalFallback command={oneClickTerminal(m, oneClick, ["browser"])} />
         </>
       ) : !switchedOn ? (
         allowsInApp(m.os) ? (
@@ -885,6 +887,7 @@ function DesktopUseSection({ machine: m }: { machine: Machine }) {
               desktopOff.map((tool) => <MachineToolButton key={tool} machine={m} tool={tool} />)
             )}
           </View>
+          <TerminalFallback command={oneClickTerminal(m, oneClick, desktopOff)} />
         </>
       ) : off ? (
         <>

@@ -121,6 +121,19 @@ export function toolOneClick(
   return { kind: "ask", ownerId: m.pairedBy.id, ownerName: m.pairedBy.name };
 }
 
+/**
+ * "Prefiro no Terminal" under the one-click button: the same switches as a command, for the person who turns them on
+ * themselves on a computer that may have no app (a server). Null where the button is all there is.
+ */
+export function oneClickTerminal(
+  m: Pick<Machine, "mode" | "os">,
+  oneClick: ToolOneClick | null,
+  tools: readonly (keyof MachineAccess["tools"])[],
+) {
+  if (oneClick?.kind !== "allow" || allowsInApp(m.os) || tools.length === 0) return null;
+  return tools.map((tool) => toolOnCommand(m, tool)).join(" && ");
+}
+
 /** The tool off behind a refused "Fazer login" (`browser_profile.tool_off`), with what this person can do about it. */
 export interface ProfileToolOff {
   machineId: string;

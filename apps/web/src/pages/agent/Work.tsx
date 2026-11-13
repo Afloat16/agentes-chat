@@ -24,6 +24,7 @@ import {
   computerKind,
   computerState,
   machineReasonText,
+  oneClickTerminal,
   toolOnCommand,
 } from "@agenteschat/client/lib/machines";
 import {
@@ -62,7 +63,7 @@ import { NO_COMPUTER, useNoComputer } from "@/components/AgentComputer";
 import { usePlanHold } from "@/components/ai/ConnectAiSteps";
 import { useConnectAi } from "@/components/ConnectAi";
 import { MachineToolButton, useToolOneClick } from "@/components/devices/ToolOneClick";
-import { CommandBlock } from "@/components/machine-bits";
+import { CommandBlock, TerminalFallback } from "@/components/machine-bits";
 import { useOrg } from "@/components/org-context";
 import {
   OpenPrefsButton,
@@ -426,6 +427,7 @@ export function BrowserSteps({ computer, machineId }: { computer: string; machin
           </span>
           <MachineToolButton machine={row} tool="browser" />
         </div>
+        <TerminalFallback command={oneClickTerminal(row, oneClick, ["browser"])} />
       </section>
     );
   }

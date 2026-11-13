@@ -32,6 +32,7 @@ import {
   loginReadPasses,
   machineReasonText,
   normalizeUserCode,
+  oneClickTerminal,
   otherThanHint,
   pausedByText,
   pauseUntil,
@@ -567,6 +568,19 @@ describe("one click where a tool is off (ADR 0036 §8)", () => {
     expect(toolOneClick({ ...mac, kind: "managed" }, "u-bia")).toBeNull();
     expect(toolOneClick({ ...mac, pairedBy: null }, "u-caio")).toBeNull();
     expect(toolOneClick(null, "u-bia")).toBeNull();
+  });
+
+  test("Prefiro no Terminal: the same switches as one command, only for who turns them on, where there may be no app", () => {
+    const linux = { mode: "user", os: "linux" } as Pick<Machine, "mode" | "os">;
+    expect(oneClickTerminal(linux, { kind: "allow" }, ["desktop", "commands"])).toBe(
+      "agentes-runner tools enable desktop && agentes-runner tools enable commands",
+    );
+    expect(oneClickTerminal({ ...linux, mode: "system" }, { kind: "allow" }, ["browser"])).toBe(
+      "sudo agentes-runner tools enable browser",
+    );
+    expect(oneClickTerminal({ ...linux, os: "darwin" }, { kind: "allow" }, ["browser"])).toBeNull();
+    expect(oneClickTerminal(linux, { kind: "ask", ownerId: "u-bia", ownerName: "Bia" }, ["browser"])).toBeNull();
+    expect(oneClickTerminal(linux, { kind: "allow" }, [])).toBeNull();
   });
 
   test("a refused Fazer login reads its cause and what this person can do", () => {

@@ -13733,6 +13733,8 @@ export const en = {
       grantTextTerminal: "Allowing happens on the computer itself, in its Terminal:",
       grantTextAdmin: "Allowing happens on the computer itself, in its Terminal, as its administrator:",
       grantTerminal: "No app? In the computer's terminal:",
+      /** Under a one-click button: the same as a command to paste on that computer. */
+      preferTerminal: "I'd rather use the Terminal",
       grantOnlyOwner: "Only {{name}} allows more, on the computer itself. If you need something, ask them.",
       pathPlaceholder: "<folder>",
       agentPlaceholder: "<agent>",

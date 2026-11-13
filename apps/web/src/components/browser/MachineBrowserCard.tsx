@@ -15,6 +15,7 @@ import {
   canReduceAccess,
   commandInReason,
   machineReasonText,
+  oneClickTerminal,
   toolOnCommand,
 } from "@agenteschat/client/lib/machines";
 import { Button, Card, CardHeader, Chip, Icon } from "@agenteschat/ui";
@@ -25,7 +26,7 @@ import { useToast } from "@/lib/toast";
 import { useStreams } from "@/realtime/context";
 import { AgentAvatar } from "../AgentAvatar";
 import { MachineToolButton, useToolOneClick } from "../devices/ToolOneClick";
-import { CommandBlock } from "../machine-bits";
+import { CommandBlock, TerminalFallback } from "../machine-bits";
 import { useOrg } from "../org-context";
 import { OpenPrefsButton, useIsThisMac } from "../ThisMac";
 import { BrowserCard } from "./BrowserCard";
@@ -137,17 +138,20 @@ export function MachineBrowserCard({ machine: m, onTurnOff }: { machine: Machine
       </div>
       {!switchedOn &&
         (oneClick && oneClick.kind !== "outdated" ? (
-          <div className="brw-note brw-note--act">
-            <span className="brw-note__text ac-iconline">
-              <Icon name="computer" size={16} />
-              <span>
-                {oneClick.kind === "ask"
-                  ? t("browser.profiles.toolOffOther", { name: firstName(oneClick.ownerName) })
-                  : t("browser.profiles.toolOff")}
+          <>
+            <div className="brw-note brw-note--act">
+              <span className="brw-note__text ac-iconline">
+                <Icon name="computer" size={16} />
+                <span>
+                  {oneClick.kind === "ask"
+                    ? t("browser.profiles.toolOffOther", { name: firstName(oneClick.ownerName) })
+                    : t("browser.profiles.toolOff")}
+                </span>
               </span>
-            </span>
-            <MachineToolButton machine={m} tool="browser" />
-          </div>
+              <MachineToolButton machine={m} tool="browser" />
+            </div>
+            <TerminalFallback command={oneClickTerminal(m, oneClick, ["browser"])} />
+          </>
         ) : here ? (
           <div className="brw-note brw-note--act">
             <span className="brw-note__text ac-iconline">

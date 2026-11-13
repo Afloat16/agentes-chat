@@ -1,10 +1,10 @@
 import { useMachines } from "@agenteschat/client";
 import { firstName } from "@agenteschat/client/lib/format";
-import { allowsInApp, toolOnCommand } from "@agenteschat/client/lib/machines";
+import { allowsInApp, oneClickTerminal, toolOnCommand } from "@agenteschat/client/lib/machines";
 import { Icon, LogoMark } from "@agenteschat/ui";
 import { Trans, useTranslation } from "react-i18next";
 import { MachineToolButton, useToolOneClick } from "@/components/devices/ToolOneClick";
-import { CommandBlock } from "@/components/machine-bits";
+import { CommandBlock, TerminalFallback } from "@/components/machine-bits";
 import { useOrg } from "@/components/org-context";
 import { OpenPrefsButton, useIsThisMac } from "@/components/ThisMac";
 
@@ -43,16 +43,19 @@ export function ToolOffSteps({
         </p>
         {row && oneClick && oneClick.kind !== "outdated" ? (
           // Whoever connected it turns it on from here; anyone else asks them. The app's steps stay for an old app.
-          <div className="tool-off__row">
-            <span>
-              <Trans
-                i18nKey={oneClick.kind === "ask" ? "connectAi.toolOff.oneClickOther" : "connectAi.toolOff.oneClick"}
-                values={{ program, ...(oneClick.kind === "ask" ? { name: firstName(oneClick.ownerName) } : {}) }}
-                components={b}
-              />
-            </span>
-            <MachineToolButton machine={row} tool={kind} />
-          </div>
+          <>
+            <div className="tool-off__row">
+              <span>
+                <Trans
+                  i18nKey={oneClick.kind === "ask" ? "connectAi.toolOff.oneClickOther" : "connectAi.toolOff.oneClick"}
+                  values={{ program, ...(oneClick.kind === "ask" ? { name: firstName(oneClick.ownerName) } : {}) }}
+                  components={b}
+                />
+              </span>
+              <MachineToolButton machine={row} tool={kind} />
+            </div>
+            <TerminalFallback command={oneClickTerminal(row, oneClick, [kind])} />
+          </>
         ) : here ? (
           <div className="tool-off__row">
             <span>

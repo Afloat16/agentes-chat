@@ -13761,6 +13761,8 @@ export const ptBR = {
       grantTextTerminal: "Liberar é no próprio computador, no Terminal dele:",
       grantTextAdmin: "Liberar é no próprio computador, no Terminal dele, como administrador:",
       grantTerminal: "Sem o app? No terminal do computador:",
+      /** Under a one-click button: the same as a command to paste on that computer. */
+      preferTerminal: "Prefiro no Terminal",
       grantOnlyOwner: "Só {{name}} libera, no próprio computador. Se precisar de algo, peça para ele ou ela.",
       pathPlaceholder: "<pasta>",
       agentPlaceholder: "<agente>",
