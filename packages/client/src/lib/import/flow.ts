@@ -287,7 +287,11 @@ export function importFailureText(
   if (cause instanceof ImportError && cause.limit) {
     const { kind, have, max, name } = cause.limit;
     const size = (n: number) => (kind === "files" ? new Intl.NumberFormat(locale).format(n) : formatBytes(locale, n));
-    return t(`onboarding.import.errors.limit.${kind}`, { have: size(have), max: size(max), name: name ? baseName(name) : "" });
+    return t(`onboarding.import.errors.limit.${kind}`, {
+      have: size(have),
+      max: size(max),
+      name: name ? baseName(name) : "",
+    });
   }
   if (cause instanceof ImportError) {
     return cause.code === "unknown" && from === "paste"

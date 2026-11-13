@@ -36,7 +36,9 @@ export interface PickedAsset {
  * archives is `archive`.
  */
 export function phonePicks<T extends PickedAsset>(assets: readonly T[]): { read: boolean[]; archive: boolean } {
-  const read = assets.map((a) => TEXT_PATH.test(a.name) && !isSecretPath(a.name) && (a.size ?? 0) <= importFileCap(a.name));
+  const read = assets.map(
+    (a) => TEXT_PATH.test(a.name) && !isSecretPath(a.name) && (a.size ?? 0) <= importFileCap(a.name),
+  );
   const archive = assets.length > 0 && assets.every((a) => ARCHIVE_PATH.test(a.name));
   return { read, archive };
 }

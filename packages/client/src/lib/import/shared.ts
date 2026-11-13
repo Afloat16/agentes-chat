@@ -76,7 +76,8 @@ export const IMPORT_TEXT_MAX_BYTES = 32 * 1024 * 1024;
 /** The name the import gives pasted text. */
 export const PASTED = "pasted";
 /** One JSON with a whole team in it (OpenBot.run's, OpenMausBot's, ours): its memories can run past `IMPORT_MAX_BYTES`. */
-const MANIFEST_PATH = /(^|\/)(openbot-import\.json|openbot-transfer\.json|agentes-chat-export\.json|[^/]*\.openmaus\.json)$/i;
+const MANIFEST_PATH =
+  /(^|\/)(openbot-import\.json|openbot-transfer\.json|agentes-chat-export\.json|[^/]*\.openmaus\.json)$/i;
 /** The most of one file the import reads. */
 export const importFileCap = (path: string) =>
   path === PASTED || MANIFEST_PATH.test(path) ? IMPORT_TEXT_MAX_BYTES : IMPORT_MAX_BYTES;

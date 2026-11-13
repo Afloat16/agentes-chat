@@ -27,7 +27,9 @@ export function ImportFailureNote({ failure, retry }: { failure: ImportFailure; 
   const mayConnect = Boolean(org && github && can(org, "manage_connectors"));
   return (
     <div className="imp-failure">
-      <Alert tone={hidden ? "neutral" : undefined}>{importFailureText(t, failure, failedOffline, mayConnect, i18n.language)}</Alert>
+      <Alert tone={hidden ? "neutral" : undefined}>
+        {importFailureText(t, failure, failedOffline, mayConnect, i18n.language)}
+      </Alert>
       {hidden && mayConnect && hidden.connection !== "ok" && github && (
         <Button size="sm" variant="primary" onClick={() => setFlow({ step: 0, def: github })}>
           <ConnectorIcon def={GITHUB_MARK} label="GitHub" />

@@ -172,9 +172,9 @@ describe("archives", () => {
     expect(await withLimits({ bytes: 100 }, () => limitOf(() => readImportFiles([archive(zip(three), "a.zip")])))).toBe(
       "bytes",
     );
-    expect(await withLimits({ unpacked: 2 }, () => limitOf(() => readImportFiles([archive(zip(three), "a.zip")])))).toBe(
-      "unpacked",
-    );
+    expect(
+      await withLimits({ unpacked: 2 }, () => limitOf(() => readImportFiles([archive(zip(three), "a.zip")]))),
+    ).toBe("unpacked");
   });
 
   test("a zip is read by slices: never the whole file at once", async () => {

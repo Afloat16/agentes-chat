@@ -337,7 +337,11 @@ async function fromTar(blob: Blob, gzip: boolean): Promise<Read> {
       if (regular) end = Math.max(end, at + size);
       if (regular && JUNK.test(path)) out.junk.push(path);
       const own = regular && !JUNK.test(path) && !path.endsWith("/");
-      if (own) keptWithin(++kept, (keptBytes += size));
+      if (own) {
+        kept++;
+        keptBytes += size;
+        keptWithin(kept, keptBytes);
+      }
       if (own && wants(path, size)) {
         const data = await bytes.take(padded);
         if (!data) throw new ImportError("corrupt");

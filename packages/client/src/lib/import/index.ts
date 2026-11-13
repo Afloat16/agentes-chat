@@ -43,12 +43,12 @@ export {
   IMPORT_TEXT_MAX_BYTES,
   ImportError,
   type ImportErrorCode,
+  type ImportFile,
   type ImportLimit,
   importFileCap,
-  PASTED,
-  type ImportFile,
   type LeftOut,
   type LeftOutKind,
+  PASTED,
   type ParseOptions,
   scrubSecrets,
   uniqueHandle,
@@ -166,15 +166,23 @@ export function parsePackage(
   for (const f of all) {
     const max = importFileCap(f.name);
     const have = f.text.length > max ? f.text.length : new TextEncoder().encode(f.text).byteLength;
-    if (have > max) throw new ImportError("tooLarge", { kind: f.name === PASTED ? "text" : "file", have, max, name: f.name });
+    if (have > max)
+      throw new ImportError("tooLarge", { kind: f.name === PASTED ? "text" : "file", have, max, name: f.name });
   }
   const usable = readable(all);
   const source = usable.length > 0 ? DETECTION.find((id) => PARSERS[id].detect(usable)) : undefined;
   if (!source) {
     // A format's text file the reader left unread for its size explains an empty or unknown read better.
-    const skipped = all.find((f) => !f.text && TEXT_PATH.test(f.name) && !isSecretPath(f.name) && (f.size ?? 0) > importFileCap(f.name));
+    const skipped = all.find(
+      (f) => !f.text && TEXT_PATH.test(f.name) && !isSecretPath(f.name) && (f.size ?? 0) > importFileCap(f.name),
+    );
     if (skipped) {
-      const limit: ImportLimit = { kind: "file", have: skipped.size ?? 0, max: importFileCap(skipped.name), name: skipped.name };
+      const limit: ImportLimit = {
+        kind: "file",
+        have: skipped.size ?? 0,
+        max: importFileCap(skipped.name),
+        name: skipped.name,
+      };
       throw new ImportError("tooLarge", limit);
     }
     throw new ImportError(usable.length === 0 ? "empty" : "unknown");
