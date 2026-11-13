@@ -7270,6 +7270,30 @@ export interface DesktopStatus {
   browserOnDesktop?: boolean;
 }
 
+/**
+ * What an agent keeps running on its computer (`keep_running`, ADR 0176): one of its programs (it ends with it), its
+ * browser, or a time alone.
+ */
+export interface Hold {
+  id: string;
+  agentId: string;
+  machineId: string;
+  /** In the agent's words, for people. */
+  what: string;
+  why: string;
+  kind: "program" | "browser" | "time";
+  since: string;
+  /** When it ends at the latest; null: when its program stops (or its browser closes). */
+  until: string | null;
+}
+
+/** `GET …/agents/{id}/holds`: for whoever may watch the agent's computer. */
+export interface AgentHolds {
+  holds: Hold[];
+  /** This person may stop them: who may use the agent's computer, and the admins of computers. */
+  canStop: boolean;
+}
+
 /** `GET …/desktop/picture`: a recent picture of the agent's screen, or why there is none. */
 export interface DesktopPictureView {
   picture: {

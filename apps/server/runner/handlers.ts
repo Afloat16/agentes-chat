@@ -210,6 +210,9 @@ export const OP_ROUTES: Readonly<Record<MachineOp, "machine" | "agent">> = {
   "phone.look": "machine",
   // The Mac's own pick of iPhones on its Wi-Fi, kept beside its phones' locks.
   "phone.wifi": "machine",
+  // Root takes each hold in the agent's slice (`holds.ts`), and checks its program is the agent's.
+  "keep.start": "machine",
+  "keep.end": "machine",
 };
 
 type AccessRequestOp = Extract<MachineRequest, { op: "access.request" }>;
@@ -320,6 +323,11 @@ export interface HandlerContext {
   desktopTaken?: (agentId: string) => void;
   /** The phones this computer reaches (`PHONES_PROTOCOL`); without it every phone op answers `phone_missing`. */
   phones?: PhoneManager;
+  /** `KEEP_RUNNING_PROTOCOL` (system mode under systemd): the agents' holds; without it `keep.*` is `unsupported`. */
+  keep?: {
+    start(agent: AgentScope, req: Extract<MachineRequest, { op: "keep.start" }>): Promise<MachineReplies["keep.start"]>;
+    end(req: Extract<MachineRequest, { op: "keep.end" }>): Promise<MachineReplies["keep.end"]>;
+  };
 }
 
 export interface RequestScope {
@@ -573,6 +581,10 @@ export const PAUSED = "The owner paused this computer. Nothing new starts here u
 const workStream = (req: MachineRequest) =>
   req.op === "stream.open" && (req.kind === "terminal" || req.mode === "control");
 
+/** Where `keep_running` has no lock to take: anywhere but a Linux computer under systemd, each agent its own user. */
+export const KEEP_UNSUPPORTED =
+  "This computer can't keep programs running for agents: that needs Linux with systemd, each agent as its own user.";
+
 /**
  * Runs one request; throws RunnerError (or fs errors) on failure. An error's text leaves redacted like an answer
  * (ADR 0144): a page's error can quote what was just typed.
@@ -645,6 +657,12 @@ async function routeRequest(ctx: HandlerContext, req: MachineRequest, scope: Req
     return out;
   }
   if (req.op === "access.request" || req.op === "access.reduce") return handleAccess(ctx, req);
+  if (req.op === "keep.start" || req.op === "keep.end") {
+    if (!ctx.keep) throw new RunnerError("unsupported", KEEP_UNSUPPORTED);
+    if (req.op === "keep.end") return ctx.keep.end(req);
+    if (!req.agent) throw new RunnerError("bad_request", "A hold belongs to an agent");
+    return ctx.keep.start(req.agent, req);
+  }
   // Protocol 13: accounts belong to the machine, not to an agent.
   if (req.op === "account") return handleAccount(ctx, req);
   // Protocol 15: messages for a turn already running (never new work: a paused computer still takes them).

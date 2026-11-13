@@ -15771,6 +15771,7 @@ export const en = {
         listingTasks: "Looked at the tasks",
         checkingTask: "Checked a task",
         cancelingTask: "Canceled a task",
+        keepingRunning: "Kept a program running",
         uploadingArtifact: "Sent a file to the Drive",
         gettingContext: "Looked up the context",
         cancelingReminder: "Canceled a reminder",
@@ -15885,6 +15886,7 @@ export const en = {
       listingTasks: "looking at the tasks",
       checkingTask: "checking a task",
       cancelingTask: "canceling a task",
+      keepingRunning: "keeping a program running",
       uploadingArtifact: "sending a file to the Drive",
       gettingContext: "looking up the context",
       cancelingReminder: "canceling a reminder",
@@ -17429,6 +17431,23 @@ export const en = {
     },
     closeAsk: "{{name}} waits 2 min for you to come back.",
     openAccess: "Open Tools and access",
+    /**
+     * What the agent keeps running on its computer (`keep_running`, ADR 0176): each line what is kept, then which
+     * agent kept it, since when and until when. Never "awake", "sleep" or "pause": people see what runs for them.
+     */
+    kept: {
+      title: "Kept running",
+      meta: "{{name}} · since {{since}} · {{until}}",
+      untilStops: "until it stops",
+      untilClosed: "until its browser closes",
+      until: "until {{time}}",
+      stop: "Stop",
+      stopOf: "Stop “{{what}}”",
+      actions: "Actions for “{{what}}”",
+      count_one: "Kept running · {{count}}",
+      count_other: "Kept running · {{count}}",
+      stopFailed: "Couldn't stop it. Try again.",
+    },
     phone: {
       now: "Now",
       trackpad: "Trackpad",
