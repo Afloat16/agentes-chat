@@ -901,6 +901,11 @@ messages, routing decisions and runs in order, and `GET /messages/{messageId}/ex
 did or did not start a run: ids, codes, times and sizes, never a message's text or what a tool was given
 or answered. `GET /orgs/{orgId}/tool-calls` lists the tools a workspace's agents called (`?groupBy=tool`
 for counts): which tool, whether it is the server's own or a connected app's, and how each call ended.
+`GET /orgs/{orgId}/connections` lists what a workspace connected (apps, mailboxes, databases) with each
+one's state and last error, `GET /orgs/{orgId}/audit` its audit log without the entries' details,
+`GET /orgs/{orgId}/asks` what its agents asked of people and of each other (`?open=true` for what still
+waits) and `GET /orgs/{orgId}/routines` its routines with their latest firings: never a credential, what
+was asked or answered, or a routine's instructions.
 `GET /jobs` lists the job queue without the jobs' payloads (`?stuck=true` for the ones nobody took,
 `?summary=true` for counts by kind and status), `GET /usage` adds up the tokens and cost of model calls
 for the instance, a workspace, an agent or a run, and `GET /orgs/{orgId}/machines` and

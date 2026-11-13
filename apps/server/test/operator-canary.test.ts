@@ -96,8 +96,15 @@ const KEPT: Record<string, string[]> = {
     "data.data.code",
     "data.data.refusal",
   ],
-  approvals: ["tool", "decided_by_user_id"],
-  agent_questions: ["answered_by_user_id"],
+  // The people an ask is for and who answered it, by their ids.
+  approvals: ["tool", "decided_by_user_id", "owner_user_id", "approvers.userIds"],
+  agent_questions: ["answered_by_user_id", "requested_for_user_id"],
+  secret_requests: ["requested_for_user_id"],
+  browser_handoffs: ["kind", "status"],
+  // Never `details`: who did what to what, as the server's own code names both.
+  audit_log: ["actor_type", "actor_id", "action", "target_type", "target_id", "outcome", "on_behalf_of_user_id"],
+  routines: ["name", "trigger_type", "cron", "timezone", "event", "paused_reason", "target.type"],
+  routine_runs: ["trigger", "status", "code"],
   routing_decisions: ["strategy", "error"],
   outbox: ["kind", "locked_by", "last_error"],
   usage_records: ["provider", "model", "billed_to"],
@@ -110,8 +117,10 @@ const KEPT: Record<string, string[]> = {
   claude_auth_settings: ["method", "rollout"],
   connector_usage_days: ["connector", "via", "tool"],
   composio_usage_days: ["toolkit", "action"],
-  connector_connections: ["connector"],
-  mail_accounts: ["provider"],
+  // A connection is the service it is of, what its workspace named it, its state and its last error's start.
+  connector_connections: ["connector", "label", "auth_type", "status", "last_error"],
+  mail_accounts: ["provider", "via", "preset", "label", "status", "last_error"],
+  db_connections: ["label", "status", "last_error"],
 };
 
 /** The places the proof is about: each holds a canary before any read, and after every column got one. */
@@ -123,7 +132,11 @@ const PLACES: [what: string, table: string, value: string, where?: string][] = [
   ["an agent's instructions", "agents", "instructions"],
   ["a job's payload with a link", "outbox", "payload->'template'->>'url'"],
   ["an audit entry's details", "audit_log", "details::text"],
+  ["an approval's parameters", "approvals", "params::text"],
+  ["a question's text", "agent_questions", "text"],
+  ["a routine's instructions", "routines", "prompt"],
   ["a credential", "provider_credentials", "secret_ciphertext"],
+  ["a connection's credential", "connector_connections", "secret_ciphertext"],
   ["a session", "sessions", "token"],
   ["a verification code", "verifications", "value"],
   ["a push token", "push_devices", "token"],
@@ -379,17 +392,29 @@ beforeAll(async () => {
   await db
     .insert(schema.providerCredentials)
     .values({ ...sealed, orgId, provider: "openai", label: "canary credential label", keyHint: "canary-hint" });
-  // What the connectors' counts read: a custom server (only its host is ever told), a mailbox and a database.
-  await db.insert(schema.connectorConnections).values({
-    ...sealed,
+  // What a workspace connected: a custom server (only its host is ever told) and its tools, a mailbox and a
+  // database. A connection's label and its last error's first characters are returned by design.
+  const [server] = await db
+    .insert(schema.connectorConnections)
+    .values({
+      ...sealed,
+      orgId,
+      connector: "custom:canary-server",
+      label: "Billing server",
+      serverUrl: "https://mcp.example.com/canary-path?access=canary-access",
+      authType: "api_key",
+      toolPrefix: "canary_prefix",
+      accountLabel: "canary account",
+      lastError: failed,
+    })
+    .returning({ id: schema.connectorConnections.id });
+  await db.insert(schema.customTools).values({
     orgId,
-    connector: "custom:canary-server",
-    label: "canary connection label",
-    serverUrl: "https://mcp.example.com/canary-path?access=canary-access",
-    authType: "api_key",
-    toolPrefix: "canary_prefix",
-    accountLabel: "canary account",
-    lastError: "canary connection error",
+    connectionId: server?.id ?? "",
+    name: "canary_tool",
+    description: "canary tool description",
+    label: "canary tool label",
+    access: "read",
   });
   await db.insert(schema.mailAccounts).values({
     ...sealed,
@@ -397,17 +422,19 @@ beforeAll(async () => {
     provider: "gmail",
     via: "composio",
     address: "canary-mailbox@example.com",
-    label: "canary mailbox",
+    label: "Support",
     status: "active",
+    lastError: failed,
     username: "canary-user",
   });
   await db.insert(schema.dbConnections).values({
     ...sealed,
     orgId,
-    label: "canary database",
+    label: "Production",
     host: "canary-db.example.com",
     database: "canary_db",
     username: "canary_user",
+    lastError: failed,
   });
   await db.insert(schema.secretRequests).values({
     orgId,
@@ -549,13 +576,48 @@ beforeAll(async () => {
     })
     .returning({ id: schema.skills.id });
   await db.insert(schema.agentSkills).values({ orgId, agentId, skillId: skill?.id ?? "" });
-  await db.insert(schema.routines).values({
+  // A routine's name is returned by design; its instructions, the words of its schedule and its firings' reports never.
+  const [routine] = await db
+    .insert(schema.routines)
+    .values({
+      orgId,
+      agentId,
+      name: "Morning report",
+      prompt: "canary routine prompt",
+      target: { type: "dm", note: "canary target" },
+      triggerType: "schedule",
+      phrase: "canary every morning",
+      description: "canary schedule",
+      cron: "0 9 * * *",
+      timezone: "America/Sao_Paulo",
+      rule: { freq: "daily", timezone: "America/Sao_Paulo", note: "canary rule" },
+      pausedReason: "creator_no_access",
+    })
+    .returning({ id: schema.routines.id });
+  await db.insert(schema.routineRuns).values({
     orgId,
-    agentId,
-    name: "canary routine",
-    prompt: "canary routine prompt",
-    target: { type: "dm" },
-    triggerType: "schedule",
+    routineId: routine?.id ?? "",
+    at: new Date(),
+    trigger: "event",
+    status: "failed",
+    code: "error",
+    summary: "canary summary",
+    event: { body: "canary event" },
+    dedupeKey: "canary-delivery",
+    agentRunId: run.id,
+  });
+  await db.insert(schema.agentConsultations).values({
+    orgId,
+    askerRunId: run.id,
+    askerAgentId: agentId,
+    targetAgentId: agentId,
+    channelId,
+    messageId: crypto.randomUUID(),
+    waitId: "canary-wait",
+    question: "canary consultation",
+    chain: [agentId],
+    answer: "canary consultation answer",
+    expiresAt: soon,
   });
   const person = { createdByType: "person", createdById: ownerId } as const;
   const [task] = await db
@@ -718,6 +780,7 @@ beforeAll(async () => {
       `/orgs/${id}/runs?groupBy=error`,
       `/orgs/${id}/tool-calls?limit=200`,
       ...["tool", "agent", "outcome"].map((by) => `/orgs/${id}/tool-calls?groupBy=${by}`),
+      ...["connections", "audit", "asks", "routines"].map((list) => `/orgs/${id}/${list}?limit=200`),
       `/analytics/work/orgs/${id}?${days}`,
     ]),
     ...users.flatMap((id) => [`/users/${id}`, ref(id, false)]),
@@ -725,6 +788,12 @@ beforeAll(async () => {
     ...machines.map((id) => `/machines/${id}`),
     ...runs.flatMap((id) => [`/runs/${id}/trace`, `/usage?runId=${id}`, `/jobs?runId=${id}`, ref(id)]),
     `/orgs/${orgId}/tool-calls?runId=${run.id}&tool=get`,
+    `/orgs/${orgId}/audit?action=tool.&actorType=agent&actorId=${agentId}&targetType=tool&targetId=lookup`,
+    `/orgs/${orgId}/audit?runId=${run.id}&from=2020-01-01T00:00:00Z`,
+    `/orgs/${orgId}/asks?open=true&agentId=${agentId}`,
+    ...["approval", "question", "secret", "handoff", "consultation"].map((kind) => `/orgs/${orgId}/asks?kind=${kind}`),
+    `/orgs/${orgId}/asks?runId=${run.id}&open=false`,
+    `/orgs/${orgId}/routines?agentId=${agentId}`,
     ...messages.map((id) => `/messages/${id}/explain`),
     `/orgs/${orgId}/timeline?channelId=${channelId}&limit=200`,
     `/orgs/${orgId}/timeline?messageId=${look}`,
@@ -753,6 +822,11 @@ beforeAll(async () => {
     [`/orgs/${orgId}/timeline`, 400],
     [`/orgs/${orgId}/tool-calls?runId=${UNKNOWN}`, 404],
     [`/orgs/${orgId}/tool-calls?outcome=maybe`, 400],
+    ...["connections", "audit", "asks", "routines"].map((list): Call => [`/orgs/${UNKNOWN}/${list}`, 404]),
+    [`/orgs/${orgId}/connections?cursor=nope`, 400],
+    [`/orgs/${orgId}/audit?from=yesterday`, 400],
+    [`/orgs/${orgId}/asks?kind=wish`, 400],
+    [`/orgs/${orgId}/routines?agentId=nope`, 400],
     ["/users", 400],
     [ref("two words"), 400],
     [ref("@dev", false), 400],

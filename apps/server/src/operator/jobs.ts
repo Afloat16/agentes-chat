@@ -108,7 +108,7 @@ const Usage = z
   })
   .openapi("OperatorUsage");
 
-const dated = <T extends { from?: string; to?: string }>({ from, to, ...query }: T) => ({
+export const dated = <T extends { from?: string; to?: string }>({ from, to, ...query }: T) => ({
   ...query,
   from: from ? new Date(from) : undefined,
   to: to ? new Date(to) : undefined,

@@ -1,7 +1,7 @@
 import { and, asc, count, type Database, desc, eq, gte, lt, or, type SQL, schema, sql } from "@agenteschat/db";
 import { decodeCursor, encodeCursor } from "./cursor";
 import { ValidationError } from "./errors";
-import { codeOf, errorText, ms, orgExists, type PageQuery, UuidCursor, uuidOf } from "./operator-paging";
+import { codeOf, errorText, micros, ms, orgExists, type PageQuery, UuidCursor, uuidOf } from "./operator-paging";
 import { LANE_SLOW_FOR_MS } from "./outbox";
 
 /**
@@ -97,8 +97,7 @@ const jobsIn = (q: JobFilters, now: Date) =>
     q.to ? lt(outbox.createdAt, q.to) : undefined,
   );
 
-// The stored time whole, microseconds included, which a JS Date drops: what a page's cursor carries.
-const QUEUED_AT = sql<string>`to_char(${outbox.createdAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+const QUEUED_AT = micros(outbox.createdAt);
 
 /**
  * Jobs of every workspace and of none, newest first, in keyset pages.
