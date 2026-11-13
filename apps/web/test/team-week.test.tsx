@@ -155,3 +155,43 @@ test("the day's card: what waits on the person and what is stuck with its cause,
   expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/c/${GENERAL_ID}`);
   expect(s.calls.some((c) => c.method === "orgs.actOnTeamWeek")).toBe(false);
 });
+
+test("suggestions: archiving is its own tap, never in the bulk one, and each can be put away alone", async () => {
+  const s = lodiWeek(
+    card({
+      stats: { done: 12, stuck: 0, waiting: 0, spentNanoUsd: 0, budgetNanoUsd: 0 },
+      worked: [],
+      proposalIds: ["p-retire", "p-model"],
+      rows: [
+        { id: "unanswered:g", kind: "unanswered", channelId: GENERAL_ID, count: 4 },
+        { id: `retire:${ADA_ID}`, kind: "retire", agentId: ADA_ID, proposalId: "p-retire" },
+        { id: `model:${ADA_ID}`, kind: "model", agentId: ADA_ID, proposalId: "p-model", from: "big-1", to: "mid-1" },
+      ],
+      done: { "unanswered:g": { byUserId: "u-walter", at: new Date().toISOString(), skipped: true } },
+    }),
+  );
+  await renderApp(`/org/${ORG_ID}/dm/agent/${LODI_ID}`, { api: createFakeApi(s) });
+  await settle(8);
+  const group = screen.getByRole("group", { name: "Semana da equipe" });
+  expect(group.textContent).toContain("Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.");
+  expect(group.textContent).toContain("com mid-1 em vez de big-1");
+  // The one already put away says so and has no button left.
+  expect(group.textContent).toContain("Dispensada");
+  expect(screen.queryByRole("button", { name: "Propor um agente" })).toBeNull();
+  expect(group.textContent).toContain("2 sugestões");
+  // "Aplicar" in bulk covers the model alone: an agent is archived by its own button.
+  expect(screen.getByRole("button", { name: "Arquivar" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Aplicar a sugestão" })).toBeTruthy();
+  const skips = screen.getAllByRole("button", { name: "Dispensar" });
+  expect(skips).toHaveLength(2);
+  await act(async () => {
+    fireEvent.click(skips[0] as HTMLElement);
+  });
+  await settle(4);
+  expect(s.calls.find((c) => c.method === "orgs.actOnTeamWeek")?.args).toEqual([
+    ORG_ID,
+    "m-week",
+    { rowId: `retire:${ADA_ID}`, skip: true },
+  ]);
+  expect(s.calls.some((c) => c.method === "proposals.accept")).toBe(false);
+});

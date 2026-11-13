@@ -52,7 +52,11 @@ export type TeamWeekRow =
       code: string;
       count: number;
       held: boolean;
-    };
+    }
+  /** An agent idle for four weeks, with no routine and no open task: a settings proposal to archive it. */
+  | { id: string; kind: "retire"; agentId: string; proposalId: string }
+  /** An agent on a large model whose work is light: a settings proposal for the next model down. */
+  | { id: string; kind: "model"; agentId: string; proposalId: string; from: string; to: string };
 
 /** The causes of a stuck row this build words. */
 export const STUCK_CAUSES = ["budget", "plan", "computer", "key", "ai", "other"] as const;
@@ -73,11 +77,13 @@ export interface TeamWeekCard {
   worked: TeamWeekHighlight[];
   rows: TeamWeekRow[];
   proposalIds: string[];
-  done: Record<string, { byUserId: string; at: string; routineId?: string }>;
+  /** Rows applied on the card, or put away alone (`skipped`), by row id. */
+  done: Record<string, { byUserId: string; at: string; routineId?: string; skipped?: true }>;
   dismissedAt: string | null;
 }
 
-export type TeamWeekAct = { dismiss: true } | { rowId: string; text?: string };
+/** "Agora não" for the card, a row applied, or one suggestion put away alone (`skip`, "Dispensar"). */
+export type TeamWeekAct = { dismiss: true } | { rowId: string; text?: string; skip?: true };
 
 /** The row kinds this build words and applies. A newer server's other kinds are left off the card. */
 const ROW_KINDS: readonly TeamWeekRow["kind"][] = [
@@ -90,6 +96,8 @@ const ROW_KINDS: readonly TeamWeekRow["kind"][] = [
   "stalled",
   "waiting",
   "stuck",
+  "retire",
+  "model",
 ];
 
 /** What waits on the reader and what is stuck lead the card, whichever list they came in. */
@@ -119,8 +127,11 @@ export function teamWeekCardOf(meta: Record<string, unknown> | null | undefined)
   };
 }
 
-/** Where a row stands, from the card and live data: open, applied (Undo where it has one), or nothing left to do. */
-export type TeamWeekRowState = "open" | "done" | "gone";
+/**
+ * Where a row stands, from the card and live data: open, applied (Undo where it has one), put away by its reader, or
+ * nothing left to do.
+ */
+export type TeamWeekRowState = "open" | "done" | "skipped" | "gone";
 
 export function teamWeekRowState(
   card: TeamWeekCard,
@@ -132,7 +143,7 @@ export function teamWeekRowState(
     waiting?: string[];
   },
 ): TeamWeekRowState {
-  if (card.done[row.id]) return "done";
+  if (card.done[row.id]) return card.done[row.id]?.skipped ? "skipped" : "done";
   if (row.kind === "waiting")
     return !live.waiting || row.ids.some((id) => live.waiting?.includes(id)) ? "open" : "done";
   if (row.kind === "approvals") {
@@ -141,7 +152,7 @@ export function teamWeekRowState(
       ? "open"
       : "done";
   }
-  if (row.kind === "budget" || row.kind === "channel") {
+  if ("proposalId" in row) {
     const p = live.proposals.find((x) => x.id === row.proposalId);
     if (!p || p.status === "pending") return p?.stale ? "gone" : "open";
     return p.status === "accepted" ? "done" : "gone";
@@ -150,10 +161,14 @@ export function teamWeekRowState(
 }
 
 /**
- * Rows "Aplicar as N" runs: open ones that apply in one click. Approvals are read and decided one by one, and what
- * waits or is stuck is opened where it is.
+ * Rows "Aplicar as N" runs: open ones that apply in one click. Approvals are read and decided one by one, what waits
+ * or is stuck is opened where it is, and archiving an agent is its own tap.
  */
-export const appliesInBulk = (row: TeamWeekRow) => !LEADS.includes(row.kind);
+export const appliesInBulk = (row: TeamWeekRow) => !LEADS.includes(row.kind) && row.kind !== "retire";
+
+/** Rows with "Dispensar": a suggestion its reader can put away for good, alone. */
+export const skipsAlone = (row: TeamWeekRow) =>
+  row.kind === "retire" || row.kind === "model" || row.kind === "unanswered";
 
 /** Where a row's button goes when it opens a screen in place of applying a fix. Null: it applies. */
 export type TeamWeekPlace =
@@ -209,6 +224,8 @@ export interface TeamWeekNames {
   join: (names: string[]) => string;
   /** "seg., 9:41": when an approval started waiting. */
   since: (iso: string) => string;
+  /** A model's name from its id. Absent: the id as it is. */
+  model?: (id: string) => string;
 }
 
 /** A row's title, its line and its button, in the reader's language. */
@@ -260,6 +277,22 @@ export function teamWeekRowText(t: TFunction, locale: string, row: TeamWeekRow, 
         action: say("teamWeek.stalled.action"),
       };
     }
+    case "retire":
+      return {
+        title: say("teamWeek.retire.title", named(row.agentId)),
+        line: say("teamWeek.retire.line"),
+        action: say("teamWeek.retire.action"),
+      };
+    case "model":
+      return {
+        title: say("teamWeek.model.title", {
+          name: n.agent(row.agentId),
+          from: n.model?.(row.from) ?? row.from,
+          to: n.model?.(row.to) ?? row.to,
+        }),
+        line: say("teamWeek.model.line"),
+        action: say("rightHand.card.apply"),
+      };
     case "waiting":
       return {
         title: say("teamWeek.waiting.title", { count: row.count }),

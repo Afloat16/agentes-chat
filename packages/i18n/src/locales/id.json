@@ -2563,6 +2563,21 @@
       },
       "action": "Buka percakapan"
     },
+    "retire": {
+      "title": "Arsipkan {{name}}",
+      "line": "Tidak ada pekerjaan selama 4 minggu, tanpa rutinitas dan tanpa tugas terbuka.",
+      "action": "Arsipkan"
+    },
+    "model": {
+      "title": "{{name}} dengan {{to}} sebagai ganti {{from}}",
+      "line": "Pekerjaannya ringan: jawaban singkat dalam satu atau dua langkah."
+    },
+    "skip": "Abaikan",
+    "skipped": "Diabaikan",
+    "why": {
+      "idle": "Tidak ada pekerjaan selama 4 minggu, tanpa rutinitas dan tanpa tugas terbuka.",
+      "lightWork": "Pekerjaannya cukup ringan untuk model yang lebih kecil."
+    },
     "applied": "Diterapkan",
     "undo": "Urungkan",
     "gone": "Tidak berlaku lagi",

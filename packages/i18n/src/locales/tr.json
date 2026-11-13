@@ -2657,6 +2657,21 @@
       },
       "action": "Sohbeti aç"
     },
+    "retire": {
+      "title": "{{name}} ajanını arşivle",
+      "line": "4 haftadır iş yok, rutin yok, açık görev yok.",
+      "action": "Arşivle"
+    },
+    "model": {
+      "title": "{{name}} için {{from}} yerine {{to}}",
+      "line": "İşi hafif: bir iki adımda kısa yanıtlar."
+    },
+    "skip": "Yok say",
+    "skipped": "Yok sayıldı",
+    "why": {
+      "idle": "4 haftadır iş yok, rutin yok, açık görev yok.",
+      "lightWork": "İşi daha küçük bir model için yeterince hafif."
+    },
     "applied": "Uygulandı",
     "undo": "Geri al",
     "gone": "Artık geçerli değil",

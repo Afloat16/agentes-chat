@@ -148,3 +148,17 @@ test("the day's card: what waits opens Atividade, what is stuck its conversation
     action: "Abrir conversa",
   });
 });
+
+test("suggestions: a row with a proposal applies it, and the ones that can be put away alone have Dispensar", () => {
+  const card = src("right-hand/TeamWeekCard.tsx");
+  expect(card).toContain(
+    'else if ("proposalId" in row) await decide.mutateAsync({ id: row.proposalId, decision: "accept" });',
+  );
+  expect(card).toContain("skipsAlone(row)");
+  expect(card).toContain("act: { rowId: row.id, skip: true }");
+  expect(card).toContain('label={t("teamWeek.skip")}');
+  expect(card).toContain('t(state === "gone" ? "teamWeek.gone" : "teamWeek.skipped")');
+  // Nothing takes a second tap while one is on its way.
+  expect(card).toContain("disabled={busy || skipping}");
+  expect(card).toContain("disabled={busy || pending}");
+});

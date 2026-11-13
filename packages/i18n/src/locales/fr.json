@@ -2763,6 +2763,21 @@
       },
       "action": "Ouvrir la conversation"
     },
+    "retire": {
+      "title": "Archiver {{name}}",
+      "line": "Aucun travail depuis 4 semaines, ni routine ni tâche ouverte.",
+      "action": "Archiver"
+    },
+    "model": {
+      "title": "{{name}} avec {{to}} à la place de {{from}}",
+      "line": "Son travail est léger : des réponses courtes en une ou deux étapes."
+    },
+    "skip": "Ignorer",
+    "skipped": "Ignorée",
+    "why": {
+      "idle": "Aucun travail depuis 4 semaines, ni routine ni tâche ouverte.",
+      "lightWork": "Son travail est assez léger pour un modèle plus petit."
+    },
     "applied": "Appliqué",
     "undo": "Annuler",
     "gone": "Ne s’applique plus",

@@ -8,7 +8,9 @@ import {
   decideProposal,
   enqueueTeamWeeks,
   getLodiPrefs,
+  IDLE_REASON,
   insertMessage,
+  LIGHT_WORK_REASON,
   LODI_PREFS_DEFAULTS,
   lastTeamWeekSlot,
   lodiPrefsOf,
@@ -18,6 +20,7 @@ import {
   postPersonMessage,
   postTeamWeek,
   RIGHT_HAND,
+  readLodiPrefs,
   requestKey,
   SET_TEAM_WEEK_TOOL,
   setLodiPrefs,
@@ -157,12 +160,13 @@ describe("the card", () => {
         createdAt: day(5),
       })
       .returning();
-    // Three questions nobody answered in #general.
+    // Three questions nobody answered in #general, from two people.
+    const asker = await addMember(fx.db, fx.org.id, "member", "nina");
     for (const n of [2, 3, 4])
       await insertMessage(fx.db, {
         orgId: fx.org.id,
         channelId: fx.general.id,
-        author: { type: "person", userId: fx.owner.id },
+        author: { type: "person", userId: n === 4 ? asker.id : fx.owner.id },
         body: `Alguém sabe emitir nota fiscal ${n}?`,
         createdAt: day(n),
       });
@@ -436,6 +440,294 @@ describe("the card", () => {
       day: 1,
       weekHour: 9,
     });
+  });
+});
+
+describe("suggestions on the week's card", () => {
+  const WEEK = 7 * DAY;
+  const cardOf = async (fx: Fixture, messageId: string) => {
+    const [m] = await fx.db.select().from(schema.messages).where(eq(schema.messages.id, messageId));
+    const card = teamWeekCardOf(m?.meta);
+    if (!m || !card) throw new Error("no card");
+    return card;
+  };
+  const post = (fx: Fixture, userId: string, slot: Date) =>
+    postTeamWeek({ db: fx.db, pubsub: fx.pubsub }, fx.org.id, { userId, slot: slot.toISOString(), period: "week" });
+  /** An agent made well before the card's four weeks. */
+  const agent = async (fx: Fixture, name: string, model = "claude-sonnet-5-5", days = 60) => {
+    const [a] = await fx.db
+      .insert(schema.agents)
+      .values({
+        orgId: fx.org.id,
+        name,
+        handle: name.toLowerCase(),
+        role: "Research",
+        instructions: "",
+        model,
+        ownerUserId: fx.owner.id,
+        createdAt: new Date(SLOT.getTime() - days * DAY),
+      })
+      .returning();
+    if (!a) throw new Error("no agent");
+    // In a channel, so the card has no other row for it.
+    await fx.db.insert(schema.channelMembers).values({ orgId: fx.org.id, channelId: fx.general.id, agentId: a.id });
+    return a;
+  };
+  /** `n` done runs of an agent in the card's last days, each with its model calls and output tokens. */
+  const worked = async (fx: Fixture, agentId: string, n: number, turns: number, tokens: number) => {
+    for (let i = 0; i < n; i++) {
+      const [r] = await fx.db
+        .insert(schema.agentRuns)
+        .values({
+          orgId: fx.org.id,
+          agentId,
+          channelId: fx.general.id,
+          threadRootId: crypto.randomUUID(),
+          triggerMessageId: crypto.randomUUID(),
+          trigger: "mention",
+          hop: 1,
+          status: "done",
+          turns,
+          createdAt: new Date(SLOT.getTime() - (i + 1) * HOUR),
+        })
+        .returning();
+      await fx.db.insert(schema.usageRecords).values({
+        orgId: fx.org.id,
+        agentId,
+        runId: r?.id,
+        provider: "anthropic",
+        model: "claude-opus-5-5",
+        requestedModel: "claude-opus-5-5",
+        inputTokens: 1000,
+        outputTokens: tokens,
+        costNanoUsd: 1,
+        createdAt: new Date(SLOT.getTime() - (i + 1) * HOUR),
+      });
+    }
+  };
+  const proposal = async (fx: Fixture, id: string) =>
+    (await fx.db.select().from(schema.contextProposals).where(eq(schema.contextProposals.id, id)))[0];
+
+  test("an idle agent is offered for archiving, one with a routine or an open task is not", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const ivo = await agent(f, "Ivo");
+    const rita = await agent(f, "Rita");
+    const tito = await agent(f, "Tito");
+    await f.db.insert(schema.routines).values({
+      orgId: f.org.id,
+      agentId: rita.id,
+      name: "Daily",
+      prompt: "Check the inbox",
+      target: { type: "dm" },
+      triggerType: "schedule",
+    });
+    await f.db.insert(schema.issues).values({
+      orgId: f.org.id,
+      number: 20,
+      title: "Write the report",
+      assigneeType: "agent",
+      assigneeId: tito.id,
+      createdByType: "person",
+      createdById: f.owner.id,
+    });
+    // Dev was made days ago: too new to be called idle.
+    const id = (await post(f, f.owner.id, SLOT)) as string;
+    const card = await cardOf(f, id);
+    expect(card.rows).toEqual([]);
+    expect(card.moreRows).toEqual([
+      { id: `retire:${ivo.id}`, kind: "retire", agentId: ivo.id, proposalId: expect.any(String) },
+    ]);
+    const row = card.moreRows?.[0] as { proposalId: string };
+    expect(card.proposalIds).toEqual([row.proposalId]);
+    expect(await proposal(f, row.proposalId)).toMatchObject({
+      agentId: ivo.id,
+      rationale: IDLE_REASON,
+      requestedByUserId: f.owner.id,
+      settings: [{ field: "archive", from: false, to: true }],
+    });
+    // One tap, as the administrator who taps, with its receipt (Undo) on the card. No model was called for any of it.
+    await decideProposal(f.db, f.owner.id, f.org.id, row.proposalId, "accept", { pubsub: f.pubsub });
+    const [gone] = await f.db.select().from(schema.agents).where(eq(schema.agents.id, ivo.id));
+    expect(gone?.archivedAt).not.toBeNull();
+    const [receipt] = await f.db.select().from(schema.agentActions).where(eq(schema.agentActions.messageId, id));
+    expect(receipt?.kind).toBe("agent.settings_changed");
+    expect(f.provider.calls).toHaveLength(0);
+    // A member's card, and anyone's daily one, never offer it.
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    expect(await post(f, bia.id, SLOT)).toBeNull();
+  });
+
+  test("an agent on a large model with light work is offered the next one down, never the smallest", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const light = await agent(f, "Opa", "claude-opus-5-5");
+    const heavy = await agent(f, "Hugo", "claude-opus-5-5");
+    const few = await agent(f, "Fia", "claude-opus-5-5");
+    const medium = await agent(f, "Mia");
+    await worked(f, light.id, 19, 1, 300);
+    // Two of 21 are long: still nine in ten light.
+    await worked(f, light.id, 2, 6, 5000);
+    await worked(f, heavy.id, 20, 5, 4000);
+    await worked(f, few.id, 5, 1, 100);
+    await worked(f, medium.id, 20, 1, 100);
+    const card = await cardOf(f, (await post(f, f.owner.id, SLOT)) as string);
+    const rows = card.moreRows ?? [];
+    expect(rows).toEqual([
+      {
+        id: `model:${light.id}`,
+        kind: "model",
+        agentId: light.id,
+        proposalId: expect.any(String),
+        from: "claude-opus-5-5",
+        to: "claude-sonnet-5-5",
+      },
+    ]);
+    const row = rows[0] as { proposalId: string };
+    expect(await proposal(f, row.proposalId)).toMatchObject({
+      rationale: LIGHT_WORK_REASON,
+      settings: [{ field: "model", from: "claude-opus-5-5", to: "claude-sonnet-5-5" }],
+    });
+    await decideProposal(f.db, f.owner.id, f.org.id, row.proposalId, "accept", { pubsub: f.pubsub });
+    const [now] = await f.db.select().from(schema.agents).where(eq(schema.agents.id, light.id));
+    expect(now?.model).toBe("claude-sonnet-5-5");
+    // On the middle model it is offered nothing smaller, however light its work.
+    await worked(f, light.id, 25, 1, 100);
+    const next = await post(f, f.owner.id, new Date(SLOT.getTime() + 5 * WEEK));
+    expect(next && (await cardOf(f, next)).moreRows?.some((r) => r.kind === "model")).toBeFalsy();
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
+  test("put away, it never returns for any administrator. Left alone, it returns after four weeks", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const ivo = await agent(f, "Ivo");
+    const caio = await addMember(f.db, f.org.id, "admin", "caio");
+    const deps = { db: f.db, pubsub: f.pubsub };
+    const offered = async (userId: string, slot: Date) => {
+      const id = await post(f, userId, slot);
+      const row = id ? (await cardOf(f, id)).moreRows?.[0] : undefined;
+      return { id: id as string, row: row?.kind === "retire" ? row : undefined };
+    };
+
+    // The oldest idle agent, on each administrator's card, each with a proposal of their own.
+    const mine = await offered(f.owner.id, SLOT);
+    const theirs = await offered(caio.id, SLOT);
+    expect(mine.row?.agentId).toBe(ivo.id);
+    expect(theirs.row?.agentId).toBe(ivo.id);
+    expect(theirs.row?.proposalId).not.toBe(mine.row?.proposalId);
+    // Left alone: not again the next week, nor the third. Nothing else to say, so no card at all.
+    expect(await post(f, f.owner.id, new Date(SLOT.getTime() + WEEK))).toBeNull();
+    expect(await post(f, f.owner.id, new Date(SLOT.getTime() + 3 * WEEK))).toBeNull();
+    // Four weeks on it is offered once more, with a fresh proposal: the old one can't be applied any longer.
+    const again = await offered(f.owner.id, new Date(SLOT.getTime() + 4 * WEEK));
+    expect(again.row?.agentId).toBe(ivo.id);
+    expect(again.row?.proposalId).not.toBe(mine.row?.proposalId);
+    expect((await proposal(f, mine.row?.proposalId ?? ""))?.status).toBe("stale");
+
+    // "Dispensar": refused as the person, the other administrator's copy closed, the row marked on the card.
+    const card = await actOnTeamWeek(deps, f.owner.id, f.org.id, again.id, { rowId: `retire:${ivo.id}`, skip: true });
+    expect(card.done[`retire:${ivo.id}`]).toMatchObject({ byUserId: f.owner.id, skipped: true });
+    expect(card.dismissedAt).toBeNull();
+    expect((await proposal(f, again.row?.proposalId ?? ""))?.status).toBe("rejected");
+    expect((await proposal(f, theirs.row?.proposalId ?? ""))?.status).toBe("stale");
+    await expect(
+      actOnTeamWeek(deps, f.owner.id, f.org.id, again.id, { rowId: `retire:${ivo.id}`, skip: true }),
+    ).rejects.toThrow();
+    // For good, and for both of them: the next idle agent takes its place, Ivo never does.
+    const lia = await agent(f, "Lia", undefined, 50);
+    const later = await offered(caio.id, new Date(SLOT.getTime() + 8 * WEEK));
+    expect(later.row?.agentId).toBe(lia.id);
+    const muchLater = await offered(f.owner.id, new Date(SLOT.getTime() + 12 * WEEK));
+    expect(muchLater.row?.agentId).toBe(lia.id);
+    const [kept] = await f.db.select().from(schema.agents).where(eq(schema.agents.id, ivo.id));
+    expect(kept?.archivedAt).toBeNull();
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
+  test("unanswered questions: two askers in a team, muted per person, and only some rows are put away alone", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const caio = await addMember(f.db, f.org.id, "admin", "caio");
+    const ask = (userId: string, n: number, slot = SLOT) =>
+      insertMessage(f.db, {
+        orgId: f.org.id,
+        channelId: f.general.id,
+        author: { type: "person", userId },
+        body: `Does anyone know how to file invoice ${n}?`,
+        createdAt: new Date(slot.getTime() - n * DAY),
+      });
+    const unanswered = async (userId: string, slot: Date) => {
+      const id = await post(f, userId, slot);
+      return {
+        id: id as string,
+        row: id ? (await cardOf(f, id)).rows.find((r) => r.kind === "unanswered") : undefined,
+      };
+    };
+    // One person asking three times is not a team's unanswered questions.
+    for (const n of [1, 2, 3]) await ask(f.owner.id, n);
+    expect((await unanswered(f.owner.id, SLOT)).row).toBeUndefined();
+    // In a personal workspace it is: the person's own questions are all there is.
+    await f.db
+      .update(schema.organizationSettings)
+      .set({ mode: "personal" })
+      .where(eq(schema.organizationSettings.orgId, f.org.id));
+    expect((await unanswered(caio.id, SLOT)).row).toMatchObject({ channelId: f.general.id, count: 3 });
+    await f.db
+      .update(schema.organizationSettings)
+      .set({ mode: "team" })
+      .where(eq(schema.organizationSettings.orgId, f.org.id));
+
+    // A second asker, four weeks later: both administrators get the row.
+    const month = new Date(SLOT.getTime() + 4 * WEEK);
+    for (const n of [1, 2]) await ask(f.owner.id, n, month);
+    await ask(caio.id, 3, month);
+    const mine = await unanswered(f.owner.id, month);
+    expect(mine.row).toMatchObject({ id: `unanswered:${f.general.id}`, count: 3 });
+    const deps = { db: f.db, pubsub: f.pubsub };
+    // "Dispensar" mutes that channel for me. Lodi is not asked anything.
+    const card = await actOnTeamWeek(deps, f.owner.id, f.org.id, mine.id, { rowId: mine.row?.id ?? "", skip: true });
+    expect(card.done[mine.row?.id ?? ""]?.skipped).toBe(true);
+    expect((await readLodiPrefs(f.db, f.org.id, f.owner.id)).prefs.muted).toEqual([`unanswered:${f.general.id}`]);
+    expect(await f.db.select().from(schema.messages).where(eq(schema.messages.authorUserId, f.owner.id))).toHaveLength(
+      5,
+    );
+    // Months later the questions go on: never again for me, still for the other administrator.
+    const later = new Date(SLOT.getTime() + 12 * WEEK);
+    for (const n of [1, 2]) await ask(f.owner.id, n, later);
+    await ask(caio.id, 3, later);
+    expect((await unanswered(f.owner.id, later)).row).toBeUndefined();
+    const theirs = await unanswered(caio.id, later);
+    expect(theirs.row).toMatchObject({ channelId: f.general.id });
+    // Left alone by them, it is not on their next week's card either.
+    const after = new Date(later.getTime() + WEEK);
+    for (const n of [1, 2]) await ask(f.owner.id, n, after);
+    await ask(caio.id, 3, after);
+    expect((await unanswered(caio.id, after)).row).toBeUndefined();
+  });
+
+  test("a row that applies a fix is not put away alone, and nobody skips a row of someone else's card", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const ivo = await agent(f, "Ivo");
+    await budgetStop(f, new Date(SLOT.getTime() - DAY));
+    const id = (await post(f, f.owner.id, SLOT)) as string;
+    const card = await cardOf(f, id);
+    const deps = { db: f.db, pubsub: f.pubsub };
+    const budget = card.rows.find((r) => r.kind === "budget");
+    await expect(
+      actOnTeamWeek(deps, f.owner.id, f.org.id, id, { rowId: budget?.id ?? "", skip: true }),
+    ).rejects.toThrow("not put away alone");
+    const caio = await addMember(f.db, f.org.id, "admin", "caio");
+    await expect(actOnTeamWeek(deps, caio.id, f.org.id, id, { rowId: `retire:${ivo.id}`, skip: true })).rejects.toThrow(
+      "someone else's",
+    );
+    // Archiving is never applied from here: it goes through its proposal, as whoever decides it.
+    await expect(actOnTeamWeek(deps, f.owner.id, f.org.id, id, { rowId: `retire:${ivo.id}` })).rejects.toThrow(
+      "its own card",
+    );
+    const [kept] = await f.db.select().from(schema.agents).where(eq(schema.agents.id, ivo.id));
+    expect(kept?.archivedAt).toBeNull();
   });
 });
 

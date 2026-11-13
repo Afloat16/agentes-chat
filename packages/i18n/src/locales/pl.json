@@ -2861,6 +2861,21 @@
       },
       "action": "Otwórz rozmowę"
     },
+    "retire": {
+      "title": "Zarchiwizuj {{name}}",
+      "line": "Od 4 tygodni bez pracy, bez rutyny i bez otwartego zadania.",
+      "action": "Archiwizuj"
+    },
+    "model": {
+      "title": "{{name}}: {{to}} zamiast {{from}}",
+      "line": "Praca jest lekka: krótkie odpowiedzi w jednym lub dwóch krokach."
+    },
+    "skip": "Odrzuć",
+    "skipped": "Odrzucono",
+    "why": {
+      "idle": "Od 4 tygodni bez pracy, bez rutyny i bez otwartego zadania.",
+      "lightWork": "Praca jest na tyle lekka, że wystarczy mniejszy model."
+    },
     "applied": "Zastosowano",
     "undo": "Cofnij",
     "gone": "Już nieaktualne",

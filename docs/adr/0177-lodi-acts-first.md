@@ -136,6 +136,19 @@ on those two, per person on unanswered questions. One left alone returns after f
 over all runs, private conversations included, so these rows never name a channel or link a run. Archiving is never
 part of "Aplicar as N".
 
+- Light work: 20 or more finished runs in four weeks, nine in ten of them with two model calls and 800 output tokens
+  at most. A run with no recorded usage never counts as light. The next model down is the provider's middle one (for
+  Claude Code, `sonnet` in place of `opus`).
+- Each administrator's card carries a proposal of its own: a settings proposal the right hand makes for a person is
+  shown to nobody else until that person sends it on, so one shared row would be hidden from the others. Putting a
+  row away refuses the reader's proposal as them and closes the copies on the other cards. An agent is never offered
+  the same suggestion again once anyone decided it, applied and undone included.
+- Unanswered questions in a team take two people asking. Put away, that channel is muted for that person
+  (`muted`). On the wire a row is put away with `{ rowId, skip: true }`, and a body that mixes a row with the card's
+  own `dismiss` is refused, so it is never read as "Agora não".
+- The two reasons reach the apps as `whyCode` `idle` and `light_work`, with the English sentence in `why` for builds
+  from before them.
+
 ### 4. Approvals digest ("Resumir aprovações esperando")
 
 When three or more approvals a person was told about wait on them, one card from the right hand in their DM, 10 to 20

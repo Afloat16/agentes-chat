@@ -8,6 +8,7 @@ import {
   useCardProposals,
   useChannels,
   useDecideProposal,
+  useModelLabel,
   useTeamWeekPrefs,
   useWaitingOnMe,
 } from "@agenteschat/client";
@@ -17,9 +18,11 @@ import { isRightHand } from "@agenteschat/client/lib/right-hand";
 import { teamWeekOn, teamWeekWhen } from "@agenteschat/client/lib/right-hand-prefs";
 import {
   appliesInBulk,
+  skipsAlone,
   type TeamWeekCard,
   type TeamWeekNames,
   type TeamWeekRow,
+  type TeamWeekRowState,
   teamWeekCardOf,
   teamWeekDoneText,
   teamWeekRowMessage,
@@ -78,6 +81,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
   // A weekly card kept by someone who no longer administers: the daily one is what they get now.
   const period = admin ? (card.period ?? "week") : "day";
   const failed = useFailed();
+  const modelLabel = useModelLabel();
   const [applying, setApplying] = useState(false);
   const locale = i18n.language;
   const names: TeamWeekNames = {
@@ -87,6 +91,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
     usd: (n) => formatUsd(locale, Math.round(n / NANO)),
     join: (list) => joinNames(list, t),
     since: (iso) => clockAt(locale, iso),
+    model: (id) => modelLabel(id) ?? id,
   };
   const rows = card.rows.map((row) => ({
     row,
@@ -113,8 +118,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
             ? `/issues/${place.number}`
             : chatHref(place.channelId)) as never,
       );
-    else if (row.kind === "budget" || row.kind === "channel")
-      await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
+    else if ("proposalId" in row) await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
     else if (row.kind === "approvals") {
       const next = row.approvalIds.find((id) => approvals.data?.find((a) => a.id === id)?.status === "pending");
       router.push(`/approval/${next ?? row.approvalIds[0]}` as never);
@@ -209,8 +213,13 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
                 action={text.action}
                 proposal={proposals.find((p) => "proposalId" in row && p.id === row.proposalId)}
                 doneText={teamWeekDoneText(t, row, lodi?.name ?? "Lodi")}
-                busy={applying}
+                busy={applying || act.isPending}
                 onApply={() => apply(row).catch(failed)}
+                onSkip={
+                  skipsAlone(row)
+                    ? () => act.mutateAsync({ messageId: message.id, act: { rowId: row.id, skip: true } }).catch(failed)
+                    : undefined
+                }
               />
             ))}
           </View>
@@ -268,12 +277,13 @@ function Fix({
   doneText,
   busy,
   onApply,
+  onSkip,
 }: {
   /** A hairline above it: every fix but the first. */
   divider: boolean;
   message: Message;
   row: TeamWeekRow;
-  state: "open" | "done" | "gone";
+  state: TeamWeekRowState;
   title: string;
   line: string;
   action: string;
@@ -281,6 +291,8 @@ function Fix({
   doneText: string;
   busy: boolean;
   onApply: () => Promise<void>;
+  /** "Dispensar": puts this one suggestion away for good. Absent on a row that has none. */
+  onSkip?: () => Promise<unknown>;
 }) {
   const { t } = useTranslation();
   const { orgId } = useOrg();
@@ -290,6 +302,7 @@ function Fix({
   const failed = useFailed();
   const actions = useAgentActions(orgId, message.channelId);
   const [pending, setPending] = useState(false);
+  const [skipping, setSkipping] = useState(false);
   const agentId = "agentId" in row ? row.agentId : null;
   const receipt = proposal?.undoActionId ? message.actions?.find((a) => a.id === proposal.undoActionId) : undefined;
   const undoable =
@@ -351,23 +364,39 @@ function Fix({
             />
           ) : null}
         </Animated.View>
-      ) : state === "gone" ? (
+      ) : state === "gone" || state === "skipped" ? (
         <Text variant="footnote" tone="muted">
-          {t("teamWeek.gone")}
+          {t(state === "gone" ? "teamWeek.gone" : "teamWeek.skipped")}
         </Text>
       ) : (
-        <Button
-          variant="secondary"
-          size="sm"
-          wide
-          label={action}
-          loading={pending}
-          disabled={busy}
-          onPress={() => {
-            setPending(true);
-            void onApply().finally(() => setPending(false));
-          }}
-        />
+        <>
+          <Button
+            variant="secondary"
+            size="sm"
+            wide
+            label={action}
+            loading={pending}
+            disabled={busy || skipping}
+            onPress={() => {
+              setPending(true);
+              void onApply().finally(() => setPending(false));
+            }}
+          />
+          {onSkip ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              wide
+              label={t("teamWeek.skip")}
+              loading={skipping}
+              disabled={busy || pending}
+              onPress={() => {
+                setSkipping(true);
+                void onSkip().finally(() => setSkipping(false));
+              }}
+            />
+          ) : null}
+        </>
       )}
     </View>
   );

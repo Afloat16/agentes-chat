@@ -6608,6 +6608,33 @@
   "teamWeek.stuck.action": {
     "value": "Open conversation"
   },
+  "teamWeek.retire.title": {
+    "value": "Archive {{name}}"
+  },
+  "teamWeek.retire.line": {
+    "value": "No work in 4 weeks, no routine and no open task."
+  },
+  "teamWeek.retire.action": {
+    "value": "Archive"
+  },
+  "teamWeek.model.title": {
+    "value": "{{name}} on {{to}} in place of {{from}}"
+  },
+  "teamWeek.model.line": {
+    "value": "Its work is light: short answers in one or two steps."
+  },
+  "teamWeek.skip": {
+    "value": "Dismiss"
+  },
+  "teamWeek.skipped": {
+    "value": "Dismissed"
+  },
+  "teamWeek.why.idle": {
+    "value": "No work in 4 weeks, no routine and no open task."
+  },
+  "teamWeek.why.lightWork": {
+    "value": "Its work is light enough for a smaller model."
+  },
   "teamWeek.applied": {
     "value": "Applied"
   },

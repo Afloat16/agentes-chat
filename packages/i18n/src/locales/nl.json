@@ -2660,6 +2660,21 @@
       },
       "action": "Gesprek openen"
     },
+    "retire": {
+      "title": "{{name}} archiveren",
+      "line": "Al 4 weken geen werk, geen routine en geen open taak.",
+      "action": "Archiveren"
+    },
+    "model": {
+      "title": "{{name}} op {{to}} in plaats van {{from}}",
+      "line": "Het werk is licht: korte antwoorden in een of twee stappen."
+    },
+    "skip": "Negeren",
+    "skipped": "Genegeerd",
+    "why": {
+      "idle": "Al 4 weken geen werk, geen routine en geen open taak.",
+      "lightWork": "Het werk is licht genoeg voor een kleiner model."
+    },
     "applied": "Toegepast",
     "undo": "Ongedaan maken",
     "gone": "Geldt niet meer",

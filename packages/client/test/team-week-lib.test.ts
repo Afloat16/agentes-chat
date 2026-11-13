@@ -5,9 +5,11 @@ import i18next, { type TFunction } from "i18next";
 import type { Approval, Proposal } from "../src/api/types";
 import { actionCardOf } from "../src/lib/action-cards";
 import { serverBody } from "../src/lib/message-body";
+import { proposalWhy } from "../src/lib/proposals";
 import { legacyPatch, lodiPrefsOf, teamWeekOn, teamWeekWhen } from "../src/lib/right-hand-prefs";
 import {
   appliesInBulk,
+  skipsAlone,
   type TeamWeekCard,
   type TeamWeekNames,
   teamWeekCardOf,
@@ -323,4 +325,71 @@ test("the day's card: what waits and what is stuck lead it, in words, and open w
     }
   // A build from before `moreRows` reads `rows` alone: the kinds it words, and no other.
   expect(day.rows.map((r) => r?.kind)).toEqual(["unanswered"]);
+});
+
+test("suggestions: archive an idle agent, a smaller model for light work, each put away alone", () => {
+  const week = {
+    ...card,
+    done: {},
+    proposalIds: ["p8", "p9"],
+    rows: [card.rows[3], card.rows[1]],
+    moreRows: [
+      { id: "retire:theo", kind: "retire", agentId: "theo", proposalId: "p8" },
+      { id: "model:ada", kind: "model", agentId: "ada", proposalId: "p9", from: "big-1", to: "mid-1" },
+    ],
+  };
+  const parsed = teamWeekCardOf({ actionCard: week }) as TeamWeekCard;
+  expect(parsed.rows.map((r) => r.kind)).toEqual(["unanswered", "budget", "retire", "model"]);
+  const [unanswered, budget, retire, model] = parsed.rows;
+  const t = tOf("pt-BR");
+  const named = { ...names, model: (id: string) => ({ "big-1": "Grande", "mid-1": "Médio" })[id] ?? id };
+  expect(teamWeekRowText(t, "pt-BR", retire as never, named)).toEqual({
+    title: "Arquivar o Theo",
+    line: "Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.",
+    action: "Arquivar",
+  });
+  expect(teamWeekRowText(t, "pt-BR", { ...(retire as object), agentId: "ada" } as never, named).title).toBe(
+    "Arquivar a Ada",
+  );
+  expect(teamWeekRowText(t, "pt-BR", model as never, named)).toEqual({
+    title: "Ada com Médio em vez de Grande",
+    line: "O trabalho é leve: respostas curtas em um ou dois passos.",
+    action: "Aplicar",
+  });
+  // Without a model list the ids stand in.
+  expect(teamWeekRowText(t, "pt-BR", model as never, names).title).toBe("Ada com mid-1 em vez de big-1");
+
+  // Both follow their proposal, like the budget's. Archiving is never part of "Aplicar as N".
+  const proposal = (id: string, status: Proposal["status"]) => ({ id, status, stale: false }) as Proposal;
+  const live = { proposals: [proposal("p8", "pending"), proposal("p9", "accepted")], approvals: [] };
+  expect(teamWeekRowState(parsed, retire as never, live)).toBe("open");
+  expect(teamWeekRowState(parsed, model as never, live)).toBe("done");
+  expect(parsed.rows.filter(appliesInBulk).map((r) => r.kind)).toEqual(["unanswered", "budget", "model"]);
+  expect(parsed.rows.filter(skipsAlone).map((r) => r.kind)).toEqual(["unanswered", "retire", "model"]);
+  // Put away by its reader: it says so, whatever its proposal reads (refused), and stays out of the open ones.
+  const skipped = {
+    ...parsed,
+    done: { "retire:theo": { byUserId: "u1", at: "2026-11-06T21:00:00Z", skipped: true as const } },
+  };
+  const refused = { ...live, proposals: [proposal("p8", "refused")] };
+  expect(teamWeekRowState(skipped, retire as never, refused)).toBe("skipped");
+  // Refused from another administrator's card, it no longer applies on this one.
+  expect(teamWeekRowState(parsed, retire as never, refused)).toBe("gone");
+  expect(teamWeekRowState(parsed, unanswered as never, live)).toBe("open");
+  expect(teamWeekRowState(parsed, budget as never, live)).toBe("open");
+
+  for (const lng of LOCALE_CODES) {
+    const tl = tOf(lng);
+    const said = [
+      ...[retire, model].flatMap((r) => Object.values(teamWeekRowText(tl, lng, r as never, named))),
+      tl("teamWeek.skip"),
+      tl("teamWeek.skipped"),
+      proposalWhy(tl, { why: "the sentence in English", whyCode: "idle" as never }),
+      proposalWhy(tl, { why: "the sentence in English", whyCode: "light_work" as never }),
+    ];
+    for (const words of said)
+      expect([lng, words === "" || words.includes("teamWeek.") || words.includes("in English")]).toEqual([lng, false]);
+  }
+  // A code this build has no words for reads as the sentence the server sent with it.
+  expect(proposalWhy(t, { why: "It is new.", whyCode: "a_later_reason" as never })).toBe("It is new.");
 });

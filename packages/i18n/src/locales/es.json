@@ -2758,6 +2758,21 @@
       },
       "action": "Abrir conversación"
     },
+    "retire": {
+      "title": "Archivar a {{name}}",
+      "line": "Sin trabajo desde hace 4 semanas, sin rutina y sin tarea abierta.",
+      "action": "Archivar"
+    },
+    "model": {
+      "title": "{{name}} con {{to}} en lugar de {{from}}",
+      "line": "Su trabajo es ligero: respuestas cortas en uno o dos pasos."
+    },
+    "skip": "Descartar",
+    "skipped": "Descartada",
+    "why": {
+      "idle": "Sin trabajo desde hace 4 semanas, sin rutina y sin tarea abierta.",
+      "lightWork": "Su trabajo es lo bastante ligero para un modelo más pequeño."
+    },
     "applied": "Aplicado",
     "undo": "Deshacer",
     "gone": "Ya no aplica",

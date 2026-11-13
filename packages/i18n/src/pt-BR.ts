@@ -2740,6 +2740,22 @@ export const ptBR = {
       },
       action: "Abrir conversa",
     },
+    retire: {
+      title: "Arquivar o {{name}}",
+      title_female: "Arquivar a {{name}}",
+      line: "Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.",
+      action: "Arquivar",
+    },
+    model: {
+      title: "{{name}} com {{to}} em vez de {{from}}",
+      line: "O trabalho é leve: respostas curtas em um ou dois passos.",
+    },
+    skip: "Dispensar",
+    skipped: "Dispensada",
+    why: {
+      idle: "Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.",
+      lightWork: "O trabalho é leve o bastante para um modelo menor.",
+    },
     applied: "Aplicado",
     undo: "Desfazer",
     gone: "Não se aplica mais",

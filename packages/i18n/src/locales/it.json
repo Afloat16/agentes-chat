@@ -2758,6 +2758,21 @@
       },
       "action": "Apri conversazione"
     },
+    "retire": {
+      "title": "Archiviare {{name}}",
+      "line": "Nessun lavoro da 4 settimane, nessuna routine e nessuna attività aperta.",
+      "action": "Archivia"
+    },
+    "model": {
+      "title": "{{name}} con {{to}} al posto di {{from}}",
+      "line": "Il suo lavoro è leggero: risposte brevi in uno o due passaggi."
+    },
+    "skip": "Ignora",
+    "skipped": "Ignorata",
+    "why": {
+      "idle": "Nessun lavoro da 4 settimane, nessuna routine e nessuna attività aperta.",
+      "lightWork": "Il suo lavoro è abbastanza leggero per un modello più piccolo."
+    },
     "applied": "Applicato",
     "undo": "Annulla",
     "gone": "Non vale più",

@@ -2661,6 +2661,21 @@
       },
       "action": "Unterhaltung öffnen"
     },
+    "retire": {
+      "title": "{{name}} archivieren",
+      "line": "Seit 4 Wochen keine Arbeit, keine Routine und keine offene Aufgabe.",
+      "action": "Archivieren"
+    },
+    "model": {
+      "title": "{{name}} mit {{to}} statt {{from}}",
+      "line": "Die Arbeit ist leicht: kurze Antworten in ein oder zwei Schritten."
+    },
+    "skip": "Verwerfen",
+    "skipped": "Verworfen",
+    "why": {
+      "idle": "Seit 4 Wochen keine Arbeit, keine Routine und keine offene Aufgabe.",
+      "lightWork": "Die Arbeit ist leicht genug für ein kleineres Modell."
+    },
     "applied": "Angewendet",
     "undo": "Rückgängig",
     "gone": "Gilt nicht mehr",
