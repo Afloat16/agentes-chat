@@ -16519,6 +16519,7 @@
       "action_install_skill": "Installa una skill",
       "action_update_skills": "Aggiorna le skill",
       "action_approvals": "Approvazioni che ti aspettano",
+      "welcome_member": "Ora fai parte di {{org}}. **Di cosa ti occupi qui?** Dimmelo e creo con te il tuo primo agente.",
       "action_open_page": "Apri una schermata",
       "calendar_proposal": "Proposta di evento: {{title}}",
       "action_workspace": "Ha proposto una modifica nello spazio di lavoro",

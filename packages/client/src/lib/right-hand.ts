@@ -174,13 +174,19 @@ export const leadsWithPlan = (
 export const introLeadKey = (held: boolean, hasTeam: boolean) =>
   held && !hasTeam ? ("rightHand.intro.heldLead" as const) : ("rightHand.intro.lead" as const);
 
+/**
+ * The right hand's stored greeting of someone who joined the workspace (`meta.bodyCode`, worded by
+ * `chat.body.welcome_member`; the engine's `WELCOME_BODY`): it asks them one thing, so the top of its DM asks no other.
+ */
+export const welcomesMember = (meta: Record<string, unknown> | null | undefined) => meta?.bodyCode === "welcome_member";
+
 /** Where the first-run checklist stands for this person (ADR 0155 §6): `none` when it isn't theirs. */
 export type FirstRunState = "none" | "open" | "complete";
 
 /**
  * Whether its greeting ends with the way to build the team again, for whoever may create agents once an AI is there:
- * only with a team, no card left under the greeting (`cards`) and no open checklist, which would offer the same or
- * ask something first.
+ * only with a team, no card left under the greeting (`cards`), no open checklist, which would offer the same or
+ * ask something first, and no stored greeting of a newcomer below, which already asks what to set up.
  */
 export const offersTeamSetup = (s: {
   noAi: boolean;
@@ -192,14 +198,25 @@ export const offersTeamSetup = (s: {
   /** A billing hold (`planHoldOf`): it can't answer, so its line would send a message that gets refused. */
   held?: boolean;
   checklist?: FirstRunState;
-}) => s.aiKnown && !s.noAi && !s.held && s.createsAgents && s.hasTeam && s.cards.length === 0 && s.checklist !== "open";
+  /** `welcomesMember` of a message in this conversation. */
+  welcomed?: boolean;
+}) =>
+  s.aiKnown &&
+  !s.noAi &&
+  !s.held &&
+  !s.welcomed &&
+  s.createsAgents &&
+  s.hasTeam &&
+  s.cards.length === 0 &&
+  s.checklist !== "open";
 
 /**
  * The cards under the right hand's greeting at the top of its DM besides the first-run checklist (ADR 0137, ADR 0155
  * §6), one question at a time. The owner's checklist has the setup in its rows: while it is open nothing else asks,
  * and once complete, how the person wants agents to talk to them (ADR 0147) until they pick, asked only once the team
  * answered them (`answered`), so it never stands beside the first task. Anyone else: Connect AI while there is none,
- * then that question. On a billing hold neither: an AI comes after the plan.
+ * then that question. On a billing hold neither: an AI comes after the plan. Someone the right hand greeted when they
+ * joined (`welcomed`) gets Connect AI alone: its greeting below is the one question.
  */
 export function introCards(s: {
   noAi: boolean;
@@ -214,9 +231,12 @@ export function introCards(s: {
   checklist?: FirstRunState;
   /** `teamAnswered`; absent, nothing to wait for. */
   answered?: boolean;
+  /** `welcomesMember` of a message in this conversation. */
+  welcomed?: boolean;
 }): ("connect" | "style")[] {
   if (s.checklist === "open") return [];
   if (s.noAi && !s.held && s.checklist !== "complete") return s.noAiCard ? [] : ["connect"];
+  if (s.welcomed) return [];
   if (s.askStyle && s.aiKnown && !s.held && s.answered !== false) return ["style"];
   return [];
 }

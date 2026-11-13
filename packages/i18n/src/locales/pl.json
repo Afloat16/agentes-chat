@@ -17010,6 +17010,7 @@
       "action_install_skill": "Zainstaluj umiejętność",
       "action_update_skills": "Zaktualizuj umiejętności",
       "action_approvals": "Zatwierdzenia czekające na ciebie",
+      "welcome_member": "Od teraz jesteś w {{org}}. **Czym się tu zajmujesz?** Napisz mi, a skonfiguruję z tobą twojego pierwszego agenta.",
       "action_open_page": "Otwórz ekran",
       "calendar_proposal": "Propozycja wydarzenia: {{title}}",
       "action_workspace": "Zaproponowano zmianę w przestrzeni roboczej",

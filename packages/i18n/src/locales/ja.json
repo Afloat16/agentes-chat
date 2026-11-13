@@ -15478,6 +15478,7 @@
       "action_install_skill": "スキルをインストール",
       "action_update_skills": "スキルを更新",
       "action_approvals": "あなたの承認待ち",
+      "welcome_member": "{{org}}に参加しましたね。**ここでは何を担当していますか？** 教えてもらえれば、最初のエージェントを一緒に設定します。",
       "action_open_page": "画面を開く",
       "calendar_proposal": "予定の提案: {{title}}",
       "action_workspace": "ワークスペースの変更を提案しました",

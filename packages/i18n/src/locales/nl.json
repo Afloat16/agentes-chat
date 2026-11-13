@@ -16076,6 +16076,7 @@
       "action_install_skill": "Een skill installeren",
       "action_update_skills": "Skills bijwerken",
       "action_approvals": "Goedkeuringen die op jou wachten",
+      "welcome_member": "Je bent net bij {{org}} gekomen. **Waar houd je je hier mee bezig?** Vertel het me en ik stel samen met jou je eerste agent in.",
       "action_open_page": "Een scherm openen",
       "calendar_proposal": "Voorstel voor een afspraak: {{title}}",
       "action_workspace": "Stelde een wijziging in de werkruimte voor",

@@ -15937,6 +15937,7 @@
       "action_install_skill": "Beceri yükle",
       "action_update_skills": "Becerileri güncelle",
       "action_approvals": "Sizi bekleyen onaylar",
+      "welcome_member": "{{org}} çalışma alanına az önce katıldın. **Burada nelerle ilgileniyorsun?** Bana anlat, ilk ajanını birlikte kuralım.",
       "action_open_page": "Bir ekran aç",
       "calendar_proposal": "Etkinlik önerisi: {{title}}",
       "action_workspace": "Çalışma alanında bir değişiklik önerdi",

@@ -181,6 +181,31 @@ describe("the right hand elsewhere", () => {
     expect(state.messages.some((m) => m.body === "Me ajuda a montar o time.")).toBe(true);
   });
 
+  test("someone it greeted when they joined: its stored question with the areas to tap, and no other ask above it", async () => {
+    const state = withRightHand(seedState());
+    const channelId = seedDm(state, { type: "agent", id: LODI_ID }, { body: "You just joined Acme." });
+    const greeting = state.messages.find((m) => m.channelId === channelId);
+    if (greeting)
+      greeting.meta = {
+        bodyCode: "welcome_member",
+        bodyParams: { org: "Acme" },
+        replyChips: { choices: ["Marketing", "Vendas"], multiple: false, step: 1, of: 1 },
+      };
+    // They never picked how agents talk to them: without the greeting, its intro would ask that.
+    const org = state.me?.organizations[0];
+    if (org) org.agentStyle = null;
+    await go(state, `dm/agent/${LODI_ID}`);
+    // Worded in the reader's language, whatever the server stored.
+    const text = document.querySelector(".channel__messages")?.textContent;
+    expect(text).toContain("Você acabou de entrar na Acme. Do que você cuida por aqui?");
+    expect(text).not.toContain("Como prefere que eu fale com você?");
+    // Nor the way to build the team, which the same conversation without the greeting ends its intro with.
+    expect(screen().queryByRole("button", { name: "Montar o time" })).toBeNull();
+    // A tap is the person's own message.
+    await click(screen().getByRole("button", { name: "Vendas" }));
+    expect(state.messages.some((m) => m.author.type === "person" && m.body === "Vendas")).toBe(true);
+  });
+
   test("on the first visit it waves under its greeting, once: the visit marks its DM read, so the next has no wave", async () => {
     const state = withRightHand(seedState());
     state.dms.push({

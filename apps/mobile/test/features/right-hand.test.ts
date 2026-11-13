@@ -10,6 +10,7 @@ import {
   rightHandOf,
   teamAnswered,
   tellsNameStory,
+  welcomesMember,
 } from "@agenteschat/client/lib/right-hand";
 import { STICKER_STILL_T, WAVE_SECONDS } from "@agenteschat/ui/agent/stickers";
 import { stickerFrame } from "../../src/agent/sticker";
@@ -124,6 +125,30 @@ test("how agents should talk waits for the team's first answer, so it never stan
   const src = (f: string) => readFileSync(new URL(f, import.meta.url), "utf8");
   for (const f of ["../../src/features/right-hand/Intro.tsx", "../../../web/src/components/RightHandIntro.tsx"])
     expect(src(f)).toContain("answered: useTeamAnswered(");
+});
+
+test("someone it greeted when they joined is asked one thing: Connect alone above its stored greeting", () => {
+  expect(welcomesMember({ bodyCode: "welcome_member", bodyParams: { org: "Acme" } })).toBe(true);
+  expect(welcomesMember({ bodyCode: "team_week" })).toBe(false);
+  expect(welcomesMember(null)).toBe(false);
+  const base = { noAi: false, aiKnown: true, askStyle: true, welcomed: true };
+  // How agents talk to them would be a second question beside what they look after.
+  expect(introCards(base)).toEqual([]);
+  expect(introCards({ ...base, welcomed: false })).toEqual(["style"]);
+  // With no AI the way to connect one stays, until a no-AI card in the conversation carries it.
+  expect(introCards({ ...base, noAi: true })).toEqual(["connect"]);
+  expect(introCards({ ...base, noAi: true, noAiCard: true })).toEqual([]);
+  expect(introCards({ ...base, noAi: true, held: true })).toEqual([]);
+  // Nor the line to build the team: the greeting already offers their first agent.
+  const again = { noAi: false, aiKnown: true, createsAgents: true, hasTeam: true, cards: [] };
+  expect(offersTeamSetup(again)).toBe(true);
+  expect(offersTeamSetup({ ...again, welcomed: true })).toBe(false);
+  const src = (f: string) => readFileSync(new URL(f, import.meta.url), "utf8");
+  for (const f of ["../../src/features/right-hand/Intro.tsx", "../../../web/src/components/RightHandIntro.tsx"]) {
+    expect(src(f)).toContain("const welcomed = messages?.some((m) => welcomesMember(m.meta));");
+    expect(src(f)).toMatch(/introCards\(\{[^}]*\bwelcomed\b[^}]*\}\)/);
+    expect(src(f)).toMatch(/offersTeamSetup\(\{[^}]*\bwelcomed\b[^}]*\}\)/);
+  }
 });
 
 test("the phone's greeting draws the checklist and Conversas has one line back to it, not a second list", () => {

@@ -16166,6 +16166,8 @@ export const ptBR = {
       action_install_skill: "Instalar uma skill",
       action_update_skills: "Atualizar skills",
       action_approvals: "Aprovações esperando você",
+      welcome_member:
+        "Você acabou de entrar na {{org}}. **Do que você cuida por aqui?** Me conta e eu monto seu primeiro agente com você.",
       action_open_page: "Abrir uma tela",
       calendar_proposal: "Proposta de evento: {{title}}",
       action_workspace: "Propôs uma mudança no workspace",

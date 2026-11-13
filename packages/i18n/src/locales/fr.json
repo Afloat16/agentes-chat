@@ -16515,6 +16515,7 @@
       "action_install_skill": "Installer une compétence",
       "action_update_skills": "Mettre à jour des compétences",
       "action_approvals": "Approbations qui vous attendent",
+      "welcome_member": "Vous venez de rejoindre {{org}}. **De quoi vous occupez-vous ici ?** Dites-le-moi et je crée votre premier agent avec vous.",
       "action_open_page": "Ouvrir un écran",
       "calendar_proposal": "Proposition d'événement : {{title}}",
       "action_workspace": "A proposé une modification dans l'espace de travail",
