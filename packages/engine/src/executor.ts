@@ -273,7 +273,7 @@ import {
 import { routineBriefOf } from "./routine-brief";
 import { missStaleRoutineRun, routineRunWaitingForComputer, routineRunWaitingForPlan } from "./routine-firing";
 import { closeRoutineRun, type RoutineRunEnd, recordRoutineReportMessage, routineFailureEnd } from "./routine-ledger";
-import { type ReleaseReason, releaseHeldInbox, releaseInbox, takeInbox, whileHeld } from "./run-inbox";
+import { type ReleaseReason, releaseHeldInbox, releaseInbox, stoppedToSend, takeInbox, whileHeld } from "./run-inbox";
 import { deliverNoticeToRun } from "./run-resume";
 import { issueRunToolToken, revokeRunToolTokens } from "./run-tool-tokens";
 import {
@@ -2569,6 +2569,8 @@ async function executeRunInner(
    * The run was canceled (the row is already `canceled`): post what the agent
    * wrote so far, nothing lost, with "Stopped by …", and tell the channel.
    * A background run posts nothing (ADR 0053 §5): its ledger says who stopped it.
+   * Stopped to read a message a person sent (`stoppedToSend`): what it wrote is posted as a plain message, placed
+   * before that message, and the run starts again from it.
    */
   /** `partial` goes on the transcript ("Continuar" reads on from it); `said`, what of it the stopped reply shows. */
   const stopCanceled = async (partial: string, said = partial) => {
@@ -2592,6 +2594,9 @@ async function executeRunInner(
       await finished("canceled");
       return;
     }
+    // Stopped to read a message the person sent ("Parar e mandar"): they stopped nothing, so nothing here says
+    // "stopped". What it wrote stays as its own message, and a run that wrote nothing posts nothing.
+    const sent = by ? await stoppedToSend(db, run) : null;
     const [person] = by ? await db.select({ name: users.name }).from(users).where(eq(users.id, by)) : [];
     const wrote = [
       ...t.messages
@@ -2610,29 +2615,38 @@ async function executeRunInner(
       t.messages.push({ role: "assistant", content: [{ type: "text", text: partial.trim() }] });
     const note = `_Stopped${person ? ` by ${person.name}` : ""}._`;
     const message = await db.transaction(async (tx) => {
-      const m = await post(tx, replyThreadId, shown ? `${shown}\n\n${note}` : note, {
-        ...(takeMemoryUpdates(t) ?? {}),
-        // `text`: what the agent wrote; the app adds "Stopped by …" in the person's language.
-        canceled: { byUserId: by, text: shown },
-      });
+      // What rides on the reply (files, memory, its browser's trail).
+      const carried = takeMemoryUpdates(t);
+      // Written before the person's message, so it reads before it: after it, the cut text would pass for the answer.
+      const m = sent
+        ? shown || carried
+          ? await post(tx, replyThreadId, shown, carried, new Date(sent.createdAt.getTime() - 1))
+          : null
+        : await post(tx, replyThreadId, shown ? `${shown}\n\n${note}` : note, {
+            ...(carried ?? {}),
+            // `text`: what the agent wrote; the app adds "Stopped by …" in the person's language.
+            canceled: { byUserId: by, text: shown },
+          });
       t.postedUpTo = t.messages.length;
-      t.postedCount++;
-      await addRunStep(tx, run, "error", { reason: "canceled", byUserId: by, messageId: m.id });
+      if (m) t.postedCount++;
+      await addRunStep(tx, run, "error", { reason: "canceled", byUserId: by, ...(m ? { messageId: m.id } : {}) });
       await tx
         .update(agentRuns)
-        .set({ replyMessageId: m.id, transcript: storedTranscript(t), updatedAt: new Date() })
+        .set({ ...(m ? { replyMessageId: m.id } : {}), transcript: storedTranscript(t), updatedAt: new Date() })
         .where(eq(agentRuns.id, run.id));
       return m;
     });
-    const [view] = await withWikiLinks(db, run.orgId, [messageView(message)]);
+    const [view] = message ? await withWikiLinks(db, run.orgId, [messageView(message)]) : [];
     if (view) await publishMessageCreated(deps.pubsub, view);
     await publishChannelEvent(deps.pubsub, event("canceled"));
     await finished("canceled");
     // Stopped by a "Parar e mandar" (a computer brain): it starts again from that message (and takes
-    // the rest of its unread messages along).
-    if (by) {
+    // the rest of its unread messages along). Its reply says no stop, so there is none to mark continued.
+    if (sent) {
       const { restartAfterStopAndSend } = await import("./continue-run");
-      await restartAfterStopAndSend(deps, run.id, { id: message.id, threadId: message.threadId }, t).catch(() => null);
+      // Read by the turn just before the stop landed: gone from the inbox, and still owed its answer.
+      const read = readIds.has(sent.id) ? sent.id : undefined;
+      await restartAfterStopAndSend(deps, run.id, { id: null, threadId: replyThreadId, read }, t).catch(() => null);
     }
     // Anything else sent to it and not read gets a run of its own (the "stop" itself was dropped by `stopRun`),
     // unless its workspace stopped it.
