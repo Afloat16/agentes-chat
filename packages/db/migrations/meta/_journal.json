@@ -1839,8 +1839,15 @@
     {
       "idx": 264,
       "version": "7",
+      "when": 1794745600000,
+      "tag": "0264_partner_waitlist",
+      "breakpoints": true
+    },
+    {
+      "idx": 265,
+      "version": "7",
       "when": 1794755500000,
-      "tag": "0264_right_hand_proactive",
+      "tag": "0265_right_hand_proactive",
       "breakpoints": true
     }
   ]

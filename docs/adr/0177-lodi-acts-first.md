@@ -69,7 +69,7 @@ when asked, said once), `saidOnce` (a finished outbox row whose dedupe key is th
 and a prefix no job uses), `setCardOnMessage`, `lodiSwitches`. A message that rings names its person on itself
 (`meta.forUserId`): nobody asked for it, so no run says whose inbox it belongs in. No new table: what was done once is
 an outbox key, what was told once is an inbox group key, what was put away is on the card's message. The one
-migration (0264) adds
+migration (0265) adds
 the two workspace switches and an index on `agent_consultations (org_id, channel_id)`, which finds the hand-over of a
 task by the task's conversation (§5).
 
@@ -89,7 +89,7 @@ still answers.
 
 **Switches.** On the right hand's page, web and phone, one group "O que o Lodi faz por conta própria": the day's card
 with its hour (everyone), the week's card with its day and hour (administrators), then one switch per live lane. Two
-are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0264, on by default and on
+are the workspace's (`organization_settings.team_watch` and `welcome_people`, migration 0265, on by default and on
 with no settings row), saved by who configures the workspace, and say so under their name. The right hand flips the
 person's own when asked (`set_team_week`: `card`, `off`, `day`, `hour`, and `digest`, `reminders` once live) and the
 workspace's through `update_workspace`.
