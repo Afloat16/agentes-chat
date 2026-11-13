@@ -1994,7 +1994,9 @@ function fileList(meta: Message["meta"] | undefined): string {
  */
 export function attachedLine(m: Pick<Message, "meta">): string {
   const list = fileList(m.meta);
-  return list ? `\n(attached files: ${list})` : "";
+  return list
+    ? `\n(attached files: ${list}; open each with read_artifact before you answer about it; if one is unreadable to you, give the reason and way out the tool gave)`
+    : "";
 }
 
 /**

@@ -572,6 +572,8 @@ export interface Transcript {
   feedbackOffer?: PendingFeedbackOffer;
   /** The agent reacted (`react`) instead of replying: an empty final answer posts nothing. */
   reacted?: boolean;
+  /** A file it opened was left out by a text-only connection, not yet on a posted message (`meta.filesTextOnly`). */
+  filesTextOnly?: boolean;
   /** It sent a GIF or its sticker (`send_gif`, `send_sticker`, ADR 0091): an empty final answer posts nothing. */
   mediaSent?: boolean;
   /** A mission `report` card was posted this run: it is the answer, an empty final reply posts nothing. */
@@ -4626,6 +4628,7 @@ async function executeRunInner(
         await kickKeyLine(db, run.orgId, passedLine);
       }
       prof.mark(`model#${run.turns + 1}`);
+      if (result.imagesLeftOut) transcript.filesTextOnly = true;
       await deferred;
       // The files its own tools made are cards on this reply too.
       await Promise.all(sharing);
@@ -5446,6 +5449,7 @@ interface BrainStep {
     Record<"inputTokens" | "outputTokens" | "cacheReadTokens" | "cacheWriteTokens" | "calls" | "maxUncached", number>
   >;
   thinking?: ModelResult["thinking"];
+  imagesLeftOut?: true;
 }
 
 /**
@@ -5590,6 +5594,7 @@ async function thinkOnce(
       costNanoUsd: r.costNanoUsd,
       usage: r.usage,
       thinking: r.thinking,
+      ...(r.imagesLeftOut ? { imagesLeftOut: r.imagesLeftOut } : {}),
       executedCount,
     };
   }
@@ -5910,7 +5915,8 @@ const FEEDBACK_SEND = "feedbackSend";
  * Moves pending memory updates, artifacts, a proposed mission's link, the
  * agents it consulted, where it browsed and what it did on its desktop onto the
  * message being posted (the "memory updated", file preview, mission link,
- * "message from @agent", browser and desktop cards), and a report it offered about the app (its row under the reply).
+ * "message from @agent", browser and desktop cards), a report it offered about the app (its row under the reply), and
+ * that a file it opened reached it as text only.
  */
 function takeMemoryUpdates(t: Transcript): Record<string, unknown> | undefined {
   const updates = t.memoryUpdates ?? [];
@@ -5921,8 +5927,10 @@ function takeMemoryUpdates(t: Transcript): Record<string, unknown> | undefined {
   const desktop = t.desktop ?? [];
   const tasks = t.tasks ?? [];
   const offer = t.feedbackOffer;
+  const textOnly = t.filesTextOnly === true;
   if (
     !offer &&
+    !textOnly &&
     updates.length === 0 &&
     files.length === 0 &&
     !link &&
@@ -5940,7 +5948,10 @@ function takeMemoryUpdates(t: Transcript): Record<string, unknown> | undefined {
   t.desktop = [];
   t.tasks = [];
   t.feedbackOffer = undefined;
+  t.filesTextOnly = undefined;
   const meta: Record<string, unknown> = {};
+  // Its reply carries the way out: another AI for this agent ("Trocar modelo" under it).
+  if (textOnly) meta.filesTextOnly = true;
   if (updates.length > 0) meta.memoryUpdates = updates;
   if (files.length > 0) meta.artifacts = files;
   if (link) meta.missionLink = link;

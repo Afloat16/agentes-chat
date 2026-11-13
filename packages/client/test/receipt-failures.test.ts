@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { resources } from "@agenteschat/i18n";
 import i18next, { type TFunction } from "i18next";
 import type { Message } from "../src/api/types";
-import { failedRunFix, runFailureLine } from "../src/lib/errors";
+import { failedRunFix, filesTextOnlyOf, runFailureLine } from "../src/lib/errors";
 import { serverBody } from "../src/lib/message-body";
 import { applyReceiptEvent, seedReceipt } from "../src/realtime/receipts";
 
@@ -55,6 +55,10 @@ test("a failed run's one fix: a key for a missing, revoked or wrong one, another
   expect(failedRunFix("run.missing_credential", { ...nobody, owner: true })).toBeNull();
   expect(failedRunFix("run.model_unlisted", nobody)).toBeNull();
   expect(failedRunFix("run.model_unlisted", { ...nobody, owner: true })).toBe("changeModel");
+  // A reply whose file reached a text-only connection: another AI, for the same people.
+  expect(failedRunFix(filesTextOnlyOf({ filesTextOnly: true }), { ...nobody, admin: true })).toBe("changeModel");
+  expect(failedRunFix(filesTextOnlyOf({ filesTextOnly: true }), nobody)).toBeNull();
+  expect(filesTextOnlyOf({})).toBeNull();
 });
 
 describe("a failed run as one line (runFailureLine)", () => {

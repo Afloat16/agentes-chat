@@ -999,6 +999,15 @@ const KEY_FAILURES = new Set([
 ]);
 
 /**
+ * A reply whose agent opened a picture or PDF its AI reads as text only through its connection (`meta.filesTextOnly`):
+ * its fix is another AI, like a failed run's.
+ */
+export const FILES_TEXT_ONLY = "run.files_text_only";
+
+export const filesTextOnlyOf = (meta: Record<string, unknown> | null | undefined) =>
+  meta?.filesTextOnly === true ? FILES_TEXT_ONLY : null;
+
+/**
  * The one thing to do about a failed run, by its code, for someone who can: another key (`keys`: who manages them), or
  * another model (the agent's owner or who manages agents). Null when nothing fixes it or it's someone else's to do.
  */
@@ -1006,7 +1015,7 @@ export function failedRunFix(
   code: string | null | undefined,
   who: { keys: boolean; admin: boolean; owner: boolean },
 ): "useKey" | "changeModel" | null {
-  if (code === "run.model_unlisted" || code === "run.provider_model_unavailable")
+  if (code === "run.model_unlisted" || code === "run.provider_model_unavailable" || code === FILES_TEXT_ONLY)
     return who.admin || who.owner ? "changeModel" : null;
   return code && KEY_FAILURES.has(code) && who.keys ? "useKey" : null;
 }
