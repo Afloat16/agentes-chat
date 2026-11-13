@@ -2546,9 +2546,30 @@ export const ptBR = {
       audience: "Quem pode usar",
       audienceHelp: "Fora do público, a pessoa não vê o {{name}} na barra lateral.",
       audienceHelp_female: "Fora do público, a pessoa não vê a {{name}} na barra lateral.",
-      lock: "O {{name}} não pode ser arquivado nem apagado. Sem ser chamado, ele só posta a Semana da equipe, para os admins.",
-      lock_female:
-        "A {{name}} não pode ser arquivada nem apagada. Sem ser chamada, ela só posta a Semana da equipe, para os admins.",
+      lock: "O {{name}} não pode ser arquivado nem apagado.",
+      lock_female: "A {{name}} não pode ser arquivada nem apagada.",
+      own: {
+        title: "O que o {{name}} faz por conta própria",
+        title_female: "O que a {{name}} faz por conta própria",
+        digest: "Resumir aprovações esperando",
+        digestHelp:
+          "Quando várias aprovações esperam você, o {{name}} manda um cartão na sua DM que separa as de rotina das arriscadas.",
+        digestHelp_female:
+          "Quando várias aprovações esperam você, a {{name}} manda um cartão na sua DM que separa as de rotina das arriscadas.",
+        reminders: "Lembrar o que combinamos",
+        remindersHelp:
+          "O {{name}} acompanha até o fim as tarefas que passou adiante e lembra você do que vocês combinaram com hora marcada.",
+        remindersHelp_female:
+          "A {{name}} acompanha até o fim as tarefas que passou adiante e lembra você do que vocês combinaram com hora marcada.",
+        teamWatch: "Cuidar da equipe",
+        teamWatchHelp:
+          "O {{name}} percebe o que trava o time, como um login de IA que caiu ou um app para reconectar, e avisa quem pode resolver.",
+        teamWatchHelp_female:
+          "A {{name}} percebe o que trava o time, como um login de IA que caiu ou um app para reconectar, e avisa quem pode resolver.",
+        welcome: "Dar boas-vindas a quem entra",
+        welcomeHelp: "O {{name}} recebe cada pessoa que entra e ajuda a montar o primeiro agente dela.",
+        welcomeHelp_female: "A {{name}} recebe cada pessoa que entra e ajuda a montar o primeiro agente dela.",
+      },
       audit: "Ver o que o {{name}} fez",
       audit_female: "Ver o que a {{name}} fez",
       planHelp: "Quem paga é o dono do plano. Sem o computador do plano, a conversa avisa e oferece uma chave de API.",
@@ -2613,6 +2634,8 @@ export const ptBR = {
     card: {
       settings: "{{name}} · Configurações",
       apply: "Aplicar",
+      /** In `apply`'s place on a card that deletes something for good (a role, a channel, an API key). */
+      delete: "Apagar",
       dismiss: "Descartar",
       decline: "Recusar",
       askAdmin: "Pedir a um admin",
@@ -2708,6 +2731,25 @@ export const ptBR = {
     },
     /** Its approvals card (`offer_approvals`): each decided on it, as whoever clicks. */
     approvals: { title: "Aprovações esperando você", done: "Decididas" },
+    /** Its summary of what waits on a person: the routine requests together, one tap for all of them. */
+    digest: {
+      /** The summary's first line: how many wait, then how they split (`split`) or that all are routine. */
+      waiting_one: "{{count}} aprovação esperando.",
+      waiting_other: "{{count}} aprovações esperando.",
+      split: "{{routine}} de rotina, {{careful}} para olhar com calma.",
+      allRoutine: "Todas de rotina.",
+      /** Under the first rows of a long routine group: shows the rest in place. `count`: the requests it hides. */
+      more_one: "Ver mais {{count}}",
+      more_other: "Ver os outros {{count}}",
+      routine_one: "{{count}} pedido de rotina",
+      routine_other: "{{count}} pedidos de rotina",
+      /** Behind the ⓘ beside `routine`. */
+      help: "Uma ação em um app conectado que não envia, não apaga, não paga e não faz merge nem deploy. Os outros pedidos ficam cada um no seu cartão.",
+      approve_one: "Aprovar {{count}} pedido",
+      approve_other: "Aprovar os {{count}}",
+      /** Shows each routine request on its own card instead. */
+      each: "Um por um",
+    },
     /** Its "Abrir" card (`offer_open_page`): one of the app's screens. */
     open: { open: "Abrir", web: "Abrir no site", notAllowed: "Você não tem acesso a esta tela" },
     action: {
@@ -2741,6 +2783,14 @@ export const ptBR = {
       update_workspace: "Mudar o workspace <b>{{name}}</b>",
       set_action_check_on: "Ligar a conferência do que o time já fez",
       set_action_check_off: "Desligar a conferência do que o time já fez",
+      invite_people: "Convidar <b>{{emails}}</b> para o workspace.",
+      /** Under it: the roles every address gets ("Vendas e Suporte"). `count`: how many roles. */
+      invite_roles_one: "Com o papel {{roles}}.",
+      invite_roles_other: "Com os papéis {{roles}}.",
+      /** The same card once applied: who got an invitation ("ana@example.com e caio@example.com"). */
+      invite_people_sent_one: "Convite enviado para <b>{{emails}}</b>.",
+      invite_people_sent_other: "Convites enviados para <b>{{emails}}</b>.",
+      remove_ai_key: "Apagar a chave de API «{{name}}».",
     },
   },
   teamWeek: {
@@ -2760,6 +2810,7 @@ export const ptBR = {
     workedTasks_one: "{{name}} fechou {{count}} tarefa",
     workedTasks_other: "{{name}} fechou {{count}} tarefas",
     improve: "Para melhorar",
+    needsYou: "Precisa de você",
     approvals: {
       title_one: "{{count}} pedido de {{name}} espera você",
       title_other: "{{count}} pedidos de {{name}} esperam você",
@@ -2811,6 +2862,44 @@ export const ptBR = {
       messageNoAgent: "Os passos {{steps}} não precisam esperar o #{{on}}. Podem seguir em paralelo.",
       done: "Mensagem enviada",
     },
+    waiting: {
+      title_one: "{{count}} coisa espera você",
+      title_other: "{{count}} coisas esperam você",
+      line_one: "Esperando desde {{since}}.",
+      line_other: "A mais antiga desde {{since}}.",
+      action: "Abrir",
+      done: "Nada mais esperando",
+    },
+    stuck: {
+      title_one: "{{name}} parou com um erro",
+      title_other: "{{name}} parou com erro {{count}} vezes",
+      heldTitle: "{{name}} parou e espera para continuar",
+      why: {
+        budget: "O orçamento do mês acabou.",
+        plan: "O plano chegou ao limite.",
+        computer: "O computador não respondeu.",
+        key: "A chave ou o login da IA foi recusado.",
+        ai: "A IA não respondeu.",
+        other: "Algo deu errado. A conversa mostra o quê.",
+      },
+      action: "Abrir conversa",
+    },
+    retire: {
+      title: "Arquivar o {{name}}",
+      title_female: "Arquivar a {{name}}",
+      line: "Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.",
+      action: "Arquivar",
+    },
+    model: {
+      title: "{{name}} pode usar o {{to}}.",
+      line: "Hoje usa o {{from}}.",
+    },
+    skip: "Dispensar",
+    skipped: "Dispensada",
+    why: {
+      idle: "Sem trabalho há 4 semanas, sem rotina e sem tarefa aberta.",
+      lightWork: "O trabalho é leve o bastante para um modelo menor.",
+    },
     applied: "Aplicado",
     undo: "Desfazer",
     gone: "Não se aplica mais",
@@ -2843,12 +2932,12 @@ export const ptBR = {
       help: "Toda semana o {{name}} conta na sua DM como foi o time e o que dá para melhorar. Só admins recebem.",
       help_female:
         "Toda semana a {{name}} conta na sua DM como foi o time e o que dá para melhorar. Só admins recebem.",
-      /** "Resumo do dia": o mesmo cartão todo dia, que qualquer pessoa pode ligar. */
+      /** "Resumo do dia": o cartão do dia, que todos recebem até pararem. */
       dayLabel: "Resumo do dia",
       dayHelp:
-        "Todo dia o {{name}} conta na sua DM o que o time fez e o que espera você, só nos dias com algo a dizer.",
+        "Todo dia o {{name}} conta na sua DM o que espera você, o que seus agentes terminaram e o que travou, só nos dias com algo novo.",
       dayHelp_female:
-        "Todo dia a {{name}} conta na sua DM o que o time fez e o que espera você, só nos dias com algo a dizer.",
+        "Todo dia a {{name}} conta na sua DM o que espera você, o que seus agentes terminaram e o que travou, só nos dias com algo novo.",
     },
   },
   routing: {
@@ -3576,6 +3665,8 @@ export const ptBR = {
       changed_update_workspace: "Mudei o workspace <b>{{name}}</b>",
       changed_set_action_check_on: "Liguei a conferência do que o time já fez",
       changed_set_action_check_off: "Desliguei a conferência do que o time já fez",
+      changed_invite_people: "Convidei <b>{{invited}}</b> para o workspace",
+      changed_remove_ai_key: "Apaguei a chave de API <b>{{name}}</b>",
     },
     /** A kind this app doesn't know yet (a newer server's). */
     other: "Fiz uma mudança",
@@ -4764,6 +4855,33 @@ export const ptBR = {
     planModelDropped: { choose: "Escolher outro modelo" },
     /** Under `plan_serves`: the person's plan serves only them again. */
     planServes: { onlyMe: "Mudar para Só eu", done: "Agora só você usa este plano." },
+    /**
+     * What the right hand found wrong (`team_watch`), by cause: the notice's headline, its stored text and its push.
+     * `names`: what it is about, the first few by name, then "e mais 2". `count`: how many things in all.
+     */
+    teamWatch: {
+      sign_in_one: "O login de {{names}} acabou.",
+      sign_in_other: "Os logins de {{names}} acabaram.",
+      connector_one: "{{names}} precisa ser reconectado.",
+      connector_other: "{{names}} precisam ser reconectados.",
+      mailbox_one: "A caixa de email {{names}} precisa ser reconectada.",
+      mailbox_other: "As caixas de email {{names}} precisam ser reconectadas.",
+      database_one: "O banco de dados {{names}} precisa ser reconectado.",
+      database_other: "Os bancos de dados {{names}} precisam ser reconectados.",
+      budget_out_one: "O orçamento de {{names}} acabou.",
+      budget_out_other: "Os orçamentos de {{names}} acabaram.",
+      budget_low_one: "O orçamento de {{names}} está quase no fim.",
+      budget_low_other: "Os orçamentos de {{names}} estão quase no fim.",
+      computer_one: "{{names}} está offline com agentes esperando.",
+      computer_other: "{{names}} estão offline com agentes esperando.",
+      /** The notice's one button: the way out, where the notice opens. */
+      act: {
+        sign_in: "Entrar de novo",
+        reconnect: "Reconectar",
+        budget: "Aumentar orçamento",
+        computer: "Trocar computador",
+      },
+    },
     docTitleUnread: "({{count}}) Notificações",
     summaryWaiting_one: "{{count}} coisa esperando você",
     summaryWaiting_other: "{{count}} coisas esperando você",
@@ -4888,6 +5006,7 @@ export const ptBR = {
       changeRequest: "<b>{{name}}</b> pede uma mudança em <b>{{agent}}</b>",
       proposalWaiting: "Propostas de melhoria de <b>{{names}}</b>",
       changeRequestAgent: "<b>{{name}}</b> pede um novo agente: <b>{{agent}}</b>",
+      changeRequestAction: "<b>{{name}}</b> pede uma mudança no workspace",
       approvalCover: "<b>{{name}}</b> escolheu você em Quem aprova por mim",
       approvalCoverDeclined: "<b>{{name}}</b> não vai mais aprovar por você",
       approvalCoverEnded: "<b>{{name}}</b> encerrou quem aprova por você",
@@ -7333,6 +7452,8 @@ export const ptBR = {
     batch: {
       already_member: "{{email}} já faz parte do workspace.",
       already_invited: "{{email}} já tem um convite pendente. Use Reenviar.",
+      /** On an invite card already applied, where nothing resends: an address that was left out. */
+      had_invite: "{{email}} já tinha um convite pendente.",
       invalid_email: "{{email}} não parece um e-mail válido.",
     },
     activeNow: "Ativo agora",
@@ -13709,6 +13830,9 @@ export const ptBR = {
     rightHand: {
       permanent:
         "O braço direito faz parte do workspace e fica fora dos canais. Uma @menção o chama em qualquer um deles.",
+      updateApp: "Este app é antigo demais para aplicar este card. Atualize o app ou faça a mudança nas Configurações.",
+      nobodyNew:
+        "Todo mundo deste card já está aqui ou já foi convidado. Descarte o card ou reenvie um convite em Membros e convites.",
     },
     agent: {
       ownerOrAdmin: "Só o dono do agente ou um admin pode fazer isso.",
@@ -16477,6 +16601,8 @@ export const ptBR = {
       action_install_skill: "Instalar uma skill",
       action_update_skills: "Atualizar skills",
       action_approvals: "Aprovações esperando você",
+      welcome_member:
+        "Você acabou de entrar na {{org}}. **Do que você cuida por aqui?** Me conta e eu monto seu primeiro agente com você.",
       action_open_page: "Abrir uma tela",
       calendar_proposal: "Proposta de evento: {{title}}",
       action_workspace: "Propôs uma mudança no workspace",

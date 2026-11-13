@@ -937,6 +937,8 @@ export const agentConsultations = pgTable(
     index().on(t.expiresAt).where(sql`${t.status} = 'open'`),
     index().on(t.targetRunId),
     index().on(t.orgId, t.askerAgentId, t.createdAt),
+    // The hand-over of a task, found by the task's conversation.
+    index().on(t.orgId, t.channelId),
   ],
 );
 

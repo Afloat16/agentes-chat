@@ -2483,7 +2483,18 @@
       "budgetHelp": "Am Limit hält er an und sagt Bescheid, wie jeder Agent.",
       "audience": "Wer es nutzen darf",
       "audienceHelp": "Wer nicht dazugehört, sieht {{name}} nicht in der Seitenleiste.",
-      "lock": "{{name}} kann weder archiviert noch gelöscht werden. Ungefragt postet er nur die Teamwoche, für Admins.",
+      "lock": "{{name}} kann weder archiviert noch gelöscht werden.",
+      "own": {
+        "title": "Was {{name}} von sich aus tut",
+        "digest": "Wartende Freigaben zusammenfassen",
+        "digestHelp": "Wenn mehrere Freigaben auf dich warten, schickt dir {{name}} eine Karte in deine DM, die die alltäglichen von den riskanten trennt.",
+        "reminders": "An Abmachungen erinnern",
+        "remindersHelp": "{{name}} verfolgt abgegebene Aufgaben bis zum Ende und erinnert dich an das, was ihr mit einer Uhrzeit abgemacht habt.",
+        "teamWatch": "Auf das Team achten",
+        "teamWatchHelp": "{{name}} bemerkt, was das Team aufhält, etwa eine abgelaufene KI-Anmeldung oder eine App, die neu verbunden werden muss, und sagt es der Person, die es beheben kann.",
+        "welcome": "Neue Personen begrüßen",
+        "welcomeHelp": "{{name}} begrüßt jede Person, die dazukommt, und hilft ihr, ihren ersten Agenten einzurichten."
+      },
       "audit": "Ansehen, was {{name}} getan hat",
       "planHelp": "Es zahlt, wem das Abo gehört. Ist sein Computer nicht erreichbar, sagt die Unterhaltung das und bietet einen API-Schlüssel an.",
       "lookEdit": "Aussehen von {{name}} ändern",
@@ -2533,6 +2544,7 @@
     "card": {
       "settings": "{{name}} · Einstellungen",
       "apply": "Anwenden",
+      "delete": "Löschen",
       "dismiss": "Verwerfen",
       "decline": "Ablehnen",
       "askAdmin": "Einen Admin fragen",
@@ -2625,6 +2637,20 @@
       "title": "Freigaben, die auf dich warten",
       "done": "Entschieden"
     },
+    "digest": {
+      "waiting_one": "{{count}} Freigabe wartet.",
+      "waiting_other": "{{count}} Freigaben warten.",
+      "split": "{{routine}} Routine, {{careful}} zum genauen Hinsehen.",
+      "allRoutine": "Alles Routine.",
+      "more_one": "{{count}} weitere anzeigen",
+      "more_other": "Die anderen {{count}} anzeigen",
+      "routine_one": "{{count}} Routineanfrage",
+      "routine_other": "{{count}} Routineanfragen",
+      "help": "Eine Aktion in einer verbundenen App, die nichts sendet, löscht, bezahlt, mergt oder deployt. Jede andere Anfrage behält ihre eigene Karte.",
+      "approve_one": "{{count}} Anfrage freigeben",
+      "approve_other": "Diese {{count}} freigeben",
+      "each": "Einzeln ansehen"
+    },
     "open": {
       "open": "Öffnen",
       "web": "Auf der Website öffnen",
@@ -2660,7 +2686,13 @@
       "continue_work": "<b>{{agent}}</b> weitermachen lassen",
       "update_workspace": "Workspace <b>{{name}}</b> ändern",
       "set_action_check_on": "Die Prüfung, was das Team schon getan hat, einschalten",
-      "set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausschalten"
+      "set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausschalten",
+      "invite_people": "<b>{{emails}}</b> in den Workspace einladen.",
+      "invite_roles_one": "Mit der Rolle {{roles}}.",
+      "invite_roles_other": "Mit den Rollen {{roles}}.",
+      "invite_people_sent_one": "Einladung an <b>{{emails}}</b> gesendet.",
+      "invite_people_sent_other": "Einladungen an <b>{{emails}}</b> gesendet.",
+      "remove_ai_key": "API-Schlüssel „{{name}}“ löschen."
     }
   },
   "teamWeek": {
@@ -2680,6 +2712,7 @@
     "workedTasks_one": "{{name}} hat {{count}} Aufgabe geschlossen",
     "workedTasks_other": "{{name}} hat {{count}} Aufgaben geschlossen",
     "improve": "Zu verbessern",
+    "needsYou": "Braucht dich",
     "approvals": {
       "title_one": "{{count}} Anfrage von {{name}} wartet auf dich",
       "title_other": "{{count}} Anfragen von {{name}} warten auf dich",
@@ -2726,6 +2759,43 @@
       "messageNoAgent": "Die Schritte {{steps}} müssen nicht auf #{{on}} warten. Sie können parallel weiterlaufen.",
       "done": "Nachricht gesendet"
     },
+    "waiting": {
+      "title_one": "{{count}} Sache wartet auf dich",
+      "title_other": "{{count}} Sachen warten auf dich",
+      "line_one": "Wartet seit {{since}}.",
+      "line_other": "Die älteste seit {{since}}.",
+      "action": "Öffnen",
+      "done": "Nichts wartet mehr"
+    },
+    "stuck": {
+      "title_one": "{{name}} hat mit einem Fehler gestoppt",
+      "title_other": "{{name}} hat {{count}}-mal mit einem Fehler gestoppt",
+      "heldTitle": "{{name}} hat gestoppt und wartet auf die Fortsetzung",
+      "why": {
+        "budget": "Das Monatsbudget ist aufgebraucht.",
+        "plan": "Das Abo hat sein Limit erreicht.",
+        "computer": "Der Computer hat nicht geantwortet.",
+        "key": "Der KI-Schlüssel oder die Anmeldung wurde abgelehnt.",
+        "ai": "Die KI hat nicht geantwortet.",
+        "other": "Etwas ist schiefgelaufen. Die Unterhaltung zeigt, was."
+      },
+      "action": "Unterhaltung öffnen"
+    },
+    "retire": {
+      "title": "{{name}} archivieren",
+      "line": "Seit 4 Wochen keine Arbeit, keine Routine und keine offene Aufgabe.",
+      "action": "Archivieren"
+    },
+    "model": {
+      "title": "{{name}} kann {{to}} nutzen.",
+      "line": "Nutzt heute {{from}}."
+    },
+    "skip": "Verwerfen",
+    "skipped": "Verworfen",
+    "why": {
+      "idle": "Seit 4 Wochen keine Arbeit, keine Routine und keine offene Aufgabe.",
+      "lightWork": "Die Arbeit ist leicht genug für ein kleineres Modell."
+    },
     "applied": "Angewendet",
     "undo": "Rückgängig",
     "gone": "Gilt nicht mehr",
@@ -2757,7 +2827,7 @@
       "label": "Teamwoche",
       "help": "Jede Woche erzählt dir {{name}} in deiner DM, wie es im Team lief und was sich verbessern lässt. Nur Admins bekommen sie.",
       "dayLabel": "Tageszusammenfassung",
-      "dayHelp": "Jeden Tag erzählt dir {{name}} in deiner DM, was das Team getan hat und was auf dich wartet, nur an Tagen mit etwas zu sagen."
+      "dayHelp": "Jeden Tag erzählt dir {{name}} in deiner DM, was auf dich wartet, was deine Agenten erledigt haben und was feststeckt, nur an Tagen mit etwas Neuem."
     }
   },
   "routing": {
@@ -3420,7 +3490,9 @@
       "changed_continue_work": "<b>{{agent}}</b> weitermachen lassen",
       "changed_update_workspace": "Workspace <b>{{name}}</b> geändert",
       "changed_set_action_check_on": "Die Prüfung, was das Team schon getan hat, eingeschaltet",
-      "changed_set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausgeschaltet"
+      "changed_set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausgeschaltet",
+      "changed_invite_people": "<b>{{invited}}</b> in den Workspace eingeladen",
+      "changed_remove_ai_key": "API-Schlüssel <b>{{name}}</b> gelöscht"
     },
     "other": "Eine Änderung vorgenommen",
     "copyWebhook": "Webhook-Adresse kopieren",
@@ -4567,6 +4639,28 @@
       "onlyMe": "Auf Nur ich umstellen",
       "done": "Jetzt nutzt nur du dieses Abo."
     },
+    "teamWatch": {
+      "sign_in_one": "Die Anmeldung von {{names}} ist abgelaufen.",
+      "sign_in_other": "Die Anmeldungen von {{names}} sind abgelaufen.",
+      "connector_one": "{{names}} muss neu verbunden werden.",
+      "connector_other": "{{names}} müssen neu verbunden werden.",
+      "mailbox_one": "Das Postfach {{names}} muss neu verbunden werden.",
+      "mailbox_other": "Die Postfächer {{names}} müssen neu verbunden werden.",
+      "database_one": "Die Datenbank {{names}} muss neu verbunden werden.",
+      "database_other": "Die Datenbanken {{names}} müssen neu verbunden werden.",
+      "budget_out_one": "Das Budget von {{names}} ist aufgebraucht.",
+      "budget_out_other": "Die Budgets von {{names}} sind aufgebraucht.",
+      "budget_low_one": "Das Budget von {{names}} ist fast aufgebraucht.",
+      "budget_low_other": "Die Budgets von {{names}} sind fast aufgebraucht.",
+      "computer_one": "{{names}} ist offline, Agenten warten.",
+      "computer_other": "{{names}} sind offline, Agenten warten.",
+      "act": {
+        "sign_in": "Erneut anmelden",
+        "reconnect": "Neu verbinden",
+        "budget": "Budget erhöhen",
+        "computer": "Computer wechseln"
+      }
+    },
     "docTitleUnread": "({{count}}) Benachrichtigungen",
     "summaryWaiting_one": "{{count}} Sache wartet auf dich",
     "summaryWaiting_other": "{{count}} Sachen warten auf dich",
@@ -4688,6 +4782,7 @@
       "changeRequest": "<b>{{name}}</b> bittet um eine Änderung an <b>{{agent}}</b>",
       "proposalWaiting": "Verbesserungsvorschläge von <b>{{names}}</b>",
       "changeRequestAgent": "<b>{{name}}</b> bittet um einen neuen Agenten: <b>{{agent}}</b>",
+      "changeRequestAction": "<b>{{name}}</b> bittet um eine Änderung im Workspace",
       "approvalCover": "<b>{{name}}</b> hat dich bei Wer für mich freigibt gewählt",
       "approvalCoverDeclined": "<b>{{name}}</b> gibt nicht mehr für dich frei",
       "approvalCoverEnded": "<b>{{name}}</b> hat deine Vertretung für Freigaben beendet",
@@ -6984,6 +7079,7 @@
     "batch": {
       "already_member": "{{email}} ist schon im Workspace.",
       "already_invited": "Für {{email}} gibt es schon eine offene Einladung. Nutze Erneut senden.",
+      "had_invite": "Für {{email}} gab es schon eine offene Einladung.",
       "invalid_email": "{{email}} sieht nicht nach einer gültigen E-Mail-Adresse aus."
     },
     "activeNow": "Gerade aktiv",
@@ -13625,7 +13721,9 @@
       "tooMany": "Dieser Workspace hat schon {{max}} Abteilungen. Lösch zuerst eine."
     },
     "rightHand": {
-      "permanent": "Die rechte Hand gehört zum Workspace und bleibt außerhalb der Kanäle. Eine @Erwähnung erreicht sie in jedem davon."
+      "permanent": "Die rechte Hand gehört zum Workspace und bleibt außerhalb der Kanäle. Eine @Erwähnung erreicht sie in jedem davon.",
+      "updateApp": "Diese App ist zu alt, um diese Karte anzuwenden. Aktualisiere sie oder nimm die Änderung in den Einstellungen vor.",
+      "nobodyNew": "Alle auf dieser Karte sind schon dabei oder schon eingeladen. Verwirf die Karte oder sende eine Einladung unter Mitglieder und Einladungen erneut."
     },
     "agent": {
       "ownerOrAdmin": "Nur der Inhaber des Agenten oder ein Admin kann das tun.",
@@ -16280,6 +16378,7 @@
       "action_install_skill": "Skill installieren",
       "action_update_skills": "Skills aktualisieren",
       "action_approvals": "Freigaben, die auf dich warten",
+      "welcome_member": "Du bist gerade {{org}} beigetreten. **Worum kümmerst du dich hier?** Sag es mir und ich richte deinen ersten Agenten mit dir ein.",
       "action_open_page": "Eine Seite öffnen",
       "calendar_proposal": "Terminvorschlag: {{title}}",
       "action_workspace": "Hat eine Änderung im Workspace vorgeschlagen",

@@ -2567,7 +2567,18 @@
       "budgetHelp": "Cuando llega al límite, se detiene y avisa, como cualquier agente.",
       "audience": "Quién puede usarlo",
       "audienceHelp": "Fuera del público, la persona no ve a {{name}} en la barra lateral.",
-      "lock": "{{name}} no se puede archivar ni borrar. Sin que nadie le hable, solo publica la Semana del equipo, para los admins.",
+      "lock": "{{name}} no se puede archivar ni borrar.",
+      "own": {
+        "title": "Lo que {{name}} hace por su cuenta",
+        "digest": "Resumir las aprobaciones en espera",
+        "digestHelp": "Cuando varias aprobaciones te esperan, {{name}} te manda una tarjeta en tu DM que separa las de rutina de las arriesgadas.",
+        "reminders": "Recordar lo que acordamos",
+        "remindersHelp": "{{name}} sigue hasta el final las tareas que pasó a otros y te recuerda lo que acordaron con una hora.",
+        "teamWatch": "Cuidar del equipo",
+        "teamWatchHelp": "{{name}} nota lo que frena al equipo, como un inicio de sesión de IA que terminó o una app por reconectar, y le avisa a quien puede resolverlo.",
+        "welcome": "Dar la bienvenida a quien entra",
+        "welcomeHelp": "{{name}} recibe a cada persona que entra y la ayuda a crear su primer agente."
+      },
       "audit": "Ver lo que hizo {{name}}",
       "planHelp": "Paga quien es dueño del plan. Si su computadora no está disponible, la conversación lo dice y ofrece una clave de API.",
       "lookEdit": "Cambiar el aspecto de {{name}}",
@@ -2617,6 +2628,7 @@
     "card": {
       "settings": "{{name}} · Configuración",
       "apply": "Aplicar",
+      "delete": "Eliminar",
       "dismiss": "Descartar",
       "decline": "Rechazar",
       "askAdmin": "Pedir a un admin",
@@ -2713,6 +2725,24 @@
       "title": "Aprobaciones esperándote",
       "done": "Decididas"
     },
+    "digest": {
+      "waiting_one": "{{count}} aprobación esperando.",
+      "waiting_many": "{{count}} aprobaciones esperando.",
+      "waiting_other": "{{count}} aprobaciones esperando.",
+      "split": "{{routine}} de rutina, {{careful}} para mirar con calma.",
+      "allRoutine": "Todas de rutina.",
+      "more_one": "Ver {{count}} más",
+      "more_many": "Ver las otras {{count}}",
+      "more_other": "Ver las otras {{count}}",
+      "routine_one": "{{count}} solicitud de rutina",
+      "routine_many": "{{count}} solicitudes de rutina",
+      "routine_other": "{{count}} solicitudes de rutina",
+      "help": "Una acción en una app conectada que no envía, no borra, no paga y no hace merge ni deploy. Las demás solicitudes siguen cada una en su tarjeta.",
+      "approve_one": "Aprobar {{count}} solicitud",
+      "approve_many": "Aprobar las {{count}}",
+      "approve_other": "Aprobar las {{count}}",
+      "each": "Una por una"
+    },
     "open": {
       "open": "Abrir",
       "web": "Abrir en el sitio",
@@ -2748,7 +2778,15 @@
       "continue_work": "Dejar que <b>{{agent}}</b> siga",
       "update_workspace": "Cambiar el espacio de trabajo <b>{{name}}</b>",
       "set_action_check_on": "Activar la revisión de lo que el equipo ya hizo",
-      "set_action_check_off": "Desactivar la revisión de lo que el equipo ya hizo"
+      "set_action_check_off": "Desactivar la revisión de lo que el equipo ya hizo",
+      "invite_people": "Invitar a <b>{{emails}}</b> al espacio de trabajo.",
+      "invite_roles_one": "Con el rol {{roles}}.",
+      "invite_roles_many": "Con los roles {{roles}}.",
+      "invite_roles_other": "Con los roles {{roles}}.",
+      "invite_people_sent_one": "Invitación enviada a <b>{{emails}}</b>.",
+      "invite_people_sent_many": "Invitaciones enviadas a <b>{{emails}}</b>.",
+      "invite_people_sent_other": "Invitaciones enviadas a <b>{{emails}}</b>.",
+      "remove_ai_key": "Eliminar la clave de API «{{name}}»."
     }
   },
   "teamWeek": {
@@ -2771,6 +2809,7 @@
     "workedTasks_many": "{{name}} cerró {{count}} tareas",
     "workedTasks_other": "{{name}} cerró {{count}} tareas",
     "improve": "Para mejorar",
+    "needsYou": "Te necesita",
     "approvals": {
       "title_one": "{{count}} pedido de {{name}} te espera",
       "title_many": "{{count}} pedidos de {{name}} te esperan",
@@ -2822,6 +2861,46 @@
       "messageNoAgent": "Los pasos {{steps}} no necesitan esperar a #{{on}}. Pueden seguir en paralelo.",
       "done": "Mensaje enviado"
     },
+    "waiting": {
+      "title_one": "{{count}} cosa te espera",
+      "title_many": "{{count}} cosas te esperan",
+      "title_other": "{{count}} cosas te esperan",
+      "line_one": "Esperando desde {{since}}.",
+      "line_many": "La más antigua desde {{since}}.",
+      "line_other": "La más antigua desde {{since}}.",
+      "action": "Abrir",
+      "done": "Ya no hay nada esperando"
+    },
+    "stuck": {
+      "title_one": "{{name}} se detuvo con un error",
+      "title_many": "{{name}} se detuvo con un error {{count}} veces",
+      "title_other": "{{name}} se detuvo con un error {{count}} veces",
+      "heldTitle": "{{name}} se detuvo y espera para continuar",
+      "why": {
+        "budget": "Se agotó el presupuesto mensual.",
+        "plan": "El plan llegó a su límite.",
+        "computer": "La computadora no respondió.",
+        "key": "La clave o el inicio de sesión de la IA fue rechazado.",
+        "ai": "La IA no respondió.",
+        "other": "Algo salió mal. La conversación muestra qué."
+      },
+      "action": "Abrir conversación"
+    },
+    "retire": {
+      "title": "Archivar a {{name}}",
+      "line": "Sin trabajo desde hace 4 semanas, sin rutina y sin tarea abierta.",
+      "action": "Archivar"
+    },
+    "model": {
+      "title": "{{name}} puede usar {{to}}.",
+      "line": "Hoy usa {{from}}."
+    },
+    "skip": "Descartar",
+    "skipped": "Descartada",
+    "why": {
+      "idle": "Sin trabajo desde hace 4 semanas, sin rutina y sin tarea abierta.",
+      "lightWork": "Su trabajo es lo bastante ligero para un modelo más pequeño."
+    },
     "applied": "Aplicado",
     "undo": "Deshacer",
     "gone": "Ya no aplica",
@@ -2854,7 +2933,7 @@
       "label": "Semana del equipo",
       "help": "Cada semana {{name}} te cuenta en tu DM cómo le fue al equipo y qué mejorar. Solo la reciben los admins.",
       "dayLabel": "Resumen del día",
-      "dayHelp": "Cada día {{name}} te cuenta en tu DM qué hizo el equipo y qué te espera, solo los días con algo que decir."
+      "dayHelp": "Cada día {{name}} te cuenta en tu DM qué te espera, qué terminaron tus agentes y qué está atascado, solo los días con algo nuevo."
     }
   },
   "routing": {
@@ -3523,7 +3602,9 @@
       "changed_continue_work": "Dejé que <b>{{agent}}</b> siguiera",
       "changed_update_workspace": "Cambié el espacio de trabajo <b>{{name}}</b>",
       "changed_set_action_check_on": "Activé la revisión de lo que el equipo ya hizo",
-      "changed_set_action_check_off": "Desactivé la revisión de lo que el equipo ya hizo"
+      "changed_set_action_check_off": "Desactivé la revisión de lo que el equipo ya hizo",
+      "changed_invite_people": "Invité a <b>{{invited}}</b> al espacio de trabajo",
+      "changed_remove_ai_key": "Eliminé la clave de API <b>{{name}}</b>"
     },
     "other": "Hice un cambio",
     "copyWebhook": "Copiar dirección del webhook",
@@ -4686,6 +4767,35 @@
       "onlyMe": "Cambiar a Solo yo",
       "done": "Ahora solo tú usas este plan."
     },
+    "teamWatch": {
+      "sign_in_one": "El inicio de sesión de {{names}} terminó.",
+      "sign_in_many": "Los inicios de sesión de {{names}} terminaron.",
+      "sign_in_other": "Los inicios de sesión de {{names}} terminaron.",
+      "connector_one": "Hay que reconectar {{names}}.",
+      "connector_many": "Hay que reconectar {{names}}.",
+      "connector_other": "Hay que reconectar {{names}}.",
+      "mailbox_one": "Hay que reconectar el buzón {{names}}.",
+      "mailbox_many": "Hay que reconectar los buzones {{names}}.",
+      "mailbox_other": "Hay que reconectar los buzones {{names}}.",
+      "database_one": "Hay que reconectar la base de datos {{names}}.",
+      "database_many": "Hay que reconectar las bases de datos {{names}}.",
+      "database_other": "Hay que reconectar las bases de datos {{names}}.",
+      "budget_out_one": "El presupuesto de {{names}} se acabó.",
+      "budget_out_many": "Los presupuestos de {{names}} se acabaron.",
+      "budget_out_other": "Los presupuestos de {{names}} se acabaron.",
+      "budget_low_one": "El presupuesto de {{names}} está por acabarse.",
+      "budget_low_many": "Los presupuestos de {{names}} están por acabarse.",
+      "budget_low_other": "Los presupuestos de {{names}} están por acabarse.",
+      "computer_one": "{{names}} está sin conexión y hay agentes esperando.",
+      "computer_many": "{{names}} están sin conexión y hay agentes esperando.",
+      "computer_other": "{{names}} están sin conexión y hay agentes esperando.",
+      "act": {
+        "sign_in": "Iniciar sesión de nuevo",
+        "reconnect": "Reconectar",
+        "budget": "Subir presupuesto",
+        "computer": "Cambiar de computadora"
+      }
+    },
     "docTitleUnread": "({{count}}) Notificaciones",
     "summaryWaiting_one": "{{count}} cosa te espera",
     "summaryWaiting_many": "{{count}} cosas te esperan",
@@ -4816,6 +4926,7 @@
       "changeRequest": "<b>{{name}}</b> pide un cambio en <b>{{agent}}</b>",
       "proposalWaiting": "Propuestas de mejora de <b>{{names}}</b>",
       "changeRequestAgent": "<b>{{name}}</b> pide un agente nuevo: <b>{{agent}}</b>",
+      "changeRequestAction": "<b>{{name}}</b> pide un cambio en el espacio de trabajo",
       "approvalCover": "<b>{{name}}</b> te eligió en Quién aprueba por mí",
       "approvalCoverDeclined": "<b>{{name}}</b> ya no aprobará por ti",
       "approvalCoverEnded": "<b>{{name}}</b> quitó a quien aprueba por ti",
@@ -7168,6 +7279,7 @@
     "batch": {
       "already_member": "{{email}} ya está en el espacio de trabajo.",
       "already_invited": "{{email}} ya tiene una invitación pendiente. Usa Reenviar.",
+      "had_invite": "{{email}} ya tenía una invitación pendiente.",
       "invalid_email": "{{email}} no parece un correo válido."
     },
     "activeNow": "Activo ahora",
@@ -14023,7 +14135,9 @@
       "tooMany": "Este espacio de trabajo ya tiene {{max}} departamentos. Elimina uno primero."
     },
     "rightHand": {
-      "permanent": "La mano derecha forma parte del espacio de trabajo y queda fuera de los canales. Una @mención la llama en cualquiera de ellos."
+      "permanent": "La mano derecha forma parte del espacio de trabajo y queda fuera de los canales. Una @mención la llama en cualquiera de ellos.",
+      "updateApp": "Esta app es demasiado antigua para aplicar esta tarjeta. Actualízala o haz el cambio en Configuración.",
+      "nobodyNew": "Todas las personas de esta tarjeta ya están aquí o ya tienen invitación. Descarta la tarjeta o reenvía una invitación en Miembros e invitaciones."
     },
     "agent": {
       "ownerOrAdmin": "Solo el dueño del agente o un admin puede hacer esto.",
@@ -16716,6 +16830,7 @@
       "action_install_skill": "Instalar una habilidad",
       "action_update_skills": "Actualizar habilidades",
       "action_approvals": "Aprobaciones esperándote",
+      "welcome_member": "Acabas de entrar en {{org}}. **¿De qué te encargas aquí?** Cuéntame y creo tu primer agente contigo.",
       "action_open_page": "Abrir una pantalla",
       "calendar_proposal": "Propuesta de evento: {{title}}",
       "action_workspace": "Propuso un cambio en el espacio de trabajo",

@@ -396,6 +396,9 @@ const KNOWN = {
   "action.not_undone": "errors.said.alreadyDone",
   "action_card.asked": "errors.said.alreadyDone",
   "action_card.decided": "errors.said.alreadyDone",
+  // A card that names all it does (an invite's addresses, a key) is applied only by an app that words it.
+  "action_card.update_app": "errors.rightHand.updateApp",
+  "action_card.nobody_new": "errors.rightHand.nobodyNew",
   "agent_proposal.asked": "errors.said.alreadyDone",
   "approval.not_ahead": "errors.said.alreadyDone",
   "approval.not_cancelable": "errors.said.alreadyDone",
@@ -416,6 +419,8 @@ const KNOWN = {
   "secret.closed": "errors.said.alreadyDone",
   "team_week.done": "errors.said.alreadyDone",
   "upload.not_pending": "errors.said.alreadyDone",
+  // What an invite card names (a role) moved since: the server rewrote the card, so a refresh shows it as it is.
+  "action_card.changed": "errors.said.changed",
   "agent.mail_loss_changed": "errors.said.changed",
   "mission.plan_conflict": "errors.said.changed",
   "run.state_changed": "errors.said.changed",

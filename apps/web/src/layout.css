@@ -14368,7 +14368,7 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
   position: absolute;
   inset: 0;
 }
-.settings-row--toggle :is(.ac-hint, .settings-row__status, .settings-row__end) {
+.settings-row--toggle :is(.ac-hint, .settings-row__status, .settings-row__value, .settings-row__end) {
   position: relative;
   z-index: 1;
 }
@@ -14507,6 +14507,25 @@ html:not([data-pointer]) .app-icons__agent:focus-visible {
     box-sizing: border-box;
     min-width: 0;
     padding-left: calc(28px + var(--space-3));
+  }
+  /* A line with a switch and a value before it (a card's day and hour, who a switch is for): the icon, the name and
+     the switch keep the first line, the value goes under the name, from its edge. */
+  .settings-row--toggle > .settings-row__value {
+    order: 1;
+    flex-basis: 100%;
+    box-sizing: border-box;
+    padding-left: calc(28px + var(--space-3));
+  }
+  /* The name over it keeps, above and below, the room one line has inside the icon's 28: the value stands as far
+     under a name of two lines as under a name of one, which centres on the icon. */
+  .settings-row--toggle:has(> .settings-row__value) > .settings-row__text {
+    /* Browsers without the lh unit: the page's 22px line. */
+    padding-block: 3px;
+  }
+  @supports (top: 1lh) {
+    .settings-row--toggle:has(> .settings-row__value) > .settings-row__text {
+      padding-block: calc((28px - 1lh) / 2);
+    }
   }
   /* A line with a status under its name and a switch or nothing at its end: the icon, the name and the switch on one
      line as above (the name keeps the 24 characters), the status under them at the row's full width, so the icon never

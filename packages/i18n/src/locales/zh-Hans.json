@@ -2397,7 +2397,18 @@
       "budgetHelp": "达到上限时，它会像其他智能体一样停下并通知。",
       "audience": "谁可以使用",
       "audienceHelp": "不在范围内的人在侧边栏里看不到{{name}}。",
-      "lock": "{{name}}不能归档或删除。没人和它说话时，它只会给管理员发团队周报。",
+      "lock": "{{name}}不能归档或删除。",
+      "own": {
+        "title": "{{name}}会主动做的事",
+        "digest": "汇总等待中的审批",
+        "digestHelp": "当有多个审批在等你时，{{name}}会在你的私信里发一张卡片，把日常的和有风险的分开。",
+        "reminders": "记住我们约定的事",
+        "remindersHelp": "{{name}}会把交出去的任务跟进到结束，并在约定的时间提醒你们说好的事。",
+        "teamWatch": "照看团队",
+        "teamWatchHelp": "{{name}}会留意让团队停下来的问题，比如 AI 登录已结束或某个应用需要重新连接，并告诉能解决的人。",
+        "welcome": "欢迎新加入的人",
+        "welcomeHelp": "{{name}}会问候每一位新加入的人，并帮他们设置第一个智能体。"
+      },
       "audit": "查看{{name}}做了什么",
       "planHelp": "费用由套餐的所有者支付。套餐所在的电脑不可用时，对话里会说明，并提供使用 API 密钥的选项。",
       "lookEdit": "更改{{name}}的外观",
@@ -2447,6 +2458,7 @@
     "card": {
       "settings": "{{name}} · 设置",
       "apply": "应用",
+      "delete": "删除",
       "dismiss": "放弃",
       "decline": "拒绝",
       "askAdmin": "请管理员处理",
@@ -2535,6 +2547,16 @@
       "title": "等你处理的审批",
       "done": "已决定"
     },
+    "digest": {
+      "waiting_other": "有 {{count}} 个审批在等待。",
+      "split": "其中 {{routine}} 个是常规请求，{{careful}} 个需要仔细查看。",
+      "allRoutine": "全部是常规请求。",
+      "more_other": "查看其余 {{count}} 个",
+      "routine_other": "{{count}} 个常规请求",
+      "help": "在已连接的应用中执行的操作，不发送、不删除、不付款，也不合并或部署。其他请求仍各自保留一张卡片。",
+      "approve_other": "批准这 {{count}} 个",
+      "each": "逐个查看"
+    },
     "open": {
       "open": "打开",
       "web": "在网站上打开",
@@ -2570,7 +2592,11 @@
       "continue_work": "让 <b>{{agent}}</b> 继续",
       "update_workspace": "更改工作区 <b>{{name}}</b>",
       "set_action_check_on": "开启对团队已做之事的检查",
-      "set_action_check_off": "关闭对团队已做之事的检查"
+      "set_action_check_off": "关闭对团队已做之事的检查",
+      "invite_people": "邀请 <b>{{emails}}</b> 加入工作区。",
+      "invite_roles_other": "角色为 {{roles}}。",
+      "invite_people_sent_other": "已向 <b>{{emails}}</b> 发送邀请。",
+      "remove_ai_key": "删除 API 密钥“{{name}}”。"
     }
   },
   "teamWeek": {
@@ -2587,6 +2613,7 @@
     "workedRuns_other": "{{name}} 在 #{{channel}} 完成了 {{count}} 项工作",
     "workedTasks_other": "{{name}} 关闭了 {{count}} 个任务",
     "improve": "可以改进的",
+    "needsYou": "需要你处理",
     "approvals": {
       "title_other": "{{name}} 的 {{count}} 个请求在等你",
       "line": "从 {{since}} 起在等。",
@@ -2628,6 +2655,40 @@
       "messageNoAgent": "步骤 {{steps}} 不需要等 #{{on}}。可以并行推进。",
       "done": "消息已发送"
     },
+    "waiting": {
+      "title_other": "有 {{count}} 件事在等你",
+      "line_other": "从 {{since}} 起在等。",
+      "action": "打开",
+      "done": "没有在等的了"
+    },
+    "stuck": {
+      "title_other": "{{name}} 因出错停了 {{count}} 次",
+      "heldTitle": "{{name}} 停下了，等着继续",
+      "why": {
+        "budget": "每月预算已用完。",
+        "plan": "套餐已达到上限。",
+        "computer": "电脑没有响应。",
+        "key": "AI 的密钥或登录被拒绝。",
+        "ai": "AI 没有响应。",
+        "other": "出了点问题。对话里能看到是什么。"
+      },
+      "action": "打开对话"
+    },
+    "retire": {
+      "title": "归档 {{name}}",
+      "line": "4 周没有工作，没有例行任务，也没有未完成的任务。",
+      "action": "归档"
+    },
+    "model": {
+      "title": "{{name}} 可以使用 {{to}}。",
+      "line": "目前使用 {{from}}。"
+    },
+    "skip": "忽略",
+    "skipped": "已忽略",
+    "why": {
+      "idle": "4 周没有工作，没有例行任务，也没有未完成的任务。",
+      "lightWork": "它的工作很轻，用更小的模型就够了。"
+    },
     "applied": "已应用",
     "undo": "撤销",
     "gone": "已不适用",
@@ -2658,7 +2719,7 @@
       "label": "团队周报",
       "help": "每周 {{name}} 会在你的私信里告诉你团队的情况和可以改进的地方。只有管理员会收到。",
       "dayLabel": "每日摘要",
-      "dayHelp": "{{name}} 每天在你的私信里告诉你团队做了什么、有什么在等你，只在有事可说的日子。"
+      "dayHelp": "{{name}} 每天在你的私信里告诉你有什么在等你、你的智能体完成了什么、什么卡住了，只在有新消息的日子。"
     }
   },
   "routing": {
@@ -3305,7 +3366,9 @@
       "changed_continue_work": "让 <b>{{agent}}</b> 继续",
       "changed_update_workspace": "更改了工作区 <b>{{name}}</b>",
       "changed_set_action_check_on": "开启了对团队已做之事的检查",
-      "changed_set_action_check_off": "关闭了对团队已做之事的检查"
+      "changed_set_action_check_off": "关闭了对团队已做之事的检查",
+      "changed_invite_people": "邀请了 <b>{{invited}}</b> 加入工作区",
+      "changed_remove_ai_key": "删除了 API 密钥 <b>{{name}}</b>"
     },
     "other": "做了一项更改",
     "copyWebhook": "复制 Webhook 地址",
@@ -4422,6 +4485,21 @@
       "onlyMe": "改为仅我自己",
       "done": "现在只有你使用这个套餐。"
     },
+    "teamWatch": {
+      "sign_in_other": "{{names}} 的登录已失效。",
+      "connector_other": "{{names}} 需要重新连接。",
+      "mailbox_other": "邮箱 {{names}} 需要重新连接。",
+      "database_other": "数据库 {{names}} 需要重新连接。",
+      "budget_out_other": "{{names}} 的预算已用完。",
+      "budget_low_other": "{{names}} 的预算即将用完。",
+      "computer_other": "{{names}} 已离线，有智能体在等待。",
+      "act": {
+        "sign_in": "重新登录",
+        "reconnect": "重新连接",
+        "budget": "提高预算",
+        "computer": "更换电脑"
+      }
+    },
     "docTitleUnread": "({{count}}) 通知",
     "summaryWaiting_other": "{{count}} 件事等你处理",
     "summaryUnread_other": "{{count}} 条未读",
@@ -4532,6 +4610,7 @@
       "changeRequest": "<b>{{name}}</b> 请求更改 <b>{{agent}}</b>",
       "proposalWaiting": "来自 <b>{{names}}</b> 的改进提议",
       "changeRequestAgent": "<b>{{name}}</b> 请求新的智能体：<b>{{agent}}</b>",
+      "changeRequestAction": "<b>{{name}}</b> 请求在工作区做一项更改",
       "approvalCover": "<b>{{name}}</b> 在“谁替我审批”中选了你",
       "approvalCoverDeclined": "<b>{{name}}</b> 不再替你审批",
       "approvalCoverEnded": "<b>{{name}}</b> 取消了替你审批的人",
@@ -6779,6 +6858,7 @@
     "batch": {
       "already_member": "{{email}} 已在工作区中。",
       "already_invited": "{{email}} 已有一份待接受的邀请。请使用“重新发送”。",
+      "had_invite": "{{email}} 之前已有一份待接受的邀请。",
       "invalid_email": "{{email}} 看起来不是有效的邮箱。"
     },
     "activeNow": "当前活跃",
@@ -13183,7 +13263,9 @@
       "tooMany": "这个工作区已有 {{max}} 个部门。请先删除一个。"
     },
     "rightHand": {
-      "permanent": "得力助手属于整个工作区，不加入频道。在任何频道 @提及它即可叫到它。"
+      "permanent": "得力助手属于整个工作区，不加入频道。在任何频道 @提及它即可叫到它。",
+      "updateApp": "此应用版本太旧，无法应用这张卡片。请更新应用，或在设置中进行更改。",
+      "nobodyNew": "这张卡片上的人都已加入或已收到邀请。请放弃这张卡片，或在“成员和邀请”中重新发送邀请。"
     },
     "agent": {
       "ownerOrAdmin": "只有智能体负责人或管理员可以执行此操作。",
@@ -15806,6 +15888,7 @@
       "action_install_skill": "安装技能",
       "action_update_skills": "更新技能",
       "action_approvals": "等你处理的审批",
+      "welcome_member": "你刚加入了{{org}}。**你在这里负责什么？**告诉我，我和你一起设置你的第一个智能体。",
       "action_open_page": "打开页面",
       "calendar_proposal": "日程提议：{{title}}",
       "action_workspace": "提议了一项工作区更改",

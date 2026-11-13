@@ -115,6 +115,7 @@ import {
   reauthorizeStream,
   recheckStream,
   releaseRunPhones,
+  reportLodiLaneErrors,
   resolveSummaryModel,
   type SandboxDeps,
   type ScheduleReader,
@@ -829,6 +830,11 @@ export function buildEngine(o: EngineOptions) {
     },
   };
   const handlers = createJobHandlers(jobDeps);
+  // A failing block of one of the right hand's lanes is left out of its prompt: it shows here.
+  reportLodiLaneErrors((lane, error) => {
+    o.log?.warn("right hand lane failed", { lane, error: String(error) });
+    o.errors?.capture(error, { lane });
+  });
   // Mail accounts, inbound mail and polling (routes and workers).
   const mail: MailDeps = {
     db,
