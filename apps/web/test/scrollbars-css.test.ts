@@ -341,6 +341,7 @@ describe("columns that scroll on their own", () => {
     ".cal-side",
     ".cal-agenda",
     ".cal-week__scroll",
+    ".onb",
   ];
   test("each hides its thumb until the pointer or the keyboard is on it, with its room kept", async () => {
     const layout = topLevel(await read("apps/web/src/layout.css"));

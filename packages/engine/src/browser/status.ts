@@ -87,7 +87,7 @@ export function browserUnavailableText(s: Extract<AgentBrowserStatus, { availabl
     case "outdated":
       return `The runner on ${on} is out of date and has no browser. Tell the person: its owner should update it.`;
     case "switched_off":
-      return `The browser is turned off on ${on}. Only the person at that computer can turn it on; tell the people.`;
+      return `The browser is turned off on ${on}. Whoever connected it can turn it on from agentes.chat; tell the people.`;
     case "not_installed":
       return `The browser isn't ready on ${on}${s.detail ? `: ${s.detail}` : ""}. Tell the person.`;
     default:

@@ -1793,6 +1793,34 @@
       "when": 1794695400000,
       "tag": "0257_widget_creator_backfill",
       "breakpoints": true
+    },
+    {
+      "idx": 258,
+      "version": "7",
+      "when": 1794705400000,
+      "tag": "0258_picture_size",
+      "breakpoints": true
+    },
+    {
+      "idx": 259,
+      "version": "7",
+      "when": 1794715400000,
+      "tag": "0259_approval_superseded_by",
+      "breakpoints": true
+    },
+    {
+      "idx": 260,
+      "version": "7",
+      "when": 1794725400000,
+      "tag": "0260_plans_serve_everyone",
+      "breakpoints": true
+    },
+    {
+      "idx": 261,
+      "version": "7",
+      "when": 1794735400000,
+      "tag": "0261_machine_spill",
+      "breakpoints": true
     }
   ]
 }
