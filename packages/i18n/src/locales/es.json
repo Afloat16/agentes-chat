@@ -492,6 +492,7 @@
       "nameLead": "¿Cómo te llama tu equipo?",
       "namePlaceholder": "Tu nombre",
       "nameIsPassword": "¿Este es tu nombre? Es igual a la contraseña que escribiste.",
+      "emailHeld": "Este correo acaba de salir de una cuenta de aquí y queda reservado 7 días. Si la cuenta es tuya, pulsa “No fui yo” en el correo que le enviamos.",
       "nameLooksLikePassword": "Eso parece una contraseña. Aquí va tu nombre.",
       "newPassword": "Ahora una contraseña.",
       "newPasswordNamed": "Genial, {{name}}. Ahora una contraseña.",
@@ -1842,7 +1843,12 @@
       "sent": "Enviamos un enlace a {{email}}. Tu correo cambia cuando lo abras.",
       "changed": "Listo: ahora entras con {{email}}.",
       "same": "Ese ya es tu correo.",
-      "noMail": "Este servidor no envía correos, así que no se puede confirmar la nueva dirección. Pide a quien administra el servidor que configure el envío de correos."
+      "noMail": "Este servidor no envía correos, así que no se puede confirmar la nueva dirección. Pide a quien administra el servidor que configure el envío de correos.",
+      "held": "Este correo acaba de salir de otra cuenta y queda reservado para ella 7 días. Usa otro.",
+      "taken": "Otra cuenta ya usa este correo. Usa otro.",
+      "cantOpen": "¿No puedes abrir ese correo?",
+      "signInInstead": "Vuelve a iniciar sesión y cámbialo sin el código. Vuelves aquí después.",
+      "useCode": "Usar el código"
     },
     "openOnPhone": "Abrir en tu teléfono",
     "openOnPhoneHint": "Inicia sesión en la app con un código QR",
@@ -17643,6 +17649,17 @@
     "plan": "Su plan deja de renovarse. No se reembolsa nada.",
     "type": "Escribe {{name}} para confirmar",
     "submit": "Eliminar espacio de trabajo"
+  },
+  "emailUndo": {
+    "title": "Recupera tu correo",
+    "lead": "La dirección que recibió este enlace vuelve a ser el correo de tu cuenta. Se cierran todas las sesiones, se desconectan las apps de IA y las formas de iniciar sesión añadidas desde el cambio dejan de funcionar. La contraseña también se borra, y “Olvidé mi contraseña” crea la siguiente.",
+    "button": "No fui yo",
+    "done": "Tu correo volvió",
+    "doneLead": "{{email}} vuelve a ser el correo de tu cuenta. Se cerraron todas las sesiones, las formas de iniciar sesión añadidas desde el cambio ya no funcionan y la contraseña se borró: “Olvidé mi contraseña” crea la siguiente al iniciar sesión.",
+    "gone": "Este enlace ya no sirve",
+    "goneLead": "Ya se usó o pasaron sus 7 días.",
+    "taken": "Otra cuenta usa este correo",
+    "takenLead": "{{email}} ahora es el correo de otra cuenta, así que no puede volver. No cambió nada."
   },
   "proof": {
     "willSend": "Enviaremos un código a {{email}} para confirmar que eres tú.",

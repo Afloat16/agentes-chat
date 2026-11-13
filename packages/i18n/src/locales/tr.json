@@ -486,6 +486,7 @@
       "nameLead": "Ekibiniz size nasıl hitap ediyor?",
       "namePlaceholder": "Adınız",
       "nameIsPassword": "Bu sizin adınız mı? Yazdığınız şifreyle aynı.",
+      "emailHeld": "Bu e-posta az önce buradaki bir hesaptan ayrıldı ve 7 gün ayrılmış kalıyor. O hesap seninse, bu adrese gönderdiğimiz e-postadaki “Bu ben değildim” düğmesine bas.",
       "nameLooksLikePassword": "Bu bir şifreye benziyor. Buraya adınızı yazın.",
       "newPassword": "Şimdi bir şifre.",
       "newPasswordNamed": "Harika, {{name}}. Şimdi bir şifre.",
@@ -1800,7 +1801,12 @@
       "sent": "{{email}} adresine bir bağlantı gönderdik. Bağlantıyı açınca e-postan değişir.",
       "changed": "Tamam: artık {{email}} ile giriş yapıyorsun.",
       "same": "Bu zaten senin e-postan.",
-      "noMail": "Bu sunucu e-posta göndermiyor, bu yüzden yeni adres doğrulanamıyor. Sunucuyu yöneten kişiden e-posta gönderimini ayarlamasını iste."
+      "noMail": "Bu sunucu e-posta göndermiyor, bu yüzden yeni adres doğrulanamıyor. Sunucuyu yöneten kişiden e-posta gönderimini ayarlamasını iste.",
+      "held": "Bu e-posta az önce başka bir hesaptan ayrıldı ve 7 gün o hesaba ayrılmış kalıyor. Başka bir e-posta kullan.",
+      "taken": "Başka bir hesap bu e-postayı zaten kullanıyor. Başka bir e-posta kullan.",
+      "cantOpen": "O gelen kutusunu açamıyor musun?",
+      "signInInstead": "Yeniden giriş yap, kodsuz değiştir. Sonra buraya dönersin.",
+      "useCode": "Kodu kullan"
     },
     "openOnPhone": "Telefonunuzda açın",
     "openOnPhoneHint": "QR koduyla uygulamaya giriş yapın",
@@ -17113,6 +17119,17 @@
     "plan": "Planı yenilenmez. Para iadesi yapılmaz.",
     "type": "Onaylamak için {{name}} yazın",
     "submit": "Çalışma alanını sil"
+  },
+  "emailUndo": {
+    "title": "E-postanı geri al",
+    "lead": "Bu bağlantının gittiği adres yeniden hesabının e-postası olur. Tüm oturumlar kapatılır, yapay zekâ uygulamalarının bağlantısı kesilir ve değişiklikten sonra eklenen giriş yolları artık çalışmaz. Şifre de silinir, sonrakini “Şifremi unuttum” ile belirlersin.",
+    "button": "Bu ben değildim",
+    "done": "E-postan geri geldi",
+    "doneLead": "{{email}} yeniden hesabının e-postası oldu ve tüm oturumlar kapatıldı. Değişiklikten sonra eklenen giriş yolları artık çalışmıyor ve şifre silindi: giriş yaparken sonrakini “Şifremi unuttum” ile belirle.",
+    "gone": "Bu bağlantı artık çalışmıyor",
+    "goneLead": "Zaten kullanıldı ya da 7 günü doldu.",
+    "taken": "Bu e-postayı başka bir hesap kullanıyor",
+    "takenLead": "{{email}} artık başka bir hesabın e-postası, bu yüzden geri gelemez. Hiçbir şey değişmedi."
   },
   "proof": {
     "willSend": "Siz olduğunuzu doğrulamak için {{email}} adresine bir kod göndereceğiz.",

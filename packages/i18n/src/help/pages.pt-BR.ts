@@ -755,7 +755,7 @@ export const helpPtBR: Record<HelpSlug, HelpDocument> = {
         id: "email",
         heading: "E-mail",
         blocks: [
-          "Sem e-mail, o agentes.chat escreve cada e-mail no log em vez de enviar, então dá para copiar um link de convite de lá. Redefinir a senha fica desligado.",
+          "Sem e-mail, o agentes.chat escreve cada e-mail no log em vez de enviar, então dá para copiar um link de convite de lá. Redefinir a senha fica desligado, e um e-mail novo para uma conta muda na hora, sem código nem link.",
           {
             code: "docker compose logs agentes | grep 'email (not sent'",
           },

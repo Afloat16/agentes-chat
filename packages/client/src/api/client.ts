@@ -136,6 +136,7 @@ import type {
   DirectMessage,
   DmRead,
   DmTarget,
+  EmailChange,
   EndpointCheck,
   EndpointModel,
   EndpointStyle,
@@ -455,6 +456,18 @@ export interface ApiClient {
     delete(input?: DeletionProofInput): Promise<void>;
     /** Brings it back before its date. `account.not_restorable` (409) after. */
     restore(): Promise<void>;
+    /**
+     * My account under `newEmail` (ADR 0088 §2, addendum 2026-11-13): with the `code` emailed to my current address, or
+     * a sign-in in the last 10 minutes, a link goes to it; without either, the code goes first (`code`), or for an
+     * address I never confirmed `reauth.sign_in` (403). On a server that sends no email it changes at once.
+     * `email.same` (400), `email.held` (409), `reauth.code_*` as deleting's.
+     */
+    changeEmail(input: { newEmail: string; code?: string }): Promise<EmailChange>;
+    /**
+     * "This wasn't me", from the page the notice to my old address links to: that address comes back and every
+     * session ends. `email.undo_gone` (404), `email.undo_taken` (409).
+     */
+    undoEmailChange(token: string): Promise<{ email: string }>;
   };
   /** Where my pushes go: phones (ADR 0035) and browsers (ADR 0071). Per person, not per organization. */
   push: {

@@ -486,6 +486,7 @@
       "nameLead": "Wie nennt dich dein Team?",
       "namePlaceholder": "Dein Name",
       "nameIsPassword": "Ist das dein Name? Er ist gleich dem Passwort, das du eingegeben hast.",
+      "emailHeld": "Diese E-Mail-Adresse hat gerade ein Konto hier verlassen und bleibt 7 Tage reserviert. Wenn das Konto dir gehört, drück „Das war ich nicht“ in der E-Mail, die wir an sie geschickt haben.",
       "nameLooksLikePassword": "Das sieht nach einem Passwort aus. Hier kommt dein Name hin.",
       "newPassword": "Jetzt ein Passwort.",
       "newPasswordNamed": "Super, {{name}}. Jetzt ein Passwort.",
@@ -1800,7 +1801,12 @@
       "sent": "Wir haben einen Link an {{email}} gesendet. Deine E-Mail ändert sich, wenn du ihn öffnest.",
       "changed": "Erledigt: Du meldest dich jetzt mit {{email}} an.",
       "same": "Das ist schon deine E-Mail.",
-      "noMail": "Dieser Server sendet keine E-Mails, daher kann die neue Adresse nicht bestätigt werden. Bitte die Person, die den Server betreibt, den E-Mail-Versand einzurichten."
+      "noMail": "Dieser Server sendet keine E-Mails, daher kann die neue Adresse nicht bestätigt werden. Bitte die Person, die den Server betreibt, den E-Mail-Versand einzurichten.",
+      "held": "Diese E-Mail-Adresse hat gerade ein anderes Konto verlassen und bleibt 7 Tage für es reserviert. Nimm eine andere.",
+      "taken": "Ein anderes Konto nutzt diese E-Mail-Adresse schon. Nimm eine andere.",
+      "cantOpen": "Kein Zugriff auf dieses Postfach?",
+      "signInInstead": "Melde dich erneut an und ändere sie ohne den Code. Danach kommst du hierher zurück.",
+      "useCode": "Code verwenden"
     },
     "openOnPhone": "Auf dem Handy öffnen",
     "openOnPhoneHint": "Mit einem QR-Code in der App anmelden",
@@ -17184,6 +17190,17 @@
     "plan": "Sein Tarif verlängert sich nicht mehr. Es wird nichts erstattet.",
     "type": "Gib {{name}} ein, um zu bestätigen",
     "submit": "Workspace löschen"
+  },
+  "emailUndo": {
+    "title": "Hol deine E-Mail-Adresse zurück",
+    "lead": "Die Adresse, an die dieser Link ging, wird wieder die E-Mail-Adresse deines Kontos. Alle Sitzungen werden abgemeldet, die KI-Apps getrennt, und Anmeldewege, die seit der Änderung hinzugekommen sind, funktionieren nicht mehr. Auch das Passwort wird gelöscht: Mit „Passwort vergessen“ legst du das nächste fest.",
+    "button": "Das war ich nicht",
+    "done": "Deine E-Mail-Adresse ist zurück",
+    "doneLead": "{{email}} ist wieder die E-Mail-Adresse deines Kontos. Alle Sitzungen sind abgemeldet, Anmeldewege, die seit der Änderung hinzugekommen sind, funktionieren nicht mehr, und das Passwort wurde gelöscht: Mit „Passwort vergessen“ legst du beim Anmelden das nächste fest.",
+    "gone": "Dieser Link funktioniert nicht mehr",
+    "goneLead": "Er wurde schon benutzt, oder seine 7 Tage sind vorbei.",
+    "taken": "Ein anderes Konto nutzt diese E-Mail-Adresse",
+    "takenLead": "{{email}} ist jetzt die E-Mail-Adresse eines anderen Kontos, darum kann sie nicht zurückkommen. Nichts wurde geändert."
   },
   "proof": {
     "willSend": "Wir senden einen Code an {{email}}, um zu bestätigen, dass du es bist.",
