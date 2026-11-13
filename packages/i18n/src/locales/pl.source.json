@@ -26933,7 +26933,31 @@
     "value": "Nothing running right now"
   },
   "queue.rule": {
-    "value": "People go first. Agents mentioned together start one at a time."
+    "value": "New work starts when the computer has free memory. People go first. Agents mentioned together start one at a time."
+  },
+  "queue.cause": {
+    "value": {
+      "one": "Computer full: {{count}} job uses its memory now ({{fill}}).",
+      "other": "Computer full: {{count}} jobs use its memory now ({{fill}})."
+    }
+  },
+  "queue.spill.title": {
+    "value": "More computers, shorter line"
+  },
+  "queue.spill.text": {
+    "value": "When this computer is full, replies to you can start on one of yours. Long work and the agents' files stay here."
+  },
+  "queue.spill.plan": {
+    "value": "your {{plan}} plan"
+  },
+  "queue.stopFill.routine": {
+    "value": "Stop the routine"
+  },
+  "queue.stopFill.work": {
+    "value": "Stop the long job"
+  },
+  "queue.stopFill.agent": {
+    "value": "Stop {{name}}"
   },
   "queue.youFirst": {
     "value": "You go first"
@@ -32602,6 +32626,9 @@
   "errors.device.widenForbidden": {
     "value": "Admins can only narrow who can use someone's own device."
   },
+  "errors.device.spillOwnerOnly": {
+    "value": "Only the person who connected this computer can let replies think on it. You can turn it off."
+  },
   "errors.device.notHome": {
     "value": "Agents live on the workspace computer and use this one when they name it."
   },
@@ -33635,6 +33662,18 @@
   },
   "devices.belongsHint": {
     "value": "It stays when the person who connected it leaves, and everyone can use it while nobody owns it."
+  },
+  "devices.spillOwn": {
+    "value": "Your replies can think here"
+  },
+  "devices.spillOwnHint": {
+    "value": "When an agent's computer is full, its replies to you start here."
+  },
+  "devices.spillOthers": {
+    "value": "Other people's agents can think here"
+  },
+  "devices.spillOthersHint": {
+    "value": "When an agent's computer is full, its replies to other people can start here too."
   },
   "devices.connectedBy": {
     "value": "Connected by {{name}}"
@@ -39261,7 +39300,7 @@
     "value": "My computer is busy with other tasks right now. I'll answer as soon as it's free."
   },
   "chat.body.brain_queued": {
-    "value": "Still in line for the computer. I'll answer as soon as it has room."
+    "value": "Still in line for the computer. I'll answer as soon as it has free memory."
   },
   "chat.body.brain_interrupted": {
     "value": "{{brain}} stopped before finishing. Already done, not repeated: {{tools}}."
@@ -42308,7 +42347,7 @@
     "value": "Back when it's on"
   },
   "taskManager.wait.computerBusyNext": {
-    "value": "Starts when there's room"
+    "value": "Starts when there's free memory"
   },
   "taskManager.wait.okNext": {
     "value": "Goes on once someone approves"

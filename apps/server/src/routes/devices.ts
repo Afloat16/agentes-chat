@@ -111,6 +111,10 @@ const Computer = z
     memoryGb: z.number().nullable(),
     ownerUserId: z.string().nullable(),
     belongsToWorkspace: z.boolean(),
+    spill: z.object({ own: z.boolean(), others: z.boolean() }).openapi({
+      description:
+        "While an agent's own computer is full, replies people wait on may think here: replies to its owner (`own`), to anyone else (`others`).",
+    }),
     systemMode: z.boolean().openapi({ description: "Each agent works as its own OS user there (a server install)." }),
     audience: Audience,
     status: Status,
@@ -264,9 +268,9 @@ export function deviceAppRoutes(deps: AppDeps) {
       path: "/organizations/{orgId}/devices/computers/{machineId}",
       tags,
       security,
-      summary: "Rename a computer, change who can use it, mark it the workspace's",
+      summary: "Rename a computer, change who can use it, mark it the workspace's, let replies spill over to it",
       description:
-        "Its owner: anything. An admin: rename, mark it the workspace's, and narrow who can use someone's own computer (`device.widen_forbidden` otherwise). Never the workspace's computer (`machine.managed`).",
+        "Its owner: anything. An admin: rename, mark it the workspace's, and narrow who can use someone's own computer (`device.widen_forbidden` otherwise). Never the workspace's computer (`machine.managed`). Only its owner turns spill-over on (`device.spill_owner_only`).",
       request: {
         params: MachineParams,
         body: body(
@@ -274,6 +278,7 @@ export function deviceAppRoutes(deps: AppDeps) {
             name: z.string().min(1).max(80).optional(),
             audience: Audience.optional(),
             belongsToWorkspace: z.boolean().optional(),
+            spill: z.object({ own: z.boolean().optional(), others: z.boolean().optional() }).optional(),
           }),
         ),
       },

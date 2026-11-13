@@ -872,6 +872,17 @@ describe("A device's page", () => {
     expect(document.querySelector(".settings-rows")?.textContent).toContain("Same as Sam's MacBook Pro");
   });
 
+  test("spill-over on someone's computer: an admin may turn it off, never on", async () => {
+    const { state } = await open(`/org/${ORG_ID}/settings/devices/${IMAC}`);
+    const own = screen().getByRole("switch", { name: "Your replies can think here" });
+    const others = screen().getByRole("switch", { name: "Other people's agents can think here" });
+    expect([own.getAttribute("aria-checked"), others.getAttribute("aria-checked")]).toEqual(["true", "false"]);
+    expect(others.hasAttribute("disabled")).toBe(true);
+    await click(own);
+    await settle(4);
+    expect(calls(state, "devices.updateComputer").map((c) => c.args.at(-1))).toEqual([{ spill: { own: false } }]);
+  });
+
   test("an admin on someone's computer may only narrow who can use it", async () => {
     await open(`/org/${ORG_ID}/settings/devices/${IMAC}`);
     const select = screen().getByRole("combobox", { name: "Who can use it" });

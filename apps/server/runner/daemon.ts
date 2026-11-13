@@ -177,11 +177,18 @@ import { XcodeFixer, type XcodeFixOptions } from "./xcode-fix";
  *   activity log (secrets masked).
  */
 
+/**
+ * Where the runner reads free memory (Linux), an idle CLI closes whenever a turn needs its room (`reclaim`), so keeping
+ * it warm costs no admission: follow-ups minutes apart skip a cold start and keep the prompt cache. Elsewhere a count
+ * of turns decides room, so idle CLIs close soon.
+ */
+const MEMORY_READ = process.platform === "linux";
+
 export const DEFAULT_LIMITS = {
   maxConcurrentTasks: 3,
   taskMaxSeconds: 4 * 3600,
-  brainIdleMinutes: 3,
-  brainMaxProcesses: 1,
+  brainIdleMinutes: MEMORY_READ ? 20 : 3,
+  brainMaxProcesses: MEMORY_READ ? 2 : 1,
 } as const;
 
 /** Bounds for `config.set` (the app's Preferences). */
@@ -1455,9 +1462,11 @@ export class RunnerDaemon implements RequestObserver {
       brains,
       ...(accountBrains ? { accountBrains } : {}),
       // System mode: root runs only the CLIs of sign-ins several agents share; the others are their workers'.
+      // Idle CLIs first (they restart in seconds), then idle agents' browsers (their logins stay on disk).
       reclaimBrains: supervisor
-        ? (spare) => accountBrains?.reclaim(spare) ?? supervisor.reclaimBrains(spare)
-        : (spare) => brains.reclaimIdle(spare),
+        ? async (spare) =>
+            (await (accountBrains?.reclaim(spare) ?? supervisor.reclaimBrains(spare))) || supervisor.reclaimBrowsers()
+        : async (spare) => (await brains.reclaimIdle(spare)) || browser.reclaimIdle(),
       warmBrain: supervisor
         ? async (spare) => accountBrains?.warm(spare) || supervisor.warmBrain(spare)
         : async (spare) => brains.warm(spare),

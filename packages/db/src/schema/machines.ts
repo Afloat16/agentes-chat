@@ -232,6 +232,12 @@ export const machines = pgTable(
     audienceRoleIds: uuid().array().notNull().default(sql`'{}'::uuid[]`),
     /** An admin marked it the workspace's: it stays when its pairer leaves (an `owner` rule then reads as everyone). */
     belongsToWorkspace: boolean().notNull().default(false),
+    /**
+     * Spill-over: while an agent's own computer is full, a turn a person waits on may think here instead, on a
+     * sign-in the agent may use. `spill_own`: turns for whoever connected it; `spill_others`: anyone else's.
+     */
+    spillOwn: boolean().notNull().default(true),
+    spillOthers: boolean().notNull().default(false),
     /** Last known; trust it only with a recent `last_seen_at` (a replica may have died). */
     online: boolean().notNull().default(false),
     /** The server process holding its socket. */

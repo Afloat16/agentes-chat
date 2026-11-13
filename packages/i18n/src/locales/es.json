@@ -11380,7 +11380,20 @@
     "inLine": "En la cola · {{n}}",
     "allStarted": "todos empiezan en ~{{n}} min",
     "nothingWorking": "Nada en marcha ahora",
-    "rule": "Las personas van primero. Los agentes mencionados juntos empiezan de uno en uno.",
+    "rule": "Un trabajo nuevo empieza cuando la computadora tiene memoria libre. Las personas van primero. Los agentes mencionados juntos empiezan de uno en uno.",
+    "cause_one": "Computadora llena: {{count}} trabajo usa su memoria ahora ({{fill}}).",
+    "cause_many": "Computadora llena: {{count}} trabajos usan su memoria ahora ({{fill}}).",
+    "cause_other": "Computadora llena: {{count}} trabajos usan su memoria ahora ({{fill}}).",
+    "spill": {
+      "title": "Más computadoras, menos cola",
+      "text": "Cuando esta computadora esté llena, las respuestas para ti pueden empezar en una tuya. El trabajo largo y los archivos de los agentes se quedan aquí.",
+      "plan": "tu plan {{plan}}"
+    },
+    "stopFill": {
+      "routine": "Detener la rutina",
+      "work": "Detener el trabajo largo",
+      "agent": "Detener a {{name}}"
+    },
     "youFirst": "Tú vas primero",
     "startsIn": "empieza en ~{{n}} min",
     "startsAfter": "empieza cuando {{after}} termine",
@@ -13837,6 +13850,7 @@
     "device": {
       "notLinkMaker": "Solo quien creó el enlace puede dejar entrar a esta computadora.",
       "widenForbidden": "Los admins solo pueden restringir quién usa el dispositivo propio de alguien.",
+      "spillOwnerOnly": "Solo quien conectó esta computadora puede dejar que las respuestas piensen en ella. Tú puedes apagarlo.",
       "notHome": "Los agentes viven en la computadora del workspace y usan esta cuando la nombran."
     },
     "machine": {
@@ -14252,6 +14266,10 @@
     "maxTasksHint": "Cuántas tareas en segundo plano ejecutan aquí los agentes al mismo tiempo. Las demás esperan su turno.",
     "belongs": "Pertenece al espacio de trabajo",
     "belongsHint": "Se queda cuando se va la persona que lo conectó, y todos pueden usarlo mientras no tenga dueño.",
+    "spillOwn": "Tus respuestas pueden pensar aquí",
+    "spillOwnHint": "Cuando la computadora de un agente esté llena, sus respuestas para ti empiezan aquí.",
+    "spillOthers": "Los agentes de otras personas pueden pensar aquí",
+    "spillOthersHint": "Cuando la computadora de un agente esté llena, sus respuestas para otras personas también pueden empezar aquí.",
     "connectedBy": "Conectado por {{name}}",
     "downloadFor": "Descargar para {{system}}",
     "downloadApp": "Descargar la app",
@@ -16497,7 +16515,7 @@
       "provider_wait_ours": "Algo de nuestro lado está bloqueando mi IA, no tu cuenta. Responderé en cuanto se resuelva.",
       "provider_back": "Mi IA ha vuelto.",
       "brain_busy": "Mi computadora está ocupada con otras tareas ahora. Responderé en cuanto se libere.",
-      "brain_queued": "Sigo en la fila de la computadora. Responderé en cuanto tenga espacio.",
+      "brain_queued": "Sigo en la cola de la computadora. Respondo en cuanto tenga memoria libre.",
       "brain_interrupted": "{{brain}} se detuvo antes de terminar. Ya hecho, no se repite: {{tools}}.",
       "plan_limit_cut": "Me detuve en el límite del plan {{plan}}. Retomaré donde lo dejé {{when}}, cuando se renueve.",
       "plan_limit_cut_unknown": "Me detuve en el límite del plan {{plan}}. Retomaré donde lo dejé en cuanto se renueve.",
@@ -17933,7 +17951,7 @@
       "computerWait": "Espera la computadora",
       "computerWaitNext": "Vuelve cuando esté lista",
       "computerOfflineNext": "Vuelve cuando se encienda",
-      "computerBusyNext": "Empieza cuando haya lugar",
+      "computerBusyNext": "Empieza cuando haya memoria libre",
       "okNext": "Sigue cuando alguien apruebe",
       "answerNext": "Sigue cuando alguien responda",
       "back": "Vuelve {{when}}",

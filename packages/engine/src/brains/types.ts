@@ -1,4 +1,10 @@
-import type { BrainEffort, BrainSpeed, BrainTurnRequest, ProviderFailureCause } from "@agenteschat/adapters";
+import type {
+  BrainEffort,
+  BrainSpeed,
+  BrainTurnRequest,
+  BrainTurnTimings,
+  ProviderFailureCause,
+} from "@agenteschat/adapters";
 import type { ToolImage } from "@agenteschat/providers";
 import { planOf } from "@agenteschat/providers/plans";
 import type { CodeSetup } from "../git/machine";
@@ -196,7 +202,7 @@ export type BrainEvent =
       maxUncached?: number;
     }
   | { type: "limit"; resetsAt?: string }
-  | { type: "done"; text: string; session?: { id: string } }
+  | { type: "done"; text: string; session?: { id: string }; timings?: BrainTurnTimings }
   | {
       type: "error";
       code: string;

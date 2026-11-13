@@ -254,6 +254,27 @@ test("who can use it: the owner sets it; an admin renames, marks it the workspac
   ).rejects.toMatchObject({ code: "machine.managed" });
 });
 
+test("spill-over: on for its owner's replies by default; only the owner turns it on, an admin only off", async () => {
+  f = await setup();
+  const sam = await addMember(f.db, f.org.id, "admin", "sam");
+  const rui = await addMember(f.db, f.org.id, "member", "rui");
+  const laptop = await pair(rui.id, "Rui's laptop");
+  expect((await updateComputerDevice(deps(), rui.id, f.org.id, laptop, {})).spill).toEqual({
+    own: true,
+    others: false,
+  });
+  await expect(
+    updateComputerDevice(deps(), sam.id, f.org.id, laptop, { spill: { others: true } }),
+  ).rejects.toMatchObject({ code: "device.spill_owner_only" });
+  expect((await updateComputerDevice(deps(), rui.id, f.org.id, laptop, { spill: { others: true } })).spill).toEqual({
+    own: true,
+    others: true,
+  });
+  expect(
+    (await updateComputerDevice(deps(), sam.id, f.org.id, laptop, { spill: { own: false, others: false } })).spill,
+  ).toEqual({ own: false, others: false });
+});
+
 test("where workspaces have their own computer, a brought one is a target, never an agent's home", async () => {
   f = await setup();
   setWorkspaceComputers(true);

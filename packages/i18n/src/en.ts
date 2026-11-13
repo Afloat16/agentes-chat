@@ -11266,7 +11266,23 @@ export const en = {
     inLine: "In line · {{n}}",
     allStarted: "all started in ~{{n}} min",
     nothingWorking: "Nothing running right now",
-    rule: "People go first. Agents mentioned together start one at a time.",
+    rule: "New work starts when the computer has free memory. People go first. Agents mentioned together start one at a time.",
+    /** Why a turn waits: `fill` is `queue.fill`'s line. */
+    cause_one: "Computer full: {{count}} job uses its memory now ({{fill}}).",
+    cause_other: "Computer full: {{count}} jobs use its memory now ({{fill}}).",
+    /** The viewer's own computers that may take their replies while this one is full (`machines.spill_own`). */
+    spill: {
+      title: "More computers, shorter line",
+      text: "When this computer is full, replies to you can start on one of yours. Long work and the agents' files stay here.",
+      /** The viewer's own sign-in there, "Claude Max". */
+      plan: "your {{plan}} plan",
+    },
+    /** The wait line's way out: stop the work on the computer the viewer may stop. `name` is the agent doing it. */
+    stopFill: {
+      routine: "Stop the routine",
+      work: "Stop the long job",
+      agent: "Stop {{name}}",
+    },
     youFirst: "You go first",
     startsIn: "starts ~{{n}} min",
     /** {{after}} is `queue.who`: the agent's name, with an article where the language needs one. */
@@ -13478,6 +13494,7 @@ export const en = {
     device: {
       notLinkMaker: "Only the person who made the link can let this computer join.",
       widenForbidden: "Admins can only narrow who can use someone's own device.",
+      spillOwnerOnly: "Only the person who connected this computer can let replies think on it. You can turn it off.",
       notHome: "Agents live on the workspace computer and use this one when they name it.",
     },
     machine: {
@@ -13888,6 +13905,10 @@ export const en = {
     maxTasksHint: "How many background tasks agents run here at the same time. The rest wait their turn.",
     belongs: "Belongs to the workspace",
     belongsHint: "It stays when the person who connected it leaves, and everyone can use it while nobody owns it.",
+    spillOwn: "Your replies can think here",
+    spillOwnHint: "When an agent's computer is full, its replies to you start here.",
+    spillOthers: "Other people's agents can think here",
+    spillOthersHint: "When an agent's computer is full, its replies to other people can start here too.",
     connectedBy: "Connected by {{name}}",
     downloadFor: "Download for {{system}}",
     downloadApp: "Download the app",
@@ -16246,7 +16267,7 @@ export const en = {
         "Something on our side is blocking my AI, not your account. I'll answer as soon as it's fixed.",
       provider_back: "My AI is back.",
       brain_busy: "My computer is busy with other tasks right now. I'll answer as soon as it's free.",
-      brain_queued: "Still in line for the computer. I'll answer as soon as it has room.",
+      brain_queued: "Still in line for the computer. I'll answer as soon as it has free memory.",
       brain_interrupted: "{{brain}} stopped before finishing. Already done, not repeated: {{tools}}.",
       plan_limit_cut: "I stopped at the {{plan}} plan's limit. I'll pick up where I left off {{when}}, when it resets.",
       plan_limit_cut_unknown:
@@ -17734,7 +17755,7 @@ export const en = {
       computerWait: "Waiting for the computer",
       computerWaitNext: "Back when it's ready",
       computerOfflineNext: "Back when it's on",
-      computerBusyNext: "Starts when there's room",
+      computerBusyNext: "Starts when there's free memory",
       okNext: "Goes on once someone approves",
       answerNext: "Goes on once someone answers",
       back: "Back {{when}}",

@@ -1793,6 +1793,13 @@
       "when": 1794705300000,
       "tag": "0257_approval_superseded_by",
       "breakpoints": true
+    },
+    {
+      "idx": 259,
+      "version": "7",
+      "when": 1794725300000,
+      "tag": "0259_machine_spill",
+      "breakpoints": true
     }
   ]
 }

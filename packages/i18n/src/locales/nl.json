@@ -11120,7 +11120,19 @@
     "inLine": "In de wachtrij · {{n}}",
     "allStarted": "allemaal gestart over ~{{n}} min",
     "nothingWorking": "Er draait nu niets",
-    "rule": "Mensen gaan voor. Agenten die samen genoemd worden starten een voor een.",
+    "rule": "Nieuw werk start als de computer vrij geheugen heeft. Mensen gaan voor. Samen genoemde agenten starten een voor een.",
+    "cause_one": "Computer vol: {{count}} taak gebruikt nu zijn geheugen ({{fill}}).",
+    "cause_other": "Computer vol: {{count}} taken gebruiken nu zijn geheugen ({{fill}}).",
+    "spill": {
+      "title": "Meer computers, kortere wachtrij",
+      "text": "Als deze computer vol is, kunnen antwoorden voor jou op een van jouw computers starten. Lange taken en de bestanden van de agenten blijven hier.",
+      "plan": "je {{plan}}-abonnement"
+    },
+    "stopFill": {
+      "routine": "Routine stoppen",
+      "work": "Lange taak stoppen",
+      "agent": "{{name}} stoppen"
+    },
     "youFirst": "Jij bent eerst",
     "startsIn": "start over ~{{n}} min",
     "startsAfter": "start zodra {{after}} klaar is",
@@ -13511,6 +13523,7 @@
     "device": {
       "notLinkMaker": "Alleen wie de link heeft gemaakt, kan deze computer laten deelnemen.",
       "widenForbidden": "Admins kunnen alleen beperken wie iemands eigen apparaat mag gebruiken.",
+      "spillOwnerOnly": "Alleen wie deze computer heeft gekoppeld, kan antwoorden hier laten denken. Uitzetten kan wel.",
       "notHome": "Agents wonen op de computer van de workspace en gebruiken deze als ze hem bij naam noemen."
     },
     "machine": {
@@ -13924,6 +13937,10 @@
     "maxTasksHint": "Hoeveel achtergrondtaken agents hier tegelijk uitvoeren. De rest wacht op zijn beurt.",
     "belongs": "Hoort bij de werkruimte",
     "belongsHint": "Het blijft als de persoon die het koppelde vertrekt, en iedereen kan het gebruiken zolang niemand de eigenaar is.",
+    "spillOwn": "Jouw antwoorden kunnen hier denken",
+    "spillOwnHint": "Als de computer van een agent vol is, starten zijn antwoorden voor jou hier.",
+    "spillOthers": "Agenten van anderen kunnen hier denken",
+    "spillOthersHint": "Als de computer van een agent vol is, kunnen zijn antwoorden voor andere mensen ook hier starten.",
     "connectedBy": "Gekoppeld door {{name}}",
     "downloadFor": "Downloaden voor {{system}}",
     "downloadApp": "De app downloaden",
@@ -16139,7 +16156,7 @@
       "provider_wait_ours": "Iets aan onze kant blokkeert mijn AI, niet jouw account. Ik antwoord zodra het is opgelost.",
       "provider_back": "Mijn AI is terug.",
       "brain_busy": "Mijn computer is nu bezig met andere taken. Ik antwoord zodra hij vrij is.",
-      "brain_queued": "Ik sta nog in de rij voor de computer. Ik antwoord zodra hij ruimte heeft.",
+      "brain_queued": "Ik sta nog in de wachtrij van de computer. Ik antwoord zodra hij vrij geheugen heeft.",
       "brain_interrupted": "{{brain}} stopte voordat het klaar was. Al gedaan, niet herhaald: {{tools}}.",
       "plan_limit_cut": "Ik ben gestopt bij de limiet van het {{plan}}-abonnement. Ik ga {{when}} verder waar ik was, als de limiet reset.",
       "plan_limit_cut_unknown": "Ik ben gestopt bij de limiet van het {{plan}}-abonnement. Ik ga verder waar ik was zodra de limiet reset.",
@@ -17616,7 +17633,7 @@
       "computerWait": "Wacht op de computer",
       "computerWaitNext": "Gaat verder als hij klaar is",
       "computerOfflineNext": "Gaat verder als hij aanstaat",
-      "computerBusyNext": "Begint als er ruimte is",
+      "computerBusyNext": "Start als er vrij geheugen is",
       "okNext": "Gaat verder zodra iemand goedkeurt",
       "answerNext": "Gaat verder zodra iemand antwoordt",
       "back": "Gaat {{when}} verder",

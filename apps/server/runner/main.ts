@@ -77,6 +77,7 @@ import {
   devicePair,
   formatUserCode,
   LINK_CODE,
+  movedFrom,
   PairingError,
   redeemIssuedCode,
   takeEnrollCode,
@@ -172,7 +173,7 @@ Usage:
 Every command takes --home <dir> (default $AGENTES_RUNNER_HOME or ~/.agentes-runner).
 Config: <home>/config.json, mode 600. For background tasks, optional "maxConcurrentTasks" (default 3)
 and "taskMaxSeconds" (default 14400). For agents thinking with Claude Code, optional "brainIdleMinutes"
-(default 3) and "brainMaxProcesses" (default 1). Changes apply while it runs.
+(default 20 on Linux, 3 elsewhere) and "brainMaxProcesses" (default 2 on Linux, 1 elsewhere). Changes apply while it runs.
 Background tasks keep running when the runner restarts. Their logs are in tasks/.
 Commands run as the user that runs the runner. Consider a dedicated OS user.`;
 
@@ -391,6 +392,9 @@ async function pair(p: Parsed): Promise<number> {
   const details = [`Workspace: ${workspaceReal}${exec ? "" : " (commands off)"}`, `Config: ${configPath(home)}`];
   if (wait) wait.done(connected, ...details);
   else term.step(connected, ...details);
+  // One home holds one connection: it left the workspace it worked for, which nothing else says.
+  const left = movedFrom(prev, grant.org);
+  if (left) term.warn(left);
   // An issued code is a provisioner's (the workspace computer): its rule is the workspace's, not a person's choice.
   const who = enrollCode ? null : whoCanUse(grant, next.name ?? grant.name);
   if (who && grant.url) {

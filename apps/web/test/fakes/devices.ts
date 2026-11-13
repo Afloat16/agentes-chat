@@ -53,6 +53,7 @@ const deviceOf = (m: Machine): ComputerDevice => ({
   memoryGb: null,
   ownerUserId: m.pairedBy?.id ?? null,
   belongsToWorkspace: m.kind === "managed" || m.kind === "host",
+  spill: { own: true, others: false },
   systemMode: m.mode === "system",
   audience: { mode: "owner", userIds: [], roleIds: [] },
   status: m.online ? { kind: "ready" } : { kind: "offline", lastSeenAt: m.lastSeenAt },
@@ -103,8 +104,10 @@ export function createFakeDevices(
     },
     updateComputer: async (orgId, id, input) => {
       record("devices.updateComputer", orgId, id, input);
-      Object.assign(computer(id), input);
-      return clone(computer(id));
+      const { spill, ...rest } = input;
+      const c = computer(id);
+      Object.assign(c, rest, spill ? { spill: { ...c.spill, ...spill } } : {});
+      return clone(c);
     },
     removeComputer: async (orgId, id) => {
       record("devices.removeComputer", orgId, id);

@@ -76,6 +76,7 @@ const KNOWN = {
   "device.link_not_found": "errors.machine.pairingInvalid",
   "device.not_link_maker": "errors.device.notLinkMaker",
   "device.widen_forbidden": "errors.device.widenForbidden",
+  "device.spill_owner_only": "errors.device.spillOwnerOnly",
   "device.not_home": "errors.device.notHome",
   "machine.not_found": "errors.machine.notFound",
   "machine.name_required": "errors.machine.nameRequired",
