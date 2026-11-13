@@ -90,7 +90,7 @@ import { useFocusEffect, useIsFocused, useIsPreview } from "expo-router";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, type LayoutChangeEvent, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Keyboard, type LayoutChangeEvent, Linking, Platform, ScrollView, StyleSheet, View } from "react-native";
 import {
   KeyboardController,
   KeyboardGestureArea,
@@ -1157,7 +1157,11 @@ function Chat({
       case "camera": {
         const perm = await ImagePicker.requestCameraPermissionsAsync();
         if (!perm.granted) {
-          toast({ title: t("mobile.plus.noCamera"), icon: "camera" });
+          toast({
+            title: t("mobile.plus.noCamera"),
+            icon: "camera",
+            action: { label: t("mobile.common.openSettings"), onPress: () => void Linking.openSettings() },
+          });
           return;
         }
         const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });

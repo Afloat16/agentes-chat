@@ -6,6 +6,7 @@
     "continue": "Doorgaan",
     "done": "Klaar",
     "retry": "Opnieuw proberen",
+    "openSettings": "Instellingen openen",
     "loading": "Laden",
     "or": "of"
   },
@@ -112,7 +113,7 @@
       "on": "Meldingen aanzetten",
       "later": "Niet nu",
       "done": "Meldingen staan aan",
-      "failed": "Meldingen aanzetten lukte niet. Probeer het opnieuw via Jij › Meldingen.",
+      "failed": "Meldingen aanzetten lukte niet op deze telefoon.",
       "someone": "Een agent",
       "examples": "Voorbeelden van meldingen",
       "now": "nu",

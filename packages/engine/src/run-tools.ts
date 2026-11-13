@@ -130,6 +130,8 @@ export interface ToolSideEffects {
   tasks?: HandedTask[];
   /** A report it offered about the app (`offer_feedback`, ADR 0160 §12), for its next reply (`meta.feedbackOffer`). */
   feedbackOffer?: PendingFeedbackOffer;
+  /** A call refused for a switch off on its computer (`ToolOffError`): its reply's one-click card (`meta.toolOff`). */
+  toolOff?: { machineId: string; tool: string };
 }
 
 /** A task handed on, as a reply's chip reads it: the task, its agent and its conversation's root (the thread). */
@@ -267,6 +269,9 @@ export function absorbToolData(t: ToolSideEffects, data: Record<string, unknown>
     t.tasks = [...(t.tasks ?? []).filter((x) => x.issueId !== task.issueId), task];
   const offer = pendingFeedbackOfferOf(data.feedbackOffer);
   if (offer) t.feedbackOffer = offer;
+  const off = data.toolOff as { machineId?: unknown; tool?: unknown } | undefined;
+  if (off && typeof off.machineId === "string" && typeof off.tool === "string")
+    t.toolOff = { machineId: off.machineId, tool: off.tool };
   const update = data.memoryUpdate as MemoryUpdate | undefined;
   if (update) t.memoryUpdates = [...(t.memoryUpdates ?? []), update];
   return update ?? null;
@@ -288,6 +293,7 @@ export function mergeToolEffects(t: ToolSideEffects, e: ToolSideEffects | null |
   if (e.desktop?.length) t.desktop = withTrail(t.desktop, e.desktop);
   if (e.tasks?.length) t.tasks = [...(t.tasks ?? []), ...e.tasks];
   if (e.feedbackOffer) t.feedbackOffer = e.feedbackOffer;
+  if (e.toolOff) t.toolOff = e.toolOff;
 }
 
 const hasEffects = (e: ToolSideEffects) =>
@@ -304,7 +310,8 @@ const hasEffects = (e: ToolSideEffects) =>
       e.browser?.length ||
       e.desktop?.length ||
       e.tasks?.length ||
-      e.feedbackOffer,
+      e.feedbackOffer ||
+      e.toolOff,
   );
 
 /** The transcript key where the bridge leaves a computer-brain turn's side effects for the engine. */

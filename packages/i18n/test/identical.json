@@ -523,7 +523,13 @@
       "install.page.beta",
       "install.scene.finder",
       "install.scene.general",
-      "devices.armBuild"
+      "devices.armBuild",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "fr": [
       "channel.tooLong.fileName",
@@ -929,7 +935,13 @@
       "install.page.versionSize",
       "devices.armBuild",
       "routines.horizon.agentRoutines",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "de": [
       "devices.iphone.steps.account",
@@ -1359,7 +1371,13 @@
       "install.scene.appLabel",
       "install.scene.downloads",
       "devices.armBuild",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "it": [
       "calendar.moreRuns",
@@ -1707,7 +1725,13 @@
       "install.scene.password",
       "devices.armBuild",
       "routines.horizon.agentRoutines",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "nl": [
       "calendar.moreRuns",
@@ -2280,7 +2304,13 @@
       "issues.projects.label",
       "issues.display.field.project",
       "routines.horizon.agentRoutines",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "ja": [
       "channel.tooLong.fileName",
@@ -2439,7 +2469,13 @@
       "install.page.beta",
       "install.scene.finder",
       "devices.armBuild",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "ko": [
       "channel.tooLong.fileName",
@@ -2592,7 +2628,13 @@
       "feedback.mark",
       "install.page.beta",
       "install.scene.finder",
-      "devices.armBuild"
+      "devices.armBuild",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "zh-Hans": [
       "channel.tooLong.fileName",
@@ -2736,7 +2778,13 @@
       "arrival.beta.word",
       "feedback.mark",
       "install.page.beta",
-      "devices.armBuild"
+      "devices.armBuild",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "id": [
       "devices.cpus",
@@ -3024,7 +3072,15 @@
       "install.scene.edit",
       "install.scene.desktopDock",
       "devices.armBuild",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity",
+      "machines.oneClick.tools.browser",
+      "machines.oneClick.tools.terminal"
     ],
     "tr": [
       "devices.cpus",
@@ -3202,7 +3258,13 @@
       "devices.android.drivers.samsung",
       "install.page.beta",
       "install.scene.finder",
-      "devices.armBuild"
+      "devices.armBuild",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "pl": [
       "devices.cpus",
@@ -3480,7 +3542,13 @@
       "install.page.system",
       "install.scene.finder",
       "devices.armBuild",
-      "devices.iphone.xcodeFix.ok"
+      "devices.iphone.xcodeFix.ok",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ],
     "ru": [
       "channel.tooLong.fileName",
@@ -3624,7 +3692,13 @@
       "devices.android.drivers.samsung",
       "install.page.beta",
       "install.scene.finder",
-      "devices.armBuild"
+      "devices.armBuild",
+      "machines.oneClick.tools.claude",
+      "machines.oneClick.tools.codex",
+      "machines.oneClick.tools.cursor",
+      "machines.oneClick.tools.opencode",
+      "machines.oneClick.tools.grok",
+      "machines.oneClick.tools.antigravity"
     ]
   },
   "mobile-base": {

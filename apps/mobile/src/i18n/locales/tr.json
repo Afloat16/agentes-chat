@@ -6,6 +6,7 @@
     "continue": "Devam et",
     "done": "Tamam",
     "retry": "Tekrar deneyin",
+    "openSettings": "Ayarları aç",
     "loading": "Yükleniyor",
     "or": "veya"
   },
@@ -112,7 +113,7 @@
       "on": "Bildirimleri aç",
       "later": "Şimdi değil",
       "done": "Bildirimler açık",
-      "failed": "Bildirimler açılamadı. Siz › Bildirimler bölümünden tekrar deneyin.",
+      "failed": "Bu telefonda bildirimler açılamadı.",
       "someone": "Bir ajan",
       "examples": "Bildirim örnekleri",
       "now": "şimdi",

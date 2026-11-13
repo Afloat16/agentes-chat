@@ -1656,7 +1656,7 @@ export const ptBR = {
     on: "Ativar avisos",
     later: "Agora não",
     done: "Avisos ativados neste navegador",
-    failed: "Não deu para ativar os avisos. Tente de novo em Configurações\u00a0›\u00a0Notificações.",
+    failed: "Não deu para ativar os avisos neste navegador.",
     someone: "Um agente",
     now: "agora",
     finished: { title: "{{name}} terminou", body: "Está pronto o que você pediu." },
@@ -2858,7 +2858,7 @@ export const ptBR = {
      * (`brain.card`), as its switch is named in that computer's own settings.
      */
     toolOff: {
-      text: "O {{computer}} está conectado, mas o {{program}} está desligado nele. Por segurança, só dá para ligar no próprio computador.",
+      text: "O {{computer}} está conectado, mas o {{program}} está desligado nele. Só quem conectou o computador liga.",
       where: "No {{computer}}",
       /** `<mark/>`: the app's icon, drawn. */
       one: "Clique no ícone do agentes.chat <mark/> perto do relógio",
@@ -2869,6 +2869,10 @@ export const ptBR = {
       terminal: "No terminal do computador, rode:",
       /** In the app on that very computer: Open Tools follows. */
       here: "Ligue <b>{{program}}</b> em <b>Ferramentas</b>.",
+      /** The person who connected the computer turns it on from here: the button follows. */
+      oneClick: "<b>{{program}}</b> está desligado nesse computador.",
+      /** Someone else: they ask whoever connected it (the button follows). */
+      oneClickOther: "<b>{{program}}</b> está desligado no computador de {{name}}.",
       waiting: "Esperando você ligar. Esta tela muda sozinha.",
     },
     titleFor: "Conectar uma IA para o {{name}}",
@@ -3173,6 +3177,9 @@ export const ptBR = {
     line: "Retoma {{when}}, quando o plano renovar. Respostas rápidas continuam.",
     /** Buttons under a wait's note, to the agent's page. */
     changeModel: "Trocar modelo",
+    changeAccount: "Escolher outra conta",
+    /** An agent left without what it thought with (a plan not saved, its owner's plan gone): its "Quem pensa". */
+    chooseBrain: "Escolher quem pensa",
     raiseBudget: "Aumentar orçamento",
     lineUnknown: "Retoma assim que o plano renovar. Respostas rápidas continuam.",
     lineBudget: "Retoma {{when}}, ou antes se o orçamento aumentar. Respostas rápidas continuam.",
@@ -3801,7 +3808,11 @@ export const ptBR = {
     add: "Adicionar ao canal",
     dismiss: "Agora não",
     added: "{{name}} entrou no canal.",
-    askAdmin: "Peça a um admin para adicionar.",
+  },
+  /** "Pedir a um admin": what a person can't do here goes to whoever can, as an inbox row that does it. */
+  adminAsk: {
+    ask: "Pedir a um admin",
+    sent: "Pedido enviado a quem pode fazer isso.",
   },
   channelRefs: {
     list: "Canais",
@@ -4745,6 +4756,10 @@ export const ptBR = {
       approvalCoverEnded: "<b>{{name}}</b> encerrou quem aprova por você",
       rightHandDecided: "Pedidos aprovados por <b>{{name}}</b> por você hoje: {{count}}",
       rightHandPaused: "<b>{{name}}</b> parou de aprovar por você: você desfez 3 decisões nesta semana",
+      /** "Pedir a um admin" (`admin_ask`): who asked, and what. */
+      adminAskChannel: "<b>{{name}}</b> pede para adicionar <b>{{agent}}</b> a #{{label}}",
+      adminAskCreate: "<b>{{name}}</b> pede para poder criar agentes",
+      adminAskWebhook: "<b>{{name}}</b> pede para ligar o webhook do {{service}} para rotinas",
       invitationAccepted: "<b>{{name}}</b> aceitou seu convite e entrou na {{org}}",
       invitationAcceptedAny: "<b>{{name}}</b> aceitou seu convite",
       reaction_one: "<b>{{names}}</b> reagiu à sua mensagem",
@@ -7824,6 +7839,8 @@ export const ptBR = {
       example: "Exemplo",
       exampleCopied: "Exemplo copiado.",
       test: "Testar",
+      /** Testar on a routine turned off: turns it on, then sends the test. */
+      turnOnAndTest: "Ligar e testar",
       tested: "Teste enviado. O agente recebe um exemplo e conta o que faria com uma chamada de verdade.",
       calls: "Últimas chamadas",
       noCalls: "Nenhuma chamada ainda.",
@@ -9704,8 +9721,10 @@ export const ptBR = {
       connection_gone: "Não deu para atualizar: a conexão com o GitHub que leu ela não existe mais.",
       link_holds_several: "Não deu para atualizar: o link agora tem várias skills.",
       link_renamed: "Não deu para atualizar: o link agora tem outra skill.",
-      owner_gone: "Não deu para atualizar: quem ligou a atualização sozinha não gerencia mais skills. Ligue de novo.",
+      owner_gone: "Não deu para atualizar: quem ligou a atualização sozinha não gerencia mais skills.",
       other: "Não deu para atualizar do link.",
+      /** Beside `owner_gone`: turns updating by itself on again, with the presser's rights. */
+      relight: "Ligar de novo",
     },
     notice: {
       updated: "{{name}} foi atualizada do link",
@@ -10128,6 +10147,7 @@ export const ptBR = {
     notUnderstood: "Não entendi nada no áudio. Nada foi enviado.",
     refused: "O áudio não pôde ser enviado nesta conversa.",
     blockedMac: "O microfone está bloqueado. No Mac: Ajustes do Sistema › Privacidade › Microfone.",
+    openMacSettings: "Abrir Ajustes do Mac",
     blockedWeb: "O microfone está bloqueado. Libere pelo cadeado ao lado do endereço do site.",
     noMic: "Nenhum microfone encontrado.",
     failed: "Não deu para abrir o microfone. Tente de novo.",
@@ -11134,6 +11154,8 @@ export const ptBR = {
         "O {{program}} está desligado no {{computer}}. Ligue lá, no app do agentes.chat: Preferências → Ferramentas.",
       tool_offLinux:
         "O {{program}} está desligado no {{computer}}. Ligue lá, no app do agentes.chat ou com {{command}}.",
+      /** The button that turns it on follows. */
+      tool_offOne: "O {{program}} está desligado no {{computer}}.",
       not_installed: "O {{program}} não está instalado no {{computer}}.",
       not_reported: "O {{computer}} ainda está vendo quais programas tem. Isto muda sozinho quando terminar.",
       outdated: "A versão no {{computer}} é antiga. Atualize o Codex para usar.",
@@ -13419,6 +13441,10 @@ export const ptBR = {
       targetSame: "Os agentes já estão nesse computador.",
       targetPaused: "Esse computador está pausado. Escolha outro.",
       pausePast: "Escolha um horário no futuro.",
+      notOwner: "Só quem conectou este computador liga as ferramentas dele. Peça a essa pessoa.",
+      askSelf: "O computador é seu: ligue com o botão.",
+      /** "Pedir a um admin" from someone who may do it themselves. */
+      adminAskSelf: "Você mesmo pode fazer isso aqui.",
       accountMethodUnsupported:
         "Este computador ainda não conecta o Claude desse jeito. Atualize o programa do agentes.chat nele, ou use uma chave de API.",
       offline: "{{name}} está fora do ar agora. Tente de novo quando ele voltar.",
@@ -13561,6 +13587,25 @@ export const ptBR = {
     paused: "Pausado",
     pausedUntil: "Pausado até {{time}}",
     pausedHint: "Pausado no próprio computador por quem o conectou.",
+    oneClick: {
+      tools: {
+        claude: "o Claude Code",
+        codex: "o Codex",
+        cursor: "o Cursor",
+        opencode: "o OpenCode",
+        grok: "o Grok Build",
+        antigravity: "o Antigravity CLI",
+        commands: "os comandos",
+        browser: "o navegador",
+        desktop: "a tela",
+        terminal: "o terminal",
+      },
+      allow: "Ligar {{tool}}",
+      ask: "Pedir a {{name}}",
+      asked: "Pedido enviado. {{name}} recebe um botão para ligar.",
+      done: "Ligado no {{machine}}.",
+      outdated: "Atualize o app do agentes.chat no {{machine}} para ligar daqui.",
+    },
     remotePause: {
       button: "Pausar",
       menu: "Pausar {{name}}",
@@ -13718,16 +13763,21 @@ export const ptBR = {
       commandsWarn: "Comandos podem chegar a outras partes do computador, não só às pastas liberadas.",
       on: "Ligado",
       off: "Desligado",
+      enable: "Ligar",
+      enableLabel: "Ligar {{tool}}",
       disable: "Desligar",
       disableLabel: "Desligar {{tool}}",
       disableTitle: "Desligar {{tool}}?",
-      disableText: "Os agentes deixam de usar {{tool}} neste computador. Para ligar de novo, só no próprio computador.",
+      disableText:
+        "Os agentes deixam de usar {{tool}} neste computador. Para ligar de novo: no próprio computador, ou aqui por quem o conectou.",
       disabled: "{{tool}} desligado.",
       grantTitle: "Para liberar mais",
       grantText: "Liberar é no próprio computador: abra o app do agentes.chat nele (Preferências → Pastas).",
       grantTextTerminal: "Liberar é no próprio computador, no Terminal dele:",
       grantTextAdmin: "Liberar é no próprio computador, no Terminal dele, como administrador:",
       grantTerminal: "Sem o app? No terminal do computador:",
+      /** Under a one-click button: the same as a command to paste on that computer. */
+      preferTerminal: "Prefiro no Terminal",
       grantOnlyOwner: "Só {{name}} libera, no próprio computador. Se precisar de algo, peça para ele ou ela.",
       pathPlaceholder: "<pasta>",
       agentPlaceholder: "<agente>",
@@ -14306,6 +14356,7 @@ export const ptBR = {
       inUse: "<b>{{who}}</b> está usando <b>{{deviceName}}</b>",
       access: "<b>{{who}}</b> pede para usar <b>{{deviceName}}</b>",
       waiting: "<b>{{who}}</b> está esperando <b>{{deviceName}}</b>",
+      toolRequest: "<b>{{who}}</b> pede para ligar {{tool}} no seu <b>{{deviceName}}</b>",
       once: "Permitir uma vez",
       always: "Sempre",
       no: "Não",
@@ -16653,6 +16704,18 @@ export const ptBR = {
       waitingNext: "O <who/> segue sozinho quando {{holder}} terminar",
       waitingNext_female: "A <who/> segue sozinha quando {{holder}} terminar",
       controlSub: "Perfil do navegador · você no controle · os agentes esperam",
+      controlSubOn: "No {{machine}} · você no controle · os agentes esperam",
+      loginTitle: "Fazer login no perfil {{name}}",
+      opening: "Abrindo o perfil {{name}}…",
+      backWhen_one: "Quando terminar, {{count}} agente usa este perfil.",
+      backWhen_other: "Quando terminar, {{count}} agentes usam este perfil.",
+      backWhenNone: "Quando terminar, devolva o perfil.",
+      handBack: "Devolver para os agentes",
+      toolOff: "O navegador está desligado nesse computador.",
+      toolOffOther: "O navegador está desligado no computador de {{name}}.",
+      loginOn: "Ligar e fazer login",
+      turningOn: "Navegador ligado no {{machine}}. Abrindo o perfil…",
+      notOpened: "O navegador não abriu no {{machine}}.",
       backTitle: "Devolver {{name}} para os agentes",
       done: "Pronto. <names/> já podem usar este perfil",
       doneOne: "Pronto. <names/> já pode usar este perfil",
@@ -16661,7 +16724,7 @@ export const ptBR = {
     machine: {
       ready: "Pronto",
       off: "Desligado",
-      offHelp: "Só quem está no computador liga, no app do agentes.chat: Preferências → Ferramentas.",
+      offHelp: "Quem conectou o computador liga aqui ou no app do agentes.chat nele: Preferências → Ferramentas.",
       needsCommand: "Precisa de um comando",
       notReady: "Ainda não pronto",
       turnOff: "Desligar",
@@ -17459,6 +17522,8 @@ export const ptBR = {
       off: "Desligado",
       unavailable: "Indisponível",
       offHelp: "Ligue a tela e os comandos neste computador:",
+      /** Whoever connected it turns each switch on with the buttons that follow. */
+      offOne: "A tela e os comandos precisam estar ligados neste computador.",
       linuxOnly: "Os agentes só usam apps na própria tela em computadores Linux.",
       agent: "O {{name}} ainda não consegue usar apps na própria tela no {{computer}}.",
       agent_female: "A {{name}} ainda não consegue usar apps na própria tela no {{computer}}.",
@@ -17560,6 +17625,8 @@ export const ptBR = {
       unavailable_female: "A tela da {{name}} não pode ser mostrada agora",
       unavailableHelp: "Tente de novo daqui a pouco.",
       screensOff: "As telas estão desligadas no {{computer}}. Ligue lá:",
+      /** The buttons that turn them on follow. */
+      screensOffOne: "As telas estão desligadas no {{computer}}.",
       screensMissing: "O {{computer}} ainda não mostra telas. Nele:",
       outdated: "Atualize o agentes no {{computer}} para ver a tela do {{name}}.",
       outdated_female: "Atualize o agentes no {{computer}} para ver a tela da {{name}}.",

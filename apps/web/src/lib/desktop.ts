@@ -227,6 +227,8 @@ export const thisMac = {
   openPrefs: (tab: "folders" | "tools" | "updates") => invoke<unknown>({ kind: "prefs", tab }),
   /** The menu bar's popover, where access requests are answered. */
   showRequests: () => invoke<unknown>({ kind: "requests" }),
+  /** System Settings on the microphone's list (a voice message macOS refused); an older app refuses it. */
+  openMicrophoneSettings: () => invoke<unknown>({ kind: "privacy", pane: "microphone" }),
   /** The Dock's badge: how many wait on the person, and unread (a dot when nothing waits). */
   badge: (waiting: number, unread: number) => invoke<unknown>({ kind: "badge", waiting, unread }),
   /** The Mac's Go menu: the person's organizations (⌘⌥1–9). */

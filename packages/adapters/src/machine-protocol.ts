@@ -642,6 +642,12 @@ export const MCP_IMAGES_PROTOCOL = 62;
  * the script. Older runners answer `bad_request`, and the apps show the Terminal command instead.
  */
 export const XCODE_FIX_PROTOCOL = 62;
+/**
+ * `access.allow`: the person who paired the computer turns one of its tools on from the apps (ADR 0036 §8). The runner
+ * applies it as its own switch (`access.changed` follows) and tells whoever is at the computer, with a way to undo it.
+ * Older runners answer `bad_request`: the server asks none of them.
+ */
+export const ACCESS_ALLOW_PROTOCOL = 62;
 
 export type PhonePlatform = "android" | "ios";
 export type PhoneKind = "device" | "emulator" | "simulator";
@@ -2362,6 +2368,8 @@ export type MachineRequest = (
       removeFolder?: { path: string; agentId?: string };
       disableTool?: keyof RunnerTools;
     }
+  /** `ACCESS_ALLOW_PROTOCOL`: the computer's owner turned `tool` on from the apps (`by` their user id, `byName` shown). */
+  | { op: "access.allow"; tool: keyof RunnerTools; by: string; byName: string }
   | {
       op: "push";
       path: string;
@@ -2547,6 +2555,7 @@ export const MACHINE_OPS: readonly MachineOp[] = [
   "mission.worktree",
   "access.request",
   "access.reduce",
+  "access.allow",
   "browser.act",
   "browser.stop",
   "browser.stream.start",
@@ -2655,6 +2664,7 @@ export interface MachineReplies {
   "mission.worktree": Partial<MissionWorktreeEnsured> & { removed?: boolean };
   "access.request": { requestId: string; status: "pending" | "granted" };
   "access.reduce": { access: RunnerAccess };
+  "access.allow": { access: RunnerAccess };
   /**
    * `agent-browser`'s own JSON answer: `success: false` with its `error` is a page-level failure (stale ref, covered
    * click). Protocol 45: `code` names a Vault refusal (`VAULT_TYPE_REFUSALS`).

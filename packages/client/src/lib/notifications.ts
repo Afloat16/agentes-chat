@@ -388,6 +388,10 @@ export function openTarget(n: AppNotification): OpenTarget | null {
   if (n.kind === "right_hand_paused") return { to: "/org/$orgId/settings/$section", params: { section: "right_hand" } };
   // Requests to join are answered in Members (ADR 0068).
   if (n.kind === "join_request") return { to: "/org/$orgId/settings/$section", params: { section: "members" } };
+  // "Pedir a um admin": roles are given in Members, webhooks set up from a routine; an agent is added in its channel.
+  if (n.kind === "admin_ask" && n.latest.reason === "create_agents")
+    return { to: "/org/$orgId/settings/$section", params: { section: "members" } };
+  if (n.kind === "admin_ask" && n.latest.reason === "webhook") return { to: "/org/$orgId/routines" };
   // Someone accepted an invitation (ADR 0090): a conversation with them, to say hi.
   if (n.kind === "invitation_accepted") {
     const who = n.actors[0];

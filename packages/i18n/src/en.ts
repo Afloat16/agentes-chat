@@ -1732,7 +1732,7 @@ export const en = {
     on: "Turn on notifications",
     later: "Not now",
     done: "Notifications on in this browser",
-    failed: "Couldn't turn on notifications. Try again in Settings\u00a0›\u00a0Notifications.",
+    failed: "Couldn't turn on notifications in this browser.",
     someone: "An agent",
     now: "now",
     finished: { title: "{{name}} is done", body: "What you asked for is ready." },
@@ -2945,7 +2945,7 @@ export const en = {
      * (`brain.card`), as its switch is named in that computer's own settings.
      */
     toolOff: {
-      text: "{{computer}} is connected, but {{program}} is switched off on it. For safety, it can only be turned on at the computer itself.",
+      text: "{{computer}} is connected, but {{program}} is switched off on it. Only whoever connected the computer turns it on.",
       where: "On {{computer}}",
       /** `<mark/>`: the app's icon, drawn. */
       one: "Click the agentes.chat icon <mark/> by the clock",
@@ -2956,6 +2956,10 @@ export const en = {
       terminal: "In the computer's terminal, run:",
       /** In the app on that very computer: Open Tools follows. */
       here: "Turn on <b>{{program}}</b> under <b>Tools</b>.",
+      /** The person who connected the computer turns it on from here: the button follows. */
+      oneClick: "<b>{{program}}</b> is off on this computer.",
+      /** Someone else: they ask whoever connected it (the button follows). */
+      oneClickOther: "<b>{{program}}</b> is off on {{name}}'s computer.",
       waiting: "Waiting for you to turn it on. This screen changes by itself.",
     },
     titleFor: "Connect an AI for {{name}}",
@@ -3247,6 +3251,9 @@ export const en = {
     line: "Picks up {{when}}, when the plan resets. Quick replies keep going.",
     /** Buttons under a wait's note, to the agent's page. */
     changeModel: "Change model",
+    changeAccount: "Choose another account",
+    /** An agent left without what it thought with (a plan not saved, its owner's plan gone): its "Quem pensa". */
+    chooseBrain: "Choose who thinks",
     raiseBudget: "Raise the budget",
     lineUnknown: "Picks up as soon as the plan resets. Quick replies keep going.",
     lineBudget: "Picks up {{when}}, or sooner if the budget goes up. Quick replies keep going.",
@@ -3891,7 +3898,11 @@ export const en = {
     add: "Add to channel",
     dismiss: "Not now",
     added: "{{name}} joined the channel.",
-    askAdmin: "Ask an admin to add them.",
+  },
+  /** "Pedir a um admin": what a person can't do here goes to whoever can, as an inbox row that does it. */
+  adminAsk: {
+    ask: "Ask an admin",
+    sent: "Sent to whoever can do it.",
   },
   channelRefs: {
     list: "Channels",
@@ -4844,6 +4855,10 @@ export const en = {
       approvalCoverEnded: "<b>{{name}}</b> ended who approves for you",
       rightHandDecided: "Requests <b>{{name}}</b> approved for you today: {{count}}",
       rightHandPaused: "<b>{{name}}</b> stopped approving for you: you undid 3 of its decisions this week",
+      /** "Pedir a um admin" (`admin_ask`): who asked, and what. */
+      adminAskChannel: "<b>{{name}}</b> asks you to add <b>{{agent}}</b> to #{{label}}",
+      adminAskCreate: "<b>{{name}}</b> asks to be able to create agents",
+      adminAskWebhook: "<b>{{name}}</b> asks you to set up the {{service}} webhook for routines",
       invitationAccepted: "<b>{{name}}</b> accepted your invitation and joined {{org}}",
       invitationAcceptedAny: "<b>{{name}}</b> accepted your invitation",
       reaction_one: "<b>{{names}}</b> reacted to your message",
@@ -7824,6 +7839,8 @@ export const en = {
       example: "Example",
       exampleCopied: "Example copied.",
       test: "Test",
+      /** Testar on a routine turned off: turns it on, then sends the test. */
+      turnOnAndTest: "Turn on and test",
       tested: "Test sent. The agent gets a sample and says what it would do with a real call.",
       calls: "Latest calls",
       noCalls: "No calls yet.",
@@ -9693,9 +9710,10 @@ export const en = {
       connection_gone: "Couldn't update it: the GitHub connection that read it is gone.",
       link_holds_several: "Couldn't update it: its link holds several skills now.",
       link_renamed: "Couldn't update it: its link holds another skill now.",
-      owner_gone:
-        "Couldn't update it: whoever turned on updating by itself can no longer manage skills. Turn it on again.",
+      owner_gone: "Couldn't update it: whoever turned on updating by itself can no longer manage skills.",
       other: "Couldn't update it from its link.",
+      /** Beside `owner_gone`: turns updating by itself on again, with the presser's rights. */
+      relight: "Turn on again",
     },
     notice: {
       updated: "{{name}} was updated from its link",
@@ -10085,6 +10103,7 @@ export const en = {
     notUnderstood: "Couldn't make out the audio. Nothing was sent.",
     refused: "The audio couldn't be sent in this conversation.",
     blockedMac: "The microphone is blocked. On a Mac: System Settings › Privacy › Microphone.",
+    openMacSettings: "Open Mac Settings",
     blockedWeb: "The microphone is blocked. Allow it from the lock next to the site's address.",
     noMic: "No microphone found.",
     failed: "Couldn't open the microphone. Try again.",
@@ -11079,6 +11098,8 @@ export const en = {
         "{{program}} is turned off on {{computer}}. Turn it on there, in the agentes.chat app: Preferences → Tools.",
       tool_offLinux:
         "{{program}} is turned off on {{computer}}. Turn it on there, in the agentes.chat app or with {{command}}.",
+      /** The button that turns it on follows. */
+      tool_offOne: "{{program}} is turned off on {{computer}}.",
       not_installed: "{{program}} isn't installed on {{computer}}.",
       /** Its runner hasn't said which CLIs it has yet: nobody knows whether this one is there. */
       not_reported: "{{computer}} is still checking which programs it has. This changes by itself when it's done.",
@@ -13393,6 +13414,10 @@ export const en = {
       targetSame: "The agents are already on that computer.",
       targetPaused: "That computer is paused. Choose another one.",
       pausePast: "Choose a time in the future.",
+      notOwner: "Only whoever connected this computer turns its tools on. Ask them.",
+      askSelf: "It's your computer: turn it on with the button.",
+      /** "Pedir a um admin" from someone who may do it themselves. */
+      adminAskSelf: "You can do this here yourself.",
       accountMethodUnsupported:
         "This computer can't connect Claude this way yet. Update the agentes.chat program on it, or use an API key.",
       offline: "{{name}} is offline right now. Try again once it's back.",
@@ -13538,6 +13563,25 @@ export const en = {
     pausedUntil: "Paused until {{time}}",
     pausedHint: "Paused on the computer itself by whoever connected it.",
     /** Pausing a computer from the web or phone app, for whoever connected it and admins. */
+    oneClick: {
+      tools: {
+        claude: "Claude Code",
+        codex: "Codex",
+        cursor: "Cursor",
+        opencode: "OpenCode",
+        grok: "Grok Build",
+        antigravity: "Antigravity CLI",
+        commands: "commands",
+        browser: "the browser",
+        desktop: "the screen",
+        terminal: "the terminal",
+      },
+      allow: "Turn on {{tool}}",
+      ask: "Ask {{name}}",
+      asked: "Asked. {{name}} gets a button to turn it on.",
+      done: "On at {{machine}}.",
+      outdated: "Update the agentes.chat app on {{machine}} to turn it on from here.",
+    },
     remotePause: {
       button: "Pause",
       menu: "Pause {{name}}",
@@ -13696,16 +13740,21 @@ export const en = {
       commandsWarn: "Commands can reach other parts of the computer, not only the allowed folders.",
       on: "On",
       off: "Off",
+      enable: "Turn on",
+      enableLabel: "Turn on {{tool}}",
       disable: "Turn off",
       disableLabel: "Turn off {{tool}}",
       disableTitle: "Turn off {{tool}}?",
-      disableText: "Agents stop using {{tool}} on this computer. To turn it back on, only on the computer itself.",
+      disableText:
+        "Agents stop using {{tool}} on this computer. To turn it back on: on the computer itself, or here by whoever connected it.",
       disabled: "{{tool}} turned off.",
       grantTitle: "To allow more",
       grantText: "Allowing happens on the computer itself: open the agentes.chat app there (Preferences → Folders).",
       grantTextTerminal: "Allowing happens on the computer itself, in its Terminal:",
       grantTextAdmin: "Allowing happens on the computer itself, in its Terminal, as its administrator:",
       grantTerminal: "No app? In the computer's terminal:",
+      /** Under a one-click button: the same as a command to paste on that computer. */
+      preferTerminal: "I'd rather use the Terminal",
       grantOnlyOwner: "Only {{name}} allows more, on the computer itself. If you need something, ask them.",
       pathPlaceholder: "<folder>",
       agentPlaceholder: "<agent>",
@@ -14323,6 +14372,7 @@ export const en = {
       inUse: "<b>{{who}}</b> is using <b>{{deviceName}}</b>",
       access: "<b>{{who}}</b> asks to use <b>{{deviceName}}</b>",
       waiting: "<b>{{who}}</b> is waiting for <b>{{deviceName}}</b>",
+      toolRequest: "<b>{{who}}</b> asks you to turn on {{tool}} on your <b>{{deviceName}}</b>",
       once: "Allow once",
       always: "Always",
       no: "No",
@@ -16668,6 +16718,18 @@ export const en = {
       waitingNext: "<who/> goes on by himself when {{holder}} is done",
       waitingNext_female: "<who/> goes on by herself when {{holder}} is done",
       controlSub: "Browser profile · you're in control · the agents wait",
+      controlSubOn: "On {{machine}} · you're in control · the agents wait",
+      loginTitle: "Sign in to the {{name}} profile",
+      opening: "Opening the {{name}} profile…",
+      backWhen_one: "When you're done, {{count}} agent uses this profile.",
+      backWhen_other: "When you're done, {{count}} agents use this profile.",
+      backWhenNone: "When you're done, hand the profile back.",
+      handBack: "Hand back to the agents",
+      toolOff: "The browser is off on this computer.",
+      toolOffOther: "The browser is off on {{name}}'s computer.",
+      loginOn: "Turn on and sign in",
+      turningOn: "Browser on at {{machine}}. Opening the profile…",
+      notOpened: "The browser didn't open on {{machine}}.",
       backTitle: "Hand {{name}} back to the agents",
       done: "Done. <names/> can use this profile now",
       doneOne: "Done. <names/> can use this profile now",
@@ -16676,7 +16738,7 @@ export const en = {
     machine: {
       ready: "Ready",
       off: "Off",
-      offHelp: "Only someone at the computer turns it on, in the agentes.chat app: Preferences → Tools.",
+      offHelp: "Whoever connected the computer turns it on here or in the agentes.chat app on it: Preferences → Tools.",
       needsCommand: "Needs a command",
       notReady: "Not ready yet",
       turnOff: "Turn off",
@@ -17396,6 +17458,8 @@ export const en = {
       off: "Off",
       unavailable: "Not available",
       offHelp: "Turn on the screens and commands on this computer:",
+      /** Whoever connected it turns each switch on with the buttons that follow. */
+      offOne: "This computer needs both the screen and commands on.",
       linuxOnly: "Agents use apps on their own screens only on Linux computers.",
       agent: "{{name}} can't use apps on his screen on {{computer}} yet.",
       agent_female: "{{name}} can't use apps on her screen on {{computer}} yet.",
@@ -17484,6 +17548,8 @@ export const en = {
       unavailable: "{{name}}'s screen can't be shown right now",
       unavailableHelp: "Try again in a moment.",
       screensOff: "Screens are off on {{computer}}. Turn them on there:",
+      /** The buttons that turn them on follow. */
+      screensOffOne: "Screens are off on {{computer}}.",
       screensMissing: "{{computer}} can't show screens yet. On it:",
       outdated: "Update agentes on {{computer}} to see {{name}}'s screen.",
       noScreen: "{{name}} has no screen to show here",

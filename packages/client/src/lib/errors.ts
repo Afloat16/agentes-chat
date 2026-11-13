@@ -87,6 +87,9 @@ const KNOWN = {
   "machine.target_same": "errors.machine.targetSame",
   "machine.target_paused": "errors.machine.targetPaused",
   "machine.pause_past": "errors.machine.pausePast",
+  "machine.not_owner": "errors.machine.notOwner",
+  "machine.ask_self": "errors.machine.askSelf",
+  "admin_ask.self": "errors.machine.adminAskSelf",
   // A computer that can't take the request now (`MachineOfflineError`, `MachinePausedError`: `name`), or its own
   // refusal (`MachineRequestError`, as `machine.<code>`).
   "machine.offline": "errors.machine.offline",
@@ -506,6 +509,8 @@ const KNOWN = {
   "browser.not_in_control": "errors.said.takeControl",
   "browser_profile.busy": "errors.said.profileBusy",
   "browser_profile.name_taken": "errors.said.nameTaken",
+  "browser_profile.tool_off": "browser.profiles.toolOff",
+  "browser_profile.unavailable": "browser.profiles.notOpened",
   "channel.delete_name": "errors.said.deleteName",
   "channel.general": "errors.said.generalKept",
   "channel.general_stays": "errors.said.generalStays",
@@ -762,6 +767,8 @@ export function knownErrorText(t: TFunction, error: unknown, locale = "en"): str
   // The person who connected the mailbox is gone or unnamed: no blank name in the sentence.
   if (error.code === "mail.owner_only" && !error.params?.ownerName)
     return t("errors.mail.ownerOnlyUnknown", error.params);
+  if (error.code === "browser_profile.unavailable")
+    return t("browser.profiles.notOpened", { machine: error.params?.machineName ?? "" });
   // `provider`: the provider whose key is missing, when the server could name it.
   if (error.code === "missing_credential" && typeof error.params?.provider === "string")
     return t("agentPage.activity.errors.missing_credential", error.params);
@@ -1008,17 +1015,22 @@ export const filesTextOnlyOf = (meta: Record<string, unknown> | null | undefined
   meta?.filesTextOnly === true ? FILES_TEXT_ONLY : null;
 
 /**
- * The one thing to do about a failed run, by its code, for someone who can: another key (`keys`: who manages them), or
- * another model (the agent's owner or who manages agents). Null when nothing fixes it or it's someone else's to do.
+ * The one thing to do about a failed run, by its code, for someone who can: another key (`keys`: who manages them),
+ * another model or another account (the agent's owner or who manages agents). Null when nothing fixes it or it's
+ * someone else's to do.
  */
 export function failedRunFix(
   code: string | null | undefined,
   who: { keys: boolean; admin: boolean; owner: boolean },
-): "useKey" | "changeModel" | null {
+): "useKey" | "changeModel" | "changeAccount" | null {
   if (code === "run.model_unlisted" || code === "run.provider_model_unavailable" || code === FILES_TEXT_ONLY)
     return who.admin || who.owner ? "changeModel" : null;
+  if (code === "run.account_missing") return who.admin || who.owner ? "changeAccount" : null;
   return code && KEY_FAILURES.has(code) && who.keys ? "useKey" : null;
 }
+
+/** The screen of "Quem pensa" a model or account fix opens on. */
+export const FIX_BRAIN_SCREEN = { changeModel: "model", changeAccount: "switch" } as const;
 
 /**
  * A failed run's reason in the reader's words, from the server's code (`run.stuck`, `run.computer_failed`): null for

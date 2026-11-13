@@ -6,6 +6,7 @@
     "continue": "Continua",
     "done": "Fatto",
     "retry": "Riprova",
+    "openSettings": "Apri Impostazioni",
     "loading": "Caricamento",
     "or": "oppure"
   },
@@ -112,7 +113,7 @@
       "on": "Attiva le notifiche",
       "later": "Non ora",
       "done": "Notifiche attive",
-      "failed": "Non è stato possibile attivare le notifiche. Riprova in Tu › Notifiche.",
+      "failed": "Impossibile attivare le notifiche su questo telefono.",
       "someone": "Un agente",
       "examples": "Esempi di notifiche",
       "now": "ora",

@@ -947,6 +947,16 @@ export function createBrowserLive(deps: BrowserLiveDeps) {
       }
       // Someone opened the agent's computer: its browser gets ready for the agent's next command meanwhile.
       if (!profileId) deps.warm?.({ orgId, agentId, machineId });
+      // A profile's Chrome too, so a view opened again after a failed start starts it again (a no-op while it runs).
+      else {
+        void deps.hub
+          .call<"browser.warm">(
+            machineId,
+            { op: "browser.warm", agent: profileScope(profileId), ...profileOp(agentId) },
+            { timeoutMs: 90_000 },
+          )
+          .catch(() => {});
+      }
       if (!deps.hub.isLocal(machineId)) {
         // Held by another replica (or not connected): frames only flow where the socket is.
         const machine = await getMachineById(deps.db, machineId);

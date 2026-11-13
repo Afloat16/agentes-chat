@@ -6,6 +6,7 @@
     "continue": "Continuer",
     "done": "OK",
     "retry": "Réessayer",
+    "openSettings": "Ouvrir les Réglages",
     "loading": "Chargement",
     "or": "ou"
   },
@@ -112,7 +113,7 @@
       "on": "Activer les notifications",
       "later": "Plus tard",
       "done": "Notifications activées",
-      "failed": "Impossible d'activer les notifications. Réessayez dans Vous › Notifications.",
+      "failed": "Impossible d'activer les notifications sur ce téléphone.",
       "someone": "Un agent",
       "examples": "Exemples de notifications",
       "now": "maintenant",

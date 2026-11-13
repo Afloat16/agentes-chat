@@ -132,6 +132,11 @@ export const desktopEn = {
     allowedAll: "{{folder}} allowed for all agents",
     denied: "Declined. {{agent}} lets them know in the chat.",
     notifTitle: "{{agent}} wants to use the folder {{folder}}",
+    allowedTitle: "{{name}} turned on {{tool}} from agentes.chat",
+    allowedBody: "If it wasn't you, undo it here.",
+    allowedUndo: "Undo",
+    allowedOk: "OK",
+    allowedUndone: "Off again: {{tool}}",
     quitTitle: "Quit agentes.chat?",
     quitBody:
       "Agents can't use this {{device}} while the app is closed. What is already running finishes and sends the result when you open it again.",
@@ -703,6 +708,8 @@ export const desktopEn = {
       addedBody: "On each agent's page, choose who uses this account.",
       addedPlan: "{{plan}} plan",
       ok: "OK",
+      /** In "Conta adicionada": the workspace's agents in the main window, to choose who uses it. */
+      chooseAgents: "Choose agents",
       failedTitle: "The account wasn't added",
       failedExpired: "Time to sign in ran out. Try again.",
       failedLogin: "The sign-in didn't finish. Try again.",

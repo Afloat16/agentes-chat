@@ -136,6 +136,11 @@ export const desktopPtBR = {
     allowedAll: "{{folder}} liberada para todos os agentes",
     denied: "Recusado. {{agent}} avisa no chat.",
     notifTitle: "{{agent}} quer usar a pasta {{folder}}",
+    allowedTitle: "{{name}} ligou {{tool}} pelo agentes.chat",
+    allowedBody: "Se não foi você, desfaça aqui.",
+    allowedUndo: "Desfazer",
+    allowedOk: "Ok",
+    allowedUndone: "Desligado de novo: {{tool}}",
     quitTitle: "Sair do agentes.chat?",
     quitBody:
       "Os agentes não conseguem usar este {{device}} com o app fechado. O que já está rodando termina e manda o resultado quando você abrir de novo.",
@@ -687,6 +692,8 @@ export const desktopPtBR = {
       addedBody: "Escolha na página de cada agente quem usa esta conta.",
       addedPlan: "plano {{plan}}",
       ok: "OK",
+      /** In "Conta adicionada": the workspace's agents in the main window, to choose who uses it. */
+      chooseAgents: "Escolher agentes",
       failedTitle: "A conta não foi adicionada",
       failedExpired: "O tempo para entrar acabou. Tente de novo.",
       failedLogin: "A entrada não terminou. Tente de novo.",

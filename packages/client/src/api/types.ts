@@ -4469,6 +4469,8 @@ export interface Machine {
   paused?: MachinePause | null;
   /** Its app takes a pause from the apps (`POST …/pause`); `false` or absent: update the app on it. */
   remotePause?: boolean;
+  /** Who paired it turns its tools on from the apps (`POST …/access/allow`); `false` or absent: its app is too old. */
+  accessAllow?: boolean;
   /** ADR 0036 §8 (protocol 10): what the machine allows, as last reported. Absent until the machine reports it. */
   access?: MachineAccess | null;
   /** ADR 0040 (protocol 12): whether the agent browser can run there; null or absent when its runner doesn't say. */
@@ -4588,6 +4590,15 @@ export interface MachineAccessReduce {
   removeFolder?: { path: string; agentId?: string };
   disableTool?: MachineToolName | "browser" | "desktop" | "terminal";
 }
+
+/** "Pedir a um admin" (`POST …/admin-asks`): what the asker can't do here themselves. */
+export type AdminAsk =
+  | { what: "channel_agent"; channelId: string; agentId: string }
+  | { what: "create_agents" }
+  | { what: "webhook"; provider: "github" | "sentry" };
+
+/** A switch on a computer (`RunnerTools`' keys): `POST …/access/allow` turns one on, `…/access/reduce` off. */
+export type MachineTool = MachineToolName | "browser" | "desktop" | "terminal";
 
 /** Approximate location of the computer that asked for a code (best effort, from its IP). */
 export type DeviceLocation = string | { city?: string | null; region?: string | null; country?: string | null };
@@ -6247,6 +6258,16 @@ export type NotificationKind =
   | "device.in_use"
   /** An agent asks to use this person's device. `source.requestId`; Allow once, Always, No. */
   | "device.access_request"
+  /**
+   * Someone asks this person to turn a tool on on their computer (`POST …/access/ask`): `source.machineId`, its name in
+   * `source.label`, the tool in `latest.reason`, the asker as actor; the row turns it on in one click.
+   */
+  | "device.tool_request"
+  /**
+   * "Pedir a um admin" (`POST …/admin-asks`): the asker as actor, what in `latest.reason` (`channel_agent` with
+   * `source.channelId` and `agentId`, waiting until added; `create_agents`; `webhook` with the service in `latest.title`).
+   */
+  | "admin_ask"
   /** Someone's agent waits for this person's device to come back. `source.phoneId` or `machineId`. */
   | "device.waiting"
   /** ADR 0040 §6: an agent needs a person in its browser (sign in, a code). `source.handoffId`. */

@@ -570,6 +570,8 @@ export interface Transcript {
   tasks?: HandedTask[];
   /** A report it offered about the app, not yet on a posted message (`meta.feedbackOffer`, ADR 0160 §12). */
   feedbackOffer?: PendingFeedbackOffer;
+  /** A switch a call found off on its computer, not yet on a posted message (`meta.toolOff`, its one-click card). */
+  toolOff?: { machineId: string; tool: string };
   /** The agent reacted (`react`) instead of replying: an empty final answer posts nothing. */
   reacted?: boolean;
   /** A file it opened was left out by a text-only connection, not yet on a posted message (`meta.filesTextOnly`). */
@@ -5928,9 +5930,11 @@ function takeMemoryUpdates(t: Transcript): Record<string, unknown> | undefined {
   const tasks = t.tasks ?? [];
   const offer = t.feedbackOffer;
   const textOnly = t.filesTextOnly === true;
+  const toolOff = t.toolOff;
   if (
     !offer &&
     !textOnly &&
+    !toolOff &&
     updates.length === 0 &&
     files.length === 0 &&
     !link &&
@@ -5949,9 +5953,11 @@ function takeMemoryUpdates(t: Transcript): Record<string, unknown> | undefined {
   t.tasks = [];
   t.feedbackOffer = undefined;
   t.filesTextOnly = undefined;
+  t.toolOff = undefined;
   const meta: Record<string, unknown> = {};
   // Its reply carries the way out: another AI for this agent ("Trocar modelo" under it).
   if (textOnly) meta.filesTextOnly = true;
+  if (toolOff) meta.toolOff = toolOff;
   if (updates.length > 0) meta.memoryUpdates = updates;
   if (files.length > 0) meta.artifacts = files;
   if (link) meta.missionLink = link;

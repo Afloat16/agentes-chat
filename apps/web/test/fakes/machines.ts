@@ -219,6 +219,16 @@ export function createFakeMachines(ctx: MockContext, log: (method: string, ...ar
         m.access = { folders, tools };
         return clone(m.access);
       },
+      allowTool: async (orgId, machineId, tool) => {
+        log("machines.allowTool", orgId, machineId, tool);
+        const m = find(machineId);
+        const access = m.access ?? { folders: [], tools: { claude: false, codex: false, commands: false } };
+        m.access = { ...access, tools: { ...access.tools, [tool]: true } };
+        return clone(m.access);
+      },
+      askTool: async (orgId, machineId, tool) => {
+        log("machines.askTool", orgId, machineId, tool);
+      },
       setPause: async (orgId, machineId, input) => {
         log("machines.setPause", orgId, machineId, input);
         const m = find(machineId);

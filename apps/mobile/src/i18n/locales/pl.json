@@ -6,6 +6,7 @@
     "continue": "Dalej",
     "done": "Gotowe",
     "retry": "Spróbuj ponownie",
+    "openSettings": "Otwórz Ustawienia",
     "loading": "Ładowanie",
     "or": "lub"
   },
@@ -114,7 +115,7 @@
       "on": "Włącz powiadomienia",
       "later": "Nie teraz",
       "done": "Powiadomienia włączone",
-      "failed": "Nie udało się włączyć powiadomień. Spróbuj ponownie w Ty › Powiadomienia.",
+      "failed": "Nie udało się włączyć powiadomień na tym telefonie.",
       "someone": "Agent",
       "examples": "Przykłady powiadomień",
       "now": "teraz",

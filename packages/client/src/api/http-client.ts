@@ -1263,6 +1263,15 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         // The new access, bare or wrapped.
         return "access" in out ? out.access : out;
       },
+      allowTool: async (orgId, machineId, tool) =>
+        (
+          await request<{ access: MachineAccess }>(`${org(orgId)}/machines/${enc(machineId)}/access/allow`, {
+            json: { tool },
+          })
+        ).access,
+      askTool: async (orgId, machineId, tool) => {
+        await request<unknown>(`${org(orgId)}/machines/${enc(machineId)}/access/ask`, { json: { tool } });
+      },
       setPause: async (orgId, machineId, input) =>
         (
           await request<{ paused: MachinePause | null }>(
@@ -1770,6 +1779,7 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
       prefs: (orgId) => request<NoticePrefs>(`${org(orgId)}/notification-prefs`),
       setPref: (orgId, category, on) =>
         request<NoticePrefs>(`${org(orgId)}/notification-prefs`, { method: "PUT", json: { category, on } }),
+      askAdmins: (orgId, ask) => request<{ sent: number }>(`${org(orgId)}/admin-asks`, { json: ask }),
     },
     calendar: {
       range: (orgId, from, to) => request<CalendarRange>(`${org(orgId)}/calendar`, { query: { from, to } }),

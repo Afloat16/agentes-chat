@@ -6,6 +6,7 @@ import type {
   ConnectLinkState,
   DeviceAudience,
   DeviceStatus,
+  MachineTool,
   PhoneDevice,
   WifiPairing,
 } from "../api/types";
@@ -1031,12 +1032,18 @@ export function screenGesture(
   };
 }
 
-export type DeviceNoticeKind = "device.join_request" | "device.in_use" | "device.access_request" | "device.waiting";
+export type DeviceNoticeKind =
+  | "device.join_request"
+  | "device.in_use"
+  | "device.access_request"
+  | "device.waiting"
+  | "device.tool_request";
 const NOTICE_KINDS = new Set<string>([
   "device.join_request",
   "device.in_use",
   "device.access_request",
   "device.waiting",
+  "device.tool_request",
 ]);
 
 /**
@@ -1059,6 +1066,9 @@ export interface DeviceNotice {
   forName: string | null;
   text: string | null;
   join: { name: string; os: string; ip: string; location: string | null } | null;
+  /** `device.tool_request`: the tool to turn on (`latest.reason`) and who asked (the person actor). */
+  tool: MachineTool | null;
+  askerId: string | null;
 }
 
 export function deviceNoticeOf(
@@ -1070,6 +1080,7 @@ export function deviceNoticeOf(
   const l = n.latest as Record<string, unknown>;
   const join = kind === "device.join_request";
   const actor = n.actors?.find((a) => a.type === "agent");
+  const tool = kind === "device.tool_request" ? (str(l.reason) as MachineTool | null) : null;
   return {
     kind: kind as DeviceNoticeKind,
     requestId: str(s.requestId),
@@ -1089,5 +1100,7 @@ export function deviceNoticeOf(
           location: str(l.location),
         }
       : null,
+    tool,
+    askerId: tool ? (n.actors?.find((a) => a.type === "user")?.id ?? null) : null,
   };
 }

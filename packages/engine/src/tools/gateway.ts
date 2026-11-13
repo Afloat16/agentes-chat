@@ -30,7 +30,7 @@ import { answersAgentsOnly, consultationOrigin } from "../consultations";
 import { recordOutcome } from "../context/outcomes";
 import { sha256 } from "../crypto";
 import { provenReadOnly } from "../databases/guard";
-import { isUnexpectedError } from "../errors";
+import { isUnexpectedError, ToolOffError } from "../errors";
 import { cutMarked, cutText, pgSafeJson, pgSafeText } from "../format";
 import { mergeReposOfCall, recordMergeDone, reposOfGithubCall } from "../git/repos";
 import { recordRead } from "../outbound";
@@ -647,6 +647,7 @@ export function createToolGateway(deps: {
       return {
         content: `Tool failed: ${tool.external ? wrapExternal(tool.name, message) : message}${hint && `\n${hint}`}`,
         isError: true,
+        ...(error instanceof ToolOffError ? { data: { toolOff: error.toolOff } } : {}),
       };
     } finally {
       done();

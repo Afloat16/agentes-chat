@@ -199,6 +199,9 @@ type WhatKey =
   | "approvalCoverEnded"
   | "rightHandDecided"
   | "rightHandPaused"
+  | "adminAskChannel"
+  | "adminAskCreate"
+  | "adminAskWebhook"
   | "reaction";
 
 /** The line on top of a row: who did what, where. */
@@ -371,6 +374,16 @@ export function Headline({
       return k("rightHandDecided", { name, count: n.count });
     case "right_hand_paused":
       return k("rightHandPaused", { name });
+    case "admin_ask":
+      return n.latest.reason === "channel_agent"
+        ? k("adminAskChannel", {
+            name,
+            agent: (n.source.agentId && dir.anyAgent(n.source.agentId)?.name) || t("channel.unknownAgent"),
+            label: n.source.label ?? "",
+          })
+        : n.latest.reason === "webhook"
+          ? k("adminAskWebhook", { name, service: n.latest.title ?? "" })
+          : k("adminAskCreate", { name });
     case "approval_cover":
       return k(
         n.latest.statusTo === "declined"

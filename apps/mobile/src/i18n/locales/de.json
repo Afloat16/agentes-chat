@@ -6,6 +6,7 @@
     "continue": "Weiter",
     "done": "Fertig",
     "retry": "Erneut versuchen",
+    "openSettings": "Einstellungen öffnen",
     "loading": "Wird geladen",
     "or": "oder"
   },
@@ -112,7 +113,7 @@
       "on": "Benachrichtigungen einschalten",
       "later": "Nicht jetzt",
       "done": "Benachrichtigungen an",
-      "failed": "Benachrichtigungen ließen sich nicht einschalten. Versuch es noch einmal unter Du › Benachrichtigungen.",
+      "failed": "Benachrichtigungen ließen sich auf diesem Handy nicht einschalten.",
       "someone": "Ein Agent",
       "examples": "Beispiele für Benachrichtigungen",
       "now": "jetzt",

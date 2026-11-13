@@ -2100,7 +2100,9 @@ function WebhookPanel({ routine: r, runs }: { routine: Routine; runs: RoutineRun
       <LoadingList count={1} avatar={false} />
     );
   }
-  const busy = (what: "address" | "secret" | "unsign" | "test") => action.isPending && action.variables === what;
+  const busy = (what: "address" | "secret" | "unsign" | "test" | "onAndTest") =>
+    action.isPending && action.variables === what;
+  const test = r.active ? "test" : "onAndTest";
   const change = (what: "address" | "secret" | "unsign") =>
     action.mutate(what, {
       onSuccess: (done) => {
@@ -2195,10 +2197,11 @@ function WebhookPanel({ routine: r, runs }: { routine: Routine; runs: RoutineRun
             type="button"
             size="sm"
             icon="send"
-            loading={busy("test")}
-            onClick={() => action.mutate("test", { onSuccess: () => toast.show(t("routines.webhook.tested")) })}
+            disabled={action.isPending}
+            loading={busy(test)}
+            onClick={() => action.mutate(test, { onSuccess: () => toast.show(t("routines.webhook.tested")) })}
           >
-            {t("routines.webhook.test")}
+            {t(r.active ? "routines.webhook.test" : "routines.webhook.turnOnAndTest")}
           </Button>
         </div>
       </div>
