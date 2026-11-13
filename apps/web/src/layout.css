@@ -8779,10 +8779,16 @@ html:not([data-pointer]) .machine-connect__toggle:focus-visible {
   grid-template-columns: 280px minmax(0, 1fr);
   height: var(--onb-h, 100dvh);
   overflow-y: auto;
-  scrollbar-gutter: stable;
   scroll-padding-bottom: 104px;
   background: var(--pane);
   color: var(--ink);
+}
+/* Beside the rail, a step that scrolls keeps its centred column where a short one has it. Stacked on a narrow window,
+   the gutter would only take the room the steps and the logo's words share. */
+@media (min-width: 761px) {
+  .onb {
+    scrollbar-gutter: stable;
+  }
 }
 .onb__rail {
   position: sticky;
