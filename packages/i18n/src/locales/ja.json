@@ -2485,7 +2485,9 @@
       "continue_work": "<b>{{agent}}</b>に続けさせる",
       "update_workspace": "ワークスペース<b>{{name}}</b>を変更",
       "set_action_check_on": "チームの過去の対応の確認をオンにする",
-      "set_action_check_off": "チームの過去の対応の確認をオフにする"
+      "set_action_check_off": "チームの過去の対応の確認をオフにする",
+      "invite_people": "<b>{{emails}}</b>をワークスペースに招待",
+      "remove_ai_key": "APIキー<b>{{name}}</b>を完全に削除"
     }
   },
   "teamWeek": {
@@ -3206,7 +3208,9 @@
       "changed_continue_work": "<b>{{agent}}</b>に続けさせました",
       "changed_update_workspace": "ワークスペース<b>{{name}}</b>を変更しました",
       "changed_set_action_check_on": "チームの過去の対応の確認をオンにしました",
-      "changed_set_action_check_off": "チームの過去の対応の確認をオフにしました"
+      "changed_set_action_check_off": "チームの過去の対応の確認をオフにしました",
+      "changed_invite_people": "<b>{{invited}}</b>をワークスペースに招待しました",
+      "changed_remove_ai_key": "APIキー<b>{{name}}</b>を削除しました"
     },
     "other": "変更を加えました",
     "copyWebhook": "Webhook のアドレスをコピー",
@@ -12936,7 +12940,9 @@
       "tooMany": "このワークスペースにはすでに {{max}} 個の部署があります。先に 1 つ削除してください。"
     },
     "rightHand": {
-      "permanent": "右腕はワークスペースの一部で、チャンネルには入りません。@メンションすれば、どのチャンネルでも呼べます。"
+      "permanent": "右腕はワークスペースの一部で、チャンネルには入りません。@メンションすれば、どのチャンネルでも呼べます。",
+      "updateApp": "このアプリは古いため、このカードを適用できません。アプリを更新するか、設定で変更してください。",
+      "nobodyNew": "このカードの全員が、すでに参加しているか招待済みです。カードを破棄するか、「メンバーと招待」で招待を再送してください。"
     },
     "agent": {
       "ownerOrAdmin": "これができるのは、エージェントのオーナーか管理者だけです。",

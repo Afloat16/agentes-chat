@@ -587,6 +587,39 @@ export function memberRowDone(row: MemberChangeRow, members: readonly Pick<Membe
   return row.addRoleIds.every((id) => has.has(id)) && row.removeRoleIds.every((id) => !has.has(id));
 }
 
+/**
+ * What a people card's row does, in the reader's words: "Gets Owner", "Loses Sales", "Gets Sales · Loses Support",
+ * "Remove from workspace". A role that is gone is left out.
+ */
+export function memberRowText(t: TFunction, row: MemberChangeRow, roleName: (id: string) => string | undefined) {
+  if ("remove" in row) return t("members.remove.item");
+  if ("role" in row)
+    return t(row.role === "owner" ? "rightHand.people.gets" : "rightHand.people.loses", { roles: t("roles.owner") });
+  const names = (ids: string[]) => ids.flatMap((id) => roleName(id) || []).join(", ");
+  return [
+    row.addRoleIds.length ? t("rightHand.people.gets", { roles: names(row.addRoleIds) }) : "",
+    row.removeRoleIds.length ? t("rightHand.people.loses", { roles: names(row.removeRoleIds) }) : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/**
+ * The key a row's change asks of whoever applies it, as the members screen does: owners make and unmake owners and
+ * remove one, who manages members does the rest. The server checks again at the click.
+ */
+export const memberRowNeeds = (
+  row: MemberChangeRow,
+  members: readonly Pick<Member, "userId" | "role">[],
+): Permission =>
+  "role" in row || ("remove" in row && members.find((m) => m.userId === row.userId)?.role === "owner")
+    ? "manage_owners"
+    : "manage_members";
+
+/** Why a viewer who may apply no open row can't: a row only owners apply, else one for who manages members. */
+export const memberRowsBlocked = (open: readonly MemberChangeRow[], may: (row: MemberChangeRow) => boolean) =>
+  open.some((r) => "role" in r && !may(r)) ? "rightHand.people.onlyOwners" : "rightHand.people.onlyAdmins";
+
 /** The roles a row leaves the person with: theirs now, with its roles given and taken. */
 export const rolesAfter = (row: { addRoleIds: string[]; removeRoleIds: string[] }, now: readonly string[] = []) => [
   ...new Set([...now.filter((id) => !row.removeRoleIds.includes(id)), ...row.addRoleIds]),
@@ -721,10 +754,40 @@ export function actionCardDetail(card: WorkspaceActionCard, t: TFunction, locale
             .map((n) => `+ ${n}`)
             .join(", ")
         : text(input.reason);
+    case "invite_people":
+      // The roles every address gets and, once sent, each address left out with why.
+      return parts(
+        keys(input.roleNames)
+          .map((n) => `+ ${n}`)
+          .join(", "),
+        INVITE_LEFT_OUT.flatMap((status) =>
+          listed(card.params.words[status]).map((email) => t(`members.batch.${status}`, { email }) as string),
+        ).join(" "),
+      );
+    case "remove_ai_key":
+      return text(card.params.words.provider);
     default:
       return "";
   }
 }
+
+/**
+ * Why an address on an applied invite card got no invitation, as the server's words name it (`words.{status}`).
+ * `already_invited` comes only in the answer to the tap of whoever applied it: the stored card never says it.
+ */
+const INVITE_LEFT_OUT = ["already_invited", "already_member", "invalid_email"] as const;
+/** The addresses of one of the server's words ("a@example.com, b@example.com"). */
+const listed = (word: string | undefined) => (word ? word.split(", ").filter(Boolean) : []);
+
+/** The mark beside the card's sentence, by what it changes: a channel, people, an AI key, else the workspace. */
+export const actionCardMark = (card: WorkspaceActionCard): "channel" | "members" | "key" | "shield" => {
+  const { action } = card.params;
+  if (action.includes("channel")) return "channel";
+  return action === "invite_people" ? "members" : action === "remove_ai_key" ? "key" : "shield";
+};
+
+/** A change nothing brings back (a role, a channel or a key deleted): its Aplicar reads as a danger. */
+export const actionCardDestroys = (card: WorkspaceActionCard) => /^(delete|remove)_/.test(card.params.action);
 
 /**
  * Whether this viewer gets Aplicar on the card: the key its screen asks for, unless they are the person it was for and

@@ -2658,7 +2658,9 @@
       "continue_work": "Dejar que <b>{{agent}}</b> siga",
       "update_workspace": "Cambiar el espacio de trabajo <b>{{name}}</b>",
       "set_action_check_on": "Activar la revisión de lo que el equipo ya hizo",
-      "set_action_check_off": "Desactivar la revisión de lo que el equipo ya hizo"
+      "set_action_check_off": "Desactivar la revisión de lo que el equipo ya hizo",
+      "invite_people": "Invitar a <b>{{emails}}</b> al espacio de trabajo",
+      "remove_ai_key": "Eliminar la clave de API <b>{{name}}</b> para siempre"
     }
   },
   "teamWeek": {
@@ -3421,7 +3423,9 @@
       "changed_continue_work": "Dejé que <b>{{agent}}</b> siguiera",
       "changed_update_workspace": "Cambié el espacio de trabajo <b>{{name}}</b>",
       "changed_set_action_check_on": "Activé la revisión de lo que el equipo ya hizo",
-      "changed_set_action_check_off": "Desactivé la revisión de lo que el equipo ya hizo"
+      "changed_set_action_check_off": "Desactivé la revisión de lo que el equipo ya hizo",
+      "changed_invite_people": "Invité a <b>{{invited}}</b> al espacio de trabajo",
+      "changed_remove_ai_key": "Eliminé la clave de API <b>{{name}}</b>"
     },
     "other": "Hice un cambio",
     "copyWebhook": "Copiar dirección del webhook",
@@ -13816,7 +13820,9 @@
       "tooMany": "Este espacio de trabajo ya tiene {{max}} departamentos. Elimina uno primero."
     },
     "rightHand": {
-      "permanent": "La mano derecha forma parte del espacio de trabajo y queda fuera de los canales. Una @mención la llama en cualquiera de ellos."
+      "permanent": "La mano derecha forma parte del espacio de trabajo y queda fuera de los canales. Una @mención la llama en cualquiera de ellos.",
+      "updateApp": "Esta app es demasiado antigua para aplicar esta tarjeta. Actualízala o haz el cambio en Configuración.",
+      "nobodyNew": "Todas las personas de esta tarjeta ya están aquí o ya tienen invitación. Descarta la tarjeta o reenvía una invitación en Miembros e invitaciones."
     },
     "agent": {
       "ownerOrAdmin": "Solo el dueño del agente o un admin puede hacer esto.",

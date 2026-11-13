@@ -2485,7 +2485,9 @@
       "continue_work": "Biarkan <b>{{agent}}</b> lanjut",
       "update_workspace": "Ubah ruang kerja <b>{{name}}</b>",
       "set_action_check_on": "Nyalakan pemeriksaan atas apa yang sudah dilakukan tim",
-      "set_action_check_off": "Matikan pemeriksaan atas apa yang sudah dilakukan tim"
+      "set_action_check_off": "Matikan pemeriksaan atas apa yang sudah dilakukan tim",
+      "invite_people": "Undang <b>{{emails}}</b> ke ruang kerja",
+      "remove_ai_key": "Hapus kunci API <b>{{name}}</b> selamanya"
     }
   },
   "teamWeek": {
@@ -3217,7 +3219,9 @@
       "changed_continue_work": "Membiarkan <b>{{agent}}</b> lanjut",
       "changed_update_workspace": "Mengubah ruang kerja <b>{{name}}</b>",
       "changed_set_action_check_on": "Menyalakan pemeriksaan atas apa yang sudah dilakukan tim",
-      "changed_set_action_check_off": "Mematikan pemeriksaan atas apa yang sudah dilakukan tim"
+      "changed_set_action_check_off": "Mematikan pemeriksaan atas apa yang sudah dilakukan tim",
+      "changed_invite_people": "Mengundang <b>{{invited}}</b> ke ruang kerja",
+      "changed_remove_ai_key": "Menghapus kunci API <b>{{name}}</b>"
     },
     "other": "Membuat perubahan",
     "copyWebhook": "Salin alamat webhook",
@@ -12990,7 +12994,9 @@
       "tooMany": "Ruang kerja ini sudah punya {{max}} departemen. Hapus satu dulu."
     },
     "rightHand": {
-      "permanent": "Tangan kanan adalah bagian dari ruang kerja dan tetap di luar kanal. Sebuah @sebutan menjangkaunya di kanal mana pun."
+      "permanent": "Tangan kanan adalah bagian dari ruang kerja dan tetap di luar kanal. Sebuah @sebutan menjangkaunya di kanal mana pun.",
+      "updateApp": "Aplikasi ini terlalu lama untuk menerapkan kartu ini. Perbarui aplikasinya atau lakukan perubahan di Pengaturan.",
+      "nobodyNew": "Semua orang di kartu ini sudah ada di sini atau sudah diundang. Abaikan kartunya atau kirim ulang undangan di Anggota dan undangan."
     },
     "agent": {
       "ownerOrAdmin": "Hanya pemilik agen atau Admin yang bisa melakukan ini.",

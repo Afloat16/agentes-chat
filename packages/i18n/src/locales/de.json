@@ -2572,7 +2572,9 @@
       "continue_work": "<b>{{agent}}</b> weitermachen lassen",
       "update_workspace": "Workspace <b>{{name}}</b> ändern",
       "set_action_check_on": "Die Prüfung, was das Team schon getan hat, einschalten",
-      "set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausschalten"
+      "set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausschalten",
+      "invite_people": "<b>{{emails}}</b> in den Workspace einladen",
+      "remove_ai_key": "API-Schlüssel <b>{{name}}</b> endgültig löschen"
     }
   },
   "teamWeek": {
@@ -3320,7 +3322,9 @@
       "changed_continue_work": "<b>{{agent}}</b> weitermachen lassen",
       "changed_update_workspace": "Workspace <b>{{name}}</b> geändert",
       "changed_set_action_check_on": "Die Prüfung, was das Team schon getan hat, eingeschaltet",
-      "changed_set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausgeschaltet"
+      "changed_set_action_check_off": "Die Prüfung, was das Team schon getan hat, ausgeschaltet",
+      "changed_invite_people": "<b>{{invited}}</b> in den Workspace eingeladen",
+      "changed_remove_ai_key": "API-Schlüssel <b>{{name}}</b> gelöscht"
     },
     "other": "Eine Änderung vorgenommen",
     "copyWebhook": "Webhook-Adresse kopieren",
@@ -13429,7 +13433,9 @@
       "tooMany": "Dieser Workspace hat schon {{max}} Abteilungen. Lösch zuerst eine."
     },
     "rightHand": {
-      "permanent": "Die rechte Hand gehört zum Workspace und bleibt außerhalb der Kanäle. Eine @Erwähnung erreicht sie in jedem davon."
+      "permanent": "Die rechte Hand gehört zum Workspace und bleibt außerhalb der Kanäle. Eine @Erwähnung erreicht sie in jedem davon.",
+      "updateApp": "Diese App ist zu alt, um diese Karte anzuwenden. Aktualisiere sie oder nimm die Änderung in den Einstellungen vor.",
+      "nobodyNew": "Alle auf dieser Karte sind schon dabei oder schon eingeladen. Verwirf die Karte oder sende eine Einladung unter Mitglieder und Einladungen erneut."
     },
     "agent": {
       "ownerOrAdmin": "Nur der Inhaber des Agenten oder ein Admin kann das tun.",

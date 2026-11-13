@@ -22,6 +22,7 @@ import {
 import {
   actionCardDetail,
   actionCardKey,
+  actionCardMark,
   actionCardOf,
   actionCardWords,
   mayApplyCard,
@@ -363,9 +364,14 @@ function WorkspaceActionView({
   const say = t as unknown as (key: string, values: Record<string, string>) => string;
   const sentence = say(actionCardKey(card), actionCardWords(card, t));
   const plain = sentence.replace(/<\/?b>/g, "");
-  const detail = actionCardDetail(card, t, i18n.language);
+  // The answer to their own tap says more than the card everyone reads (an address that already held an invitation).
+  const own = decide.data?.card;
+  const detail = actionCardDetail(own?.state === "applied" ? own : card, t, i18n.language);
   const may = mayApplyCard(card, { userId: meId ?? "", may: (key) => can(org, key) });
   const mine = card.forUserId === meId;
+  // Whoever applies it for someone else reads who asked, in the conversation and in their inbox.
+  const asker = mine ? undefined : dir.memberById.get(card.forUserId)?.name;
+  const mark = actionCardMark(card);
   // Decided: the same card, and who did it, when and Undo where the buttons were.
   let answer: AskAnswer | null = null;
   if (card.state !== "pending") {
@@ -439,11 +445,16 @@ function WorkspaceActionView({
     <AskCard
       id={where.messageId}
       kind="proposal"
+      kindNote={asker ? t("audit.behind.person", { name: asker }) : undefined}
       agentId={agentId ?? ""}
       waitsFor={may ? "you" : t("rightHand.action.only")}
       answer={answer}
       lead={card.params.why || plain}
-      well={{ tile: <Icon name="shield" size={16} />, title: plain, ...(detail ? { detail } : {}) }}
+      well={{
+        tile: <Icon name={mark === "channel" ? "hash" : mark} size={16} />,
+        title: plain,
+        ...(detail ? { detail } : {}),
+      }}
       foot={decision ? <AskFoot>{decision}</AskFoot> : undefined}
     />
   );

@@ -2663,7 +2663,9 @@
       "continue_work": "Laisser <b>{{agent}}</b> continuer",
       "update_workspace": "Modifier l'espace de travail <b>{{name}}</b>",
       "set_action_check_on": "Activer la vérification de ce que l'équipe a déjà fait",
-      "set_action_check_off": "Désactiver la vérification de ce que l'équipe a déjà fait"
+      "set_action_check_off": "Désactiver la vérification de ce que l'équipe a déjà fait",
+      "invite_people": "Inviter <b>{{emails}}</b> dans l'espace de travail",
+      "remove_ai_key": "Supprimer définitivement la clé API <b>{{name}}</b>"
     }
   },
   "teamWeek": {
@@ -3426,7 +3428,9 @@
       "changed_continue_work": "J'ai laissé <b>{{agent}}</b> continuer",
       "changed_update_workspace": "J'ai modifié l'espace de travail <b>{{name}}</b>",
       "changed_set_action_check_on": "J'ai activé la vérification de ce que l'équipe a déjà fait",
-      "changed_set_action_check_off": "J'ai désactivé la vérification de ce que l'équipe a déjà fait"
+      "changed_set_action_check_off": "J'ai désactivé la vérification de ce que l'équipe a déjà fait",
+      "changed_invite_people": "J'ai invité <b>{{invited}}</b> dans l'espace de travail",
+      "changed_remove_ai_key": "J'ai supprimé la clé API <b>{{name}}</b>"
     },
     "other": "A fait une modification",
     "copyWebhook": "Copier l’adresse du webhook",
@@ -13887,7 +13891,9 @@
       "tooMany": "Cet espace de travail a déjà {{max}} services. Supprimez-en un d'abord."
     },
     "rightHand": {
-      "permanent": "Le bras droit fait partie de l'espace de travail et reste hors des canaux. Une @mention le joint dans n'importe lequel."
+      "permanent": "Le bras droit fait partie de l'espace de travail et reste hors des canaux. Une @mention le joint dans n'importe lequel.",
+      "updateApp": "Cette application est trop ancienne pour appliquer cette carte. Mettez-la à jour ou faites le changement dans les Paramètres.",
+      "nobodyNew": "Toutes les personnes de cette carte sont déjà là ou déjà invitées. Ignorez la carte ou renvoyez une invitation dans Membres et invitations."
     },
     "agent": {
       "ownerOrAdmin": "Seuls le responsable de l'agent ou un admin peuvent faire cela.",

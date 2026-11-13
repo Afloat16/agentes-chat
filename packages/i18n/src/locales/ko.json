@@ -2485,7 +2485,9 @@
       "continue_work": "<b>{{agent}}</b>이(가) 계속하게 하기",
       "update_workspace": "워크스페이스 <b>{{name}}</b> 변경",
       "set_action_check_on": "팀이 이미 한 일 확인 켜기",
-      "set_action_check_off": "팀이 이미 한 일 확인 끄기"
+      "set_action_check_off": "팀이 이미 한 일 확인 끄기",
+      "invite_people": "<b>{{emails}}</b>을(를) 워크스페이스에 초대하기",
+      "remove_ai_key": "API 키 <b>{{name}}</b> 영구 삭제"
     }
   },
   "teamWeek": {
@@ -3204,7 +3206,9 @@
       "changed_continue_work": "<b>{{agent}}</b>이(가) 계속하게 했어요",
       "changed_update_workspace": "워크스페이스 <b>{{name}}</b>을(를) 변경했어요",
       "changed_set_action_check_on": "팀이 이미 한 일 확인을 켰어요",
-      "changed_set_action_check_off": "팀이 이미 한 일 확인을 껐어요"
+      "changed_set_action_check_off": "팀이 이미 한 일 확인을 껐어요",
+      "changed_invite_people": "<b>{{invited}}</b>을(를) 워크스페이스에 초대했어요",
+      "changed_remove_ai_key": "API 키 <b>{{name}}</b>을(를) 삭제했어요"
     },
     "other": "변경 사항을 적용했어요",
     "copyWebhook": "웹훅 주소 복사",
@@ -12930,7 +12934,9 @@
       "tooMany": "이 워크스페이스에는 이미 부서가 {{max}}개 있어요. 먼저 하나를 삭제하세요."
     },
     "rightHand": {
-      "permanent": "오른팔은 워크스페이스의 일부라 채널에 들어가지 않아요. @멘션하면 어느 채널에서든 부를 수 있어요."
+      "permanent": "오른팔은 워크스페이스의 일부라 채널에 들어가지 않아요. @멘션하면 어느 채널에서든 부를 수 있어요.",
+      "updateApp": "이 앱은 너무 오래돼서 이 카드를 적용할 수 없어요. 앱을 업데이트하거나 설정에서 직접 변경하세요.",
+      "nobodyNew": "이 카드의 모든 사람이 이미 참여 중이거나 이미 초대됐어요. 카드를 버리거나 멤버와 초대에서 초대를 다시 보내세요."
     },
     "agent": {
       "ownerOrAdmin": "에이전트 소유자나 관리자만 할 수 있어요.",

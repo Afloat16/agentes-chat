@@ -2750,7 +2750,9 @@
       "continue_work": "Pozwól <b>{{agent}}</b> kontynuować",
       "update_workspace": "Zmień przestrzeń roboczą <b>{{name}}</b>",
       "set_action_check_on": "Włącz sprawdzanie, co zespół już zrobił",
-      "set_action_check_off": "Wyłącz sprawdzanie, co zespół już zrobił"
+      "set_action_check_off": "Wyłącz sprawdzanie, co zespół już zrobił",
+      "invite_people": "Zaproś <b>{{emails}}</b> do przestrzeni roboczej",
+      "remove_ai_key": "Usuń klucz API <b>{{name}}</b> na zawsze"
     }
   },
   "teamWeek": {
@@ -3527,7 +3529,9 @@
       "changed_continue_work": "Pozwolono <b>{{agent}}</b> kontynuować",
       "changed_update_workspace": "Zmieniono przestrzeń roboczą <b>{{name}}</b>",
       "changed_set_action_check_on": "Włączono sprawdzanie, co zespół już zrobił",
-      "changed_set_action_check_off": "Wyłączono sprawdzanie, co zespół już zrobił"
+      "changed_set_action_check_off": "Wyłączono sprawdzanie, co zespół już zrobił",
+      "changed_invite_people": "Zaproszono <b>{{invited}}</b> do przestrzeni roboczej",
+      "changed_remove_ai_key": "Usunięto klucz API <b>{{name}}</b>"
     },
     "other": "Wprowadzono zmianę",
     "copyWebhook": "Kopiuj adres webhooka",
@@ -14350,7 +14354,9 @@
       "tooMany": "Ta przestrzeń robocza ma już {{max}} działów. Najpierw usuń jeden."
     },
     "rightHand": {
-      "permanent": "Prawa ręka jest częścią przestrzeni roboczej i nie dołącza do kanałów. @wzmianka przywoła ją w każdym z nich."
+      "permanent": "Prawa ręka jest częścią przestrzeni roboczej i nie dołącza do kanałów. @wzmianka przywoła ją w każdym z nich.",
+      "updateApp": "Ta aplikacja jest zbyt stara, żeby zastosować tę kartę. Zaktualizuj ją albo wprowadź zmianę w Ustawieniach.",
+      "nobodyNew": "Wszyscy z tej karty już tu są albo mają już zaproszenie. Odrzuć kartę albo wyślij zaproszenie ponownie w sekcji Członkowie i zaproszenia."
     },
     "agent": {
       "ownerOrAdmin": "Może to zrobić tylko właściciel agenta albo administrator.",

@@ -3,7 +3,7 @@ import { setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
 
-import type { Message } from "@agenteschat/client";
+import type { ApiClient, Message, WorkspaceActionCard } from "@agenteschat/client";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import {
   ADA_ID,
@@ -29,7 +29,12 @@ afterEach(() => {
 const DM = `dm-${LODI_ID}`;
 
 /** A card of Lodi's in its DM, `ago` ms old. A second card joins the same DM: Lodi and the DM are seeded once. */
-const withLodiCard = (state: FakeState, actionCard: Record<string, unknown>, id = "m-card", ago = 60_000) => {
+const withLodiCard = (
+  state: FakeState,
+  actionCard: Record<string, unknown> | WorkspaceActionCard,
+  id = "m-card",
+  ago = 60_000,
+) => {
   if (!state.agents.some((a) => a.id === LODI_ID)) {
     withRightHand(state);
     seedDm(state, { type: "agent", id: LODI_ID });
@@ -188,5 +193,163 @@ describe("opening a screen", () => {
     await go(state);
     expect(document.body.textContent).toContain("Você não tem acesso a esta tela");
     expect(screen().queryByRole("button", { name: "Abrir" })).toBeNull();
+  });
+});
+
+describe("a change in the workspace that names all it does", () => {
+  const invite = (words: Record<string, string> = {}): WorkspaceActionCard => ({
+    kind: "workspace_action",
+    forUserId: "u-walter",
+    params: {
+      action: "invite_people",
+      input: { emails: ["ana@example.com", "bia@example.com"], roleIds: ["r-vendas"], roleNames: ["Vendas"] },
+      words: { emails: "ana@example.com, bia@example.com", roles: "Vendas", ...words },
+      needs: "invite_people",
+      why: "As duas novas vendedoras.",
+    },
+    state: "pending",
+    decidedByUserId: null,
+    decidedAt: null,
+  });
+  const removeKey: WorkspaceActionCard = {
+    ...invite(),
+    params: {
+      action: "remove_ai_key",
+      input: { credentialId: "k-old" },
+      words: { name: "Chave antiga", provider: "DeepSeek" },
+      needs: "manage_credentials",
+      why: "Ninguém usa mais.",
+    },
+  };
+
+  /** The app over a server whose card routes answer `applied` (what the click got back). */
+  const goWith = async (state: FakeState, applied: WorkspaceActionCard) => {
+    const api: ApiClient = {
+      ...createFakeApi(state),
+      actionCards: {
+        get: async (_orgId, messageId) => ({ messageId, channelId: DM, threadId: null, card: applied }),
+        decide: async (...args) => {
+          state.calls.push({ method: "actionCards.decide", args });
+          return { card: applied };
+        },
+      },
+    };
+    await renderApp(`/org/${ORG_ID}/dm/agent/${LODI_ID}`, { api });
+    await settle(8);
+  };
+  const cardGroup = () => screen().getByRole("group", { name: "Mudança no workspace" });
+
+  test("an invite reads every address and role before the tap; applied, who was left out and why", async () => {
+    const state = withLodiCard(seedState(), invite());
+    await goWith(state, {
+      ...invite({ invited: "ana@example.com", already_invited: "bia@example.com", already_member: "" }),
+      state: "applied",
+      decidedByUserId: "u-walter",
+      decidedAt: new Date().toISOString(),
+    });
+    const c = cardGroup();
+    expect(c.textContent).toContain("As duas novas vendedoras.");
+    expect(c.querySelector(".rq__wt b")?.textContent).toBe(
+      "Convidar ana@example.com, bia@example.com para o workspace",
+    );
+    expect(c.querySelector(".rq__wt small")?.textContent).toBe("+ Vendas");
+    // Nothing is sent before the tap, and the tap says which action this app showed.
+    expect(state.calls.some((x) => x.method === "actionCards.decide")).toBe(false);
+    await click(within(c).getByRole("button", { name: "Aplicar" }));
+    expect(state.calls.find((x) => x.method === "actionCards.decide")?.args).toEqual([
+      ORG_ID,
+      "m-card",
+      "apply",
+      "invite_people",
+    ]);
+    const over = cardGroup();
+    expect(over.textContent).toContain("Aplicado por você");
+    expect(over.querySelector(".rq__wt small")?.textContent).toBe(
+      "+ Vendas · bia@example.com já tem um convite pendente. Use Reenviar.",
+    );
+    expect(within(over).queryByRole("button", { name: "Aplicar" })).toBeNull();
+  });
+
+  test("who was already invited is read from the answer to their own tap, and stays when the card everyone reads arrives", async () => {
+    const state = withLodiCard(seedState(), invite());
+    const done = { state: "applied", decidedByUserId: "u-walter", decidedAt: new Date().toISOString() } as const;
+    const api: ApiClient = {
+      ...createFakeApi(state),
+      actionCards: {
+        get: async (_orgId, messageId) => ({ messageId, channelId: DM, threadId: null, card: invite() }),
+        decide: async () => ({
+          card: { ...invite({ invited: "ana@example.com", already_invited: "bia@example.com" }), ...done },
+        }),
+      },
+    };
+    const { sockets } = await renderApp(`/org/${ORG_ID}/dm/agent/${LODI_ID}`, { api });
+    await settle(8);
+    const socket = sockets.last();
+    await act(async () => socket.open());
+    await settle(2);
+    await click(within(cardGroup()).getByRole("button", { name: "Aplicar" }));
+    // The card as the server stores and announces it: who was invited, and no word of the open invitation.
+    await act(async () =>
+      socket.push({
+        type: "event",
+        channelId: DM,
+        event: {
+          type: "action_card.updated",
+          channelId: DM,
+          threadId: null,
+          messageId: "m-card",
+          card: { ...invite({ invited: "ana@example.com" }), ...done },
+        },
+      }),
+    );
+    await settle(2);
+    expect(cardGroup().textContent).toContain("Aplicado por você");
+    expect(cardGroup().querySelector(".rq__wt small")?.textContent).toBe(
+      "+ Vendas · bia@example.com já tem um convite pendente. Use Reenviar.",
+    );
+  });
+
+  test("removing an API key names the key and its provider, on a danger button", async () => {
+    const state = withLodiCard(seedState(), removeKey);
+    await goWith(state, removeKey);
+    const c = cardGroup();
+    expect(c.querySelector(".rq__wt b")?.textContent).toBe("Apagar a chave de API Chave antiga de vez");
+    expect(c.querySelector(".rq__wt small")?.textContent).toBe("DeepSeek");
+    const apply = within(c).getByRole("button", { name: "Aplicar" });
+    await click(apply);
+    expect(state.calls.find((x) => x.method === "actionCards.decide")?.args.slice(2)).toEqual([
+      "apply",
+      "remove_ai_key",
+    ]);
+  });
+
+  test("someone else's card says who asked; who can't apply it reads who may, with no button", async () => {
+    const state = withLodiCard(seedState(), { ...invite(), forUserId: "u-joao" });
+    await goWith(state, invite());
+    expect(cardGroup().querySelector(".rq__source")?.textContent).toBe(" · pedido por João");
+    expect(within(cardGroup()).getByRole("button", { name: "Aplicar" })).toBeTruthy();
+    cleanup();
+    const member = withLodiCard(seedState(), { ...invite(), forUserId: "u-joao" });
+    meWithRole(member, []);
+    await goWith(member, invite());
+    expect(cardGroup().textContent).toContain("Só quem pode fazer essa mudança aplica");
+    expect(within(cardGroup()).queryByRole("button")).toBeNull();
+  });
+
+  // Laid out by the geometry check at 1280, 390 and 320: twenty addresses that never break on their own.
+  test("twenty long addresses and long role names stay inside the card", async () => {
+    const emails = Array.from(
+      { length: 20 },
+      (_, i) => `contas-a-receber.filial-norte-sul-leste-${i}@comercial-distribuidora.example.com`,
+    );
+    const roleNames = ["Coordenação de vendas e pós-venda", "Financeiro e contas a receber"];
+    const worst = invite();
+    worst.params.input = { emails, roleIds: ["r-1", "r-2"], roleNames };
+    worst.params.words = { emails: emails.join(", "), roles: roleNames.join(", ") };
+    const state = withLodiCard(seedState(), worst);
+    await goWith(state, worst);
+    const c = cardGroup();
+    expect(c.querySelector(".rq__wt b")?.textContent).toContain(emails[19] ?? "");
+    expect(c.querySelector(".rq__wt small")?.textContent).toBe(roleNames.map((n) => `+ ${n}`).join(", "));
   });
 });
