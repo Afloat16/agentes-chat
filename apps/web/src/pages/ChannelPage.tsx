@@ -2276,6 +2276,7 @@ function ChannelView({
     followBottom: () => {
       if (stick.current && Date.now() >= autoScrollUntil.current) follow();
     },
+    letGo,
     channelAgents,
     // "Responder": in a thread view the next message answers this one (there are no threads in a thread); in a
     // channel, the message's thread opens in the panel (a reply there starts it).
@@ -2328,6 +2329,7 @@ function ChannelView({
       focusComposer: () => now().focusComposer(),
       fillComposer: (text) => now().fillComposer(text),
       followBottom: () => now().followBottom(),
+      letGo: () => now().letGo(),
       channelAgents,
       reply: replies ? (message) => now().reply(message) : undefined,
       // A thread view has no panel: its links go to the thread's page.
@@ -4185,17 +4187,16 @@ export const TimelineMessage = memo(function TimelineMessage({
   const choiceReply = Boolean(m.meta?.choiceReply);
   // My own message with a code block or a table: the bubble takes the row's whole width.
   const wide = useMemo(() => own && hasWideBlock(body), [own, body]);
-  // A long message from one agent to another (ADR 0034): its first paragraph here and "Ler tudo", which opens it
-  // whole in its thread, beside the chat. In a thread view (no panel), where it is already read, it stays whole.
-  const openThread = !live && !m.local && !readOnly ? actions?.openThread : undefined;
+  // A long message from one agent to another (ADR 0034): its first paragraph and "Ver mais", which opens the rest in
+  // place. In a thread view (no panel), where it is already read, it stays whole.
+  const foldsTalk = !live && !m.local && !readOnly && Boolean(actions?.openThread);
   const talk = useMemo(
     () =>
-      openThread && talksToAgent(m, (handle) => dir.agentByHandle.get(handle)?.id)
+      foldsTalk && talksToAgent(m, (handle) => dir.agentByHandle.get(handle)?.id)
         ? foldTalk(body, TALK_LINE_CHARS.web)
         : null,
-    [openThread, m, body, dir.agentByHandle],
+    [foldsTalk, m, body, dir.agentByHandle],
   );
-  const talkThread = m.threadId ?? m.id;
   // The reply of a run that reached its step limit, or that stopped because it got stuck: Continuar under it too.
   const ended = stopped.canceled ? undefined : (m.meta?.stepLimit as { stuck?: unknown } | undefined);
   const atLimit = ended ? (ended.stuck === true ? "stuck" : "steps") : undefined;
@@ -4572,11 +4573,11 @@ export const TimelineMessage = memo(function TimelineMessage({
             {routine && report && reportOpen && <RoutineReport text={report} />}
             {bodyShown && (
               <MessageText key="body" style={workOver ? { opacity: 0.6 } : undefined}>
-                <ClippedBody name={name} text={talk ? talk.lead : body}>
-                  {(clip) => (
+                <ClippedBody lead={talk?.lead}>
+                  {(clip, lead) => (
                     <MessageBody
                       className={clip}
-                      body={talk ? talk.lead : body}
+                      body={lead ?? body}
                       resolveMention={dir.mentionName}
                       mentionTone={dir.mentionTone}
                       renderMention={renderMention}
@@ -4591,18 +4592,6 @@ export const TimelineMessage = memo(function TimelineMessage({
                     />
                   )}
                 </ClippedBody>
-                {talk && openThread && (
-                  <button
-                    type="button"
-                    className="msg-talk__more"
-                    aria-pressed={threadsView?.open === talkThread}
-                    onClick={() => openThread(talkThread)}
-                  >
-                    {t("chat.talk.readAll")}
-                    <span className="msg-talk__count">{t("chat.talk.more", { count: talk.more })}</span>
-                    <Icon name="chevronRight" size={14} />
-                  </button>
-                )}
               </MessageText>
             )}
             {choiceReply && (

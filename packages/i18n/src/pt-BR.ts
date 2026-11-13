@@ -2357,10 +2357,9 @@ export const ptBR = {
       asFile: "Enviar como arquivo",
       fileName: "mensagem.txt",
     },
-    /** A tall message, clipped in the conversation: the button under it and the dialog that shows it whole. */
+    /** Under words folded to their start (a tall message, a long text, an email): opens them in place, for good. */
     long: {
       more: "Ver mais",
-      title: "Mensagem de {{name}}",
     },
     retrySend: "Tentar de novo",
     thinking: "{{name}} está pensando…",
@@ -4074,7 +4073,6 @@ export const ptBR = {
     issue: "Issue",
   },
   folded: {
-    more: "Mostrar mais",
     less: "Mostrar menos",
   },
   secret: {
@@ -4692,8 +4690,6 @@ export const ptBR = {
       /** A connector's reply: who it goes to is the message's sender, not in its call. */
       toSender: "Para quem enviou a mensagem",
       toList: "Para {{to}}",
-      more: "Ler tudo",
-      less: "Mostrar menos",
       answers: "Responde a <b>“{{subject}}”</b>",
       answersFrom: "Responde a <b>“{{subject}}”</b>, de {{from}}",
       forwards: "Encaminha <b>“{{subject}}”</b>",
@@ -5287,8 +5283,6 @@ export const ptBR = {
       textDone: "O que foi publicado",
       values: "O que vai fazer",
       valuesDone: "O que fez",
-      more: "Ver inteiro",
-      less: "Mostrar menos",
       trail: "Como chegou aqui",
       showSteps: "Ver cada passo",
       hideSteps: "Esconder os passos",
@@ -9013,7 +9007,6 @@ export const ptBR = {
       releaseClosed: "A missão foi fechada: a sessão não continua mais.",
       onlyDeciders: "Só quem decide nesta missão libera comandos.",
       pick: "Liberar {{command}}",
-      showAll: "Mostrar tudo",
     },
     decision: {
       approveAll_one: "Aprovar {{count}} provisória",
@@ -11839,8 +11832,6 @@ export const ptBR = {
     thousand: "mil",
     building: "Montando…",
     openBig: "Abrir grande",
-    showAll: "Mostrar tudo",
-    showLess: "Mostrar menos",
     keep: "Guardar no Drive",
     kept: "Guardado no Drive",
     inDrive: "No Drive",
@@ -16058,12 +16049,6 @@ export const ptBR = {
       labelMany: "Conversas de {{from}} com {{to}}",
     },
     /** A question opened in the panel over the conversation ("Theo ⇄ Iris"): what the two agents said, read only. */
-    /** A long message from one agent to another, folded to its first paragraph: the whole opens in its thread. */
-    talk: {
-      readAll: "Ler tudo",
-      more_one: "mais {{count}} linha",
-      more_other: "mais {{count}} linhas",
-    },
     consultPanel: {
       label: "Conversa entre {{from}} e {{to}}",
       /** The phone's bar (the web draws the arrows as an icon between the names). */

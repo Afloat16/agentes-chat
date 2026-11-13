@@ -2317,8 +2317,7 @@
       "fileName": "nachricht.txt"
     },
     "long": {
-      "more": "Mehr anzeigen",
-      "title": "Nachricht von {{name}}"
+      "more": "Mehr anzeigen"
     },
     "retrySend": "Erneut versuchen",
     "thinking": "{{name}} denkt nach…",
@@ -3887,7 +3886,6 @@
     "issue": "Issue"
   },
   "folded": {
-    "more": "Mehr anzeigen",
     "less": "Weniger anzeigen"
   },
   "secret": {
@@ -4468,8 +4466,6 @@
       "noSubject": "(kein Betreff)",
       "toSender": "An den Absender der Nachricht",
       "toList": "An {{to}}",
-      "more": "Alles lesen",
-      "less": "Weniger anzeigen",
       "answers": "Antwortet auf <b>„{{subject}}“</b>",
       "answersFrom": "Antwortet auf <b>„{{subject}}“</b>, von {{from}}",
       "forwards": "Leitet <b>„{{subject}}“</b> weiter",
@@ -5059,8 +5055,6 @@
       "textDone": "Was veröffentlicht wurde",
       "values": "Was passieren wird",
       "valuesDone": "Was passiert ist",
-      "more": "Alles anzeigen",
-      "less": "Weniger anzeigen",
       "trail": "Wie es dazu kam",
       "showSteps": "Jeden Schritt ansehen",
       "hideSteps": "Schritte ausblenden",
@@ -8681,8 +8675,7 @@
       "releasePaused": "Die Mission ist pausiert: Setze sie fort, damit die Sitzung weitermacht.",
       "releaseClosed": "Die Mission ist abgeschlossen: Die Sitzung macht nicht weiter.",
       "onlyDeciders": "Nur wer in dieser Mission entscheidet, erlaubt Befehle.",
-      "pick": "{{command}} erlauben",
-      "showAll": "Alle anzeigen"
+      "pick": "{{command}} erlauben"
     },
     "decision": {
       "approveAll_one": "{{count}} vorläufige freigeben",
@@ -11548,8 +11541,6 @@
     "thousand": "Tsd.",
     "building": "Wird zusammengestellt…",
     "openBig": "Groß öffnen",
-    "showAll": "Alles anzeigen",
-    "showLess": "Weniger anzeigen",
     "keep": "In Drive behalten",
     "kept": "In Drive behalten",
     "inDrive": "In Drive",
@@ -15890,11 +15881,6 @@
       "notFinished": "nicht fertig geworden",
       "someAnswered": "{{done}} von {{total}} haben geantwortet",
       "labelMany": "Gespräche von {{from}} mit {{to}}"
-    },
-    "talk": {
-      "readAll": "Alles lesen",
-      "more_one": "{{count}} weitere Zeile",
-      "more_other": "{{count}} weitere Zeilen"
     },
     "consultPanel": {
       "label": "Unterhaltung zwischen {{from}} und {{to}}",
