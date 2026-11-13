@@ -1012,6 +1012,25 @@
       }
     },
     /**
+     * A grouped message's receipt (`.ac-msg__aside`, in its gutter) never sits under the row's bar
+     * (`.ac-msg__actions`, measured where it stands at rest, laid out though unseen) and never leaves the row on its
+     * left, at any text size.
+     */
+    msgaside(out) {
+      for (const aside of document.querySelectorAll(".ac-msg--grouped .ac-msg__aside")) {
+        if (!seen(aside)) continue;
+        const row = aside.closest(".ac-msg");
+        const a = aside.getBoundingClientRect();
+        const r = row.getBoundingClientRect();
+        const bar = row.querySelector(":scope > .ac-msg__body > .ac-msg__actions");
+        const b = bar && style(bar).display !== "none" ? bar.getBoundingClientRect() : null;
+        const ox = b ? Math.min(a.right, b.right) - Math.max(a.left, b.left) : 0;
+        const oy = b ? Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) : 0;
+        const px = Math.max(ox > 0.5 && oy > 0.5 ? Math.min(ox, oy) : 0, r.left - a.left);
+        if (px > 0.5) out.push({ rule: "msgaside", node: aside, el: sig(aside), box: sig(row), px: +px.toFixed(1) });
+      }
+    },
+    /**
      * A box that scrolls for a few px: margins, a border or rounding past its edge show a scrollbar (and let the wheel
      * nudge it) over content that, to the eye, fits. The check keeps one only if it stays in a taller window
      * (`lasting` in check.ts). A box with no class of its own is named by the nearest one with a class around it, so

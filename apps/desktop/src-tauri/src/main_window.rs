@@ -846,25 +846,23 @@ fn files_gate(mut request: Value, server_here: bool) -> Result<Value, String> {
 }
 
 /// The site's notifications: at most one every 3 seconds and 60 an hour, only while the window isn't in
-/// front, and only while the person wants them (Preferences › General). Coming back to the app within 30
-/// seconds opens the last one's page.
+/// front, and only while the person wants them (Preferences › General). Only a click on one opens its page
+/// (`stop_from_notices`): coming back to the app any other way (its icon, Alt+Tab) leaves the window where it was.
 pub struct Notices(Mutex<NoticeState>);
 
 struct NoticeState {
     on: bool,
     sent: VecDeque<Instant>,
-    pending: Option<(Url, Instant)>,
 }
 
 impl Default for Notices {
     fn default() -> Self {
-        Self(Mutex::new(NoticeState { on: true, sent: VecDeque::new(), pending: None }))
+        Self(Mutex::new(NoticeState { on: true, sent: VecDeque::new() }))
     }
 }
 
 const NOTIFY_GAP: Duration = Duration::from_secs(3);
 const NOTIFY_PER_HOUR: usize = 60;
-const NOTIFY_OPENS_FOR: Duration = Duration::from_secs(30);
 
 /// Whether one more notification fits the limits at `now` (and counts it).
 fn notice_fits(sent: &mut VecDeque<Instant>, now: Instant) -> bool {
@@ -888,7 +886,7 @@ fn notify(app: &AppHandle, request: &Value, site: &Url) {
 }
 
 /// A notification with the site's limits: `url` (a page of a server of the app's list, the one open or another,
-/// ADR 0154) opens when the app comes back within 30 seconds.
+/// ADR 0154) opens when it is clicked.
 pub fn notice(app: &AppHandle, title: &str, body: &str, url: Url) {
     show_notice(app, title, body, url, None);
 }
@@ -906,7 +904,6 @@ fn show_notice(app: &AppHandle, title: &str, body: &str, url: Url, stop: Option<
         if in_front || !state.on || !notice_fits(&mut state.sent, Instant::now()) {
             return;
         }
-        state.pending = Some((url.clone(), Instant::now()));
     }
     let mut builder = app.notification().builder().title(title).body(body).extra("url", url.as_str());
     if let (Some(stop), Some(label)) = (stop, crate::menus::labels(app).get("notifyStop").cloned()) {
@@ -918,9 +915,10 @@ fn show_notice(app: &AppHandle, title: &str, body: &str, url: Url, stop: Option<
 }
 
 /// A notification's click and its Stop. With a handler registered the plugin reports every click here, and the app
-/// may not come forward by itself (`focused` would not see it): the click opens its own page. Stop: the stop the
-/// web's button makes, with the window's session for that server. When it can't (signed out, offline, no longer
-/// allowed), the phone's page opens, where Stop is.
+/// may not come forward by itself: the click opens its own page. Windows reports a click only while the toast is
+/// on screen, not from the Action Center: that one brings the app back where it was, like its icon would. Stop: the
+/// stop the web's button makes, with the window's session for that server. When it can't (signed out, offline, no
+/// longer allowed), the phone's page opens, where Stop is.
 pub fn stop_from_notices(app: &AppHandle) {
     let handle = app.clone();
     let _ = app.notification().on_action(move |performed| {
@@ -930,10 +928,8 @@ pub fn stop_from_notices(app: &AppHandle) {
         }
         let extra = |key: &str| performed.notification().and_then(|n| n.extra().get(key)).cloned();
         let app = handle.clone();
-        // Handled here: the app coming forward from this click opens nothing more.
-        app.state::<Notices>().0.lock().unwrap_or_else(|e| e.into_inner()).pending = None;
         if action == "tap" {
-            let Some(url) = extra("url").and_then(|u| u.as_str().and_then(|u| u.parse::<Url>().ok())) else { return };
+            let Some(url) = tapped_page(extra("url").as_ref()) else { return };
             std::thread::spawn(move || {
                 let _ = show_url(&app, url);
             });
@@ -955,29 +951,19 @@ pub fn stop_from_notices(app: &AppHandle) {
     });
 }
 
-/// The main window came to the front: within 30 seconds of a notification, its page (on its server, which
-/// becomes the one open); and the other servers' workspaces are read again.
+/// The page a click on a notification opens: the one it was shown with (its `url` extra).
+fn tapped_page(url: Option<&Value>) -> Option<Url> {
+    url?.as_str()?.parse().ok()
+}
+
+/// The main window came to the front: the other servers' workspaces are read again. Its page stays as it was, even
+/// when a notification came meanwhile: only that notification's click opens its page.
 pub fn focused(app: &AppHandle) {
     keep_lights(app);
     crate::workspaces::on_focus(app);
     // Brought forward by a notification of the server here: the popover says what happened and how to fix it.
     if crate::local_server::take_notice_click() {
         let _ = crate::present(app, "popover");
-        return;
-    }
-    let pending = {
-        let notices = app.state::<Notices>();
-        let mut state = notices.0.lock().unwrap_or_else(|e| e.into_inner());
-        state.pending.take()
-    };
-    if let Some((url, at)) = pending {
-        if at.elapsed() <= NOTIFY_OPENS_FOR {
-            let app = app.clone();
-            // Another server's page loads the window anew: not from inside the focus event.
-            std::thread::spawn(move || {
-                let _ = show_url(&app, url);
-            });
-        }
     }
 }
 
@@ -1242,6 +1228,17 @@ mod tests {
 
     fn r(url: &str, site: &str) -> Route {
         route(&url.parse().unwrap(), &site.parse().unwrap())
+    }
+
+    #[test]
+    fn only_a_click_opens_a_notice_page() {
+        // The click opens the page the notification was shown with.
+        assert_eq!(
+            tapped_page(Some(&json!("https://app.agentes.chat/org/o1/dm/agent/a1?m=9"))).map(|u| u.to_string()),
+            Some("https://app.agentes.chat/org/o1/dm/agent/a1?m=9".to_string())
+        );
+        assert_eq!(tapped_page(None), None);
+        assert_eq!(tapped_page(Some(&json!("not a page"))), None);
     }
 
     #[test]

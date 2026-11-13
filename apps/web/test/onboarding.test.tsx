@@ -538,6 +538,13 @@ describe("the plan step (agentes.chat Cloud)", () => {
     await act(async () => answer(list));
     await settle(10);
     expect(document.querySelector(".onb__plan-price")?.textContent).toContain("Plano Equipe · $49 por mês");
+    // Why it costs, behind an ⓘ on the price: one's own server is free.
+    const why = within(document.querySelector(".onb__plan-price") as HTMLElement).getByRole("button", {
+      name: "Por que pago?",
+    });
+    expect(document.getElementById(why.getAttribute("aria-describedby") ?? "")?.textContent).toContain(
+      "Rodar no seu servidor é grátis.",
+    );
   });
 
   test("with no plan data, the plan is named generically and both ways open the billing page", async () => {
