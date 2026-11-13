@@ -360,21 +360,23 @@ function PickerBody({ agent, view, onClose }: { agent: Agent; view: AgentBrain; 
             type="button"
             role="option"
             aria-selected={r.checked}
-            className="mp__model"
+            className="ac-menu__item mp__model"
             data-refused={r.refused || undefined}
             disabled={busy}
             onClick={() => void pick(r)}
           >
-            <span className="mp__model-text">
+            <span className="ac-menu__label">
               <span className="mp__model-name">{r.label}</span>
               {(r.auto || r.refused || r.textOnly) && (
-                <span className="mp__model-sub">
+                <span className="ac-menu__desc">
                   {r.refused ? t("brain.picker.refused") : r.auto ? r.sub : t("brain.picker.textOnly")}
                 </span>
               )}
             </span>
             {r.auto && <span className="mp__model-tag">{t("brain.picker.default")}</span>}
-            {r.checked && <Icon name="check" size={16} className="mp__model-check" />}
+            <svg className="ac-menu__check" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m5.5 10.5 3 3 6-7" />
+            </svg>
           </button>
         ))}
       </div>

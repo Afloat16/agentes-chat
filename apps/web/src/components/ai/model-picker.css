@@ -1,20 +1,27 @@
 /* The model picker: the agent's AI and model in place (a DM's header, its profile card, its side panel). */
 
-/* The button: what it thinks with, its maker's mark first, a chevron. 32 tall in a header, a row's height elsewhere. */
+/* The button: what it thinks with, its maker's mark first, a chevron. 32 tall on one line; a name that wraps (a narrow
+   card, the side panel) grows it, with the mark and the chevron on its first line. */
 .mp-trigger,
 .mp-label {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
   min-width: 0;
   max-width: 100%;
   color: var(--ink2);
   font: inherit;
   font-size: var(--text-sm);
+  line-height: 20px;
+}
+.mp-trigger > :not(.mp-label__text),
+.mp-label > :not(.mp-label__text) {
+  flex: none;
+  translate: 0 calc(10px - var(--cap-mid) - 50%);
 }
 .mp-trigger {
-  height: var(--control-h-sm);
-  padding: 0 var(--space-2) 0 var(--space-3);
+  min-height: var(--control-h-sm);
+  padding: calc((var(--control-h-sm) - 20px) / 2) var(--space-2) calc((var(--control-h-sm) - 20px) / 2) var(--space-3);
   border: 0;
   border-radius: var(--radius-btn);
   background: var(--raised);
@@ -31,9 +38,7 @@
   background: var(--chosen-bg);
 }
 .mp-trigger[data-size="row"] {
-  height: auto;
-  min-height: var(--control-h-sm);
-  padding: var(--space-1) var(--space-2);
+  padding-inline: var(--space-2);
   margin-left: calc(-1 * var(--space-2));
   background: transparent;
   box-shadow: none;
@@ -67,7 +72,8 @@
   display: flex;
   flex-direction: column;
 }
-.mp__sky {
+/* Over the scene's own fill-the-box height, whichever sheet comes first. */
+.team-scene.mp__sky {
   flex: none;
   height: 96px;
 }
@@ -147,55 +153,29 @@
   margin-top: var(--space-3);
 }
 
-/* The models: one row each, Automático first with "padrão", the one it runs checked, a refused one dimmed. */
+/* The models: the kit's menu rows (`.ac-menu__item`), Automático first with "padrão", the one it runs checked, a
+   refused one dimmed. */
 .mp__models {
   display: flex;
   flex-direction: column;
   gap: 2px;
   margin-top: var(--space-2);
 }
-.mp__model {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 40px;
-  padding: var(--space-2) var(--space-3);
-  margin-inline: calc(-1 * var(--space-1));
-  border: 0;
-  border-radius: var(--radius-item);
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.mp__model:hover,
-.mp__model[aria-selected="true"] {
-  background: var(--plate);
-}
-.mp__model[data-refused] .mp__model-text {
+.mp__model[data-refused] .ac-menu__label {
   opacity: 0.55;
 }
-.mp__model-text {
-  display: flex;
+.mp__model .ac-menu__label {
   flex: 1;
-  flex-direction: column;
-  min-width: 0;
 }
 .mp__model-name {
   overflow-wrap: anywhere;
+  white-space: normal;
 }
-.mp__model-sub,
 .mp__model-tag {
+  flex: none;
+  align-self: center;
   color: var(--muted);
   font-size: var(--text-xs);
-}
-.mp__model-tag {
-  flex: none;
-}
-.mp__model-check {
-  flex: none;
-  color: var(--ink);
 }
 
 .mp__effort {
