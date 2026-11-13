@@ -4515,7 +4515,7 @@ export const TimelineMessage = memo(function TimelineMessage({
         {live && waiting ? (
           <Parts resetKey={m}>
             <LiveRunStatus run={live} />
-            {makingImage(live) && <ImageMaking />}
+            {makingImage(live) && <ImageMaking color={colorOf(agent)} />}
             <RunBrowserCard run={live} name={name} />
             <span className="ac-visually-hidden">{t("channel.writing")}</span>
           </Parts>

@@ -1974,8 +1974,8 @@ html:not([data-pointer]) .artifact-tile__open:focus-visible {
     filter: blur(16px);
   }
 }
-/* Where a picture an agent is making will show (`ImageMaking`): a lone picture's box with a fine grain on it; where
-   motion is allowed, a band of it develops across, left to right, until the reply brings the picture. */
+/* Where a picture an agent is making will show (`ImageMaking`): a lone picture's box, the agent's sky forming in it
+   (`ImageSky`, its canvas filling the box), the pixel orbit and the words over it at the bottom left. */
 .artifact-cards > .image-making {
   flex: none;
 }
@@ -1986,39 +1986,17 @@ html:not([data-pointer]) .artifact-tile__open:focus-visible {
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 16px 16px 16px 4px;
-  background-color: var(--sunken);
-  background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 0.8px, transparent 1.2px);
-  background-size: 6px 6px;
-}
-.image-making__grain {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(color-mix(in srgb, var(--ink) 30%, transparent) 0.9px, transparent 1.3px);
-  background-size: 6px 6px;
-  opacity: 0.35;
-}
-@keyframes image-making {
-  from {
-    mask-position: 100% 0;
-  }
-  to {
-    mask-position: 0 0;
-  }
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--line);
 }
 @media (prefers-reduced-motion: no-preference) {
   .artifact-tile__picture img[data-fresh] {
     animation: picture-in 0.7s var(--out) both;
   }
-  .image-making__grain {
-    opacity: 1;
-    mask-image: linear-gradient(105deg, transparent 38%, #000 50%, transparent 62%);
-    mask-size: 300% 100%;
-    mask-repeat: no-repeat;
-    animation: image-making 2.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
-  }
 }
 .image-making__label {
   position: absolute;
+  z-index: 1;
   left: 14px;
   bottom: 12px;
   font-size: 13.5px;

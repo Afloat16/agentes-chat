@@ -1889,7 +1889,7 @@ function Chat({
               entering={isFresh(item.key) ? ENTER : undefined}
               style={[styles.browserRow, { paddingLeft: quiet, marginTop: rhythm.turn }]}
             >
-              <ImageMaking />
+              <ImageMaking color={agentLook(dir.agentById.get(item.run.agentId)).color} />
             </Animated.View>
           );
         case "message":
