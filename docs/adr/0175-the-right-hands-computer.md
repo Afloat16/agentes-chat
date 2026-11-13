@@ -1,7 +1,8 @@
 # 0175. The right hand's computer: a seat per person
 
 - Status: Accepted (built: engine, the shared client's lists, the web and the phone app's row; not yet run on a real
-  system-mode computer, see "Before it ships")
+  system-mode computer, see "Before it ships"); amended 2026-11-13 (§3, §8, §9: a shared seat wherever others read,
+  see "Amendment: the shared seat")
 - Date: 2026-11-12
 - Amends: ADR 0137 (§1 "it is on no computer", §4 and §13 "no computer", the 2026-11-12 amendment's "No computer
   yet"), ADR 0057 (§2: an OS user per id the server sends, not only per agent), ADR 0169 (§9: a seat has its
@@ -19,7 +20,8 @@
   (`stopOrgWork`), `tools/gateway.ts` and `right-hand.ts` (`RIGHT_HAND_NOT_OFFERED`, `RIGHT_HAND_COMPUTER_GRANTS`),
   `right-hand-prompt.ts` (`rightHandTools`), `organizations.ts` (`removeSeat` on leaving),
   `apps/server/runner/agent-users.ts` (`sweepAgent`)
-- Tests: `packages/engine/test/right-hand-computer.test.ts`, `packages/engine/test/right-hand-screens.test.ts`
+- Tests: `packages/engine/test/right-hand-computer.test.ts`, `packages/engine/test/right-hand-screens.test.ts`,
+  `packages/engine/test/right-hand-shared-seat.test.ts`
 
 ## Context
 
@@ -185,6 +187,77 @@ hold their own at once.
 - In their own DM a run reads web pages and files while it can act as that person on their seat. Outside content
   marks the run as before (ADR 0117).
 - On a plan every command goes through the server.
+
+## Amendment (2026-11-13): the shared seat
+
+### Context
+
+§3 gave it a computer only in a person's own conversation with it. In a channel, on a widget and in a routine that
+reports to a channel it had none and was told to hand the work on. The owner decided it has a computer like any
+agent, everywhere.
+
+### Decision
+
+- **One more seat per workspace, shared.** A row of `right_hand_seats` whose `user_id` is `shared`
+  (`SHARED_SEAT`), with a stored id of its own, so on the workspace's computer it is one more Linux user with its own
+  home, worker, browser profile and desktop ("Lodi (shared)"). No migration: the column has no foreign key, no person's
+  id is that word, and the table's index (one live row per workspace and owner) keeps two first uses at once to one
+  seat. It is made on first use and only where a person's seat is (the workspace's own computer, in system mode).
+- **Which seat a run works in is decided in one place** (`runSeat`), from who is behind the run and where its work
+  is read, never from what the model says:
+  - a person's own seat only where that person alone reads: their own DM with it, when they are the person behind the
+    run, and a routine they made that reports in that DM (its own run in its room, the run its report wakes there,
+    and the run the end of a task it started wakes);
+  - the shared seat everywhere else: a channel and any thread in one, whoever started it; a widget's refresh, wherever
+    its routine was set up; a routine that reports where others read; a run nobody is behind, even in a person's DM.
+  Work in the background is the same run going on, so it stays in the seat that run had. This replaces §3's "a
+  channel mention, a routine's run... get no seat" and the background item of "What is not in this change". **A routine a person made that reports in their own DM now works in that person's seat**, where
+  §3 gave it none: its work is read by that person alone, the same rule their Vault items, mailbox and memory already
+  follow (`rightHandReader`), and the shared seat would have put a private routine's work where the workspace reads.
+- **Nothing crosses.** A run's request to the computer is built from `runSeat` alone (`machineScope`), so a run in
+  the shared seat never carries a person's seat id, and the reverse. That covers commands and files, background
+  tasks, `git_clone`, the browser, the desktop, a Vault key sealed to the seat, and the screen's look memory
+  (`screenKey`, per seat). A task kept for a seat (`machine_tasks.scope_id`) is listed, read and stopped only by a
+  run that works in that seat. Nothing copies or mounts one home into another: the OS users keep them apart, and what
+  the shared folder gives every agent is all they share. A person's Vault items, mailbox and memory keep their own
+  gates and never follow a seat.
+- **The hub guard is unchanged.** The agent's own id is still refused for anything but its locked turn: the shared
+  seat goes out under its own id.
+- **Handoffs.** The shared seat's screen is one, like any agent's: its handoffs are the rows of the right hand with no
+  `seat_user_id`, read through the same condition (`ofScreen` with `SHARED_SEAT`). `desktop_ask_person` from a run in
+  it asks who may drive it. A handoff's view says it is that seat's (`seat: "shared"`), so the apps keep its state
+  apart from a person's own.
+- **Who opens it.** Whoever may open any agent's computer there, by the same rule (`screenAccess`, `computerDriving`
+  with `shared`): the admins of computers (`control_computers`) and the right hand's owner, plus the person an open
+  handoff was asked of. A person who only has a run of their own going on with it does not: that run is in their own
+  conversation and shows nothing there. A person's own request still names nobody's seat: the routes take
+  `seat=shared` or nothing, and nothing opens another person's.
+- **Its end.** It is tombstoned when the right hand loses its last computer grant (`setAgentAccess`) and when the
+  workspace's own computer is removed (`detachMachine`). The `deleted` list then names it, so the computer kills its
+  processes and stops its worker like a removed member's, and the next use starts another one with an empty home. It
+  has no membership to lose, so the membership rule of `removedSeatIds` leaves it alone.
+- **Lists.** The `agents` frame lists it with the others. `GET …/machines` says where it is (`sharedSeatOf`) only to
+  who may open it. A hold and a stop reach it like every seat (`seatScopes`).
+- **What it is told** (§8). The wording for a channel is replaced: there it has a computer, its shared place, shared
+  with the whole workspace, so nothing private belongs there, and what a person keeps in their own place is not
+  reachable from it.
+- **Screens.** The row on its page and its dialog still show the viewer's own seat. On the computer's page, where
+  admins open each agent's computer, the shared seat is a row of its own ("Lodi (shared)", with what it is for) with
+  Open beside it, on the web and the phone. The dialog and the phone's screen opened from it say so in their title,
+  and everything they read and do goes there (`SeatContext`).
+
+### Consequences
+
+- Everything any channel, widget or background run leaves on the shared seat is readable by every other run there
+  and by whoever may open it, private channels included. Its prompt and its row say so. It is one seat, not one per
+  channel.
+- The shared seat's browser is signed in for everyone who can reach the right hand in a channel: a sign-in made there
+  is used by whoever asks next.
+- A routine's run in its creator's seat acts on what the routine read from outside with that person's files and
+  sign-ins at hand, as their own conversation's runs already do (see "Consequences" above).
+- `keep_running` (ADR 0176) still sends the agent's own id, so the hub refuses it for the right hand in any seat.
+- A grant taken away through a card ends the seat in the database at once, and the computer hears with its next
+  `agents` frame; the access page's own save sends that frame at once.
 
 ## Before it ships
 

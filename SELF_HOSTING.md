@@ -1259,6 +1259,12 @@ can't keep people's places apart, so Lodi has no computer there, and its page sa
 browser or desktop off for everyone on its page, under what it can use. The computer's shared folder is
 still shared: every agent and every person's Lodi reads and writes it.
 
+Where others read what Lodi does (a channel, a dashboard widget, a routine that reports to a channel) it works in
+one more place, shared by the whole workspace: one more user on that computer, "Lodi (shared)". Nothing of a
+person's own place reaches it. Whoever may open any agent's computer (the admins of computers) opens it from the
+computer's page in Settings, Computers. Turning all three of Lodi's computer permissions off ends that place and
+stops what runs there, and turning one back on starts an empty one.
+
 **What an agent reaches on its computer (`--system`).** Each agent reaches the local ports its own
 processes open (any port, port 0 included, on 127.0.0.1, ::1 or the computer's own addresses), and
 nobody else's: another agent's listeners refuse it at once, so two agents can run dev servers, test
