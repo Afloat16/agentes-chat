@@ -1,5 +1,6 @@
 import type { PubSub } from "@agenteschat/adapters";
 import { and, type Database, eq, inArray, isNull, schema, sql } from "@agenteschat/db";
+import { type AgentWork, agentWorkFor, bareWork } from "./agent-work";
 import { publishOrgEvent } from "./events";
 import { cutText } from "./format";
 import type { Judge } from "./judge";
@@ -86,6 +87,8 @@ export interface AgentStatusView {
    * its AI, which for the right hand is each viewer's own.
    */
   working: boolean;
+  /** For one viewer (`agentStatuses`): its most important work and where it shows (`agent-work.ts`); null: none. */
+  work?: AgentWork | null;
 }
 
 /** A run going this long is heavy work: the agent reads as busy. */
@@ -113,8 +116,9 @@ const ACTIVE = ["queued", "running"] as const;
 const WAITING = ["waiting_approval", "waiting_input"] as const;
 
 /**
- * Every agent's presence and written status, for a member of the organization. An agent hidden from them (the
- * agents list's rule, `routineSeer`) keeps its presence but not its line, which can name a routine, task or channel.
+ * Every agent's presence and written status, for a member of the organization, with its work as they may read it
+ * (`agentWorkFor`). An agent hidden from them (the agents list's rule, `routineSeer`) keeps its presence and its
+ * work's state, but not its line or where it works, which can name a routine, task or channel.
  */
 export async function agentStatuses(
   db: Database,
@@ -122,13 +126,19 @@ export async function agentStatuses(
   orgId: string,
   now = new Date(),
   options: Pick<OutOfOfficeOptions, "hasModel"> = {},
-) {
+): Promise<(AgentStatusView & { work: AgentWork | null })[]> {
   await requirePermission(db, actorId, orgId, "read");
-  const [list, sees] = await Promise.all([
+  const [list, sees, work] = await Promise.all([
     loadAgentStatuses(db, orgId, now, undefined, options),
     routineSeer(db, orgId, actorId),
+    agentWorkFor(db, actorId, orgId, new Date(now.getTime() - AGENT_HEARTBEAT_FRESH_MS)),
   ]);
-  return list.map((s) => (sees({ agentId: s.agentId, createdByUserId: null }) ? s : { ...s, status: null }));
+  return list.map((s) => {
+    const w = work.get(s.agentId) ?? null;
+    return sees({ agentId: s.agentId, createdByUserId: null })
+      ? { ...s, work: w }
+      : { ...s, status: null, work: w && bareWork(w) };
+  });
 }
 
 /**
