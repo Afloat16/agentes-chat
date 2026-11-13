@@ -1957,6 +1957,52 @@ html:not([data-pointer]) .artifact-tile__open:focus-visible {
 .artifact-cards > .artifact-tile[data-media]:only-child .artifact-tile__picture img {
   object-fit: contain;
 }
+/* A picture alone whose size the server read (`data-ratio`, before its details load too): its own proportions, up to
+   400px wide and 440px high, from the first paint. Lengths only, as above. */
+.artifact-cards > .artifact-tile[data-ratio]:only-child {
+  --tile-w: min(400px, calc(440px * var(--ratio)));
+}
+.artifact-cards > .artifact-tile[data-ratio]:only-child .artifact-tile__cover {
+  height: auto;
+  aspect-ratio: var(--ratio);
+}
+/* A picture fetched after its tile showed (one just made or sent) comes into focus; one read again from the cache is
+   simply there. */
+@keyframes picture-in {
+  from {
+    opacity: 0;
+    filter: blur(16px);
+  }
+}
+/* Where a picture an agent is making will show (`ImageMaking`): a lone picture's box, the agent's sky forming in it
+   (`ImageSky`, its canvas filling the box), the pixel orbit and the words over it at the bottom left. */
+.artifact-cards > .image-making {
+  flex: none;
+}
+.image-making {
+  position: relative;
+  width: 400px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--line);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .artifact-tile__picture img[data-fresh] {
+    animation: picture-in 0.7s var(--out) both;
+  }
+}
+.image-making__label {
+  position: absolute;
+  z-index: 1;
+  left: 14px;
+  bottom: 12px;
+  font-size: 13.5px;
+  line-height: 18px;
+  color: var(--muted);
+}
 /* A video is its player. */
 .artifact-tile[data-kind="video"] {
   width: fit-content;
