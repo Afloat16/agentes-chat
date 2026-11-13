@@ -136,16 +136,17 @@ nothing.
 
 - A task the right hand handed to an agent for a person is followed to its end: when it is done or canceled after the
   hand-over was reported back, the right hand is woken once per hand-over in that person's DM. Not when they made the
-  change themselves, asked the run that made it in their own words, or it did so for them, and not while the
-  hand-over's own report is still to come, or came after the change or within five minutes before it (that report
-  tells the end). An agent's background
-  work that ends the task counts too. The inbox row of the same change is done for them when a turn starts, so one
-  thing tells them. Its push may already have left.
-- A handed task that has not changed and whose conversation was quiet for four hours is looked at a day after the
-  hand-over, then daily while it moves, seven looks in all, and said once per task with what it waits on, read from the
-  task's own conversation: the people something there waits on (also while the hand-over is still out), else its
-  agent's run paused on something else, else nothing. Never said: a task that waits on the requester (their inbox has
-  it), and a hand-over that failed or was never taken (told when it closed).
+  change themselves, asked the run that made it in their own words, it did so for them or asked the agent that did in
+  a later turn of theirs, and not while the hand-over's own report is still to come, or came after the change or
+  within five minutes before it (that report tells the end). An agent's background work that ends the task counts
+  too. The inbox row of the same change is marked read for them when a turn starts: it sends no push and counts in no
+  badge, so one thing tells them, and it stays in their list, so a turn that fails or passes still leaves the news.
+- A handed task is looked at a day after the hand-over, then daily, seven looks in all. One that has not changed and
+  whose conversation was quiet for four hours is said once per task with what it waits on, read from the task's own
+  conversation: the people something there waits on (also while the hand-over is still out), else its agent's run
+  paused on something no inbox shows. Never said: a task that waits on the requester (their inbox has it), a hand-over
+  that failed or was never taken (told when it closed), and a task whose hand-over was reported back and that nobody
+  closed (the person heard the report, and what is left of it is theirs).
 - What the right hand is told is a notice only it reads (`wait_result` with `refs.task`, agent-only on every build),
   which names the run that handed the task over, so the turn it starts is that person's own.
 - A commitment with a time becomes a plain reminder, said in one line. A run at that time only when the person asked

@@ -1,5 +1,5 @@
 import type { PubSub } from "@agenteschat/adapters";
-import { and, type Database, desc, type Executor, eq, isNotNull, isNull, schema, sql } from "@agenteschat/db";
+import { and, type Database, desc, type Executor, eq, gte, isNotNull, isNull, schema, sql } from "@agenteschat/db";
 import { plainLine } from "@agenteschat/ui/markdown";
 import { runPerson } from "./authority";
 import { deliverNotice, publishDelivery } from "./delivery";
@@ -8,7 +8,7 @@ import { cutText } from "./format";
 import { canSee } from "./issues";
 import type { Notice } from "./notices";
 import { humanBehindRun } from "./notification-producers";
-import { resolveNotifications } from "./notifications";
+import { markNotificationRead } from "./notifications";
 import { enqueue } from "./outbox";
 import { RIGHT_HAND } from "./right-hand";
 import { defineLodiLane, type LodiPromptContext } from "./right-hand-lane";
@@ -26,8 +26,9 @@ import { forPeople } from "./run-resume";
  * - A task's end (`TASK_END_JOB`, queued with the status change): done or canceled after the hand-over was reported
  *   back, the right hand is told once in the DM of the person it handed the task over for.
  * - A task that stopped (`TASK_CHECK_JOB`, queued with the hand-over, first a day later): nothing moved for
- *   `HANDED_TASK_QUIET_MS`, it is told once what the task waits on. While the task moves it looks again a day
- *   later, `HANDED_TASK_LOOKS` times.
+ *   `HANDED_TASK_QUIET_MS` and it waits on someone or something the person was not told of, it is told once what.
+ *   Otherwise it looks again a day later, `HANDED_TASK_LOOKS` times. A task reported back and left open is not
+ *   stopped: the person heard its report, and closing it is theirs.
  * - What it is told is a notice only it reads (`wait_result` with `refs.task`), and at most
  *   `HANDED_TASK_WAKES_A_DAY` of them a person a day start a turn of it, on that person's AI. Neither job calls a
  *   model.
@@ -90,8 +91,12 @@ export async function queueTaskCheck(tx: Executor, orgId: string, consultationId
   });
 }
 
-/** The right hand's newest hand-over of the task whose conversation this is. */
-async function handOverOf(db: Executor, orgId: string, conversationId: string): Promise<HandOver | null> {
+/**
+ * The right hand's newest hand-over of the task whose conversation this is. `since` is when the task was created: no
+ * index leads to a hand-over by its conversation, and none is older than its task, so the walk over the right hand's
+ * hand-overs (indexed by time) ends there.
+ */
+async function handOverOf(db: Executor, orgId: string, conversationId: string, since: Date): Promise<HandOver | null> {
   const [row] = await db
     .select({ c: agentConsultations })
     .from(agentConsultations)
@@ -101,6 +106,7 @@ async function handOverOf(db: Executor, orgId: string, conversationId: string): 
         eq(agentConsultations.orgId, orgId),
         eq(agentConsultations.channelId, conversationId),
         eq(agentConsultations.kind, "note"),
+        gte(agentConsultations.createdAt, since),
         eq(agents.builtin, RIGHT_HAND),
       ),
     )
@@ -115,11 +121,11 @@ async function handOverOf(db: Executor, orgId: string, conversationId: string): 
  */
 export async function queueTaskEnd(
   tx: Executor,
-  issue: Pick<IssueRow, "id" | "orgId" | "status" | "updatedAt" | "conversationChannelId">,
+  issue: Pick<IssueRow, "id" | "orgId" | "status" | "createdAt" | "updatedAt" | "conversationChannelId">,
   by: TaskChangedBy,
 ): Promise<Record<string, unknown> | null> {
   if ((issue.status !== "done" && issue.status !== "canceled") || !issue.conversationChannelId) return null;
-  if (!(await handOverOf(tx, issue.orgId, issue.conversationChannelId))) return null;
+  if (!(await handOverOf(tx, issue.orgId, issue.conversationChannelId, issue.createdAt))) return null;
   const at = issue.updatedAt.getTime();
   const payload = { issueId: issue.id, to: issue.status, at, by };
   await enqueue(tx, {
@@ -205,26 +211,34 @@ const personName = async (db: Database, userId: string) => {
 
 /**
  * The person already knows of the change: they made it, they asked the run that made it in their own words (its
- * answer is theirs to read), or the right hand made it for them.
+ * answer is theirs to read), the right hand made it for them, or it asked the agent that made it in a later turn of
+ * theirs. The hand-over's own run is none of these: what it does after its report is news.
  */
-async function knownToRequester(db: Database, orgId: string, by: TaskChangedBy, requester: string, lodiId: string) {
+async function knownToRequester(db: Database, orgId: string, by: TaskChangedBy, requester: string, c: HandOver) {
   if (by.type === "person") return by.id === requester;
   if (!by.runId) return false;
   const [asked] = await db
-    .select({ author: messages.authorUserId })
+    .select({ person: messages.authorUserId, agent: messages.authorAgentId, inRun: messages.agentRunId })
     .from(agentRuns)
     .innerJoin(messages, and(eq(messages.orgId, agentRuns.orgId), eq(messages.id, agentRuns.triggerMessageId)))
     .where(and(eq(agentRuns.orgId, orgId), eq(agentRuns.id, by.runId)));
-  if (asked?.author === requester) return true;
-  return by.id === lodiId && (await humanBehindRun({ db }, orgId, by.runId)) === requester;
+  if (asked?.person === requester) return true;
+  const lodiRun =
+    by.id === c.askerAgentId
+      ? by.runId
+      : by.runId !== c.targetRunId && asked?.agent === c.askerAgentId
+        ? asked.inRun
+        : null;
+  return (await humanBehindRun({ db }, orgId, lodiRun)) === requester;
 }
 
 /**
  * Job `right_hand.task_end`, and what a status change calls right after it: a task the right hand handed over ended
  * after its hand-over was reported back. Silent when the task changed status again since, the hand-over is still out
- * or closed after the change or just before it (its own report tells the end), or the person knows already. The inbox
- * row of the same change is done for them when a turn starts, so one thing tells them. True when the right hand was
- * told.
+ * or closed after the change or just before it (its own report tells the end), or the person knows already. When a
+ * turn starts, the inbox row of the same change is marked read for them: it rings nothing, so one thing tells them,
+ * and it stays in their list, so a turn that fails or passes still leaves them the news. True when the right hand
+ * was told.
  */
 export async function tellTaskEnd(deps: Deps, orgId: string, payload: Record<string, unknown>): Promise<boolean> {
   const { db } = deps;
@@ -235,10 +249,10 @@ export async function tellTaskEnd(deps: Deps, orgId: string, payload: Record<str
     .from(issues)
     .where(and(eq(issues.orgId, orgId), eq(issues.id, str(payload.issueId))));
   if (!issue?.conversationChannelId || issue.status !== payload.to || !by) return false;
-  const c = await handOverOf(db, orgId, issue.conversationChannelId);
+  const c = await handOverOf(db, orgId, issue.conversationChannelId, issue.createdAt);
   if (!c || c.status === "open" || !c.answeredAt || c.answeredAt.getTime() + SAME_FINISH_MS > at) return false;
   const to = await tellable(db, orgId, c, issue);
-  if (!to || (await knownToRequester(db, orgId, by, to.requester, to.lodi.id))) return false;
+  if (!to || (await knownToRequester(db, orgId, by, to.requester, c))) return false;
   const who = by.type === "person" ? await personName(db, by.id) : await handleOf(db, orgId, by.id);
   const told = await tellLodi(deps, orgId, to, `right_hand.task_end:${c.id}`, {
     kind: "wait_result",
@@ -248,9 +262,22 @@ export async function tellTaskEnd(deps: Deps, orgId: string, payload: Record<str
     }: ${who} marked it.`,
     refs: { task: issue.id, state: issue.status, runId: c.askerRunId, consultationId: c.id },
   });
-  // The group key `notifyIssueChanged` gives the row of this change.
-  if (told?.wake)
-    await resolveNotifications(deps, orgId, { groupKey: `issue_status:${issue.id}:${at}`, userIds: [to.requester] });
+  if (told?.wake) {
+    const [row] = await db
+      .select({ id: notifications.id })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.orgId, orgId),
+          eq(notifications.userId, to.requester),
+          // The group key `notifyIssueChanged` gives the row of this change.
+          eq(notifications.groupKey, `issue_status:${issue.id}:${at}`),
+          isNull(notifications.doneAt),
+          isNull(notifications.readAt),
+        ),
+      );
+    if (row) await markNotificationRead(deps, to.requester, orgId, row.id, true);
+  }
   return Boolean(told);
 }
 
@@ -263,9 +290,10 @@ const WAITS: Record<string, string> = {
 
 /**
  * What a task that stopped waits on, read from its own conversation: the people something there waits on, else its
- * agent's run paused on something else, else nothing. Null when there is nothing to say: work goes on, the person it
- * would be told to is one of those it waits on (they have it in their inbox), or its hand-over is still out and waits
- * on no person (what comes of it is reported by itself).
+ * agent's run paused on something else. Null when there is nothing to say: work goes on, the person it would be told
+ * to is one of those it waits on (they have it in their inbox), its hand-over is still out and waits on no person
+ * (what comes of it is reported by itself), or its hand-over was reported back and nothing there is paused (the
+ * person heard that report, and a task left open after it waits on them).
  */
 async function waitsOn(
   db: Database,
@@ -303,18 +331,16 @@ async function waitsOn(
         .orderBy(desc(agentRuns.createdAt))
         .limit(1)
     : [];
-  if (run?.status === "queued" || run?.status === "running") return null;
-  if (run?.status === "waiting_approval" || run?.status === "waiting_input")
-    return `${await handleOf(db, issue.orgId, run.agentId)}'s run there is paused and nobody has what it waits on in their inbox: it may be its computer, its AI or its budget (team_status says which).`;
-  return "Nobody is working on it and nothing in its conversation waits on a person.";
+  if (run?.status !== "waiting_approval" && run?.status !== "waiting_input") return null;
+  return `${await handleOf(db, issue.orgId, run.agentId)}'s run there is paused and nobody has what it waits on in their inbox: it may be its computer, its AI or its budget (team_status says which).`;
 }
 
 /**
  * Job `right_hand.task_check`: a look at a task the right hand handed over, a day after the hand-over or the last look.
- * Ended: nothing (its end is told by `tellTaskEnd`). Moving: one more look tomorrow, `HANDED_TASK_LOOKS` in all.
- * Stopped: the right hand is told once per task what it waits on, and the looks end. A hand-over that failed or was
- * never taken was told when it closed, so it is not said again. It may run twice (`saidOnce` inside `tellLodi`) and
- * calls no model.
+ * Ended: nothing (its end is told by `tellTaskEnd`). Moving, or stopped with nothing to say (`waitsOn`): one more look
+ * tomorrow, `HANDED_TASK_LOOKS` in all. Stopped on someone or something the person was not told of: the right hand is
+ * told once per task what it waits on, and the looks end. A hand-over that failed or was never taken was told when it
+ * closed, so it is not said again. It may run twice (`saidOnce` inside `tellLodi`) and calls no model.
  */
 export async function checkHandedTask(deps: Deps, orgId: string, payload: Record<string, unknown>): Promise<void> {
   const { db } = deps;
