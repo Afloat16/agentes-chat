@@ -1800,6 +1800,13 @@
       "when": 1794705400000,
       "tag": "0258_picture_size",
       "breakpoints": true
+    },
+    {
+      "idx": 259,
+      "version": "7",
+      "when": 1794705460000,
+      "tag": "0259_right_hand_proactive",
+      "breakpoints": true
     }
   ]
 }

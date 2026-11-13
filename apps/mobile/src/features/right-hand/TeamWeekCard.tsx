@@ -13,6 +13,7 @@ import {
 import { clockAt, formatUsd, joinNames } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
+import { teamWeekOn, teamWeekWhen } from "@agenteschat/client/lib/right-hand-prefs";
 import {
   appliesInBulk,
   type TeamWeekCard,
@@ -20,12 +21,10 @@ import {
   type TeamWeekRow,
   teamWeekCardOf,
   teamWeekDoneText,
-  teamWeekOn,
   teamWeekRowMessage,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
-  teamWeekWhen,
 } from "@agenteschat/client/lib/team-week";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -70,6 +69,9 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
   const decide = useDecideProposal(orgId);
   const act = useActOnTeamWeek(orgId);
   const prefs = useTeamWeekPrefs(orgId).data;
+  const admin = can(org, "administrator");
+  // A weekly card kept by someone who no longer administers: the daily one is what they get now.
+  const period = admin ? (card.period ?? "week") : "day";
   const failed = useFailed();
   const [applying, setApplying] = useState(false);
   const locale = i18n.language;
@@ -220,7 +222,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
               style={({ pressed }) => [styles.when, pressed && styles.pressed]}
             >
               <Text variant="footnote" tone="muted">
-                {teamWeekOn(prefs, can(org, "administrator")) ? teamWeekWhen(t, locale, prefs) : t("teamWeek.off")}
+                {teamWeekOn(prefs, period, admin) ? teamWeekWhen(t, locale, prefs, period) : t("teamWeek.off")}
                 {" · "}
                 <Text variant="footnote" tone="ink" style={styles.semibold}>
                   {t("teamWeek.change")}

@@ -35,12 +35,14 @@ import type { RolePermission } from "./permissions";
 import { personBehindCall } from "./requester";
 import { isRightHand } from "./right-hand";
 import { queueRightHandLook } from "./right-hand-approvals";
+import { liveLodiSwitches } from "./right-hand-lane";
+import { type LodiPrefsPatch, setLodiPrefs } from "./right-hand-prefs";
 import { bodyCode } from "./run-tools";
 import { REPORT_SCHEMA, SCHEDULE_INPUT } from "./schedule-tools";
 import { deletes, type WantedLine } from "./settings-proposals";
 import { noAgentText } from "./team";
 import { OFFER_ANSWERS_TOOL, PROPOSE_TEAM_SCHEMA_PERSONAL, PROPOSE_TEAM_TOOL, teamTools } from "./team-proposals";
-import { SET_TEAM_WEEK_TOOL, setTeamWeekPrefs } from "./team-week";
+import { SET_TEAM_WEEK_TOOL } from "./team-week";
 import { OFFER_CONNECT_APP_TOOL } from "./tools/connector-first";
 import { APPROVAL_TTL_MS } from "./tools/gateway";
 import type { ToolContext, ToolDefinition, ToolOutput, ToolSource } from "./tools/types";
@@ -205,7 +207,8 @@ export interface InviteCard {
 export interface ApprovalsCard {
   kind: "approvals";
   forUserId: string;
-  params: { approvalIds: string[]; why: string };
+  /** `digest`: the right hand posted it by itself, as the summary of what waits on this person. */
+  params: { approvalIds: string[]; why: string; digest?: boolean };
 }
 
 /**
@@ -1003,7 +1006,7 @@ const SETUP_TOOLS_PERSONAL: Record<string, string> = {
   [OFFER_INVITES_TOOL]:
     "Offer to invite someone the person trusts (family, a partner, someone who helps them) to this workspace with a card in this conversation: its button opens the app's invite dialog with these addresses filled in, as members. A person who may invite sends it there (and may change roles); you send nothing. Use it when they ask to invite or add someone by email, never on your own.",
   [SET_TEAM_WEEK_TOOL]:
-    "Stop, start again or move the card you post in this person's DM: the weekly look at how their agents did (Fridays at 17h in the workspace's time zone), or 'Resumo do dia', the same card every day at an hour ('me manda isso todo dia às 9h'). Use it when they ask you to stop it, send it again, or on another day or hour. It changes only their card.",
+    "Stop, start again or move the cards you post in this person's DM by yourself: 'Resumo do dia' (`card: day`, every day at an hour in their own time zone, 9h unless they moved it) and the weekly look at how their agents did (`card: week`, Fridays at 17h in the workspace's time zone). Use it when they ask you to stop one, send it again, or on another day or hour ('me manda isso todo dia às 8h'). It changes only what they get.",
   [PROPOSE_SETTINGS_TOOL]:
     "Change agents' settings with one card in this conversation: the model, the AI account it thinks with, its monthly budget, its owner, who may talk to it, the channels it joins or leaves and whether it answers there without a mention, the skills it has on, its name, its look, who it reports to, or archiving it. A change the person who asked may make, with nothing read from outside this turn, applies at once with Undo. Any other waits on the card for who may make it, and one they can't make they send from there. The result says which: never say it is done before it does. Instructions, a role or apps go through propose_instruction_change.",
   [OFFER_ANSWERS_TOOL]:
@@ -1050,6 +1053,8 @@ async function rolesByName(ctx: ToolContext, wanted: string[]): Promise<string[]
  * whoever clicks, checked at the click, with the confirmation that screen asks for; it decides and moves nothing itself.
  */
 function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
+  const live = liveLodiSwitches();
+  const ownSwitches = OWN_SWITCHES.filter((o) => live.includes(o.switch));
   return [
     {
       name: OFFER_APPROVALS_TOOL,
@@ -1279,16 +1284,27 @@ function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
     },
     {
       name: SET_TEAM_WEEK_TOOL,
-      description:
-        "Stop, start again or move the card you post in this person's DM: the weekly 'Semana da equipe' (admins get it by default, Fridays at 17h in the workspace's time zone), or 'Resumo do dia', the same card every day at an hour, which anyone may ask for ('me manda isso todo dia às 9h'). Use it when they ask you to stop it, send it again, or on another day or hour. It changes only their card.",
+      description: `Stop, start again or move the cards you post in this person's DM by yourself: 'Resumo do dia' (\`card: day\`, everyone gets it, every day at an hour in their own time zone, 9h unless they moved it) and the weekly 'Semana da equipe' (\`card: week\`, admins only, Fridays at 17h in the workspace's time zone).${
+        ownSwitches.length ? ` Also turns ${ownSwitches.map((o) => o.does).join(" and ")} off or on.` : ""
+      } Use it when they ask you to stop one, send it again, or on another day or hour ('me manda isso todo dia às 8h'). It changes only what they get.`,
       scope: SETUP_SCOPE,
       inputSchema: {
         type: "object",
         properties: {
+          card: {
+            type: "string",
+            enum: ["day", "week"],
+            description: "Which card `off` and `hour` are about. Left out, `off` stops or starts both.",
+          },
           off: { type: "boolean", description: "True stops it; false starts it again." },
-          daily: { type: "boolean", description: "True: every day at `hour`; false: back to weekly." },
-          day: { type: "string", enum: [...WEEK_DAYS] },
-          hour: { type: "integer", minimum: 0, maximum: 23, description: "In the workspace's time zone." },
+          day: { type: "string", enum: [...WEEK_DAYS], description: "The weekly card's day." },
+          hour: { type: "integer", minimum: 0, maximum: 23 },
+          ...Object.fromEntries(
+            ownSwitches.map((o) => [
+              o.input,
+              { type: "boolean", description: `False stops ${o.does}; true starts it.` },
+            ]),
+          ),
         },
         additionalProperties: false,
       },
@@ -1296,21 +1312,40 @@ function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
         try {
           const forUserId = await personBehindCall(ctx);
           if (!forUserId) return { content: "Only a person's request changes their card.", isError: true };
-          const day = WEEK_DAYS.indexOf(str(input.day) as (typeof WEEK_DAYS)[number]);
-          const next = await setTeamWeekPrefs(ctx.db, ctx.orgId, forUserId, {
-            ...(typeof input.off === "boolean" ? { off: input.off } : {}),
-            ...(typeof input.daily === "boolean" ? { daily: input.daily } : {}),
-            ...(day >= 0 ? { day } : {}),
-            ...(typeof input.hour === "number" ? { hour: input.hour } : {}),
-          });
           const admin = can(await getMembership(ctx.db, forUserId, ctx.orgId), "administrator");
+          // Only the day's card comes to someone who administers nothing.
+          const card = input.card === "day" || input.card === "week" ? input.card : admin ? null : "day";
+          if (card === "week" && !admin)
+            return { content: "The weekly card is for admins. They get the daily one: use card: day.", isError: true };
+          if (typeof input.hour === "number" && !card)
+            return { content: "Say which card the hour is for: card: day or card: week.", isError: true };
+          const day = WEEK_DAYS.indexOf(str(input.day) as (typeof WEEK_DAYS)[number]);
+          const patch: LodiPrefsPatch = {
+            ...(typeof input.off === "boolean" && card !== "day" ? { weekOff: input.off } : {}),
+            ...(typeof input.off === "boolean" && card !== "week" ? { dayOff: input.off } : {}),
+            ...(day >= 0 ? { day } : {}),
+            ...(typeof input.hour === "number" ? { [card === "day" ? "dayHour" : "weekHour"]: input.hour } : {}),
+            ...Object.fromEntries(
+              ownSwitches.flatMap((o) => (typeof input[o.input] === "boolean" ? [[o.pref, !input[o.input]]] : [])),
+            ),
+          };
+          const next = await setLodiPrefs(ctx.db, ctx.orgId, forUserId, patch);
           return {
-            content:
-              next.off || (!next.daily && !admin)
-                ? "Stopped: no card for them until they ask again or turn it on in Settings › Lodi."
-                : next.daily
-                  ? `Their 'Resumo do dia' now comes every day at ${next.hour}:00 (${next.timezone}), on days with something to say.`
-                  : `Their weekly card now comes every ${WEEK_DAYS[next.day]} at ${next.hour}:00 (${next.timezone}), when there is something to say.`,
+            content: [
+              "Saved, for them only.",
+              next.dayOff
+                ? "Daily summary: off."
+                : `Daily summary: every day at ${next.dayHour}:00 (${next.dayTimezone}), on days with something to say.`,
+              !admin
+                ? ""
+                : next.weekOff
+                  ? "Weekly card: off."
+                  : `Weekly card: every ${WEEK_DAYS[next.day]} at ${next.weekHour}:00 (${next.timezone}), when there is something to say.`,
+              ...ownSwitches.map((o) => `${o.name}: ${next[o.pref] ? "off" : "on"}.`),
+              "They can change each in Settings › Lodi.",
+            ]
+              .filter(Boolean)
+              .join(" "),
           };
         } catch (error) {
           return failed(error);
@@ -1319,6 +1354,24 @@ function rightHandCards(deps: { pubsub?: PubSub }): ToolDefinition[] {
     },
   ];
 }
+
+/** The right hand's own switches a person may ask it to flip, as `set_team_week` takes them. */
+const OWN_SWITCHES = [
+  {
+    switch: "digest",
+    input: "digest",
+    pref: "digestOff",
+    name: "Summary of approvals waiting",
+    does: "your summary of approvals waiting on them",
+  },
+  {
+    switch: "reminders",
+    input: "reminders",
+    pref: "remindOff",
+    name: "Reminders of what you agreed on",
+    does: "your reminders of what you two agreed on",
+  },
+] as const;
 
 const WEEK_DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 

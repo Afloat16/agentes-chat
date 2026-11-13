@@ -54,6 +54,7 @@ import {
   type RolePermission,
 } from "./permissions";
 import { personBehindCall } from "./requester";
+import { liveLodiSwitches } from "./right-hand-lane";
 import {
   createRole,
   deleteRole,
@@ -1394,20 +1395,34 @@ const continueWorkAction: WorkspaceAction = {
 
 // ── The workspace ────────────────────────────────────────────────────────────
 
-const WORKSPACE_FIELDS = ["name", "timezone", "defaultAgentBudgetNanoUsd"] as const;
+const WORKSPACE_FIELDS = ["name", "timezone", "defaultAgentBudgetNanoUsd", "teamWatch", "welcomePeople"] as const;
+
+/** The right hand's workspace switches as `update_workspace` takes them, each offered once its feature is built. */
+const WORKSPACE_SWITCHES = {
+  teamWatch: { input: "team_watch", does: "whether Lodi watches for what stops the team and tells who can fix it" },
+  welcomePeople: { input: "welcome_people", does: "whether Lodi greets each person who joins" },
+} as const;
+const workspaceSwitches = () =>
+  liveLodiSwitches().flatMap((s) => (s in WORKSPACE_SWITCHES ? [s as keyof typeof WORKSPACE_SWITCHES] : []));
 const NANO_PER_USD = 1_000_000_000;
 
 const updateWorkspaceAction: WorkspaceAction = {
   id: "update_workspace",
-  does: "Change the workspace's name, time zone or the monthly budget of agents without their own.",
-  input: {
-    type: "object",
-    properties: {
-      name: { type: "string", minLength: 1, maxLength: 80 },
-      timezone: { type: "string", minLength: 1, maxLength: 64, description: "IANA, e.g. America/Sao_Paulo." },
-      default_budget_usd: { type: "number", minimum: 0.01, maximum: 100_000 },
-    },
-    additionalProperties: false,
+  get does() {
+    const switches = workspaceSwitches().map((s) => `, ${WORKSPACE_SWITCHES[s].does}`);
+    return `Change the workspace's name, time zone or the monthly budget of agents without their own${switches.join("")}.`;
+  },
+  get input(): JsonSchema {
+    return {
+      type: "object",
+      properties: {
+        name: { type: "string", minLength: 1, maxLength: 80 },
+        timezone: { type: "string", minLength: 1, maxLength: 64, description: "IANA, e.g. America/Sao_Paulo." },
+        default_budget_usd: { type: "number", minimum: 0.01, maximum: 100_000 },
+        ...Object.fromEntries(workspaceSwitches().map((s) => [WORKSPACE_SWITCHES[s].input, { type: "boolean" }])),
+      },
+      additionalProperties: false,
+    };
   },
   mode: "now",
   needs: "configure",
@@ -1427,6 +1442,12 @@ const updateWorkspaceAction: WorkspaceAction = {
       ...(typeof input.default_budget_usd === "number"
         ? { defaultAgentBudgetNanoUsd: Math.round(input.default_budget_usd * NANO_PER_USD) }
         : {}),
+      ...Object.fromEntries(
+        workspaceSwitches().flatMap((s) => {
+          const on = input[WORKSPACE_SWITCHES[s].input];
+          return typeof on === "boolean" ? [[s, on]] : [];
+        }),
+      ),
     };
     const fields = WORKSPACE_FIELDS.filter((f) => f in patch);
     const updated = await updateOrgSettings(deps.db, actorId, orgId, patch);

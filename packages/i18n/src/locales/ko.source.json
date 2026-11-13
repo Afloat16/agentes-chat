@@ -5931,7 +5931,34 @@
     "value": "Outside it, a person doesn't see {{name}} in the sidebar."
   },
   "rightHand.settings.lock": {
-    "value": "{{name}} can't be archived or deleted. The only thing it posts without being asked is Team week, for admins."
+    "value": "{{name}} can't be archived or deleted."
+  },
+  "rightHand.settings.own.title": {
+    "value": "What {{name}} does by itself"
+  },
+  "rightHand.settings.own.digest": {
+    "value": "Summarize approvals waiting"
+  },
+  "rightHand.settings.own.digestHelp": {
+    "value": "When several approvals wait for you, {{name}} sends one card in your DM that tells the routine ones from the risky ones."
+  },
+  "rightHand.settings.own.reminders": {
+    "value": "Remember what we agreed on"
+  },
+  "rightHand.settings.own.remindersHelp": {
+    "value": "{{name}} follows the tasks it handed over until they end, and reminds you of what you two agreed on with a time."
+  },
+  "rightHand.settings.own.teamWatch": {
+    "value": "Look after the team"
+  },
+  "rightHand.settings.own.teamWatchHelp": {
+    "value": "{{name}} notices what stops the team, like an AI sign-in that ended or an app to reconnect, and tells the person who can fix it."
+  },
+  "rightHand.settings.own.welcome": {
+    "value": "Welcome people who join"
+  },
+  "rightHand.settings.own.welcomeHelp": {
+    "value": "{{name}} greets each person who joins and helps them set up their first agent."
   },
   "rightHand.settings.audit": {
     "value": "See what {{name}} did"

@@ -3,7 +3,8 @@ import type { PlanModel } from "@agenteschat/providers/plans";
 import type { DashboardsApi } from "../dashboards/api";
 import type { ChatPrefs } from "../lib/chat-look";
 import type { OnboardingStepId } from "../lib/onboarding";
-import type { TeamWeekAct, TeamWeekPrefs } from "../lib/team-week";
+import type { LodiPrefs, LodiPrefsPatch } from "../lib/right-hand-prefs";
+import type { TeamWeekAct } from "../lib/team-week";
 import type { AudienceChoice } from "../lib/who-sees";
 import type { WikiAccess } from "../lib/wiki";
 import type { WorkAreaAnswer } from "../lib/work-area";
@@ -617,8 +618,8 @@ export interface ApiClient {
     raisePersonLimit(orgId: string, userId: string, limitUsd: number): Promise<void>;
     refuseMoreUsage(orgId: string, userId: string): Promise<void>;
     /** Lodi's weekly card (ADR 0137 §9): when mine comes, or that it is off. */
-    teamWeek(orgId: string): Promise<TeamWeekPrefs>;
-    setTeamWeek(orgId: string, patch: Partial<Omit<TeamWeekPrefs, "timezone">>): Promise<TeamWeekPrefs>;
+    teamWeek(orgId: string): Promise<LodiPrefs>;
+    setTeamWeek(orgId: string, patch: LodiPrefsPatch): Promise<LodiPrefs>;
     /** A row of my weekly card applied as me (a routine, a message), or "Agora não". */
     actOnTeamWeek(orgId: string, messageId: string, act: TeamWeekAct): Promise<void>;
     /** The audit log, newest first (admins): agents' tool calls and people's changes. `before`: `next`. */
@@ -1803,6 +1804,8 @@ export interface ApiClient {
       orgId: string,
       messageId: string,
       decision: "apply" | "dismiss" | "ask",
+      /** The card's action id, when this build words it. */
+      knows?: string,
     ): Promise<{ card: WorkspaceActionCard }>;
   };
   /** "O que fez por você": what an agent did that involves the viewer (agent profile). */

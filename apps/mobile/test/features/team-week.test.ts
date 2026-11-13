@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { teamWeekCardOf, teamWeekRowText, teamWeekWhen } from "@agenteschat/client/lib/team-week";
+import { teamWeekWhen } from "@agenteschat/client/lib/right-hand-prefs";
+import { teamWeekCardOf, teamWeekRowText } from "@agenteschat/client/lib/team-week";
 import { resources } from "@agenteschat/i18n";
 import i18next, { type TFunction } from "i18next";
 
@@ -33,13 +34,44 @@ test("stacked rows: every fix's button under its words, full width, and the foot
   expect(card).toContain("router.push(`/approval/");
 });
 
-test("Configurações › Lodi: on or off, the day and the hour for admins, Resumo do dia for anyone", () => {
+test("Configurações › Lodi: Resumo do dia and its hour for anyone, the week's day and hour for admins", () => {
   const screen = src("right-hand/SettingsScreen.tsx");
-  expect(screen).toContain("<TeamWeekRows name={agent.name} />");
+  expect(screen).toContain("<OwnRows name={agent.name} />");
   expect(screen).toContain('can(org, "administrator")');
-  expect(screen).toContain("toggle={on}");
-  expect(screen).toContain("teamWeekOn(prefs, admin)");
-  expect(screen).toContain('"teamWeek.settings.dayLabel"');
+  expect(screen).toContain('teamWeekOn(prefs, "day", admin)');
+  expect(screen).toContain("toggle={dayOn}");
+  expect(screen).toContain("onPress={() => save({ dayOff: dayOn })}");
+  expect(screen).toContain("{admin ? (");
+  expect(screen).toContain("toggle={weekOn}");
+  expect(screen).toContain("onPick={(weekHour) => save({ weekHour })}");
+  expect(screen).toContain('t("teamWeek.settings.dayLabel")');
+});
+
+test("the other switches show only for a feature the server lists, the workspace's only to who configures it", () => {
+  const screen = src("right-hand/SettingsScreen.tsx");
+  expect(screen).toContain("const shows = (s: LodiSwitch) => prefs.switches.includes(s);");
+  expect(screen).toContain(".filter((r) => shows(r.id))");
+  expect(screen).toContain('can(org, "configure") && settings');
+  // A workspace switch says who it is for under its name, and saves through the workspace's settings.
+  expect(screen).toContain('sub={t("rightHand.settings.groupWorkspace")}');
+  expect(screen).toContain("setSettings.mutate({ [r.id]: !on }, { onError: failed })");
+  // Nothing takes a second press while a change is being saved.
+  expect(screen).toContain("disabled={set.isPending}");
+  expect(screen).toContain("disabled={setSettings.isPending}");
+});
+
+test("the card's footer says when the card it sits on comes", () => {
+  const card = src("right-hand/TeamWeekCard.tsx");
+  expect(card).toContain('const period = admin ? (card.period ?? "week") : "day";');
+  expect(card).toContain("teamWeekOn(prefs, period, admin) ? teamWeekWhen(t, locale, prefs, period)");
+});
+
+test("the approvals and the people cards live in files of their own, drawn as the other offers", () => {
+  const offer = src("ai/OfferCard.tsx");
+  expect(offer).toContain('if (card.kind === "approvals") return <OfferApprovals card={card} />;');
+  expect(offer).toContain('if (card.kind === "member_changes") return <OfferPeople card={card} />;');
+  expect(src("ai/OfferApprovals.tsx")).toContain("<OfferShell");
+  expect(src("ai/OfferPeople.tsx")).toContain("<OfferShell");
 });
 
 test("the phone reads the same card and says its rows in the person's language", () => {
@@ -68,5 +100,8 @@ test("the phone reads the same card and says its rows in the person's language",
   expect(teamWeekRowText(t, "pt-BR", card?.rows[0] as never, names).line).toBe(
     "1 pergunta ficou sem resposta em #atendimento esta semana.",
   );
-  expect(teamWeekWhen(tOf("en"), "en", { day: 5, hour: 17 })).toMatch(/^Every Friday at 5:00\sPM$/);
+  expect(teamWeekWhen(tOf("en"), "en", { day: 5, weekHour: 17, dayHour: 9 }, "week")).toMatch(
+    /^Every Friday at 5:00\sPM$/,
+  );
+  expect(teamWeekWhen(tOf("en"), "en", { day: 5, weekHour: 17, dayHour: 9 }, "day")).toMatch(/^Every day at 9:00\sAM$/);
 });

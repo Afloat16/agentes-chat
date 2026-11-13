@@ -2327,6 +2327,10 @@ export interface OrgSettings {
   agentMedia: AgentMediaLevel;
   /** People can send voice messages (ADR 0100); only with `voiceAvailable` too. On by default. */
   voiceMessages: boolean;
+  /** The right hand watches for what stops the team and tells who can fix it. Absent from an older server: on. */
+  teamWatch?: boolean;
+  /** The right hand greets each person who joins, once. Absent from an older server: on. */
+  welcomePeople?: boolean;
   /** Read only: this server has a speech engine. */
   voiceAvailable: boolean;
   /** Read only: this server can search GIFs (it has a GIF provider). */

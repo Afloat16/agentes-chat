@@ -2441,9 +2441,30 @@ export const ptBR = {
       audience: "Quem pode usar",
       audienceHelp: "Fora do público, a pessoa não vê o {{name}} na barra lateral.",
       audienceHelp_female: "Fora do público, a pessoa não vê a {{name}} na barra lateral.",
-      lock: "O {{name}} não pode ser arquivado nem apagado. Sem ser chamado, ele só posta a Semana da equipe, para os admins.",
-      lock_female:
-        "A {{name}} não pode ser arquivada nem apagada. Sem ser chamada, ela só posta a Semana da equipe, para os admins.",
+      lock: "O {{name}} não pode ser arquivado nem apagado.",
+      lock_female: "A {{name}} não pode ser arquivada nem apagada.",
+      own: {
+        title: "O que o {{name}} faz por conta própria",
+        title_female: "O que a {{name}} faz por conta própria",
+        digest: "Resumir aprovações esperando",
+        digestHelp:
+          "Quando várias aprovações esperam você, o {{name}} manda um cartão na sua DM que separa as de rotina das arriscadas.",
+        digestHelp_female:
+          "Quando várias aprovações esperam você, a {{name}} manda um cartão na sua DM que separa as de rotina das arriscadas.",
+        reminders: "Lembrar o que combinamos",
+        remindersHelp:
+          "O {{name}} acompanha até o fim as tarefas que passou adiante e lembra você do que vocês combinaram com hora marcada.",
+        remindersHelp_female:
+          "A {{name}} acompanha até o fim as tarefas que passou adiante e lembra você do que vocês combinaram com hora marcada.",
+        teamWatch: "Cuidar da equipe",
+        teamWatchHelp:
+          "O {{name}} percebe o que trava o time, como um login de IA que caiu ou um app para reconectar, e avisa quem pode resolver.",
+        teamWatchHelp_female:
+          "A {{name}} percebe o que trava o time, como um login de IA que caiu ou um app para reconectar, e avisa quem pode resolver.",
+        welcome: "Dar boas-vindas a quem entra",
+        welcomeHelp: "O {{name}} recebe cada pessoa que entra e ajuda a montar o primeiro agente dela.",
+        welcomeHelp_female: "A {{name}} recebe cada pessoa que entra e ajuda a montar o primeiro agente dela.",
+      },
       audit: "Ver o que o {{name}} fez",
       audit_female: "Ver o que a {{name}} fez",
       planHelp: "Quem paga é o dono do plano. Sem o computador do plano, a conversa avisa e oferece uma chave de API.",

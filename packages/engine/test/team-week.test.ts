@@ -7,9 +7,11 @@ import {
   createToolGateway,
   decideProposal,
   enqueueTeamWeeks,
-  getTeamWeekPrefs,
+  getLodiPrefs,
   insertMessage,
+  LODI_PREFS_DEFAULTS,
   lastTeamWeekSlot,
+  lodiPrefsOf,
   notifyMessage,
   openPersonAgentDm,
   postPersonMessage,
@@ -17,12 +19,10 @@ import {
   RIGHT_HAND,
   requestKey,
   SET_TEAM_WEEK_TOOL,
-  setTeamWeekPrefs,
-  TEAM_WEEK_DEFAULTS,
+  setLodiPrefs,
   TEAM_WEEK_JOB,
   type TeamWeekCard,
   teamWeekCardOf,
-  teamWeekPrefsOf,
   weekKey,
 } from "../src";
 import { addMember, type Fixture, setup } from "./fixtures";
@@ -85,16 +85,18 @@ const budgetStop = (fx: Fixture, at: Date) =>
 
 describe("when it comes", () => {
   test("Friday at 17h in the workspace's zone by default; one card per person and week", () => {
-    const prefs = teamWeekPrefsOf({});
-    expect(prefs).toEqual({ off: false, day: 5, hour: 17, daily: false });
-    expect(teamWeekPrefsOf({ day: 9, hour: -1, off: "yes" })).toEqual(prefs);
-    expect(lastTeamWeekSlot(prefs, ZONE, new Date(SLOT.getTime() + HOUR))?.toISOString()).toBe(SLOT.toISOString());
+    const prefs = lodiPrefsOf({});
+    expect(prefs).toMatchObject({ weekOff: false, day: 5, weekHour: 17 });
+    expect(lodiPrefsOf({ day: 9, hour: -1, off: "yes" })).toEqual(prefs);
+    expect(lastTeamWeekSlot("week", prefs, ZONE, new Date(SLOT.getTime() + HOUR))?.toISOString()).toBe(
+      SLOT.toISOString(),
+    );
     // Before the slot: last week's.
-    expect(lastTeamWeekSlot(prefs, ZONE, new Date(SLOT.getTime() - HOUR))?.toISOString()).toBe(
+    expect(lastTeamWeekSlot("week", prefs, ZONE, new Date(SLOT.getTime() - HOUR))?.toISOString()).toBe(
       new Date(SLOT.getTime() - 7 * DAY).toISOString(),
     );
     // Moved to Monday 9h, the same week: the same key, so no second card.
-    const monday = lastTeamWeekSlot({ off: false, day: 1, hour: 9, daily: false }, ZONE, SLOT);
+    const monday = lastTeamWeekSlot("week", { ...prefs, day: 1, weekHour: 9 }, ZONE, SLOT);
     expect(monday && weekKey(monday, ZONE)).toBe(weekKey(SLOT, ZONE));
     expect(weekKey(SLOT, ZONE)).toBe("2026-11-02");
   });
@@ -113,14 +115,14 @@ describe("when it comes", () => {
     await enqueueTeamWeeks(f.db, new Date(at.getTime() + HOUR));
     const queued = await jobs(f);
     expect(queued).toHaveLength(1);
-    expect(queued[0]?.payload).toEqual({ userId: f.owner.id, slot: SLOT.toISOString() });
+    expect(queued[0]?.payload).toEqual({ userId: f.owner.id, slot: SLOT.toISOString(), period: "week" });
     expect(queued.some((j) => (j.payload as { userId: string }).userId === member.id)).toBe(false);
     // A slot missed by more than a few hours waits for next week.
     expect(await enqueueTeamWeeks(f.db, new Date(SLOT.getTime() + DAY))).toBe(0);
 
-    await setTeamWeekPrefs(f.db, f.org.id, f.owner.id, { off: true });
+    await setLodiPrefs(f.db, f.org.id, f.owner.id, { off: true });
     expect(await enqueueTeamWeeks(f.db, new Date(at.getTime() + 7 * DAY))).toBe(0);
-    await setTeamWeekPrefs(f.db, f.org.id, f.owner.id, { off: false });
+    await setLodiPrefs(f.db, f.org.id, f.owner.id, { off: false });
     // No agent but Lodi: no team, no card.
     await f.db.update(schema.agents).set({ archivedAt: new Date() }).where(eq(schema.agents.id, f.agent.id));
     expect(await enqueueTeamWeeks(f.db, new Date(at.getTime() + 7 * DAY))).toBe(0);
@@ -270,7 +272,7 @@ describe("the card", () => {
     expect(m.body).toBe("Sua semana está pronta");
   });
 
-  test("a quiet week says nothing, and a member never gets one", async () => {
+  test("a quiet week says nothing, and a member never gets the week's", async () => {
     f = await setup({ rightHand: true });
     await inZone(f);
     expect(
@@ -279,7 +281,11 @@ describe("the card", () => {
     const member = await addMember(f.db, f.org.id, "member", "bia");
     await run(f, f.agent.id, new Date(SLOT.getTime() - DAY), "done");
     expect(
-      await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: member.id, slot: SLOT.toISOString() }),
+      await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, {
+        userId: member.id,
+        slot: SLOT.toISOString(),
+        period: "week",
+      }),
     ).toBeNull();
   });
 
@@ -411,13 +417,19 @@ describe("the card", () => {
     };
     const res = await gateway.invoke(ctx, { toolUseId: "tu_1", name: SET_TEAM_WEEK_TOOL, input: { off: true } });
     expect(res.type).toBe("result");
-    expect((await getTeamWeekPrefs(f.db, f.org.id, f.owner.id)).off).toBe(true);
+    expect((await getLodiPrefs(f.db, f.org.id, f.owner.id)).off).toBe(true);
     await gateway.invoke(ctx, {
       toolUseId: "tu_2",
       name: SET_TEAM_WEEK_TOOL,
-      input: { off: false, day: "monday", hour: 9 },
+      input: { card: "week", off: false, day: "monday", hour: 9 },
     });
-    expect(await getTeamWeekPrefs(f.db, f.org.id, f.owner.id)).toMatchObject({ off: false, day: 1, hour: 9 });
+    expect(await getLodiPrefs(f.db, f.org.id, f.owner.id)).toMatchObject({
+      off: false,
+      weekOff: false,
+      dayOff: true,
+      day: 1,
+      weekHour: 9,
+    });
   });
 });
 
@@ -431,25 +443,31 @@ describe("Resumo do dia", () => {
     return { m, card };
   };
 
-  test("every day at its hour, over the last day, for anyone who asks; one card per person and day", async () => {
-    const prefs = teamWeekPrefsOf({ daily: true, hour: 9 });
-    expect(prefs.daily).toBe(true);
-    expect(lastTeamWeekSlot(prefs, ZONE, new Date(NINE.getTime() + HOUR))?.toISOString()).toBe(NINE.toISOString());
-    expect(lastTeamWeekSlot(prefs, ZONE, new Date(NINE.getTime() - HOUR))?.toISOString()).toBe(
+  test("every day at its hour, over the last day, for everyone; one card per person and day", async () => {
+    const prefs = lodiPrefsOf({ daily: true, hour: 9 });
+    expect(prefs).toMatchObject({ dayOff: false, dayHour: 9, weekOff: true });
+    expect(lastTeamWeekSlot("day", prefs, ZONE, new Date(NINE.getTime() + HOUR))?.toISOString()).toBe(
+      NINE.toISOString(),
+    );
+    expect(lastTeamWeekSlot("day", prefs, ZONE, new Date(NINE.getTime() - HOUR))?.toISOString()).toBe(
       new Date(NINE.getTime() - DAY).toISOString(),
     );
 
     f = await setup({ rightHand: true });
     await inZone(f);
     const bia = await addMember(f.db, f.org.id, "member", "bia");
-    await setTeamWeekPrefs(f.db, f.org.id, f.owner.id, { off: true });
-    expect(await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + HOUR))).toBe(0);
-    await setTeamWeekPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
+    await setLodiPrefs(f.db, f.org.id, f.owner.id, { off: true });
+    // On for anyone who never chose.
     expect(await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + HOUR))).toBe(1);
     await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + 2 * HOUR));
     expect(await jobs(f)).toHaveLength(1);
     expect(await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + DAY + HOUR))).toBe(1);
-    expect(await jobs(f)).toHaveLength(2);
+    expect((await jobs(f)).map((j) => j.payload)).toEqual([
+      { userId: bia.id, slot: NINE.toISOString(), period: "day" },
+      { userId: bia.id, slot: new Date(NINE.getTime() + DAY).toISOString(), period: "day" },
+    ]);
+    await setLodiPrefs(f.db, f.org.id, bia.id, { dayOff: true });
+    expect(await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + 2 * DAY + HOUR))).toBe(0);
   });
 
   test("a member's card counts only work where they read and no money; a quiet day posts nothing", async () => {
@@ -457,7 +475,7 @@ describe("Resumo do dia", () => {
     await inZone(f);
     const bia = await addMember(f.db, f.org.id, "member", "bia");
     const slot = NINE.toISOString();
-    await setTeamWeekPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
+    await setLodiPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
     expect(await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: bia.id, slot })).toBeNull();
 
     await run(f, f.agent.id, new Date(NINE.getTime() - 2 * HOUR), "done");
@@ -491,7 +509,7 @@ describe("Resumo do dia", () => {
     // Once a day.
     expect(await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: bia.id, slot })).toBeNull();
     // Turned off: nothing.
-    await setTeamWeekPrefs(f.db, f.org.id, bia.id, { daily: false });
+    await setLodiPrefs(f.db, f.org.id, bia.id, { daily: false });
     expect(
       await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, {
         userId: bia.id,
@@ -504,7 +522,7 @@ describe("Resumo do dia", () => {
     f = await setup({ rightHand: true });
     await inZone(f);
     const bia = await addMember(f.db, f.org.id, "member", "bia");
-    await setTeamWeekPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
+    await setLodiPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
     await run(f, f.agent.id, new Date(NINE.getTime() - 2 * HOUR), "done");
     await budgetStop(f, new Date(NINE.getTime() - HOUR));
     const id = await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, {
@@ -517,7 +535,7 @@ describe("Resumo do dia", () => {
     expect(await f.db.select().from(schema.contextProposals)).toEqual([]);
   });
 
-  test("asked of Lodi: set_team_week turns it on for the person behind the run", async () => {
+  test("asked of Lodi: set_team_week moves it for the person behind the run", async () => {
     f = await setup({ rightHand: true });
     const bia = await addMember(f.db, f.org.id, "member", "bia");
     const lodi = await lodiOf(f);
@@ -537,25 +555,27 @@ describe("Resumo do dia", () => {
         threadRootId: r?.threadRootId ?? trigger.id,
         triggerMessageId: trigger.id,
       },
-      { toolUseId: "tu_1", name: SET_TEAM_WEEK_TOOL, input: { daily: true, hour: 9 } },
+      { toolUseId: "tu_1", name: SET_TEAM_WEEK_TOOL, input: { card: "day", hour: 8 } },
     );
     if (res.type !== "result") throw new Error(res.type);
-    expect((res.output as { content: string }).content).toContain("Resumo do dia");
-    expect(await getTeamWeekPrefs(f.db, f.org.id, bia.id)).toMatchObject({ off: false, daily: true, hour: 9 });
+    expect((res.output as { content: string }).content).toContain("Daily summary: every day at 8:00");
+    expect(await getLodiPrefs(f.db, f.org.id, bia.id)).toMatchObject({
+      dayOff: false,
+      dayHour: 8,
+      daily: true,
+      hour: 8,
+    });
   });
 });
 
-test("Lodi's settings name what it posts unasked: Team week, on by default, in every language", () => {
-  expect(TEAM_WEEK_DEFAULTS.off).toBe(false);
+test("what Lodi posts unasked is on by default and named on its page in every language", () => {
+  expect(LODI_PREFS_DEFAULTS).toMatchObject({ weekOff: false, dayOff: false });
   for (const [code, strings] of Object.entries(STRINGS)) {
-    const words = strings as {
-      rightHand?: { settings?: Record<string, string> };
-      teamWeek?: { settings?: { label?: string } };
-    };
-    const label = words.teamWeek?.settings?.label ?? en.teamWeek.settings.label;
-    expect(label).not.toBe("");
-    const lines = Object.entries(words.rightHand?.settings ?? {}).filter(([k]) => /^lock(_female)?$/.test(k));
-    for (const [key, line] of lines)
-      expect({ code, key, names: line.includes(label) }).toEqual({ code, key, names: true });
+    const words = strings as { teamWeek?: { settings?: { label?: string; dayLabel?: string } } };
+    const labels = [
+      words.teamWeek?.settings?.label ?? en.teamWeek.settings.label,
+      words.teamWeek?.settings?.dayLabel ?? en.teamWeek.settings.dayLabel,
+    ];
+    expect({ code, named: labels.every(Boolean) }).toEqual({ code, named: true });
   }
 });

@@ -12,8 +12,6 @@ import {
   useActionCard,
   useAgentActions,
   useAgentProposal,
-  useApproval,
-  useApprovals,
   useAskProposal,
   useAuthConfig,
   useCardProposals,
@@ -29,7 +27,6 @@ import {
   useSetMemberRoles,
 } from "@agenteschat/client";
 import {
-  type ApprovalsCard,
   actionCardDetail,
   actionCardKey,
   actionCardWords,
@@ -67,7 +64,6 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { AgentProposalCardView } from "@/components/ActionCard";
 import { AgentAvatar, PersonAvatar } from "@/components/AgentAvatar";
-import { ApprovalAsk } from "@/components/ApprovalAsk";
 import { DeleteAgentsDialog } from "@/components/DeleteAgentDialog";
 import { useOrg } from "@/components/org-context";
 import { RemoveMemberDialog } from "@/components/RemoveMember";
@@ -526,39 +522,6 @@ function ChangeRequestProposal({ n }: { n: AppNotification }) {
 }
 
 /**
- * The right hand's approvals card (`offer_approvals`, ADR 0137 §4): each approval as the conversation shows it, with its
- * own buttons, holds and confirmations, decided as whoever clicks (audited via the right hand); decided, its one line.
- */
-export function ApprovalsCardView({ message, card }: { message: Message; card: ApprovalsCard }) {
-  const { t } = useTranslation();
-  return (
-    <CardVia messageId={message.id}>
-      {/* biome-ignore lint/a11y/useSemanticElements: a labelled group inside a message, not a fieldset */}
-      <div className="rh-cards" role="group" aria-label={t("rightHand.approvals.title")}>
-        {card.why && <p>{inlineWords(card.why)}</p>}
-        {card.approvalIds.map((id) => (
-          <CardApproval key={id} id={id} />
-        ))}
-      </div>
-    </CardVia>
-  );
-}
-
-export function CardApproval({ id }: { id: string }) {
-  const { org } = useOrg();
-  const dir = useDirectory(org.id);
-  const list = useApprovals(org.id);
-  const listed = list.data?.find((a) => a.id === id);
-  const one = useApproval(org.id, id, !listed && list.isSuccess);
-  const people = useMembers(org.id).data;
-  const members = new Map((people ?? []).map((m) => [m.userId, m]));
-  const approval = listed ?? one.data;
-  if (!approval) return null;
-  const agent = dir.anyAgent(approval.agentId);
-  return <ApprovalAsk approval={approval} agent={agent} members={members} />;
-}
-
-/**
  * The right hand's people card (`propose_member_changes`): a row per person and change ("Ganha Dono", "Perde Vendas",
  * "Remover do workspace"), each applied with the members screen's own call as whoever clicks, removal through its
  * confirmation. Who can't reads who may. Done from the members list.
@@ -756,7 +719,7 @@ export function WorkspaceActionCardView({
   const { t, i18n } = useTranslation();
   const { org, me } = useOrg();
   const dir = useDirectory(org.id);
-  const decide = useDecideActionCard(org.id, where);
+  const decide = useDecideActionCard(org.id, { ...where, action: card.params.action });
   const undo = useAgentActions(org.id, where.channelId).undo;
   const toast = useToast();
   const failed = (e: unknown) => toast.show(errorText(t, e), "error");

@@ -39,6 +39,7 @@ import { setMyReaction } from "../lib/reactions";
 import { recentConversations } from "../lib/recent";
 import { replyOf } from "../lib/reply";
 import { firstVisitOf, teamAnswered } from "../lib/right-hand";
+import type { LodiPrefsPatch } from "../lib/right-hand-prefs";
 import { usagePauseRefetchMs } from "../lib/routine-view";
 import { withRead } from "../lib/seen";
 import {
@@ -50,7 +51,7 @@ import {
 } from "../lib/sidebar-items";
 import { repinAgent, SIDEBAR_VIEW_DEFAULT, unpinAgents } from "../lib/sidebar-view";
 import { playSound } from "../lib/sounds";
-import type { TeamWeekAct, TeamWeekPrefs } from "../lib/team-week";
+import type { TeamWeekAct } from "../lib/team-week";
 import { threadStartOf } from "../lib/threads";
 import { upsertMessage, withLocalCopies } from "../lib/timeline";
 import { voiceOf } from "../lib/voice";
@@ -190,6 +191,7 @@ import type {
   WorkspaceActionCardView,
   WorkView,
 } from "./types";
+import { WORKSPACE_ACTION_IDS } from "./types";
 
 /**
  * React Query hooks over the `ApiClient`. Reads are cached per organization;
@@ -754,12 +756,18 @@ export function useActionCard(orgId: string, messageId: string | null) {
  * Aplicar, Descartar or Pedir a quem pode on the right hand's card of a workspace change: the card comes back as it is
  * now, and what the change touches (roles, people, channels) is read again.
  */
-export function useDecideActionCard(orgId: string, where: { channelId: string; messageId: string }) {
+export function useDecideActionCard(
+  orgId: string,
+  /** `action`: the card's catalog action. Sent back as `knows` when this build words it, so the server can refuse to
+   * apply a change this build would show without saying what it is. */
+  where: { channelId: string; messageId: string; action?: string },
+) {
   const api = useApi();
   const qc = useQueryClient();
+  const knows = (WORKSPACE_ACTION_IDS as readonly string[]).includes(where.action ?? "") ? where.action : undefined;
   return useMutation({
     mutationFn: (decision: "apply" | "dismiss" | "ask") =>
-      part(api, "actionCards").decide(orgId, where.messageId, decision),
+      part(api, "actionCards").decide(orgId, where.messageId, decision, knows),
     onSuccess: ({ card }) => {
       cacheActionCard(qc, orgId, where, card);
       for (const key of [keys.roles(orgId), keys.members(orgId), keys.channels(orgId)])
@@ -2983,7 +2991,7 @@ export const useRefuseMoreUsage = (orgId: string) => {
   return usePeopleUsageMutation(orgId, (userId: string) => api.orgs.refuseMoreUsage(orgId, userId));
 };
 
-/** When Lodi's weekly card comes for me (ADR 0137 §9), or that it is off. */
+/** What Lodi does for me by itself: when its daily and weekly cards come, and its other switches (ADR 0137 §9). */
 export const useTeamWeekPrefs = (orgId: string, enabled = true) => {
   const api = useApi();
   return useQuery({ queryKey: keys.teamWeek(orgId), queryFn: () => api.orgs.teamWeek(orgId), enabled });
@@ -2993,7 +3001,7 @@ export const useSetTeamWeekPrefs = (orgId: string) => {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (patch: Partial<Omit<TeamWeekPrefs, "timezone">>) => api.orgs.setTeamWeek(orgId, patch),
+    mutationFn: (patch: LodiPrefsPatch) => api.orgs.setTeamWeek(orgId, patch),
     onSuccess: (prefs) => qc.setQueryData(keys.teamWeek(orgId), prefs),
   });
 };

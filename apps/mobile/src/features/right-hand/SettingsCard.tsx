@@ -358,7 +358,7 @@ function WorkspaceActionView({
   const dir = useDirectory();
   const failed = useFailed();
   const when = useWhen();
-  const decide = useDecideActionCard(orgId, where);
+  const decide = useDecideActionCard(orgId, { ...where, action: card.params.action });
   const undo = useAgentActions(orgId, where.channelId).undo;
   const say = t as unknown as (key: string, values: Record<string, string>) => string;
   const sentence = say(actionCardKey(card), actionCardWords(card, t));

@@ -1,23 +1,33 @@
 import type { PubSub } from "@agenteschat/adapters";
-import { and, type Database, desc, type Executor, eq, gte, isNull, rowsOf, schema, sql } from "@agenteschat/db";
+import {
+  and,
+  type Database,
+  desc,
+  type Executor,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  rowsOf,
+  schema,
+  sql,
+} from "@agenteschat/db";
 import { listApprovals } from "./approvals";
-import { canTalkTo, speakerFor } from "./audience";
 import { editContextItem, howToSql } from "./context/items";
 import { LEARN_DEFAULTS } from "./context/learn";
 import { NO_CHANNEL_REASON, OVER_BUDGET_REASON, proposeSettings } from "./context/proposals";
-import { openPersonAgentDm } from "./dms";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
-import { publishMessageCreated } from "./events";
 import { cutText } from "./format";
 import { commentIssue } from "./issues";
-import { getMessage, insertMessage, messageView, postPersonMessage } from "./messages";
+import { getMessage, postPersonMessage } from "./messages";
 import { enqueue } from "./outbox";
 import { maySql } from "./permissions";
-import { pushLocale, pushStrings } from "./push-messages";
-import { isRightHand } from "./right-hand";
+import { pushStrings } from "./push-messages";
+import { knownZonesSql, type LodiPrefs, lodiPrefsOf, lodiPrefsSql, readLodiPrefs, zoneSql } from "./right-hand-prefs";
+import { lodiFor, postFromLodi, setCardOnMessage } from "./right-hand-proactive";
 import { createRoutine, type RoutineDeps } from "./routines";
 import { localDate, nextOccurrence, type ScheduleRule } from "./rrule";
-import { closedRefusal, openOrg, orgStanding } from "./standing";
+import { openOrg } from "./standing";
 import { taskSeenSql } from "./task-access";
 
 /**
@@ -25,9 +35,11 @@ import { taskSeenSql } from "./task-access";
  * already stores (runs, approvals, budgets, channels, unanswered questions, requests repeated by hand, stalled steps),
  * with no model call. Each row is a fix applied as whoever clicks, through the paths the other cards use: a settings
  * proposal (budget, a channel), the approvals list, a routine, a message to Lodi or to a task's conversation.
+ * "Resumo do dia" is the same card over a day, for everyone. When each comes is the person's own choice
+ * (`right-hand-prefs.ts`).
  */
 
-const { agents, contextItems, contextProposals, organizationMembers, organizationSettings } = schema;
+const { agents, contextItems, contextProposals, organizationSettings, outbox } = schema;
 
 export const TEAM_WEEK_JOB = "team_week.post";
 export const TEAM_WEEK_CARD = "team_week";
@@ -48,58 +60,68 @@ const UNANSWERED_MIN = 3;
 const MAX_ROWS = 6;
 const NANO = 1_000_000_000;
 
-export interface TeamWeekPrefs {
-  off: boolean;
-  /** 0 = Sunday … 6 = Saturday. */
-  day: number;
-  /** 0–23, in the workspace's time zone. */
-  hour: number;
-  /**
-   * "Resumo do dia": the same card every day at `hour`, over the last day, in place of the week's. Anyone may turn it
-   * on (the week's is for admins); off by default.
-   */
-  daily: boolean;
-}
-
-export const TEAM_WEEK_DEFAULTS: TeamWeekPrefs = { off: false, day: 5, hour: 17, daily: false };
+/** "Resumo do dia" or "Semana da equipe". */
+export type TeamWeekPeriod = "day" | "week";
 
 const WEEKDAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"] as const;
 
-const whole = (v: unknown, min: number, max: number) =>
-  typeof v === "number" && Number.isInteger(v) && v >= min && v <= max ? v : null;
+/** What a card looks back on. */
+export const teamWeekSpan = (period: TeamWeekPeriod) => (period === "day" ? DAY_MS : WEEK_MS);
 
-/** A person's stored choice, whatever it holds, with the defaults for what it lacks. */
-export function teamWeekPrefsOf(raw: unknown): TeamWeekPrefs {
-  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  return {
-    off: r.off === true,
-    day: whole(r.day, 0, 6) ?? TEAM_WEEK_DEFAULTS.day,
-    hour: whole(r.hour, 0, 23) ?? TEAM_WEEK_DEFAULTS.hour,
-    daily: r.daily === true,
-  };
-}
-
-/** What the card looks back on: a day for "Resumo do dia", else a week. */
-export const teamWeekSpan = (prefs: Pick<TeamWeekPrefs, "daily">) => (prefs.daily ? DAY_MS : WEEK_MS);
-
-/** The latest slot at or before `now` within one span (a day or a week), in the workspace's time zone. */
-export function lastTeamWeekSlot(prefs: TeamWeekPrefs, timezone: string, now: Date): Date | null {
-  const times = [`${String(prefs.hour).padStart(2, "0")}:00`];
-  const rule: ScheduleRule = prefs.daily
-    ? { freq: "daily", times, timezone }
-    : { freq: "weekly", byWeekday: [WEEKDAYS[prefs.day] as string], times, timezone };
-  const at = nextOccurrence(rule, new Date(now.getTime() - teamWeekSpan(prefs)));
+/**
+ * The latest slot of that card at or before `now`, within one span. `timezone` is the one its hour is in: the
+ * person's own for the day's, the workspace's for the week's.
+ */
+export function lastTeamWeekSlot(
+  period: TeamWeekPeriod,
+  prefs: Pick<LodiPrefs, "day" | "weekHour" | "dayHour">,
+  timezone: string,
+  now: Date,
+): Date | null {
+  const times = [`${String(period === "day" ? prefs.dayHour : prefs.weekHour).padStart(2, "0")}:00`];
+  const rule: ScheduleRule =
+    period === "day"
+      ? { freq: "daily", times, timezone }
+      : { freq: "weekly", byWeekday: [WEEKDAYS[prefs.day] as string], times, timezone };
+  const at = nextOccurrence(rule, new Date(now.getTime() - teamWeekSpan(period)));
   return at && at.getTime() <= now.getTime() ? at : null;
 }
 
 const localHour = (at: Date, timezone: string) =>
   Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", hourCycle: "h23" }).format(at));
 
+/** 0 = Sunday … 6 = Saturday, where `at` falls in that time zone. */
+const localWeekday = (at: Date, timezone: string) => new Date(`${localDate(at, timezone)}T00:00:00Z`).getUTCDay();
+
 /** The Monday of the local week `at` falls in: one card per person per week, whatever day they move it to. */
 export function weekKey(at: Date, timezone: string) {
   const day = new Date(`${localDate(at, timezone)}T00:00:00Z`);
   day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7));
   return day.toISOString().slice(0, 10);
+}
+
+/** One job per person and day, and one per person and week: the key a second enqueue of the same card runs into. */
+export const teamWeekJobKey = (orgId: string, userId: string, period: TeamWeekPeriod, slot: Date, timezone: string) =>
+  `${TEAM_WEEK_JOB}:${orgId}:${userId}:${period === "day" ? `day:${localDate(slot, timezone)}` : weekKey(slot, timezone)}`;
+
+/**
+ * The cards of one person whose slot just passed. The week's is an administrator's. The day's is anyone's, in their
+ * own time zone, and is left out on the day the week's card comes: that one says the day too.
+ */
+export function dueTeamWeeks(
+  prefs: LodiPrefs,
+  who: { admin: boolean; timezone: string; dayTimezone: string },
+  now: Date,
+): { period: TeamWeekPeriod; slot: Date; timezone: string }[] {
+  const fresh = (slot: Date | null): slot is Date => !!slot && now.getTime() - slot.getTime() <= POST_WINDOW_MS;
+  const weekly = who.admin && !prefs.weekOff;
+  const due: ReturnType<typeof dueTeamWeeks> = [];
+  const week = weekly ? lastTeamWeekSlot("week", prefs, who.timezone, now) : null;
+  if (fresh(week)) due.push({ period: "week", slot: week, timezone: who.timezone });
+  const day = prefs.dayOff ? null : lastTeamWeekSlot("day", prefs, who.dayTimezone, now);
+  if (fresh(day) && !(weekly && localWeekday(day, who.timezone) === prefs.day))
+    due.push({ period: "day", slot: day, timezone: who.dayTimezone });
+  return due;
 }
 
 // --- The card ------------------------------------------------------------------------------------------------
@@ -611,38 +633,75 @@ async function provenHowTos(db: Database, w: Window): Promise<TeamWeekRow[]> {
 // --- When it goes out ------------------------------------------------------------------------------------------
 
 /**
- * Queues the card of every admin whose slot just passed (dedupe: one per person and week), in workspaces with a team
- * and Lodi, open. Returns how many slots were due.
+ * Queues the cards whose slot just passed, in open workspaces with a team and Lodi: the day's for everyone who has it
+ * on, the week's for administrators (dedupe: one per person and day, one per person and week). Returns how many it
+ * queued.
+ *
+ * Every member of every workspace has the day's card on unless they stopped it, so the statement itself keeps only
+ * who is within the hours after their slot, and asks who administers only on the day a week's card may be due. A card
+ * already queued is skipped before any insert.
  */
 export async function enqueueTeamWeeks(db: Database, now = new Date()) {
-  const due = rowsOf<{ org_id: string; user_id: string; team_week: unknown; tz: string | null }>(
-    await db.execute(sql`select m.org_id, m.user_id, m.team_week, s.timezone as tz
-      from organization_members m
-      join organizations on organizations.id = m.org_id and ${openOrg}
-      left join organization_settings s on s.org_id = m.org_id
-      where coalesce(m.team_week->>'off', 'false') <> 'true'
-        and exists (select 1 from agents a where a.org_id = m.org_id and a.builtin is null
-          and a.archived_at is null and a.deleted_at is null)
-        and exists (select 1 from agents a where a.org_id = m.org_id and a.builtin = 'right_hand')
-        and (coalesce(m.team_week->>'daily', 'false') = 'true'
-          or ${maySql(sql`m.org_id`, sql`m.user_id`, "administrator")})`),
+  const at = sql`${now.toISOString()}::timestamptz`;
+  const window = POST_WINDOW_MS / HOUR_MS;
+  const tz = sql`z.tz`;
+  const dayTz = sql`z.day_tz`;
+  const hoursSince = (hour: unknown, zone: unknown) =>
+    sql`((extract(hour from ${at} at time zone ${zone})::int - ${hour} + 24) % 24)`;
+  const weekday = (moment: unknown) => sql`extract(dow from ${moment} at time zone ${tz})::int`;
+  const due = rowsOf<{
+    org_id: string;
+    user_id: string;
+    team_week: unknown;
+    tz: string;
+    day_tz: string;
+    admin: boolean;
+  }>(
+    await db.execute(sql`with ${knownZonesSql} select * from (
+        select m.org_id, m.user_id, m.team_week, ${tz} as tz, ${dayTz} as day_tz,
+          not ${lodiPrefsSql.dayOff} and ${hoursSince(lodiPrefsSql.dayHour, dayTz)} <= ${window} as day_near,
+          ${hoursSince(lodiPrefsSql.weekHour, tz)} <= ${window} as week_near,
+          case when not ${lodiPrefsSql.weekOff}
+              and ${lodiPrefsSql.day} in (${weekday(at)}, ${weekday(sql`(${at} - make_interval(hours => ${window}))`)})
+            then ${maySql(sql`m.org_id`, sql`m.user_id`, "administrator")} else false end as admin
+        from organization_members m
+        join organizations on organizations.id = m.org_id and ${openOrg}
+        left join organization_settings s on s.org_id = m.org_id
+        cross join lateral (select ${zoneSql(sql`s.timezone`, sql`'UTC'`)} as tz,
+          ${zoneSql(sql`m.timezone`, zoneSql(sql`s.timezone`, sql`'UTC'`))} as day_tz) z
+        where exists (select 1 from agents a where a.org_id = m.org_id and a.builtin is null
+            and a.archived_at is null and a.deleted_at is null)
+          and exists (select 1 from agents a where a.org_id = m.org_id and a.builtin = 'right_hand')
+      ) near where day_near or (admin and week_near)`),
   );
-  let n = 0;
-  for (const d of due) {
-    const timezone = d.tz || "UTC";
-    const prefs = teamWeekPrefsOf(d.team_week);
-    const slot = lastTeamWeekSlot(prefs, timezone, now);
-    if (!slot || now.getTime() - slot.getTime() > POST_WINDOW_MS) continue;
-    n++;
-    await enqueue(db, {
-      orgId: d.org_id,
-      kind: TEAM_WEEK_JOB,
-      payload: { userId: d.user_id, slot: slot.toISOString() },
-      dedupeKey: `${TEAM_WEEK_JOB}:${d.org_id}:${d.user_id}:${prefs.daily ? `day:${localDate(slot, timezone)}` : weekKey(slot, timezone)}`,
-      maxAttempts: 4,
-    });
-  }
-  return n;
+  const jobs = due.flatMap((d) =>
+    dueTeamWeeks(lodiPrefsOf(d.team_week), { admin: d.admin, timezone: d.tz, dayTimezone: d.day_tz }, now).map(
+      ({ period, slot, timezone }) => ({
+        orgId: d.org_id,
+        kind: TEAM_WEEK_JOB,
+        payload: { userId: d.user_id, slot: slot.toISOString(), period },
+        dedupeKey: teamWeekJobKey(d.org_id, d.user_id, period, slot, timezone),
+        maxAttempts: 4,
+      }),
+    ),
+  );
+  if (jobs.length === 0) return 0;
+  const queued = new Set(
+    (
+      await db
+        .select({ key: outbox.dedupeKey })
+        .from(outbox)
+        .where(
+          inArray(
+            outbox.dedupeKey,
+            jobs.map((j) => j.dedupeKey),
+          ),
+        )
+    ).map((r) => r.key),
+  );
+  const fresh = jobs.filter((j) => !queued.has(j.dedupeKey));
+  for (const job of fresh) await enqueue(db, job);
+  return fresh.length;
 }
 
 /**
@@ -652,36 +711,23 @@ export async function enqueueTeamWeeks(db: Database, now = new Date()) {
 export async function postTeamWeek(
   deps: { db: Database; pubsub?: PubSub },
   orgId: string,
-  payload: { userId?: unknown; slot?: unknown },
+  payload: { userId?: unknown; slot?: unknown; period?: unknown },
 ) {
   const { db } = deps;
   const userId = typeof payload.userId === "string" ? payload.userId : null;
   const slot = typeof payload.slot === "string" ? new Date(payload.slot) : null;
   if (!userId || !slot || Number.isNaN(slot.getTime())) return null;
-  if (closedRefusal(await orgStanding(db, orgId))) return null;
-  const [member] = rowsOf<{
-    team_week: unknown;
-    admin: boolean;
-    tz: string | null;
-    locale: string | null;
-    mode: string | null;
-  }>(
-    await db.execute(sql`select m.team_week, ${maySql(sql`m.org_id`, sql`m.user_id`, "administrator")} as admin,
-        s.timezone as tz, u.locale, s.mode
-      from organization_members m left join organization_settings s on s.org_id = m.org_id
-      join users u on u.id = m.user_id
-      where m.org_id = ${orgId} and m.user_id = ${userId}`),
-  );
-  const prefs = teamWeekPrefsOf(member?.team_week);
-  if (!member || prefs.off || (!member.admin && !prefs.daily)) return null;
-  const [lodi] = await db
-    .select()
-    .from(agents)
-    .where(and(eq(agents.orgId, orgId), eq(agents.builtin, "right_hand"), isNull(agents.archivedAt)));
-  if (!lodi || !isRightHand(lodi) || !canTalkTo(lodi, userId, await speakerFor(db, orgId, userId))) return null;
-  const timezone = member.tz || "UTC";
-  const start = new Date(slot.getTime() - teamWeekSpan(prefs));
-  const period = prefs.daily ? "day" : "week";
+  const member = await readLodiPrefs(db, orgId, userId).catch(() => null);
+  if (!member) return null;
+  const { prefs, admin } = member;
+  // A job queued before cards named their period carries none: the one card that person then got.
+  const period: TeamWeekPeriod =
+    payload.period === "day" || payload.period === "week" ? payload.period : admin && !prefs.weekOff ? "week" : "day";
+  if (period === "week" ? !admin || prefs.weekOff : prefs.dayOff) return null;
+  const lodi = await lodiFor(db, orgId, userId);
+  if (!lodi) return null;
+  const timezone = period === "day" ? member.dayTimezone : member.timezone;
+  const start = new Date(slot.getTime() - teamWeekSpan(period));
   const posted = async (tx: Executor) =>
     rowsOf<{ id: string }>(
       await tx.execute(sql`select id from messages where org_id = ${orgId} and author_agent_id = ${lodi.id}
@@ -691,70 +737,27 @@ export async function postTeamWeek(
     ).length > 0;
   // A retry after the card went out builds nothing: building again would stale the proposals that card shows.
   if (await posted(db)) return null;
-  const built = await buildTeamWeek(db, {
-    orgId,
-    userId,
-    rightHandId: lodi.id,
-    start,
-    end: slot,
-    timezone,
-    admin: member.admin,
-  });
+  const built = await buildTeamWeek(db, { orgId, userId, rightHandId: lodi.id, start, end: slot, timezone, admin });
   if (!built) return null;
   const card: TeamWeekCard = { ...built, period, done: {}, dismissedAt: null };
+  const [settings] = await db
+    .select({ mode: organizationSettings.mode })
+    .from(organizationSettings)
+    .where(eq(organizationSettings.orgId, orgId));
   // A personal workspace's week is the person's own with their agents (ADR 0159), not a team's.
-  const week = member.mode === "personal" ? "teamWeekReadyPersonal" : "teamWeekReady";
-  const message = await db.transaction(async (tx) => {
-    const dm = await openPersonAgentDm(tx, orgId, userId, lodi.id);
-    if (await posted(tx)) return null;
-    const m = await insertMessage(tx, {
-      orgId,
-      channelId: dm.id,
-      author: { type: "agent", agentId: lodi.id, runId: null, hop: 1, stretchId: null },
-      // Only this person reads it: the push and the conversation list say it in their language.
-      body: pushStrings(pushLocale(member.locale))[prefs.daily ? "teamDayReady" : week],
-      meta: {
-        bodyCode: TEAM_WEEK_CARD,
-        bodyParams: { from: card.from, to: card.to, ...(prefs.daily ? { period: "day" } : {}) },
-        actionCard: card,
-      },
-    });
-    await enqueue(tx, {
-      orgId,
-      kind: "notifications.message",
-      payload: { messageId: m.id },
-      dedupeKey: `notifications.message:${m.id}`,
-      maxAttempts: 4,
-    });
-    return m;
+  const week = settings?.mode === "personal" ? "teamWeekReadyPersonal" : "teamWeekReady";
+  return postFromLodi(deps, orgId, userId, {
+    bodyCode: TEAM_WEEK_CARD,
+    bodyParams: { from: card.from, to: card.to, ...(period === "day" ? { period } : {}) },
+    // Only this person reads it: the push and the conversation list say it in their language.
+    body: (locale) => pushStrings(locale)[period === "day" ? "teamDayReady" : week],
+    meta: { actionCard: card },
+    push: true,
+    posted,
   });
-  if (message && deps.pubsub) await publishMessageCreated(deps.pubsub, messageView(message));
-  return message?.id ?? null;
 }
 
 // --- What a person does with it --------------------------------------------------------------------------------
-
-/** This person's choice, with the workspace's time zone it is read in. */
-export async function getTeamWeekPrefs(db: Executor, orgId: string, userId: string) {
-  const [row] = await db
-    .select({ teamWeek: organizationMembers.teamWeek, tz: organizationSettings.timezone })
-    .from(organizationMembers)
-    .leftJoin(organizationSettings, eq(organizationSettings.orgId, organizationMembers.orgId))
-    .where(and(eq(organizationMembers.orgId, orgId), eq(organizationMembers.userId, userId)));
-  if (!row) throw new NotFoundError("Not a member of this workspace");
-  return { ...teamWeekPrefsOf(row.teamWeek), timezone: row.tz ?? "UTC" };
-}
-
-/** Stops the card, starts it again or moves its day and hour, for this person only. */
-export async function setTeamWeekPrefs(db: Executor, orgId: string, userId: string, patch: Partial<TeamWeekPrefs>) {
-  const now = await getTeamWeekPrefs(db, orgId, userId);
-  const next = teamWeekPrefsOf({ ...now, ...patch });
-  await db
-    .update(organizationMembers)
-    .set({ teamWeek: { off: next.off, day: next.day, hour: next.hour, daily: next.daily } })
-    .where(and(eq(organizationMembers.orgId, orgId), eq(organizationMembers.userId, userId)));
-  return { ...next, timezone: now.timezone };
-}
 
 /**
  * A row applied from the card as `actorId` (only the person it is for: it lives in their DM), or "Agora não"
@@ -806,11 +809,6 @@ export async function actOnTeamWeek(
     } else throw new ValidationError("This row is applied on its own card", "team_week.own_path");
     next.done[row.id] = done;
   }
-  const [updated] = await db
-    .update(schema.messages)
-    .set({ meta: { ...message.meta, actionCard: next } })
-    .where(and(eq(schema.messages.orgId, orgId), eq(schema.messages.id, messageId)))
-    .returning();
-  if (updated) await publishMessageCreated(deps.pubsub, messageView(updated));
+  await setCardOnMessage(deps, orgId, messageId, next);
   return next;
 }

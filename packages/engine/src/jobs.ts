@@ -103,6 +103,7 @@ import { checkPushReceipts, deliverPush, pushTicketsOf } from "./push";
 import { reachOf, settleReach } from "./reach";
 import { routineCreatorOf } from "./requester";
 import { considerCard, RIGHT_HAND_DECIDE_JOB } from "./right-hand-approvals";
+import { lodiLaneHandlers } from "./right-hand-lanes";
 import {
   createLlmRouterStrategy,
   DEFAULT_ROUTER_POLICY,
@@ -1110,6 +1111,8 @@ export function createJobHandlers(deps: JobDeps): JobHandlers {
     [TEAM_WEEK_JOB]: async (job) => {
       await postTeamWeek({ db: deps.db, pubsub: deps.pubsub }, orgOf(job), job.payload);
     },
+    // What else the right hand does by itself: each lane's own jobs (`right-hand-lane.ts`).
+    ...lodiLaneHandlers(deps),
     [PERSON_LIMIT_JOB]: async (job) => {
       await notifyPersonLimit({ db: deps.db, pubsub: deps.pubsub }, orgOf(job), {
         personId: String(job.payload.personId),

@@ -5,16 +5,16 @@ import i18next, { type TFunction } from "i18next";
 import type { Approval, Proposal } from "../src/api/types";
 import { actionCardOf } from "../src/lib/action-cards";
 import { serverBody } from "../src/lib/message-body";
+import { lodiPrefsOf, teamWeekOn, teamWeekWhen } from "../src/lib/right-hand-prefs";
 import {
   appliesInBulk,
   type TeamWeekCard,
   type TeamWeekNames,
-  teamWeekOn,
+  teamWeekCardOf,
   teamWeekRowMessage,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
-  teamWeekWhen,
   weekDay,
 } from "../src/lib/team-week";
 
@@ -111,8 +111,8 @@ test("its words in pt-BR, with the agent's gender", () => {
   expect(teamWeekRowMessage(t, card.rows[4] as never, names)).toBe(
     "@ada os passos #12, #13, #14 não precisam esperar o #11. Pode seguir com eles em paralelo.",
   );
-  expect(teamWeekWhen(t, "pt-BR", { day: 5, hour: 17 })).toBe("Toda sexta às 17:00");
-  expect(teamWeekWhen(t, "pt-BR", { day: 6, hour: 9 })).toBe("Todo sábado às 9:00");
+  expect(teamWeekWhen(t, "pt-BR", { day: 5, weekHour: 17, dayHour: 9 }, "week")).toBe("Toda sexta às 17:00");
+  expect(teamWeekWhen(t, "pt-BR", { day: 6, weekHour: 9, dayHour: 8 }, "week")).toBe("Todo sábado às 9:00");
   expect(weekDay("pt-BR", "2026-11-06")).toBe("6 de nov.");
   expect(serverBody(t, "Sua semana", { bodyCode: "team_week", bodyParams: card }, "pt-BR")).toBe(
     "Como foi a semana do time, de 30 de out. a 6 de nov.",
@@ -130,7 +130,10 @@ test("every language says every row, with no key left showing", () => {
       const { title, line, action } = teamWeekRowText(t, lng, r, names);
       for (const s of [title, line, action]) expect([lng, s.includes("teamWeek.")]).toEqual([lng, false]);
     }
-    expect([lng, teamWeekWhen(t, lng, { day: 1, hour: 9 }).includes("teamWeek.")]).toEqual([lng, false]);
+    expect([lng, teamWeekWhen(t, lng, { day: 1, weekHour: 9, dayHour: 9 }, "week").includes("teamWeek.")]).toEqual([
+      lng,
+      false,
+    ]);
   }
 });
 
@@ -139,18 +142,71 @@ test("Resumo do dia: its title, its hour, its line, and who gets it", () => {
   expect(teamWeekTitleKey({ period: "day" })).toBe("teamWeek.dayTitle");
   expect(teamWeekTitleKey({})).toBe("teamWeek.title");
   expect(t(teamWeekTitleKey({ period: "day" }))).toBe("Resumo do dia");
-  expect(teamWeekWhen(t, "pt-BR", { day: 5, hour: 9, daily: true })).toBe("Todo dia às 9:00");
+  expect(teamWeekWhen(t, "pt-BR", { day: 5, weekHour: 17, dayHour: 9 }, "day")).toBe("Todo dia às 9:00");
   expect(serverBody(t, "Seu resumo", { bodyCode: "team_week", bodyParams: { ...card, period: "day" } }, "pt-BR")).toBe(
     "Como foi o dia do time, até 6 de nov.",
   );
-  // An admin's weekly card comes unless off; anyone else's only once they asked for it daily.
-  expect(teamWeekOn({ off: false }, true)).toBe(true);
-  expect(teamWeekOn({ off: false }, false)).toBe(false);
-  expect(teamWeekOn({ off: false, daily: true }, false)).toBe(true);
-  expect(teamWeekOn({ off: true, daily: true }, true)).toBe(false);
+  // The weekly card is an administrator's, the daily one anyone's, each unless stopped.
+  const on = { weekOff: false, dayOff: false };
+  expect(teamWeekOn(on, "week", true)).toBe(true);
+  expect(teamWeekOn(on, "week", false)).toBe(false);
+  expect(teamWeekOn(on, "day", false)).toBe(true);
+  expect(teamWeekOn({ weekOff: true, dayOff: true }, "day", true)).toBe(false);
+  expect(teamWeekOn({ weekOff: true, dayOff: false }, "week", true)).toBe(false);
   for (const lng of LOCALE_CODES) {
     const tl = tOf(lng);
-    expect([lng, teamWeekWhen(tl, lng, { day: 1, hour: 9, daily: true }).includes("teamWeek.")]).toEqual([lng, false]);
+    expect([lng, teamWeekWhen(tl, lng, { day: 1, weekHour: 9, dayHour: 9 }, "day").includes("teamWeek.")]).toEqual([
+      lng,
+      false,
+    ]);
     expect([lng, tl("teamWeek.dayTitle").includes("teamWeek.")]).toEqual([lng, false]);
   }
+});
+
+test("what a person chose, from this server and from one before the two cards were told apart", () => {
+  expect(lodiPrefsOf({ weekOff: true, dayOff: false, dayHour: 8, weekHour: 10, day: 2, switches: ["digest"] })).toEqual(
+    {
+      weekOff: true,
+      day: 2,
+      weekHour: 10,
+      dayOff: false,
+      dayHour: 8,
+      digestOff: false,
+      remindOff: false,
+      timezone: "UTC",
+      dayTimezone: "UTC",
+      switches: ["digest"],
+    },
+  );
+  // An older server: its one card, and no switch of a feature it does not have.
+  expect(lodiPrefsOf({ off: false, day: 5, hour: 17, timezone: "America/Sao_Paulo" })).toMatchObject({
+    weekOff: false,
+    weekHour: 17,
+    dayOff: true,
+    dayTimezone: "America/Sao_Paulo",
+    switches: [],
+  });
+  expect(lodiPrefsOf({ off: false, daily: true, day: 5, hour: 9 })).toMatchObject({
+    weekOff: true,
+    dayOff: false,
+    dayHour: 9,
+  });
+  expect(lodiPrefsOf({ off: true, daily: true, hour: 9 })).toMatchObject({ weekOff: true, dayOff: true });
+});
+
+test("rows a newer server adds travel in moreRows: known kinds join the card, unknown ones are left off", () => {
+  const meta = {
+    actionCard: {
+      ...card,
+      rows: [card.rows[0], { id: "later:1", kind: "something_later" }],
+      moreRows: [card.rows[1], { id: "later:2", kind: "something_later" }, null],
+    },
+  };
+  const parsed = teamWeekCardOf(meta);
+  expect(parsed?.rows).toEqual(card.rows.slice(0, 2));
+  expect(parsed).not.toHaveProperty("moreRows");
+  // Every row left is one this build words.
+  for (const r of parsed?.rows ?? []) expect(teamWeekRowText(tOf("en"), "en", r, names).title).not.toBe("");
+  // A card from before moreRows reads as it did.
+  expect(teamWeekCardOf({ actionCard: card })?.rows).toEqual(card.rows);
 });

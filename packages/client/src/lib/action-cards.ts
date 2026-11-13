@@ -173,6 +173,8 @@ export interface ApprovalsCard {
   forUserId: string | null;
   approvalIds: string[];
   why: string;
+  /** The right hand posted it by itself: the summary of what waits on this person. */
+  digest?: boolean;
 }
 
 /** One person's change on a people card (`propose_member_changes`). */
@@ -497,7 +499,9 @@ export function actionCardOf(meta: Record<string, unknown> | null | undefined): 
   }
   if (card.kind === "approvals") {
     const approvalIds = strings(p.approvalIds);
-    return approvalIds.length > 0 ? { kind: "approvals", forUserId, approvalIds, why } : null;
+    return approvalIds.length > 0
+      ? { kind: "approvals", forUserId, approvalIds, why, ...(p.digest === true ? { digest: true } : {}) }
+      : null;
   }
   if (card.kind === "member_changes") {
     const rows = (Array.isArray(p.rows) ? p.rows : []).flatMap((r): MemberChangeRow[] => {

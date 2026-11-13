@@ -57,23 +57,35 @@ export interface TeamWeekCard {
   dismissedAt: string | null;
 }
 
-export interface TeamWeekPrefs {
-  off: boolean;
-  /** 0 = Sunday. */
-  day: number;
-  hour: number;
-  /** "Resumo do dia": every day at `hour` (anyone may); absent from an older server. */
-  daily?: boolean;
-  timezone: string;
-}
-
 export type TeamWeekAct = { dismiss: true } | { rowId: string; text?: string };
 
+/** The row kinds this build words and applies. A newer server's other kinds are left off the card. */
+const ROW_KINDS: readonly TeamWeekRow["kind"][] = [
+  "approvals",
+  "howto",
+  "budget",
+  "channel",
+  "unanswered",
+  "routine",
+  "stalled",
+];
+
+const knownRows = (rows: unknown): TeamWeekRow[] =>
+  (Array.isArray(rows) ? rows : []).filter((r: { kind?: unknown } | null) =>
+    (ROW_KINDS as readonly unknown[]).includes(r?.kind),
+  );
+
+/**
+ * The card as this build draws it. Its rows are `rows` then `moreRows`: kinds added after the first builds travel in
+ * `moreRows`, which those builds never read, since a kind they do not know would break their card.
+ */
 export function teamWeekCardOf(meta: Record<string, unknown> | null | undefined): TeamWeekCard | null {
-  const c = meta?.actionCard as Partial<TeamWeekCard> | undefined;
+  const c = meta?.actionCard as (Partial<TeamWeekCard> & { moreRows?: unknown }) | undefined;
   if (c?.kind !== "team_week" || typeof c.forUserId !== "string" || !Array.isArray(c.rows) || !c.stats) return null;
+  const { moreRows, ...card } = c;
   return {
-    ...(c as TeamWeekCard),
+    ...(card as TeamWeekCard),
+    rows: [...knownRows(c.rows), ...knownRows(moreRows)],
     worked: Array.isArray(c.worked) ? c.worked : [],
     proposalIds: Array.isArray(c.proposalIds) ? c.proposalIds : [],
     done: c.done && typeof c.done === "object" ? c.done : {},
@@ -117,8 +129,6 @@ export function weekDay(locale: string, ymd: string) {
   return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "UTC" }).format(at);
 }
 
-const DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
-
 /** "17:00" / "5:00 PM": an hour of the day in the reader's language. */
 export const hourText = (locale: string, hour: number) =>
   new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(
@@ -132,19 +142,6 @@ export const dayText = (locale: string, day: number) =>
   );
 
 type Say = (key: string, options?: Record<string, unknown>) => string;
-
-/** "Toda sexta às 17:00" (or "Todo dia às 9:00"), in the reader's language. */
-export function teamWeekWhen(t: TFunction, locale: string, prefs: Pick<TeamWeekPrefs, "day" | "hour" | "daily">) {
-  const day = prefs.daily ? "day" : (DAYS[prefs.day] ?? "fri");
-  return (t as unknown as Say)(`teamWeek.every.${day}`, { time: hourText(locale, prefs.hour) });
-}
-
-/**
- * Whether this person's card comes at all: an administrator's weekly unless off; anyone else's only once they asked for
- * it daily ("Resumo do dia").
- */
-export const teamWeekOn = (prefs: Pick<TeamWeekPrefs, "off" | "daily">, admin: boolean) =>
-  !prefs.off && (admin || prefs.daily === true);
 
 /** The card's title key: "Resumo do dia" or "Semana da equipe". */
 export const teamWeekTitleKey = (card: Pick<TeamWeekCard, "period">) =>

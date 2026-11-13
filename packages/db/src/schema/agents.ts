@@ -391,6 +391,13 @@ export const organizationSettings = pgTable("organization_settings", {
    * what exists or who may do what.
    */
   mode: text().$type<"team" | "personal">().notNull().default("team"),
+  /**
+   * "Cuidar da equipe": the right hand watches for what stops the team (an ended sign-in, an app to reconnect) and
+   * tells the one person who can fix it. A workspace with no row here has it on.
+   */
+  teamWatch: boolean().notNull().default(true),
+  /** "Dar boas-vindas a quem entra": the right hand greets each person who joins, once. On without a row too. */
+  welcomePeople: boolean().notNull().default(true),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 

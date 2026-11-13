@@ -14,29 +14,27 @@ import { errorText } from "@agenteschat/client/lib/errors";
 import { clockAt, formatUsd, joinNames } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
 import { isRightHand } from "@agenteschat/client/lib/right-hand";
+import { type TeamWeekPeriod, teamWeekOn, teamWeekWhen } from "@agenteschat/client/lib/right-hand-prefs";
 import {
   appliesInBulk,
-  dayText,
-  hourText,
   type TeamWeekCard,
   type TeamWeekNames,
   type TeamWeekRow,
   teamWeekDoneText,
-  teamWeekOn,
   teamWeekRowMessage,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
-  teamWeekWhen,
 } from "@agenteschat/client/lib/team-week";
-import { Button, Icon, Popover, Select } from "@agenteschat/ui";
+import { Button, Icon, Popover } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useOrg } from "@/components/org-context";
 import { WaitMark } from "@/components/RequestCard";
-import { CardApproval } from "@/components/RightHandCards";
+import { CardApproval } from "@/components/RightHandApprovalsCard";
+import { TeamWeekSchedule } from "@/components/TeamWeekSchedule";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useToast } from "@/lib/toast";
 import "./team-week.css";
@@ -203,7 +201,7 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
             </Button>
           )}
           <span className="rq__end tw__when">
-            <TeamWeekWhen />
+            <TeamWeekWhen period={card.period ?? "week"} />
           </span>
         </div>
       </div>
@@ -337,8 +335,8 @@ function FixRow({
   );
 }
 
-/** "Toda sexta às 17:00 · Mudar": the day and hour of the reader's card, changed in place, or stopped. */
-export function TeamWeekWhen() {
+/** "Toda sexta às 17:00 · Mudar": when the card it sits on comes to its reader, changed in place, or stopped. */
+export function TeamWeekWhen({ period }: { period: TeamWeekPeriod }) {
   const { t, i18n } = useTranslation();
   const { org } = useOrg();
   const prefs = useTeamWeekPrefs(org.id).data;
@@ -349,9 +347,11 @@ export function TeamWeekWhen() {
   const save = (patch: Parameters<typeof set.mutate>[0]) =>
     set.mutate(patch, { onError: (e) => toast.show(errorText(t, e), "error") });
   const locale = i18n.language;
+  // A weekly card kept by someone who no longer administers: the daily one is what they get now.
+  const mine = admin ? period : "day";
   return (
     <>
-      <span>{teamWeekOn(prefs, admin) ? teamWeekWhen(t, locale, prefs) : t("teamWeek.off")}</span>
+      <span>{teamWeekOn(prefs, mine, admin) ? teamWeekWhen(t, locale, prefs, mine) : t("teamWeek.off")}</span>
       {" · "}
       <Popover
         label={t("teamWeek.schedule.title")}
@@ -364,67 +364,16 @@ export function TeamWeekWhen() {
         }
       >
         <div className="tw__schedule">
-          <TeamWeekSchedule prefs={prefs} admin={admin} locale={locale} onChange={save} />
+          <TeamWeekSchedule
+            period={mine}
+            prefs={prefs}
+            admin={admin}
+            locale={locale}
+            busy={set.isPending}
+            onChange={save}
+          />
         </div>
       </Popover>
     </>
   );
 }
-
-/** The day and hour selects and "Parar de receber" (the card's footer and Settings › Lodi). */
-export function TeamWeekSchedule({
-  prefs,
-  admin,
-  locale,
-  onChange,
-  plated = false,
-}: {
-  prefs: { off: boolean; day: number; hour: number; daily?: boolean };
-  /** An administrator picks a day of the week or every day; anyone else gets it every day or not at all. */
-  admin: boolean;
-  locale: string;
-  onChange: (patch: { off?: boolean; day?: number; hour?: number; daily?: boolean }) => void;
-  /**
-   * The button on a plate like the selects: where it can wrap under them (a settings row on a phone), a plate starts
-   * on their edge, while bare words would start a padding further in.
-   */
-  plated?: boolean;
-}) {
-  const { t } = useTranslation();
-  const on = teamWeekOn(prefs, admin);
-  const days = [
-    ...(admin ? [1, 2, 3, 4, 5, 6, 0].map((d) => ({ value: String(d), label: dayText(locale, d) })) : []),
-    { value: DAILY, label: t("teamWeek.schedule.daily") },
-  ];
-  const hours = Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: hourText(locale, h) }));
-  return (
-    <>
-      <Select
-        size="sm"
-        aria-label={t("teamWeek.schedule.day")}
-        value={prefs.daily || !admin ? DAILY : String(prefs.day)}
-        options={days}
-        disabled={!on || !admin}
-        onValueChange={(v) => onChange(v === DAILY ? { daily: true } : { daily: false, day: Number(v) })}
-      />
-      <Select
-        size="sm"
-        aria-label={t("teamWeek.schedule.hour")}
-        value={String(prefs.hour)}
-        options={hours}
-        disabled={!on}
-        onValueChange={(v) => onChange({ hour: Number(v) })}
-      />
-      <Button
-        size="sm"
-        {...(plated ? {} : { variant: "ghost" as const })}
-        onClick={() => onChange(admin ? { off: !prefs.off } : on ? { daily: false } : { daily: true, off: false })}
-      >
-        {t(on ? "teamWeek.schedule.stop" : "teamWeek.schedule.start")}
-      </Button>
-    </>
-  );
-}
-
-/** The day select's "every day" ("Resumo do dia"). */
-const DAILY = "daily";
