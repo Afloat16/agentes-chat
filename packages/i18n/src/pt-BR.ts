@@ -4657,6 +4657,21 @@ export const ptBR = {
     },
     /** Under `plan_model_dropped`: opens the agent's "Quem pensa". */
     planModelDropped: { choose: "Escolher outro modelo" },
+    /**
+     * What the right hand found wrong and the one way out (`team_watch`), by cause. `names`: what it is about, the
+     * first few by name and "+2" for the rest. Also the notice's stored text and its push.
+     */
+    teamWatch: {
+      /** The notice's headline, the right hand's name bold. The sentence under it says what and how to fix it. */
+      found: "<b>{{name}}</b> encontrou algo para resolver",
+      sign_in: "O login de IA acabou: {{names}}. Entre de novo em Configurações",
+      connector: "Precisa reconectar: {{names}}. Reconecte em Configurações",
+      mailbox: "A caixa de email precisa reconectar: {{names}}. Reconecte em Configurações",
+      database: "O banco de dados precisa reconectar: {{names}}. Reconecte em Configurações",
+      budget_out: "O orçamento do mês acabou: {{names}}. Aumente o orçamento na página do agente",
+      budget_low: "O orçamento do mês está quase no fim: {{names}}. Aumente na página do agente",
+      computer: "Computador offline com agentes esperando: {{names}}. Ligue o computador ou confira a conexão",
+    },
     docTitleUnread: "({{count}}) Notificações",
     summaryWaiting_one: "{{count}} coisa esperando você",
     summaryWaiting_other: "{{count}} coisas esperando você",

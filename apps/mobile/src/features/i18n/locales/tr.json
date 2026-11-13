@@ -980,6 +980,8 @@
       "plan_lent_female_other": "{{names}}, {{plan}} planını {{agent}} ajanına bağladı",
       "plan_model_dropped_one": "{{model}}, {{plan}} listesinden çıktı. {{names}} şimdilik {{runs}} kullanıyor",
       "plan_model_dropped_other": "{{model}}, {{plan}} listesinden çıktı. {{names}} şimdilik {{runs}} kullanıyor",
+      "team_watch_one": "{{names}} çözülmesi gereken bir şey buldu",
+      "team_watch_other": "{{names}} çözülmesi gereken bir şey buldu",
       "computer_disk_full_one": "Bir bilgisayarın diski neredeyse dolu",
       "computer_disk_full_other": "Bir bilgisayarın diski neredeyse dolu",
       "computer_no_chrome_one": "Bir bilgisayarın Google Chrome'a ihtiyacı var. google.com/chrome adresinden indirin",

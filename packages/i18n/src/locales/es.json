@@ -4588,6 +4588,16 @@
     "planModelDropped": {
       "choose": "Elegir otro modelo"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> encontró algo que resolver",
+      "sign_in": "El inicio de sesión de IA terminó: {{names}}. Vuelve a iniciar sesión en Configuración",
+      "connector": "Hay que reconectar: {{names}}. Reconéctalo en Configuración",
+      "mailbox": "Hay que reconectar el buzón: {{names}}. Reconéctalo en Configuración",
+      "database": "Hay que reconectar la base de datos: {{names}}. Reconéctala en Configuración",
+      "budget_out": "Sin presupuesto este mes: {{names}}. Sube el presupuesto en la página del agente",
+      "budget_low": "El presupuesto del mes está por acabarse: {{names}}. Súbelo en la página del agente",
+      "computer": "Computadora sin conexión con agentes esperando: {{names}}. Enciéndela o revisa su conexión"
+    },
     "docTitleUnread": "({{count}}) Notificaciones",
     "summaryWaiting_one": "{{count}} cosa te espera",
     "summaryWaiting_many": "{{count}} cosas te esperan",

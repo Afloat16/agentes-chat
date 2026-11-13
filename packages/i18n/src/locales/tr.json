@@ -4454,6 +4454,16 @@
     "planModelDropped": {
       "choose": "Başka bir model seç"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> çözülmesi gereken bir şey buldu",
+      "sign_in": "Yapay zekâ oturumu sona erdi: {{names}}. Ayarlar'dan yeniden oturum aç",
+      "connector": "Yeniden bağlanması gerekiyor: {{names}}. Ayarlar'dan yeniden bağla",
+      "mailbox": "Posta kutusunun yeniden bağlanması gerekiyor: {{names}}. Ayarlar'dan yeniden bağla",
+      "database": "Veritabanının yeniden bağlanması gerekiyor: {{names}}. Ayarlar'dan yeniden bağla",
+      "budget_out": "Bu ayın bütçesi bitti: {{names}}. Ajanın sayfasından bütçeyi artır",
+      "budget_low": "Bu ayın bütçesi bitmek üzere: {{names}}. Ajanın sayfasından artır",
+      "computer": "Bilgisayar çevrimdışı ve ajanlar bekliyor: {{names}}. Bilgisayarı aç veya bağlantısını kontrol et"
+    },
     "docTitleUnread": "({{count}}) Bildirimler",
     "summaryWaiting_one": "Sizi bekleyen {{count}} şey var",
     "summaryWaiting_other": "Sizi bekleyen {{count}} şey var",

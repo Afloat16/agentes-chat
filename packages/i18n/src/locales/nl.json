@@ -4472,6 +4472,16 @@
     "planModelDropped": {
       "choose": "Ander model kiezen"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> heeft iets gevonden om op te lossen",
+      "sign_in": "AI-aanmelding beëindigd: {{names}}. Meld je opnieuw aan in Instellingen",
+      "connector": "Moet opnieuw verbonden worden: {{names}}. Verbind het opnieuw in Instellingen",
+      "mailbox": "Mailbox moet opnieuw verbonden worden: {{names}}. Verbind hem opnieuw in Instellingen",
+      "database": "Database moet opnieuw verbonden worden: {{names}}. Verbind hem opnieuw in Instellingen",
+      "budget_out": "Budget van deze maand is op: {{names}}. Verhoog het budget op de pagina van de agent",
+      "budget_low": "Budget van deze maand is bijna op: {{names}}. Verhoog het op de pagina van de agent",
+      "computer": "Computer offline terwijl agents wachten: {{names}}. Zet hem aan of controleer de verbinding"
+    },
     "docTitleUnread": "({{count}}) Meldingen",
     "summaryWaiting_one": "{{count}} ding wacht op jou",
     "summaryWaiting_other": "{{count}} dingen wachten op jou",

@@ -4469,6 +4469,16 @@
     "planModelDropped": {
       "choose": "Anderes Modell wählen"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> hat etwas gefunden, das zu beheben ist",
+      "sign_in": "KI-Anmeldung beendet: {{names}}. Melde dich in den Einstellungen wieder an",
+      "connector": "Muss neu verbunden werden: {{names}}. Verbinde es in den Einstellungen neu",
+      "mailbox": "Postfach muss neu verbunden werden: {{names}}. Verbinde es in den Einstellungen neu",
+      "database": "Datenbank muss neu verbunden werden: {{names}}. Verbinde sie in den Einstellungen neu",
+      "budget_out": "Budget für diesen Monat aufgebraucht: {{names}}. Erhöhe das Budget auf der Seite des Agenten",
+      "budget_low": "Budget für diesen Monat fast aufgebraucht: {{names}}. Erhöhe es auf der Seite des Agenten",
+      "computer": "Computer offline, Agenten warten: {{names}}. Schalte ihn ein oder prüfe die Verbindung"
+    },
     "docTitleUnread": "({{count}}) Benachrichtigungen",
     "summaryWaiting_one": "{{count}} Sache wartet auf dich",
     "summaryWaiting_other": "{{count}} Sachen warten auf dich",

@@ -4744,6 +4744,16 @@
     "planModelDropped": {
       "choose": "Wybierz inny model"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> znajduje coś do naprawienia",
+      "sign_in": "Logowanie do AI wygasło: {{names}}. Zaloguj się ponownie w Ustawieniach",
+      "connector": "Wymaga ponownego połączenia: {{names}}. Połącz ponownie w Ustawieniach",
+      "mailbox": "Skrzynka wymaga ponownego połączenia: {{names}}. Połącz ją ponownie w Ustawieniach",
+      "database": "Baza danych wymaga ponownego połączenia: {{names}}. Połącz ją ponownie w Ustawieniach",
+      "budget_out": "Budżet na ten miesiąc się skończył: {{names}}. Zwiększ budżet na stronie agenta",
+      "budget_low": "Budżet na ten miesiąc zaraz się skończy: {{names}}. Zwiększ go na stronie agenta",
+      "computer": "Komputer offline, agenci czekają: {{names}}. Włącz go lub sprawdź połączenie"
+    },
     "docTitleUnread": "({{count}}) Powiadomienia",
     "summaryWaiting_one": "{{count}} rzecz czeka na ciebie",
     "summaryWaiting_few": "{{count}} rzeczy czekają na ciebie",

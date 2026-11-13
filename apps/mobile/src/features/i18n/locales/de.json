@@ -980,6 +980,8 @@
       "plan_lent_female_other": "{{names}} haben dein {{plan}}-Abo mit {{agent}} verbunden",
       "plan_model_dropped_one": "{{model}} ist nicht mehr bei {{plan}}. {{names}} nutzt vorerst {{runs}}",
       "plan_model_dropped_other": "{{model}} ist nicht mehr bei {{plan}}. {{names}} nutzt vorerst {{runs}}",
+      "team_watch_one": "{{names}} hat etwas gefunden, das zu beheben ist",
+      "team_watch_other": "{{names}} hat etwas gefunden, das zu beheben ist",
       "computer_disk_full_one": "Die Festplatte eines Computers ist fast voll",
       "computer_disk_full_other": "Festplatten von Computern sind fast voll",
       "computer_no_chrome_one": "Ein Computer braucht Google Chrome. Lade es unter google.com/chrome herunter",

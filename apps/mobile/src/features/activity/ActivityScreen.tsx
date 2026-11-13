@@ -12,6 +12,7 @@ import { restrictionLine } from "@agenteschat/client/lib/errors";
 import { timeLeft, upperFirst } from "@agenteschat/client/lib/format";
 import { mediaWord } from "@agenteschat/client/lib/media";
 import { latestText } from "@agenteschat/client/lib/message-body";
+import { teamWatchOf } from "@agenteschat/client/lib/notifications";
 import { usageLimitLine } from "@agenteschat/client/lib/person-usage";
 import { useLocalSearchParams } from "expo-router";
 import type { TFunction } from "i18next";
@@ -453,16 +454,22 @@ const ActivityRow = memo(function ActivityRow({ item: n, divider }: { item: AppN
     (kind) => mediaWord(t, kind),
     (l) => latestText(t, l),
   );
+  // What the right hand found and how to fix it (ADR 0177 §1), in the reader's language.
+  const found = teamWatchOf(n);
   const sub = restriction
     ? restrictionLine(t, restriction.code, restriction.facts)
     : n.kind === "usage_limit"
       ? usageLimitLine(t, n)
-      : failed
-        ? failed.sub
-        : // A widget's or routine's name is often its line too: said once ("Assinaturas hoje", not twice).
-          [emojisOf(n).join(" "), [...new Set([line, placeOf(n)].filter(Boolean))].join(" · ")]
-            .filter(Boolean)
-            .join(" ");
+      : found
+        ? found.words
+          ? say(found.words, found.text)
+          : found.text
+        : failed
+          ? failed.sub
+          : // A widget's or routine's name is often its line too: said once ("Assinaturas hoje", not twice).
+            [emojisOf(n).join(" "), [...new Set([line, placeOf(n)].filter(Boolean))].join(" · ")]
+              .filter(Boolean)
+              .join(" ");
   const time = when.short(n.updatedAt);
   // As Conversas' rows: line 1 who (the names alone, one line, the time on their baseline), line 2 what they did and
   // where. A sentence that doesn't open with the names (or has none) is line 1 itself, on one line too.

@@ -4319,6 +4319,16 @@
     "planModelDropped": {
       "choose": "다른 모델 고르기"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b>님이 해결할 일을 찾았어요",
+      "sign_in": "AI 로그인이 끝났어요: {{names}}. 설정에서 다시 로그인하세요",
+      "connector": "다시 연결해야 해요: {{names}}. 설정에서 다시 연결하세요",
+      "mailbox": "메일함을 다시 연결해야 해요: {{names}}. 설정에서 다시 연결하세요",
+      "database": "데이터베이스를 다시 연결해야 해요: {{names}}. 설정에서 다시 연결하세요",
+      "budget_out": "이번 달 예산을 다 썼어요: {{names}}. 에이전트 페이지에서 예산을 늘리세요",
+      "budget_low": "이번 달 예산이 곧 바닥나요: {{names}}. 에이전트 페이지에서 늘리세요",
+      "computer": "컴퓨터가 오프라인이고 에이전트가 기다리고 있어요: {{names}}. 컴퓨터를 켜거나 연결을 확인하세요"
+    },
     "docTitleUnread": "({{count}}) 알림",
     "summaryWaiting_other": "내 확인을 기다리는 항목 {{count}}개",
     "summaryUnread_other": "{{count}}개 읽지 않음",

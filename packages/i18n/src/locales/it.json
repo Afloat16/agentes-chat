@@ -4594,6 +4594,16 @@
     "planModelDropped": {
       "choose": "Scegli un altro modello"
     },
+    "teamWatch": {
+      "found": "<b>{{name}}</b> ha trovato qualcosa da sistemare",
+      "sign_in": "L'accesso all'IA è terminato: {{names}}. Accedi di nuovo nelle Impostazioni",
+      "connector": "Da ricollegare: {{names}}. Ricollegalo nelle Impostazioni",
+      "mailbox": "Casella di posta da ricollegare: {{names}}. Ricollegala nelle Impostazioni",
+      "database": "Database da ricollegare: {{names}}. Ricollegalo nelle Impostazioni",
+      "budget_out": "Budget del mese esaurito: {{names}}. Aumenta il budget nella pagina dell'agente",
+      "budget_low": "Budget del mese quasi esaurito: {{names}}. Aumentalo nella pagina dell'agente",
+      "computer": "Computer offline con agenti in attesa: {{names}}. Accendilo o controlla la connessione"
+    },
     "docTitleUnread": "({{count}}) Notifiche",
     "summaryWaiting_one": "{{count}} cosa ti aspetta",
     "summaryWaiting_many": "{{count}} cose ti aspettano",
