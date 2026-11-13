@@ -743,6 +743,8 @@ function Chat({
   // Held at the start of a long message someone else wrote (see "Reading from the top"): the list doesn't follow
   // the end until the person gets there, sends, or takes the pill.
   const [readHold, setReadHold] = useState(false);
+  // The person's first touch here, anywhere (a scroll, the box, a message): the day's greeting closes a while after.
+  const [touched, setTouched] = useState(false);
   const [seenKey, setSeenKey] = useState<string | null>(null);
   // The message posted last when the person was last at the end: one posted since in a place above the last row they
   // saw (`PLACE_KEPT_MS`) is new to them too.
@@ -2242,7 +2244,10 @@ function Chat({
   return (
     <AskStoreProvider store={asks}>
       <AskProbes messages={shownMessages} />
-      <View style={[styles.screen, { backgroundColor: c.bg }]}>
+      <View
+        style={[styles.screen, { backgroundColor: c.bg }]}
+        onTouchStart={touched ? undefined : () => setTouched(true)}
+      >
         {/* A clear bar on every conversation (DM, channel, thread): the band behind it is ours, below, so the
             system's scroll edge never makes one look different from another. */}
         <PushedHeader title={pill ?? title} plate solid={false} right={right} />
@@ -2426,6 +2431,7 @@ function Chat({
               messages={top.data}
               agentIds={channelAgents}
               top={headerHeight + 8}
+              touched={touched}
             />
           ) : null}
           {/* Above the composer and its working line, riding the keyboard with them. */}

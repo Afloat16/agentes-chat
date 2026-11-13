@@ -33,6 +33,9 @@ describe("channel permissions (ADR 0134)", () => {
         .getAllByRole("button")
         .map((b) => b.textContent),
     ).toEqual(["Visão geral", "Permissões", "Membros", "Sair do canal", "Arquivar canal", "Apagar canal"]);
+    // Leave, archive and delete are rows of the nav like its sections: as wide as it, their hover plate across it.
+    for (const name of ["Sair do canal", "Arquivar canal", "Apagar canal"])
+      expect(within(nav).getByRole("button", { name }).className).toBe("settings__link channel-settings__act");
     expect(within(nav).getByRole("button", { name: "Visão geral" }).getAttribute("aria-current")).toBe("page");
     expect(within(dialog).getByLabelText("Nome")).toBeTruthy();
   });

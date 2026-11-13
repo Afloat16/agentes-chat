@@ -33,6 +33,32 @@ export function peaksOf(levels: readonly number[], n = 48): number[] {
   return out;
 }
 
+/** The wave's grid (ADR 0100): square cells of 4, columns 6 apart, and the square handle a played wave moves by. */
+export const WAVE_CELL = 4;
+export const WAVE_PITCH = 6;
+export const WAVE_HANDLE = 8;
+
+/** How many columns fit in `width`. */
+export function columnsIn(width: number): number {
+  "worklet";
+  return Math.max(1, Math.floor((width + WAVE_PITCH - WAVE_CELL) / WAVE_PITCH));
+}
+
+/**
+ * How wide a played wave's columns are on `width`. It leaves half the handle at both ends, so the handle stays whole
+ * there and its middle runs from the first column's left edge (0:00) to the last one's right edge, as WhatsApp's dot.
+ */
+export function waveSpan(width: number): number {
+  "worklet";
+  return columnsIn(width - WAVE_HANDLE) * WAVE_PITCH - (WAVE_PITCH - WAVE_CELL);
+}
+
+/** Where `x` falls on a played wave `width` wide: 0 on its first column's left edge, up to 0.999 at its end. */
+export function waveAt(x: number, width: number): number {
+  "worklet";
+  return Math.max(0, Math.min(0.999, (x - WAVE_HANDLE / 2) / waveSpan(width)));
+}
+
 /** A finger's position during a hold: what it asks for now. */
 export function slideIntent(dx: number, dy: number): "cancel" | "lock" | null {
   "worklet";

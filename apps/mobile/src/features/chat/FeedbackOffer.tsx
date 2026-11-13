@@ -117,8 +117,11 @@ export function FeedbackOfferRow({ message: m }: { message: Message }) {
 
 const styles = StyleSheet.create({
   bold: { fontWeight: "600" },
-  // The receipts' card (TeamChecks.tsx): a hairline, the cut corner, the icon on the first line's middle.
+  // The receipts' card (TeamChecks.tsx): a hairline, the cut corner, as wide as its words, the icon on the first line's
+  // middle.
   one: {
+    alignSelf: "flex-start",
+    maxWidth: "100%",
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
   },
   // The "small" line (20) on a 32 row's middle, as the other cards' first line.
   tx: { paddingTop: (32 - 20) / 2 },
-  body: { flex: 1, minWidth: 0 },
+  body: { flexShrink: 1, minWidth: 0 },
   detail: { marginTop: 2 },
   report: { marginTop: 10, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth },
   // The words of the actions start on the sentence's edge: the first one's own padding taken back.

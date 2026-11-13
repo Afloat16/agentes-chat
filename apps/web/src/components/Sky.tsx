@@ -33,10 +33,11 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useOrg } from "@/components/org-context";
+import { useCloseAfterUse } from "@/hooks/useCloseAfterUse";
 import { useDirectory } from "@/hooks/useDirectory";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { lookOf } from "@/lib/look";
-import { agentActivitySince, dayPart, isNewDay, lastVisit, markVisit } from "@/lib/welcome";
+import { agentActivitySince, dayPart, isNewDay, lastVisit, markVisit, WELCOME_CLOSE_MS } from "@/lib/welcome";
 
 /*
  * The pixel sky inside the app. The sky is the
@@ -67,7 +68,10 @@ function claimGreeting(orgId: string, channelId: string) {
   return g;
 }
 
-/** The sky band at the top of a channel on the first visit of the day: a greeting and what its agents did since. */
+/**
+ * The sky band at the top of a channel on the first visit of the day: a greeting and what its agents did since. It
+ * closes by itself a while after the person starts using the page, never under the pointer, gliding shut.
+ */
 export function ChannelWelcome({
   channelId,
   messages,
@@ -83,14 +87,30 @@ export function ChannelWelcome({
   const overview = useOverview(org.id);
   const [greeting] = useState(() => claimGreeting(org.id, channelId));
   const [closed, setClosed] = useState(greeting.closed ?? false);
+  const reduced = usePrefersReducedMotion();
+  const box = useRef<HTMLElement>(null);
   const text = useRef<HTMLDivElement>(null);
   const faces = useRef<HTMLDivElement>(null);
   const shut = useRef<HTMLButtonElement>(null);
-  if (!greeting.show || greeting.channelId !== channelId || closed || !messages || greeting.last === null) return null;
+  const shows =
+    greeting.show && greeting.channelId === channelId && !closed && messages !== undefined && greeting.last !== null;
+  // Glides shut: its height and the room above it go to nothing, the conversation takes the room, then it leaves.
   const close = () => {
+    if (greeting.closed) return;
     greeting.closed = true;
-    setClosed(true);
+    const el = box.current;
+    if (!el || reduced || typeof el.animate !== "function") return setClosed(true);
+    const gone = () => setClosed(true);
+    el.animate(
+      [
+        { height: `${el.offsetHeight}px`, minHeight: "0px", marginTop: getComputedStyle(el).marginTop, opacity: 1 },
+        { height: "0px", minHeight: "0px", marginTop: "0px", opacity: 0 },
+      ],
+      { duration: 240, easing: "ease", fill: "forwards" },
+    ).finished.then(gone, gone);
   };
+  useCloseAfterUse(box, close, WELCOME_CLOSE_MS, shows);
+  if (!shows || greeting.last === null || !messages) return null;
   const since = greeting.last;
   const activity = agentActivitySince(messages, since);
   const names = joinNames(
@@ -101,7 +121,7 @@ export function ChannelWelcome({
   const firstName = me.user.name.split(/\s+/)[0] ?? me.user.name;
   const crew = (activity.agentIds.length ? activity.agentIds : agents.map((a) => a.id)).slice(0, 3);
   return (
-    <section className="sky-welcome" aria-label={t("sky.welcome.label")}>
+    <section className="sky-welcome" aria-label={t("sky.welcome.label")} ref={box}>
       <PixelSky
         options={{
           pixel: 4,

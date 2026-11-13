@@ -11,6 +11,9 @@ export function isNewDay(last: number | null, now = new Date()) {
   return a.getFullYear() !== now.getFullYear() || a.getMonth() !== now.getMonth() || a.getDate() !== now.getDate();
 }
 
+/** How long after the person's first press, key or scroll the greeting closes by itself, on the web and the phone. */
+export const WELCOME_CLOSE_MS = 8_000;
+
 export type DayPart = "morning" | "afternoon" | "evening";
 
 export const dayPart = (hour: number): DayPart =>

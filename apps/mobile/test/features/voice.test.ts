@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { VOICE_MAX_MS } from "@agenteschat/client/lib/voice";
 import { hidesBody } from "../../src/features/chat/logic";
 import {
+  columnsIn,
   hasWords,
   levelOf,
   nextSpeed,
@@ -10,6 +11,11 @@ import {
   secondsLeft,
   slideIntent,
   uploadVerdict,
+  WAVE_CELL,
+  WAVE_HANDLE,
+  WAVE_PITCH,
+  waveAt,
+  waveSpan,
 } from "../../src/features/voice/logic";
 import { joinM4a } from "../../src/features/voice/m4a";
 
@@ -94,6 +100,18 @@ describe("voice gestures and wave", () => {
   });
   test("speed goes round", () => {
     expect([nextSpeed(1), nextSpeed(1.5), nextSpeed(2)]).toEqual([1.5, 2, 1]);
+  });
+  test("a played wave's handle runs from its first column's left edge to its last one's end, whole, as WhatsApp's dot", () => {
+    for (const width of [180, 233, 300]) {
+      const span = waveSpan(width);
+      // Its columns start half the handle in and end no further than half the handle from the other side.
+      expect(span).toBe(columnsIn(width - WAVE_HANDLE) * WAVE_PITCH - (WAVE_PITCH - WAVE_CELL));
+      expect(WAVE_HANDLE / 2 + span + WAVE_HANDLE / 2).toBeLessThanOrEqual(width);
+      // A touch on the first column's left edge is 0:00, on the last one's end the end, past them held there.
+      expect([waveAt(WAVE_HANDLE / 2, width), waveAt(0, width)]).toEqual([0, 0]);
+      expect([waveAt(WAVE_HANDLE / 2 + span, width), waveAt(width, width)]).toEqual([0.999, 0.999]);
+      expect(waveAt(WAVE_HANDLE / 2 + span / 2, width)).toBeCloseTo(0.5, 9);
+    }
   });
 });
 

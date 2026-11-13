@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import { setupDom } from "../testing/dom";
 
 setupDom();
@@ -6,6 +6,7 @@ setupDom();
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { VoicePlayer, type VoicePlayerProps } from "../src/components/VoicePlayer";
 import { peaksOf } from "../src/components/voice-recorder";
+import { drawVoiceWave, waveAt } from "../src/components/voice-wave";
 
 const realAudio = globalThis.Audio;
 afterEach(() => {
@@ -99,5 +100,71 @@ describe("peaksOf", () => {
   test("a short recording keeps what it has", () => {
     expect(peaksOf([0.1, 0.2]).length).toBe(2);
     expect(peaksOf([])).toEqual([]);
+  });
+});
+
+describe("the wave's handle", () => {
+  /** A canvas `width` wide whose context keeps what was drawn: each bar's left edge, width and fill, each dot. */
+  function drawn(width: number, progress: number) {
+    const bars: { x: number; w: number; fill: string }[] = [];
+    const dots: { x: number; r: number }[] = [];
+    const g = {
+      fillStyle: "",
+      setTransform() {},
+      clearRect() {},
+      beginPath() {},
+      fill() {},
+      roundRect(x: number, _y: number, w: number) {
+        bars.push({ x, w, fill: g.fillStyle });
+      },
+      arc(x: number, _y: number, r: number) {
+        dots.push({ x, r });
+      },
+    };
+    const canvas = document.createElement("canvas");
+    Object.defineProperty(canvas, "clientWidth", { value: width });
+    Object.defineProperty(canvas, "clientHeight", { value: 30 });
+    canvas.getContext = (() => g) as unknown as HTMLCanvasElement["getContext"];
+    canvas.getBoundingClientRect = () => ({ left: 100, width }) as DOMRect;
+    // The played and unplayed tones come from the canvas's style, which this DOM doesn't cascade.
+    const style = spyOn(globalThis, "getComputedStyle").mockImplementation(
+      () => ({ color: "", getPropertyValue: (p: string) => (p === "--voice-on" ? "#111" : "#999") }) as never,
+    );
+    try {
+      drawVoiceWave(canvas, [0.2, 0.9, 0.5, 0.7], { progress, handle: true });
+    } finally {
+      style.mockRestore();
+    }
+    return { canvas, bars, dots };
+  }
+
+  test("runs from the first bar's left edge at 0:00 to the last bar's end, whole on the canvas, like WhatsApp's dot", () => {
+    for (const width of [200, 263, 401]) {
+      const start = drawn(width, 0);
+      const end = drawn(width, 1);
+      const first = start.bars[0] as { x: number };
+      const last = end.bars.at(-1) as { x: number; w: number };
+      const [atStart] = start.dots as [{ x: number; r: number }];
+      const [atEnd] = end.dots as [{ x: number; r: number }];
+      expect([width, atStart.x, atEnd.x]).toEqual([width, first.x, last.x + last.w]);
+      expect(atStart.x - atStart.r).toBeGreaterThanOrEqual(0);
+      expect(atEnd.x + atEnd.r).toBeLessThanOrEqual(width);
+      // Nothing is played at 0:00, all of it at the end.
+      expect(new Set(start.bars.map((b) => b.fill)).size).toBe(1);
+      expect(new Set(end.bars.map((b) => b.fill)).size).toBe(1);
+      expect(start.bars[0]?.fill).not.toBe(end.bars[0]?.fill);
+      // A press where the handle is goes there: 0 on the first bar's edge, 1 on the last one's end.
+      expect(waveAt(start.canvas, 100 + atStart.x)).toBe(0);
+      expect(waveAt(end.canvas, 100 + atEnd.x)).toBeCloseTo(1, 9);
+    }
+  });
+
+  test("halfway, the handle's middle is where played bars end", () => {
+    const { bars, dots } = drawn(263, 0.5);
+    const dot = dots[0] as { x: number };
+    const played = bars.filter((b) => b.fill === bars[0]?.fill);
+    const rest = bars.slice(played.length);
+    expect((played.at(-1)?.x ?? 0) + 1.5).toBeLessThanOrEqual(dot.x);
+    expect((rest[0]?.x ?? 0) + 1.5).toBeGreaterThan(dot.x);
   });
 });

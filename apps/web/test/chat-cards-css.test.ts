@@ -93,23 +93,24 @@ test("nothing in a message wears the hover plate's own gray: cards a step up, we
     expect([selector, value(selector, "background")]).toEqual([selector, undefined]);
 });
 
-test("a row's sentence and a tool's line wrap, whole; what an agent changed is one line, cut with '…'", () => {
-  for (const selector of [".ag-rc__sentence", ".ac-tools__label", ".ac-tools__label b", ".ac-tools__label small"]) {
+test("a row's sentence and a tool's line wrap, whole; what an agent changed too, on a card as wide as its words", () => {
+  for (const selector of [
+    ".ag-rc__sentence",
+    ".ag-rc__by",
+    ".ac-tools__label",
+    ".ac-tools__label b",
+    ".ac-tools__label small",
+  ]) {
     expect(value(selector, "text-overflow")).toBeUndefined();
     expect(value(selector, "white-space")).toBeUndefined();
   }
-  expect(value(".ag-rc__sentence", "overflow-wrap")).toBe("anywhere");
+  for (const selector of [".ag-rc__sentence", ".ag-rc__by"]) expect(value(selector, "overflow-wrap")).toBe("anywhere");
   expect(value(".ac-tools__label", "flex-wrap")).toBe("wrap");
-  // A change's line (its whole words in its tip): the clip stands out of the line, so a focused link's ring shows whole.
-  expect(value(".ag-rc__line", "white-space")).toBe("nowrap");
-  expect(value(".ag-rc__line", "text-overflow")).toBe("ellipsis");
-  // Clipped, not a scroller: tabbing to a link past the cut never scrolls the words.
-  expect(value(".ag-rc__line", "overflow")).toBe("clip");
-  expect(value(".ag-rc__line", "padding")).toBe("var(--space-1)");
-  expect(value(".ag-rc__line", "margin")).toBe("calc(-1 * var(--space-1))");
-  // A link the keys reach is never past the cut: its line says everything while it has the focus.
-  expect(value(".ag-rc__line:has(:focus-visible)", "overflow")).toBe("visible");
-  expect(value(".ag-rc__line:has(:focus-visible)", "white-space")).toBe("normal");
+  // Nothing cuts a change's words with "…" any more.
+  expect(css).not.toContain(".ag-rc__line");
+  // A receipt is as wide as its words, up to the cards' width: a short one never spans the conversation.
+  for (const selector of [".ag-rc", ".ag-rcg"])
+    expect([selector, value(selector, "width")]).toEqual([selector, "fit-content"]);
 });
 
 test("a card's rows start under its title: a row's hover never covers it", () => {

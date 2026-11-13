@@ -12,13 +12,26 @@ function resample(peaks: readonly number[], n: number) {
   });
 }
 
+/** How many bars fit in `width`. */
+const barsIn = (width: number) => Math.max(1, Math.floor((width + GAP) / (BAR + GAP)));
+
+/**
+ * The handle's radius. A wave with a handle leaves this much room at both ends, so the handle stays whole there and its
+ * middle runs from the first bar's left edge (0:00) to the last bar's right edge (the end), as WhatsApp's dot does.
+ */
+const HANDLE = 6;
+
+/** Where `clientX` falls on a wave drawn with its handle: 0 on its first bar's left edge, 1 on its last bar's end. */
+export function waveAt(canvas: HTMLElement, clientX: number) {
+  const r = canvas.getBoundingClientRect();
+  return (clientX - r.left - HANDLE) / (barsIn(r.width - 2 * HANDLE) * (BAR + GAP) - GAP);
+}
+
 /**
  * Draws a recording's wave on a canvas in bars. Live: the newest bars at the right, quiet dots before the first sound,
  * so the line is never half empty. Otherwise the whole recording, played up to `progress`. Colors come from the
  * canvas's `--voice-on` and `--voice-off`.
  */
-const HANDLE = 6;
-
 export function drawVoiceWave(
   canvas: HTMLCanvasElement | null,
   peaks: readonly number[],
@@ -42,9 +55,11 @@ export function drawVoiceWave(
   const css = getComputedStyle(canvas);
   const on = css.getPropertyValue("--voice-on").trim() || css.color;
   const off = css.getPropertyValue("--voice-off").trim() || on;
-  const n = Math.max(1, Math.floor((w + GAP) / (BAR + GAP)));
+  const n = barsIn(handle ? w - 2 * HANDLE : w);
   const data = live ? peaks.slice(-n) : resample(peaks, n);
-  const x0 = live ? w - data.length * (BAR + GAP) + GAP : 0;
+  const x0 = live ? w - data.length * (BAR + GAP) + GAP : handle ? HANDLE : 0;
+  // Where the audio is: a bar is played once its middle is behind it.
+  const at = x0 + progress * (data.length * (BAR + GAP) - GAP);
   if (live) {
     g.fillStyle = off;
     for (let px = x0 - (BAR + GAP); px > -BAR; px -= BAR + GAP) {
@@ -55,17 +70,17 @@ export function drawVoiceWave(
   }
   data.forEach((v, i) => {
     const bar = Math.max(3, Math.min(h, v * h));
-    g.fillStyle = live || (i + 0.5) / data.length <= progress ? on : off;
+    g.fillStyle = live || x0 + i * (BAR + GAP) + BAR / 2 <= at ? on : off;
     g.beginPath();
     if (g.roundRect) g.roundRect(x0 + i * (BAR + GAP), (h - bar) / 2, BAR, bar, 1.5);
     else g.rect(x0 + i * (BAR + GAP), (h - bar) / 2, BAR, bar);
     g.fill();
   });
-  // Where the audio is, to grab and drag; kept whole at both ends.
+  // Where the audio is, to grab and drag.
   if (handle) {
     g.fillStyle = on;
     g.beginPath();
-    g.arc(Math.min(w - HANDLE, Math.max(HANDLE, progress * w)), h / 2, HANDLE, 0, 7);
+    g.arc(at, h / 2, HANDLE, 0, 7);
     g.fill();
   }
 }

@@ -5199,33 +5199,35 @@ function ChannelDetails({
                   </li>
                 ))}
               </ul>
+              {/* Rows of the nav, as wide as it, the pressed one's spinner in its icon's place. */}
               {channel.name !== "general" && (
                 <div className="channel-settings__danger">
                   {channel.isMember && (
-                    <Button
-                      variant="ghost"
-                      icon="arrowRight"
-                      className="channel-details__archive"
-                      loading={leaving.pending}
+                    <button
+                      type="button"
+                      className="settings__link channel-settings__act"
+                      disabled={leaving.pending}
+                      aria-busy={leaving.pending || undefined}
                       onClick={() => leaving.run(channel, () => onOpenChange(false))}
                     >
+                      <Icon name={leaving.pending ? "spinner" : "arrowRight"} size={18} />
                       {t("channel.leave")}
-                    </Button>
+                    </button>
                   )}
-                  <Button
-                    variant="ghost"
-                    icon="archive"
-                    className="channel-details__archive"
-                    loading={archive.pending}
+                  <button
+                    type="button"
+                    className="settings__link channel-settings__act"
+                    disabled={archive.pending}
+                    aria-busy={archive.pending || undefined}
                     onClick={archiveIt}
                   >
+                    <Icon name={archive.pending ? "spinner" : "archive"} size={18} />
                     {t("channel.archive")}
-                  </Button>
+                  </button>
                   {deletable && (
-                    <Button
-                      variant="ghost"
-                      icon="trash"
-                      className="channel-details__archive"
+                    <button
+                      type="button"
+                      className="settings__link channel-settings__act"
                       disabled={archive.pending}
                       onClick={() => {
                         saveTopic();
@@ -5233,8 +5235,9 @@ function ChannelDetails({
                         setDeleting(true);
                       }}
                     >
+                      <Icon name="trash" size={18} />
                       {t("channel.delete")}
-                    </Button>
+                    </button>
                   )}
                 </div>
               )}
