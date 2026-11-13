@@ -4869,7 +4869,7 @@
     },
     "expiredLine": "Niemand besliste binnen 24 u, dus er is niets gedaan.",
     "canceledLine": "De run stopte vóór een besluit.",
-    "supersededLine": "De agent vroeg het opnieuw met een nieuwere versie; deze is niet uitgevoerd.",
+    "supersededLine": "De agent vroeg het opnieuw met een nieuwere versie. Deze is niet uitgevoerd.",
     "lesson": "{{name}} houdt hier rekening mee: {{reason}}",
     "again": "Opnieuw vragen",
     "againBody": "@{{handle}} het verzoek “{{title}}” is verlopen zonder besluit. Als het nog zin heeft, vraag het opnieuw.",

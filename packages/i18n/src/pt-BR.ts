@@ -5053,7 +5053,7 @@ export const ptBR = {
     expiredLine: "Ninguém decidiu em 24 h, então nada foi feito.",
     canceledLine: "A execução parou antes da decisão.",
     /** Replaced by the agent's newer request for the same action (`supersededById`). */
-    supersededLine: "O agente pediu de novo com uma versão nova; esta não foi feita.",
+    supersededLine: "O agente pediu de novo com uma versão nova. Esta não foi feita.",
     lesson: "{{name}} vai levar em conta: {{reason}}",
     again: "Pedir de novo",
     againBody: "@{{handle}} o pedido “{{title}}” expirou sem decisão. Se ainda fizer sentido, pede de novo.",

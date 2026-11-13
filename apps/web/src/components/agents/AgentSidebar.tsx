@@ -408,7 +408,7 @@ function ThinksSection({ agent }: { agent: Agent }) {
         {thinks?.text && (
           <div>
             <dt>{t("agentSide.thinksWith")}</dt>
-            <dd className="ac-iconline">
+            <dd>
               <ModelPickerButton agent={agent} size="row" />
               {agent.brain?.speed && ` · ${t("agentPage.work.brain.speeds.fast")}`}
             </dd>

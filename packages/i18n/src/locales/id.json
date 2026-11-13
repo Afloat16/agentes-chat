@@ -4709,7 +4709,7 @@
     },
     "expiredLine": "Tidak ada yang memutuskan dalam 24 jam, jadi tidak ada yang dilakukan.",
     "canceledLine": "Proses berhenti sebelum ada keputusan.",
-    "supersededLine": "Agen meminta lagi dengan versi yang lebih baru; yang ini tidak dijalankan.",
+    "supersededLine": "Agen meminta lagi dengan versi yang lebih baru. Yang ini tidak dijalankan.",
     "lesson": "{{name}} akan mengingatnya: {{reason}}",
     "again": "Minta lagi",
     "againBody": "@{{handle}} permintaan “{{title}}” kedaluwarsa tanpa keputusan. Jika masih masuk akal, minta lagi.",

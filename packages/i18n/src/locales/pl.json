@@ -5179,7 +5179,7 @@
     },
     "expiredLine": "Nikt nie zdecydował w ciągu 24 h, więc nic nie zrobiono.",
     "canceledLine": "Uruchomienie zatrzymało się przed decyzją.",
-    "supersededLine": "Agent poprosił ponownie o nowszą wersję; ta nie została wykonana.",
+    "supersededLine": "Agent poprosił ponownie o nowszą wersję. Ta nie została wykonana.",
     "lesson": "{{name}} będzie o tym pamiętać: {{reason}}",
     "again": "Poproś ponownie",
     "againBody": "@{{handle}} prośba „{{title}}” wygasła bez decyzji. Jeśli nadal ma sens, poproś ponownie.",

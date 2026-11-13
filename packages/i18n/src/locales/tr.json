@@ -4847,7 +4847,7 @@
     },
     "expiredLine": "24 saat içinde kimse karar vermedi, bu yüzden hiçbir şey yapılmadı.",
     "canceledLine": "Çalıştırma karardan önce durdu.",
-    "supersededLine": "Ajan daha yeni bir sürümle yeniden istedi; bu yapılmadı.",
+    "supersededLine": "Ajan daha yeni bir sürümle yeniden istedi. Bu yapılmadı.",
     "lesson": "{{name}} bunu aklında tutacak: {{reason}}",
     "again": "Yeniden sor",
     "againBody": "@{{handle}} “{{title}}” isteğinin süresi karar verilmeden doldu. Hâlâ anlamlıysa yeniden sor.",

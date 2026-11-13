@@ -5001,7 +5001,7 @@
     },
     "expiredLine": "Nadie decidió en 24 h, así que no se hizo nada.",
     "canceledLine": "La ejecución se detuvo antes de una decisión.",
-    "supersededLine": "El agente volvió a pedirlo con una versión más nueva; esta no se hizo.",
+    "supersededLine": "El agente volvió a pedirlo con una versión más nueva. Esta no se hizo.",
     "lesson": "{{name}} lo tendrá en cuenta: {{reason}}",
     "again": "Volver a pedir",
     "againBody": "@{{handle}} la solicitud “{{title}}” venció sin una decisión. Si todavía tiene sentido, vuelve a pedirla.",

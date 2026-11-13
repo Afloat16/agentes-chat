@@ -5011,7 +5011,7 @@
     },
     "expiredLine": "Nessuno ha deciso entro 24 h, quindi non è stato fatto nulla.",
     "canceledLine": "L'esecuzione si è fermata prima di una decisione.",
-    "supersededLine": "L'agente ha chiesto di nuovo con una versione più recente; questa non è stata eseguita.",
+    "supersededLine": "L'agente ha chiesto di nuovo con una versione più recente. Questa non è stata eseguita.",
     "lesson": "{{name}} ne terrà conto: {{reason}}",
     "again": "Chiedi di nuovo",
     "againBody": "@{{handle}} la richiesta “{{title}}” è scaduta senza una decisione. Se ha ancora senso, chiedi di nuovo.",

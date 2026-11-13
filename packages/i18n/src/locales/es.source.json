@@ -11917,7 +11917,7 @@
     "value": "The run stopped before a decision."
   },
   "approvals.supersededLine": {
-    "value": "The agent asked again with a newer version; this one wasn't done."
+    "value": "The agent asked again with a newer version. This one wasn't done."
   },
   "approvals.lesson": {
     "value": "{{name}} will keep it in mind: {{reason}}"

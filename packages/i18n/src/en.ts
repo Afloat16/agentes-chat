@@ -5147,7 +5147,7 @@ export const en = {
     expiredLine: "Nobody decided within 24 h, so nothing was done.",
     canceledLine: "The run stopped before a decision.",
     /** Replaced by the agent's newer request for the same action (`supersededById`). */
-    supersededLine: "The agent asked again with a newer version; this one wasn't done.",
+    supersededLine: "The agent asked again with a newer version. This one wasn't done.",
     lesson: "{{name}} will keep it in mind: {{reason}}",
     again: "Ask again",
     againBody: "@{{handle}} the request “{{title}}” expired without a decision. If it still makes sense, ask again.",

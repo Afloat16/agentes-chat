@@ -378,7 +378,11 @@ function WhoUses({ accountId, account }: { accountId: string; account: PlanAccou
   };
   return (
     <View style={styles.serves}>
-      <InfoHint name={terms.about} text={terms.text} variant="small">
+      <InfoHint
+        name={t("common.about", { label: t("aiAccounts.share.terms.about") })}
+        text={terms.text}
+        variant="small"
+      >
         <Text variant="small" tone="ink2" style={styles.bold}>
           {t("usageViews.serves.label")}
         </Text>
