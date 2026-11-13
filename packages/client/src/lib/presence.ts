@@ -197,7 +197,9 @@ export function agentPresenceShown(status: AgentStatus | undefined, hasAi: boole
   const presence = status?.presence ?? "away";
   if (presence === "offline") return "offline";
   if (presence === "out" && !working) return "out";
-  const atWork = working || status?.working === true || presence === "busy";
+  // The server's `busy` is also long work that waits and a run in line: it stands for work only from an older server,
+  // which sends no `working`.
+  const atWork = working || (status?.working ?? presence === "busy");
   if (!hasAi && !atWork) return "offline";
   if (status?.work?.state === "you") return "waiting";
   return atWork ? "working" : "online";

@@ -180,8 +180,8 @@ function AgentHead({ agent }: { agent: Agent }) {
       ) : (
         word && (
           <p className="dm-side__status">
-            {/* The presence's own badge, as beside its face everywhere: away wears its clock, offline its outline. */}
-            <PresenceBadge presence={busy ? "online" : (shown?.presence ?? "offline")} ring={false} />
+            {/* The face's own badge, as beside its face everywhere: at work its dots, offline its outline. */}
+            <PresenceBadge presence={busy ? "working" : (shown?.presence ?? "offline")} ring={false} />
             {word}
           </p>
         )

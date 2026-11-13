@@ -3903,7 +3903,7 @@ function ActivityBar({
     ...consultDetails(
       c,
       consultList ?? [],
-      (id) => askOf(pendingAsks, id)?.on ?? null,
+      (id, run) => askOf(pendingAsks, id, run)?.on ?? null,
       (id) => lineStep(t, agentLines.get(id)),
     ),
   }));
@@ -3952,7 +3952,7 @@ function ActivityBar({
   // One agent's question or hand-off still out (ADR 0095 addendum): the consulted agent's state, its sky, its time, and
   // "Ver", which opens their talk (or, when its card waits on me, goes to the card). No stop: that is theirs.
   const consult = agents.length === 1 && firstAgent?.consult?.status === "asking" ? firstAgent.consult : undefined;
-  const consultAsk = consult?.yours ? askOf(pendingAsks, consult.to) : null;
+  const consultAsk = consult?.yours ? askOf(pendingAsks, consult.to, consult.toRun) : null;
   const consultTime = barConsultTime(i18n.language, consult, now);
   const openTalk = useChannelActions()?.openConsultation;
   const seeConsult = consultAsk
@@ -4793,7 +4793,7 @@ export const TimelineMessage = memo(function TimelineMessage({
               usageWait && !usageWait.canceled && !usageWait.ended && <UsageWaitCancel message={m} wait={usageWait} />
             )}
             {question && <QuestionCard question={question} />}
-            {secretRequest && <SecretCard request={secretRequest} />}
+            {secretRequest && <SecretCard request={secretRequest} runId={m.agentRunId} />}
             {browserHandoff && <BrowserHandoffCard handoff={browserHandoff} />}
             {missionDecision && <MissionDecisionCard message={missionDecision} />}
             {missionDelivery && <MissionDeliveryCard message={missionDelivery} />}

@@ -6,6 +6,7 @@ import {
   useConsultationConversation,
   useConsultations,
 } from "@agenteschat/client";
+import { handoffAsk } from "@agenteschat/client/lib/agent-work";
 import {
   asExchanges,
   type ConsultLineState,
@@ -141,11 +142,12 @@ export function ConsultPairRow({
   const c = useColors();
   const live = items.some((x) => x.status === "open");
   const now = useTick(live);
-  // The consulted agent waits on me (its work for me, ADR 0084 addendum): the row says so in amber, as on the web.
+  // The hand-off's run waits on me (its agent's work for me, ADR 0084 addendum): the row says so in amber, as on
+  // the web.
   const presence = usePresenceOf();
   const only = items.length === 1 && items[0]?.status === "open" ? items[0] : undefined;
-  const mine = only ? presence.agent(only.consultedAgentId)?.work : null;
-  const pair = consultPair(items, now, askerId, mine?.state === "you" ? mine.ask : null);
+  const mine = only ? handoffAsk(presence.agent(only.consultedAgentId)?.work, only.consultedRunId) : null;
+  const pair = consultPair(items, now, askerId, mine);
   if (!pair) return null;
   // Blue at work, amber when it waits on me, quiet when it waits on someone else, the warning for what went unanswered.
   const tone =

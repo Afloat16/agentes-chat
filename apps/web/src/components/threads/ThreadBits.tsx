@@ -47,7 +47,8 @@ export function ThreadStatusChip({
 }) {
   const { t } = useTranslation();
   const status = threadStatus(thread);
-  const wait = status === "open" ? threadWorkState(thread) : null;
+  // One state with the chip under its root (`threadWorkState`): a run in line counts as at work but reads "Na fila".
+  const wait = status === "open" || status === "working" ? threadWorkState(thread) : null;
   const icon = wait ? WAIT_ICON[wait] : undefined;
   if (wait && icon) {
     return (

@@ -5,6 +5,7 @@ setupDom();
 
 import type { Message, RunConsultation } from "@agenteschat/client";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
+import { askOf, type PendingAsk } from "@/components/RequestCard";
 import { ADA_ID, ATLAS_ID, createFakeApi, ENG_ID, LODI_ID, ORG_ID, seedState, withRightHand } from "./fake-api";
 import { renderApp, screen, settle } from "./render";
 
@@ -556,5 +557,17 @@ describe("the bar above the composer speaks for a hand-off (ADR 0095 addendum)",
     });
     await settle(2);
     expect(bar()).toBe("Atlas terminou. Ada está escrevendo…");
+  });
+});
+
+describe("whose card waits on you (ADR 0095 addendum)", () => {
+  test("a hand-off's own run's card, never another run's of the same agent", () => {
+    const other: PendingAsk = { id: "a-other", kind: "approval", agentId: ATLAS_ID, runId: "atlas-2", what: "Deploy" };
+    const mine: PendingAsk = { id: "a-mine", kind: "question", agentId: ATLAS_ID, runId: "atlas-run", what: "Qual?" };
+    expect(askOf([other, mine], ATLAS_ID, "atlas-run")).toMatchObject({ ask: { id: "a-mine" }, on: "answer" });
+    // Atlas asks you from another run while the hand-off works: the hand-off is at work, never amber.
+    expect(askOf([other], ATLAS_ID, "atlas-run")).toBeNull();
+    // Before the list names the hand-off's run, the agent's card stands for it.
+    expect(askOf([other], ATLAS_ID)?.ask.id).toBe("a-other");
   });
 });

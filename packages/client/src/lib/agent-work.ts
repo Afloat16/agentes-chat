@@ -44,6 +44,15 @@ export function agentWork(
   };
 }
 
+/**
+ * What a hand-off's run (`runId`, the list's) waits on the viewer for, from its agent's work for them: only when that
+ * work is this run, since another run of the agent may be the one that waits on them.
+ */
+export const handoffAsk = (
+  work: Pick<AgentWork, "state" | "ask" | "runId"> | null | undefined,
+  runId: string | null | undefined,
+): "approval" | "answer" | null => (work?.state === "you" && runId != null && work.runId === runId ? work.ask : null);
+
 /** How long a state has held, as lists say it ("22 min", "1,5 h"); none in its first minute. */
 export function workTime(locale: string, since: string | null | undefined, now = Date.now()): string | null {
   const ms = since ? now - Date.parse(since) : Number.NaN;

@@ -44,12 +44,15 @@ export type RequestKind =
   | "team"
   | "firstTask";
 
-/** A request waiting for the viewer, as its card registers it: the bar above the composer says it. */
-export type PendingAsk = { id: string; kind: RequestKind; agentId: string; what: string };
+/**
+ * A request waiting for the viewer, as its card registers it: the bar above the composer says it. `runId`: the run that
+ * asked, null when the card doesn't know it.
+ */
+export type PendingAsk = { id: string; kind: RequestKind; agentId: string; runId: string | null; what: string };
 
 /** The same request, said the same way: nothing for the bar to redraw. */
 export const sameAsk = (a: PendingAsk | undefined, b: PendingAsk | undefined) =>
-  a?.id === b?.id && a?.kind === b?.kind && a?.agentId === b?.agentId && a?.what === b?.what;
+  a?.id === b?.id && a?.kind === b?.kind && a?.agentId === b?.agentId && a?.runId === b?.runId && a?.what === b?.what;
 
 /**
  * The request cards waiting for the viewer in one conversation's scroller, by their root element. A card puts
@@ -115,12 +118,16 @@ export function usePendingAsks(registry?: AskRegistry): readonly PendingAsk[] {
   return asks;
 }
 
-/** What waits on the viewer from `agentId` here: an approval, or anything else to answer; null when nothing. */
+/**
+ * What waits on the viewer from `agentId` here: an approval, or anything else to answer; null when nothing. With
+ * `runId` (a hand-off's run, as its list says), only a card of that run: another run of the agent's is not its wait.
+ */
 export function askOf(
   asks: readonly PendingAsk[],
   agentId: string,
+  runId?: string | null,
 ): { ask: PendingAsk; on: "approval" | "answer" } | null {
-  const ask = asks.find((a) => a.agentId === agentId);
+  const ask = asks.find((a) => a.agentId === agentId && (!runId || a.runId === runId));
   return ask ? { ask, on: ask.kind === "approval" ? "approval" : "answer" } : null;
 }
 
@@ -188,6 +195,7 @@ export function RequestCard({
   id,
   kind,
   agent,
+  runId = null,
   label,
   mine: waitsOnMe,
   waitingFor,
@@ -212,6 +220,8 @@ export function RequestCard({
   id: string;
   kind: RequestKind;
   agent: Agent | undefined;
+  /** The run that asked: a hand-off's bar and divider know their run's card by it. */
+  runId?: string | null;
   /** The group's accessible name. */
   label: string;
   /** The viewer can answer it: the header says it waits for you (and the bar may bring it back). */
@@ -287,8 +297,8 @@ export function RequestCard({
   // Waiting for the viewer: in the conversation's list, with what the bar says (kept current in place).
   useEffect(() => {
     const el = root.current;
-    if (registry && mine && el) registry.put(el, { id, kind, agentId, what });
-  }, [registry, mine, id, kind, agentId, what]);
+    if (registry && mine && el) registry.put(el, { id, kind, agentId, runId, what });
+  }, [registry, mine, id, kind, agentId, runId, what]);
   useEffect(() => {
     const el = root.current;
     if (!registry || !mine || !el) return;

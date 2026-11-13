@@ -188,7 +188,13 @@ export function consultGroupSummary(
 export type ConsultPairItem = Pick<
   RunConsultation,
   "id" | "kind" | "consultedAgentId" | "status" | "waiting" | "question" | "answer" | "expiresAt" | "waitingSince"
-> & { agentId?: string; createdAt: string | null; answeredAt: string | null };
+> & {
+  agentId?: string;
+  /** The consulted agent's run, from the list: whose card here waits on the reader. */
+  consultedRunId?: string | null;
+  createdAt: string | null;
+  answeredAt: string | null;
+};
 
 export const pairItemOf = (c: MessageConsultation): ConsultPairItem => ({
   id: c.consultationId,

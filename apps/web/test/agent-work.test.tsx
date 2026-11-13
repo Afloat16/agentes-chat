@@ -4,7 +4,7 @@ import { setupDom } from "@agenteschat/ui/testing/dom";
 setupDom();
 
 import type { AgentStatus, AgentWork, Message, ThreadInfo } from "@agenteschat/client";
-import { cleanup, within } from "@testing-library/react";
+import { act, cleanup, within } from "@testing-library/react";
 import { DESKTOP_QUERY } from "@/components/NavDrawer";
 import {
   ADA_ID,
@@ -213,6 +213,35 @@ describe("a thread's chip", () => {
   };
   const chip = () => screen().getByRole("main").querySelector(".thread-line") as HTMLElement;
 
+  test("the Threads page says the chip's state: a run in line reads Na fila, never Trabalhando", async () => {
+    const state = replied(seedState());
+    const api = createFakeApi(state);
+    await state.openThread?.(ORG_ID, "m-1", new Date(NOW.getTime() - 31 * 60_000).toISOString());
+    // The worst case beside it (break-ui, measured by CI's geometry step): the longest wait word on a thread at work.
+    await state.openThread?.(ORG_ID, "m-2", new Date(NOW.getTime() - 30 * 60_000).toISOString());
+    const waits = { "m-1": "queued", "m-2": "computer" } as const;
+    const list = api.threads.list.bind(api.threads);
+    api.threads.list = async (...args: Parameters<typeof list>) => {
+      const r = await list(...args);
+      return {
+        ...r,
+        threads: r.threads.map((t) =>
+          t.id === "m-1" || t.id === "m-2" ? { ...t, working: true, wait: waits[t.id] } : t,
+        ),
+      };
+    };
+    await renderApp(`/org/${ORG_ID}/threads`, { api });
+    await settle(8);
+    const tags = [...screen().getByRole("main").querySelectorAll(".ac-chip")].map((c) => c.textContent);
+    expect(tags).toContain("Na fila");
+    expect(tags).toContain("Esperando o computador");
+    expect(tags).not.toContain("Trabalhando");
+    // Its column holds the longest state whole, never "Esperando o computa…" (es "Esperando su computadora" is 184px).
+    const css = await Bun.file(new URL("../src/pages/threads.css", import.meta.url)).text();
+    const tag = Number(/\.thread-row__end \{[^}]*grid-template-columns: (\d+)px/.exec(css)?.[1]);
+    expect(tag).toBeGreaterThanOrEqual(184);
+  });
+
   test("one state, with how long it has held in place of the last reply's time", async () => {
     await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, {
       api: await withThread({ working: true, since: ago(22), worker: ATLAS_ID }),
@@ -224,6 +253,35 @@ describe("a thread's chip", () => {
     expect(state.querySelector(".ac-pixspin")).toBeTruthy();
     expect(chip().querySelector(".thread-line__held")?.textContent).toBe("22 min");
     expect(chip().querySelector("time")).toBeNull();
+  });
+
+  test("a hand-off's news reloads it: once approved, the chip says it works again", async () => {
+    let over: Partial<ThreadInfo> = { working: false, wait: "approval", since: ago(25) };
+    const state = replied(seedState());
+    const api = createFakeApi(state);
+    await state.openThread?.(ORG_ID, "m-1", new Date(NOW.getTime() - 31 * 60_000).toISOString());
+    const inChannel = api.threads.inChannel.bind(api.threads);
+    api.threads.inChannel = async (...args: Parameters<typeof inChannel>) => {
+      const r = await inChannel(...args);
+      return { ...r, threads: r.threads.map((t) => (t.id === "m-1" ? { ...t, ...over } : t)) };
+    };
+    const r = await renderApp(`/org/${ORG_ID}/c/${ENG_ID}`, { api });
+    const socket = r.sockets.last();
+    await act(async () => socket.open());
+    await settle(8);
+    const word = () => chip().querySelector(".thread-line__state")?.textContent;
+    expect(word()).toBe("Esperando aprovação");
+    // Atlas works on in the agents' DM, where nothing is posted here: the hand-off's own event says it moved.
+    over = { working: true, wait: null, since: ago(1), worker: ATLAS_ID };
+    await act(async () =>
+      socket.push({
+        type: "event",
+        channelId: ENG_ID,
+        event: { type: "agent.consultation", channelId: ENG_ID, threadId: "m-1", runId: "r-ada", consultationId: "q1" },
+      }),
+    );
+    await settle(8);
+    expect(word()).toBe("Trabalhando");
   });
 
   test("what its work waits on, quiet with the clock; what waits on you, amber with the still mark", async () => {

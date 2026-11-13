@@ -10,7 +10,7 @@ import {
   consultDetails,
   lineStep,
 } from "../src/lib/activity";
-import { agentWork, threadWorkState, workDetail, workLine, workTime } from "../src/lib/agent-work";
+import { agentWork, handoffAsk, threadWorkState, workDetail, workLine, workTime } from "../src/lib/agent-work";
 import { consultPair, pairItemOf } from "../src/lib/consult-group";
 import { agentFaceWord, agentPresenceShown } from "../src/lib/presence";
 import { applyConsultEvent, type ConsultsState } from "../src/realtime/consults";
@@ -110,6 +110,15 @@ describe("an agent's face", () => {
   });
   test("never red Ocupado or amber Ausente: working, waiting on you, available", () => {
     expect(agentPresenceShown(status({ presence: "busy", working: true }), true)).toBe("working");
+    // Busy with nothing at work (long work waiting on someone, a routine's run in line): free, as its line says.
+    expect(
+      agentPresenceShown(status({ presence: "busy", working: false, work: work({ state: "approval" }) }), true),
+    ).toBe("online");
+    expect(
+      agentPresenceShown(status({ presence: "busy", working: false, work: work({ state: "queued" }) }), true),
+    ).toBe("online");
+    // An older server sends no `working`: its busy still reads at work.
+    expect(agentPresenceShown(status({ presence: "busy" }), true)).toBe("working");
     expect(agentPresenceShown(status({ presence: "away" }), true)).toBe("online");
     expect(agentPresenceShown(status({ work: work({ state: "you", ask: "approval" }) }), true)).toBe("waiting");
     expect(agentPresenceShown(status({ presence: "out" }), true)).toBe("out");
@@ -222,15 +231,37 @@ describe("the bar's hand-off (ADR 0095 addendum)", () => {
         () => null,
         () => "mexendo nos arquivos",
       ),
-    ).toEqual({ kind: "note", id: "q1", wait: "approval", waitSince: NOW - 180_000, yours: null, step: null });
+    ).toEqual({
+      kind: "note",
+      id: "q1",
+      wait: "approval",
+      waitSince: NOW - 180_000,
+      yours: null,
+      toRun: "run-atlas",
+      step: null,
+    });
     expect(
       consultDetails(
         live(),
         [consultation()],
-        (id) => (id === "atlas" ? "approval" : null),
+        (id, run) => (id === "atlas" && run === "run-atlas" ? "approval" : null),
         () => "x",
       ),
-    ).toMatchObject({ yours: "approval", step: null });
+    ).toMatchObject({ yours: "approval", toRun: "run-atlas", step: null });
+    // Another run of Atlas waits on you while the hand-off works: the hand-off is at work, never amber.
+    const elsewhere = work({ state: "you", ask: "approval", runId: "run-atlas-2" });
+    expect(
+      consultDetails(
+        live(),
+        [consultation()],
+        (_id, run) => handoffAsk(elsewhere, run),
+        () => "lendo o Drive",
+      ),
+    ).toMatchObject({ yours: null, step: "lendo o Drive" });
+    expect(handoffAsk(work({ state: "you", ask: "answer", runId: "run-atlas" }), "run-atlas")).toBe("answer");
+    // Before the list names the hand-off's run, its agent's work can't say it is this one.
+    expect(handoffAsk(work({ state: "you", ask: "answer", runId: "run-atlas" }), null)).toBeNull();
+    expect(handoffAsk(work({ runId: "run-atlas" }), "run-atlas")).toBeNull();
     // The bar's own verbs: no case changed on a translated line (ADR 0122).
     expect(lineStep(t, { by: "auto", text: null, kind: "files", subject: null, emoji: null, until: null })).toBe(
       "lendo o Drive",

@@ -124,6 +124,9 @@ describe("how a status reads in a row, a pill and a profile", () => {
     // The list says it works: blue, never red "Ocupado".
     expect(agentPresenceShown(row("online", true), false)).toBe("working");
     expect(agentPresenceShown(row("busy", true), false)).toBe("working");
+    // Busy with nothing at work (long work waiting on someone's approval): free, as its line says.
+    const waits = { state: "approval", ask: null, since: "2026-11-13T00:00:00Z", runId: "r2" } as const;
+    expect(agentPresenceShown(row("busy", false, { ...waits, ...NO_PLACE }), true)).toBe("online");
     // Its run heard here before the list's next read says so.
     expect(agentPresenceShown(row("away", false), false, true)).toBe("working");
     expect(agentPresenceShown(undefined, false, true)).toBe("working");

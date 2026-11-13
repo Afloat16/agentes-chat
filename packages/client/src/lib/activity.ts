@@ -426,6 +426,8 @@ export interface EntryConsult {
   waitSince?: number | null;
   /** It waits on the person reading: their card from it is here (it wins over the list). */
   yours?: "approval" | "answer" | null;
+  /** The consulted agent's run, as the list says: the cards it posts here carry it. */
+  toRun?: string | null;
   /** The consulted agent's step in the bar's words, from its line ("lendo o Drive"), while it works. */
   step?: string | null;
 }
@@ -453,31 +455,36 @@ export function lineStep(t: TFunction, line: AgentStatusLine | null | undefined)
 
 /**
  * What the bar adds to a question or hand-off out from here (ADR 0095 addendum of 2026-11-13): its id and where it
- * stands in the conversation's list, whether the consulted agent's card here waits on the person reading, and its
- * step while it works.
+ * stands in the conversation's list, whether the consulted agent's card here waits on the person reading (`yours`, by
+ * the agent and the run the list names for it, unknown before the list has it), and its step while it works.
  */
 export function consultDetails(
   c: Pick<LiveConsult, "runId" | "consultedAgentId" | "kind">,
-  list: readonly Pick<RunConsultation, "id" | "runId" | "consultedAgentId" | "status" | "waiting" | "waitingSince">[],
-  yours: (agentId: string) => "approval" | "answer" | null,
+  list: readonly Pick<
+    RunConsultation,
+    "id" | "runId" | "consultedAgentId" | "consultedRunId" | "status" | "waiting" | "waitingSince"
+  >[],
+  yours: (agentId: string, runId: string | null) => "approval" | "answer" | null,
   step: (agentId: string) => string | null,
-): Pick<EntryConsult, "kind" | "id" | "wait" | "waitSince" | "yours" | "step"> {
+): Pick<EntryConsult, "kind" | "id" | "wait" | "waitSince" | "yours" | "toRun" | "step"> {
   const row = list.find((r) => r.runId === c.runId && r.consultedAgentId === c.consultedAgentId && r.status === "open");
   const since = row?.waitingSince ? Date.parse(row.waitingSince) : Number.NaN;
-  const mine = yours(c.consultedAgentId);
+  const toRun = row?.consultedRunId ?? null;
+  const mine = yours(c.consultedAgentId, toRun);
   return {
     kind: c.kind ?? "question",
     ...(row ? { id: row.id } : {}),
     wait: row?.waiting ?? null,
     waitSince: Number.isNaN(since) ? null : since,
     yours: mine,
+    toRun,
     step: mine || row?.waiting ? null : step(c.consultedAgentId),
   };
 }
 
 /** The question or hand-off one entry tells, with what the list and the cards here add (`consultDetails`). */
 export type ConsultWithDetails = LiveConsult &
-  Partial<Pick<EntryConsult, "id" | "wait" | "waitSince" | "yours" | "step">>;
+  Partial<Pick<EntryConsult, "id" | "wait" | "waitSince" | "yours" | "toRun" | "step">>;
 
 /** Live statuses the working bar shows (the ones "Parar" can stop; a provisional row is about to be one). */
 const BAR_STATUSES: ReadonlySet<string> = new Set(["thinking", "queued", "running"]);
@@ -523,6 +530,7 @@ export function barEntries(
         wait: c.wait ?? null,
         waitSince: c.waitSince ?? null,
         yours: c.yours ?? null,
+        toRun: c.toRun ?? null,
         step: c.step ?? null,
       },
     });

@@ -73,10 +73,11 @@ export const useOpenConsultation = () => useContext(ConsultGroupsContext).open;
 const RELOAD_ON = new Set(["agent.consulting", "agent.consulted", "agent.consultation"]);
 
 /**
- * The conversation's questions to other agents, by the run that asked; reloaded when one changes. `rows`: the
- * messages drawn here, in order; `live`: the runs at work after them. A reply shows its run's questions: the answers'
- * notices close to it fold, and the working line leaves out the ones near the end. A run at work draws none until its
- * reply comes (its answers' notices fold meanwhile): the line says its questions.
+ * The conversation's questions to other agents, by the run that asked; reloaded when one changes, with its threads'
+ * list, whose chips say how a hand-off's work stands. `rows`: the messages drawn here, in order; `live`: the runs at
+ * work after them. A reply shows its run's questions: the answers' notices close to it fold, and the working line
+ * leaves out the ones near the end. A run at work draws none until its reply comes (its answers' notices fold
+ * meanwhile): the line says its questions.
  */
 export function useConsultGroups(
   channelId: string,
@@ -88,7 +89,9 @@ export function useConsultGroups(
   const qc = useQueryClient();
   const list = useConsultations(org.id, channelId);
   useChannelEvents(channelId, true, (event) => {
-    if (RELOAD_ON.has(event.type)) void qc.invalidateQueries({ queryKey: keys.consultations(org.id, channelId) });
+    if (!RELOAD_ON.has(event.type)) return;
+    void qc.invalidateQueries({ queryKey: keys.consultations(org.id, channelId) });
+    void qc.invalidateQueries({ queryKey: keys.channelThreads(org.id, channelId, "all") });
   });
   // Its own memo: opening a question doesn't hand every row a new map.
   const helping = useMemo(() => {
@@ -180,7 +183,7 @@ export function ConsultPairRow({ askerId, items }: { askerId: string; items: rea
   // click goes to the card (ADR 0095 addendum).
   const asks = usePendingAsks();
   const only = items.length === 1 && items[0]?.status === "open" ? items[0] : undefined;
-  const mine = only ? askOf(asks, only.consultedAgentId) : null;
+  const mine = only ? askOf(asks, only.consultedAgentId, only.consultedRunId) : null;
   const pair = consultPair(items, now, askerId, mine?.on ?? null);
   if (!pair) return null;
   // An old reply's question with no id of its own has no conversation to open: it opens in place.

@@ -45,6 +45,7 @@ import {
   useWaitingOnMe,
 } from "@agenteschat/client";
 import { activityVerb, consultDetails, lineStep, listNames } from "@agenteschat/client/lib/activity";
+import { handoffAsk } from "@agenteschat/client/lib/agent-work";
 import { canTalk } from "@agenteschat/client/lib/audience";
 import { runPosition, screenAboveEnd } from "@agenteschat/client/lib/chat";
 import { CHAT_RHYTHM, firstUnreadId, opensAtLastRead, unreadThreadRootId } from "@agenteschat/client/lib/chat-look";
@@ -701,7 +702,8 @@ function Chat({
   // biome-ignore lint/correctness/useExhaustiveDependencies: `movedKey` stands for the set
   const stopsMoved = useMemo(() => movedNow, [movedKey]);
   // Work handed off from here stays on the line for as long as it is out (ADR 0095 addendum), with the other agent's
-  // state: its step, what it waits on, or what waits on me (its work for me says so before the list does).
+  // state: its step, what it waits on, or what waits on me (its work for me, when that work is the hand-off's run, says
+  // so before the list does).
   const presence = usePresenceOf();
   const lineConsults = useMemo(
     () =>
@@ -716,10 +718,7 @@ function Chat({
         ...consultDetails(
           x,
           consultData ?? [],
-          (id) => {
-            const work = presence.agent(id)?.work;
-            return work?.state === "you" ? work.ask : null;
-          },
+          (id, run) => handoffAsk(presence.agent(id)?.work, run),
           (id) => lineStep(t, presence.agent(id)?.status?.status),
         ),
       })),
