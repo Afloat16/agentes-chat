@@ -6,9 +6,14 @@ import {
   liveLodiSwitches,
   markNotificationDone,
   RIGHT_HAND,
+  registerPushDevice,
+  remindNotifications,
   renderPush,
   routineFailureEnd,
+  runRoutineNow,
+  wakeSnoozedNotifications,
 } from "../src";
+import { approvalsDigestLane } from "../src/approvals-digest";
 import { OUTSIDE_RUN_ERRORS, outsideRoutineFailure, ROUTINE_RETRY_AFTER_MS } from "../src/routine-ledger";
 import {
   enqueueTeamWatches,
@@ -83,11 +88,54 @@ const plan = async (values: Partial<typeof schema.machineAccounts.$inferInsert> 
     status: "signed_out",
     shared: true,
     createdBy: f.owner.id,
+    createdAt: ago(30 * 24 * HOUR),
+    lastUsedAt: ago(HOUR),
     updatedAt: ago(HOUR),
     ...values,
   });
   return id;
 };
+
+/** A run of `agentId` that failed for `reason`, as its person was told. */
+const runFailed = (agentId: string, reason: string, at = ago(30 * MIN)) =>
+  f.db.insert(schema.notifications).values({
+    orgId: f.org.id,
+    userId: f.owner.id,
+    kind: "run_failed",
+    groupKey: `run_failed:${crypto.randomUUID()}`,
+    actors: [{ type: "agent", id: agentId }],
+    latest: { reason },
+    createdAt: at,
+    updatedAt: at,
+  });
+
+const database = () =>
+  f.db.insert(schema.dbConnections).values({
+    orgId: f.org.id,
+    label: "Produção",
+    host: "db.example.com",
+    database: "app",
+    username: "reader",
+    secretCiphertext: "v1.x.y.z",
+    wrappedDataKey: "k",
+    kekId: "local:v1",
+    status: "needs_reconnect",
+    createdByUserId: f.owner.id,
+  });
+
+const waitingRun = (machineId: string) =>
+  f.db.insert(schema.agentRuns).values({
+    orgId: f.org.id,
+    agentId: f.agent.id,
+    channelId: f.general.id,
+    triggerMessageId: crypto.randomUUID(),
+    threadRootId: crypto.randomUUID(),
+    trigger: "mention",
+    hop: 0,
+    waitingMachineId: machineId,
+  });
+
+const pushes = async () => (await f.db.select().from(schema.outbox).where(eq(schema.outbox.kind, "push.send"))).length;
 
 const connector = async (label: string, values: Partial<typeof schema.connectorConnections.$inferInsert> = {}) => {
   const [row] = await f.db
@@ -145,6 +193,13 @@ const reread = async (id: string) => {
 };
 
 describe("the sweep", () => {
+  /** How many checks an hour of sweeps queues, from `from`. */
+  const anHour = async (from: Date) => {
+    let queued = 0;
+    for (let i = 0; i < 6; i++) queued += await enqueueTeamWatches(f.db, new Date(from.getTime() + i * 10 * MIN));
+    return queued;
+  };
+
   test("a healthy workspace gets no check, a problem gets one per window, the switch off none", async () => {
     f = await setup({ rightHand: true });
     expect(teamWatchLane.live).toBe(true);
@@ -193,6 +248,86 @@ describe("the sweep", () => {
       .set({ timezone: "Asia/Tokyo" })
       .where(eq(schema.organizationMembers.userId, f.owner.id));
     expect(await enqueueTeamWatches(f.db, new Date(NOW.getTime() + 10 * MIN))).toBe(0);
+  });
+
+  test("what the check would pass over queues nothing: a plan no agent uses, a budget on pace", async () => {
+    f = await setup({ rightHand: true, budgetNanoUsd: 10_000_000_000 });
+    await plan({ shared: false });
+    // 85% on the 29th lasts the month.
+    const late = new Date("2026-11-29T15:00:00Z");
+    await spend(f.agent.id, 8_500_000_000, late);
+    expect(await anHour(late)).toBe(0);
+    await watch(late);
+    expect(await rows()).toHaveLength(0);
+  });
+
+  test("what only stands as it was is looked at once an hour, what is new every 10 minutes", async () => {
+    f = await setup({ rightHand: true });
+    await connector("Slack");
+    await watch();
+    expect(await rows()).toHaveLength(1);
+    // The day it broke and was told: every window, so its row leaves soon after the fix.
+    expect(await anHour(NOW)).toBe(6);
+    // Days later, told and still not fixed, or put away: once an hour.
+    const later = new Date("2026-11-14T15:00:00Z");
+    expect(await anHour(later)).toBe(1);
+    const [row] = await rows();
+    await markNotificationDone({ db: f.db }, f.owner.id, f.org.id, row?.id ?? "", true);
+    expect(await anHour(new Date("2026-11-15T15:00:00Z"))).toBe(1);
+  });
+
+  test("a person reminded today, and an approval no longer theirs to decide, queue nothing more", async () => {
+    f = await setup({ rightHand: true });
+    const member = await addMember(f.db, f.org.id, "member", "caio");
+    await ask(f.owner.id, ago(8 * HOUR));
+    const [approval] = await f.db
+      .insert(schema.approvals)
+      .values({
+        orgId: f.org.id,
+        agentId: f.agent.id,
+        channelId: f.general.id,
+        threadRootId: crypto.randomUUID(),
+        toolUseId: "tool-1",
+        tool: "github_merge",
+        scope: "github:pr.merge",
+        params: { pr: 42 },
+        actionHash: "hash",
+        title: "Merge PR #42",
+        approvers: { required: true, userIds: [f.owner.id], label: "Ana", requestedBy: null, requesterDecides: false },
+        expiresAt: new Date(NOW.getTime() + 24 * HOUR),
+      })
+      .returning();
+    // Told to a member who may not decide it (any more).
+    const stale = await ask(member.id, ago(8 * HOUR), {
+      kind: "approval",
+      groupKey: "approval:stale",
+      source: { approvalId: approval?.id },
+    });
+    expect(await enqueueTeamWatches(f.db, NOW)).toBe(1);
+    await watch();
+    // Marked without a word: it is out of that person's inbox.
+    expect((await reread(stale.id)).latest.reminder).toBe(true);
+    expect((await reread(stale.id)).updatedAt.getTime()).toBe(stale.updatedAt.getTime());
+    // What became old after today's reminder waits for tomorrow, and asks for no check until then.
+    await ask(f.owner.id, ago(3.5 * HOUR));
+    expect(await anHour(new Date(NOW.getTime() + HOUR))).toBe(0);
+    expect(await enqueueTeamWatches(f.db, new Date(NOW.getTime() + 24 * HOUR))).toBe(1);
+  });
+
+  test("with the switch turned off, one last check closes the rows it had open", async () => {
+    f = await setup({ rightHand: true });
+    await connector("Slack");
+    await watch();
+    expect((await rows())[0]?.doneAt).toBeNull();
+    await setSwitch(false);
+    expect(await enqueueTeamWatches(f.db, NOW)).toBe(1);
+    await watch();
+    expect((await rows())[0]?.doneAt).not.toBeNull();
+    expect(await enqueueTeamWatches(f.db, new Date(NOW.getTime() + 10 * MIN))).toBe(0);
+    // Back on, what was told once is not told again.
+    await setSwitch(true);
+    await watch(new Date(NOW.getTime() + 20 * MIN));
+    expect(await rows()).toHaveLength(1);
   });
 });
 
@@ -276,6 +411,21 @@ describe("what it tells", () => {
     expect(teamWatchNames(["a", "b", "c", "d", "e"])).toBe("a, b, c +2");
   });
 
+  test("a new problem joins the open row at once, and brings it back unread only once it lasted", async () => {
+    f = await setup({ rightHand: true });
+    await connector("Slack");
+    await watch();
+    await f.db.update(schema.notifications).set({ readAt: NOW }).where(eq(schema.notifications.kind, "team_watch"));
+    const broke = new Date(NOW.getTime() + 5 * MIN);
+    await connector("Notion", { updatedAt: broke });
+    await watch(new Date(NOW.getTime() + 10 * MIN));
+    expect((await rows())[0]).toMatchObject({ count: 2, latest: { names: ["Slack", "Notion"] } });
+    expect((await rows())[0]?.readAt).not.toBeNull();
+    await watch(new Date(NOW.getTime() + 30 * MIN));
+    expect(await rows()).toHaveLength(1);
+    expect((await rows())[0]).toMatchObject({ count: 2, readAt: null });
+  });
+
   test("a connector goes to who connected it while they manage connectors, else to who does", async () => {
     f = await setup({ rightHand: true });
     const member = await addMember(f.db, f.org.id, "member", "caio");
@@ -310,18 +460,7 @@ describe("what it tells", () => {
 
   test("a database to reconnect is told to who manages connectors", async () => {
     f = await setup({ rightHand: true });
-    await f.db.insert(schema.dbConnections).values({
-      orgId: f.org.id,
-      label: "Produção",
-      host: "db.example.com",
-      database: "app",
-      username: "reader",
-      secretCiphertext: "v1.x.y.z",
-      wrappedDataKey: "k",
-      kekId: "local:v1",
-      status: "needs_reconnect",
-      createdByUserId: f.owner.id,
-    });
+    await database();
     await watch();
     expect((await rows())[0]).toMatchObject({ userId: f.owner.id, waiting: true, latest: { reason: "database" } });
   });
@@ -401,16 +540,9 @@ describe("what it tells", () => {
 
   test("what another notice already told the person gets no second row, now or later", async () => {
     f = await setup({ rightHand: true });
-    await plan();
-    await f.db.insert(schema.notifications).values({
-      orgId: f.org.id,
-      userId: f.owner.id,
-      kind: "run_failed",
-      groupKey: "run_failed:x",
-      latest: { reason: "not_logged_in", plan: "Trabalho" },
-      createdAt: ago(30 * MIN),
-      updatedAt: ago(30 * MIN),
-    });
+    const accountId = await plan();
+    await f.db.update(schema.agents).set({ brainAccountId: accountId }).where(eq(schema.agents.id, f.agent.id));
+    await runFailed(f.agent.id, "not_logged_in");
     await watch();
     expect(await rows()).toHaveLength(0);
     // That notice gone, the same sign-in is still not told twice.
@@ -423,23 +555,119 @@ describe("what it tells", () => {
     f = await setup({ rightHand: true, budgetNanoUsd: 10_000_000_000 });
     await spend(f.agent.id, 10_000_000_000);
     const mac = await computer();
-    await f.db.insert(schema.agentRuns).values({
-      orgId: f.org.id,
-      agentId: f.agent.id,
-      channelId: f.general.id,
-      triggerMessageId: crypto.randomUUID(),
-      threadRootId: crypto.randomUUID(),
-      trigger: "mention",
-      hop: 0,
-      waitingMachineId: mac.id,
-    });
+    await waitingRun(mac.id);
     const told = { orgId: f.org.id, userId: f.owner.id, createdAt: ago(30 * MIN), updatedAt: ago(30 * MIN) };
     await f.db.insert(schema.notifications).values([
-      { ...told, kind: "routine_failed", groupKey: "routine_failed:x", latest: { reason: "budget_exceeded" } },
+      {
+        ...told,
+        kind: "routine_failed",
+        groupKey: "routine_failed:x",
+        actors: [{ type: "agent", id: f.agent.id }],
+        latest: { reason: "budget_exceeded" },
+      },
       { ...told, kind: "routine_stalled", groupKey: "routine_stalled:x", source: { machineId: mac.id } },
     ]);
     await watch();
     expect(await rows()).toHaveLength(0);
+  });
+
+  test("another notice hides only its own thing: another agent's budget, plan or computer is still told", async () => {
+    f = await setup({ rightHand: true, budgetNanoUsd: 10_000_000_000 });
+    const lodi = await lodiOf();
+    // An earlier notice about another agent (the right hand itself), with nothing wrong on it now.
+    await runFailed(lodi.id, "budget_exceeded");
+    await runFailed(lodi.id, "not_logged_in");
+    const other = await computer({ name: "Outro" });
+    await f.db.insert(schema.notifications).values({
+      orgId: f.org.id,
+      userId: f.owner.id,
+      kind: "device.waiting",
+      groupKey: "device-waiting:x",
+      source: { machineId: other.id },
+      createdAt: ago(30 * MIN),
+      updatedAt: ago(30 * MIN),
+    });
+    await spend(f.agent.id, 10_000_000_000);
+    const accountId = await plan();
+    await f.db.update(schema.agents).set({ brainAccountId: accountId }).where(eq(schema.agents.id, f.agent.id));
+    const mac = await computer();
+    await waitingRun(mac.id);
+    await watch();
+    expect((await rows()).map((r) => r.latest.reason).sort()).toEqual(["budget_out", "computer", "sign_in"]);
+  });
+
+  test("when the other notice comes second, the right hand's own row leaves", async () => {
+    f = await setup({ rightHand: true });
+    const accountId = await plan();
+    await f.db.update(schema.agents).set({ brainAccountId: accountId }).where(eq(schema.agents.id, f.agent.id));
+    await watch();
+    expect((await rows())[0]?.doneAt).toBeNull();
+    await runFailed(f.agent.id, "not_logged_in", new Date(NOW.getTime() + 5 * MIN));
+    await watch(new Date(NOW.getTime() + 10 * MIN));
+    expect(await rows()).toHaveLength(1);
+    expect((await rows())[0]?.doneAt).not.toBeNull();
+  });
+
+  test("a row stays while its thing is wrong, whatever else moves on it, and is never told twice", async () => {
+    f = await setup({ rightHand: true });
+    await registerPushDevice(f.db, f.owner.id, {
+      token: "ExponentPushToken[ana-phone-0001]",
+      platform: "ios",
+      locale: "pt-BR",
+    });
+    const accountId = await plan();
+    const slack = await connector("Slack");
+    await watch();
+    expect(await rows()).toHaveLength(2);
+    expect(await pushes()).toBe(2);
+    // A usage report of its computer rewrites a plan's row, and a rename an app's: both as wrong as before.
+    for (let i = 1; i <= 12; i++) {
+      const at = new Date(NOW.getTime() + i * 10 * MIN);
+      await f.db.update(schema.machineAccounts).set({ updatedAt: at }).where(eq(schema.machineAccounts.id, accountId));
+      if (i === 1)
+        await f.db
+          .update(schema.connectorConnections)
+          .set({ updatedAt: at })
+          .where(eq(schema.connectorConnections.id, slack.id));
+      await watch(at);
+    }
+    const all = await rows();
+    expect(all).toHaveLength(2);
+    expect(all.every((r) => r.doneAt === null)).toBe(true);
+    expect(await pushes()).toBe(2);
+
+    // Put away while still signed out, the plan's notice does not come back with the next report either.
+    const signIn = all.find((r) => r.latest.reason === "sign_in");
+    await markNotificationDone({ db: f.db }, f.owner.id, f.org.id, signIn?.id ?? "", true);
+    const later = new Date(NOW.getTime() + 3 * HOUR);
+    await f.db.update(schema.machineAccounts).set({ updatedAt: later }).where(eq(schema.machineAccounts.id, accountId));
+    await watch(new Date(later.getTime() + HOUR));
+    expect(await rows()).toHaveLength(2);
+    expect(await pushes()).toBe(2);
+  });
+
+  test("a plan on a busy computer is told though its row never rests, and again when it ends after working", async () => {
+    f = await setup({ rightHand: true });
+    // Its row moved a minute ago, its last turn an hour ago.
+    const accountId = await plan({ updatedAt: ago(MIN) });
+    await watch();
+    expect(await rows()).toHaveLength(1);
+    // Signed out a moment after a turn: a blip tells nobody yet.
+    const again = new Date(NOW.getTime() + 5 * HOUR);
+    await f.db
+      .update(schema.machineAccounts)
+      .set({ status: "active", lastUsedAt: again })
+      .where(eq(schema.machineAccounts.id, accountId));
+    await watch(again);
+    expect((await rows())[0]?.doneAt).not.toBeNull();
+    await f.db
+      .update(schema.machineAccounts)
+      .set({ status: "signed_out" })
+      .where(eq(schema.machineAccounts.id, accountId));
+    await watch(new Date(again.getTime() + 10 * MIN));
+    expect(await rows()).toHaveLength(1);
+    await watch(new Date(again.getTime() + 30 * MIN));
+    expect(await rows()).toHaveLength(2);
   });
 
   test("at most three new rows a person a day, the rest told on a later day", async () => {
@@ -447,18 +675,7 @@ describe("what it tells", () => {
     await plan();
     await connector("Slack");
     await spend(f.agent.id, 10_000_000_000);
-    await f.db.insert(schema.dbConnections).values({
-      orgId: f.org.id,
-      label: "Produção",
-      host: "db.example.com",
-      database: "app",
-      username: "reader",
-      secretCiphertext: "v1.x.y.z",
-      wrappedDataKey: "k",
-      kekId: "local:v1",
-      status: "needs_reconnect",
-      createdByUserId: f.owner.id,
-    });
+    await database();
     await watch();
     await watch(new Date(NOW.getTime() + 10 * MIN));
     expect(await rows()).toHaveLength(TEAM_WATCH_DAILY_ROWS);
@@ -597,9 +814,73 @@ describe("what it fixes", () => {
     expect((await routineRow(f, routine.id)).active).toBe(false);
     await watch(new Date(Date.now() + 45 * MIN));
     expect((await routineRow(f, routine.id)).active).toBe(false);
-    // One pause notice each time it paused, and no second "failed" after the resume.
+    // The resume did not hold: its first failure says so, once, then the pause.
     expect(await notificationsOf(f, "routine_paused")).toHaveLength(2);
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(2);
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
+  test("after its resume, a routine that fails for its own reasons is told at the first failure, each time", async () => {
+    f = await setup({ rightHand: true });
+    const routine = await channelRoutine(f);
+    await slotIn(routine.id, 30);
+    for (const minutesAgo of [50, 40, 30, 20, 10]) await failOnce(routine.id, minutesAgo, DOWN);
+    await watch(new Date(Date.now() + 45 * MIN));
+    expect((await routineRow(f, routine.id)).active).toBe(true);
     expect(await notificationsOf(f, "routine_failed")).toHaveLength(1);
+
+    await slotIn(routine.id, 30);
+    await failOnce(routine.id, 9, "provider_error: invalid_key@Claude: refused");
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(2);
+    for (const minutesAgo of [8, 7, 6, 5]) await failOnce(routine.id, minutesAgo, "too_many_tool_calls");
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(2);
+    // The person turns it back on (what their own resume writes), and it fails again: told again.
+    await f.db
+      .update(schema.routines)
+      .set({ active: true, pausedReason: null, failuresInRow: 0, nextRunAt: minutesFromNow(30) })
+      .where(eq(schema.routines.id, routine.id));
+    await failOnce(routine.id, 4, "too_many_tool_calls");
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(3);
+  });
+
+  test("a failure held for a retry that never ran is told at the streak's next failure, once", async () => {
+    f = await setup({ rightHand: true });
+    const routine = await channelRoutine(f);
+    await farSlot(routine.id);
+    await failOnce(routine.id, 30, DOWN);
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(0);
+    const [retry] = (await f.db.select().from(schema.routineRuns)).filter((r) => r.status === "queued");
+    // The workspace is on hold at the retry's time: its slot passes.
+    const standing = (to: "active" | "hold") =>
+      f.db.update(schema.organizations).set({ standing: to }).where(eq(schema.organizations.id, f.org.id));
+    await standing("hold");
+    await executeRoutineRun(routineDeps(f), retry?.id ?? "");
+    expect((await routineRunRow(f, retry?.id ?? "")).status).toBe("skipped");
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(0);
+    await standing("active");
+    await failOnce(routine.id, 5, DOWN);
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(1);
+    await failOnce(routine.id, 4, DOWN);
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(1);
+  });
+
+  test("Rodar agora while a retry waits runs now, the retry gives way, and its failure tells the held one", async () => {
+    f = await setup({ rightHand: true });
+    const routine = await channelRoutine(f);
+    await farSlot(routine.id);
+    await failOnce(routine.id, 30, DOWN);
+    const [retry] = (await f.db.select().from(schema.routineRuns)).filter((r) => r.status === "queued");
+    await runRoutineNow(routineDeps(f), f.owner.id, f.org.id, routine.id);
+    expect(await routineRunRow(f, retry?.id ?? "")).toMatchObject({ status: "superseded", code: "superseded" });
+    const [manual] = (await f.db.select().from(schema.routineRuns)).filter((r) => r.status === "queued");
+    expect(manual?.trigger).toBe("manual");
+    await executeRoutineRun(routineDeps(f), manual?.id ?? "");
+    expect((await routineRunRow(f, manual?.id ?? "")).status).toBe("started");
+    await failRun(manual?.id ?? "", DOWN);
+    expect(await notificationsOf(f, "routine_failed")).toHaveLength(1);
+    // The retry's own job finds nothing to run.
+    await executeRoutineRun(routineDeps(f), retry?.id ?? "");
+    expect((await routineRunRow(f, retry?.id ?? "")).status).toBe("superseded");
     expect(f.provider.calls).toHaveLength(0);
   });
 
@@ -660,6 +941,102 @@ describe("what it reminds of", () => {
     // 01:00 UTC is 10:00 in Tokyo.
     await watch(new Date("2026-11-12T01:00:00Z"));
     expect((await reread(row.id)).latest.reminder).toBe(true);
+  });
+
+  test("one push a day, to the person alone, and only for what they have not read", async () => {
+    f = await setup({ rightHand: true });
+    const admin = await addMember(f.db, f.org.id, "admin", "bia");
+    for (const user of [f.owner, admin])
+      await registerPushDevice(f.db, user.id, {
+        token: `ExponentPushToken[${user.id.slice(0, 8)}-phone-01]`,
+        platform: "ios",
+        locale: "pt-BR",
+      });
+    // One ask told to both: the owner left it unread, the admin read it.
+    const mine = await ask(f.owner.id, ago(8 * HOUR), { groupKey: "agent_question:shared" });
+    const theirs = await ask(admin.id, ago(8 * HOUR), { groupKey: "agent_question:shared", readAt: ago(HOUR) });
+    await ask(f.owner.id, ago(6 * HOUR));
+    await ask(f.owner.id, ago(5 * HOUR));
+    await watch();
+    await watch(new Date(NOW.getTime() + 10 * MIN));
+    await watch(new Date(NOW.getTime() + 2 * HOUR));
+    expect(await pushes()).toBe(1);
+    expect((await reread(mine.id)).latest).toMatchObject({ reminder: true, still: 3 });
+    expect((await reread(theirs.id)).readAt).not.toBeNull();
+    expect((await reread(theirs.id)).latest.reminder).toBeUndefined();
+
+    // The helper itself: with `to`, a group's rows of other people and read rows stay as they are.
+    const again = await remindNotifications(
+      { db: f.db, pubsub: f.pubsub, now: () => NOW },
+      f.org.id,
+      "agent_question:shared",
+      { reminder: true },
+      "test",
+      [admin.id],
+    );
+    expect(again).toBe(0);
+    expect(await pushes()).toBe(1);
+  });
+
+  test("approvals are left to their digest for who has it on with enough waiting. The rest is still reminded", async () => {
+    f = await setup({ rightHand: true });
+    const approvals = await f.db
+      .insert(schema.approvals)
+      .values(
+        [1, 2, 3].map((n) => ({
+          orgId: f.org.id,
+          agentId: f.agent.id,
+          channelId: f.general.id,
+          threadRootId: crypto.randomUUID(),
+          toolUseId: `tool-${n}`,
+          tool: "github_merge",
+          scope: "github:pr.merge",
+          params: { pr: n },
+          actionHash: `hash-${n}`,
+          title: `Merge PR #${n}`,
+          expiresAt: new Date(NOW.getTime() + 24 * HOUR),
+        })),
+      )
+      .returning();
+    const asked = [];
+    for (const a of approvals)
+      asked.push(
+        await ask(f.owner.id, ago(8 * HOUR), {
+          kind: "approval",
+          groupKey: `approval:${a.id}`,
+          source: { approvalId: a.id },
+        }),
+      );
+    const question = await ask(f.owner.id, ago(5 * HOUR));
+    approvalsDigestLane.live = true;
+    try {
+      await watch();
+    } finally {
+      approvalsDigestLane.live = false;
+    }
+    for (const a of asked) {
+      const row = await reread(a.id);
+      expect(row.latest.reminder).toBe(true);
+      expect(row.latest.still).toBeUndefined();
+      expect(row.updatedAt.getTime()).toBe(a.updatedAt.getTime());
+    }
+    expect((await reread(question.id)).latest).toMatchObject({ reminder: true, still: 1 });
+  });
+
+  test("a reminded item snoozed and back says its own line, not that day's count", async () => {
+    f = await setup({ rightHand: true });
+    const row = await ask(f.owner.id, ago(8 * HOUR));
+    await ask(f.owner.id, ago(6 * HOUR));
+    await watch();
+    expect((await reread(row.id)).latest.still).toBe(2);
+    await f.db
+      .update(schema.notifications)
+      .set({ snoozedUntil: new Date(Date.now() - MIN) })
+      .where(eq(schema.notifications.id, row.id));
+    await wakeSnoozedNotifications({ db: f.db, pubsub: f.pubsub });
+    const woke = await reread(row.id);
+    expect(woke.latest.still).toBeUndefined();
+    expect(woke.latest.reminder).toBe(true);
   });
 
   test("a reminder's push says how many things wait, and a notice's push is its whole sentence", () => {

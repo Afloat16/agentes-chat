@@ -114,8 +114,8 @@ export async function lastGoodRun(db: Executor, routineId: string): Promise<numb
 /** `saidOnce` keys of the right hand's fixes: one retry and one resume of a routine since its last good run. */
 export const routineRetryKey = (routineId: string, lastGood: number) => `team_watch.retry:${routineId}:${lastGood}`;
 export const routineResumeKey = (routineId: string, lastGood: number) => `team_watch.resume:${routineId}:${lastGood}`;
-/** The routine run that is such a retry: when it fails too, its routine's failure is told. */
-const retryRunKey = (routineRunId: string) => `team_watch.retry_run:${routineRunId}`;
+/** The failure that retry held back was told. */
+const heldToldKey = (routineId: string, lastGood: number) => `${routineRetryKey(routineId, lastGood)}:told`;
 
 /** Whether `saidOnce` was already asked for this key (without asking). */
 export async function wasSaid(db: Executor, orgId: string, key: string): Promise<boolean> {
@@ -166,14 +166,15 @@ async function retryOutsideFailure(
       runAt: at,
       maxAttempts: 3,
     });
-    await saidOnce(tx, ended.orgId, retryRunKey(run.id));
     return true;
   });
 }
 
 /**
- * Whether a routine's failure is told now. The streak's first one is, unless the right hand tries it once more
- * (`retryOutsideFailure`) or had just resumed the routine (its next pause tells). The retry's own failure is.
+ * Whether a routine's failure is told now. The first of a streak is, unless the right hand tries it once more first
+ * (`retryOutsideFailure`). A failure held back so is told at the streak's next one, whichever run that is (the
+ * retry, the run a person started in its place, the next slot when the retry never ran), once. A good run in
+ * between leaves nothing to tell.
  */
 async function tellsRoutineFailure(
   deps: LedgerDeps,
@@ -181,11 +182,12 @@ async function tellsRoutineFailure(
   failures: number,
   active: boolean,
 ): Promise<boolean> {
-  if (failures === 2) return wasSaid(deps.db, ended.orgId, retryRunKey(ended.routineRunId));
-  if (failures !== 1) return false;
   const lastGood = await lastGoodRun(deps.db, ended.routineId);
-  if (active && (await retryOutsideFailure(deps, ended, lastGood))) return false;
-  return !(await wasSaid(deps.db, ended.orgId, routineResumeKey(ended.routineId, lastGood)));
+  if (failures === 1) return !(active && (await retryOutsideFailure(deps, ended, lastGood)));
+  return (
+    (await wasSaid(deps.db, ended.orgId, routineRetryKey(ended.routineId, lastGood))) &&
+    (await saidOnce(deps.db, ended.orgId, heldToldKey(ended.routineId, lastGood)))
+  );
 }
 
 /**

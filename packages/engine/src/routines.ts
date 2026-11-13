@@ -1992,6 +1992,26 @@ export async function runRoutineNow(deps: RoutineDeps, actorId: string, orgId: s
   await requireRoutineManager(deps.db, actorId, orgId, routine.agentId);
   // A person is waiting on this one: told now, where a scheduled slot just passes.
   await assertCanWork(deps.db, orgId, routine.agentId);
+  // A try queued for later after a failure (`retryOutsideFailure`, the only scheduled run queued ahead of its time)
+  // gives way: the person's run is that try, now. Left queued, it would have this one skipped as "the previous one
+  // was still running".
+  const ahead = await deps.db
+    .select({ id: routineRuns.id })
+    .from(routineRuns)
+    .where(
+      and(
+        eq(routineRuns.routineId, routine.id),
+        eq(routineRuns.status, "queued"),
+        eq(routineRuns.trigger, "schedule"),
+        sql`${routineRuns.at} > now()`,
+      ),
+    );
+  for (const r of ahead)
+    await endRoutineRun(
+      deps,
+      { orgId, routineId: routine.id, routineRunId: r.id },
+      { status: "superseded", code: "superseded" },
+    );
   await queueRoutineRun(deps, routine, new Date(), "manual");
   await publishRoutineRuns(deps.pubsub, orgId, routine.id);
   const [view] = await views(deps.db, [routine], actorId, deps.hooks);

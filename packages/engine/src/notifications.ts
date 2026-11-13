@@ -1004,7 +1004,8 @@ export async function wakeSnoozedNotifications(deps: NotificationDeps): Promise<
   const now = nowOf(deps);
   const rows = await deps.db
     .update(notifications)
-    .set({ snoozedUntil: null, updatedAt: now })
+    // A reminder's count of what else waited (`still`) was that day's: the wake's push is this item's own.
+    .set({ snoozedUntil: null, updatedAt: now, latest: sql`${notifications.latest} - 'still'` })
     .where(and(lte(notifications.snoozedUntil, now), isNull(notifications.doneAt)))
     .returning();
   const users = new Map<string, string>();

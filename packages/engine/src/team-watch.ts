@@ -41,8 +41,10 @@ import { DEFAULT_AGENT_BUDGET_NANO_USD, monthStartUtc } from "./usage";
  * switch from it, so nothing else is wired by hand.
  * - `enqueueTeamWatches` runs on the worker's `rightHand` tick, every 10 minutes, for every workspace at once. It
  *   queues `TEAM_WATCH_JOB` (payload `{}`, the organization on the job) only for open workspaces that have the right
- *   hand, whose `organization_settings.team_watch` is on (no row counts as on) and that have something to look at.
- * - `runTeamWatch` is that job. It reads the switch again and may run twice: every step is once-only by a key.
+ *   hand, whose `organization_settings.team_watch` is on (no row counts as on) and that have something the job would
+ *   act on: every 10 minutes while something is new, every hour while it only stands.
+ * - `runTeamWatch` is that job. It reads the switch again and may run twice: every step is once-only by a key. With
+ *   the switch off it closes the rows it had open.
  */
 
 export const TEAM_WATCH_JOB = "team_watch.check";
@@ -59,7 +61,10 @@ export const TEAM_WATCH_CAUSES = [
 ] as const;
 export type TeamWatchCause = (typeof TEAM_WATCH_CAUSES)[number];
 
-/** A sign-in, an app or a mailbox is told once it stayed wrong this long: a blip tells nobody. */
+/**
+ * A sign-in, an app or a mailbox is told once it stayed wrong this long: a blip tells nobody. Counted from the plan's
+ * last turn, and from the last change of an app's or a mailbox's row.
+ */
 export const TELL_GRACE_MS = 20 * 60_000;
 /** A brought computer is told once it has been gone this long with work waiting for it. */
 export const OFFLINE_GRACE_MS = 30 * 60_000;
@@ -69,9 +74,14 @@ export const BUDGET_LOW_RATIO = 0.8;
 export const TEAM_WATCH_DAILY_ROWS = 3;
 /** How many things a row names. The rest are counted. */
 const MAX_NAMES = 3;
+const DAY_MS = 24 * 3600_000;
 /** A paused routine is looked at from this long after its pause (an outage needs time to pass) and for a day. */
 export const ROUTINE_RESUME_AFTER_MS = 30 * 60_000;
-const RESUME_WITHIN_MS = 24 * 3600_000;
+const RESUME_WITHIN_MS = DAY_MS;
+/** What began or moved within this long is looked at every 10 minutes. What only stands as it was, every hour. */
+const NEW_FOR_MS = DAY_MS;
+const WINDOW_MS = 10 * 60_000;
+const WINDOWS_AN_HOUR = 6;
 /** What waits on a person unread this long is reminded once, in their daytime. */
 export const UNANSWERED_MS = 4 * 3600_000;
 const DAY_STARTS = 9;
@@ -116,53 +126,110 @@ const unreadAsk = (at: SQL) => sql`n.waiting and n.done_at is null and n.read_at
 const localClock = (at: SQL) =>
   sql`(${at} at time zone ${zoneSql(sql`m.timezone`, zoneSql(sql`s.timezone`, sql`'UTC'`))})`;
 const daytime = (at: SQL) => sql`extract(hour from ${localClock(at)})::int between ${DAY_STARTS} and ${DAY_ENDS - 1}`;
+const localDay = (at: SQL) => sql`to_char(${localClock(at)}, 'YYYY-MM-DD')`;
+/** `saidOnce` key of a person's one reminder on their local day. */
+const remindKey = (userId: string, day: string) => `team_watch.remind:${userId}:${day}`;
+
+/** The share of the month gone, never zero: a budget's pace is what was spent over it. */
+const monthShare = (now: Date) => {
+  const start = monthStartUtc(now).getTime();
+  const end = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
+  return Math.max((now.getTime() - start) / (end - start), 0.001);
+};
 
 /**
- * Queues one check for each open workspace that has the right hand, "Cuidar da equipe" on and something to look at:
- * an open row of its own (to close once fixed), a candidate problem, a routine it may resume, an ask to remind of.
- * One job per workspace and 10-minute window. Returns how many it queued.
+ * Queues one check for each open workspace that has the right hand, "Cuidar da equipe" on and something the check
+ * would act on: an open row of its own (to close once fixed), a problem as `problemsOf` reads it, a routine it may
+ * resume, an ask to remind of today. A workspace with something new (`NEW_FOR_MS`) gets one check per 10-minute
+ * window. One where everything only stands as it was, one an hour. With the switch off or the right hand gone, one
+ * last check while a row of its own is open, to close it. Returns how many it queued.
  */
 export async function enqueueTeamWatches(db: Database, now: Date = new Date()): Promise<number> {
   const at = sql`${now.toISOString()}::timestamptz`;
   const ago = (ms: number) => sql`(${at} - make_interval(secs => ${ms / 1000}))`;
+  const isNew = (since: SQL) => sql`${since} > ${ago(NEW_FOR_MS)}`;
   const budget = sql`coalesce(a.monthly_budget_nano_usd, s.default_agent_budget_nano_usd,
     ${DEFAULT_AGENT_BUDGET_NANO_USD}::bigint)`;
-  // ponytail: a workspace with a standing problem is checked every 10 minutes until it is fixed (about ten small
-  // queries each time). If the outbox shows that as load, widen the window for problems that did not change.
-  const orgs = rowsOf<{ id: string }>(
+  const planSince = sql`greatest(ma.created_at, ma.last_used_at, ma.last_success_at)`;
+  const lastSeen = sql`coalesce(mc.last_seen_at, mc.updated_at)`;
+  const ownRows = sql`notifications n where n.org_id = organizations.id and n.kind = 'team_watch'
+    and n.done_at is null`;
+  // What there is to look at, each as rows under the workspace, and which of them are new. The conditions are the
+  // check's own (`problemsOf`, `resumeCleared`, `remindUnread`): a row here that the check would pass over costs a
+  // job each time.
+  const reasons: { from: SQL; fresh?: SQL }[] = [
+    { from: ownRows, fresh: isNew(sql`n.updated_at`) },
+    {
+      from: sql`machine_accounts ma where ma.org_id = organizations.id and ma.status = 'signed_out'
+        and ma.created_by is not null and ${planSince} < ${ago(TELL_GRACE_MS)}
+        and (ma.shared or exists (select 1 from agents a where a.org_id = ma.org_id
+          and a.brain_account_id = ma.id and a.archived_at is null))`,
+      fresh: isNew(planSince),
+    },
+    {
+      from: sql`connector_connections c where c.org_id = organizations.id and c.status = 'needs_reconnect'
+        and c.revoked_at is null and c.updated_at < ${ago(TELL_GRACE_MS)}`,
+      fresh: isNew(sql`c.updated_at`),
+    },
+    {
+      from: sql`mail_accounts ml where ml.org_id = organizations.id and ml.status = 'needs_reconnect'
+        and ml.revoked_at is null and ml.created_by_user_id is not null and ml.updated_at < ${ago(TELL_GRACE_MS)}`,
+      fresh: isNew(sql`ml.updated_at`),
+    },
+    {
+      from: sql`db_connections d where d.org_id = organizations.id and d.status = 'needs_reconnect'
+        and d.revoked_at is null`,
+      fresh: isNew(sql`d.updated_at`),
+    },
+    {
+      from: sql`machines mc where mc.org_id = organizations.id and mc.kind = 'connected' and mc.deleted_at is null
+        and ${lastSeen} < ${ago(OFFLINE_GRACE_MS)}
+        and exists (select 1 from agent_runs r where r.waiting_machine_id = mc.id)`,
+      fresh: isNew(lastSeen),
+    },
+    {
+      from: sql`agent_budget_periods b join agents a on a.id = b.agent_id
+        where b.org_id = organizations.id and b.period_start = ${periodOf(now)}::date and a.archived_at is null
+          and ${budget} > 0 and (b.spent_nano_usd >= ${budget}
+            or (b.spent_nano_usd >= ${BUDGET_LOW_RATIO}::numeric * ${budget}
+              and b.spent_nano_usd > ${monthShare(now)}::float8 * ${budget}))`,
+    },
+    {
+      from: sql`routines rt where rt.org_id = organizations.id and not rt.active and rt.paused_reason = 'failing'
+        and rt.trigger_type = 'schedule' and rt.deleted_at is null
+        and rt.updated_at < ${ago(ROUTINE_RESUME_AFTER_MS)} and rt.updated_at > ${ago(RESUME_WITHIN_MS)}`,
+    },
+    {
+      // Nobody is reminded twice a day: the key is `saidKey(orgId, remindKey(userId, day))`, as `remindUnread` writes it.
+      from: sql`notifications n join organization_members m on m.org_id = n.org_id and m.user_id = n.user_id
+        where n.org_id = organizations.id and ${unreadAsk(at)} and ${daytime(at)}
+          and not exists (select 1 from outbox ob where ob.dedupe_key = 'right_hand.said:' || n.org_id::text
+            || ':team_watch.remind:' || n.user_id || ':' || ${localDay(at)})`,
+      fresh: sql`true`,
+    },
+  ];
+  // 2: something new. 1: only what stands. 0: nothing.
+  const level = sql`greatest(${sql.join(
+    reasons.map(
+      (r) => sql`coalesce((select max(case when ${r.fresh ?? sql`false`} then 2 else 1 end) from ${r.from}), 0)`,
+    ),
+    sql`, `,
+  )})`;
+  const orgs = rowsOf<{ id: string; level: number }>(
     await db.execute(sql`with ${knownZonesSql}
-      select organizations.id from organizations
-      left join organization_settings s on s.org_id = organizations.id
-      where ${openOrg} and coalesce(s.team_watch, true)
-        and exists (select 1 from agents a where a.org_id = organizations.id and a.builtin = 'right_hand'
-          and a.archived_at is null)
-        and (
-          exists (select 1 from notifications n where n.org_id = organizations.id and n.kind = 'team_watch'
-            and n.done_at is null)
-          or exists (select 1 from machine_accounts ma where ma.org_id = organizations.id
-            and ma.status = 'signed_out' and ma.created_by is not null and ma.updated_at < ${ago(TELL_GRACE_MS)})
-          or exists (select 1 from connector_connections c where c.org_id = organizations.id
-            and c.status = 'needs_reconnect' and c.revoked_at is null and c.updated_at < ${ago(TELL_GRACE_MS)})
-          or exists (select 1 from mail_accounts ml where ml.org_id = organizations.id
-            and ml.status = 'needs_reconnect' and ml.revoked_at is null and ml.created_by_user_id is not null
-            and ml.updated_at < ${ago(TELL_GRACE_MS)})
-          or exists (select 1 from db_connections d where d.org_id = organizations.id
-            and d.status = 'needs_reconnect' and d.revoked_at is null)
-          or exists (select 1 from machines mc where mc.org_id = organizations.id and mc.kind = 'connected'
-            and mc.deleted_at is null and coalesce(mc.last_seen_at, mc.updated_at) < ${ago(OFFLINE_GRACE_MS)}
-            and exists (select 1 from agent_runs r where r.waiting_machine_id = mc.id))
-          or exists (select 1 from agent_budget_periods b join agents a on a.id = b.agent_id
-            where b.org_id = organizations.id and b.period_start = ${periodOf(now)}::date and a.archived_at is null
-              and ${budget} > 0 and b.spent_nano_usd >= ${BUDGET_LOW_RATIO}::numeric * ${budget})
-          or exists (select 1 from routines rt where rt.org_id = organizations.id and not rt.active
-            and rt.paused_reason = 'failing' and rt.trigger_type = 'schedule' and rt.deleted_at is null
-            and rt.updated_at < ${ago(ROUTINE_RESUME_AFTER_MS)} and rt.updated_at > ${ago(RESUME_WITHIN_MS)})
-          or exists (select 1 from notifications n
-            join organization_members m on m.org_id = n.org_id and m.user_id = n.user_id
-            where n.org_id = organizations.id and ${unreadAsk(at)} and ${daytime(at)})
-        )`),
+      select t.id, t.level from (
+        select organizations.id, case
+          when coalesce(s.team_watch, true) and exists (select 1 from agents a where a.org_id = organizations.id
+            and a.builtin = 'right_hand' and a.archived_at is null) then ${level}
+          when exists (select 1 from ${ownRows}) then 2
+          else 0 end as level
+        from organizations
+        left join organization_settings s on s.org_id = organizations.id
+        where ${openOrg}
+      ) t where t.level > 0`),
   );
   if (orgs.length === 0) return 0;
+  const window = Math.floor(now.getTime() / WINDOW_MS);
   const queued = await db
     .insert(outbox)
     .values(
@@ -170,7 +237,7 @@ export async function enqueueTeamWatches(db: Database, now: Date = new Date()): 
         orgId: o.id,
         kind: TEAM_WATCH_JOB,
         payload: {},
-        dedupeKey: `${TEAM_WATCH_JOB}:${o.id}:${Math.floor(now.getTime() / 600_000)}`,
+        dedupeKey: `${TEAM_WATCH_JOB}:${o.id}:${Number(o.level) > 1 ? window : window - (window % WINDOWS_AN_HOUR)}`,
         maxAttempts: 3,
       })),
     )
@@ -181,13 +248,22 @@ export async function enqueueTeamWatches(db: Database, now: Date = new Date()): 
 
 // ── The job ───────────────────────────────────────────────────────────────────
 
-/** One look at a workspace: what it may fix, what it tells, what it reminds of. Nothing with the switch off. */
+/**
+ * One look at a workspace: what it may fix, what it tells, what it reminds of. With the switch off or the right hand
+ * gone it only closes the rows it had open: nobody is left with a notice that nothing will ever close.
+ */
 export async function runTeamWatch(deps: JobDeps, orgId: string, now: Date = new Date()): Promise<void> {
   const { db } = deps;
-  if (!(await lodiSwitches(db, orgId)).teamWatch) return;
-  const lodi = await lodiFor(db, orgId);
-  if (!lodi) return;
   const inbox: NotificationDeps = { db, pubsub: deps.pubsub, now: () => now };
+  const lodi = (await lodiSwitches(db, orgId)).teamWatch ? await lodiFor(db, orgId) : null;
+  if (!lodi) {
+    const open = await db
+      .select({ id: notifications.id })
+      .from(notifications)
+      .where(and(eq(notifications.orgId, orgId), eq(notifications.kind, "team_watch"), isNull(notifications.doneAt)));
+    if (open.length) await resolveNotifications(inbox, orgId, { ids: open.map((r) => r.id) });
+    return;
+  }
   await resumeCleared(deps, orgId, lodi, now);
   await tellProblems(inbox, orgId, lodi, now);
   await remindUnread(inbox, orgId, now);
@@ -255,25 +331,47 @@ interface Problem {
   cause: TeamWatchCause;
   id: string;
   name: string;
-  /** The same thing wrong again later is another episode, told again. */
+  /**
+   * The same thing wrong again later is another episode, told again. Read from what a write that leaves it as wrong
+   * as it was cannot move, wherever its row keeps such a time.
+   */
   episode: string;
   since: Date;
+  /** Wrong for long enough to tell. One that is not yet opens no row and brings none back unread. */
+  ripe: boolean;
   /** Whose it is to fix, when they still may (`needs`). Else the first person who may `orElse`, else nobody. */
   to: string | null;
   needs?: RolePermission;
   orElse?: RolePermission;
+  /** Another kind's notice that says the same of this very thing (`saidElsewhere`). */
+  elsewhere?: SQL;
 }
 
+/** A notice that names the agent: its actor, or one of the runs a `run_failed` row stands for. */
+const namesAgent = (agentId: SQL | string) => sql`(${notifications.actors} @> jsonb_build_array(
+    jsonb_build_object('type', 'agent', 'id', ${agentId}::text))
+  or ${notifications.latest}->'failures' @> jsonb_build_array(jsonb_build_object('agentId', ${agentId}::text)))`;
+
 /**
- * Kinds that already tell a person the same thing, by cause: with such a row of theirs since the problem began, the
- * right hand adds none of its own.
+ * Notices of other kinds that already tell a person the same thing about the same object: with such a row of theirs
+ * since the problem began, the right hand keeps none of its own. Each names its object, so one agent's notice never
+ * hides another's problem.
  */
-const SAID_ELSEWHERE: Partial<Record<TeamWatchCause, SQL>> = {
-  sign_in: sql`(${notifications.kind} = 'run_failed' and ${notifications.latest}->>'reason' = 'not_logged_in')`,
-  budget_out: sql`(${notifications.kind} in ('run_failed', 'routine_failed', 'widget_failed')
-    and ${notifications.latest}->>'reason' = 'budget_exceeded')`,
-  computer: sql`(${notifications.kind} in ('routine_stalled', 'device.waiting')
-    or (${notifications.kind} = 'run_failed' and ${notifications.latest}->>'reason' = 'machine_offline'))`,
+const saidElsewhere = {
+  /** A run that could not go on for want of a sign-in, of an agent that thinks with this plan. */
+  signIn: (orgId: string, accountId: string) =>
+    sql`(${notifications.kind} = 'run_failed' and ${notifications.latest}->>'reason' = 'not_logged_in'
+      and exists (select 1 from agents a where a.org_id = ${orgId} and a.brain_account_id = ${accountId}
+        and ${namesAgent(sql`a.id`)}))`,
+  budget: (agentId: string) =>
+    sql`(${notifications.kind} in ('run_failed', 'routine_failed', 'widget_failed')
+      and ${notifications.latest}->>'reason' = 'budget_exceeded' and ${namesAgent(agentId)})`,
+  computer: (orgId: string, machineId: string) =>
+    sql`((${notifications.kind} in ('routine_stalled', 'device.waiting')
+        and ${notifications.source}->>'machineId' = ${machineId})
+      or (${notifications.kind} = 'run_failed' and ${notifications.latest}->>'reason' = 'machine_offline'
+        and exists (select 1 from agents a where a.org_id = ${orgId} and a.machine_id = ${machineId}
+          and ${namesAgent(sql`a.id`)})))`,
 };
 
 /** Everything wrong in the workspace now, from stored rows only. */
@@ -282,26 +380,42 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
   const out: Problem[] = [];
   const at = (d: Date) => String(d.getTime());
 
-  // A plan's sign-in ended while an agent thinks with it: only whose plan it is hears it.
+  // A plan's sign-in ended while an agent thinks with it: only whose plan it is hears it. Since its last turn, not
+  // since its row last moved: every usage report of its computer rewrites the row of a plan that is still signed out.
   const accounts = await db
     .select({
       id: machineAccounts.id,
       name: machineAccounts.label,
       by: machineAccounts.createdBy,
-      since: machineAccounts.updatedAt,
+      createdAt: machineAccounts.createdAt,
+      usedAt: machineAccounts.lastUsedAt,
+      workedAt: machineAccounts.lastSuccessAt,
     })
     .from(machineAccounts)
     .where(
       and(
         eq(machineAccounts.orgId, orgId),
         eq(machineAccounts.status, "signed_out"),
-        lt(machineAccounts.updatedAt, stale),
         sql`(${machineAccounts.shared} or exists (select 1 from agents a where a.org_id = ${orgId}
           and a.brain_account_id = ${machineAccounts.id} and a.archived_at is null))`,
       ),
     );
-  for (const a of accounts) out.push({ cause: "sign_in", ...a, episode: at(a.since), to: a.by });
+  for (const a of accounts) {
+    const since = new Date(Math.max(a.createdAt.getTime(), a.usedAt?.getTime() ?? 0, a.workedAt?.getTime() ?? 0));
+    out.push({
+      cause: "sign_in",
+      id: a.id,
+      name: a.name,
+      episode: at(since),
+      since,
+      ripe: since < stale,
+      to: a.by,
+      elsewhere: saidElsewhere.signIn(orgId, a.id),
+    });
+  }
 
+  // An app or a mailbox keeps no time of when it broke: its row's last change stands for it. A rename of one that
+  // still needs reconnecting reads as a new episode.
   const connectors = await db
     .select({
       id: connectorConnections.id,
@@ -315,7 +429,6 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
         eq(connectorConnections.orgId, orgId),
         eq(connectorConnections.status, "needs_reconnect"),
         isNull(connectorConnections.revokedAt),
-        lt(connectorConnections.updatedAt, stale),
       ),
     );
   for (const c of connectors)
@@ -323,6 +436,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       cause: "connector",
       ...c,
       episode: at(c.since),
+      ripe: c.since < stale,
       to: c.by,
       needs: "manage_connectors",
       orElse: "manage_connectors",
@@ -339,12 +453,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
     })
     .from(mailAccounts)
     .where(
-      and(
-        eq(mailAccounts.orgId, orgId),
-        eq(mailAccounts.status, "needs_reconnect"),
-        isNull(mailAccounts.revokedAt),
-        lt(mailAccounts.updatedAt, stale),
-      ),
+      and(eq(mailAccounts.orgId, orgId), eq(mailAccounts.status, "needs_reconnect"), isNull(mailAccounts.revokedAt)),
     );
   for (const m of mailboxes)
     out.push({
@@ -353,6 +462,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       name: m.address || m.label,
       episode: at(m.since),
       since: m.since,
+      ripe: m.since < stale,
       to: m.by,
     });
 
@@ -373,6 +483,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       cause: "database",
       ...d,
       episode: at(d.since),
+      ripe: true,
       to: d.by,
       needs: "manage_connectors",
       orElse: "manage_connectors",
@@ -380,9 +491,7 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
 
   // A month's budget used up stops the agent. One at 80% is told only when the month's pace would end it early.
   const period = periodOf(now);
-  const monthStart = monthStartUtc(now).getTime();
-  const monthEnd = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
-  const elapsed = Math.max((now.getTime() - monthStart) / (monthEnd - monthStart), 0.001);
+  const elapsed = monthShare(now);
   const [settings] = await db
     .select({ budget: organizationSettings.defaultAgentBudgetNanoUsd })
     .from(organizationSettings)
@@ -411,10 +520,12 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
       name: a.name,
       // Raised and used up again in the same month is told again.
       episode: `${period}:${budget}`,
-      since: new Date(monthStart),
+      since: monthStartUtc(now),
+      ripe: true,
       to: a.owner,
       needs: "manage_agents",
       orElse: "manage_agents",
+      ...(usedUp ? { elsewhere: saidElsewhere.budget(a.id) } : {}),
     });
   }
 
@@ -439,7 +550,17 @@ async function problemsOf(db: Database, orgId: string, now: Date): Promise<Probl
     );
   for (const m of offline) {
     const since = m.seen ?? m.at;
-    out.push({ cause: "computer", id: m.id, name: m.name, episode: at(since), since, to: m.by, orElse: "configure" });
+    out.push({
+      cause: "computer",
+      id: m.id,
+      name: m.name,
+      episode: at(since),
+      since,
+      ripe: true,
+      to: m.by,
+      orElse: "configure",
+      elsewhere: saidElsewhere.computer(orgId, m.id),
+    });
   }
   return out;
 }
@@ -452,9 +573,11 @@ export const teamWatchNames = (names: readonly string[]) =>
 
 /**
  * Tells each problem to the one person who can fix it: one open row per person and cause, listing all of that cause
- * that is theirs, rewritten in place as the list changes and done once it is empty. A new row comes only for a problem
- * this person was never told (`toldKey`), so one put away with "Feito" does not return, and at most
- * `TEAM_WATCH_DAILY_ROWS` new rows a person a day.
+ * that is theirs, rewritten in place as the list changes and done only once nothing of it is wrong any more (a
+ * problem stays listed for as long as its own status says so, whatever else moved on its row). A new row comes only
+ * for a problem wrong for long enough that this person was never told (`toldKey`), so one put away with "Feito" does
+ * not return, and at most `TEAM_WATCH_DAILY_ROWS` new rows a person a day. What another notice of theirs says of the
+ * same thing (`saidElsewhere`) is left to that notice, whichever came first.
  */
 async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, now: Date): Promise<void> {
   const { db } = deps;
@@ -476,13 +599,35 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
     }
     return firsts.get(permission) ?? null;
   };
+  const markTold = async (userId: string, list: Problem[]) => {
+    for (const p of list) await saidOnce(db, orgId, toldKey(userId, p));
+  };
 
-  // Who each problem is told to, by person and cause.
+  // Who each problem is told to, by person and cause. One that another notice of theirs already says is that
+  // notice's: told for good, and in no row of the right hand's.
   const groups = new Map<string, { userId: string; cause: TeamWatchCause; problems: Problem[] }>();
   for (const p of problems) {
     const own = p.to ? await memberOf(p.to) : null;
     const userId = own && (!p.needs || can(own, p.needs)) ? p.to : p.orElse ? await firstWhoMay(p.orElse) : null;
     if (!userId) continue;
+    if (p.elsewhere) {
+      const [other] = await db
+        .select({ id: notifications.id })
+        .from(notifications)
+        .where(
+          and(
+            eq(notifications.orgId, orgId),
+            eq(notifications.userId, userId),
+            p.elsewhere,
+            gt(notifications.createdAt, p.since),
+          ),
+        )
+        .limit(1);
+      if (other) {
+        await markTold(userId, [p]);
+        continue;
+      }
+    }
     const key = `${userId}:${p.cause}`;
     const group = groups.get(key) ?? { userId, cause: p.cause, problems: [] };
     group.problems.push(p);
@@ -494,7 +639,7 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
     .select()
     .from(notifications)
     .where(and(eq(notifications.orgId, orgId), eq(notifications.kind, "team_watch"), isNull(notifications.doneAt)));
-  // What is no longer wrong leaves by itself.
+  // What is no longer wrong, or is another notice's now, leaves by itself.
   const fixed = open.filter((r) => !groups.has(`${r.userId}:${causeOf(r)}`));
   if (fixed.length) await resolveNotifications(deps, orgId, { ids: fixed.map((r) => r.id) });
 
@@ -506,10 +651,7 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
         (r) => r.key,
       ),
     );
-    let fresh = g.problems.filter((_, i) => !told.has(keys[i] as string));
-    const markTold = async (list: Problem[]) => {
-      for (const p of list) await saidOnce(db, orgId, toldKey(g.userId, p));
-    };
+    const fresh = g.problems.filter((p, i) => p.ripe && !told.has(keys[i] as string));
     const names = g.problems.map((p) => p.name);
     const only = g.problems.length === 1 ? g.problems[0] : undefined;
     const source: NotificationSource = {
@@ -526,35 +668,13 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
     };
     const row = open.find((r) => r.userId === g.userId && causeOf(r) === g.cause);
     if (row) {
-      if (row.count !== names.length || row.latest.text !== latest.text)
+      // It lists everything of that cause at once, and comes back unread only for what is wrong for long enough.
+      if (fresh.length > 0 || row.count !== names.length || row.latest.text !== latest.text)
         await rewriteNotification(deps, row.id, { count: names.length, source, latest, unread: fresh.length > 0 });
-      await markTold(fresh);
+      await markTold(g.userId, fresh);
       continue;
     }
     if (fresh.length === 0) continue;
-    // Another notice of theirs already says it: that one told them.
-    const elsewhere = SAID_ELSEWHERE[g.cause];
-    if (elsewhere) {
-      const said: Problem[] = [];
-      for (const p of fresh) {
-        const [other] = await db
-          .select({ id: notifications.id })
-          .from(notifications)
-          .where(
-            and(
-              eq(notifications.orgId, orgId),
-              eq(notifications.userId, g.userId),
-              elsewhere,
-              gt(notifications.createdAt, p.since),
-            ),
-          )
-          .limit(1);
-        if (other) said.push(p);
-      }
-      await markTold(said);
-      fresh = fresh.filter((p) => !said.includes(p));
-      if (fresh.length === 0) continue;
-    }
     const [today] = await db
       .select({ n: sql<number>`count(*)::int` })
       .from(notifications)
@@ -563,7 +683,7 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
           eq(notifications.orgId, orgId),
           eq(notifications.userId, g.userId),
           eq(notifications.kind, "team_watch"),
-          gt(notifications.createdAt, new Date(now.getTime() - 24 * 3600_000)),
+          gt(notifications.createdAt, new Date(now.getTime() - DAY_MS)),
         ),
       );
     // Over the day's rows: it waits, untold, for a later look.
@@ -581,7 +701,7 @@ async function tellProblems(deps: NotificationDeps, orgId: string, lodi: Agent, 
       latest,
     });
     if (made && names.length > 1) await rewriteNotification(deps, made.id, { count: names.length, source, latest });
-    await markTold(fresh);
+    await markTold(g.userId, fresh);
   }
 }
 
@@ -598,7 +718,7 @@ async function remindUnread(deps: NotificationDeps, orgId: string, now: Date): P
   const at = sql`${now.toISOString()}::timestamptz`;
   const people = rowsOf<{ user_id: string; day: string; digest_off: boolean }>(
     await db.execute(sql`with ${knownZonesSql}
-      select distinct n.user_id, to_char(${localClock(at)}, 'YYYY-MM-DD') as day,
+      select distinct n.user_id, ${localDay(at)} as day,
         ${lodiPrefsSql.digestOff} as digest_off
       from notifications n
       join organization_members m on m.org_id = n.org_id and m.user_id = n.user_id
@@ -608,21 +728,34 @@ async function remindUnread(deps: NotificationDeps, orgId: string, now: Date): P
   let reminded = 0;
   for (const p of people) {
     const mine = and(inboxVisible(orgId, p.user_id, now), eq(notifications.waiting, true));
+    const asked = and(
+      eq(notifications.waiting, true),
+      isNull(notifications.readAt),
+      inArray(notifications.kind, REMINDED_KINDS),
+      lt(notifications.createdAt, new Date(now.getTime() - UNANSWERED_MS)),
+      sql`${notifications.latest}->>'reminder' is null`,
+    );
     let rows = await db
       .select({ id: notifications.id, kind: notifications.kind, groupKey: notifications.groupKey })
       .from(notifications)
+      .where(and(mine, asked))
+      .orderBy(notifications.createdAt);
+    // Marked as reminded with no push: the digest's, all but the one the reminder brings back, and an approval this
+    // person may no longer decide (it is out of their inbox, and unmarked it would be looked at for ever).
+    const theirs = await db
+      .select({ id: notifications.id })
+      .from(notifications)
       .where(
         and(
-          mine,
-          isNull(notifications.readAt),
-          inArray(notifications.kind, REMINDED_KINDS),
-          lt(notifications.createdAt, new Date(now.getTime() - UNANSWERED_MS)),
-          sql`${notifications.latest}->>'reminder' is null`,
+          eq(notifications.orgId, orgId),
+          eq(notifications.userId, p.user_id),
+          eq(notifications.kind, "approval"),
+          isNull(notifications.doneAt),
+          sql`(${notifications.snoozedUntil} is null or ${notifications.snoozedUntil} <= ${at})`,
+          asked,
         ),
-      )
-      .orderBy(notifications.createdAt);
-    // Marked as reminded with no push: the digest's, and all but the one the reminder brings back.
-    const quiet: string[] = [];
+      );
+    const quiet = theirs.map((r) => r.id).filter((id) => !rows.some((r) => r.id === id));
     if (liveLodiSwitches().includes("digest") && !p.digest_off) {
       const [pending] = await db
         .select({ n: sql<number>`count(*)::int` })
@@ -634,7 +767,7 @@ async function remindUnread(deps: NotificationDeps, orgId: string, now: Date): P
       }
     }
     const first = rows[0];
-    const once = first ? await saidOnce(db, orgId, `team_watch.remind:${p.user_id}:${p.day}`) : false;
+    const once = first ? await saidOnce(db, orgId, remindKey(p.user_id, p.day)) : false;
     if (once) quiet.push(...rows.slice(1).map((r) => r.id));
     if (quiet.length)
       await db
