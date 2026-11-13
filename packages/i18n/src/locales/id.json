@@ -1436,6 +1436,22 @@
     "moveDown": "Pindah ke bawah",
     "restoreOrder": "Kembalikan urutan bawaan"
   },
+  "appIcon": {
+    "title": "Ikon aplikasi",
+    "hintWeb": "Ikon di tab browser ini.",
+    "hintMac": "Ikon Dock selama aplikasi terbuka. Finder dan Launchpad tetap memakai ikon bawaan.",
+    "hintDesktop": "Ikon taskbar selama aplikasi terbuka.",
+    "hintAndroid": "Beberapa layar utama butuh beberapa detik untuk menampilkan ikon baru.",
+    "failed": "Ikon tidak bisa diganti. Coba lagi.",
+    "agentsOf": "Agen di {{org}}",
+    "names": {
+      "night": "Malam",
+      "moon": "Bulan",
+      "sky": "Langit",
+      "peekNight": "Mengintip di malam hari",
+      "peekSky": "Mengintip di langit"
+    }
+  },
   "install": {
     "frames": "Cara memasang di {{system}}",
     "step": "Langkah {{n}}",
