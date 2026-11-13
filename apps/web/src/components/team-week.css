@@ -73,9 +73,10 @@
   background: transparent;
   box-shadow: 0 0 0 1px var(--line);
 }
+/* The title's capitals start at the face's or the tile's top (`.ac-captop` on it), however many lines it wraps to. */
 .tw__fix-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 .tw__fix-row > .ac-avatar,
@@ -115,6 +116,7 @@
 }
 .tw__fix-side {
   display: flex;
+  align-self: center;
   align-items: center;
   gap: 8px;
   flex: none;

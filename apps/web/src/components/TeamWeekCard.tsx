@@ -373,7 +373,7 @@ function FixRow({
       <div className="tw__fix-row">
         {lead}
         <span className="tw__fix-t">
-          <b>{title}</b>
+          <b className="ac-captop">{title}</b>
           <span>{line}</span>
         </span>
         <span className="tw__fix-side">{side}</span>
