@@ -1,0 +1,199 @@
+name: ZIP integrity follow-up validation
+
+# Fork-only evidence for agentes-chat/agentes-chat#354. The workflow lives
+# on a helper branch, but checks out the exact PR commit before running checks.
+on:
+  push:
+    branches:
+      - validation/zip-integrity-20261113-0945
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zip-integrity-followup-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validate:
+    name: PR 354 exact-commit checks
+    if: >-
+      github.repository == 'Afloat16/agentes-chat' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/validation/zip-integrity-20261113-0945'
+    # The public-repository GitHub-hosted Linux runner has 16 GB of RAM.
+    # Keep this independent of the upstream repository's runner variables.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      TARGET_SHA: b8a0845768d1ab8057cbc50d56a099f3d98735bd
+      NODE_OPTIONS: --max-old-space-size=12288
+    steps:
+      - name: Check out the exact PR commit
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Afloat16/agentes-chat
+          ref: b8a0845768d1ab8057cbc50d56a099f3d98735bd
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Prepare logs and verify the source
+        id: source
+        run: |
+          mkdir -p "$RUNNER_TEMP/agentes-zip-integrity"
+          cat > "$RUNNER_TEMP/agentes-zip-run-log.sh" <<'BASH'
+          #!/usr/bin/env bash
+          set -uo pipefail
+          label=$1
+          shift
+          log="$RUNNER_TEMP/agentes-zip-integrity/$label.log"
+          started=$(date +%s)
+          {
+            printf 'Started UTC: '
+            date -u '+%Y-%m-%dT%H:%M:%SZ'
+            printf 'Command:'
+            printf ' %q' "$@"
+            printf '\n'
+          } | tee "$log"
+          "$@" 2>&1 | tee -a "$log"
+          codes=("${PIPESTATUS[@]}")
+          code=${codes[0]}
+          if [ "$code" -eq 0 ] && [ "${codes[1]}" -ne 0 ]; then
+            code=${codes[1]}
+          fi
+          printf '\nExit: %s; elapsed: %ss\n' "$code" "$(( $(date +%s) - started ))" | tee -a "$log"
+          exit "$code"
+          BASH
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" source bash -c '
+            set -euo pipefail
+            actual=$(git rev-parse HEAD)
+            printf "Target commit: %s\nChecked-out commit: %s\nWorkflow commit: %s\n" "$TARGET_SHA" "$actual" "$GITHUB_SHA"
+            test "$actual" = "$TARGET_SHA"
+            test "$(git rev-parse HEAD^{tree})" = "5b8cc11b9de39a9e6c8be8802bab46a7e5e9b36c"
+            git diff --exit-code HEAD --
+            test -f apps/web/src/routeTree.gen.ts
+            git ls-files --error-unmatch apps/web/src/routeTree.gen.ts
+          '
+
+      - name: Set up the repository's Bun version
+        id: bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - name: Record runner and tool versions
+        id: runtime
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" runtime bash -c '
+            set -euo pipefail
+            bun --version
+            test "$(bun --version)" = "1.4.4"
+            node --version
+            uname -a
+            free -h
+            df -h .
+            printf "Node heap option: %s\n" "$NODE_OPTIONS"
+          '
+
+      - name: Install frozen dependencies
+        id: install
+        timeout-minutes: 8
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" install timeout 420 bun install --frozen-lockfile
+
+      - name: Check the changed files with Biome
+        id: biome
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        timeout-minutes: 3
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" biome timeout 120 ./node_modules/.bin/biome check packages/client/src/lib/zip.ts apps/web/test/zip-integrity.test.ts
+
+      - name: Check architecture boundaries
+        id: boundaries
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        timeout-minutes: 3
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" boundaries timeout 120 bun run check:boundaries
+
+      # Upstream CI runs package typechecks before bun run build. The generated
+      # route tree is already tracked at TARGET_SHA, so no generation or build
+      # is needed to make this the real web package check.
+      - name: Typecheck the web package
+        id: web_typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        working-directory: apps/web
+        timeout-minutes: 6
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" web-typecheck timeout 300 bun run typecheck
+
+      - name: Typecheck the changed client package
+        id: client_typecheck
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        working-directory: packages/client
+        timeout-minutes: 6
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" client-typecheck timeout 300 bun run typecheck
+
+      - name: Build production web and server
+        id: build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        timeout-minutes: 12
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" build timeout 660 bun run build
+
+      - name: Test ZIP integrity and archive imports
+        id: zip_tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        timeout-minutes: 5
+        run: |
+          bash "$RUNNER_TEMP/agentes-zip-run-log.sh" zip-tests timeout 240 bun test apps/web/test/zip-integrity.test.ts apps/web/test/agent-import-archive.test.ts
+
+      - name: Summarize exact-commit evidence
+        if: always()
+        env:
+          CHECKOUT_RESULT: ${{ steps.checkout.outcome }}
+          SOURCE_RESULT: ${{ steps.source.outcome }}
+          BUN_RESULT: ${{ steps.bun.outcome }}
+          RUNTIME_RESULT: ${{ steps.runtime.outcome }}
+          INSTALL_RESULT: ${{ steps.install.outcome }}
+          BIOME_RESULT: ${{ steps.biome.outcome }}
+          BOUNDARIES_RESULT: ${{ steps.boundaries.outcome }}
+          WEB_TYPECHECK_RESULT: ${{ steps.web_typecheck.outcome }}
+          CLIENT_TYPECHECK_RESULT: ${{ steps.client_typecheck.outcome }}
+          BUILD_RESULT: ${{ steps.build.outcome }}
+          TEST_RESULT: ${{ steps.zip_tests.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/agentes-zip-integrity"
+          {
+            printf '## PR #354 validation\n\n'
+            printf 'Source commit: `%s`\n\n' "$TARGET_SHA"
+            printf 'Workflow commit: `%s`\n\n' "$GITHUB_SHA"
+            printf 'Fork run: %s/%s/actions/runs/%s\n\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+            printf '| Check | Outcome |\n| --- | --- |\n'
+            printf '| Checkout | %s |\n' "$CHECKOUT_RESULT"
+            printf '| Source SHA/tree | %s |\n' "$SOURCE_RESULT"
+            printf '| Bun setup | %s |\n' "$BUN_RESULT"
+            printf '| Runner/tool versions | %s |\n' "$RUNTIME_RESULT"
+            printf '| Frozen install | %s |\n' "$INSTALL_RESULT"
+            printf '| Changed-file Biome | %s |\n' "$BIOME_RESULT"
+            printf '| Boundaries | %s |\n' "$BOUNDARIES_RESULT"
+            printf '| Web package typecheck | %s |\n' "$WEB_TYPECHECK_RESULT"
+            printf '| Client package typecheck | %s |\n' "$CLIENT_TYPECHECK_RESULT"
+            printf '| Production web/server build | %s |\n' "$BUILD_RESULT"
+            printf '| ZIP/import tests | %s |\n' "$TEST_RESULT"
+          } | tee "$RUNNER_TEMP/agentes-zip-integrity/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Archive verification logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: agentes-zip-integrity-${{ env.TARGET_SHA }}-attempt-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/agentes-zip-integrity
+          if-no-files-found: warn
+          retention-days: 14
