@@ -769,7 +769,7 @@ function StalledLine({ issues, onOpen }: { issues: Issue[]; onOpen: (n: number) 
   const resume = useResumeStalled();
   const left = issues.filter((i) => !resume.isAsked(i));
   const groups = stalledByAgent(left.length ? left : issues, actors.name);
-  const names = namesText(t, groups.map((g) => g.name), 3);
+  const names = namesText(t, groups.map((g) => g.name), 4);
   return (
     <>
       {left.length === 0 ? (

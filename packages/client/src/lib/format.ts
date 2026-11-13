@@ -177,7 +177,7 @@ export function relativeTime(t: TFunction, locale: string, iso: string, now = ne
   return formatShortDate(locale, iso);
 }
 
-/** When an agent stopped working on a task: "Parou há 2 h", "Parou ontem", "Parou em 11 nov". */
+/** When an agent stopped working on a task: "Stopped 2 h ago", "Stopped yesterday", "Stopped on Nov 11". */
 export function stoppedLine(t: TFunction, locale: string, iso: string, now = new Date()) {
   const diff = now.getTime() - new Date(iso).getTime();
   if (diff < 60_000) return t("issues.now.stoppedNow");
