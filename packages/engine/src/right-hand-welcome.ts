@@ -38,8 +38,9 @@ export const WELCOME_BODY = "welcome_member";
 export const NEWCOMER_DAYS = 30;
 
 /**
- * The areas a person taps under the greeting: the onboarding's own, in its order. "Something else" is left out, since
- * typing is that answer and the words alone tell the right hand nothing.
+ * The areas a person taps under the greeting: the onboarding's own, in its order (the client's `WORK_AREAS`, which
+ * this package cannot import). "Something else" is left out, since typing is that answer and the words alone tell the
+ * right hand nothing.
  */
 const AREAS = Object.keys(en.onboarding.flow.area.options).filter((id) => id !== "other");
 
@@ -65,10 +66,10 @@ export async function postWelcome(deps: JobDeps, orgId: string, payload: Record<
     .innerJoin(organizations, eq(organizations.id, organizationMembers.orgId))
     .where(and(eq(organizationMembers.orgId, orgId), eq(organizationMembers.userId, userId)));
   if (!person) return;
+  // An owner has the first-run checklist at the top of this DM, which holds the whole setup: one ask, not two.
+  if (person.role === "owner") return;
   const lodi = await lodiFor(db, orgId, userId);
   if (!lodi) return;
-  // An owner still has the first-run checklist at the top of this DM, which holds the whole setup: one ask, not two.
-  if (person.role === "owner" && lodi.setup) return;
   const locale = await personLocale(db, userId);
   const chips: ReplyChips = {
     choices: AREAS.map((id) => serverText(locale, `onboarding.flow.area.options.${id}`)),

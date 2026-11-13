@@ -15,7 +15,7 @@ import {
   introLeadKey,
   isRightHand,
   offersTeamSetup,
-  welcomesMember,
+  welcomeOpen,
 } from "@agenteschat/client/lib/right-hand";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import { WAVE_SECONDS } from "@agenteschat/ui/agent/stickers";
@@ -46,9 +46,9 @@ import { useSendAnswer } from "./TeamCard";
  * no AI, then how agents talk to them (ADR 0147); the owner gets that question once the checklist is complete and the
  * team answered them once, so it never stands beside the first task. With no card left, a line to build the team with
  * it, at any time; a personal workspace's words speak of one person's agents (ADR 0159). Someone it greeted when
- * they joined (`welcomesMember`) gets Connect alone: its stored greeting right below asks the one question. On the
- * person's first visit (`waveFrom`, when its wave started), its waving sticker under the greeting, drawn as a sticker
- * message is and decorative.
+ * they joined gets Connect alone until they answer (`welcomeOpen`): its stored greeting right below asks the one
+ * question. On the person's first visit (`waveFrom`, when its wave started), its waving sticker under the greeting,
+ * drawn as a sticker message is and decorative.
  */
 export function RightHandIntro({ agent, channelId, waveFrom }: { agent: Agent; channelId: string; waveFrom?: number }) {
   const { t } = useTranslation();
@@ -67,8 +67,8 @@ export function RightHandIntro({ agent, channelId, waveFrom }: { agent: Agent; c
   // Picked here: its card stays where it was, answered, instead of leaving the moment the workspace has a style.
   const [styled, setStyled] = useState<AgentStyle | null>(null);
   const messages = useMessages(orgId, channelId).data;
-  // Its stored greeting of someone who joined asks what they look after: nothing else here asks beside it.
-  const welcomed = messages?.some((m) => welcomesMember(m.meta));
+  // Its stored greeting of someone who joined asks what they look after: until they answer, nothing else here asks.
+  const welcomed = welcomeOpen(messages, org?.role === "owner");
   const cards = introCards({
     noAi: noAi && aiKnown,
     aiKnown,

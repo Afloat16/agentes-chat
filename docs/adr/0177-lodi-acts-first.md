@@ -151,15 +151,16 @@ do they look after here, and it sets up their first agent with them. Under it th
 "something else" (typing is that answer), and none at all for someone whose account already holds an area. Then an
 ordinary conversation: a tap is their own message.
 
-- Never for the workspace's creator, on a rejoin, when they wrote first, with the switch off, while the workspace is
-  on hold (nothing would answer them), or for an owner who still has the first-run checklist at the top of that
-  conversation. The job's key is spent either way: nobody is greeted later for having been missed.
+- Never for the workspace's creator or any other owner (an owner has the first-run checklist at the top of that
+  conversation), on a rejoin, when they wrote first, with the switch off, or while the workspace is on hold (nothing
+  would answer them). The job's key is spent either way: nobody is greeted later for having been missed.
 - While they are new (a member who is not an owner, 30 days, no agent of their own) and the switch is on, the right
   hand's prompt in their DM says so: one agent with a first task, never the team interview, then the way to connect an
   AI. It holds that person's own area and nothing of anyone else.
-- A conversation that holds the greeting shows only the way to connect an AI at its top, drawn by the app: not how
-  agents should talk to them, not the line to build the team. So they are asked one thing at a time. How agents talk to
-  them stays in their account's settings.
+- Until they answer the greeting, the top of that conversation, drawn by the app, shows only the way to connect an
+  AI: not how agents should talk to them, not the line to build the team. So they are asked one thing at a time. Once
+  they answered, it asks what it asks anyone. The apps tell this from the newest page of messages alone (the greeting
+  loaded and no message of the person after it), and ask nothing while that page loads for anyone but an owner.
 - The greeting calls no model and rings as any new message does.
 
 ### 7. Action cards

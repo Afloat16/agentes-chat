@@ -16,7 +16,7 @@ import {
   introLeadKey,
   isRightHand,
   offersTeamSetup,
-  welcomesMember,
+  welcomeOpen,
 } from "@agenteschat/client/lib/right-hand";
 import { modeKey } from "@agenteschat/client/lib/workspace-mode";
 import { AgentSticker, Button, Message, MessageText, WAVE_SECONDS } from "@agenteschat/ui";
@@ -44,9 +44,9 @@ import { useToast } from "@/lib/toast";
  * how agents talk to them (ADR 0147); the owner gets that question once the checklist is complete and the team answered
  * them once, so it never stands beside the first task. With no card left, a line to build the team with it, at any
  * time; a personal workspace's words speak of one person's agents (ADR 0159). Someone it greeted when they joined
- * (`welcomesMember`) gets Connect AI alone: its stored greeting right below asks the one question. On the person's first visit, its waving
- * sticker under the greeting, drawn as a sticker message is and decorative (the greeting already says hello). Its face
- * and name open the profile card, as on any message.
+ * gets Connect AI alone until they answer (`welcomeOpen`): its stored greeting right below asks the one question. On
+ * the person's first visit, its waving sticker under the greeting, drawn as a sticker message is and decorative (the
+ * greeting already says hello). Its face and name open the profile card, as on any message.
  */
 export function RightHandIntro({ agent, channelId }: { agent: Agent; channelId: string }) {
   const { t, i18n } = useTranslation();
@@ -65,8 +65,8 @@ export function RightHandIntro({ agent, channelId }: { agent: Agent; channelId: 
   const aiKnown = Boolean(status.data) && !setup.isPending;
   const createsAgents = can(org, "create_agents");
   const messages = useMessages(org.id, channelId).data;
-  // Its stored greeting of someone who joined asks what they look after: nothing else here asks beside it.
-  const welcomed = messages?.some((m) => welcomesMember(m.meta));
+  // Its stored greeting of someone who joined asks what they look after: until they answer, nothing else here asks.
+  const welcomed = welcomeOpen(messages, org.role === "owner");
   const cards = introCards({
     noAi: noAi && aiKnown,
     aiKnown,

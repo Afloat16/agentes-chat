@@ -1,8 +1,12 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { createMemoryRateLimiter } from "@agenteschat/adapters";
 import { and, eq, schema } from "@agenteschat/db";
 import {
   acceptInvitation,
+  approveJoinRequest,
+  askToJoin,
   createInvitation,
+  inviteLink,
   joinOrganization,
   liveLodiSwitches,
   type MemberRole,
@@ -24,6 +28,7 @@ afterEach(async () => {
 });
 
 const DAY = 24 * 3_600_000;
+const PUBLIC = "https://agentes.test/";
 
 const lodiOf = async (fx: Fixture) => {
   const [lodi] = await fx.db
@@ -114,6 +119,28 @@ describe("who is greeted", () => {
     });
   });
 
+  test("an approved request to join queues it once and gives one message", async () => {
+    f = await setup({ rightHand: true });
+    const deps = { db: f.db, pubsub: f.pubsub, rateLimiter: createMemoryRateLimiter() };
+    const { token } = await inviteLink(f.db, SECRET, f.owner.id, f.org.id);
+    const dora = await addUser(f.db, "dora");
+    await f.db.update(schema.users).set({ emailVerified: true }).where(eq(schema.users.id, dora.id));
+    await askToJoin(deps, PUBLIC, { token, user: dora });
+    const [asked] = await f.db.select().from(schema.organizationJoinRequests);
+    expect(await welcomeJobs(f)).toEqual([]);
+    expect(await approveJoinRequest(deps, PUBLIC, f.owner.id, f.org.id, asked?.id ?? "")).toEqual({
+      outcome: "joined",
+    });
+    const jobs = await welcomeJobs(f);
+    expect(jobs.map((j) => j.payload)).toEqual([{ userId: dora.id }]);
+    await f.handlers[WELCOME_JOB]?.(jobs[0] as never, {} as never);
+    await greet(f, dora.id);
+    const all = await said(f);
+    expect(all.map((m) => m.meta.bodyCode)).toEqual(["welcome_member"]);
+    expect(await rings(f)).toHaveLength(1);
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
   test("someone whose area the onboarding knows is not asked to tap it again", async () => {
     f = await setup({ rightHand: true });
     const bia = await join(f, "bia");
@@ -133,6 +160,7 @@ describe("silence", () => {
   test("once per person and workspace: not on a second run of the job, not on a rejoin", async () => {
     f = await setup({ rightHand: true });
     const bia = await join(f, "bia");
+    // Two runs started together, then a retry after both ended.
     await Promise.all([greet(f, bia.id), greet(f, bia.id)]);
     await greet(f, bia.id);
     expect(await said(f)).toHaveLength(1);
@@ -149,18 +177,19 @@ describe("silence", () => {
     expect(f.provider.calls).toHaveLength(0);
   });
 
-  test("never the workspace's creator", async () => {
+  test("never the workspace's creator, nor any owner", async () => {
     f = await setup({ rightHand: true });
     expect(await welcomeJobs(f)).toEqual([]);
-    // Nor an owner who still has the first-run checklist at the top of that conversation.
-    const lodi = await lodiOf(f);
-    await f.db
-      .update(schema.agents)
-      .set({ setup: { role: null, done: [] } })
-      .where(eq(schema.agents.id, lodi.id));
+    // Nor an owner invited later, with the first-run checklist there or not.
     const dora = await join(f, "dora", "owner");
     await greet(f, dora.id);
+    const lodi = await lodiOf(f);
+    expect(lodi.setup).not.toBeNull();
+    await f.db.update(schema.agents).set({ setup: null }).where(eq(schema.agents.id, lodi.id));
+    const enzo = await join(f, "enzo", "owner");
+    await greet(f, enzo.id);
     expect(await said(f)).toEqual([]);
+    expect(await rings(f)).toEqual([]);
   });
 
   test("none with the workspace's switch off, and none later for who was missed", async () => {

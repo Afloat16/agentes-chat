@@ -1,8 +1,19 @@
 import type { TFunction } from "i18next";
 import type { ApiClient } from "../api/client";
-import type { Agent, AgentBrain, AgentStatus, BrainScope, Credential, DirectMessage, Me, Model } from "../api/types";
+import type {
+  Agent,
+  AgentBrain,
+  AgentStatus,
+  BrainScope,
+  Credential,
+  DirectMessage,
+  Me,
+  Message,
+  Model,
+} from "../api/types";
 import { agentGrammar } from "./grammar";
 import { AUTO, keyRuns, providerLabel } from "./providers";
+import { answerAfter } from "./team-plan";
 
 /** The workspace's right hand (ADR 0137): every surface that treats it apart asks here. */
 export const isRightHand = (agent: Pick<Agent, "builtin"> | null | undefined) => agent?.builtin === "right_hand";
@@ -180,13 +191,29 @@ export const introLeadKey = (held: boolean, hasTeam: boolean) =>
  */
 export const welcomesMember = (meta: Record<string, unknown> | null | undefined) => meta?.bodyCode === "welcome_member";
 
+/**
+ * Whether that greeting is still the open question of this conversation: it is among `messages` and the person has
+ * not answered it. Older pages never change the answer: an unanswered greeting is in the newest page until a whole
+ * page of the right hand's own messages follows it, and by then it is far from the top of the DM. Once they answered,
+ * the top asks what it asks anyone. While the messages load, it counts as open for anyone it may have greeted (never
+ * an owner): a card that waits, not one that shows and leaves.
+ */
+export const welcomeOpen = (
+  messages: readonly Pick<Message, "id" | "createdAt" | "author" | "body" | "local" | "meta">[] | undefined,
+  owner: boolean,
+) => {
+  if (!messages) return !owner;
+  const greeting = messages.find((m) => welcomesMember(m.meta));
+  return greeting !== undefined && answerAfter(messages, greeting.id) === null;
+};
+
 /** Where the first-run checklist stands for this person (ADR 0155 §6): `none` when it isn't theirs. */
 export type FirstRunState = "none" | "open" | "complete";
 
 /**
  * Whether its greeting ends with the way to build the team again, for whoever may create agents once an AI is there:
  * only with a team, no card left under the greeting (`cards`), no open checklist, which would offer the same or
- * ask something first, and no stored greeting of a newcomer below, which already asks what to set up.
+ * ask something first, and no unanswered greeting of a newcomer below, which already asks what to set up.
  */
 export const offersTeamSetup = (s: {
   noAi: boolean;
@@ -198,7 +225,7 @@ export const offersTeamSetup = (s: {
   /** A billing hold (`planHoldOf`): it can't answer, so its line would send a message that gets refused. */
   held?: boolean;
   checklist?: FirstRunState;
-  /** `welcomesMember` of a message in this conversation. */
+  /** `welcomeOpen`. */
   welcomed?: boolean;
 }) =>
   s.aiKnown &&
@@ -216,7 +243,7 @@ export const offersTeamSetup = (s: {
  * and once complete, how the person wants agents to talk to them (ADR 0147) until they pick, asked only once the team
  * answered them (`answered`), so it never stands beside the first task. Anyone else: Connect AI while there is none,
  * then that question. On a billing hold neither: an AI comes after the plan. Someone the right hand greeted when they
- * joined (`welcomed`) gets Connect AI alone: its greeting below is the one question.
+ * joined gets Connect AI alone until they answer it (`welcomed`): its greeting below is the one question.
  */
 export function introCards(s: {
   noAi: boolean;
@@ -231,7 +258,7 @@ export function introCards(s: {
   checklist?: FirstRunState;
   /** `teamAnswered`; absent, nothing to wait for. */
   answered?: boolean;
-  /** `welcomesMember` of a message in this conversation. */
+  /** `welcomeOpen`. */
   welcomed?: boolean;
 }): ("connect" | "style")[] {
   if (s.checklist === "open") return [];
