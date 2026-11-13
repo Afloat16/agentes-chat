@@ -265,7 +265,7 @@ export function GalleryPage() {
           <Avatar name="Ana" size="sm" presence="away" />
           <Avatar name="Bruno" size="sm" presence="busy" />
           <Avatar name="Lia" size="lg" presence="offline" />
-          <AgentAvatar name="Ada" presence="busy" />
+          <AgentAvatar name="Ada" presence="working" />
           <AgentAvatar name="Atlas" initials="At" running />
           <AgentAvatar name="Lia" size="lg" />
           <AgentAvatar name="Theo" size="sm" />

@@ -199,13 +199,18 @@ describe("the pair row before the reply that asked (ConsultPairRow)", () => {
     expect(r.querySelector(".consult-pair__who + .consult-pair__sep")).not.toBeNull();
   });
 
-  test("waiting on a person, for its computer, on what it handed on: a short word in the same slot", async () => {
+  test("waiting on a person, for its computer, on what it handed on: a short word in the same slot, quiet", async () => {
     await open(withAsk([consultation({ waiting: "approval" })]));
     expect(row()?.querySelector(".consult-pair__word")?.textContent).toBe("esperando aprovação");
     cleanup();
     await open(withAsk([consultation({ waiting: "computer" })]));
     expect(row()?.querySelector(".consult-pair__word")?.textContent).toBe("esperando o computador");
-    expect(row()?.querySelector(".consult-pair__row--live")).not.toBeNull();
+    // It waits on no one here: the words quiet, the arrows still, no halo (ADR 0095 addendum).
+    expect(row()?.querySelector(".consult-pair__row--wait")).not.toBeNull();
+    expect(row()?.querySelector(".consult-pair__row--live")).toBeNull();
+    cleanup();
+    await open(withAsk([consultation({ waiting: "queued" })]));
+    expect(row()?.querySelector(".consult-pair__word")?.textContent).toBe("na fila");
   });
 
   test("work handed off, its part done: 'esperando outros agentes', and the dialog opens it as a request", async () => {
@@ -506,5 +511,50 @@ describe("the working line while the row shows the questions", () => {
     await settle(2);
     expect(bar()).toBe("Ada está perguntando para Atlas…");
     expect(typingBar().querySelector(".ac-typing__clock")).not.toBeNull();
+  });
+});
+
+describe("the bar above the composer speaks for a hand-off (ADR 0095 addendum)", () => {
+  test("work handed off from here: the other agent at work with the hand-off's time, Ver opens their talk", async () => {
+    const c = consultation({ kind: "note" });
+    const { socket } = await open(withTalk(withAsk([c]), c));
+    await push(socket, { ...asking, kind: "note" });
+    await settle(2);
+    expect(bar()).toBe("Atlas está trabalhando…");
+    expect(typingBar().getAttribute("data-consult")).toBe("work");
+    // Its time is the lists' clock, never a question's "0:41".
+    expect(typingBar().querySelector(".ac-typing__clock")).toBeNull();
+    expect(typingBar().querySelector(".ac-typing__elapsed")?.textContent).toMatch(/ s$/);
+    // No stop: stopping another agent's work is in their talk, Agora and the task manager.
+    expect(typingBar().querySelector("[aria-label^='Parar']")).toBeNull();
+    await act(async () => fireEvent.click(within(typingBar()).getByRole("button", { name: "Ver" })));
+    await settle(3);
+    expect(panel()).not.toBeNull();
+  });
+
+  test("waiting on someone else's approval: quiet, with the wait's own clock", async () => {
+    const c = consultation({ kind: "note", waiting: "approval", waitingSince: ago(180) });
+    const { socket } = await open(withAsk([c]));
+    await push(socket, { ...asking, kind: "note" });
+    await settle(2);
+    expect(bar()).toBe("O Atlas espera uma aprovação…");
+    expect(typingBar().getAttribute("data-consult")).toBe("wait");
+    expect(typingBar().querySelector(".ac-typing__elapsed")?.textContent).toBe("3 min");
+  });
+
+  test("done: the other agent finished and the one who handed it writes", async () => {
+    const c = consultation({ kind: "note" });
+    const { socket } = await open(withAsk([c]));
+    await push(socket, { ...asking, kind: "note" });
+    await push(socket, {
+      type: "agent.consulted",
+      runId: RUN,
+      agentId: ADA_ID,
+      consultedAgentId: ATLAS_ID,
+      status: "answered",
+      kind: "note",
+    });
+    await settle(2);
+    expect(bar()).toBe("Atlas terminou. Ada está escrevendo…");
   });
 });

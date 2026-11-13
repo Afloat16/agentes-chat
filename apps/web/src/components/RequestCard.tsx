@@ -91,6 +91,39 @@ const AskRegistryContext = createContext<AskRegistry | null>(null);
  */
 export const AskRegistryProvider = AskRegistryContext.Provider;
 
+const NO_ASKS: readonly PendingAsk[] = [];
+
+/**
+ * Every request card in this conversation waiting for the viewer, in view or not: the divider and the bar say "esperando
+ * sua aprovação" from them before the conversation's list hears the agent stopped. `registry`: one read from outside the
+ * scroller (the bar); without it, the scroller's own.
+ */
+export function usePendingAsks(registry?: AskRegistry): readonly PendingAsk[] {
+  const around = useContext(AskRegistryContext);
+  const source = registry ?? around;
+  const [asks, setAsks] = useState<readonly PendingAsk[]>(NO_ASKS);
+  useEffect(() => {
+    if (!source) return;
+    const read = () =>
+      setAsks((before) => {
+        const now = [...source.cards.values()];
+        return now.length === before.length && now.every((a, i) => sameAsk(a, before[i])) ? before : now;
+      });
+    read();
+    return source.subscribe(read);
+  }, [source]);
+  return asks;
+}
+
+/** What waits on the viewer from `agentId` here: an approval, or anything else to answer; null when nothing. */
+export function askOf(
+  asks: readonly PendingAsk[],
+  agentId: string,
+): { ask: PendingAsk; on: "approval" | "answer" } | null {
+  const ask = asks.find((a) => a.agentId === agentId);
+  return ask ? { ask, on: ask.kind === "approval" ? "approval" : "answer" } : null;
+}
+
 /** setTimeout's longest wait (about 24.8 days): a later deadline is waited for in steps. */
 const LONGEST_WAIT = 2_147_483_647;
 
@@ -642,10 +675,13 @@ export function RequestKeys({ count }: { count: number }) {
   return <span className="rq__keys">{t("question.keysHint", { count: Math.min(count, CHOICE_KEYS) })}</span>;
 }
 
-/** Waiting for you: a small pixel square outline that pulses (also in the bar above the composer). */
-export function WaitMark() {
+/**
+ * Waiting for you: a small pixel square outline that pulses inside the conversation (the bar above the composer, the
+ * divider, the cards); `still` in lists and chips.
+ */
+export function WaitMark({ still = false }: { still?: boolean }) {
   return (
-    <span className="rq-wait" aria-hidden="true">
+    <span className={still ? "rq-wait rq-wait--still" : "rq-wait"} aria-hidden="true">
       <span />
     </span>
   );
