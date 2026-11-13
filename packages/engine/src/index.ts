@@ -117,6 +117,7 @@ export * from "./dms";
 export * from "./docx";
 export * from "./early-access";
 export * from "./email";
+export * from "./email-change";
 export * from "./email-codes";
 export * from "./endpoints";
 export * from "./errors";
