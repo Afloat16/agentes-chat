@@ -7681,7 +7681,6 @@ export const ptBR = {
     auto: "automático",
     autoHint: "Mudou de coluna sozinha, pelo trabalho do agente.",
     now: {
-      title: "Agentes trabalhando agora",
       stalledCount_one: "{{count}} tarefa parada",
       stalledCount_other: "{{count}} tarefas paradas",
       viewStalled: "Ver paradas",

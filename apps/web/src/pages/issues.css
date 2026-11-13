@@ -21,100 +21,10 @@
   gap: var(--space-4);
 }
 
-/* ── Agents working now ─────────────────────────────────────────────────── */
+/* ── Stalled tasks, above the board ──────────────────────────────────────── */
 .issues-now {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-.issues-now__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 4px;
-  font-size: 13px;
-  font-weight: 650;
-  color: var(--ink2);
-}
-.issues-now__title span {
-  font-weight: 500;
-  font-size: 12.5px;
-  color: var(--faint);
-}
-.issues-now__list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
-}
-/* A MediaRow: the agent and the task's number and time on the face's line, the task and its step under them. */
-.issues-now__card {
-  position: relative;
-  padding: 12px 14px 16px;
-  border: 0;
-  border-radius: 18px;
-  background: var(--raised);
-  box-shadow: var(--e1), var(--top);
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
-  transition:
-    transform 0.22s var(--spring),
-    box-shadow 0.2s var(--out);
-}
-.issues-now__card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--e2), var(--top);
-}
-html:not([data-pointer]) .issues-now__card:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-/* The task and its step read as one: closer than the row's 8. */
-.issues-now__card > .ac-mediarow__body {
-  gap: 4px;
-}
-/* Two lines at most: a long title doesn't make every card in the row as tall as it. */
-.issues-now__task {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 20px;
-  overflow-wrap: anywhere;
-}
-.issues-now__step {
-  font-size: 12.5px;
-  color: var(--muted);
-  overflow-wrap: anywhere;
-}
-.issues-now__step.is-live {
-  color: var(--ink2);
-}
-.issues-now__step.is-live::after {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 12px;
-  margin-left: 3px;
-  vertical-align: -2px;
-  border-radius: 2px;
-  background: var(--agent);
-  animation: issues-caret 1s steps(2) infinite;
-}
-@keyframes issues-caret {
-  50% {
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .issues-now__step.is-live::after {
-    animation: none;
-  }
 }
 
 /* The stalled tasks as one line: how many, whose, "See stalled" and "Continue all". Every piece stands on the first
@@ -1424,21 +1334,6 @@ html:not([data-pointer]) .issue-ask__other:focus-visible {
   }
   .issues-col {
     scroll-snap-align: start;
-  }
-  /* A strip that scrolls clips what it holds at its padding edge: out to the work area's edges as the board is, the
-     room up and down keeping the cards' rings and focus whole, the negative margin keeping the cards where they were. */
-  .issues-now__list {
-    grid-auto-flow: column;
-    grid-template-columns: none;
-    grid-auto-columns: minmax(78vw, 1fr);
-    margin: -4px calc(-1 * var(--page-x)) -8px;
-    padding: 4px var(--page-x) 8px;
-    scroll-padding-inline: var(--page-x);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .issues-now__list::-webkit-scrollbar {
-    display: none;
   }
   /* Stacked as a card: the title, its facts with the number among them, who has it. */
   .issue-list__row {

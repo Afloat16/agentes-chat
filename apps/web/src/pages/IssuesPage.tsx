@@ -10,7 +10,7 @@ import {
   useSetIssuesView,
   useTaskUnread,
 } from "@agenteschat/client";
-import { dueLabel, dueTone, namesText, relativeTime, stoppedLine } from "@agenteschat/client/lib/format";
+import { dueLabel, dueTone, namesText, stoppedLine } from "@agenteschat/client/lib/format";
 import { githubLinkLabel } from "@agenteschat/client/lib/github-link";
 import { NO_PROJECT, projectOfFilter } from "@agenteschat/client/lib/issue-projects";
 import { ISSUES_VIEW_DEFAULT, PRIORITY_ORDER, sortIssues } from "@agenteschat/client/lib/issues-view";
@@ -66,7 +66,6 @@ import {
   isCustomBoard,
   isOpen,
   isStalled,
-  isWorking,
   rankAt,
   STATUS_ICON,
   type CardState as TaskState,
@@ -240,7 +239,7 @@ export function IssuesPage() {
               )
             }
           />
-          <WorkingNow issues={all} onOpen={toggle} />
+          <StalledNow issues={all} onOpen={toggle} />
           <Toolbar
             label={t("issues.filters")}
             search={
@@ -617,67 +616,16 @@ function IssuesBody({
 }
 
 /**
- * The agents on issues right now (live runs and the ones waiting on a person), each on its card with its live step;
- * under them the stalled ones (in progress, no run alive) as one line, since what they need is the same: a nudge.
+ * Above the board, only the stalled tasks (in progress, no run alive), as one line: an agent at work already shows on
+ * its own card on the board, so the strip says only what needs a person, a nudge. Nothing stalled, no strip.
  */
-function WorkingNow({ issues, onOpen }: { issues: Issue[]; onOpen: (n: number) => void }) {
-  const { t, i18n } = useTranslation();
-  const actors = useActors();
-  const color = useAssigneeColor();
-  const stepOf = useTaskStep();
-  const working = issues.filter((i) => isOpen(i) && isWorking(i) && i.work && i.assignee);
+function StalledNow({ issues, onOpen }: { issues: Issue[]; onOpen: (n: number) => void }) {
+  const { t } = useTranslation();
   const stalled = issues.filter((i) => isOpen(i) && isStalled(i) && i.work && i.assignee?.type === "agent");
-  if (working.length + stalled.length === 0) return null;
+  if (stalled.length === 0) return null;
   return (
-    <section className="issues-now" aria-label={t(working.length ? "issues.now.title" : "issues.now.stalledTitle")}>
-      {working.length > 0 && (
-        <>
-          <h2 className="issues-now__title">
-            {t("issues.now.title")}
-            <span>{working.length}</span>
-          </h2>
-          <div className="issues-now__list">
-            {working.map((i) => {
-              const w = i.work;
-              if (!w || !i.assignee) return null;
-              const name = actors.name(i.assignee);
-              const waiting = w.state === "waiting_approval" || w.state === "waiting_input";
-              const step = stepOf(i);
-              const body = waiting ? step && t("issues.work.lastStep", { step }) : step || t("issues.work.starting");
-              return (
-                <button
-                  key={i.id}
-                  type="button"
-                  className={cx("issues-now__card ac-mediarow", waiting && "is-waiting")}
-                  onClick={() => onOpen(i.number)}
-                >
-                  <span className="ac-mediarow__face">
-                    <AgentAvatar
-                      agentId={i.assignee.id}
-                      name={name}
-                      size="md"
-                      state={waiting ? "idle" : "writing"}
-                      running={!waiting}
-                    />
-                  </span>
-                  <span className="ac-mediarow__head">
-                    <b>{name}</b>
-                    <span className="ac-mediarow__meta">
-                      #{i.number} · {relativeTime(t, i18n.language, w.since)}
-                    </span>
-                  </span>
-                  <span className="ac-mediarow__body">
-                    <span className="issues-now__task">{codeAndBold(i.title)}</span>
-                    {body && <span className={cx("issues-now__step", !waiting && "is-live")}>{body}</span>}
-                  </span>
-                  <WorkSweep color={color(i) ?? "sky"} waiting={waiting} />
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
-      {stalled.length > 0 && <StalledLine issues={stalled} onOpen={onOpen} />}
+    <section className="issues-now" aria-label={t("issues.now.stalledTitle")}>
+      <StalledLine issues={stalled} onOpen={onOpen} />
     </section>
   );
 }

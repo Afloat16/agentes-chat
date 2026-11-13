@@ -7683,7 +7683,6 @@ export const en = {
     auto: "automatic",
     autoHint: "It changed column on its own, from the agent's work.",
     now: {
-      title: "Agents working now",
       stalledCount_one: "{{count}} stalled task",
       stalledCount_other: "{{count}} stalled tasks",
       viewStalled: "See stalled",
