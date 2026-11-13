@@ -1703,7 +1703,7 @@ function Chat({
             }}
           />
         ) : null}
-        {dmModel ? <DmModelButton agent={dmModel} /> : null}
+        {dmModel ? <DmModelButton agent={dmModel} host={sheet} /> : null}
         {queueShown && barQueue && queueMachineId ? (
           dmComputer ? (
             <DmQueueButton

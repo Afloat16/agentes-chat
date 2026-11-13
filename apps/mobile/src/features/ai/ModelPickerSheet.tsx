@@ -33,7 +33,7 @@ import { Sky } from "@/sky/Sky";
 import { GroupedList, GroupedRow, IconButton, ProviderLogo, Text, useToast } from "@/ui";
 import { useColors, useDirectory, useMeId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
-import { useSheetIfAny } from "../shared/SheetHost";
+import { type SheetHost, useSheetIfAny } from "../shared/SheetHost";
 import { openAgentAi } from "./AgentAiScreen";
 import { EffortRamp } from "./EffortRamp";
 
@@ -63,12 +63,16 @@ export function useAgentThinks(agent: Agent | undefined) {
 /**
  * The DM header's button: the agent's AI's logo, opening the picker. Whoever can't change it gets the same logo, and a
  * press says who can.
+ *
+ * `host`: the conversation's own sheets. The button is drawn in the navigation bar, outside the screen and its sheet
+ * host, so it can't find them itself: without them it told admins and owners too that only they change the model.
  */
-export function DmModelButton({ agent }: { agent: Agent }) {
+export function DmModelButton({ agent, host }: { agent: Agent; host?: SheetHost }) {
   const { t } = useTranslation();
   const { org } = useOrg();
   const meId = useMeId();
-  const sheet = useSheetIfAny();
+  const here = useSheetIfAny();
+  const sheet = host ?? here;
   const toast = useToast();
   const thinks = useAgentThinks(agent);
   if (!thinks?.text || isRightHand(agent)) return null;
