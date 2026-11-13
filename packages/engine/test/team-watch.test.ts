@@ -551,6 +551,24 @@ describe("what it tells", () => {
     expect(await rows()).toHaveLength(0);
   });
 
+  test("a routine that failed for want of the sign-in already told it", async () => {
+    f = await setup({ rightHand: true });
+    const accountId = await plan();
+    await f.db.update(schema.agents).set({ brainAccountId: accountId }).where(eq(schema.agents.id, f.agent.id));
+    await f.db.insert(schema.notifications).values({
+      orgId: f.org.id,
+      userId: f.owner.id,
+      kind: "routine_failed",
+      groupKey: "routine_failed:x",
+      actors: [{ type: "agent", id: f.agent.id }],
+      latest: { reason: "not_logged_in" },
+      createdAt: ago(5 * MIN),
+      updatedAt: ago(5 * MIN),
+    });
+    await watch();
+    expect(await rows()).toHaveLength(0);
+  });
+
   test("a budget's end or a computer's absence another notice told is not told again", async () => {
     f = await setup({ rightHand: true, budgetNanoUsd: 10_000_000_000 });
     await spend(f.agent.id, 10_000_000_000);

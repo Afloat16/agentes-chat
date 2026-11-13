@@ -358,9 +358,10 @@ const namesAgent = (agentId: SQL | string) => sql`(${notifications.actors} @> js
  * hides another's problem.
  */
 const saidElsewhere = {
-  /** A run that could not go on for want of a sign-in, of an agent that thinks with this plan. */
+  /** A run, a routine or a widget that could not go on for want of a sign-in, of an agent that thinks with this plan. */
   signIn: (orgId: string, accountId: string) =>
-    sql`(${notifications.kind} = 'run_failed' and ${notifications.latest}->>'reason' = 'not_logged_in'
+    sql`(${notifications.kind} in ('run_failed', 'routine_failed', 'widget_failed')
+      and ${notifications.latest}->>'reason' = 'not_logged_in'
       and exists (select 1 from agents a where a.org_id = ${orgId} and a.brain_account_id = ${accountId}
         and ${namesAgent(sql`a.id`)}))`,
   budget: (agentId: string) =>

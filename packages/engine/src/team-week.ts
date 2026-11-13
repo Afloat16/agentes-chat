@@ -40,6 +40,7 @@ import {
   setLodiPrefs,
   zoneSql,
 } from "./right-hand-prefs";
+import { taskEndToldSql } from "./right-hand-follow";
 import { lodiFor, postFromLodi, setCardOnMessage } from "./right-hand-proactive";
 import { createRoutine, type RoutineDeps } from "./routines";
 import { localDate, nextOccurrence, type ScheduleRule } from "./rrule";
@@ -723,7 +724,8 @@ const isMoreRow = (r: TeamWeekRow | TeamWeekMoreRow): r is TeamWeekMoreRow =>
  * agents' how-tos. New: not on the card before (`seen`), or ended inside this card's window. Work that finished posts
  * it only when the person did not ask for it themselves (the answer reached them where they asked), and it rings only
  * for what waits or is held. The whole workspace's work never posts it, an administrator's included, and every run is
- * read through a conversation the person reads.
+ * read through a conversation the person reads. A task whose end the right hand was already told for them
+ * (`taskEndToldSql`) is not counted: that end is said in their DM, once.
  *
  * A run is the person's when they wrote the message that started it or the first message of its thread, which is one
  * statement for all of them. Work an agent passed to another outside that thread is left to its owner's card.
@@ -842,6 +844,12 @@ export async function buildTeamDay(
       where org_id = ${w.orgId} and assignee_type = 'agent'
         and created_by_type = 'person' and created_by_id = ${w.userId}
         and ${closedByAgentSql("issues", start, end)}
+        and not ${taskEndToldSql(
+          sql`issues.id`,
+          sql`(select id from channels where org_id = ${w.orgId}
+            and dm_key = ${personAgentDmKey(w.userId, w.rightHandId)})`,
+          start,
+        )}
       group by assignee_id order by n desc limit 1`),
   );
   const worked: TeamWeekHighlight[] = [

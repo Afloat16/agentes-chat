@@ -629,6 +629,9 @@ export type IssueNotifyActor = { type: "person"; id: string } | { type: "agent";
 const issueActor = (a: IssueNotifyActor): NotificationActor =>
   (a.type === "person" ? person(a.id) : agent(a.id)) as NotificationActor;
 
+/** The inbox group of one change of a task's status: the task and the moment it changed. */
+export const issueStatusGroup = (issueId: string, at: number) => `issue_status:${issueId}:${at}`;
+
 /**
  * After an issue changed: a new person assignee hears it (and the previous
  * one's "assigned to you" resolves); a status change reaches the followers.
@@ -664,7 +667,7 @@ export async function notifyIssueChanged(
       orgId: issue.orgId,
       userIds: await issueFollowers(deps, issue),
       kind: "issue_status",
-      groupKey: `issue_status:${issue.id}:${at}`,
+      groupKey: issueStatusGroup(issue.id, at),
       actor: issueActor(actor),
       source: issueSource(issue),
       latest: { title: issue.title, statusFrom: before.status, statusTo: issue.status },

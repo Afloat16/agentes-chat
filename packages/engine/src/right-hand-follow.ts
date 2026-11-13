@@ -1,5 +1,17 @@
 import type { PubSub } from "@agenteschat/adapters";
-import { and, type Database, desc, type Executor, eq, gte, isNotNull, isNull, schema, sql } from "@agenteschat/db";
+import {
+  and,
+  type Database,
+  desc,
+  type Executor,
+  eq,
+  gte,
+  isNotNull,
+  isNull,
+  type SQL,
+  schema,
+  sql,
+} from "@agenteschat/db";
 import { plainLine } from "@agenteschat/ui/markdown";
 import { runPerson } from "./authority";
 import { deliverNotice, publishDelivery } from "./delivery";
@@ -7,7 +19,7 @@ import { openPersonAgentDm, personAgentDmKey } from "./dms";
 import { cutText } from "./format";
 import { canSee } from "./issues";
 import type { Notice } from "./notices";
-import { humanBehindRun } from "./notification-producers";
+import { humanBehindRun, issueStatusGroup } from "./notification-producers";
 import { markNotificationRead } from "./notifications";
 import { enqueue } from "./outbox";
 import { RIGHT_HAND } from "./right-hand";
@@ -233,6 +245,16 @@ async function knownToRequester(db: Database, orgId: string, by: TaskChangedBy, 
 }
 
 /**
+ * In SQL: the right hand holds the news that task `taskId` ended, in its DM `dm` with the person, since `since` (the
+ * notice `tellTaskEnd` writes there). The day's card leaves such a task out, so one thing tells an end. Read by
+ * conversation and time, never across every message.
+ */
+export const taskEndToldSql = (taskId: SQL, dm: SQL, since: string) => sql`exists (select 1 from messages tm
+  where tm.channel_id = ${dm} and tm.created_at >= ${since}::timestamptz
+    and tm.meta->'notice'->>'kind' = 'wait_result' and tm.meta->'notice'->'refs'->>'task' = ${taskId}::text
+    and tm.meta->'notice'->'refs'->>'state' in ('done', 'canceled'))`;
+
+/**
  * Job `right_hand.task_end`, and what a status change calls right after it: a task the right hand handed over ended
  * after its hand-over was reported back. Silent when the task changed status again since, the hand-over is still out
  * or closed after the change or just before it (its own report tells the end), or the person knows already. When a
@@ -270,8 +292,7 @@ export async function tellTaskEnd(deps: Deps, orgId: string, payload: Record<str
         and(
           eq(notifications.orgId, orgId),
           eq(notifications.userId, to.requester),
-          // The group key `notifyIssueChanged` gives the row of this change.
-          eq(notifications.groupKey, `issue_status:${issue.id}:${at}`),
+          eq(notifications.groupKey, issueStatusGroup(issue.id, at)),
           isNull(notifications.doneAt),
           isNull(notifications.readAt),
         ),

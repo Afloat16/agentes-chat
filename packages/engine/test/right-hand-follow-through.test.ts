@@ -3,6 +3,7 @@ import { and, eq, like, schema } from "@agenteschat/db";
 import { ProviderError } from "@agenteschat/providers";
 import {
   askAgentToImplement,
+  buildTeamDay,
   createIssue,
   createReminder,
   drainOutbox,
@@ -231,6 +232,49 @@ describe("a handed task that ends after its report", () => {
     expect([...new Set(inbox.map((r) => r.kind))].sort()).toEqual(["agent_reply", "issue_comment", "issue_status"]);
     expect(inbox.filter((r) => r.kind === "agent_reply")).toHaveLength(1);
     expect(JSON.stringify(inbox)).not.toContain(notice?.id ?? "no notice");
+  });
+
+  test("the day's card leaves out a task whose end Lodi holds for them, and counts one Lodi was not told", async () => {
+    f = await setup({ rightHand: true });
+    const bea = await addMember(f.db, f.org.id, "member", "bea");
+    /** The tasks @dev closed, as the day's card of `userId` counts them. */
+    const closedOnCard = async (userId: string) => {
+      const day = await buildTeamDay(f.db, {
+        orgId: f.org.id,
+        userId,
+        rightHandId: (await lodiOf()).id,
+        start: new Date(Date.now() - DAY),
+        end: new Date(Date.now() + HOUR),
+        timezone: "UTC",
+      });
+      return (day?.card.worked ?? []).filter((w) => w.kind === "tasks");
+    };
+    const devCloses = (h: Awaited<ReturnType<typeof handOver>>) =>
+      updateIssue(
+        deps(),
+        { type: "agent", agentId: f.agent.id, channelId: h.conversationId, runId: h.c.targetRunId ?? undefined },
+        f.org.id,
+        h.issue.id,
+        { status: "done" },
+      );
+
+    // The owner's task: Lodi is told its end, in their DM with it, so their card does not say it again.
+    const told = await handOver();
+    await reported(told.c);
+    await devCloses(told);
+    expect(await noticesIn(told.dm.id)).toHaveLength(1);
+    expect(await closedOnCard(f.owner.id)).toEqual([]);
+
+    // Bea turned the reports off: Lodi is told nothing, and her card is what counts the task.
+    await setLodiPrefs(f.db, f.org.id, bea.id, { remindOff: true });
+    const untold = await handOver(bea.id, "Sem aviso");
+    await reported(untold.c);
+    await devCloses(untold);
+    expect(await noticesIn(untold.dm.id)).toEqual([]);
+    expect(await closedOnCard(bea.id)).toEqual([{ kind: "tasks", agentId: f.agent.id, count: 1 }]);
+    // What Lodi holds for the owner is theirs alone: it hides nothing on anyone else's card.
+    expect(await closedOnCard(f.owner.id)).toEqual([]);
+    expect(f.provider.calls).toHaveLength(0);
   });
 
   test("a turn that fails leaves the news in their inbox: the row of the change is read, never done", async () => {
