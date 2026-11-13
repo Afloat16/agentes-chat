@@ -40,6 +40,7 @@ import {
   pushStrings,
   pushTicketsOf,
   registerPushDevice,
+  remindNotifications,
   renderPush,
   sealSecret,
   setNoticePref,
@@ -399,6 +400,29 @@ describe("push delivery", () => {
       priority: "high",
       data: { kind: "agent_question", notificationId: question?.id },
     });
+  });
+
+  test("the day's one reminder reaches the phone saying how many things still wait", async () => {
+    f = await setup();
+    const { bia, push, drain } = await withPhone();
+    await notify(deps(), {
+      orgId: f.org.id,
+      userIds: [bia.id],
+      kind: "agent_question",
+      groupKey: "agent_question:q1",
+      waiting: true,
+      actor: { type: "agent", id: f.agent.id },
+      source: { channelId: f.general.id },
+      latest: { text: "Qual branch?" },
+    });
+    await drain();
+    expect(
+      await remindNotifications(deps(), f.org.id, "agent_question:q1", { reminder: true, still: 3 }, "day-1", [bia.id]),
+    ).toBe(1);
+    await drain();
+    expect(push.sent).toHaveLength(2);
+    expect(push.sent[1]?.title).toBe(renderPush("pt-BR", { kind: "agent_question", waiting: true, still: 3 }).title);
+    expect(push.sent[1]?.title).toContain("3");
   });
 
   test("an approval a routine asked: its why and origin in the inbox, the routine's name in the push", async () => {

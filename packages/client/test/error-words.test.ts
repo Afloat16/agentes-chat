@@ -508,6 +508,7 @@ const PLAIN_LINE = new Set([
   "storage.daily_full",
   "storage.full",
   "storage.invalid_bucket",
+  "team_week.no_skip",
   "team_week.own_path",
   "timeout",
   "tls",
