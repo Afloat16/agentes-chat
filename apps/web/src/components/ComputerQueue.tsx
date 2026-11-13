@@ -329,7 +329,7 @@ function SpillHere({ machineId }: { machineId: string }) {
       </h3>
       <ul className="cq-spill__rows">
         {mine.map((d) => (
-          <li key={d.id} className="cq-spill__row">
+          <li key={d.id} className="cq-spill__row ac-iconline">
             <Icon name="computer" size={16} />
             <span className="cq-spill__name">
               <b>{d.name}</b>
