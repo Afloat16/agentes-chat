@@ -74,7 +74,7 @@ export const envVars = {
   LANDING_URL: {
     schema: z.url().optional(),
     description:
-      "Public URL of the agentes.chat landing page (its own site), without a trailing slash. Turns on the waiting list: that origin may call it (CORS on `/api/waitlist` only), and the confirmation email links there. Unset: no waiting list.",
+      "Public URL of the agentes.chat landing page (its own site), without a trailing slash. Turns on the waiting lists, the product's and the partner program's: that origin may call them (CORS on `/api/waitlist` and `/api/partners/waitlist` only), and the confirmation email links there. Unset: no waiting lists.",
     section: "Server",
     example: "https://agentes.chat",
   },

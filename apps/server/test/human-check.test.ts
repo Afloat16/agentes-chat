@@ -54,8 +54,8 @@ const signUpPassing = (b: Browser, email: string) =>
     headers: passing,
   });
 
-/** The six guarded calls, each from a fresh browser, with `headers`. */
-async function sixCalls(token: string, headers: Record<string, string>) {
+/** The guarded calls, each from a fresh browser, with `headers`: one per action, and the partner list's. */
+async function guardedCalls(token: string, headers: Record<string, string>) {
   const call = (path: string, json: unknown) => browser(t)(path, { json, headers });
   return {
     "email-lookup": await call("/api/app/sign-in-options", { email: "owner@example.com" }),
@@ -71,6 +71,11 @@ async function sixCalls(token: string, headers: Record<string, string>) {
     }),
     "ask-code": await call(`/api/app/invitations/${token}/code`, { email: "ana@example.com" }),
     waitlist: await call("/api/waitlist", { email: "ana@example.com" }),
+    partners: await call("/api/partners/waitlist", {
+      email: "ana@example.com",
+      name: "Ana",
+      whatsapp: "+5511912345678",
+    }),
   };
 }
 const statuses = (calls: Record<string, Response>) =>
@@ -82,6 +87,7 @@ const THROUGH = {
   "password-reset": 200,
   "ask-code": 202,
   waitlist: 202,
+  partners: 202,
 };
 
 /** An owner with a workspace and its invitation link, on a server with `check` (none: no keys). */
@@ -102,17 +108,17 @@ async function start(check?: ReturnType<typeof turnstile>) {
 test("without the keys: no site key for pages, and every form works without a token", async () => {
   const { token } = await start();
   expect(await (await browser(t)("/api/app/auth-config")).json()).toMatchObject({ turnstileSiteKey: null });
-  expect(statuses(await sixCalls(token, {}))).toEqual(THROUGH);
+  expect(statuses(await guardedCalls(token, {}))).toEqual(THROUGH);
 });
 
-test("with the keys: each of the six forms needs a token Cloudflare passes, and nothing else changes", async () => {
+test("with the keys: each guarded form needs a token Cloudflare passes, and nothing else changes", async () => {
   const { token } = await start(turnstile(cloudflare().fetch));
   expect(await (await browser(t)("/api/app/auth-config")).json()).toMatchObject({
     turnstileSiteKey: "1x00000000000000000000AA",
   });
 
   for (const headers of [{}, { "x-captcha-response": "a-made-up-token" }] as Record<string, string>[]) {
-    for (const [action, res] of Object.entries(await sixCalls(token, headers))) {
+    for (const [action, res] of Object.entries(await guardedCalls(token, headers))) {
       expect({ action, status: res.status, code: await codeOf(res) }).toEqual({
         action,
         status: 403,
@@ -124,7 +130,7 @@ test("with the keys: each of the six forms needs a token Cloudflare passes, and 
   await t.drain();
   expect(t.email.sent.filter((m) => m.to.includes("ana@example.com"))).toEqual([]);
 
-  expect(statuses(await sixCalls(token, passing))).toEqual(THROUGH);
+  expect(statuses(await guardedCalls(token, passing))).toEqual(THROUGH);
 });
 
 test("sign-up's refusal by the check says so by its code, not as a closed sign-up", async () => {
