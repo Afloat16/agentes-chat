@@ -641,6 +641,7 @@
       "addedBody": "Di halaman setiap agen, pilih siapa yang memakai akun ini.",
       "addedPlan": "Paket {{plan}}",
       "ok": "Oke",
+      "chooseAgents": "Pilih agen",
       "failedTitle": "Akun tidak berhasil ditambahkan",
       "failedExpired": "Waktu untuk masuk sudah habis. Coba lagi.",
       "failedLogin": "Proses masuk tidak selesai. Coba lagi.",

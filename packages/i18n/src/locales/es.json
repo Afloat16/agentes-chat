@@ -3137,6 +3137,8 @@
     },
     "line": "Retoma {{when}}, cuando el plan se renueva. Las respuestas rápidas siguen.",
     "changeModel": "Cambiar modelo",
+    "changeAccount": "Elegir otra cuenta",
+    "chooseBrain": "Elegir quién piensa",
     "raiseBudget": "Aumentar el presupuesto",
     "lineUnknown": "Retoma en cuanto el plan se renueve. Las respuestas rápidas siguen.",
     "lineBudget": "Retoma {{when}}, o antes si sube el presupuesto. Las respuestas rápidas siguen.",
@@ -3752,8 +3754,11 @@
     "offer": "{{name}} no está en el canal y no verá la mención.",
     "add": "Añadir al canal",
     "dismiss": "Ahora no",
-    "added": "{{name}} se unió al canal.",
-    "askAdmin": "Pide a un admin que lo añada."
+    "added": "{{name}} se unió al canal."
+  },
+  "adminAsk": {
+    "ask": "Pedírselo a un admin",
+    "sent": "Enviado a quien puede hacerlo."
   },
   "channelRefs": {
     "list": "Canales",
@@ -4686,6 +4691,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> quitó a quien aprueba por ti",
       "rightHandDecided": "Pedidos que <b>{{name}}</b> aprobó por ti hoy: {{count}}",
       "rightHandPaused": "<b>{{name}}</b> dejó de aprobar por ti: deshiciste 3 de sus decisiones esta semana",
+      "adminAskChannel": "<b>{{name}}</b> te pide añadir a <b>{{agent}}</b> a #{{label}}",
+      "adminAskCreate": "<b>{{name}}</b> pide poder crear agentes",
+      "adminAskWebhook": "<b>{{name}}</b> te pide configurar el webhook de {{service}} para rutinas",
       "invitationAccepted": "<b>{{name}}</b> aceptó tu invitación y se unió a {{org}}",
       "invitationAcceptedAny": "<b>{{name}}</b> aceptó tu invitación",
       "reaction_one": "<b>{{names}}</b> reaccionó a tu mensaje",
@@ -7727,6 +7735,7 @@
       "example": "Ejemplo",
       "exampleCopied": "Ejemplo copiado.",
       "test": "Probar",
+      "turnOnAndTest": "Activar y probar",
       "tested": "Prueba enviada. El agente recibe una muestra y dice qué haría con una llamada real.",
       "calls": "Últimas llamadas",
       "noCalls": "Aún no hay llamadas.",
@@ -9773,8 +9782,9 @@
       "connection_gone": "No se pudo actualizar: la conexión de GitHub que la leyó ya no existe.",
       "link_holds_several": "No se pudo actualizar: su enlace ahora tiene varias habilidades.",
       "link_renamed": "No se pudo actualizar: su enlace ahora tiene otra habilidad.",
-      "owner_gone": "No se pudo actualizar: quien activó la actualización automática ya no puede gestionar habilidades. Actívala de nuevo.",
-      "other": "No se pudo actualizar desde su enlace."
+      "owner_gone": "No se pudo actualizar: quien activó la actualización automática ya no gestiona skills.",
+      "other": "No se pudo actualizar desde su enlace.",
+      "relight": "Activar de nuevo"
     },
     "notice": {
       "updated": "{{name}} se actualizó desde su enlace",
@@ -13760,6 +13770,7 @@
       "pausePast": "Elige una hora en el futuro.",
       "notOwner": "Solo quien conectó este ordenador activa sus herramientas. Pídeselo.",
       "askSelf": "Es tu ordenador: actívalo con el botón.",
+      "adminAskSelf": "Puedes hacerlo aquí tú mismo.",
       "accountMethodUnsupported": "Esta computadora todavía no puede conectar Claude de esta forma. Actualiza el programa de agentes.chat en ella o usa una clave de API.",
       "offline": "{{name}} está desconectada ahora. Intenta de nuevo cuando vuelva.",
       "paused": "{{name}} está en pausa: nada nuevo empieza en ella hasta que se reanude.",
@@ -14089,6 +14100,7 @@
       "grantTextTerminal": "Los permisos se dan en la propia computadora, en su Terminal:",
       "grantTextAdmin": "Los permisos se dan en la propia computadora, en su Terminal, como su administrador:",
       "grantTerminal": "¿No tienes la app? En la terminal de la computadora:",
+      "preferTerminal": "Prefiero la terminal",
       "grantOnlyOwner": "Solo {{name}} permite más, desde la propia computadora. Si necesitas algo, pídeselo.",
       "pathPlaceholder": "<carpeta>",
       "agentPlaceholder": "<agente>"

@@ -1766,6 +1766,9 @@
   "prefs.accounts.ok": {
     "value": "OK"
   },
+  "prefs.accounts.chooseAgents": {
+    "value": "Choose agents"
+  },
   "prefs.accounts.failedTitle": {
     "value": "The account wasn't added"
   },

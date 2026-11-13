@@ -2193,6 +2193,15 @@
       "other": "Couldn't finish"
     }
   },
+  "activity.kind.admin_ask_channel_agent": {
+    "value": "{{names}} asks you to add {{agent}} to #{{label}}"
+  },
+  "activity.kind.admin_ask_create_agents": {
+    "value": "{{names}} asks to be able to create agents"
+  },
+  "activity.kind.admin_ask_webhook": {
+    "value": "{{names}} asks you to set up the {{service}} webhook for routines"
+  },
   "activity.kind.routine_paused": {
     "value": {
       "one": "Routine paused",

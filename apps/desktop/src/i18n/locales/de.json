@@ -646,6 +646,7 @@
       "addedBody": "Wähle auf der Seite jedes Agenten, wer dieses Konto nutzt.",
       "addedPlan": "{{plan}}-Abo",
       "ok": "Fertig",
+      "chooseAgents": "Agenten wählen",
       "failedTitle": "Das Konto wurde nicht hinzugefügt",
       "failedExpired": "Die Zeit zum Anmelden ist abgelaufen. Versuch es noch einmal.",
       "failedLogin": "Die Anmeldung wurde nicht abgeschlossen. Versuch es noch einmal.",

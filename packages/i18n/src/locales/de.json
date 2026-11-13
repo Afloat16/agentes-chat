@@ -3042,6 +3042,8 @@
     },
     "line": "Geht {{when}} weiter, wenn sich das Abo zurücksetzt. Schnelle Antworten laufen weiter.",
     "changeModel": "Modell wechseln",
+    "changeAccount": "Anderes Konto wählen",
+    "chooseBrain": "Wählen, wer denkt",
     "raiseBudget": "Budget erhöhen",
     "lineUnknown": "Geht weiter, sobald sich das Abo zurücksetzt. Schnelle Antworten laufen weiter.",
     "lineBudget": "Geht {{when}} weiter, oder früher, wenn das Budget erhöht wird. Schnelle Antworten laufen weiter.",
@@ -3646,8 +3648,11 @@
     "offer": "{{name}} ist nicht im Kanal und sieht die Erwähnung nicht.",
     "add": "Zum Kanal hinzufügen",
     "dismiss": "Nicht jetzt",
-    "added": "{{name}} ist dem Kanal beigetreten.",
-    "askAdmin": "Bitte einen Admin, die Person hinzuzufügen."
+    "added": "{{name}} ist dem Kanal beigetreten."
+  },
+  "adminAsk": {
+    "ask": "Einen Admin fragen",
+    "sent": "An alle gesendet, die das tun können."
   },
   "channelRefs": {
     "list": "Kanäle",
@@ -4560,6 +4565,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> hat deine Vertretung für Freigaben beendet",
       "rightHandDecided": "Heute von <b>{{name}}</b> für dich freigegebene Anfragen: {{count}}",
       "rightHandPaused": "<b>{{name}}</b> gibt nicht mehr für dich frei: Du hast diese Woche 3 Entscheidungen rückgängig gemacht",
+      "adminAskChannel": "<b>{{name}}</b> bittet dich, <b>{{agent}}</b> zu #{{label}} hinzuzufügen",
+      "adminAskCreate": "<b>{{name}}</b> möchte Agenten erstellen dürfen",
+      "adminAskWebhook": "<b>{{name}}</b> bittet dich, den {{service}}-Webhook für Routinen einzurichten",
       "invitationAccepted": "<b>{{name}}</b> hat deine Einladung angenommen und ist {{org}} beigetreten",
       "invitationAcceptedAny": "<b>{{name}}</b> hat deine Einladung angenommen",
       "reaction_one": "<b>{{names}}</b> hat auf deine Nachricht reagiert",
@@ -7526,6 +7534,7 @@
       "example": "Beispiel",
       "exampleCopied": "Beispiel kopiert.",
       "test": "Testen",
+      "turnOnAndTest": "Einschalten und testen",
       "tested": "Test gesendet. Der Agent bekommt ein Beispiel und sagt, was er mit einem echten Aufruf tun würde.",
       "calls": "Letzte Aufrufe",
       "noCalls": "Noch keine Aufrufe.",
@@ -9486,8 +9495,9 @@
       "connection_gone": "Aktualisieren nicht möglich: Die GitHub-Verbindung, die ihn gelesen hat, ist weg.",
       "link_holds_several": "Aktualisieren nicht möglich: Sein Link enthält jetzt mehrere Skills.",
       "link_renamed": "Aktualisieren nicht möglich: Sein Link enthält jetzt einen anderen Skill.",
-      "owner_gone": "Aktualisieren nicht möglich: Wer das Selbst-Aktualisieren eingeschaltet hat, kann keine Skills mehr verwalten. Schalte es erneut ein.",
-      "other": "Aktualisieren über seinen Link nicht möglich."
+      "owner_gone": "Aktualisierung fehlgeschlagen: Wer die automatische Aktualisierung eingeschaltet hat, darf keine Skills mehr verwalten.",
+      "other": "Aktualisieren über seinen Link nicht möglich.",
+      "relight": "Wieder einschalten"
     },
     "notice": {
       "updated": "{{name}} wurde über seinen Link aktualisiert",
@@ -13374,6 +13384,7 @@
       "pausePast": "Wähl eine Zeit in der Zukunft.",
       "notOwner": "Nur wer diesen Computer verbunden hat, schaltet seine Werkzeuge ein. Frag diese Person.",
       "askSelf": "Es ist dein Computer: schalte es mit dem Button ein.",
+      "adminAskSelf": "Das kannst du hier selbst tun.",
       "accountMethodUnsupported": "Dieser Computer kann Claude noch nicht auf diese Weise verbinden. Aktualisiere das agentes.chat-Programm darauf oder verwende einen API-Schlüssel.",
       "offline": "{{name}} ist gerade offline. Versuch es noch einmal, sobald er wieder da ist.",
       "paused": "{{name}} ist pausiert: Darauf startet nichts Neues, bis er fortgesetzt wird.",
@@ -13702,6 +13713,7 @@
       "grantTextTerminal": "Erlaubt wird auf dem Computer selbst, in seinem Terminal:",
       "grantTextAdmin": "Erlaubt wird auf dem Computer selbst, in seinem Terminal, als dessen Administrator:",
       "grantTerminal": "Keine App? Im Terminal des Computers:",
+      "preferTerminal": "Lieber im Terminal",
       "grantOnlyOwner": "Nur {{name}} erlaubt mehr, auf dem Computer selbst. Wenn du etwas brauchst, frag nach.",
       "pathPlaceholder": "<Ordner>",
       "agentPlaceholder": "<Agent>"

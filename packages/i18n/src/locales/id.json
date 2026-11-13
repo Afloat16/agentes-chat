@@ -2946,6 +2946,8 @@
     },
     "line": "Lanjut {{when}}, saat paket diatur ulang. Balasan singkat tetap jalan.",
     "changeModel": "Ganti model",
+    "changeAccount": "Pilih akun lain",
+    "chooseBrain": "Pilih siapa yang berpikir",
     "raiseBudget": "Naikkan anggaran",
     "lineUnknown": "Lanjut begitu paket diatur ulang. Balasan singkat tetap jalan.",
     "lineBudget": "Lanjut {{when}}, atau lebih cepat kalau anggarannya dinaikkan. Balasan singkat tetap jalan.",
@@ -3538,8 +3540,11 @@
     "offer": "{{name}} tidak ada di kanal dan tidak akan melihat sebutan ini.",
     "add": "Tambahkan ke kanal",
     "dismiss": "Nanti saja",
-    "added": "{{name}} bergabung ke kanal.",
-    "askAdmin": "Minta admin untuk menambahkannya."
+    "added": "{{name}} bergabung ke kanal."
+  },
+  "adminAsk": {
+    "ask": "Minta ke admin",
+    "sent": "Terkirim ke yang bisa melakukannya."
   },
   "channelRefs": {
     "list": "Kanal",
@@ -4417,6 +4422,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> mengakhiri siapa yang menyetujui untukmu",
       "rightHandDecided": "Permintaan yang disetujui <b>{{name}}</b> untukmu hari ini: {{count}}",
       "rightHandPaused": "<b>{{name}}</b> berhenti menyetujui untukmu: kamu membatalkan 3 keputusannya minggu ini",
+      "adminAskChannel": "<b>{{name}}</b> memintamu menambahkan <b>{{agent}}</b> ke #{{label}}",
+      "adminAskCreate": "<b>{{name}}</b> meminta izin membuat agen",
+      "adminAskWebhook": "<b>{{name}}</b> memintamu menyiapkan webhook {{service}} untuk rutinitas",
       "invitationAccepted": "<b>{{name}}</b> menerima undanganmu dan bergabung ke {{org}}",
       "invitationAcceptedAny": "<b>{{name}}</b> menerima undanganmu",
       "reaction_other": "<b>{{names}}</b> bereaksi pada pesanmu",
@@ -7309,6 +7317,7 @@
       "example": "Contoh",
       "exampleCopied": "Contoh disalin.",
       "test": "Uji",
+      "turnOnAndTest": "Nyalakan dan uji",
       "tested": "Uji coba terkirim. Agen menerima contoh dan menjelaskan apa yang akan dilakukannya dengan panggilan sungguhan.",
       "calls": "Panggilan terbaru",
       "noCalls": "Belum ada panggilan.",
@@ -9170,8 +9179,9 @@
       "connection_gone": "Tidak bisa memperbarui: koneksi GitHub yang membacanya sudah tidak ada.",
       "link_holds_several": "Tidak bisa memperbarui: tautannya sekarang berisi beberapa skill.",
       "link_renamed": "Tidak bisa memperbarui: tautannya sekarang berisi skill lain.",
-      "owner_gone": "Tidak bisa memperbarui: orang yang menyalakan pembaruan otomatis tidak bisa mengelola skill lagi. Nyalakan lagi.",
-      "other": "Tidak bisa memperbarui dari tautannya."
+      "owner_gone": "Gagal memperbarui: orang yang menyalakan pembaruan otomatis tidak lagi mengelola skill.",
+      "other": "Tidak bisa memperbarui dari tautannya.",
+      "relight": "Nyalakan lagi"
     },
     "notice": {
       "updated": "{{name}} diperbarui dari tautannya",
@@ -12936,6 +12946,7 @@
       "pausePast": "Pilih waktu di masa depan.",
       "notOwner": "Hanya orang yang menghubungkan komputer ini yang menyalakan alatnya. Minta kepada orang itu.",
       "askSelf": "Ini komputermu: nyalakan dengan tombolnya.",
+      "adminAskSelf": "Kamu bisa melakukannya sendiri di sini.",
       "accountMethodUnsupported": "Komputer ini belum bisa menghubungkan Claude dengan cara ini. Perbarui program agentes.chat di komputer ini, atau pakai kunci API.",
       "offline": "{{name}} sedang offline. Coba lagi setelah ia kembali.",
       "paused": "{{name}} dijeda: tidak ada yang baru dimulai di sana sampai dilanjutkan.",
@@ -13263,6 +13274,7 @@
       "grantTextTerminal": "Izin diberikan di komputer itu sendiri, lewat Terminal-nya:",
       "grantTextAdmin": "Izin diberikan di komputer itu sendiri, lewat Terminal-nya, sebagai administrator:",
       "grantTerminal": "Tidak ada aplikasi? Di terminal komputer itu:",
+      "preferTerminal": "Saya lebih suka Terminal",
       "grantOnlyOwner": "Hanya {{name}} yang bisa mengizinkan lebih banyak, di komputer itu sendiri. Kalau kamu butuh sesuatu, minta padanya.",
       "pathPlaceholder": "<folder>",
       "agentPlaceholder": "<agen>"

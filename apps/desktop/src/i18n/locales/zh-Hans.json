@@ -641,6 +641,7 @@
       "addedBody": "在每个智能体的页面上，选择谁使用此账号。",
       "addedPlan": "{{plan}} 套餐",
       "ok": "确定",
+      "chooseAgents": "选择智能体",
       "failedTitle": "账号未添加",
       "failedExpired": "登录超时了，请重试。",
       "failedLogin": "登录没有完成，请重试。",

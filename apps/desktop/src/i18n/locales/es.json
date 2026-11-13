@@ -651,6 +651,7 @@
       "addedBody": "En la página de cada agente, elige quién usa esta cuenta.",
       "addedPlan": "Plan {{plan}}",
       "ok": "OK",
+      "chooseAgents": "Elegir agentes",
       "failedTitle": "La cuenta no se agregó",
       "failedExpired": "Se acabó el tiempo para iniciar sesión. Inténtalo de nuevo.",
       "failedLogin": "El inicio de sesión no terminó. Inténtalo de nuevo.",

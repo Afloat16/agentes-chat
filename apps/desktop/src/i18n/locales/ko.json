@@ -641,6 +641,7 @@
       "addedBody": "에이전트 페이지마다 이 계정을 쓸 에이전트를 고르세요.",
       "addedPlan": "{{plan}} 요금제",
       "ok": "확인",
+      "chooseAgents": "에이전트 선택",
       "failedTitle": "계정이 추가되지 않았어요",
       "failedExpired": "로그인 시간이 지났어요. 다시 시도해 주세요.",
       "failedLogin": "로그인이 끝나지 않았어요. 다시 시도해 주세요.",

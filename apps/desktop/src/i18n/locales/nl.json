@@ -646,6 +646,7 @@
       "addedBody": "Kies op de pagina van elke agent wie dit account gebruikt.",
       "addedPlan": "{{plan}}-abonnement",
       "ok": "OK",
+      "chooseAgents": "Agents kiezen",
       "failedTitle": "Het account is niet toegevoegd",
       "failedExpired": "De tijd om in te loggen is op. Probeer het opnieuw.",
       "failedLogin": "Het inloggen is niet afgerond. Probeer het opnieuw.",

@@ -3031,6 +3031,8 @@
     },
     "line": "{{when}}, plan sıfırlanınca devam eder. Hızlı yanıtlar sürer.",
     "changeModel": "Modeli değiştir",
+    "changeAccount": "Başka hesap seç",
+    "chooseBrain": "Kimin düşüneceğini seç",
     "raiseBudget": "Bütçeyi artır",
     "lineUnknown": "Plan sıfırlanır sıfırlanmaz devam eder. Hızlı yanıtlar sürer.",
     "lineBudget": "{{when}} ya da bütçe artarsa daha erken devam eder. Hızlı yanıtlar sürer.",
@@ -3632,8 +3634,11 @@
     "offer": "{{name}} kanalda değil ve bahsetmeyi görmeyecek.",
     "add": "Kanala ekle",
     "dismiss": "Şimdi değil",
-    "added": "{{name}} kanala katıldı.",
-    "askAdmin": "Eklemesi için bir yöneticiye sorun."
+    "added": "{{name}} kanala katıldı."
+  },
+  "adminAsk": {
+    "ask": "Bir admine sor",
+    "sent": "Bunu yapabilecek kişilere gönderildi."
   },
   "channelRefs": {
     "list": "Kanallar",
@@ -4544,6 +4549,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> sizin yerinize onaylayan kişiyi kaldırdı",
       "rightHandDecided": "<b>{{name}}</b> adlı yardımcının bugün sizin yerinize onayladığı istekler: {{count}}",
       "rightHandPaused": "<b>{{name}}</b> artık sizin yerinize onaylamıyor: bu hafta 3 kararını geri aldınız",
+      "adminAskChannel": "<b>{{name}}</b>, <b>{{agent}}</b> ajanını #{{label}} kanalına eklemenizi istiyor",
+      "adminAskCreate": "<b>{{name}}</b>, ajan oluşturabilmek istiyor",
+      "adminAskWebhook": "<b>{{name}}</b>, rutinler için {{service}} webhook'unu kurmanızı istiyor",
       "invitationAccepted": "<b>{{name}}</b> davetinizi kabul etti ve {{org}} çalışma alanına katıldı",
       "invitationAcceptedAny": "<b>{{name}}</b> davetinizi kabul etti",
       "reaction_one": "<b>{{names}}</b> mesajınıza tepki verdi",
@@ -7486,6 +7494,7 @@
       "example": "Örnek",
       "exampleCopied": "Örnek kopyalandı.",
       "test": "Test et",
+      "turnOnAndTest": "Aç ve test et",
       "tested": "Test gönderildi. Ajan bir örnek alır ve gerçek bir çağrıyla ne yapacağını söyler.",
       "calls": "Son çağrılar",
       "noCalls": "Henüz çağrı yok.",
@@ -9431,8 +9440,9 @@
       "connection_gone": "Güncellenemedi: onu okuyan GitHub bağlantısı artık yok.",
       "link_holds_several": "Güncellenemedi: bağlantısında artık birden fazla beceri var.",
       "link_renamed": "Güncellenemedi: bağlantısında artık başka bir beceri var.",
-      "owner_gone": "Güncellenemedi: kendi kendine güncellemeyi açan kişi artık becerileri yönetemiyor. Yeniden açın.",
-      "other": "Bağlantısından güncellenemedi."
+      "owner_gone": "Güncellenemedi: otomatik güncellemeyi açan kişi artık skill'leri yönetmiyor.",
+      "other": "Bağlantısından güncellenemedi.",
+      "relight": "Yeniden aç"
     },
     "notice": {
       "updated": "{{name}} bağlantısından güncellendi",
@@ -13309,6 +13319,7 @@
       "pausePast": "Gelecekte bir zaman seçin.",
       "notOwner": "Bu bilgisayarın araçlarını yalnızca onu bağlayan kişi açar. O kişiden isteyin.",
       "askSelf": "Bu sizin bilgisayarınız: düğmeyle açın.",
+      "adminAskSelf": "Bunu burada kendiniz yapabilirsiniz.",
       "accountMethodUnsupported": "Bu bilgisayar Claude'u henüz bu şekilde bağlayamıyor. Üzerindeki agentes.chat programını güncelleyin ya da bir API anahtarı kullanın.",
       "offline": "{{name}} şu an çevrimdışı. Geri geldiğinde tekrar deneyin.",
       "paused": "{{name}} duraklatıldı: devam ettirilene kadar üzerinde yeni bir şey başlamaz.",
@@ -13637,6 +13648,7 @@
       "grantTextTerminal": "İzin vermek bilgisayarın kendisinde, Terminal'inde yapılır:",
       "grantTextAdmin": "İzin vermek bilgisayarın kendisinde, Terminal'inde, yöneticisi olarak yapılır:",
       "grantTerminal": "Uygulama yok mu? Bilgisayarın terminalinde:",
+      "preferTerminal": "Terminal'i tercih ederim",
       "grantOnlyOwner": "Daha fazlasına yalnızca {{name}}, bilgisayarın kendisinden izin verebilir. Bir şeye ihtiyacınız varsa ona sorun.",
       "pathPlaceholder": "<klasör>",
       "agentPlaceholder": "<ajan>"

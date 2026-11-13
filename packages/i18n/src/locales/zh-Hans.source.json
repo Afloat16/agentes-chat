@@ -7432,6 +7432,12 @@
   "usageCard.changeModel": {
     "value": "Change model"
   },
+  "usageCard.changeAccount": {
+    "value": "Choose another account"
+  },
+  "usageCard.chooseBrain": {
+    "value": "Choose who thinks"
+  },
   "usageCard.raiseBudget": {
     "value": "Raise the budget"
   },
@@ -8922,8 +8928,11 @@
   "mentions.added": {
     "value": "{{name}} joined the channel."
   },
-  "mentions.askAdmin": {
-    "value": "Ask an admin to add them."
+  "adminAsk.ask": {
+    "value": "Ask an admin"
+  },
+  "adminAsk.sent": {
+    "value": "Sent to whoever can do it."
   },
   "channelRefs.list": {
     "value": "Channels"
@@ -11153,6 +11162,15 @@
   },
   "notifications.what.rightHandPaused": {
     "value": "<b>{{name}}</b> stopped approving for you: you undid 3 of its decisions this week"
+  },
+  "notifications.what.adminAskChannel": {
+    "value": "<b>{{name}}</b> asks you to add <b>{{agent}}</b> to #{{label}}"
+  },
+  "notifications.what.adminAskCreate": {
+    "value": "<b>{{name}}</b> asks to be able to create agents"
+  },
+  "notifications.what.adminAskWebhook": {
+    "value": "<b>{{name}}</b> asks you to set up the {{service}} webhook for routines"
   },
   "notifications.what.invitationAccepted": {
     "value": "<b>{{name}}</b> accepted your invitation and joined {{org}}"
@@ -18260,6 +18278,9 @@
   "routines.webhook.test": {
     "value": "Test"
   },
+  "routines.webhook.turnOnAndTest": {
+    "value": "Turn on and test"
+  },
   "routines.webhook.tested": {
     "value": "Test sent. The agent gets a sample and says what it would do with a real call."
   },
@@ -23033,10 +23054,13 @@
     "value": "Couldn't update it: its link holds another skill now."
   },
   "skills.updateFailed.owner_gone": {
-    "value": "Couldn't update it: whoever turned on updating by itself can no longer manage skills. Turn it on again."
+    "value": "Couldn't update it: whoever turned on updating by itself can no longer manage skills."
   },
   "skills.updateFailed.other": {
     "value": "Couldn't update it from its link."
+  },
+  "skills.updateFailed.relight": {
+    "value": "Turn on again"
   },
   "skills.notice.updated": {
     "value": "{{name}} was updated from its link"
@@ -32419,6 +32443,9 @@
   "errors.machine.askSelf": {
     "value": "It's your computer: turn it on with the button."
   },
+  "errors.machine.adminAskSelf": {
+    "value": "You can do this here yourself."
+  },
   "errors.machine.accountMethodUnsupported": {
     "value": "This computer can't connect Claude this way yet. Update the agentes.chat program on it, or use an API key."
   },
@@ -33236,6 +33263,9 @@
   },
   "machines.access.grantTerminal": {
     "value": "No app? In the computer's terminal:"
+  },
+  "machines.access.preferTerminal": {
+    "value": "I'd rather use the Terminal"
   },
   "machines.access.grantOnlyOwner": {
     "value": "Only {{name}} allows more, on the computer itself. If you need something, ask them."

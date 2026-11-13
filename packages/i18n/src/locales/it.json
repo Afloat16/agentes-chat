@@ -3144,6 +3144,8 @@
     },
     "line": "Riprende {{when}}, quando il piano si rinnova. Le risposte rapide continuano.",
     "changeModel": "Cambia modello",
+    "changeAccount": "Scegli un altro account",
+    "chooseBrain": "Scegli chi pensa",
     "raiseBudget": "Aumenta il budget",
     "lineUnknown": "Riprende appena il piano si rinnova. Le risposte rapide continuano.",
     "lineBudget": "Riprende {{when}}, o prima se il budget aumenta. Le risposte rapide continuano.",
@@ -3758,8 +3760,11 @@
     "offer": "{{name}} non è nel canale e non vedrà la menzione.",
     "add": "Aggiungi al canale",
     "dismiss": "Non ora",
-    "added": "{{name}} è entrato nel canale.",
-    "askAdmin": "Chiedi a un admin di aggiungerlo."
+    "added": "{{name}} è entrato nel canale."
+  },
+  "adminAsk": {
+    "ask": "Chiedi a un admin",
+    "sent": "Inviato a chi può farlo."
   },
   "channelRefs": {
     "list": "Canali",
@@ -4693,6 +4698,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> ha tolto chi approva per te",
       "rightHandDecided": "Richieste approvate da <b>{{name}}</b> per te oggi: {{count}}",
       "rightHandPaused": "<b>{{name}}</b> non approva più per te: hai annullato 3 sue decisioni questa settimana",
+      "adminAskChannel": "<b>{{name}}</b> ti chiede di aggiungere <b>{{agent}}</b> a #{{label}}",
+      "adminAskCreate": "<b>{{name}}</b> chiede di poter creare agenti",
+      "adminAskWebhook": "<b>{{name}}</b> ti chiede di configurare il webhook di {{service}} per le routine",
       "invitationAccepted": "<b>{{name}}</b> ha accettato il tuo invito ed è entrato in {{org}}",
       "invitationAcceptedAny": "<b>{{name}}</b> ha accettato il tuo invito",
       "reaction_one": "<b>{{names}}</b> ha reagito al tuo messaggio",
@@ -7786,6 +7794,7 @@
       "example": "Esempio",
       "exampleCopied": "Esempio copiato.",
       "test": "Prova",
+      "turnOnAndTest": "Attiva e prova",
       "tested": "Prova inviata. L'agente riceve un esempio e dice cosa farebbe con una chiamata vera.",
       "calls": "Ultime chiamate",
       "noCalls": "Ancora nessuna chiamata.",
@@ -9841,8 +9850,9 @@
       "connection_gone": "Impossibile aggiornarla: il collegamento GitHub che l'ha letta non c'è più.",
       "link_holds_several": "Impossibile aggiornarla: il suo link ora contiene più skill.",
       "link_renamed": "Impossibile aggiornarla: il suo link ora contiene un'altra skill.",
-      "owner_gone": "Impossibile aggiornarla: chi ha attivato l'aggiornamento automatico non può più gestire le skill. Riattivalo.",
-      "other": "Impossibile aggiornarla dal suo link."
+      "owner_gone": "Aggiornamento non riuscito: chi ha attivato l'aggiornamento automatico non gestisce più le skill.",
+      "other": "Impossibile aggiornarla dal suo link.",
+      "relight": "Riattiva"
     },
     "notice": {
       "updated": "{{name}} è stata aggiornata dal suo link",
@@ -13841,6 +13851,7 @@
       "pausePast": "Scegli un orario nel futuro.",
       "notOwner": "Solo chi ha collegato questo computer attiva i suoi strumenti. Chiedi a questa persona.",
       "askSelf": "È il tuo computer: attivalo con il pulsante.",
+      "adminAskSelf": "Puoi farlo tu stesso qui.",
       "accountMethodUnsupported": "Questo computer non può ancora collegare Claude in questo modo. Aggiorna il programma agentes.chat che ha installato, oppure usa una chiave API.",
       "offline": "{{name}} è offline in questo momento. Riprova quando torna disponibile.",
       "paused": "{{name}} è in pausa: non parte nulla di nuovo finché non riprende.",
@@ -14170,6 +14181,7 @@
       "grantTextTerminal": "Si consente sul computer stesso, nel suo Terminale:",
       "grantTextAdmin": "Si consente sul computer stesso, nel suo Terminale, come amministratore:",
       "grantTerminal": "Niente app? Nel terminale del computer:",
+      "preferTerminal": "Preferisco il Terminale",
       "grantOnlyOwner": "Solo {{name}} può consentire di più, sul computer stesso. Se ti serve qualcosa, chiediglielo.",
       "pathPlaceholder": "<cartella>",
       "agentPlaceholder": "<agente>"

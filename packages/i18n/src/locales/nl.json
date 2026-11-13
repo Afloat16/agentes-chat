@@ -3045,6 +3045,8 @@
     },
     "line": "Gaat {{when}} verder, als het abonnement opnieuw begint. Snelle antwoorden gaan door.",
     "changeModel": "Model wijzigen",
+    "changeAccount": "Ander account kiezen",
+    "chooseBrain": "Kiezen wie denkt",
     "raiseBudget": "Budget verhogen",
     "lineUnknown": "Gaat verder zodra het abonnement opnieuw begint. Snelle antwoorden gaan door.",
     "lineBudget": "Gaat {{when}} verder, of eerder als het budget omhoog gaat. Snelle antwoorden gaan door.",
@@ -3647,8 +3649,11 @@
     "offer": "{{name}} zit niet in het kanaal en ziet de vermelding niet.",
     "add": "Toevoegen aan kanaal",
     "dismiss": "Niet nu",
-    "added": "{{name}} is bij het kanaal gekomen.",
-    "askAdmin": "Vraag een beheerder om die persoon toe te voegen."
+    "added": "{{name}} is bij het kanaal gekomen."
+  },
+  "adminAsk": {
+    "ask": "Een admin vragen",
+    "sent": "Verstuurd naar wie het kan doen."
   },
   "channelRefs": {
     "list": "Kanalen",
@@ -4563,6 +4568,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> heeft gestopt wie voor je goedkeurt",
       "rightHandDecided": "Verzoeken die <b>{{name}}</b> vandaag voor je goedkeurde: {{count}}",
       "rightHandPaused": "<b>{{name}}</b> keurt niet meer voor je goed: je hebt deze week 3 beslissingen ongedaan gemaakt",
+      "adminAskChannel": "<b>{{name}}</b> vraagt je <b>{{agent}}</b> toe te voegen aan #{{label}}",
+      "adminAskCreate": "<b>{{name}}</b> vraagt om agents te mogen maken",
+      "adminAskWebhook": "<b>{{name}}</b> vraagt je de {{service}}-webhook voor routines in te stellen",
       "invitationAccepted": "<b>{{name}}</b> heeft je uitnodiging geaccepteerd en doet mee in {{org}}",
       "invitationAcceptedAny": "<b>{{name}}</b> heeft je uitnodiging geaccepteerd",
       "reaction_one": "<b>{{names}}</b> heeft op je bericht gereageerd",
@@ -7575,6 +7583,7 @@
       "example": "Voorbeeld",
       "exampleCopied": "Voorbeeld gekopieerd.",
       "test": "Testen",
+      "turnOnAndTest": "Aanzetten en testen",
       "tested": "Test gestuurd. De agent krijgt een voorbeeld en zegt wat hij met een echte aanroep zou doen.",
       "calls": "Laatste aanroepen",
       "noCalls": "Nog geen aanroepen.",
@@ -9532,8 +9541,9 @@
       "connection_gone": "Bijwerken lukte niet: de GitHub-koppeling die het las, bestaat niet meer.",
       "link_holds_several": "Bijwerken lukte niet: de link bevat nu meerdere skills.",
       "link_renamed": "Bijwerken lukte niet: de link bevat nu een andere skill.",
-      "owner_gone": "Bijwerken lukte niet: wie zelf bijwerken aanzette, kan geen skills meer beheren. Zet het opnieuw aan.",
-      "other": "Bijwerken vanaf de link lukte niet."
+      "owner_gone": "Bijwerken lukte niet: wie automatisch bijwerken aanzette, beheert geen skills meer.",
+      "other": "Bijwerken vanaf de link lukte niet.",
+      "relight": "Weer aanzetten"
     },
     "notice": {
       "updated": "{{name}} is bijgewerkt vanaf de link",
@@ -13436,6 +13446,7 @@
       "pausePast": "Kies een tijd in de toekomst.",
       "notOwner": "Alleen wie deze computer heeft gekoppeld zet de tools aan. Vraag het die persoon.",
       "askSelf": "Het is jouw computer: zet het aan met de knop.",
+      "adminAskSelf": "Dat kun je hier zelf doen.",
       "accountMethodUnsupported": "Deze computer kan Claude nog niet op deze manier koppelen. Werk het agentes.chat-programma erop bij, of gebruik een API-sleutel.",
       "offline": "{{name}} is nu offline. Probeer het opnieuw zodra hij terug is.",
       "paused": "{{name}} is gepauzeerd: er start niets nieuws op tot hij wordt hervat.",
@@ -13764,6 +13775,7 @@
       "grantTextTerminal": "Toestaan gebeurt op de computer zelf, in de Terminal:",
       "grantTextAdmin": "Toestaan gebeurt op de computer zelf, in de Terminal, als beheerder van die computer:",
       "grantTerminal": "Geen app? In de terminal van de computer:",
+      "preferTerminal": "Liever in de Terminal",
       "grantOnlyOwner": "Alleen {{name}} kan meer toestaan, op de computer zelf. Heb je iets nodig, vraag het dan aan die persoon.",
       "pathPlaceholder": "<map>",
       "agentPlaceholder": "<agent>"

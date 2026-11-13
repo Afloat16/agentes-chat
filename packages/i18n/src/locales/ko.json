@@ -2934,6 +2934,8 @@
     },
     "line": "요금제가 초기화되는 {{when}}에 이어서 해요. 간단한 답변은 계속돼요.",
     "changeModel": "모델 변경",
+    "changeAccount": "다른 계정 선택",
+    "chooseBrain": "생각할 대상 선택",
     "raiseBudget": "예산 늘리기",
     "lineUnknown": "요금제가 초기화되면 바로 이어서 해요. 간단한 답변은 계속돼요.",
     "lineBudget": "{{when}}에 이어서 하거나, 예산이 늘어나면 더 일찍 이어서 해요. 간단한 답변은 계속돼요.",
@@ -3525,8 +3527,11 @@
     "offer": "{{name}}은(는) 채널에 없어서 멘션을 볼 수 없어요.",
     "add": "채널에 추가",
     "dismiss": "나중에",
-    "added": "{{name}}이(가) 채널에 참여했어요.",
-    "askAdmin": "관리자에게 추가해 달라고 요청하세요."
+    "added": "{{name}}이(가) 채널에 참여했어요."
+  },
+  "adminAsk": {
+    "ask": "관리자에게 요청",
+    "sent": "할 수 있는 사람에게 보냈어요."
   },
   "channelRefs": {
     "list": "채널",
@@ -4401,6 +4406,9 @@
       "approvalCoverEnded": "<b>{{name}}</b>님이 나 대신 승인할 사람을 해제했어요",
       "rightHandDecided": "<b>{{name}}</b>이(가) 오늘 나 대신 승인한 요청: {{count}}",
       "rightHandPaused": "<b>{{name}}</b>이(가) 나 대신 승인하는 걸 멈췄어요. 이번 주에 결정을 3번 되돌렸어요",
+      "adminAskChannel": "<b>{{name}}</b> 님이 <b>{{agent}}</b>을(를) #{{label}}에 추가해 달라고 요청합니다",
+      "adminAskCreate": "<b>{{name}}</b> 님이 에이전트를 만들 수 있게 해 달라고 요청합니다",
+      "adminAskWebhook": "<b>{{name}}</b> 님이 루틴용 {{service}} 웹훅을 설정해 달라고 요청합니다",
       "invitationAccepted": "<b>{{name}}</b> 님이 내 초대를 수락하고 {{org}}에 참여했어요",
       "invitationAcceptedAny": "<b>{{name}}</b> 님이 내 초대를 수락했어요",
       "reaction_other": "<b>{{names}}</b>이(가) 내 메시지에 반응했어요",
@@ -7269,6 +7277,7 @@
       "example": "예시",
       "exampleCopied": "예시를 복사했어요.",
       "test": "테스트",
+      "turnOnAndTest": "켜고 테스트",
       "tested": "테스트를 보냈어요. 에이전트가 샘플을 받고, 실제 호출이었다면 무엇을 할지 알려줘요.",
       "calls": "최근 호출",
       "noCalls": "아직 호출이 없어요.",
@@ -9115,8 +9124,9 @@
       "connection_gone": "업데이트할 수 없어요: 읽어 온 GitHub 연결이 없어졌어요.",
       "link_holds_several": "업데이트할 수 없어요: 링크에 이제 스킬이 여러 개 있어요.",
       "link_renamed": "업데이트할 수 없어요: 링크에 이제 다른 스킬이 있어요.",
-      "owner_gone": "업데이트할 수 없어요: 자동 업데이트를 켠 사람이 더 이상 스킬을 관리할 수 없어요. 다시 켜 주세요.",
-      "other": "링크에서 업데이트할 수 없었어요."
+      "owner_gone": "업데이트하지 못했어요: 자동 업데이트를 켠 사람이 더 이상 스킬을 관리하지 않아요.",
+      "other": "링크에서 업데이트할 수 없었어요.",
+      "relight": "다시 켜기"
     },
     "notice": {
       "updated": "{{name}}이(가) 링크에서 업데이트됐어요",
@@ -12876,6 +12886,7 @@
       "pausePast": "앞으로의 시간을 고르세요.",
       "notOwner": "이 컴퓨터를 연결한 사람만 도구를 켤 수 있습니다. 그분께 요청하세요.",
       "askSelf": "내 컴퓨터입니다. 버튼으로 켜세요.",
+      "adminAskSelf": "여기서 직접 할 수 있어요.",
       "accountMethodUnsupported": "이 컴퓨터에서는 아직 이 방식으로 Claude를 연결할 수 없어요. 컴퓨터의 agentes.chat 프로그램을 업데이트하거나 API 키를 쓰세요.",
       "offline": "{{name}}은(는) 지금 오프라인이에요. 돌아오면 다시 시도해 주세요.",
       "paused": "{{name}}이(가) 일시 중지됐어요: 다시 시작될 때까지 새 작업이 시작되지 않아요.",
@@ -13201,6 +13212,7 @@
       "grantTextTerminal": "허용은 컴퓨터에서 직접, 터미널에서 해요.",
       "grantTextAdmin": "허용은 컴퓨터에서 직접, 관리자 권한으로 터미널에서 해요.",
       "grantTerminal": "앱이 없나요? 컴퓨터의 터미널에서:",
+      "preferTerminal": "터미널이 더 좋아요",
       "grantOnlyOwner": "더 허용하는 건 {{name}} 님만 컴퓨터에서 직접 할 수 있어요. 필요한 게 있으면 요청하세요.",
       "pathPlaceholder": "<폴더>",
       "agentPlaceholder": "<에이전트>"

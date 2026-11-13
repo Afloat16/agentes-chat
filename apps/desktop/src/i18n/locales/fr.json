@@ -651,6 +651,7 @@
       "addedBody": "Sur la page de chaque agent, choisissez qui utilise ce compte.",
       "addedPlan": "Abonnement {{plan}}",
       "ok": "OK",
+      "chooseAgents": "Choisir des agents",
       "failedTitle": "Le compte n'a pas été ajouté",
       "failedExpired": "Le temps de connexion est écoulé. Réessayez.",
       "failedLogin": "La connexion n'a pas abouti. Réessayez.",

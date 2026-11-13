@@ -2939,6 +2939,8 @@
     },
     "line": "套餐重置后，将于{{when}}继续。快速回复不受影响。",
     "changeModel": "更换模型",
+    "changeAccount": "选择其他账号",
+    "chooseBrain": "选择由谁思考",
     "raiseBudget": "提高预算",
     "lineUnknown": "套餐一重置就会继续。快速回复不受影响。",
     "lineBudget": "将于{{when}}继续，如果预算提高会更早。快速回复不受影响。",
@@ -3528,8 +3530,11 @@
     "offer": "{{name}} 不在这个频道中，看不到这次提及。",
     "add": "添加到频道",
     "dismiss": "暂不",
-    "added": "{{name}} 已加入频道。",
-    "askAdmin": "请管理员把对方加进来。"
+    "added": "{{name}} 已加入频道。"
+  },
+  "adminAsk": {
+    "ask": "请管理员处理",
+    "sent": "已发送给能处理的人。"
   },
   "channelRefs": {
     "list": "频道",
@@ -4406,6 +4411,9 @@
       "approvalCoverEnded": "<b>{{name}}</b> 取消了替你审批的人",
       "rightHandDecided": "<b>{{name}}</b> 今天替你批准的请求：{{count}}",
       "rightHandPaused": "<b>{{name}}</b> 已停止替你审批：你本周撤销了它的 3 个决定",
+      "adminAskChannel": "<b>{{name}}</b> 请你把 <b>{{agent}}</b> 加入 #{{label}}",
+      "adminAskCreate": "<b>{{name}}</b> 请求获得创建智能体的权限",
+      "adminAskWebhook": "<b>{{name}}</b> 请你为例行任务设置 {{service}} Webhook",
       "invitationAccepted": "<b>{{name}}</b> 接受了你的邀请并加入了 {{org}}",
       "invitationAcceptedAny": "<b>{{name}}</b> 接受了你的邀请",
       "reaction_other": "<b>{{names}}</b> 对你的消息发了表情回应",
@@ -7320,6 +7328,7 @@
       "example": "示例",
       "exampleCopied": "示例已复制。",
       "test": "测试",
+      "turnOnAndTest": "打开并测试",
       "tested": "测试已发送。智能体会收到一个示例，并说明收到真实调用时会怎么做。",
       "calls": "最近的调用",
       "noCalls": "还没有调用。",
@@ -9166,8 +9175,9 @@
       "connection_gone": "无法更新：读取它的 GitHub 连接已失效。",
       "link_holds_several": "无法更新：链接里现在有多个技能。",
       "link_renamed": "无法更新：链接里现在是另一个技能。",
-      "owner_gone": "无法更新：开启自动更新的人已不能管理技能。请重新开启。",
-      "other": "无法从链接更新。"
+      "owner_gone": "无法更新：开启自动更新的人已不再管理技能。",
+      "other": "无法从链接更新。",
+      "relight": "重新打开"
     },
     "notice": {
       "updated": "{{name}} 已从链接更新",
@@ -12944,6 +12954,7 @@
       "pausePast": "请选择一个未来的时间。",
       "notOwner": "只有连接这台电脑的人能打开它的工具。请向那个人提出。",
       "askSelf": "这是你的电脑：用按钮打开它。",
+      "adminAskSelf": "你可以在这里自己完成。",
       "accountMethodUnsupported": "这台电脑暂时无法用这种方式连接 Claude。请更新电脑上的 agentes.chat 程序，或使用 API 密钥。",
       "offline": "{{name}} 现在离线，等它恢复后再试。",
       "paused": "{{name}} 已暂停：恢复之前不会在上面开始新的工作。",
@@ -13271,6 +13282,7 @@
       "grantTextTerminal": "允许操作需要在这台电脑上进行，在它的终端中：",
       "grantTextAdmin": "允许操作需要在这台电脑上进行，以管理员身份在它的终端中：",
       "grantTerminal": "没有应用？在这台电脑的终端中：",
+      "preferTerminal": "我更想用终端",
       "grantOnlyOwner": "只有 {{name}} 可以在这台电脑上允许更多内容。如有需要，请联系对方。",
       "pathPlaceholder": "<文件夹>",
       "agentPlaceholder": "<智能体>"

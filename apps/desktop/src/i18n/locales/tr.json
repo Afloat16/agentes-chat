@@ -646,6 +646,7 @@
       "addedBody": "Her ajanın sayfasında bu hesabı kimin kullanacağını seçin.",
       "addedPlan": "{{plan}} planı",
       "ok": "Tamam",
+      "chooseAgents": "Ajanları seç",
       "failedTitle": "Hesap eklenmedi",
       "failedExpired": "Giriş süresi doldu. Tekrar deneyin.",
       "failedLogin": "Giriş tamamlanmadı. Tekrar deneyin.",
