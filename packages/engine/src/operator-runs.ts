@@ -17,14 +17,14 @@ import {
 } from "@agenteschat/db";
 import { z } from "zod";
 import { audienceSql } from "./audience";
-import { UUID } from "./authority";
 import { decodeCursor, encodeCursor } from "./cursor";
 import { ValidationError } from "./errors";
 import { cutText, stringsOf } from "./format";
 import { PLATFORM_CAP } from "./limits";
 import { machineOnline } from "./machines";
 import { type Message, parseMentionHandles, receiptsFor } from "./messages";
-import { ms, orgExists, type PageQuery, pageOf, UuidCursor } from "./operator-paging";
+import { jobOf, jobsOfRun, OPERATOR_JOB_ERROR_MAX, selectJobs, spentColumns, spentOf } from "./operator-jobs";
+import { CODE, codeOf, errorText, ms, orgExists, type PageQuery, pageOf, UuidCursor, uuidOf } from "./operator-paging";
 import { rightHandReaches } from "./right-hand";
 import {
   computerWaitSql,
@@ -37,7 +37,6 @@ import {
   usageWaitSql,
 } from "./runs";
 import { type BillingHold, isBillingHold } from "./standing";
-import { redactCredentials } from "./tool-detail";
 import { monthStartUtc } from "./usage";
 
 /**
@@ -66,21 +65,14 @@ const {
   usageRecords,
 } = schema;
 
-/** How much of a run's stored error and of a job's last error an answer carries. */
+/** How much of a run's stored error an answer carries. */
 export const OPERATOR_RUN_ERROR_MAX = 500;
-export const OPERATOR_JOB_ERROR_MAX = 300;
 
-// What a JSON column holds is returned only when shaped like what the code writes there: a code, an id, a time.
-// Anything else in its place reads as absent, so text never leaves through a field meant for a code.
-const CODE = /^[A-Za-z][\w.:/-]{0,99}$/;
-const codeOf = (v: unknown) => (typeof v === "string" && CODE.test(v) ? v : null);
-const uuidOf = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
+/** A time a JSON column holds, when it is one (`codeOf`, `uuidOf`: the same rule). */
 function timeOf(v: unknown) {
   const at = typeof v === "string" ? new Date(v) : null;
   return at && !Number.isNaN(at.getTime()) ? at : null;
 }
-/** What a provider, a CLI or the server said went wrong: its start, with anything shaped like a credential masked. */
-const errorText = (text: string | null, max: number) => (text ? cutText(redactCredentials(text), max) : null);
 /** A JSON array of names computed in SQL: some drivers hand it over as text. */
 const namesOf = (v: unknown) => stringsOf(typeof v === "string" ? JSON.parse(v) : v).filter((k) => CODE.test(k));
 
@@ -354,36 +346,6 @@ async function asksWhere(db: Database, where: (t: AskTable, at: SQL<Date>) => SQ
 const inOrder = (a: [Date, string], b: [Date, string]) =>
   a[0].getTime() - b[0].getTime() || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
 
-// ── Jobs ─────────────────────────────────────────────────────────────────────
-
-// Never `payload`: a job's holds addresses, links and text.
-const jobColumns = {
-  id: outbox.id,
-  kind: outbox.kind,
-  status: outbox.status,
-  attempts: outbox.attempts,
-  maxAttempts: outbox.maxAttempts,
-  nextAttemptAt: outbox.nextAttemptAt,
-  lockedUntil: outbox.lockedUntil,
-  lockedBy: outbox.lockedBy,
-  lastError: outbox.lastError,
-  dedupe: outbox.dedupeKey,
-  createdAt: outbox.createdAt,
-  completedAt: outbox.completedAt,
-};
-
-const selectJobs = (db: Database) => db.select(jobColumns).from(outbox);
-type JobRow = Awaited<ReturnType<typeof selectJobs>>[number];
-
-/** `prefix`: what a run's jobs all start their name with; the word after it says why that job woke the run. */
-function jobOf({ dedupe, lastError, ...job }: JobRow, prefix?: string) {
-  return {
-    ...job,
-    lastError: errorText(lastError, OPERATOR_JOB_ERROR_MAX),
-    cause: prefix && dedupe ? codeOf(dedupe.slice(prefix.length + 1).split(":")[0]) : null,
-  };
-}
-
 // ── One run ──────────────────────────────────────────────────────────────────
 
 /** How many of a run's jobs, and of each kind of ask, its trace lists. */
@@ -418,9 +380,6 @@ const stepColumns = {
     then (select jsonb_agg(k) from jsonb_object_keys(${DATA}) k) end`.mapWith(namesOf),
 };
 
-const usd = (nanoUsd: number) => Math.round(nanoUsd / 1e3) / 1e6;
-const total = (column: unknown) => sql<number>`coalesce(sum(${column}), 0)`.mapWith(Number);
-
 /**
  * One run, start to end: its row, its steps in order (which tool, whether it failed, how big its input and its
  * result were, never either of them), what it asked of people, the jobs that started and woke it, what it spent and
@@ -436,7 +395,6 @@ export async function operatorRunTrace(db: Database, runId: string, query: { lim
     gte(usageRecords.createdAt, run.createdAt),
     eq(usageRecords.runId, runId),
   );
-  const jobPrefix = `agent_run.execute:${runId}`;
   const [steps, counted, asks, jobs, usage, ranOn, agent] = await Promise.all([
     db
       .select(stepColumns)
@@ -446,11 +404,8 @@ export async function operatorRunTrace(db: Database, runId: string, query: { lim
       .limit(query.limit),
     db.select({ steps: count() }).from(agentRunSteps).where(eq(agentRunSteps.runId, runId)),
     asksWhere(db, (t) => sql`${t.runId} = ${runId}::uuid`, OPERATOR_TRACE_ASKS),
-    // ponytail: no index serves this, it reads the whole outbox; an index on `dedupe_key` with
-    // `text_pattern_ops` (a migration) once that takes long. By name, not by payload: a finished job's payload is
-    // cleared after 30 days and its name stays.
     selectJobs(db)
-      .where(and(eq(outbox.kind, "agent_run.execute"), sql`starts_with(${outbox.dedupeKey}, ${jobPrefix})`))
+      .where(jobsOfRun(runId))
       .orderBy(desc(outbox.createdAt), desc(outbox.id))
       .limit(OPERATOR_TRACE_JOBS + 1),
     db
@@ -458,12 +413,7 @@ export async function operatorRunTrace(db: Database, runId: string, query: { lim
         provider: usageRecords.provider,
         model: usageRecords.model,
         billedTo: usageRecords.billedTo,
-        calls: count(),
-        input: total(usageRecords.inputTokens),
-        output: total(usageRecords.outputTokens),
-        cacheRead: total(usageRecords.cacheReadTokens),
-        cacheWrite: total(usageRecords.cacheWriteTokens),
-        costNanoUsd: total(usageRecords.costNanoUsd),
+        ...spentColumns,
       })
       .from(usageRecords)
       .where(spent)
@@ -520,24 +470,24 @@ export async function operatorRunTrace(db: Database, runId: string, query: { lim
       records: s.records ?? [],
     };
   });
-  const byModel = usage.map(({ costNanoUsd, ...u }) => ({ ...u, costUsd: usd(costNanoUsd) }));
-  const sumOf = (field: "calls" | "input" | "output" | "cacheRead" | "cacheWrite") =>
-    usage.reduce((n, u) => n + u[field], 0);
+  const sumOf = (field: keyof typeof spentColumns) => usage.reduce((n, u) => n + u[field], 0);
   return {
     run: runOf(run),
     steps: trail,
     stepCount: counted[0]?.steps ?? 0,
     asks: asks.sort((a, b) => inOrder([a.createdAt, a.id], [b.createdAt, b.id])),
-    jobs: jobs.slice(0, OPERATOR_TRACE_JOBS).map((j) => jobOf(j, jobPrefix)),
+    jobs: jobs.slice(0, OPERATOR_TRACE_JOBS).map(jobOf),
     moreJobs: jobs.length > OPERATOR_TRACE_JOBS,
     usage: {
-      calls: sumOf("calls"),
-      input: sumOf("input"),
-      output: sumOf("output"),
-      cacheRead: sumOf("cacheRead"),
-      cacheWrite: sumOf("cacheWrite"),
-      costUsd: usd(usage.reduce((n, u) => n + u.costNanoUsd, 0)),
-      byModel,
+      ...spentOf({
+        calls: sumOf("calls"),
+        input: sumOf("input"),
+        output: sumOf("output"),
+        cacheRead: sumOf("cacheRead"),
+        cacheWrite: sumOf("cacheWrite"),
+        costNanoUsd: sumOf("costNanoUsd"),
+      }),
+      byModel: usage.map(spentOf),
     },
     machine:
       tied && computer

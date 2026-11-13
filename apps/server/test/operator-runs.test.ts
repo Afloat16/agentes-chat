@@ -425,6 +425,7 @@ test("a run's trace: its steps without their contents, what it asked, its jobs a
   expect(look.jobs).toEqual([
     {
       id: ID,
+      orgId: org.orgId,
       kind: "agent_run.execute",
       status: "done",
       attempts: 1,
@@ -433,6 +434,7 @@ test("a run's trace: its steps without their contents, what it asked, its jobs a
       lockedUntil: null,
       lockedBy: "drain",
       lastError: null,
+      runId: look.run.id,
       cause: null,
       createdAt: TIME,
       completedAt: TIME,

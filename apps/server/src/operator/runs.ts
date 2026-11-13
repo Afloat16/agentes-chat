@@ -32,9 +32,9 @@ const errors = {
   404: errorResponse("Not found"),
 };
 
-const Time = z.string().openapi({ description: "ISO 8601, UTC." });
-const Instant = z.iso.datetime({ offset: true });
-const Count = z.number().int().min(0);
+export const Time = z.string().openapi({ description: "ISO 8601, UTC." });
+export const Instant = z.iso.datetime({ offset: true });
+export const Count = z.number().int().min(0);
 
 const RunStatus = z.enum(schema.agentRunStatusEnum.enumValues);
 
@@ -142,9 +142,13 @@ const Ask = z
   })
   .openapi("OperatorAsk");
 
-const Job = z
+export const Job = z
   .object({
     id: z.uuid(),
+    orgId: z
+      .uuid()
+      .nullable()
+      .openapi({ description: "Null: a job of no workspace (an email to someone signing up)." }),
     kind: z.string(),
     status: z.enum(schema.outboxStatusEnum.enumValues),
     attempts: Count,
@@ -158,6 +162,7 @@ const Job = z
       .openapi({
         description: `Its first ${OPERATOR_JOB_ERROR_MAX} characters; cleared 30 days after the job ended.`,
       }),
+    runId: z.uuid().nullable().openapi({ description: "A run's job (`agent_run.execute`): the run." }),
     cause: z.string().nullable().openapi({
       description:
         "A run's job: why it woke the run (`question`, `approval`, `steer`, `outage`, `room`, `recover`, `requeue`…); null for the job that started it.",
@@ -167,7 +172,7 @@ const Job = z
   })
   .openapi("OperatorJob");
 
-const Spent = {
+export const Spent = {
   calls: Count.openapi({ description: "Model calls recorded." }),
   input: Count.openapi({ description: "Uncached input tokens." }),
   output: Count,
@@ -424,7 +429,7 @@ const askJson = (ask: Found<typeof operatorRunTrace>["asks"][number]) => ({
   resolvedAt: iso(ask.resolvedAt),
 });
 
-const jobJson = (job: Found<typeof operatorRunTrace>["jobs"][number]) => ({
+export const jobJson = (job: Found<typeof operatorRunTrace>["jobs"][number]) => ({
   ...job,
   nextAttemptAt: job.nextAttemptAt.toISOString(),
   lockedUntil: iso(job.lockedUntil),

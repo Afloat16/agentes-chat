@@ -3,7 +3,7 @@
   "info": {
     "title": "agentes.chat operator API",
     "version": "test",
-    "description": "Workspace and account lookups, what a run did and why a message started one or none, workspace standing, billing holds and limits (ADR 0079), the events feed and review blocks, the workspaces' computers from an external provisioner, who may sign up (the waiting list and early-access invitations, ADR 0078), how new Claude sign-ins for all agents are made (ADR 0150), and how connectors are used (ADR 0103), for the people who run this instance (ADR 0056)."
+    "description": "Workspace and account lookups, what a run did and why a message started one or none, the job queue and what model calls spent, workspace standing, billing holds and limits (ADR 0079), the events feed and review blocks, the workspaces' computers from an external provisioner, who may sign up (the waiting list and early-access invitations, ADR 0078), how new Claude sign-ins for all agents are made (ADR 0150), and how connectors are used (ADR 0103), for the people who run this instance (ADR 0056)."
   },
   "servers": [
     {
@@ -736,6 +736,28 @@
         },
         "required": ["machineId", "enrollCode", "expiresAt"]
       },
+      "OperatorMachineList": {
+        "type": "object",
+        "properties": {
+          "machines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OperatorMachine"
+            }
+          },
+          "provisioning": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OperatorProvisioning"
+              },
+              {
+                "description": "How far the workspace's own computer is, as a provisioner last said; null: nothing said."
+              }
+            ]
+          }
+        },
+        "required": ["machines", "provisioning"]
+      },
       "OperatorMachine": {
         "type": "object",
         "properties": {
@@ -777,6 +799,110 @@
           "lastUsedAt": {
             "type": ["string", "null"],
             "description": "When the workspace's computer was last used: the latest of the workspace's runs and this computer's tasks of the last 7 days, the last time something wanted it, and its people's last visit. Null for every other computer, or when nothing says."
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": ["string", "null"]
+                }
+              },
+              "required": ["name", "version"]
+            },
+            "description": "What its runner found on it that says its version: its coding CLIs (`claude`, `codex`…) and its agents' `browser`. `version` is the line each printed; null when that isn't a plain version."
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "The CLI it signs in to: `claude_code`, `codex`…"
+                },
+                "provider": {
+                  "type": ["string", "null"],
+                  "description": "A coding plan's id; null: the CLI's own sign-in."
+                },
+                "authMethod": {
+                  "type": ["string", "null"]
+                },
+                "plan": {
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "type": "string",
+                  "description": "`active`, `signed_out`, `signing_in` or `removing`."
+                },
+                "statusUnknown": {
+                  "type": "boolean",
+                  "description": "Its runner's last look at `status` was inconclusive."
+                },
+                "lastSuccessAt": {
+                  "type": ["string", "null"]
+                },
+                "lastFailureCause": {
+                  "type": ["string", "null"]
+                },
+                "lastFailureAt": {
+                  "type": ["string", "null"]
+                },
+                "shared": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "provider",
+                "authMethod",
+                "plan",
+                "status",
+                "statusUnknown",
+                "lastSuccessAt",
+                "lastFailureCause",
+                "lastFailureAt",
+                "shared"
+              ]
+            },
+            "description": "Its AI accounts, most recently used first: at most 200 across one answer's computers (`GET /ai-accounts?orgId=` pages them all). `shared`: one sign-in thinks for every agent its owner gives it. No email or label."
+          },
+          "accountCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "How many AI accounts it has."
+          },
+          "openTasks": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Background tasks queued or running on it, and interrupted ones that may still come back."
+          },
+          "holds": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "What agents keep running on it now (`keep_running`)."
+          },
+          "waitingRuns": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Runs waiting for it: for it to come back, or for room on it."
+          },
+          "deletedAt": {
+            "type": ["string", "null"],
+            "description": "When it was removed. Always null in a workspace's list, which leaves removed computers out."
           }
         },
         "required": [
@@ -790,7 +916,15 @@
           "protocol",
           "standby",
           "busy",
-          "lastUsedAt"
+          "lastUsedAt",
+          "orgId",
+          "executors",
+          "accounts",
+          "accountCount",
+          "openTasks",
+          "holds",
+          "waitingRuns",
+          "deletedAt"
         ]
       },
       "OperatorStandby": {
@@ -4100,6 +4234,11 @@
             "type": "string",
             "format": "uuid"
           },
+          "orgId": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "description": "Null: a job of no workspace (an email to someone signing up)."
+          },
           "kind": {
             "type": "string"
           },
@@ -4131,6 +4270,11 @@
             "type": ["string", "null"],
             "description": "Its first 300 characters; cleared 30 days after the job ended."
           },
+          "runId": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "description": "A run's job (`agent_run.execute`): the run."
+          },
           "cause": {
             "type": ["string", "null"],
             "description": "A run's job: why it woke the run (`question`, `approval`, `steer`, `outage`, `room`, `recover`, `requeue`…); null for the job that started it."
@@ -4146,6 +4290,7 @@
         },
         "required": [
           "id",
+          "orgId",
           "kind",
           "status",
           "attempts",
@@ -4154,6 +4299,7 @@
           "lockedUntil",
           "lockedBy",
           "lastError",
+          "runId",
           "cause",
           "createdAt",
           "completedAt"
@@ -4952,6 +5098,163 @@
           }
         },
         "required": ["message", "verdict", "skipped", "handles", "agents", "routing", "workspace", "postedJob"]
+      },
+      "OperatorJobPage": {
+        "type": "object",
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OperatorJob"
+            }
+          },
+          "next": {
+            "type": ["string", "null"],
+            "description": "`cursor` for the next page; null on the last one."
+          }
+        },
+        "required": ["jobs", "next"]
+      },
+      "OperatorJobSummary": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "description": "When it was counted."
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending", "processing", "done", "failed"]
+                },
+                "jobs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "oldestDueAt": {
+                  "type": ["string", "null"],
+                  "description": "Of its `pending` jobs already due: since when the oldest waits for a worker."
+                }
+              },
+              "required": ["kind", "status", "jobs", "oldestDueAt"]
+            },
+            "description": "By kind, then status; at most 500."
+          },
+          "more": {
+            "type": "boolean"
+          },
+          "oldestDueAt": {
+            "type": ["string", "null"],
+            "description": "The oldest of them all; null: nothing waits."
+          },
+          "oldestDueSeconds": {
+            "type": ["integer", "null"],
+            "minimum": 0,
+            "description": "How long that one has waited."
+          }
+        },
+        "required": ["at", "counts", "more", "oldestDueAt", "oldestDueSeconds"]
+      },
+      "OperatorUsage": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "to": {
+            "type": "string",
+            "description": "ISO 8601, UTC."
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "calls": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Model calls recorded."
+              },
+              "input": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Uncached input tokens."
+              },
+              "output": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheRead": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cacheWrite": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "costUsd": {
+                "type": "number",
+                "description": "What was billed through an API (a plan's tokens are 0)."
+              }
+            },
+            "required": ["calls", "input", "output", "cacheRead", "cacheWrite", "costUsd"]
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "group": {
+                  "type": ["string", "null"],
+                  "description": "What `groupBy` names: an agent's id (null: calls made for the workspace, like routing), a UTC day (`2026-01-31`), the start of a UTC hour, a model, a provider, or who it is billed to."
+                },
+                "billedTo": {
+                  "type": "string",
+                  "description": "`org` (a provider's API, the workspace's key or the instance's), `platform` (the instance's own services) or `plan` (a coding CLI's plan). One group has a row for each."
+                },
+                "calls": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Model calls recorded."
+                },
+                "input": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Uncached input tokens."
+                },
+                "output": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cacheRead": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cacheWrite": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "costUsd": {
+                  "type": "number",
+                  "description": "What was billed through an API (a plan's tokens are 0)."
+                }
+              },
+              "required": ["group", "billedTo", "calls", "input", "output", "cacheRead", "cacheWrite", "costUsd"]
+            },
+            "description": "Days and hours oldest first; every other group most tokens first."
+          },
+          "more": {
+            "type": "boolean",
+            "description": "There are more groups than `limit`: narrow the dates."
+          }
+        },
+        "required": ["from", "to", "total", "groups", "more"]
       }
     },
     "parameters": {}
@@ -6120,6 +6423,7 @@
       "get": {
         "tags": ["Operator"],
         "summary": "The workspace's computers, its own and the ones its people connected",
+        "description": "Oldest first. Whether each is there, what runs on it and what waits for it: never a token, a code, its hostname, its folders or its address.",
         "parameters": [
           {
             "schema": {
@@ -6137,16 +6441,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "machines": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/OperatorMachine"
-                      }
-                    }
-                  },
-                  "required": ["machines"]
+                  "$ref": "#/components/schemas/OperatorMachineList"
                 }
               }
             }
@@ -6382,6 +6677,66 @@
         "responses": {
           "204": {
             "description": "Done"
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/machines/{machineId}": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "One computer, as its workspace's list shows it",
+        "description": "A removed one too (`deletedAt`): runs outlive the computer they waited for.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "machineId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorMachine"
+                }
+              }
+            }
           },
           "400": {
             "description": "Invalid request",
@@ -8378,6 +8733,287 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OperatorMessageExplained"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "The job queue, newest first; or how many jobs of each kind are in each state",
+        "description": "Every workspace's jobs and the ones of none. A job is its kind, its state, its attempts and its last error, never its payload.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Only this workspace's. An unknown one has none."
+            },
+            "required": false,
+            "description": "Only this workspace's. An unknown one has none.",
+            "name": "orgId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Only this kind: `message.posted`, `agent_run.execute`, `email.send`, `push.send`, `routine.run`…"
+            },
+            "required": false,
+            "description": "Only this kind: `message.posted`, `agent_run.execute`, `email.send`, `push.send`, `routine.run`…",
+            "name": "kind",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "processing", "done", "failed"]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Only the jobs that started and woke this run."
+            },
+            "required": false,
+            "description": "Only the jobs that started and woke this run.",
+            "name": "runId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "`true`: only jobs due for over 5 minutes that no worker took, and jobs a worker took whose lease ran out."
+            },
+            "required": false,
+            "description": "`true`: only jobs due for over 5 minutes that no worker took, and jobs a worker took whose lease ran out.",
+            "name": "stuck",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Queued at or after."
+            },
+            "required": false,
+            "description": "Queued at or after.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Queued before."
+            },
+            "required": false,
+            "description": "Queued before.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "`true`: counts by kind and status instead of jobs. `limit` and `cursor` don't apply."
+            },
+            "required": false,
+            "description": "`true`: counts by kind and status instead of jobs. `limit` and `cursor` don't apply.",
+            "name": "summary",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/OperatorJobPage"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OperatorJobSummary"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usage": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "What model calls spent: tokens, cache and cost, in all and by group",
+        "description": "Of the whole instance, a workspace, an agent or one run. 404 when the workspace, agent or run doesn't exist, or isn't in the workspace or of the agent given with it.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "One workspace's. Absent: the whole instance's."
+            },
+            "required": false,
+            "description": "One workspace's. Absent: the whole instance's.",
+            "name": "orgId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "agentId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "One run's, from when it began unless `from` says."
+            },
+            "required": false,
+            "description": "One run's, from when it began unless `from` says.",
+            "name": "runId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Recorded at or after. Default: 7 days before `to`."
+            },
+            "required": false,
+            "description": "Recorded at or after. Default: 7 days before `to`.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Recorded before. Default: now. At most 90 days after `from`, except for one run."
+            },
+            "required": false,
+            "description": "Recorded before. Default: now. At most 90 days after `from`, except for one run.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["agent", "day", "hour", "model", "provider", "payer"],
+              "description": "`payer`: who it is billed to. Absent: the total alone."
+            },
+            "required": false,
+            "description": "`payer`: who it is billed to. Absent: the total alone.",
+            "name": "groupBy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "description": "How many groups."
+            },
+            "required": false,
+            "description": "How many groups.",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorUsage"
                 }
               }
             }

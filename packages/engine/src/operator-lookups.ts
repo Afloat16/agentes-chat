@@ -326,6 +326,20 @@ export async function operatorAgents(db: Database, orgId: string, query: PageQue
   return { agents: page.items.map(withHold), next: page.next };
 }
 
+/** An AI account as the operator reads it: how it signs in and whether it works, never its email, label or key hint. */
+export const operatorAccountColumns = {
+  id: machineAccounts.id,
+  kind: machineAccounts.kind,
+  provider: machineAccounts.provider,
+  authMethod: machineAccounts.authMethod,
+  plan: machineAccounts.plan,
+  status: machineAccounts.status,
+  statusUnknown: machineAccounts.statusUnknown,
+  lastSuccessAt: machineAccounts.lastSuccessAt,
+  lastFailureCause: machineAccounts.lastFailureCause,
+  lastFailureAt: machineAccounts.lastFailureAt,
+};
+
 /**
  * One agent: who thinks for it and with which key or sign-in, its computer, the channels it is in, and how many
  * skills, routines and memories it has. Never its instructions nor the text of any of those. Null: no such agent.
@@ -350,18 +364,7 @@ export async function operatorAgent(db: Database, agentId: string) {
       : [],
     agent.accountId
       ? db
-          .select({
-            id: machineAccounts.id,
-            kind: machineAccounts.kind,
-            provider: machineAccounts.provider,
-            authMethod: machineAccounts.authMethod,
-            plan: machineAccounts.plan,
-            status: machineAccounts.status,
-            statusUnknown: machineAccounts.statusUnknown,
-            lastSuccessAt: machineAccounts.lastSuccessAt,
-            lastFailureCause: machineAccounts.lastFailureCause,
-            lastFailureAt: machineAccounts.lastFailureAt,
-          })
+          .select(operatorAccountColumns)
           .from(machineAccounts)
           .where(and(eq(machineAccounts.orgId, orgId), eq(machineAccounts.id, agent.accountId)))
       : [],

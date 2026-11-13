@@ -1,8 +1,14 @@
 import { type Database, eq, schema, sql } from "@agenteschat/db";
 import { z } from "zod";
+import { UUID } from "./authority";
 import { encodeCursor } from "./cursor";
+import { cutText } from "./format";
+import { redactCredentials } from "./tool-detail";
 
-/** Keyset paging shared by the operator API's reads (ADR 0056): a page ends at `[createdAt (ms), id]`. */
+/**
+ * Shared by the operator API's reads (ADR 0056): keyset paging, where a page ends at `[createdAt (ms), id]`, and
+ * what a stored value may give an answer.
+ */
 
 // Cut to milliseconds (what a JS Date and a cursor carry), so paging compares exactly what it returned.
 export const ms = (column: unknown) =>
@@ -32,3 +38,11 @@ export const orgExists = async (db: Database, orgId: string) =>
       .from(schema.organizations)
       .where(eq(schema.organizations.id, orgId))
   ).length > 0;
+
+// What a JSON column or a job's name holds is returned only when shaped like what the code writes there: a code, an
+// id. Anything else in its place reads as absent, so text never leaves through a field meant for a code.
+export const CODE = /^[A-Za-z][\w.:/-]{0,99}$/;
+export const codeOf = (v: unknown) => (typeof v === "string" && CODE.test(v) ? v : null);
+export const uuidOf = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
+/** What a provider, a CLI or the server said went wrong: its start, with anything shaped like a credential masked. */
+export const errorText = (text: string | null, max: number) => (text ? cutText(redactCredentials(text), max) : null);

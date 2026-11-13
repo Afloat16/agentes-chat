@@ -1081,6 +1081,9 @@ test("no answer carries a secret or a field named like one", async () => {
     .from(schema.agentRuns)
     .where(eq(schema.agentRuns.orgId, acme.orgId))
     .limit(1);
+  // Removed ones too: their rows keep what they held.
+  const machines = await t.db.select({ id: schema.machines.id }).from(schema.machines);
+  expect(machines.length).toBeGreaterThan(0);
   for (const path of [
     "/health",
     "/orgs?limit=200",
@@ -1095,7 +1098,12 @@ test("no answer carries a secret or a field named like one", async () => {
     `/orgs/${acme.orgId}/runs?limit=200`,
     `/orgs/${acme.orgId}/runs?groupBy=error`,
     `/orgs/${acme.orgId}/timeline?channelId=${acme.channelId}&limit=200`,
-    ...(run ? [`/runs/${run.id}/trace`, `/messages/${run.messageId}/explain`] : []),
+    ...(run ? [`/runs/${run.id}/trace`, `/messages/${run.messageId}/explain`, `/usage?runId=${run.id}`] : []),
+    "/jobs?limit=200",
+    "/jobs?summary=true",
+    `/usage?orgId=${acme.orgId}&groupBy=agent`,
+    `/orgs/${acme.orgId}/machines`,
+    ...machines.map((m) => `/machines/${m.id}`),
     "/signup",
     "/waitlist",
     "/early-access/invitations?limit=200",

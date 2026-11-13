@@ -252,6 +252,20 @@ const agentFields = {
   deletedAt: z.string().nullable(),
 };
 
+/** An AI account without its email, its label or a hint of its key. */
+export const accountFacts = {
+  id: z.uuid(),
+  kind: z.string().openapi({ description: "The CLI it signs in to: `claude_code`, `codex`…" }),
+  provider: z.string().nullable().openapi({ description: "A coding plan's id; null: the CLI's own sign-in." }),
+  authMethod: z.string().nullable(),
+  plan: z.string().nullable(),
+  status: z.string().openapi({ description: "`active`, `signed_out`, `signing_in` or `removing`." }),
+  statusUnknown: z.boolean().openapi({ description: "Its runner's last look at `status` was inconclusive." }),
+  lastSuccessAt: z.string().nullable(),
+  lastFailureCause: z.string().nullable(),
+  lastFailureAt: z.string().nullable(),
+};
+
 const AgentPage = z.object({ agents: z.array(z.object(agentFields)), next: Next }).openapi("OperatorAgentPage");
 
 const Agent = z
@@ -267,18 +281,7 @@ const Agent = z
       .nullable()
       .openapi({ description: "`credentialId`'s: never the credential itself nor a hint of it." }),
     account: z
-      .object({
-        id: z.uuid(),
-        kind: z.string().openapi({ description: "The CLI it signs in to: `claude_code`, `codex`…" }),
-        provider: z.string().nullable().openapi({ description: "A coding plan's id; null: the CLI's own sign-in." }),
-        authMethod: z.string().nullable(),
-        plan: z.string().nullable(),
-        status: z.string().openapi({ description: "`active`, `signed_out`, `signing_in` or `removing`." }),
-        statusUnknown: z.boolean().openapi({ description: "Its runner's last look at `status` was inconclusive." }),
-        lastSuccessAt: z.string().nullable(),
-        lastFailureCause: z.string().nullable(),
-        lastFailureAt: z.string().nullable(),
-      })
+      .object(accountFacts)
       .nullable()
       .openapi({ description: "`accountId`'s. No email or label: `GET /ai-accounts` has the label." }),
     machine: z
