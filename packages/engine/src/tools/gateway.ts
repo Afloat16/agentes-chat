@@ -10,6 +10,7 @@ import {
 import { startInFlight } from "@agenteschat/adapters/in-flight";
 import { and, desc, eq, inArray, isNotNull, isNull, or, schema, sql } from "@agenteschat/db";
 import { auditsCall, callSubject, callTitle, recordToolCall, type ToolCallSubject } from "../agent-audit";
+import { getAgentCached } from "../agents";
 import {
   COMMAND_RULE_TOOL,
   coveringRules,
@@ -35,7 +36,7 @@ import { cutMarked, cutText, pgSafeJson, pgSafeText } from "../format";
 import { mergeReposOfCall, recordMergeDone, reposOfGithubCall } from "../git/repos";
 import { recordRead } from "../outbound";
 import { routineCreatorOf } from "../requester";
-import { isRightHandId, RIGHT_HAND_NO_COMPUTER } from "../right-hand";
+import { isRightHand, RIGHT_HAND_NOT_OFFERED } from "../right-hand";
 import type { RoutineBrief } from "../routine-brief";
 import { keysOfCall, RUN_CODE_TOOL, routineKeysAllowed, routineKeysKind } from "../routine-keys";
 import { addRunStep } from "../runs";
@@ -375,7 +376,6 @@ async function refusalOf(
   granted: Set<string>,
 ) {
   const of = access.of;
-  if (NOT_IN_ALL.has(of.scope) && (await isRightHandId(ctx.db, ctx.orgId, ctx.agentId))) return RIGHT_HAND_NO_COMPUTER;
   if (access.state === "denied") {
     return `${of === tool ? "this tool" : of.name} is turned off for this agent, not for good: an admin can turn it back on, on the agent's page in Tools and access (in Portuguese, Ferramentas e acesso). Say so in plain words (the person asking may be that admin), never that it can't be done`;
   }
@@ -511,9 +511,11 @@ export function createToolGateway(deps: {
 
   async function allTools(ctx: ToolContext) {
     const byName = new Map<string, ToolDefinition>();
+    const rightHand = isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId));
     for (const source of deps.sources) {
       for (const tool of await source.tools(ctx)) {
         if (!TOOL_NAME.test(tool.name)) continue;
+        if (rightHand && RIGHT_HAND_NOT_OFFERED.has(tool.name)) continue;
         const current = byName.get(tool.name);
         // A connected MCP server must not shadow one of our own tools just
         // because its source appears earlier in the list.

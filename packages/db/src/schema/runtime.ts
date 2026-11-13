@@ -1044,6 +1044,8 @@ export const machineTasks = pgTable(
       .$defaultFn(() => Bun.randomUUIDv7()),
     orgId: uuid().notNull(),
     agentId: uuid().notNull(),
+    /** The id its computer knows the agent by when it isn't the agent's own: a seat of the right hand (ADR 0175). */
+    scopeId: uuid(),
     machineId: uuid()
       .notNull()
       .references(() => machines.id, { onDelete: "cascade" }),

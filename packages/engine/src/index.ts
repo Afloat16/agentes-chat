@@ -258,6 +258,7 @@ export * from "./reporting";
 export * from "./right-hand";
 export * from "./right-hand-approvals";
 export * from "./right-hand-prompt";
+export * from "./right-hand-seats";
 export * from "./roles";
 export * from "./router";
 export * from "./router-jev";

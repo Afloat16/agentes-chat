@@ -2574,6 +2574,17 @@ export const ptBR = {
       groupWorkspace: "Para todo o workspace",
       groupAdmins: "só admins",
     },
+    /** Its "Computador" row: the computer is the viewer's own seat (ADR 0175). */
+    computerYours: "Seu espaço próprio no computador do workspace. Só você pode ver ou controlar.",
+    sharedName: "{{name}} (compartilhado)",
+    sharedPlace:
+      "Usado em canais e em trabalhos que rodam sozinhos. Todo o workspace compartilha este espaço. Não guarde nada privado aqui.",
+    /** The row where it has none for anyone: the workspace has no computer of its own. */
+    computerNoHome:
+      "Ainda sem computador. Passa a ter um quando este workspace tiver um computador próprio, adicionado em Configurações, Computadores.",
+    /** The row where the workspace's computer runs every agent as one OS user. */
+    computerOneUser:
+      "Sem computador aqui. O computador do workspace roda todos os agentes como um só usuário, então não separa o espaço de cada pessoa. Um servidor Linux instalado com a opção --system do instalador separa.",
     powers: {
       title: "Poderes do workspace",
       help: "Só o seu braço direito faz isto.",

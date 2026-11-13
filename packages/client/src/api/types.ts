@@ -4,6 +4,7 @@ import type { ChatPrefs } from "../lib/chat-look";
 import type { RoleId } from "../lib/new-agent";
 import type { OnboardingStepId } from "../lib/onboarding";
 import type { Permission } from "../lib/permissions";
+import type { Seat } from "../lib/seat";
 import type { AudienceChoice } from "../lib/who-sees";
 
 /** Whether a person owns the workspace (ADR 0085); what anyone may do comes from their roles (`OrgRole`). */
@@ -4477,6 +4478,11 @@ export interface Machine {
   execAllowed: boolean;
   pairedBy: { id: string; name: string } | null;
   agents: { id: string; name: string; handle: string }[];
+  /**
+   * The built-in agent's id where this computer holds its shared place (ADR 0175) and this person may open it, as
+   * they may any agent's computer here; null or absent otherwise.
+   */
+  sharedSeatOf?: string | null;
   /** Workspace folder on the machine; null unless admin or the person who paired it. */
   workspace: string | null;
   /** This person may rename or remove it (an admin or whoever connected it); they may also reduce its access. */
@@ -7265,6 +7271,11 @@ export interface BrowserHandoff {
   requestedForUserId: string | null;
   /** Who is in control now (null: nobody yet). */
   controllerUserId: string | null;
+  /**
+   * On the workspace's built-in agent: the handoff is of its shared place on the workspace's computer, not of a
+   * person's own (ADR 0175). Absent for every other handoff.
+   */
+  seat?: Seat;
   /** What the person told the agent when it ended ("Não consegui"'s reason, or a note on "Pronto"/"Devolver"). */
   note: string | null;
   /** While nobody has opened it: when it expires. Null once someone is in control (no deadline then). */

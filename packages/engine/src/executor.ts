@@ -272,6 +272,7 @@ import {
   scrubRightHandReply,
   withPersonalBrain,
 } from "./right-hand";
+import { seatState } from "./right-hand-seats";
 import { routineBriefOf } from "./routine-brief";
 import { missStaleRoutineRun, routineRunWaitingForComputer, routineRunWaitingForPlan } from "./routine-firing";
 import { closeRoutineRun, type RoutineRunEnd, recordRoutineReportMessage, routineFailureEnd } from "./routine-ledger";
@@ -2208,8 +2209,13 @@ async function executeRunInner(
         ...(deps.blockSpec ? { blockSpec: deps.blockSpec } : {}),
         choices: choicesApply && tools.some((t) => t.name === ASK_CHOICES_TOOL),
         // "What you can do" names the loaded groups: it waits for the judge.
-        capabilities: Promise.resolve(judging).then(() =>
-          [describeCapabilities(tools, pending, isRightHand(agent)), browsers, repositories]
+        capabilities: Promise.resolve(judging).then(async () =>
+          [
+            // The right hand has a computer only as a seat on the workspace's own (ADR 0175).
+            describeCapabilities(tools, pending, isRightHand(agent) && (await seatState(db, run)) === "none"),
+            browsers,
+            repositories,
+          ]
             .filter(Boolean)
             .join("\n\n"),
         ),
