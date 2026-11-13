@@ -1155,6 +1155,8 @@
       "name": "Name",
       "namePlaceholder": "Dein Name",
       "email": "E-Mail",
+      "emailWebLead": "Melde dich auf der Website erneut an und ändere sie dort, ohne den Code.",
+      "emailWeb": "Auf der Website erneut anmelden",
       "inWorkspace": "In diesem Workspace · {{org}}",
       "handle": "Dein @",
       "timezone": "Zeitzone",

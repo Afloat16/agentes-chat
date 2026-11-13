@@ -33,6 +33,7 @@ import type {
   ConsultationConversation,
   Credential,
   Edition,
+  EmailChange,
   EndpointCheck,
   FeedbackOffer,
   ForeignMailbox,
@@ -439,6 +440,14 @@ export interface FakeState {
   deletionError?: ApiError;
   /** Make `orgs.deletionCode` and `account.deletionCode` fail with this error (`reauth.code_wait`…). */
   codeError?: ApiError;
+  /** What `account.changeEmail` answers without a code; unset: a code goes to my address first (`code`). */
+  emailChange?: EmailChange;
+  /** Make `account.changeEmail` fail with this error (`email.held`, `reauth.code_wrong`…). */
+  emailChangeError?: ApiError;
+  /** Make `account.undoEmailChange` fail with this error (`email.undo_gone`…). */
+  undoError?: ApiError;
+  /** The address `account.undoEmailChange` brings back; unset: walter@example.com. */
+  undoBack?: string;
   /** The workspace's roles (ADR 0085, `roles.*`); unset: a new workspace's (`seedRoles`). */
   roles?: OrgRole[];
   /** Where I put the sidebar's tools (`orgs.sidebarItems`); unset = none moved. */
@@ -1496,6 +1505,17 @@ export function createFakeHttpApi(state: FakeState): Omit<HttpApi, FakedParts> {
         log("account.delete", input);
         if (state.deletionError) throw state.deletionError;
         state.me = null;
+      },
+      changeEmail: async (input) => {
+        log("account.changeEmail", input);
+        if (state.emailChangeError) throw state.emailChangeError;
+        if (input.code) return { status: "sent", email: input.newEmail };
+        return state.emailChange ?? { status: "code", email: requireMe().user.email, resendIn: 60 };
+      },
+      undoEmailChange: async (token) => {
+        log("account.undoEmailChange", token);
+        if (state.undoError) throw state.undoError;
+        return { email: state.undoBack ?? "walter@example.com" };
       },
       unread: async () =>
         state.me

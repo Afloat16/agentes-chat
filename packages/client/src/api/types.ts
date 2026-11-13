@@ -570,6 +570,12 @@ export interface CodeSent {
   resendIn: number;
 }
 
+/**
+ * Where a new address for my account stands (`account.changeEmail`): a link went to it (`sent`), it changed at once on
+ * a server that sends no email (`changed`), or a code went to my current address first (`code`, as `CodeSent`).
+ */
+export type EmailChange = { status: "sent" | "changed"; email: string } | ({ status: "code" } & CodeSent);
+
 /** A workspace's invitation link people can still ask with (admins). */
 export interface InviteLink {
   id: string;

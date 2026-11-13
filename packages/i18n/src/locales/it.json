@@ -492,6 +492,7 @@
       "nameLead": "Come ti chiama il tuo team?",
       "namePlaceholder": "Il tuo nome",
       "nameIsPassword": "È il tuo nome? È uguale alla password che hai scritto.",
+      "emailHeld": "Questa email ha appena lasciato un account qui e resta riservata per 7 giorni. Se l’account è tuo, premi “Non ero io” nell’email che le abbiamo mandato.",
       "nameLooksLikePassword": "Sembra una password. Qui va il tuo nome.",
       "newPassword": "Ora una password.",
       "newPasswordNamed": "Perfetto, {{name}}. Ora una password.",
@@ -1843,7 +1844,12 @@
       "sent": "Abbiamo inviato un link a {{email}}. La tua email cambia quando lo apri.",
       "changed": "Fatto: ora accedi con {{email}}.",
       "same": "È già la tua email.",
-      "noMail": "Questo server non invia email, quindi il nuovo indirizzo non può essere confermato. Chiedi a chi gestisce il server di configurare l'invio delle email."
+      "noMail": "Questo server non invia email, quindi il nuovo indirizzo non può essere confermato. Chiedi a chi gestisce il server di configurare l'invio delle email.",
+      "held": "Questa email ha appena lasciato un altro account e resta riservata a lui per 7 giorni. Usane un’altra.",
+      "taken": "Un altro account usa già questa email. Usane un’altra.",
+      "cantOpen": "Non riesci ad aprire quella casella?",
+      "signInInstead": "Accedi di nuovo e cambiala senza il codice. Poi torni qui.",
+      "useCode": "Usa il codice"
     },
     "openOnPhone": "Apri sul telefono",
     "openOnPhoneHint": "Accedi all'app con un codice QR",
@@ -17778,6 +17784,17 @@
     "plan": "Il suo piano non si rinnova più. Nulla viene rimborsato.",
     "type": "Scrivi {{name}} per confermare",
     "submit": "Elimina spazio di lavoro"
+  },
+  "emailUndo": {
+    "title": "Riprendi la tua email",
+    "lead": "L’indirizzo che ha ricevuto questo link torna a essere l’email del tuo account. Tutte le sessioni vengono chiuse, le app di IA scollegate e i modi di accesso aggiunti dopo la modifica smettono di funzionare. Anche la password viene cancellata, e “Ho dimenticato la password” imposta la prossima.",
+    "button": "Non ero io",
+    "done": "La tua email è tornata",
+    "doneLead": "{{email}} è di nuovo l’email del tuo account, e tutte le sessioni sono state chiuse. I modi di accesso aggiunti dopo la modifica non funzionano più e la password è stata cancellata: “Ho dimenticato la password” imposta la prossima quando accedi.",
+    "gone": "Questo link non vale più",
+    "goneLead": "È già stato usato, o i suoi 7 giorni sono passati.",
+    "taken": "Un altro account usa questa email",
+    "takenLead": "{{email}} ora è l’email di un altro account, quindi non può tornare. Non è cambiato nulla."
   },
   "proof": {
     "willSend": "Invieremo un codice a {{email}} per confermare che sei tu.",
