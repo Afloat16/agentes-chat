@@ -17464,6 +17464,7 @@
       "agent_archived": "{{name}} wurde archiviert.",
       "audience": "Wer es eingerichtet hat, kann nicht mehr mit {{name}} sprechen.",
       "failing": "Es ist mehrmals hintereinander fehlgeschlagen und wurde gestoppt.",
+      "failingLast": "Nach 5 Fehlern in Folge gestoppt. Der letzte: {{cause}}",
       "stopped": "Die Aktualisierung wurde gestoppt.",
       "missing_credential": "{{name}} hat keinen KI-Schlüssel und kein Abo zum Arbeiten.",
       "timeout": "Die Aktualisierung hat zu lange gedauert.",

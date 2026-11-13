@@ -18109,6 +18109,7 @@
       "agent_archived": "{{name}} è stato archiviato.",
       "audience": "Chi l'ha configurato non può più parlare con {{name}}.",
       "failing": "Non è riuscito più volte di fila e si è fermato.",
+      "failingLast": "Si è fermato dopo 5 errori di fila. L'ultimo: {{cause}}",
       "stopped": "L'aggiornamento è stato fermato.",
       "missing_credential": "{{name}} non ha una chiave o un piano di IA con cui lavorare.",
       "timeout": "L'aggiornamento ha richiesto troppo tempo.",

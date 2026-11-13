@@ -16900,6 +16900,7 @@
       "agent_archived": "{{name}}이(가) 보관되었어요.",
       "audience": "설정한 사람이 더 이상 {{name}}와(과) 대화할 수 없어요.",
       "failing": "여러 번 연속으로 실패해서 멈췄어요.",
+      "failingLast": "5번 연속으로 실패해서 멈췄어요. 마지막 실패: {{cause}}",
       "stopped": "업데이트가 중지되었어요.",
       "missing_credential": "{{name}}에게 작업에 쓸 AI 키나 요금제가 없어요.",
       "timeout": "업데이트가 너무 오래 걸렸어요.",

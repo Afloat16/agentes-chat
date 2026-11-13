@@ -18585,6 +18585,7 @@
       "agent_archived": "Agent {{name}} został zarchiwizowany.",
       "audience": "Osoba, która go skonfigurowała, nie może już rozmawiać z agentem {{name}}.",
       "failing": "Kilka razy z rzędu się nie udało, więc zatrzymano.",
+      "failingLast": "Zatrzymano po 5 niepowodzeniach z rzędu. Ostatnie: {{cause}}",
       "stopped": "Aktualizacja została zatrzymana.",
       "missing_credential": "{{name}} nie ma klucza AI ani planu do pracy.",
       "timeout": "Aktualizacja trwała za długo.",

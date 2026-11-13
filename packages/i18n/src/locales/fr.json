@@ -18105,6 +18105,7 @@
       "agent_archived": "{{name}} a été archivé.",
       "audience": "La personne qui l'a configuré ne peut plus parler à {{name}}.",
       "failing": "Il a échoué plusieurs fois de suite et s'est arrêté.",
+      "failingLast": "Arrêté après 5 échecs de suite. Le dernier : {{cause}}",
       "stopped": "La mise à jour a été arrêtée.",
       "missing_credential": "{{name}} n'a ni clé ni abonnement d'IA pour travailler.",
       "timeout": "La mise à jour a pris trop de temps.",

@@ -17393,6 +17393,7 @@
       "agent_archived": "{{name}} arşivlendi.",
       "audience": "Onu kuran kişi artık {{name}} ile konuşamıyor.",
       "failing": "Art arda birkaç kez başarısız oldu ve durdu.",
+      "failingLast": "Art arda 5 hatadan sonra durdu. Sonuncusu: {{cause}}",
       "stopped": "Güncelleme durduruldu.",
       "missing_credential": "{{name}} için çalışacak bir yapay zeka anahtarı ya da plan yok.",
       "timeout": "Güncelleme çok uzun sürdü.",

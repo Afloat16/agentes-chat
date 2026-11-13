@@ -42307,6 +42307,9 @@
   "widgets.failure.failing": {
     "value": "It failed several times in a row and stopped."
   },
+  "widgets.failure.failingLast": {
+    "value": "It stopped after 5 failures in a row. The last one: {{cause}}"
+  },
   "widgets.failure.stopped": {
     "value": "The update was stopped."
   },
