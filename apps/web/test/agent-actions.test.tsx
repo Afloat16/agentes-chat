@@ -109,14 +109,14 @@ const click = async (el: HTMLElement) => {
 };
 
 describe("receipts under the agent's reply", () => {
-  test("one change: a quiet row, its words whole and in its tip, the target links to the issue, nothing else", async () => {
+  test("one change: a quiet row, its words whole with no tip repeating them, the target links to the issue, nothing else", async () => {
     // Who sees the task is the task's own: the receipt says nothing of it.
     await open(withActions([action({ params: { ...action().params, audience: "everyone" } })]));
     const group = receipts();
     const row = group.querySelector(".ag-rc") as HTMLElement;
     expect(row.textContent).toBe("Criei a tarefa #23 · Prompt de avaliação após a assinatura");
     const line = row.querySelector(".ag-rc__sentence") as HTMLElement;
-    expect(line.title).toBe("Criei a tarefa #23 · Prompt de avaliação após a assinatura");
+    expect(line.hasAttribute("title")).toBe(false);
     const link = within(group).getByRole("link", { name: "#23" });
     expect(link.getAttribute("href")).toBe(`/org/${ORG_ID}/issues/23`);
     expect(within(group).queryAllByRole("button")).toHaveLength(0);
