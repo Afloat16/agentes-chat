@@ -18137,10 +18137,10 @@
   },
   "emailUndo": {
     "title": "Odzyskaj swój e-mail",
-    "lead": "Adres, na który trafił ten link, znowu staje się e-mailem Twojego konta. Wszystkie sesje zostają wylogowane, a aplikacje AI odłączone.",
+    "lead": "Adres, na który trafił ten link, znowu staje się e-mailem Twojego konta. Wszystkie sesje zostają wylogowane, a aplikacje AI odłączone. Sposoby logowania dodane po zmianie przestają działać, także nowe hasło.",
     "button": "To nie ja",
     "done": "Twój e-mail wrócił",
-    "doneLead": "{{email}} znowu jest e-mailem Twojego konta, a wszystkie sesje zostały wylogowane. Jeśli ktoś zna Twoje hasło, naciśnij „Nie pamiętam hasła” przy logowaniu.",
+    "doneLead": "{{email}} znowu jest e-mailem Twojego konta, a wszystkie sesje zostały wylogowane. Sposoby logowania dodane po zmianie już nie działają, także nowe hasło. Jeśli Twoje hasło nie działa albo ktoś może je znać, naciśnij „Nie pamiętam hasła” przy logowaniu.",
     "gone": "Ten link już nie działa",
     "goneLead": "Został już użyty albo minęło jego 7 dni.",
     "taken": "Inne konto używa tego e-maila",

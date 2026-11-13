@@ -41452,7 +41452,7 @@
     "value": "Bring your email back"
   },
   "emailUndo.lead": {
-    "value": "The address this link went to becomes your account's email again. Every session is signed out and the AI apps are disconnected."
+    "value": "The address this link went to becomes your account's email again. Every session is signed out and the AI apps are disconnected. Ways to sign in added since the change stop working, a new password included."
   },
   "emailUndo.button": {
     "value": "This wasn't me"
@@ -41461,7 +41461,7 @@
     "value": "Your email is back"
   },
   "emailUndo.doneLead": {
-    "value": "{{email}} is your account's email again, and every session is signed out. If someone knows your password, press “Forgot my password” when you sign in."
+    "value": "{{email}} is your account's email again. Every session is signed out, and ways to sign in added since the change no longer work, a new password included. If your password doesn't work, or someone may know it, press “Forgot my password” when you sign in."
   },
   "emailUndo.gone": {
     "value": "This link no longer works"

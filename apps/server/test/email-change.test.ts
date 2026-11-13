@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { eq, schema } from "@agenteschat/db";
-import { type Browser, browser, createTestServer, lastCode, signUp, type TestServer } from "./harness";
+import {
+  type Browser,
+  browser,
+  createTestServer,
+  GOOGLE_ENV,
+  googleSignIn,
+  lastCode,
+  signUp,
+  type TestServer,
+} from "./harness";
 
 /*
  * A new address for an account, made safe (ADR 0088 §2, addendum 2026-11-13): one door, the code sent to the current
@@ -31,12 +40,18 @@ const linkIn = (text: string, path: string) => {
   const url = new URL(found);
   return `${url.pathname}${url.search}`;
 };
-/** Someone opens the link in the newest email to `to`: an address the link changes. */
-async function openLink(b: Browser, to: string) {
+/** The link to `path` in the newest email to `to`. */
+async function newestLink(to: string, path: string) {
   await t.drain();
-  const text = mailTo(to).at(-1)?.text ?? "";
-  return b(linkIn(text, "/api/auth/verify-email"), { origin: null });
+  return linkIn(mailTo(to).at(-1)?.text ?? "", path);
 }
+/** Someone opens the link in the newest email to `to`: an address the link changes. */
+const openLink = async (b: Browser, to: string) => b(await newestLink(to, "/api/auth/verify-email"), { origin: null });
+/** The `token` of the link to `path` in the newest email to `to`: "This wasn't me", a new password. */
+const tokenIn = async (to: string, path: string) =>
+  new URL(`http://x${await newestLink(to, path)}`).searchParams.get("token") ?? "";
+/** Where a link that no longer works lands. */
+const DEAD_LINK = "/?email_confirmed=1&error=INVALID_TOKEN";
 
 describe("one door", () => {
   test("Better Auth's own change-email answers nothing over HTTP, however it's spelled, and update-user refuses it", async () => {
@@ -144,9 +159,7 @@ describe("on a server that sends email", () => {
     const userId = (await userOf("ana@example.com"))?.id ?? "";
     await change(ana, { newEmail: "thief@example.com" });
     await openLink(browser(t), "thief@example.com");
-    await t.drain();
-    const text = mailTo("ana@example.com").at(-1)?.text ?? "";
-    const token = new URL(`http://x${linkIn(text, "/email-undo")}`).searchParams.get("token") ?? "";
+    const token = await tokenIn("ana@example.com", "/email-undo");
     expect(token).not.toBe("");
     expect(await t.db.select().from(schema.sessions).where(eq(schema.sessions.userId, userId))).not.toEqual([]);
 
@@ -159,6 +172,73 @@ describe("on a server that sends email", () => {
     expect(await t.db.select().from(schema.sessions).where(eq(schema.sessions.userId, userId))).toEqual([]);
     const twice = await browser(t)("/api/app/email-undo", { json: { token } });
     expect([twice.status, await errorOf(twice)]).toEqual([404, "email.undo_gone"]);
+  });
+
+  test("a link changes the address once: not after a newer ask, and never again after “This wasn't me”", async () => {
+    t = await createTestServer();
+    const ana = browser(t);
+    await signUp(ana, "ana@example.com");
+    const userId = (await userOf("ana@example.com"))?.id ?? "";
+    await change(ana, { newEmail: "ana.antigo@example.com" });
+    const older = await newestLink("ana.antigo@example.com", "/api/auth/verify-email");
+    await change(ana, { newEmail: "thief@example.com" });
+    const refused = await browser(t)(older, { origin: null });
+    expect([refused.status, refused.headers.get("location")]).toEqual([302, DEAD_LINK]);
+    expect((await userOf("ana@example.com"))?.id).toBe(userId);
+
+    const link = await newestLink("thief@example.com", "/api/auth/verify-email");
+    expect((await browser(t)(link, { origin: null })).status).toBe(302);
+    expect((await userOf("thief@example.com"))?.id).toBe(userId);
+    const token = await tokenIn("ana@example.com", "/email-undo");
+    expect((await browser(t)("/api/app/email-undo", { json: { token } })).status).toBe(200);
+    const told = mailTo("ana@example.com").length;
+
+    // The same link again, within its hour: the address stays, nobody signs in, nobody is told.
+    const replay = await browser(t)(link, { origin: null });
+    expect([replay.status, replay.headers.get("location")]).toEqual([302, DEAD_LINK]);
+    expect((await userOf("ana@example.com"))?.id).toBe(userId);
+    expect(await t.db.select().from(schema.sessions).where(eq(schema.sessions.userId, userId))).toEqual([]);
+    await t.drain();
+    expect(mailTo("ana@example.com")).toHaveLength(told);
+  });
+
+  test("“This wasn't me” also takes the ways in the other mailbox got: Google by its address, a password, a reset link", async () => {
+    t = await createTestServer({ env: GOOGLE_ENV });
+    const ana = browser(t);
+    await signUp(ana, "ana@example.com");
+    const userId = (await userOf("ana@example.com"))?.id ?? "";
+    await change(ana, { newEmail: "thief@example.com" });
+    await openLink(browser(t), "thief@example.com");
+    const undoToken = await tokenIn("ana@example.com", "/email-undo");
+
+    // Its holder: Google by that address joins the account, a reset from there sets a password, another one waits.
+    const google = await googleSignIn(t, "web", "thief@example.com");
+    expect(((await (await google.browser("/api/app/me")).json()) as { user: { id: string } }).user.id).toBe(userId);
+    const thief = browser(t);
+    const reset = { email: "thief@example.com", redirectTo: "/reset-password" };
+    await thief("/api/auth/request-password-reset", { json: reset });
+    const first = await tokenIn("thief@example.com", "/reset-password");
+    const password = { token: first, newPassword: "the other one's password" };
+    expect((await thief("/api/auth/reset-password", { json: password })).status).toBe(200);
+    await thief("/api/auth/request-password-reset", { json: reset });
+    const waiting = await tokenIn("thief@example.com", "/reset-password");
+
+    expect((await browser(t)("/api/app/email-undo", { json: { token: undoToken } })).status).toBe(200);
+    const again = await googleSignIn(t, "web", "thief@example.com");
+    expect((await again.browser("/api/app/me")).status).toBe(401);
+    const signIn = { email: "ana@example.com", password: password.newPassword };
+    expect((await browser(t)("/api/auth/sign-in/email", { json: signIn })).status).toBe(401);
+    const late = await thief("/api/auth/reset-password", { json: { token: waiting, newPassword: "yet another one" } });
+    expect(late.status).toBe(400);
+
+    // "Forgot my password" at the address that came back sets the next one.
+    await browser(t)("/api/auth/request-password-reset", { json: { ...reset, email: "ana@example.com" } });
+    const mine = { token: await tokenIn("ana@example.com", "/reset-password"), newPassword: "ana's own password" };
+    expect((await browser(t)("/api/auth/reset-password", { json: mine })).status).toBe(200);
+    const back = await browser(t)("/api/auth/sign-in/email", {
+      json: { email: "ana@example.com", password: mine.newPassword },
+    });
+    expect(back.status).toBe(200);
   });
 
   test("the old address is held while its undo works: no sign-up, no other account's change", async () => {

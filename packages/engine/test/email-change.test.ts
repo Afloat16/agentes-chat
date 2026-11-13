@@ -4,6 +4,7 @@ import { eq, like, schema } from "@agenteschat/db";
 import {
   addressHeld,
   askEmailChange,
+  changeAsked,
   finishEmailChange,
   pruneEmailChanges,
   sendDeletionCode,
@@ -24,6 +25,7 @@ afterEach(async () => {
 const SERVER = "https://chat.example.com";
 const T0 = Date.parse("2026-11-13T12:00:00Z");
 const at = (ms = 0) => new Date(T0 + ms);
+const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
 /** The notices to old addresses queued so far, oldest first. */
@@ -44,10 +46,21 @@ const answer = (p: Promise<unknown>) =>
     (e: { code?: string }) => e.code ?? String(e),
   );
 
+/** A way the owner signs in, as Better Auth keeps it: a password (`credential`) or a provider. */
+const signIn = (providerId: string, createdAt: Date, password: string | null = null) => ({
+  id: `${providerId}-${createdAt.getTime()}`,
+  accountId: providerId,
+  providerId,
+  userId: f.owner.id,
+  password,
+  createdAt,
+  updatedAt: createdAt,
+});
+
 /** `userId` moves to `to` as Better Auth's link does it, after the change was asked; then the notice's token. */
 async function moveTo(userId: string, to: string, now: Date) {
   const user = await emailOf(userId);
-  await askEmailChange(f.db, { userId, from: user?.email ?? "" }, now);
+  await askEmailChange(f.db, { userId, from: user?.email ?? "", to }, now);
   await f.db.update(schema.users).set({ email: to }).where(eq(schema.users.id, userId));
   const told = await finishEmailChange({ db: f.db, publicUrl: `${SERVER}/` }, { ...user, id: userId, email: to }, now);
   return { told, token: tokenOf((await notices()).at(-1)) };
@@ -85,7 +98,7 @@ describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () 
     f = await setup();
     const from = f.owner.email;
     // Asked, not changed yet: the account still has it, so it's no hold.
-    await askEmailChange(f.db, { userId: f.owner.id, from }, at());
+    await askEmailChange(f.db, { userId: f.owner.id, from, to: "ana.nova@example.com" }, at());
     expect(await addressHeld(f.db, from, { now: at() })).toBe(false);
     await moveTo(f.owner.id, "ana.nova@example.com", at());
     expect(await addressHeld(f.db, from, { now: at(1) })).toBe(true);
@@ -95,9 +108,32 @@ describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () 
     expect(await addressHeld(f.db, from, { now: at(7 * DAY + 1) })).toBe(false);
   });
 
+  test("a link goes on only for the change its account asked last, within its hour, until it's made", async () => {
+    f = await setup();
+    const from = f.owner.email;
+    const bia = await addUser(f.db, "bia");
+    expect(await changeAsked(f.db, from, "b@example.com", at())).toBe(false);
+    await askEmailChange(f.db, { userId: f.owner.id, from, to: "b@example.com" }, at());
+    expect(await changeAsked(f.db, from.toUpperCase(), "B@example.com", at(1))).toBe(true);
+    // Another new address, or another account's link.
+    expect(await changeAsked(f.db, from, "c@example.com", at(1))).toBe(false);
+    expect(await changeAsked(f.db, bia.email, "b@example.com", at(1))).toBe(false);
+    // A newer ask: the older link goes nowhere.
+    await askEmailChange(f.db, { userId: f.owner.id, from, to: "c@example.com" }, at(2));
+    expect(await changeAsked(f.db, from, "b@example.com", at(3))).toBe(false);
+    expect(await changeAsked(f.db, from, "c@example.com", at(3))).toBe(true);
+    expect(await changeAsked(f.db, from, "c@example.com", at(2 * HOUR + 3))).toBe(false);
+    // Made, then undone: the account has `from` again, and the link that made it is spent.
+    const { token } = await moveTo(f.owner.id, "c@example.com", at(4));
+    expect(await changeAsked(f.db, from, "c@example.com", at(5))).toBe(false);
+    await undoEmailChange(f.db, token, at(6));
+    expect(await changeAsked(f.db, from, "c@example.com", at(7))).toBe(false);
+  });
+
   test("“This wasn't me”: the address comes back confirmed, every session ends and every app is cut off, once", async () => {
     f = await setup();
     const from = f.owner.email;
+    await f.db.insert(schema.accounts).values(signIn("credential", at(-DAY), "old-hash"));
     const { token } = await moveTo(f.owner.id, "thief@example.com", at());
     for (const n of [1, 2]) {
       await f.db.insert(schema.sessions).values({
@@ -137,6 +173,33 @@ describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () 
     expect(await answer(undoEmailChange(f.db, "x".repeat(43), at(DAY + 1)))).toBe("email.undo_gone");
     // Back on the account, the address needs no hold.
     expect(await addressHeld(f.db, from, { now: at(DAY + 1) })).toBe(false);
+    // The password from before, never set anew, still signs in.
+    const [password] = await f.db.select().from(schema.accounts).where(eq(schema.accounts.userId, f.owner.id));
+    expect(password?.password).toBe("old-hash");
+  });
+
+  test("“This wasn't me” also takes every way in the other mailbox got since the change, and keeps the ones from before", async () => {
+    f = await setup();
+    await f.db.insert(schema.accounts).values([signIn("credential", at(-DAY), "old-hash"), signIn("google", at(-DAY))]);
+    const { token } = await moveTo(f.owner.id, "thief@example.com", at());
+    // Its holder: GitHub joined by that address, the password reset from there, another reset waiting, a phone.
+    await f.db.insert(schema.accounts).values(signIn("github", at(1000)));
+    await f.db
+      .update(schema.accounts)
+      .set({ password: "thief-hash", updatedAt: at(2000) })
+      .where(eq(schema.accounts.providerId, "credential"));
+    await f.db
+      .insert(schema.verifications)
+      .values({ id: "r1", identifier: "reset-password:waiting", value: f.owner.id, expiresAt: at(DAY) });
+    await f.db
+      .insert(schema.pushDevices)
+      .values({ userId: f.owner.id, token: "ExponentPushToken[thief]", platform: "ios", locale: "pt-BR" });
+    await undoEmailChange(f.db, token, at(3000));
+    const left = await f.db.select().from(schema.accounts).where(eq(schema.accounts.userId, f.owner.id));
+    // The password row stays, without a password: "Forgot my password" at the address that came back sets the next.
+    expect(left.map((a) => `${a.providerId}:${a.password}`).sort()).toEqual(["credential:null", "google:null"]);
+    expect(await f.db.select().from(schema.verifications).where(eq(schema.verifications.id, "r1"))).toEqual([]);
+    expect(await f.db.select().from(schema.pushDevices)).toEqual([]);
   });
 
   test("it works for 7 days", async () => {
@@ -232,7 +295,7 @@ describe("a new address for an account (ADR 0088 §2, addendum 2026-11-13)", () 
   test("rows past their end go", async () => {
     f = await setup();
     await moveTo(f.owner.id, "ana.nova@example.com", at());
-    await askEmailChange(f.db, { userId: f.owner.id, from: "ana.nova@example.com" }, at());
+    await askEmailChange(f.db, { userId: f.owner.id, from: "ana.nova@example.com", to: "ana.outra@example.com" }, at());
     const ours = async () =>
       (await f.db.select().from(schema.verifications)).filter((r) => /^email-(change|held|undo):/.test(r.identifier));
     expect((await ours()).length).toBeGreaterThanOrEqual(3);

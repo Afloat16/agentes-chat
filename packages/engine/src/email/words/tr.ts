@@ -365,7 +365,7 @@ export const words: EmailWords = {
       headline: "E-posta adresiniz değişti",
       body: (email, newEmail) => [{ b: email }, " hesabı artık ", { b: newEmail }, " ile giriş yapıyor."],
       notYou:
-        "Siz değil miydiniz? 7 gün içinde düğmeye basın. Bu adres geri gelir, tüm oturumlar kapatılır ve yapay zekâ uygulamalarının bağlantısı kesilir.",
+        "Siz değil miydiniz? 7 gün içinde düğmeye basın. Bu adres geri gelir, tüm oturumlar kapatılır ve yapay zekâ uygulamalarının bağlantısı kesilir. O zamandan beri eklenen giriş yolları, yeni bir şifre de dahil, artık çalışmaz.",
       button: "Bu ben değildim",
       small: "Bunu siz yaptıysanız bir şey yapmanıza gerek yok.",
       why: "Bu e-postayı, bu adres bir agentes.chat hesabının e-posta adresi olduğu için aldınız.",

@@ -17497,10 +17497,10 @@
   },
   "emailUndo": {
     "title": "Recupera tu correo",
-    "lead": "La dirección que recibió este enlace vuelve a ser el correo de tu cuenta. Se cierran todas las sesiones y se desconectan las apps de IA.",
+    "lead": "La dirección que recibió este enlace vuelve a ser el correo de tu cuenta. Se cierran todas las sesiones y se desconectan las apps de IA. Las formas de iniciar sesión añadidas desde el cambio dejan de funcionar, también una contraseña nueva.",
     "button": "No fui yo",
     "done": "Tu correo volvió",
-    "doneLead": "{{email}} vuelve a ser el correo de tu cuenta y se cerraron todas las sesiones. Si alguien sabe tu contraseña, pulsa “Olvidé mi contraseña” al iniciar sesión.",
+    "doneLead": "{{email}} vuelve a ser el correo de tu cuenta. Se cerraron todas las sesiones, y las formas de iniciar sesión añadidas desde el cambio ya no funcionan, tampoco una contraseña nueva. Si tu contraseña no funciona, o alguien podría saberla, pulsa “Olvidé mi contraseña” al iniciar sesión.",
     "gone": "Este enlace ya no sirve",
     "goneLead": "Ya se usó o pasaron sus 7 días.",
     "taken": "Otra cuenta usa este correo",

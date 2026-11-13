@@ -1,17 +1,19 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { and, type Database, type Executor, eq, gt, inArray, like, lte, ne, or, schema } from "@agenteschat/db";
+import { and, type Database, type Executor, eq, gt, gte, inArray, like, lte, ne, or, schema } from "@agenteschat/db";
 import { revokeUserApps } from "./apps/revoke";
 import { sha256 } from "./crypto";
 import { emailLocale, queueEmail } from "./email";
 import { ConflictError, NotFoundError } from "./errors";
+import { dropPasswordLinks } from "./password-link";
 
-const { users, sessions, verifications } = schema;
+const { users, sessions, verifications, accounts, pushDevices } = schema;
 
 /**
  * A new address for an account (ADR 0088 §2, addendum 2026-11-13). Better Auth's link to the new address makes the
  * change; these rows, in its `verifications`, remember the address it leaves and keep it safe for a week:
- * - `email-change:<userId>` `{ from }`: a change asked, while its link can still work. Better Auth's link works only
- *   while the account still has the address it was asked from, so `from` is the one any of its links leaves.
+ * - `email-change:<userId>` `{ from, to }`: the change the account asked last, until its link makes it. That link is a
+ *   token signed for an hour that names both addresses and keeps no state, so only this row lets it work, once
+ *   (`changeAsked`).
  * - `email-held:<sha256(address)>` `{ userId }`: an address the account is leaving or just left. While no account has
  *   it, nobody signs up with it and no other account takes it, so "This wasn't me" can always put it back.
  * - `email-undo:<sha256(token)>` `{ userId, from, to }`: "This wasn't me", emailed to the address the account left.
@@ -82,13 +84,40 @@ export async function addressHeld(db: Executor, email: string, options: { except
   return !owner;
 }
 
-/** A change from `from` was asked, before its link goes: its notice goes to `from`, which is held meanwhile. */
-export async function askEmailChange(db: Database, input: { userId: string; from: string }, now = new Date()) {
+/**
+ * A change from `from` to `to` was asked, before its link goes: only that link may make it (`changeAsked`), a link
+ * asked before it no longer does, and its notice goes to `from`, which is held meanwhile.
+ */
+export async function askEmailChange(
+  db: Database,
+  input: { userId: string; from: string; to: string },
+  now = new Date(),
+) {
   const until = new Date(now.getTime() + ASKED_MS);
   await db.transaction(async (tx) => {
-    await putRow(tx, askedId(input.userId), { from: lower(input.from) }, until, now);
+    await putRow(tx, askedId(input.userId), { from: lower(input.from), to: lower(input.to) }, until, now);
     await hold(tx, input.from, input.userId, until, now);
   });
+}
+
+/**
+ * Whether Better Auth's link from `from` to `to` is the change the account at `from` asked last and hasn't made yet.
+ * Checked before the link runs (apps/server auth.ts): without it, the link would work again for its hour after "This
+ * wasn't me" put `from` back, or after a newer ask, and move the account telling nobody.
+ */
+export async function changeAsked(db: Executor, from: string, to: string, now = new Date()) {
+  const [user] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, lower(from)))
+    .limit(1);
+  if (!user) return false;
+  const [row] = await db
+    .select({ value: verifications.value })
+    .from(verifications)
+    .where(and(eq(verifications.identifier, askedId(user.id)), gt(verifications.expiresAt, now)));
+  const asked = row ? parsed<{ from: string; to: string }>(row.value, ["from", "to"]) : null;
+  return asked?.from === lower(from) && asked.to === lower(to);
 }
 
 /**
@@ -131,10 +160,11 @@ export async function finishEmailChange(
 
 /**
  * "This wasn't me": the account the token was sent for gets the address back (confirmed: its mailbox opened the link),
- * every session ends and every AI app and token it let in is cut off, as a new password does. Once, within 7 days: it
- * also voids the newer ones of that account (a later change's undo would hand the address back to whoever made it),
- * and keeps the older ones. Throws `email.undo_gone` (used, run out, or the account is gone) and `email.undo_taken`
- * (another account has the address: nothing changes, and the link still works).
+ * every session ends and every AI app and token it let in is cut off, as a new password does, and so does every way in
+ * the other mailbox got since the change. Once, within 7 days: it also voids the newer ones of that account (a later
+ * change's undo would hand the address back to whoever made it), and keeps the older ones. Throws `email.undo_gone`
+ * (used, run out, or the account is gone) and `email.undo_taken` (another account has the address: nothing changes,
+ * and the link still works).
  */
 export async function undoEmailChange(db: Database, token: string, now = new Date()) {
   return db.transaction(async (tx) => {
@@ -179,6 +209,24 @@ export async function undoEmailChange(db: Database, token: string, now = new Dat
       ),
     );
     await tx.delete(sessions).where(eq(sessions.userId, undo.userId));
+    // Whoever holds the other mailbox would sign straight back in: through a provider its address joined to the
+    // account once confirmed (Better Auth links by a confirmed address), with a password set or reset from there, or
+    // with a reset link still waiting. The sign-ins made since the change go, and a password from before that was set
+    // anew is cleared, so "Forgot my password" at this address sets the next one. Phones hear no more pushes until
+    // they sign in again.
+    await tx.delete(accounts).where(and(eq(accounts.userId, undo.userId), gte(accounts.createdAt, row.createdAt)));
+    await tx
+      .update(accounts)
+      .set({ password: null, updatedAt: now })
+      .where(
+        and(
+          eq(accounts.userId, undo.userId),
+          eq(accounts.providerId, "credential"),
+          gte(accounts.updatedAt, row.createdAt),
+        ),
+      );
+    await dropPasswordLinks(tx, undo.userId);
+    await tx.delete(pushDevices).where(eq(pushDevices.userId, undo.userId));
     await revokeUserApps(tx, undo.userId, "email_change_undone");
     return { email: undo.from };
   });

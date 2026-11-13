@@ -381,7 +381,7 @@ export const words: EmailWords = {
       headline: "Votre e-mail a changé",
       body: (email, newEmail) => ["Le compte ", { b: email }, " se connecte désormais avec ", { b: newEmail }, "."],
       notYou:
-        "Ce n’était pas vous ? Appuyez sur le bouton dans les 7 jours. Cette adresse revient, toutes les sessions sont fermées et les apps d’IA sont déconnectées.",
+        "Ce n’était pas vous ? Appuyez sur le bouton dans les 7 jours. Cette adresse revient, toutes les sessions sont fermées et les apps d’IA sont déconnectées. Les moyens de connexion ajoutés depuis ne fonctionnent plus, y compris un nouveau mot de passe.",
       button: "Ce n’était pas moi",
       small: "Si c’était vous, il n’y a rien à faire.",
       why: "Vous recevez cet e-mail car cette adresse était l’e-mail d’un compte agentes.chat.",

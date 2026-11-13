@@ -345,7 +345,7 @@ export const words: EmailWords = {
       headline: "Emailmu sudah berubah",
       body: (email, newEmail) => ["Akun ", { b: email }, " sekarang masuk dengan ", { b: newEmail }, "."],
       notYou:
-        "Bukan kamu? Tekan tombolnya dalam 7 hari. Alamat ini kembali, semua sesi dikeluarkan, dan aplikasi AI diputuskan.",
+        "Bukan kamu? Tekan tombolnya dalam 7 hari. Alamat ini kembali, semua sesi dikeluarkan, dan aplikasi AI diputuskan. Cara masuk yang ditambahkan sejak itu tidak berlaku lagi, termasuk kata sandi baru.",
       button: "Ini bukan saya",
       small: "Kalau ini kamu, tidak perlu melakukan apa-apa.",
       why: "Kamu menerima email ini karena alamat ini adalah email sebuah akun agentes.chat.",

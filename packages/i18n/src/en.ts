@@ -17300,21 +17300,21 @@ export const en = {
     type: "Type {{name}} to confirm",
     submit: "Delete workspace",
   },
-  /** Proof that it's the person, before deleting (ADR 0088 §2): a code emailed to them, or their password. */
   /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
   emailUndo: {
     title: "Bring your email back",
-    lead: "The address this link went to becomes your account's email again. Every session is signed out and the AI apps are disconnected.",
+    lead: "The address this link went to becomes your account's email again. Every session is signed out and the AI apps are disconnected. Ways to sign in added since the change stop working, a new password included.",
     button: "This wasn't me",
     done: "Your email is back",
     /** `{{email}}`: the address the account has again. Then: Sign in. */
     doneLead:
-      "{{email}} is your account's email again, and every session is signed out. If someone knows your password, press “Forgot my password” when you sign in.",
+      "{{email}} is your account's email again. Every session is signed out, and ways to sign in added since the change no longer work, a new password included. If your password doesn't work, or someone may know it, press “Forgot my password” when you sign in.",
     gone: "This link no longer works",
     goneLead: "It was already used, or its 7 days are over.",
     taken: "Another account has this email",
     takenLead: "{{email}} is another account's email now, so it can't come back. Nothing changed.",
   },
+  /** Proof that it's the person, before deleting (ADR 0088 §2): a code emailed to them, or their password. */
   proof: {
     /** `{{email}}`: the account's own address. */
     willSend: "We'll email a code to {{email}} to confirm it's you.",

@@ -17057,10 +17057,10 @@
   },
   "emailUndo": {
     "title": "Hol deine E-Mail-Adresse zurück",
-    "lead": "Die Adresse, an die dieser Link ging, wird wieder die E-Mail-Adresse deines Kontos. Alle Sitzungen werden abgemeldet und die KI-Apps getrennt.",
+    "lead": "Die Adresse, an die dieser Link ging, wird wieder die E-Mail-Adresse deines Kontos. Alle Sitzungen werden abgemeldet und die KI-Apps getrennt. Anmeldewege, die seit der Änderung hinzugekommen sind, funktionieren nicht mehr, auch ein neues Passwort.",
     "button": "Das war ich nicht",
     "done": "Deine E-Mail-Adresse ist zurück",
-    "doneLead": "{{email}} ist wieder die E-Mail-Adresse deines Kontos, und alle Sitzungen sind abgemeldet. Wenn jemand dein Passwort kennt, drück beim Anmelden auf „Passwort vergessen“.",
+    "doneLead": "{{email}} ist wieder die E-Mail-Adresse deines Kontos. Alle Sitzungen sind abgemeldet, und Anmeldewege, die seit der Änderung hinzugekommen sind, funktionieren nicht mehr, auch ein neues Passwort. Wenn dein Passwort nicht funktioniert oder jemand es kennen könnte, drück beim Anmelden auf „Passwort vergessen“.",
     "gone": "Dieser Link funktioniert nicht mehr",
     "goneLead": "Er wurde schon benutzt, oder seine 7 Tage sind vorbei.",
     "taken": "Ein anderes Konto nutzt diese E-Mail-Adresse",

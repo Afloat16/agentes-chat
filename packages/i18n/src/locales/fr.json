@@ -17626,10 +17626,10 @@
   },
   "emailUndo": {
     "title": "Récupérer votre e-mail",
-    "lead": "L’adresse qui a reçu ce lien redevient l’e-mail de votre compte. Toutes les sessions sont fermées et les apps d’IA déconnectées.",
+    "lead": "L’adresse qui a reçu ce lien redevient l’e-mail de votre compte. Toutes les sessions sont fermées et les apps d’IA déconnectées. Les moyens de connexion ajoutés depuis le changement ne fonctionnent plus, y compris un nouveau mot de passe.",
     "button": "Ce n’était pas moi",
     "done": "Votre e-mail est revenu",
-    "doneLead": "{{email}} est de nouveau l’e-mail de votre compte, et toutes les sessions sont fermées. Si quelqu’un connaît votre mot de passe, appuyez sur « Mot de passe oublié » en vous connectant.",
+    "doneLead": "{{email}} est de nouveau l’e-mail de votre compte. Toutes les sessions sont fermées, et les moyens de connexion ajoutés depuis le changement ne fonctionnent plus, y compris un nouveau mot de passe. Si votre mot de passe ne marche pas, ou si quelqu’un pourrait le connaître, appuyez sur « Mot de passe oublié » en vous connectant.",
     "gone": "Ce lien ne marche plus",
     "goneLead": "Il a déjà servi, ou ses 7 jours sont passés.",
     "taken": "Un autre compte utilise cet e-mail",

@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { randomBytes, sign as signWithKey } from "node:crypto";
 import type { HumanAction, HumanCheck, PubSub, RateLimiter } from "@agenteschat/adapters";
-import { nameIsPassword } from "@agenteschat/client/lib/text";
+import { jwtClaims, nameIsPassword } from "@agenteschat/client/lib/text";
 import type { Config } from "@agenteschat/config";
 import { and, type Database, eq, ne, schema } from "@agenteschat/db";
 import {
@@ -11,6 +11,7 @@ import {
   askEmailChange,
   CODE_LIMITS,
   ConflictError,
+  changeAsked,
   countUsers,
   deriveSecret,
   EARLY_ACCESS_HEADER,
@@ -341,6 +342,20 @@ export function createAuth(deps: {
             throw new APIError("BAD_REQUEST", { message: "Invalid authorizationURL" });
           }
         }
+        if (ctx.path === "/verify-email") {
+          // Better Auth's link to a new address is a token signed for an hour that names both addresses and works while
+          // the account has the old one: after "This wasn't me" puts it back, or after a newer ask, it would move the
+          // account again, telling nobody. Only the change its account asked last goes on (`changeAsked`). Read
+          // unchecked: this only refuses, and Better Auth checks the signature next.
+          const claims = jwtClaims(String((ctx.query as { token?: unknown } | undefined)?.token ?? ""));
+          if (
+            typeof claims?.updateTo === "string" &&
+            !(await changeAsked(db, String(claims.email ?? ""), claims.updateTo))
+          ) {
+            // Where a link that no longer works lands: never the link's own callbackURL, which nothing checked yet.
+            throw ctx.redirect(`${CONFIRMATION_LANDING}&error=INVALID_TOKEN`);
+          }
+        }
         const action = HUMAN_ACTIONS[ctx.path];
         // Before the sign-up policy: a bot gets the cheap refusal first.
         if (action && ctx.headers) {
@@ -592,7 +607,7 @@ export async function changeAccountEmail(
       throw new TooManyError("Too many new addresses. Try again later.");
     }
   }
-  await askEmailChange(db, { userId, from });
+  await askEmailChange(db, { userId, from, to: newEmail });
   await change();
   return { status: "sent", email: newEmail };
 }
@@ -746,15 +761,17 @@ async function accessOf(context: { headers?: Headers | null } | null | undefined
   return typeof value === "string" && EARLY_ACCESS_TOKEN.test(value) ? value : null;
 }
 
+/** Where a confirmation link lands: the web app says how it went there (apps/web/src/lib/email-confirmation.ts). */
+const CONFIRMATION_LANDING = "/?email_confirmed=1";
+
 /**
- * The confirmation link, landing on `/?email_confirmed=1`, where the web app says how it went
- * (apps/web/src/lib/email-confirmation.ts), whenever the request named no other page: the phone app's sign-up
- * and a new link asked for later name none.
+ * The confirmation link, landing on `CONFIRMATION_LANDING` whenever the request named no other page: the phone app's
+ * sign-up, a new link asked for later and every new address name none.
  */
 function confirmationLanding(verifyUrl: string): string {
   const url = new URL(verifyUrl);
   const back = url.searchParams.get("callbackURL");
-  if (!back || back === "/") url.searchParams.set("callbackURL", "/?email_confirmed=1");
+  if (!back || back === "/") url.searchParams.set("callbackURL", CONFIRMATION_LANDING);
   return url.toString();
 }
 

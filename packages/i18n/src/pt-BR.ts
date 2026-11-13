@@ -17331,21 +17331,21 @@ export const ptBR = {
     type: "Digite {{name}} para confirmar",
     submit: "Apagar workspace",
   },
-  /** Proof that it's the person, before deleting (ADR 0088 §2): a code emailed to them, or their password. */
   /** “This wasn't me”: the page the notice to an account's old address links to (`/email-undo?token=`). */
   emailUndo: {
     title: "Trazer seu e-mail de volta",
-    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas e os apps de IA são desconectados.",
+    lead: "O endereço que recebeu este link volta a ser o e-mail da sua conta. Todas as sessões são encerradas e os apps de IA são desconectados. Jeitos de entrar adicionados depois da troca deixam de valer, senha nova inclusive.",
     button: "Não fui eu",
     done: "Seu e-mail voltou",
     /** `{{email}}`: the address the account has again. Then: Sign in. */
     doneLead:
-      "{{email}} voltou a ser o e-mail da sua conta, e todas as sessões foram encerradas. Se alguém sabe a sua senha, aperte “Esqueci a senha” quando for entrar.",
+      "{{email}} voltou a ser o e-mail da sua conta. Todas as sessões foram encerradas, e jeitos de entrar adicionados depois da troca não valem mais, senha nova inclusive. Se a sua senha não funcionar, ou se alguém puder saber dela, aperte “Esqueci a senha” quando for entrar.",
     gone: "Este link não vale mais",
     goneLead: "Ele já foi usado, ou os 7 dias dele passaram.",
     taken: "Outra conta usa este e-mail",
     takenLead: "{{email}} agora é o e-mail de outra conta, então não dá para trazê-lo de volta. Nada mudou.",
   },
+  /** Proof that it's the person, before deleting (ADR 0088 §2): a code emailed to them, or their password. */
   proof: {
     /** `{{email}}`: the account's own address. */
     willSend: "Vamos mandar um código para {{email}} para confirmar que é você.",

@@ -182,18 +182,26 @@ mailbox, then reset the password from there.
   it has no sign-in while signed in, and signing out there drops the messages it is still sending.
 - **Then the link, as before.** Better Auth's link goes to the new address, now in words of its own
   (`email_change_link`, no longer the sign-up's), at most 3 an hour per address. An account asks for at most 5 an hour
-  and 10 a day (429 `rate_limited`). A link works for an hour, and only while the account still has the address it was
-  asked from.
-- **The old address is told.** Asking records it (`email-change:{userId}`, Better Auth's `verifications`). When the
-  link changes the address, `user.update.after` (`finishEmailChange`, `packages/engine/src/email-change.ts`) sends it a
-  notice in the person's language (`email_changed`) with "This wasn't me": `/email-undo?token=`, a page whose button
-  posts to `POST /api/app/email-undo` (public, 10 tries per 10 minutes per IP address). Opening the link does nothing,
-  since mail scanners open links. Within 7 days and once, it puts the old address back (confirmed: its mailbox opened
-  the link), ends every session and cuts off every AI app and token as a new password does (`revokeUserApps`, reason
-  `email_change_undone`). It voids the account's newer undos, since a later change's would hand the address back to
-  whoever made it, and keeps the older ones. 404 `email.undo_gone` once used or run out. 409 `email.undo_taken` when
-  another account has the address, which changes nothing and leaves the link working. A cached session cookie can still
-  answer for up to 5 minutes, as after a password reset.
+  and 10 a day (429 `rate_limited`). A link works for an hour, once, and only for the change its account asked last:
+  Better Auth's link is a signed token that keeps no state and finds the account by its old address, so on its own it
+  would move the account again after "This wasn't me" put that address back, or after a newer ask, telling nobody.
+  `createAuth`'s `hooks.before` lets `/verify-email` go on with a new address only when the asked row names that very
+  change (`changeAsked`), and the change or the undo deletes the row. Any other lands where a dead link does
+  (`/?email_confirmed=1&error=INVALID_TOKEN`).
+- **The old address is told.** Asking records both addresses (`email-change:{userId}` `{ from, to }`, Better Auth's
+  `verifications`). When the link changes the address, `user.update.after` (`finishEmailChange`,
+  `packages/engine/src/email-change.ts`) sends the old one a notice in the person's language (`email_changed`) with
+  "This wasn't me": `/email-undo?token=`, a page whose button posts to `POST /api/app/email-undo` (public, 10 tries per
+  10 minutes per IP address). Opening the link does nothing, since mail scanners open links. Within 7 days and once, it
+  puts the old address back (confirmed: its mailbox opened the link), ends every session and cuts off every AI app and
+  token as a new password does (`revokeUserApps`, reason `email_change_undone`). It also takes every way in the other
+  mailbox got since the change, so its holder can't sign straight back in: the sign-ins made since then (Better Auth
+  joins a provider's sign-in to an account by its confirmed address), a password set since then (cleared, so "Forgot my
+  password" at the address that came back sets the next one), every reset link still waiting, and the phones that hear
+  the account's pushes (each registers again when it signs in). It voids the account's newer undos, since a later
+  change's would hand the address back to whoever made it, and keeps the older ones. 404 `email.undo_gone` once used or
+  run out. 409 `email.undo_taken` when another account has the address, which changes nothing and leaves the link
+  working. A cached session cookie can still answer for up to 5 minutes, as after a password reset.
 - **The old address is held** from the moment a change is asked until its undo runs out (`email-held:{sha256}`): while
   no account has it, sign-up refuses it (`EMAIL_HELD`) and so does another account's change to it (`email.held`).
 - **A server that sends no email** changes the address at once, as before, and tells nobody, since nothing can be

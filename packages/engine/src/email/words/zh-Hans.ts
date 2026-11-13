@@ -308,7 +308,8 @@ export const words: EmailWords = {
       preheader: "如果不是你本人操作，7 天内可以把这个地址改回来。",
       headline: "你的邮箱已更改",
       body: (email, newEmail) => ["账号 ", { b: email }, " 现在用 ", { b: newEmail }, " 登录。"],
-      notYou: "不是你本人操作？请在 7 天内按下按钮。我们会改回这个地址，退出所有会话，并断开 AI 应用的连接。",
+      notYou:
+        "不是你本人操作？请在 7 天内按下按钮。我们会改回这个地址，退出所有会话，并断开 AI 应用的连接。此后添加的登录方式会失效，包括新设置的密码。",
       button: "不是我",
       small: "如果是你本人操作，无需任何处理。",
       why: "你收到这封邮件，是因为这个地址曾是一个 agentes.chat 账号的邮箱。",

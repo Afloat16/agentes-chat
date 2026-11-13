@@ -969,7 +969,7 @@ export function accountRoutes(deps: AppDeps) {
       tags,
       summary: "“This wasn't me”: put the account's old email address back",
       description:
-        "Public, from the page the notice to an account's old address links to (`/email-undo?token=`), never from the link itself: mail scanners open links. Within 7 days of the change and once, it puts that address back (confirmed), ends every session and cuts off every AI app and token, as a new password does. It voids the newer ones of the same account, never the older. 404 `email.undo_gone` once used, run out or its account gone; 409 `email.undo_taken` (`params.email`) when another account has the address, which changes nothing. 10 tries per 10 minutes per IP address (429 `rate_limited`).",
+        "Public, from the page the notice to an account's old address links to (`/email-undo?token=`), never from the link itself: mail scanners open links. Within 7 days of the change and once, it puts that address back (confirmed), ends every session and cuts off every AI app and token, as a new password does. It also removes what the other mailbox got since the change: the sign-ins made since then, a password set since then (cleared), every reset link still waiting, and the phones' push registrations. It voids the newer ones of the same account, never the older. 404 `email.undo_gone` once used, run out or its account gone; 409 `email.undo_taken` (`params.email`) when another account has the address, which changes nothing. 10 tries per 10 minutes per IP address (429 `rate_limited`).",
       request: { body: body(z.object({ token: z.string().min(16).max(200) })) },
       responses: {
         ...errors,
