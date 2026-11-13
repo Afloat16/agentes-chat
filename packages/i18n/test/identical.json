@@ -1,6 +1,7 @@
 {
   "app": {
     "pt-BR": [
+      "usageViews.logins",
       "chat.wait.said",
       "access.area.skills",
       "agent.builtinName",
@@ -1380,6 +1381,7 @@
       "machines.oneClick.tools.antigravity"
     ],
     "it": [
+      "shell.email.label",
       "calendar.moreRuns",
       "devices.iphone.steps.account",
       "devices.cpus",
@@ -2787,6 +2789,7 @@
       "machines.oneClick.tools.antigravity"
     ],
     "id": [
+      "shell.email.label",
       "devices.cpus",
       "devices.memory",
       "devices.system.android",

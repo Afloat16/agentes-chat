@@ -309,12 +309,6 @@
       "short": "KI-Schlüssel",
       "say": "verwaltet KI-Schlüssel"
     },
-    "use_others_plans": {
-      "title": "Abos anderer Personen nutzen",
-      "desc": "Den Agenten, die man bearbeiten darf, ein Abo geben, das jemand anderes verbunden hat. Der Inhaber bekommt eine E-Mail und kann es zurücknehmen.",
-      "short": "Abos anderer Personen nutzen",
-      "say": "nutzt Abos anderer Personen"
-    },
     "edit_wiki": {
       "title": "Wiki bearbeiten",
       "desc": "Seiten erstellen und ändern.",
@@ -1772,6 +1766,17 @@
     },
     "inviteHint": "Per E-Mail oder Link",
     "profileHint": "Name, Foto und @",
+    "email": {
+      "label": "E-Mail",
+      "title": "E-Mail ändern",
+      "new": "Neue E-Mail",
+      "help": "Du behältst dasselbe Konto, in denselben Workspaces und mit denselben Abos.",
+      "change": "E-Mail ändern",
+      "sent": "Wir haben einen Link an {{email}} gesendet. Deine E-Mail ändert sich, wenn du ihn öffnest.",
+      "changed": "Erledigt: Du meldest dich jetzt mit {{email}} an.",
+      "same": "Das ist schon deine E-Mail.",
+      "noMail": "Dieser Server sendet keine E-Mails, daher kann die neue Adresse nicht bestätigt werden. Bitte die Person, die den Server betreibt, den E-Mail-Versand einzurichten."
+    },
     "openOnPhone": "Auf dem Handy öffnen",
     "openOnPhoneHint": "Mit einem QR-Code in der App anmelden",
     "addPassword": "Passwort festlegen",
@@ -2479,7 +2484,6 @@
       "workspace": "KI für alle ohne eigenes Abo",
       "workspaceHelp": "Wer kein eigenes Abo hat, spricht über diese KI mit {{name}}.",
       "noPlans": "Verbinde unter KI und Verbrauch ein Abo, um es hier zu nutzen.",
-      "lend": "Dieses Abo an alle ohne eigenes verleihen",
       "groupMine": "Nur für dich",
       "groupWorkspace": "Für den ganzen Workspace",
       "groupAdmins": "nur Admins"
@@ -2778,6 +2782,7 @@
       "cli_failedWhy": "{{name}} kann gerade nicht antworten: Die KI des Abos wurde mit einem Fehler beendet ({{why}}).",
       "plan_limit": "{{name}} kann gerade nicht antworten: Das Abo hat sein Limit erreicht.",
       "plan_not_shared": "Verbinde dein eigenes Abo, um mit {{name}} zu sprechen: Das Abo des Workspace antwortet nur der Person, der es gehört.",
+      "plans_not_yours": "Das {{plan}} hier gehört nur {{owner}}. Verbinde deins, dann antworte ich.",
       "plan_unattended": "{{name}} hat nicht geantwortet: Die Anfrage kam nicht von einer Person, und das Abo des Workspace antwortet nur der Person, der es gehört.",
       "runner_outdated": "{{name}} kann gerade nicht antworten: Das Programm auf dem Computer des Abos braucht ein Update.",
       "plan_tools": "{{name}} hat vor der Antwort gestoppt: Die KI des Abos ist auf diesem Computer nicht bei den Werkzeugen von agentes.chat geblieben.",
@@ -2803,6 +2808,9 @@
       "channel": "Aufgehoben. Die Agenten antworten, sobald der Workspace einen agentes.chat-Tarif hat."
     },
     "receipt": "Niemand wird antworten: keine KI verbunden",
+    "notYours": {
+      "receipt": "Niemand wird antworten: das {{plan}} gehört nur {{owner}}"
+    },
     "chip": "Keine KI"
   },
   "connectAi": {
@@ -4521,6 +4529,10 @@
     "planModelDropped": {
       "choose": "Anderes Modell wählen"
     },
+    "planServes": {
+      "onlyMe": "Auf Nur ich umstellen",
+      "done": "Jetzt nutzt nur du dieses Abo."
+    },
     "docTitleUnread": "({{count}}) Benachrichtigungen",
     "summaryWaiting_one": "{{count}} Sache wartet auf dich",
     "summaryWaiting_other": "{{count}} Sachen warten auf dich",
@@ -4621,6 +4633,7 @@
       "browserProfileRequest": "<b>{{name}}</b> bittet um ein weiteres Browserprofil für <b>{{agent}}</b>",
       "desktopTaken": "<b>{{name}}</b> hat den Bildschirm des Computers von <b>{{agent}}</b> übernommen",
       "planLent": "<b>{{name}}</b> hat dein {{plan}}-Abo mit <b>{{agent}}</b> verbunden",
+      "planServes": "Dein {{plan}} dient jetzt dem ganzen Workspace",
       "planModelDropped": "{{model}} ist nicht mehr bei {{plan}}. <b>{{name}}</b> nutzt {{runs}}, bis du ein anderes Modell wählst.",
       "routineWaitingPlan": "<b>{{name}}</b> wartet, bis sein Abo zurückgesetzt wird, um eine Routine auszuführen",
       "planResetUnknown": "{{plan}} hat nicht gesagt, wann das Limit zurückgesetzt wird. Die Arbeit von <b>{{name}}</b> wartet noch.",
@@ -5050,7 +5063,7 @@
         "accountMove": "Genutzt von {{agents}} · Hierher verschieben",
         "accountAlso": "Auch genutzt von {{agents}}",
         "accountOf": "Von {{name}}",
-        "accountOthers": "Abos anderer Personen zeigen, wem sie gehören. Der Inhaber bekommt eine E-Mail und kann es zurücknehmen.",
+        "accountOthers": "Abos, die dem ganzen Workspace dienen, zeigen, wem sie gehören.",
         "addAccount": "Konto hinzufügen",
         "signInAgain": "Erneut anmelden",
         "connectPlan": "Weiteres Abo verbinden",
@@ -7834,6 +7847,12 @@
       "hintShort": "Jeder Lauf erledigt das, ohne zu fragen.",
       "noneShort": "Sie fragt vor jeder Aktion eine Person.",
       "remove": "Wieder vorher fragen: {{action}}"
+    },
+    "vaultKeys": {
+      "title": "Vault-Schlüssel, die sie nutzt",
+      "hint": "Nur in dieser Routine, nur in ihren Befehlen.",
+      "named": "den Vault-Schlüssel {{key}}",
+      "remove": "Wieder fragen, bevor {{key}} genutzt wird"
     },
     "ahead": {
       "approved": "Freigegeben · läuft {{when}}",
@@ -15487,6 +15506,19 @@
   "usageViews": {
     "signedOut": "Abgemeldet",
     "whose": "von {{name}}",
+    "serves": {
+      "everyone": "Alle nutzen es",
+      "onlyYou": "Nur du nutzt es",
+      "only": "Nur {{name}} nutzt es",
+      "someone": "dem Inhaber",
+      "label": "Wer es nutzt",
+      "all": "Ganzer Workspace",
+      "me": "Nur ich",
+      "savedEveryone": "Jetzt nutzt der ganze Workspace dieses Abo.",
+      "savedOwner": "Jetzt nutzt nur du dieses Abo."
+    },
+    "logins_one": "{{count}} Anmeldung",
+    "logins_other": "{{count}} Anmeldungen",
     "noWindows": "Das Limit erscheint, sobald dieses Konto wieder genutzt wird.",
     "unused": "Kein Agent nutzt dieses Konto.",
     "usesNow": "nutzt es gerade",
@@ -16173,6 +16205,7 @@
       "no_ai_cli_failedWhy": "Ich kann gerade nicht antworten: Die KI meines Abos wurde mit einem Fehler beendet ({{why}}).",
       "no_ai_plan_limit": "Ich kann gerade nicht antworten: Das Abo, mit dem ich denke, hat sein Limit erreicht.",
       "no_ai_plan_not_shared": "Über das Abo des Workspace kann ich dir nicht antworten: Es antwortet nur der Person, der es gehört. Verbinde dein eigenes Abo, dann antworte ich.",
+      "no_ai_plans_not_yours": "Das {{plan}} hier gehört nur {{owner}}. Verbinde deins, dann antworte ich.",
       "no_ai_plan_unattended": "Ich habe nicht geantwortet: Die Anfrage kam nicht von einer Person, und das Abo des Workspace antwortet nur der Person, der es gehört.",
       "no_ai_runner_outdated": "Ich kann gerade nicht antworten: Das Programm auf dem Computer meines Abos braucht ein Update.",
       "no_ai_plan_tools": "Ich habe vor der Antwort gestoppt: Die KI meines Abos ist auf diesem Computer nicht bei den Werkzeugen von agentes.chat geblieben.",

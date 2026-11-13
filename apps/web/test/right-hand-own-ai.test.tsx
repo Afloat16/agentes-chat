@@ -81,12 +81,8 @@ test("Lodi's old settings address opens Lodi's page: two groups, the face opens 
   expect(ai.querySelector(".settings-row__chevron")).toBeTruthy();
   expect(ai.querySelector(".settings-row__value")).toBeNull();
   expect(screen().queryByRole("button", { name: "Usar uma chave de API" })).toBeNull();
-  // The switch says what it does once: its state is the switch.
-  const lend = screen().getByRole("switch", { name: "Emprestar este plano a quem não tem um" });
-  const lendRow = lend.closest(".settings-row") as HTMLElement;
-  expect(lendRow.querySelector(".settings-row__status")).toBeNull();
-  // The plan's terms on lending it stay one press away, beside the name.
-  expect(within(lendRow).getByRole("button", { name: "Sobre Emprestar este plano a quem não tem um" })).toBeTruthy();
+  // Who a plan serves is its owner's choice in IA e uso (ADR 0059 §3): no lending switch here.
+  expect(screen().queryByRole("switch", { name: /Emprestar/ })).toBeNull();
   // The row opens the choice in place, and choosing there changes the row.
   await act(async () => fireEvent.click(ai));
   await settle(4);
@@ -104,7 +100,6 @@ test("Lodi's old settings address opens Lodi's page: two groups, the face opens 
   expect(row(/^IA de quem não tem plano próprio/).querySelector(".settings-row__status")?.textContent).toBe(
     "OpenAI da Acme · Automático",
   );
-  expect(screen().queryByRole("switch", { name: "Emprestar este plano a quem não tem um" })).toBeNull();
 });
 
 test("a member's Lodi page is only Só para você: Sua IA is one row that opens, and connects their plan from its dialog", async () => {

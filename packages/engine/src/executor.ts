@@ -1566,10 +1566,16 @@ async function executeRunInner(
    * Nothing to think with (ADR 0061): the run fails with `no_ai`, and the conversation gets its agent's
    * card with Connect. Background work only fails, its routine run keeping why (a widget says it, ADR 0135 §20).
    */
-  const failNoAi = async (why: NoAiCardReason, own?: AgentAi["own"], model?: string, said?: string) => {
+  const failNoAi = async (
+    why: NoAiCardReason,
+    own?: AgentAi["own"],
+    model?: string,
+    said?: string,
+    notYours?: Pick<AgentAi, "owner" | "plan">,
+  ) => {
     if (!run.background) {
       const cardDeps = { db, pubsub: deps.pubsub, gateway: deps.gateway, machines: deps.machines };
-      await postNoAiCard({ ...cardDeps, judge: deps.context?.judge }, run, why, own, model, said)
+      await postNoAiCard({ ...cardDeps, judge: deps.context?.judge }, run, why, own, model, said, notYours)
         .catch((error) => addRunStep(db, run, "error", { reason: "no_ai_card", message: String(error) }))
         .catch(() => {});
     }
@@ -1734,7 +1740,7 @@ async function executeRunInner(
   // before the judges below, any context or a model call.
   if (needsContext) {
     const ai = await agentAiState({ db, gateway: deps.gateway, machines: deps.machines }, agent, run);
-    if (ai.state === "no_ai") return failNoAi(ai.reason ?? "no_key", ai.own);
+    if (ai.state === "no_ai") return failNoAi(ai.reason ?? "no_key", ai.own, undefined, undefined, ai);
   }
   if (!askingForRoom) await publishChannelEvent(deps.pubsub, event("running"));
   // Tools on demand (ADR 0043): a new run lists the core tools and the groups the judge expects it to need.

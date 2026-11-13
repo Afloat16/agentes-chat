@@ -2378,6 +2378,12 @@
       "other": "{{names}} connected your {{plan}} plan to {{agent}}"
     }
   },
+  "activity.kind.plan_serves": {
+    "value": {
+      "one": "Your {{plan}} now serves the whole workspace",
+      "other": "Your {{plan}} now serves the whole workspace"
+    }
+  },
   "activity.kind.plan_model_dropped": {
     "value": {
       "one": "{{model}} left {{plan}}. {{names}} is using {{runs}} for now",

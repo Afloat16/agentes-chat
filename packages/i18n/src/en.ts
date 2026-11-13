@@ -318,12 +318,6 @@ export const en = {
       short: "AI keys",
       say: "looks after AI keys",
     },
-    use_others_plans: {
-      title: "Use other people's plans",
-      desc: "Give the agents they can edit a plan someone else connected. Its owner gets an email and can take it back.",
-      short: "use other people's plans",
-      say: "uses other people's plans",
-    },
     edit_wiki: {
       title: "Edit the wiki",
       desc: "Create and change pages.",
@@ -1876,6 +1870,18 @@ export const en = {
     },
     inviteHint: "By email or link",
     profileHint: "Name, photo and @",
+    email: {
+      label: "Email",
+      title: "Change email",
+      new: "New email",
+      help: "You keep the same account, in the same workspaces and with the same plans.",
+      change: "Change email",
+      sent: "We sent a link to {{email}}. Your email changes when you open it.",
+      changed: "Done: you now sign in with {{email}}.",
+      same: "That's already your email.",
+      noMail:
+        "This server sends no email, so the new address can't be confirmed. Ask whoever runs the server to set up email.",
+    },
     openOnPhone: "Open on your phone",
     openOnPhoneHint: "Sign in to the app with a QR code",
     addPassword: "Add a password",
@@ -2638,7 +2644,6 @@ export const en = {
       workspaceHelp: "People without their own plan talk to {{name}} through this AI.",
       noPlans: "Connect a plan in AI and usage to use it here.",
       /** Under the switch that lends the workspace's plan: what it does, whatever its state. */
-      lend: "Lend this plan to people without one",
       /** The right hand's page, its two groups: what is the viewer's alone, and what admins set for everyone. */
       groupMine: "Just for you",
       groupWorkspace: "For the whole workspace",
@@ -2953,6 +2958,7 @@ export const en = {
       cli_failedWhy: "{{name}} can't answer now: the plan's AI stopped with an error ({{why}}).",
       plan_limit: "{{name}} can't answer now: the plan reached its limit.",
       plan_not_shared: "Connect your own plan to talk to {{name}}: the workspace's plan serves only its owner.",
+      plans_not_yours: "The {{plan}} here is only {{owner}}'s. Connect your own and I'll answer.",
       /** A request no person made (another agent's, a routine's): nobody's own plan would answer it. */
       plan_unattended:
         "{{name}} didn't answer: the request didn't come from a person, and the workspace's plan serves only its owner.",
@@ -2997,6 +3003,7 @@ export const en = {
       channel: "Kept. The agents answer once the workspace has an agentes.chat plan.",
     },
     receipt: "Nobody will answer: no\u00a0AI connected",
+    notYours: { receipt: "Nobody will answer: the {{plan}} is only {{owner}}'s" },
     chip: "No AI",
   },
   connectAi: {
@@ -4809,6 +4816,7 @@ export const en = {
     },
     /** Under `plan_model_dropped`: opens the agent's "Quem pensa". */
     planModelDropped: { choose: "Choose another model" },
+    planServes: { onlyMe: "Switch to Only me", done: "Only you use this plan now." },
     docTitleUnread: "({{count}}) Notifications",
     summaryWaiting_one: "{{count}} thing waiting on you",
     summaryWaiting_other: "{{count}} things waiting on you",
@@ -4906,6 +4914,7 @@ export const en = {
       desktopTaken: "<b>{{name}}</b> took control of the screen of <b>{{agent}}</b>'s computer",
       /** Someone gave an agent the person's plan (`plan_lent`): `plan` its maker ("Claude"). */
       planLent: "<b>{{name}}</b> connected your {{plan}} plan to <b>{{agent}}</b>",
+      planServes: "Your {{plan}} now serves the whole workspace",
       /** The agent's model left its plan's list (`plan_model_dropped`): `runs` the model it uses now. */
       planModelDropped: "{{model}} left {{plan}}. <b>{{name}}</b> is using {{runs}} until you choose another model.",
       routineWaitingPlan: "<b>{{name}}</b> is waiting for its plan to reset to run a routine",
@@ -5351,8 +5360,8 @@ export const en = {
         accountMove: "In use by {{agents}} · Move it here",
         accountAlso: "Also used by {{agents}}",
         accountOf: "{{name}}'s",
-        /** Under the account for someone who may use other people's plans (`use_others_plans`). */
-        accountOthers: "Other people's plans show whose they are. Their owner gets an email and can take it back.",
+        /** Under the accounts when other people's plans are listed (`canUseOthersPlans`). */
+        accountOthers: "Plans that serve the whole workspace show whose they are.",
         addAccount: "Add account",
         signInAgain: "Sign in again",
         connectPlan: "Connect another plan",
@@ -8124,6 +8133,12 @@ export const en = {
       noneShort: "It asks a person before each action.",
       /** Screen reader name of the button that takes one action out of the routine's list. */
       remove: "Ask again before: {{action}}",
+    },
+    vaultKeys: {
+      title: "Vault keys it uses",
+      hint: "Only in this routine, only in its commands.",
+      named: "the Vault key {{key}}",
+      remove: "Ask again before using {{key}}",
     },
     ahead: {
       approved: "Approved · runs {{when}}",
@@ -15600,6 +15615,19 @@ export const en = {
   usageViews: {
     signedOut: "Signed out",
     whose: "{{name}}'s",
+    serves: {
+      everyone: "Everyone uses it",
+      onlyYou: "Only you use it",
+      only: "Only {{name}} uses it",
+      someone: "its owner",
+      label: "Who uses it",
+      all: "Everyone in the workspace",
+      me: "Only me",
+      savedEveryone: "Everyone in the workspace uses this plan now.",
+      savedOwner: "Only you use this plan now.",
+    },
+    logins_one: "{{count}} login",
+    logins_other: "{{count}} logins",
     noWindows: "The limit shows up after this account is used again.",
     unused: "No agent uses this account.",
     usesNow: "uses it now",
@@ -16372,6 +16400,7 @@ export const en = {
       no_ai_plan_limit: "I can't answer now: the plan I think with reached its limit.",
       no_ai_plan_not_shared:
         "I can't answer you on the workspace's plan: it serves only its owner. Connect your own plan and I will.",
+      no_ai_plans_not_yours: "The {{plan}} here is only {{owner}}'s. Connect your own and I'll answer.",
       no_ai_plan_unattended:
         "I didn't answer: the request didn't come from a person, and the workspace's plan serves only its owner.",
       no_ai_runner_outdated: "I can't answer now: the program on my plan's computer needs an update.",

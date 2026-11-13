@@ -177,6 +177,7 @@ function AppStack() {
       <Stack.Screen name="me/account" options={{ ...pushed, ...scrollUnder }} />
       <Stack.Screen name="me/status" options={{ ...pushed, ...scrollUnder }} />
       <Stack.Screen name="me/zone" options={{ ...pushed, ...scrollUnder }} />
+      <Stack.Screen name="me/email" options={{ ...pushed, ...scrollUnder }} />
       <Stack.Screen name="me/workspaces" options={{ ...pushed, ...scrollUnder }} />
       {/* The same list as a sheet, from a long press on the workspace's mark in the bar (ADR 0154). */}
       <Stack.Screen name="workspaces-sheet" options={workspacesSheet} />

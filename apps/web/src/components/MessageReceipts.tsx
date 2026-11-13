@@ -13,7 +13,7 @@ import {
 } from "@agenteschat/client";
 import { errorText, runFailureLine } from "@agenteschat/client/lib/errors";
 import { joinNames, sentAtLine } from "@agenteschat/client/lib/format";
-import { mayConnectAi } from "@agenteschat/client/lib/no-ai";
+import { mayConnectAi, plansNotYoursOf } from "@agenteschat/client/lib/no-ai";
 import { can } from "@agenteschat/client/lib/permissions";
 import { retryAnswer } from "@agenteschat/client/lib/retry-answer";
 import { deciderOf, everyoneLineOf } from "@agenteschat/client/lib/routing";
@@ -156,6 +156,7 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
       : null;
   const view = receiptView(receipt);
   const status = view.status;
+  const aiStatus = useAiStatus(org.id, status?.kind === "no_ai").data;
   // One agent failed: while its failed row is in the conversation the row says why; once it's closed (its ×, a
   // reload), this line does.
   const failedAgent = status?.kind === "failed" && status.agents.length === 1 ? status.agents[0] : undefined;
@@ -208,6 +209,8 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
   const failedWhy = failedAgent && failure ? runFailureLine(t, name(failedAgent), failure, i18n.language) : null;
   const only = status?.kind === "no_ai" && status.agents.length === 1 ? status.agents[0] : undefined;
   const mayConnect = mayConnectAi(only ? dir.agentById.get(only) : null, me.user.id, org);
+  // Every plan here serves only someone else: the agent's card has the way out, so the line only says whose.
+  const notYours = plansNotYoursOf(aiStatus, only);
   const mentionNeeded = status?.kind === "nobody" && status.mentionNeeded === true;
   const statusText =
     status === null
@@ -383,8 +386,8 @@ export function MessageReceipts({ message, part }: { message: Message; part: "ch
       {status?.kind === "no_ai" && !held && (
         <KeptAnswer message={message} kept={receipt?.server?.kept === true}>
           <span className="ac-receipt__words">
-            <span>{t("noAi.receipt")}</span>
-            {connect && mayConnect && (
+            <span>{notYours ? t("noAi.notYours.receipt", notYours) : t("noAi.receipt")}</span>
+            {connect && mayConnect && !notYours && (
               <ReceiptAction>
                 <button
                   type="button"

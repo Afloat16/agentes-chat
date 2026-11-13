@@ -9,7 +9,7 @@ import {
   OPENCODE_PROTOCOL,
   type PlanUsage,
 } from "@agenteschat/adapters";
-import { and, desc, type Executor, eq, isNotNull, ne, schema, sql } from "@agenteschat/db";
+import { and, desc, type Executor, eq, isNotNull, ne, or, schema, sql } from "@agenteschat/db";
 import { isAutoModel } from "@agenteschat/providers";
 import {
   autoPlanModel,
@@ -573,11 +573,9 @@ export async function brainAccountFor(
 }
 
 /**
- * A plan thinks only for its owner's agents (ADR 0059 §3): the account's
- * owner, or with the computer's own sign-in the person who connected that
- * computer, must be the agent's owner, still in the organization. The account
- * someone who may use other people's plans gave it (`brainAccountLentBy`)
- * needs only its own owner still there.
+ * Whether the plan may think for this agent (ADR 0059 §3): an account that serves everyone in the workspace
+ * (`machine_accounts.serves`), or one that serves only its owner when that is the agent's owner; either way its owner
+ * still in the organization. The computer's own sign-in thinks only for agents of the person who connected it.
  */
 export async function planIsOwners(
   db: Executor,
@@ -587,7 +585,6 @@ export async function planIsOwners(
 ): Promise<boolean> {
   const owner = agent.ownerUserId;
   if (!owner) return false;
-  const lent = account !== undefined && !!agent.brainAccountLentBy && agent.brainAccountId === account.id;
   const { machineAccounts, machines, organizationMembers: members } = schema;
   const rows = account
     ? await db
@@ -601,7 +598,7 @@ export async function planIsOwners(
           and(
             eq(machineAccounts.orgId, agent.orgId),
             eq(machineAccounts.id, account.id),
-            lent ? undefined : eq(machineAccounts.createdBy, owner),
+            or(eq(machineAccounts.createdBy, owner), eq(machineAccounts.serves, "everyone")),
           ),
         )
     : await db

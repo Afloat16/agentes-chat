@@ -981,6 +981,8 @@
       "plan_lent_other": "{{names}}, {{plan}} planını {{agent}} ajanına bağladı",
       "plan_lent_female_one": "{{names}}, {{plan}} planını {{agent}} ajanına bağladı",
       "plan_lent_female_other": "{{names}}, {{plan}} planını {{agent}} ajanına bağladı",
+      "plan_serves_one": "{{plan}} artık tüm workspace'e hizmet ediyor",
+      "plan_serves_other": "{{plan}} artık tüm workspace'e hizmet ediyor",
       "plan_model_dropped_one": "{{model}}, {{plan}} listesinden çıktı. {{names}} şimdilik {{runs}} kullanıyor",
       "plan_model_dropped_other": "{{model}}, {{plan}} listesinden çıktı. {{names}} şimdilik {{runs}} kullanıyor",
       "computer_disk_full_one": "Bir bilgisayarın diski neredeyse dolu",

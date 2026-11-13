@@ -247,6 +247,7 @@ import type {
   PhoneDevice,
   PhoneDeviceInput,
   PhoneSignIn,
+  PlanServes,
   Poll,
   PostMedia,
   Proposal,
@@ -1149,6 +1150,12 @@ export interface ApiClient {
      * such agent.
      */
     takeBackPlan(orgId: string, accountId: string, agentId?: string): Promise<{ agentIds: string[] }>;
+    /** Who the viewer's plan thinks for (ADR 0059 §3): everyone in the workspace, or only them. */
+    setAccountServes(
+      orgId: string,
+      accountId: string,
+      serves: PlanServes,
+    ): Promise<{ serves: PlanServes; agentIds: string[] }>;
     /** Its owner names it (1 to 40 characters). */
     renameAccount(orgId: string, machineId: string, accountId: string, label: string): Promise<MachineAccount>;
     /** Its owner (or whoever connected the computer) disconnects it; the computer signs it out and deletes it. */

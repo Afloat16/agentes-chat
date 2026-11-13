@@ -155,6 +155,20 @@ export interface MachineAccountView {
   shared: boolean;
   /** Claude's organization it is signed in to (opaque, protocol 50), for its owner's eyes only; null: not known. */
   providerOrgId: string | null;
+  /** Who it thinks for (ADR 0059 §3): everyone in the workspace, or only its owner. */
+  serves: PlanServes;
+}
+
+/** Who a plan thinks for (`machine_accounts.serves`, ADR 0059 §3). */
+export type PlanServes = "everyone" | "owner";
+export const isPlanServes = (v: unknown): v is PlanServes => v === "everyone" || v === "owner";
+export const servesOf = (v: string | null | undefined): PlanServes => (v === "owner" ? "owner" : "everyone");
+
+/** How much a plan has left in its tightest window (100: unknown or unused), below 0 while it is at its limit. */
+export function planRoom(usage: PlanUsage | null | undefined, now = Date.now()): number {
+  if (!usage) return 100;
+  const s = planState(usage, now);
+  return s.state === "limited" ? -1 : 100 - s.used;
 }
 
 /** An account on a computer, by what the runner needs to remove it. */
@@ -240,6 +254,7 @@ function accountView(
     keyHint: mine ? row.keyHint : null,
     shared: row.shared,
     providerOrgId: mine ? row.providerOrgId : null,
+    serves: servesOf(row.serves),
   };
 }
 
@@ -445,6 +460,14 @@ function sameAccountWhere(row: AccountKey, same: AccountIdentity) {
     match,
   );
 }
+
+/** Every login of this account on its computer (`sameAccountWhere`), itself included, oldest first. */
+export const sameLogins = (db: Executor, row: MachineAccountRow) =>
+  db
+    .select()
+    .from(machineAccounts)
+    .where(sameAccountWhere(row, row) ?? and(eq(machineAccounts.orgId, row.orgId), eq(machineAccounts.id, row.id)))
+    .orderBy(machineAccounts.createdAt, machineAccounts.id);
 
 /** Another login of the same account (`sameAccountWhere`), the oldest; `forAll`: only one made for all agents. */
 async function sameAccount(
@@ -1544,13 +1567,7 @@ export async function renameMachineAccount(
   if (account.createdBy !== userId) {
     throw new ForbiddenError("Only the account's owner can rename it", "account.not_owner");
   }
-  const logins = await deps.db
-    .select()
-    .from(machineAccounts)
-    .where(
-      sameAccountWhere(account, account) ?? and(eq(machineAccounts.orgId, orgId), eq(machineAccounts.id, account.id)),
-    )
-    .orderBy(machineAccounts.createdAt, machineAccounts.id);
+  const logins = await sameLogins(deps.db, account);
   const renamed = logins.filter((r) => r.label !== label);
   if (renamed.length === 0) return accountViewOf(deps.db, orgId, account, userId);
   await deps.db

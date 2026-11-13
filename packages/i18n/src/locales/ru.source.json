@@ -734,18 +734,6 @@
   "permissions.manage_credentials.say": {
     "value": "looks after AI keys"
   },
-  "permissions.use_others_plans.title": {
-    "value": "Use other people's plans"
-  },
-  "permissions.use_others_plans.desc": {
-    "value": "Give the agents they can edit a plan someone else connected. Its owner gets an email and can take it back."
-  },
-  "permissions.use_others_plans.short": {
-    "value": "use other people's plans"
-  },
-  "permissions.use_others_plans.say": {
-    "value": "uses other people's plans"
-  },
   "permissions.edit_wiki.title": {
     "value": "Edit the wiki"
   },
@@ -4343,6 +4331,33 @@
   "shell.profileHint": {
     "value": "Name, photo and @"
   },
+  "shell.email.label": {
+    "value": "Email"
+  },
+  "shell.email.title": {
+    "value": "Change email"
+  },
+  "shell.email.new": {
+    "value": "New email"
+  },
+  "shell.email.help": {
+    "value": "You keep the same account, in the same workspaces and with the same plans."
+  },
+  "shell.email.change": {
+    "value": "Change email"
+  },
+  "shell.email.sent": {
+    "value": "We sent a link to {{email}}. Your email changes when you open it."
+  },
+  "shell.email.changed": {
+    "value": "Done: you now sign in with {{email}}."
+  },
+  "shell.email.same": {
+    "value": "That's already your email."
+  },
+  "shell.email.noMail": {
+    "value": "This server sends no email, so the new address can't be confirmed. Ask whoever runs the server to set up email."
+  },
   "shell.openOnPhone": {
     "value": "Open on your phone"
   },
@@ -6167,9 +6182,6 @@
   "rightHand.settings.noPlans": {
     "value": "Connect a plan in AI and usage to use it here."
   },
-  "rightHand.settings.lend": {
-    "value": "Lend this plan to people without one"
-  },
   "rightHand.settings.groupMine": {
     "value": "Just for you"
   },
@@ -6868,6 +6880,9 @@
   "noAi.rightHand.plan_not_shared": {
     "value": "Connect your own plan to talk to {{name}}: the workspace's plan serves only its owner."
   },
+  "noAi.rightHand.plans_not_yours": {
+    "value": "The {{plan}} here is only {{owner}}'s. Connect your own and I'll answer."
+  },
   "noAi.rightHand.plan_unattended": {
     "value": "{{name}} didn't answer: the request didn't come from a person, and the workspace's plan serves only its owner."
   },
@@ -6927,6 +6942,9 @@
   },
   "noAi.receipt": {
     "value": "Nobody will answer: no AI connected"
+  },
+  "noAi.notYours.receipt": {
+    "value": "Nobody will answer: the {{plan}} is only {{owner}}'s"
   },
   "noAi.chip": {
     "value": "No AI"
@@ -11025,6 +11043,12 @@
   "notifications.planModelDropped.choose": {
     "value": "Choose another model"
   },
+  "notifications.planServes.onlyMe": {
+    "value": "Switch to Only me"
+  },
+  "notifications.planServes.done": {
+    "value": "Only you use this plan now."
+  },
   "notifications.docTitleUnread": {
     "value": "({{count}}) Notifications"
   },
@@ -11288,6 +11312,9 @@
   },
   "notifications.what.planLent": {
     "value": "<b>{{name}}</b> connected your {{plan}} plan to <b>{{agent}}</b>"
+  },
+  "notifications.what.planServes": {
+    "value": "Your {{plan}} now serves the whole workspace"
   },
   "notifications.what.planModelDropped": {
     "value": "{{model}} left {{plan}}. <b>{{name}}</b> is using {{runs}} until you choose another model."
@@ -12415,7 +12442,7 @@
     "value": "{{name}}'s"
   },
   "agentPage.work.brain.accountOthers": {
-    "value": "Other people's plans show whose they are. Their owner gets an email and can take it back."
+    "value": "Plans that serve the whole workspace show whose they are."
   },
   "agentPage.work.brain.addAccount": {
     "value": "Add account"
@@ -19018,6 +19045,18 @@
   },
   "routines.ownActions.remove": {
     "value": "Ask again before: {{action}}"
+  },
+  "routines.vaultKeys.title": {
+    "value": "Vault keys it uses"
+  },
+  "routines.vaultKeys.hint": {
+    "value": "Only in this routine, only in its commands."
+  },
+  "routines.vaultKeys.named": {
+    "value": "the Vault key {{key}}"
+  },
+  "routines.vaultKeys.remove": {
+    "value": "Ask again before using {{key}}"
   },
   "routines.ahead.approved": {
     "value": "Approved · runs {{when}}"
@@ -37707,6 +37746,39 @@
   "usageViews.whose": {
     "value": "{{name}}'s"
   },
+  "usageViews.serves.everyone": {
+    "value": "Everyone uses it"
+  },
+  "usageViews.serves.onlyYou": {
+    "value": "Only you use it"
+  },
+  "usageViews.serves.only": {
+    "value": "Only {{name}} uses it"
+  },
+  "usageViews.serves.someone": {
+    "value": "its owner"
+  },
+  "usageViews.serves.label": {
+    "value": "Who uses it"
+  },
+  "usageViews.serves.all": {
+    "value": "Everyone in the workspace"
+  },
+  "usageViews.serves.me": {
+    "value": "Only me"
+  },
+  "usageViews.serves.savedEveryone": {
+    "value": "Everyone in the workspace uses this plan now."
+  },
+  "usageViews.serves.savedOwner": {
+    "value": "Only you use this plan now."
+  },
+  "usageViews.logins": {
+    "value": {
+      "one": "{{count}} login",
+      "other": "{{count}} logins"
+    }
+  },
   "usageViews.noWindows": {
     "value": "The limit shows up after this account is used again."
   },
@@ -39541,6 +39613,9 @@
   },
   "chat.body.no_ai_plan_not_shared": {
     "value": "I can't answer you on the workspace's plan: it serves only its owner. Connect your own plan and I will."
+  },
+  "chat.body.no_ai_plans_not_yours": {
+    "value": "The {{plan}} here is only {{owner}}'s. Connect your own and I'll answer."
   },
   "chat.body.no_ai_plan_unattended": {
     "value": "I didn't answer: the request didn't come from a person, and the workspace's plan serves only its owner."

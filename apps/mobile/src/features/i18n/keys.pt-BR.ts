@@ -1018,6 +1018,8 @@ export const featureKeysPtBR = {
       plan_lent_other: "{{names}} conectaram o seu plano do {{plan}} ao\u00a0{{agent}}",
       plan_lent_female_one: "{{names}} conectou o seu plano do {{plan}} à\u00a0{{agent}}",
       plan_lent_female_other: "{{names}} conectaram o seu plano do {{plan}} à\u00a0{{agent}}",
+      plan_serves_one: "Seu {{plan}} agora atende o workspace todo",
+      plan_serves_other: "Seu {{plan}} agora atende o workspace todo",
       /** An agent's model left its plan's list (`plan_model_dropped`): `runs` the model it uses now. */
       plan_model_dropped_one: "O {{model}} saiu do {{plan}}. {{names}} está usando o {{runs}} por enquanto",
       plan_model_dropped_other: "O {{model}} saiu do {{plan}}. {{names}} está usando o {{runs}} por enquanto",

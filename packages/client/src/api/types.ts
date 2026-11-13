@@ -1417,10 +1417,14 @@ export interface AiStatus {
       | "plan_inactive"
       | "commands_off"
       | "plan_not_shared"
+      | "plans_not_yours"
       | "runner_outdated"
       | "plan_tools";
     /** Ready on an API key with Automático: the maker of the key it thinks with (`autoMakerOf`). */
     provider?: string;
+    /** With `plans_not_yours`: whose the workspace's plans are (each serves only who connected it), and what ("Claude"). */
+    owner?: string;
+    plan?: string;
     /**
      * Its state for background work (a routine, a widget's build) where that differs from `state`: background work
      * never falls back on the model brain, and the right hand's thinks with the workspace's own AI, nobody's.
@@ -5653,8 +5657,8 @@ export interface AgentBrain {
   /** The viewer owns the agent: only they connect its plan and turn its paid extra usage on or off. */
   canUsePlans: boolean;
   /**
-   * The viewer may use other people's plans (`use_others_plans`, ADR 0059 §3): `accounts` has every plan on its
-   * computer, and they may give it any of them. Absent on older servers.
+   * True since plans serve the whole workspace (ADR 0059 §3): `accounts` has every plan on its computer that serves
+   * everyone, and the viewer may give it any of them. Absent on older servers.
    */
   canUseOthersPlans?: boolean;
   /** "Conta deste computador" can think for it: whoever connected the computer owns the agent. */
@@ -5710,7 +5714,12 @@ export interface MachineAccount {
   shared?: boolean;
   /** Claude's organization it is signed in to (opaque), its owner's eyes only; null or absent: not known. */
   providerOrgId?: string | null;
+  /** Who it thinks for (ADR 0059 §3): everyone in the workspace, or only its owner (absent: an older server). */
+  serves?: PlanServes;
 }
+
+/** Who a plan thinks for (ADR 0059 §3): everyone in the workspace, or only the person who connected it. */
+export type PlanServes = "everyone" | "owner";
 
 /** `GET …/ai-accounts`: the viewer's AI accounts on the organization's computers, and where they can add one. */
 export interface AiAccounts {
@@ -6322,6 +6331,11 @@ export type NotificationKind =
    * `source.agentId`, `source.accountId`, `latest.plan`. "Tirar de volta" (`takeBackPlan`) makes it done.
    */
   | "plan_lent"
+  /**
+   * ADR 0059 §3: the person's plan serves everyone in the workspace now. `source.accountId`, its name in `latest.plan`;
+   * "Mudar para Só eu" (`setAccountServes`) makes it done.
+   */
+  | "plan_serves"
   /**
    * A model an agent thinks with left its plan's live list, so its turns run another (the agent's owner, once per agent
    * and model). `source.agentId`, the model in `latest.title`, the plan in `latest.plan`, what runs now in
@@ -7362,6 +7376,12 @@ export interface PlanAccountInfo {
   /** Only for its owner. */
   email: string | null;
   signedOut: boolean;
+  /** Who it thinks for; null for the computer's own sign-in (absent: an older server). */
+  serves?: PlanServes | null;
+  /** The same seat whoever connected it (opaque): rows with one `seat` are one account. Null: not known. */
+  seat?: string | null;
+  /** How many logins this row stands for, once grouped (`groupUsageAccounts`); absent: one. */
+  logins?: number;
 }
 
 export interface PlanAccountUsage extends PlanAccountInfo {

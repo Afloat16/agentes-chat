@@ -435,7 +435,8 @@ export function openTarget(n: AppNotification): OpenTarget | null {
       search: { sec: "brain", brain: "model" },
     };
   // Someone gave an agent the person's plan: IA e uso, where their plans and the agents on them are.
-  if (n.kind === "plan_lent") return { to: "/org/$orgId/settings/$section", params: { section: "usage" } };
+  if (n.kind === "plan_lent" || n.kind === "plan_serves")
+    return { to: "/org/$orgId/settings/$section", params: { section: "usage" } };
   // An update of a skill from its link: the skill, in Skills.
   if (n.kind === "skill_update")
     return {

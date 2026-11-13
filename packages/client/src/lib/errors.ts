@@ -871,6 +871,20 @@ export function authErrorText(
   return knownErrorText(t, error) ?? (noAnswer(error) ? noAnswerText(t) : untranslatedText(t, error));
 }
 
+/**
+ * Why a new address for the signed-in account was refused (Better Auth's `change-email`), web and phone: the same
+ * address, a server that sends no e-mail to confirm it with (who runs it can turn e-mail on), else as any sign-in.
+ */
+export function emailChangeErrorText(
+  t: TFunction,
+  refusal: { status: number; code?: string; message: string } & RestrictionFacts,
+): string {
+  if (/email is the same/i.test(refusal.message)) return t("shell.email.same");
+  if (/verification email isn't enabled|change email is disabled/i.test(refusal.message))
+    return t("shell.email.noMail");
+  return authErrorText(t, refusal);
+}
+
 type ProviderRefusal = "cancelled" | "linked" | "noEmail" | "expired" | "server" | "other";
 
 /** Better Auth's codes for a provider sign-in that didn't finish (`/login?error=`), by what the person can do. */

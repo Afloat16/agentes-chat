@@ -304,12 +304,6 @@
       "short": "AI 密钥",
       "say": "管理 AI 密钥"
     },
-    "use_others_plans": {
-      "title": "使用其他人的套餐",
-      "desc": "把其他人连接的套餐给自己能编辑的智能体使用。套餐的主人会收到邮件，并且可以收回。",
-      "short": "使用其他人的套餐",
-      "say": "使用其他人的套餐"
-    },
     "edit_wiki": {
       "title": "编辑 wiki",
       "desc": "创建和修改页面。",
@@ -1731,6 +1725,17 @@
     },
     "inviteHint": "通过邮件或链接",
     "profileHint": "名称、照片和 @",
+    "email": {
+      "label": "邮箱",
+      "title": "更改邮箱",
+      "new": "新邮箱",
+      "help": "账号不变，workspace 和套餐也都不变。",
+      "change": "更改邮箱",
+      "sent": "我们已向 {{email}} 发送链接。打开链接后邮箱就会更改。",
+      "changed": "完成：现在用 {{email}} 登录。",
+      "same": "这已经是你的邮箱。",
+      "noMail": "此服务器不发送邮件，所以无法确认新地址。请让服务器的管理员设置邮件发送。"
+    },
     "openOnPhone": "在手机上打开",
     "openOnPhoneHint": "用二维码登录应用",
     "addPassword": "设置密码",
@@ -2393,7 +2398,6 @@
       "workspace": "没有自己套餐的人使用的 AI",
       "workspaceHelp": "没有自己套餐的人通过这个 AI 与{{name}}交谈。",
       "noPlans": "请先在“AI 和用量”中连接套餐，才能在这里使用。",
-      "lend": "把这个套餐借给没有套餐的人",
       "groupMine": "仅对你",
       "groupWorkspace": "对整个工作区",
       "groupAdmins": "仅管理员"
@@ -2673,6 +2677,7 @@
       "cli_failedWhy": "{{name}} 现在无法回答：套餐的 AI 因出错而停止（{{why}}）。",
       "plan_limit": "{{name}} 现在无法回答：套餐已达到上限。",
       "plan_not_shared": "连接你自己的套餐才能与{{name}}交谈：工作区的套餐只回复其所有者。",
+      "plans_not_yours": "这里的 {{plan}} 只属于 {{owner}}。连接你自己的，我就会回复。",
       "plan_unattended": "{{name}} 没有回复：这个请求不是由人发出的，而工作区的套餐只回复其所有者。",
       "runner_outdated": "{{name}} 现在无法回复：套餐所在电脑上的程序需要更新。",
       "plan_tools": "{{name}} 在回复前停下了：那台电脑上套餐的 AI 没有只使用 agentes.chat 的工具。",
@@ -2698,6 +2703,9 @@
       "channel": "已保留。工作区有 agentes.chat 套餐后，智能体就会回复。"
     },
     "receipt": "没有人会回复：未连接 AI",
+    "notYours": {
+      "receipt": "没有人会回复：{{plan}} 只属于 {{owner}}"
+    },
     "chip": "无 AI"
   },
   "connectAi": {
@@ -4376,6 +4384,10 @@
     "planModelDropped": {
       "choose": "选择其他模型"
     },
+    "planServes": {
+      "onlyMe": "改为仅我自己",
+      "done": "现在只有你使用这个套餐。"
+    },
     "docTitleUnread": "({{count}}) 通知",
     "summaryWaiting_other": "{{count}} 件事等你处理",
     "summaryUnread_other": "{{count}} 条未读",
@@ -4466,6 +4478,7 @@
       "browserProfileRequest": "<b>{{name}}</b> 申请为 <b>{{agent}}</b> 再添加一个浏览器配置文件",
       "desktopTaken": "<b>{{name}}</b> 接管了 <b>{{agent}}</b> 的电脑屏幕",
       "planLent": "<b>{{name}}</b> 把你的 {{plan}} 套餐连接到了 <b>{{agent}}</b>",
+      "planServes": "你的 {{plan}} 现在服务整个 workspace",
       "planModelDropped": "{{model}} 已从 {{plan}} 下架。在你选择其他模型之前，<b>{{name}}</b> 会使用 {{runs}}。",
       "routineWaitingPlan": "<b>{{name}}</b> 正在等待套餐额度重置后运行例行工作",
       "planResetUnknown": "{{plan}} 没有说明额度何时重置。<b>{{name}}</b> 的工作仍在等待。",
@@ -4901,7 +4914,7 @@
         "accountMove": "{{agents}} 正在使用 · 移到这里",
         "accountAlso": "{{agents}} 也在使用",
         "accountOf": "{{name}} 的",
-        "accountOthers": "其他人的套餐会显示是谁的。主人会收到邮件，并且可以收回。",
+        "accountOthers": "服务整个 workspace 的套餐会显示属于谁。",
         "addAccount": "添加账号",
         "signInAgain": "重新登录",
         "connectPlan": "连接其他套餐",
@@ -7618,6 +7631,12 @@
       "hintShort": "每次运行都会直接执行这些操作，无需询问。",
       "noneShort": "每个操作前都会先请人审批。",
       "remove": "之前再次询问：{{action}}"
+    },
+    "vaultKeys": {
+      "title": "使用的 Vault 密钥",
+      "hint": "仅在此例程的命令中使用。",
+      "named": "Vault 密钥 {{key}}",
+      "remove": "使用 {{key}} 前再次询问"
     },
     "ahead": {
       "approved": "已批准 · {{when}}运行",
@@ -15022,6 +15041,18 @@
   "usageViews": {
     "signedOut": "已退出登录",
     "whose": "{{name}} 的",
+    "serves": {
+      "everyone": "所有人可用",
+      "onlyYou": "仅你可用",
+      "only": "仅 {{name}} 可用",
+      "someone": "所有者",
+      "label": "谁可以用",
+      "all": "整个 workspace",
+      "me": "仅我自己",
+      "savedEveryone": "现在整个 workspace 都使用这个套餐。",
+      "savedOwner": "现在只有你使用这个套餐。"
+    },
+    "logins_other": "{{count}} 个登录",
     "noWindows": "再次使用此账号后会显示限额。",
     "unused": "没有智能体使用此账号。",
     "usesNow": "正在使用",
@@ -15703,6 +15734,7 @@
       "no_ai_cli_failedWhy": "我现在无法回答：我的套餐的 AI 因出错而停止（{{why}}）。",
       "no_ai_plan_limit": "我现在无法回答：我用来思考的套餐已达到上限。",
       "no_ai_plan_not_shared": "我无法通过工作区的套餐回复你：它只回复其所有者。连接你自己的套餐后我就能回复。",
+      "no_ai_plans_not_yours": "这里的 {{plan}} 只属于 {{owner}}。连接你自己的，我就会回复。",
       "no_ai_plan_unattended": "我没有回复：这个请求不是由人发出的，而工作区的套餐只回复其所有者。",
       "no_ai_runner_outdated": "我现在无法回复：我的套餐所在电脑上的程序需要更新。",
       "no_ai_plan_tools": "我在回复前停下了：那台电脑上我的套餐的 AI 没有只使用 agentes.chat 的工具。",
