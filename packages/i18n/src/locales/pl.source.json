@@ -5741,6 +5741,15 @@
   "receipts.popoverTitle": {
     "value": "Agents"
   },
+  "receipts.sentToday": {
+    "value": "Sent today at {{time}}"
+  },
+  "receipts.sentYesterday": {
+    "value": "Sent yesterday at {{time}}"
+  },
+  "receipts.sentOn": {
+    "value": "Sent on {{date}} at {{time}}"
+  },
   "receipts.seenBy": {
     "value": "Seen by {{names}}"
   },

@@ -774,7 +774,16 @@ export const MessageRow = memo(function MessageRow({
         ) : null}
         {look.faces ? (
           <View style={[styles.avslot, bubbled && lookRows.bubblesSlot, compact && lookRows.compactSlot]}>
-            {grouped ? null : <Face who={m.author} size={compact ? 18 : bubbled ? 30 : 34} live={false} />}
+            {grouped ? (
+              // A grouped row's receipt in its face's place, on its first line: a tap opens who it went to.
+              (receipt || seenBy) && !m.local && !inBubble ? (
+                <View style={[styles.slotMark, { height: look.text?.lineHeight ?? 24 }]}>
+                  <ReceiptMark message={m} mine={mine} receipt={receipt} seenBy={seenBy} />
+                </View>
+              ) : null
+            ) : (
+              <Face who={m.author} size={compact ? 18 : bubbled ? 30 : 34} live={false} />
+            )}
           </View>
         ) : null}
         <View style={[styles.body, { gap: rhythm.part }]}>
@@ -1346,6 +1355,8 @@ const styles = StyleSheet.create({
   // never wraps the line.
   whoRoom: { paddingRight: 40 },
   whoMark: { position: "absolute", top: 0, right: 0, height: 19, justifyContent: "center" },
+  // On the words' first line: the slot's 2 over the words' own 1.
+  slotMark: { marginTop: -1, justifyContent: "center" },
   whoTight: { marginBottom: 0 },
   // The time ends the words' line when it fits; a longer text pushes it to a line of its own, at the bubble's end.
   bubbleLine: {

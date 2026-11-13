@@ -637,6 +637,10 @@ describe("receipts: a check with a popover", () => {
     expect(pop.textContent).toContain("Ada");
     expect(pop.textContent).toContain("Respondeu");
     expect(pop.querySelector(".ac-avatar--agent")).not.toBeNull();
+    // Its last line says when the message went out: a touch screen has no hover time.
+    expect(pop.querySelector(".receipt-sent:last-child")?.textContent).toMatch(
+      /^Enviada (hoje|ontem|em .+) às \d{2}:\d{2}$/,
+    );
     await act(async () => fireEvent.keyDown(pop, { key: "Escape" }));
     await act(() => new Promise((r) => setTimeout(r, 0)));
     expect(screen().queryByRole("dialog", { name: "Agentes" })).toBeNull();

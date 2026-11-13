@@ -163,7 +163,7 @@ import { retryVoice, type VoiceRefusal } from "../voice/outbox";
 import { useVoiceComposer } from "../voice/useVoiceComposer";
 import { AgentReceiptLine } from "./AgentReceipts";
 import { AttachmentStrip, MAX_PENDING, type PendingFile } from "./AttachmentStrip";
-import { receiptMessageId, turnHeadId } from "./agent-receipts";
+import { markRowId, receiptMessageId } from "./agent-receipts";
 import { AskStore } from "./ask-store";
 import { AskBar, AskProbes, AskStoreProvider, useAskWatch, useAwayAsk, WaitingHereBar } from "./asks";
 import { ChannelHello } from "./ChannelHello";
@@ -1715,8 +1715,13 @@ function Chat({
   // Someone else's message sent into a task at work says nothing here (mine wears it: `ReceiptMark`).
   const receiptSteered = useSteerState(orgId, channelId, receiptId && !receiptMine ? receiptId : "") !== null;
   const markAt = useMemo(
-    () => (!receiptId || receiptSteered ? null : receiptMine ? receiptId : turnHeadId(rows, receiptId)),
-    [receiptId, receiptSteered, receiptMine, rows],
+    () =>
+      !receiptId || receiptSteered
+        ? null
+        : receiptMine
+          ? receiptId
+          : markRowId(rows, receiptId, { faces: rowLook.faces, bubbles: rowLook.style === "bubbles" }),
+    [receiptId, receiptSteered, receiptMine, rows, rowLook.faces, rowLook.style],
   );
   // The line redraws when what it shows changes, not on every event that touches the receipt (typing).
   const receiptNow = receiptId ? live.receipts[receiptId] : undefined;
@@ -2388,7 +2393,6 @@ function Chat({
                     draftKey={threadId ? `${channelId}:${threadId}` : channelId}
                     inputNativeID={COMPOSER_INPUT_ID}
                     {...(suggestions.length > 0 ? { suggestions } : {})}
-                    {...(dmAgentId && !isThread ? { face: <AgentFace agentId={dmAgentId} size={22} /> } : {})}
                     mentionAt={refQuery}
                     insertMention={insertRef}
                     prefill={prefill ?? captionBack}

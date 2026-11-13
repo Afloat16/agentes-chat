@@ -2425,6 +2425,10 @@ export const en = {
     },
     failedShort: "Couldn't answer",
     popoverTitle: "Agents",
+    /** The receipt popover's last line: when the message went out (touch screens have no hover time). */
+    sentToday: "Sent today at {{time}}",
+    sentYesterday: "Sent yesterday at {{time}}",
+    sentOn: "Sent on {{date}} at {{time}}",
     seenBy: "Seen by {{names}}",
     retry: "Try again",
     /** On its way (`receipts.retry` pressed): the line says so until the server answers. */

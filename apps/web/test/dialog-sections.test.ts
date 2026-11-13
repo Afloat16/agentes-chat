@@ -24,10 +24,10 @@ const SECTIONS = new Set(["DialogBody", "DialogFooter", "DialogSearchList"]);
 const WRAPPERS = new Set(["form", "Suspense", "Locked"]);
 /**
  * Custom sections, each with its own inset on `--dialog-pad`, or full bleed on purpose under a rule (the catalog's
- * grid, a channel's settings with their nav).
+ * grid, a channel's settings with their nav, two agents' conversation as a channel's message list).
  */
 const OWN_INSET =
-  /\b(ac-dialog__\w+|cflow__steps|catalog__tools|catalog__body|catalog-svc__body|catalog-svc__act|channel-settings|ac-steps|pu-drawer__body)\b/;
+  /\b(ac-dialog__\w+|cflow__steps|catalog__tools|catalog__body|catalog-svc__body|catalog-svc__act|channel-settings|ac-steps|pu-drawer__body|consult-dialog__list)\b/;
 /** Components from other files that render sections (checked where they are defined). */
 const SECTION_COMPONENTS = new Set([
   "ConnectFlow",

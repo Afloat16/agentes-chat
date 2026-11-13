@@ -2336,6 +2336,10 @@ export const ptBR = {
     },
     failedShort: "Não conseguiu responder",
     popoverTitle: "Agentes",
+    /** The receipt popover's last line: when the message went out (touch screens have no hover time). */
+    sentToday: "Enviada hoje às {{time}}",
+    sentYesterday: "Enviada ontem às {{time}}",
+    sentOn: "Enviada em {{date}} às {{time}}",
     seenBy: "Vista por {{names}}",
     retry: "Tentar de novo",
     /** On its way (`receipts.retry` pressed): the line says so until the server answers. */
