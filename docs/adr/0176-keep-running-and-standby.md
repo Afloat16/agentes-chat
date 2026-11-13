@@ -77,7 +77,7 @@ systemd-run --scope --unit=agentes-keep-<hold id> --slice=agents-<uid>.slice -- 
 
 ### 3. The server's record
 
-`machine_holds` (migration 0257): the hold's id (the runner's too), its organization, agent, computer and run, `what`,
+`machine_holds` (migration 0256): the hold's id (the runner's too), its organization, agent, computer and run, `what`,
 `why`, `pid`, `browser`, `until`, and how it ended (`exited`, `expired`, `stopped_by_person`, `ended_by_agent`,
 `restarted`) with who stopped it. The server asks the computer first and writes the row once it holds, so a hold
 people see is one the computer holds; a change the computer holds undoes an end it reported meanwhile. A hold whose

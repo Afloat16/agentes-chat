@@ -1774,10 +1774,17 @@
       "breakpoints": true
     },
     {
-      "idx": 257,
+      "idx": 255,
       "version": "7",
-      "when": 1794675700000,
-      "tag": "0257_machine_holds",
+      "when": 1794685300000,
+      "tag": "0255_destructive_hint_suggests",
+      "breakpoints": true
+    },
+    {
+      "idx": 256,
+      "version": "7",
+      "when": 1794695300000,
+      "tag": "0256_machine_holds",
       "breakpoints": true
     }
   ]
