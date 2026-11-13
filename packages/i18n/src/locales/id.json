@@ -7158,8 +7158,22 @@
     "auto": "otomatis",
     "autoHint": "Kolomnya berubah sendiri, dari pekerjaan agen.",
     "now": {
-      "title": "Agen yang sedang bekerja",
-      "stalled_other": "{{count}} macet"
+      "stalledCount_other": "{{count}} tugas macet",
+      "viewStalled": "Lihat yang macet",
+      "continue": "Lanjutkan",
+      "continueAll": "Lanjutkan semua",
+      "continueAllCount": "Lanjutkan semua ({{count}})",
+      "sent_other": "Sudah diminta. {{names}} melanjutkan dari tempat terakhir.",
+      "rowSent": "Sudah diminta: melanjutkan dari tempat terakhir.",
+      "stalledTitle": "Tugas macet",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_other": "{{count}} tugas",
+      "agents_other": "{{count}} agen",
+      "stalledText": "Para agen berhenti sebelum selesai. Lanjutkan meminta mereka melanjutkan dari tempat terakhir.",
+      "stoppedNow": "Berhenti barusan",
+      "stoppedAgo": "Berhenti {{ago}}",
+      "stoppedYesterday": "Berhenti kemarin",
+      "stoppedOn": "Berhenti pada {{date}}"
     },
     "work": {
       "label": "Pekerjaan {{name}}",
@@ -7175,8 +7189,6 @@
       "started": "dimulai {{when}}",
       "starting": "Memulai…",
       "stalled": "Macet {{when}}",
-      "noRun": "Tidak ada proses yang berjalan.",
-      "noRunStep": "Tidak ada proses yang berjalan. Langkah terakhir: {{step}}",
       "lastStep": "Langkah terakhir: {{step}}",
       "waitingApproval": "Meminta persetujuan",
       "waitingInput": "Punya pertanyaan",

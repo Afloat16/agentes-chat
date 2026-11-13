@@ -7169,8 +7169,22 @@
     "auto": "自动",
     "autoHint": "根据智能体的工作自动换了列。",
     "now": {
-      "title": "正在工作的智能体",
-      "stalled_other": "{{count}} 个已停滞"
+      "stalledCount_other": "{{count}} 个任务已停止",
+      "viewStalled": "查看已停止",
+      "continue": "继续",
+      "continueAll": "全部继续",
+      "continueAllCount": "全部继续（{{count}}）",
+      "sent_other": "已请求。{{names}} 会从停下的地方继续。",
+      "rowSent": "已请求：会从停下的地方继续。",
+      "stalledTitle": "已停止的任务",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_other": "{{count}} 个任务",
+      "agents_other": "{{count}} 个智能体",
+      "stalledText": "智能体在完成前停了下来。点“继续”会请它们从停下的地方接着做。",
+      "stoppedNow": "刚刚停止",
+      "stoppedAgo": "{{ago}}停止",
+      "stoppedYesterday": "昨天停止",
+      "stoppedOn": "{{date}}停止"
     },
     "work": {
       "label": "{{name}} 的工作",
@@ -7186,8 +7200,6 @@
       "started": "开始于 {{when}}",
       "starting": "正在开始…",
       "stalled": "{{when}} 停滞",
-      "noRun": "目前没有运行。",
-      "noRunStep": "目前没有运行。最后一步：{{step}}",
       "lastStep": "最后一步：{{step}}",
       "waitingApproval": "请求审批",
       "waitingInput": "有问题要问",

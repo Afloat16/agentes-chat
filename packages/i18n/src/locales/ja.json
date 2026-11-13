@@ -7130,8 +7130,22 @@
     "auto": "自動",
     "autoHint": "エージェントの作業に応じて、自動で列が変わりました。",
     "now": {
-      "title": "作業中のエージェント",
-      "stalled_other": "{{count}}件が停滞中"
+      "stalledCount_other": "{{count}}件のタスクが停止中",
+      "viewStalled": "停止中を見る",
+      "continue": "続ける",
+      "continueAll": "すべて続ける",
+      "continueAllCount": "すべて続ける（{{count}}）",
+      "sent_other": "依頼しました。{{names}}が止まったところから再開します。",
+      "rowSent": "依頼しました。止まったところから再開します。",
+      "stalledTitle": "停止中のタスク",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_other": "{{count}}件のタスク",
+      "agents_other": "{{count}}人のエージェント",
+      "stalledText": "エージェントは終わる前に止まりました。「続ける」で止まったところから再開を依頼します。",
+      "stoppedNow": "たった今停止",
+      "stoppedAgo": "{{ago}}に停止",
+      "stoppedYesterday": "昨日停止",
+      "stoppedOn": "{{date}}に停止"
     },
     "work": {
       "label": "{{name}}の作業",
@@ -7142,8 +7156,6 @@
       "started": "{{when}}に開始",
       "starting": "開始中…",
       "stalled": "{{when}}から停滞中",
-      "noRun": "実行中の処理はありません。",
-      "noRunStep": "実行中の処理はありません。最後のステップ: {{step}}",
       "lastStep": "最後のステップ: {{step}}",
       "waitingApproval": "承認を求めています",
       "waitingInput": "質問があります",
