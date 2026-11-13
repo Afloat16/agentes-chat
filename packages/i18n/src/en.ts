@@ -1720,6 +1720,8 @@ export const en = {
     /** On Android, under the list: launchers redraw the home screen in their own time. */
     hintAndroid: "Some home screens take a few seconds to show the new icon.",
     failed: "Couldn't change the icon. Try again.",
+    /** Over the open workspace's agents in the picker (web and desktop only). */
+    agentsOf: "Agents in {{org}}",
     names: {
       night: "Night",
       moon: "Moon",

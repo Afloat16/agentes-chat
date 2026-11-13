@@ -1443,6 +1443,7 @@
     "hintDesktop": "应用打开时任务栏中的图标。",
     "hintAndroid": "部分主屏幕需要几秒钟才会显示新图标。",
     "failed": "无法更换图标，请重试。",
+    "agentsOf": "{{org}} 的智能体",
     "names": {
       "night": "夜晚",
       "moon": "月亮",

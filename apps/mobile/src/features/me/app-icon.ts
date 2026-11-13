@@ -1,7 +1,7 @@
 import { APP_ICONS, type AppIconId, DEFAULT_APP_ICON, isAppIcon } from "@agenteschat/client/lib/app-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { requireOptionalNativeModule } from "expo";
-import { type ImageSourcePropType, Platform } from "react-native";
+import { Platform } from "react-native";
 import { iconOfNativeName, nativeIconName } from "./app-icon-names";
 
 /**
@@ -20,8 +20,11 @@ const native = requireOptionalNativeModule<AppIconNative>("AppIcon");
 /** Every icon's native name (Android's aliases; iOS reads none of them). */
 const NAMES = APP_ICONS.map((id) => nativeIconName(id, Platform.OS) ?? "");
 
-/** Each icon's picture in the picker, as the home screen shows it in light and in dark. */
-export const APP_ICON_PICTURES: Record<AppIconId, { light: ImageSourcePropType; dark: ImageSourcePropType }> = {
+/**
+ * Each icon's picture in the picker, as the home screen shows it in light and in dark: bundled assets (`require`
+ * gives their ids, which React Native's and expo-image's views both take).
+ */
+export const APP_ICON_PICTURES: Record<AppIconId, { light: number; dark: number }> = {
   night: {
     light: require("../../../assets/app-icons/night/preview.png"),
     dark: require("../../../assets/app-icons/night/preview-dark.png"),

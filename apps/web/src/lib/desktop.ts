@@ -229,8 +229,15 @@ export const thisMac = {
   showRequests: () => invoke<unknown>({ kind: "requests" }),
   /** System Settings on the microphone's list (a voice message macOS refused); an older app refuses it. */
   openMicrophoneSettings: () => invoke<unknown>({ kind: "privacy", pane: "microphone" }),
-  /** The app icon on this computer (ADR 0179): with an id, the app keeps and shows it; it answers the one kept. */
-  appIcon: (icon?: string) => invoke<{ icon?: string }>({ kind: "appIcon", ...(icon ? { icon } : {}) }),
+  /**
+   * The app icon on this computer (ADR 0179): one of the app's ids, or an agent with the Dock's and the windows'
+   * pictures drawn here (PNG in base64); the app keeps and shows it, and answers the one kept (nothing asked: reads it).
+   */
+  appIcon: (
+    pick?:
+      | { icon: string }
+      | { agent: { orgId: string; id: string; name: string; look: object; dock: string; window: string } },
+  ) => invoke<{ icon?: string; agent?: unknown }>({ kind: "appIcon", ...pick }),
   /** The Dock's badge: how many wait on the person, and unread (a dot when nothing waits). */
   badge: (waiting: number, unread: number) => invoke<unknown>({ kind: "badge", waiting, unread }),
   /** The Mac's Go menu: the person's organizations (⌘⌥1–9). */

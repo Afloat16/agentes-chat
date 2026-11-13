@@ -3647,6 +3647,9 @@
   "appIcon.failed": {
     "value": "Couldn't change the icon. Try again."
   },
+  "appIcon.agentsOf": {
+    "value": "Agents in {{org}}"
+  },
   "appIcon.names.night": {
     "value": "Night"
   },

@@ -1636,6 +1636,7 @@ export const ptBR = {
     hintDesktop: "O ícone na barra de tarefas enquanto o app está aberto.",
     hintAndroid: "Algumas telas iniciais levam alguns segundos para mostrar o ícone novo.",
     failed: "Não deu para trocar o ícone. Tente de novo.",
+    agentsOf: "Agentes de {{org}}",
     names: {
       night: "Noite",
       moon: "Lua",

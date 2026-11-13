@@ -6,7 +6,8 @@
   `apps/desktop/scripts/icons.ts`; the list
   `packages/client/src/lib/app-icons.ts` (`APP_ICONS`); phone `apps/mobile/plugins/with-app-icons.js`,
   `apps/mobile/modules/app-icon`, `src/features/me/app-icon.ts`, `app-icon-names.ts`, `PreferencePages.tsx`
-  (`AppIconPage`); web `src/lib/app-icon.ts`, `components/AppIconPicker.tsx`, `AccountSettings.tsx`; desktop
+  (`AppIconPage`); web `src/lib/app-icon.ts`, `src/lib/agent-app-icon.ts`, `components/AppIconPicker.tsx`,
+  `AccountSettings.tsx`; desktop
   `src-tauri/src/app_icon.rs`, `this_mac` `appIcon` (`main_window.rs`); tests `packages/ui/test/app-icons.test.ts`,
   `apps/mobile/test/app-icons.test.ts`, `apps/web/test/app-icon.test.ts`
 
@@ -60,8 +61,20 @@ Comparing directions, more than one was liked, which raised the question of lett
    - **Browser**: the tab's icon, kept in the browser's storage. The home screen icon a phone makes from the site
      (`apple-touch-icon`) stays the shipped one.
 
+4a. **On the web and the desktop app, a workspace's agent can be the icon too.** A phone can't: iOS and Android take
+   only icons its build carries. The site draws the agent (`apps/web/src/lib/agent-app-icon.ts`): the Night's sky
+   without its agent (`/app-icons/night-sky.png`, from the generator) and the agent by the agent engine in its own
+   color, eyes and accessory, on the sky's cells as the shipped icon's (with an accessory, smaller and lower so it
+   fits). The tab's icon is drawn pixel by pixel like the shipped favicons, without the accessory (noise at 16 px).
+   The pick keeps who the agent is (its workspace's id and its own, its name and look): a browser keeps it in its
+   storage; the desktop app, which can't draw, is sent the Dock's picture (512, macOS's shape and shadow) and the
+   windows' (256), checked as PNGs of at most 1 MiB (`app_icon::about`, `picture`) and kept beside the choice, so the
+   Dock shows the agent on every server. When the agent's workspace is open and its name or look changed, the icon
+   is drawn again (`followPickedAgent`); an agent no longer there keeps the icon as it was.
+
 5. **Where.** Settings › Account › This device › App icon on the web and in the desktop app (a dialog listing the
-   icons with their pictures; a pick applies at once), and the phone's You › App icon (a pushed screen). Where the
+   icons with their pictures, then the open workspace's agents side by side, each drawn as the icon it makes; a pick
+   applies at once), and the phone's You › App icon (a pushed screen). Where the
    build or the app can't change it (a phone build or a desktop app from before), the row isn't there.
 
 ## Consequences

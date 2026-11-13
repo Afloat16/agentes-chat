@@ -1484,6 +1484,7 @@
     "hintDesktop": "Das Taskleisten-Symbol, solange die App geöffnet ist.",
     "hintAndroid": "Manche Startbildschirme brauchen ein paar Sekunden, bis das neue Symbol erscheint.",
     "failed": "Das Symbol konnte nicht geändert werden. Versuch es noch einmal.",
+    "agentsOf": "Agenten in {{org}}",
     "names": {
       "night": "Nacht",
       "moon": "Mond",

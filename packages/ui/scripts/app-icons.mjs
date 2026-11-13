@@ -8,8 +8,9 @@
  *   app-icons plugin copies as they are) and, for the others, the 192 icon of Android before 8; the picker's previews.
  * - Desktop: nothing here. Its build draws its own from the same scenes (apps/desktop/scripts/icons.ts: the bundle's
  *   master and each icon's Dock and window pictures), as its icons folder is never committed.
- * - Web (apps/web/public/): favicon.ico, apple-touch-icon.png and icon-512.png, and app-icons/<id>.ico/.png for the
- *   pick (the tab's icon and the picker's preview).
+ * - Web (apps/web/public/): favicon.ico, apple-touch-icon.png and icon-512.png, app-icons/<id>.ico/.png for the
+ *   pick (the tab's icon and the picker's preview), and app-icons/night-sky.png, the Night's sky without its agent,
+ *   on which the web draws a workspace's agent picked as the icon.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -58,6 +59,9 @@ for (const id of APP_ICON_IDS) {
   write(`apps/web/public/app-icons/${id}.png`, png(resize(light, 160), { opaque: true }));
 
   if (shipped) {
+    // The Night's sky without its agent: the web draws a workspace's agent on it (apps/web/src/lib/agent-app-icon.ts).
+    const sky = scene.light().filter((l) => l.part !== "agent" && l.part !== "eyes");
+    write("apps/web/public/app-icons/night-sky.png", png(render(512, sky, { k: 2 }), { opaque: true }));
     write("apps/web/public/favicon.ico", favicon);
     write("apps/web/public/apple-touch-icon.png", png(resize(light, 180), { opaque: true }));
     write("apps/web/public/icon-512.png", png(resize(light, 512), { opaque: true }));

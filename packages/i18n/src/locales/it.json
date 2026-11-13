@@ -1527,6 +1527,7 @@
     "hintDesktop": "L'icona nella barra delle applicazioni mentre l'app è aperta.",
     "hintAndroid": "Alcune schermate Home impiegano qualche secondo a mostrare la nuova icona.",
     "failed": "Impossibile cambiare l'icona. Riprova.",
+    "agentsOf": "Agenti di {{org}}",
     "names": {
       "night": "Notte",
       "moon": "Luna",

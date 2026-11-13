@@ -1443,6 +1443,7 @@
     "hintDesktop": "Ikon taskbar selama aplikasi terbuka.",
     "hintAndroid": "Beberapa layar utama butuh beberapa detik untuk menampilkan ikon baru.",
     "failed": "Ikon tidak bisa diganti. Coba lagi.",
+    "agentsOf": "Agen di {{org}}",
     "names": {
       "night": "Malam",
       "moon": "Bulan",

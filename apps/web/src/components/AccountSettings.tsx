@@ -1,5 +1,4 @@
 import { type AgentStyle, keys, useAiAccounts, useSetAgentStyle, useSetShowActivity } from "@agenteschat/client";
-import { appIconNameKey } from "@agenteschat/client/lib/app-icons";
 import { authErrorText, emailChangeErrorText, errorText } from "@agenteschat/client/lib/errors";
 import { browserTimezone, isTimeZone, timezoneName, zoneDisplayName } from "@agenteschat/client/lib/routines";
 import { isEmail } from "@agenteschat/client/lib/text";
@@ -29,7 +28,7 @@ import { useTranslation } from "react-i18next";
 import { useApi } from "@/api/context";
 import type { AuthResult } from "@/auth/client";
 import { useAuth } from "@/auth/context";
-import { AppIconDialog, AppIconPicture, useAppIcon } from "@/components/AppIconPicker";
+import { AppIconDialog, AppIconPicture, useAppIcon, useAppIconName } from "@/components/AppIconPicker";
 import { ChangeAvatarDialog } from "@/components/AvatarBuilder";
 import { ChatLookSettings } from "@/components/ChatLookSettings";
 import { DeleteWorkspaceDialog } from "@/components/DeleteWorkspace";
@@ -77,6 +76,7 @@ export function AccountSection() {
   const [email, setEmail] = useState(false);
   const [phone, setPhone] = useState(false);
   const icon = useAppIcon();
+  const iconName = useAppIconName(icon);
   const [iconPicker, setIconPicker] = useState(false);
   // Adding a password and deleting the account: their dialogs are the account button's, kept in the address so a
   // sign-in again comes back to them.
@@ -211,9 +211,9 @@ export function AccountSection() {
           {picksAppIcon() && (
             <PrefRow
               id="account-app-icon"
-              lead={<AppIconPicture id={icon} className="settings-row__app-icon" />}
+              lead={<AppIconPicture pick={icon} className="settings-row__app-icon" />}
               label={t("appIcon.title")}
-              status={t(appIconNameKey(icon))}
+              status={iconName}
               onOpen={() => setIconPicker(true)}
             />
           )}

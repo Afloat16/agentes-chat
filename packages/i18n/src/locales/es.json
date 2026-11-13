@@ -1526,6 +1526,7 @@
     "hintDesktop": "El icono de la barra de tareas mientras la app está abierta.",
     "hintAndroid": "Algunas pantallas de inicio tardan unos segundos en mostrar el icono nuevo.",
     "failed": "No se pudo cambiar el icono. Inténtalo de nuevo.",
+    "agentsOf": "Agentes de {{org}}",
     "names": {
       "night": "Noche",
       "moon": "Luna",

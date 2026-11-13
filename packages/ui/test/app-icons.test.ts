@@ -30,6 +30,7 @@ describe("app icons (ADR 0179)", () => {
     }
     expect(icoSizes(read("apps/web/public/favicon.ico"))).toEqual([16, 32, 48]);
     expect(sizeOf(read("apps/web/public/apple-touch-icon.png"))).toEqual([180, 180]);
+    expect(sizeOf(read("apps/web/public/app-icons/night-sky.png"))).toEqual([512, 512]);
   });
 
   test("the 16 px favicon's eyes sit on whole pixels", () => {

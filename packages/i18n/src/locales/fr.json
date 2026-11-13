@@ -1527,6 +1527,7 @@
     "hintDesktop": "L'icône de la barre des tâches tant que l'app est ouverte.",
     "hintAndroid": "Certains écrans d'accueil mettent quelques secondes à afficher la nouvelle icône.",
     "failed": "Impossible de changer l'icône. Réessayez.",
+    "agentsOf": "Agents de {{org}}",
     "names": {
       "night": "Nuit",
       "moon": "Lune",

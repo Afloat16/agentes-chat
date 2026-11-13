@@ -1569,6 +1569,7 @@
     "hintDesktop": "Ikona na pasku zadań, gdy aplikacja jest otwarta.",
     "hintAndroid": "Niektóre ekrany główne potrzebują kilku sekund, by pokazać nową ikonę.",
     "failed": "Nie udało się zmienić ikony. Spróbuj ponownie.",
+    "agentsOf": "Agenci w {{org}}",
     "names": {
       "night": "Noc",
       "moon": "Księżyc",
