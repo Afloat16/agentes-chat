@@ -2788,6 +2788,796 @@
       "OperatorAuthMethod": {
         "type": "string",
         "enum": ["cli_login", "setup_token", "api_key"]
+      },
+      "OperatorUserPage": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "emailVerified": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "blockedAt": {
+                  "type": ["string", "null"],
+                  "description": "Since when it is blocked (`PUT /users/{userId}/block`)."
+                },
+                "blockedReason": {
+                  "type": ["string", "null"]
+                },
+                "deletionDueAt": {
+                  "type": ["string", "null"],
+                  "description": "The person deleted it: gone for good then. Null: not being deleted."
+                },
+                "lastSignInAt": {
+                  "type": ["string", "null"],
+                  "description": "When its newest session on record began. Signing out deletes a session, so null says little."
+                },
+                "orgs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "orgId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "role": {
+                        "$ref": "#/components/schemas/Role"
+                      }
+                    },
+                    "required": ["orgId", "name", "role"]
+                  },
+                  "description": "Its workspaces, oldest membership first, at most 20."
+                },
+                "orgCount": {
+                  "type": "integer",
+                  "description": "How many workspaces it is in."
+                }
+              },
+              "required": [
+                "id",
+                "email",
+                "name",
+                "emailVerified",
+                "createdAt",
+                "blockedAt",
+                "blockedReason",
+                "deletionDueAt",
+                "lastSignInAt",
+                "orgs",
+                "orgCount"
+              ]
+            }
+          },
+          "next": {
+            "type": ["string", "null"],
+            "description": "`cursor` for the next page; null on the last one."
+          }
+        },
+        "required": ["users", "next"]
+      },
+      "OperatorResolved": {
+        "type": "object",
+        "properties": {
+          "form": {
+            "type": "string",
+            "enum": [
+              "message_link",
+              "file_link",
+              "handle",
+              "channel_name",
+              "task_number",
+              "id",
+              "id_prefix",
+              "user_id"
+            ],
+            "description": "How `ref` was read. With no match: nothing by that handle, number or id here."
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "workspace",
+                    "user",
+                    "agent",
+                    "channel",
+                    "dm",
+                    "task_conversation",
+                    "message",
+                    "run",
+                    "task",
+                    "file",
+                    "computer",
+                    "ai_account"
+                  ],
+                  "description": "`user`: an account (by its id) or a member (by handle). `dm`: a direct conversation. `task_conversation`: the channel a task's conversation is in. `file`: a file in the Drive. `computer`: a connected computer. `ai_account`: a sign-in to an AI plan on a computer."
+                },
+                "id": {
+                  "type": "string"
+                },
+                "orgId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "Null only for an account found by its id."
+                },
+                "name": {
+                  "type": ["string", "null"],
+                  "description": "A workspace's, a person's, an agent's, a channel's or a computer's. Never a task's or a file's."
+                },
+                "handle": {
+                  "type": ["string", "null"],
+                  "description": "An agent's, or a member's in that workspace."
+                },
+                "email": {
+                  "type": ["string", "null"]
+                },
+                "channelId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "Where a message, a run or a file is; a task's conversation, once it has one."
+                },
+                "threadRootId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "The thread a reply, a run or a file is in; null for a message outside any thread."
+                },
+                "agentId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "A run's agent; a message's author when an agent."
+                },
+                "runId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "The run that wrote a message."
+                },
+                "number": {
+                  "type": ["integer", "null"],
+                  "description": "A task's."
+                },
+                "version": {
+                  "type": ["integer", "null"],
+                  "description": "A file's: the one its link names, else its current one."
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id",
+                "orgId",
+                "name",
+                "handle",
+                "email",
+                "channelId",
+                "threadRootId",
+                "agentId",
+                "runId",
+                "number",
+                "version",
+                "createdAt"
+              ]
+            },
+            "description": "At most 20. The start of an id can match several things."
+          }
+        },
+        "required": ["form", "matches"]
+      },
+      "OperatorMembers": {
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "handle": {
+                  "type": ["string", "null"],
+                  "description": "`@ana` in this workspace; null until given one."
+                },
+                "role": {
+                  "$ref": "#/components/schemas/Role"
+                },
+                "joinedAt": {
+                  "type": "string"
+                },
+                "lastSeenAt": {
+                  "type": ["string", "null"],
+                  "description": "Last time they had this workspace open."
+                },
+                "blockedAt": {
+                  "type": ["string", "null"],
+                  "description": "Blocked accounts are members of nothing."
+                },
+                "deletionDueAt": {
+                  "type": ["string", "null"],
+                  "description": "The person deleted their account: until it goes, it reads as no member."
+                }
+              },
+              "required": [
+                "userId",
+                "email",
+                "name",
+                "handle",
+                "role",
+                "joinedAt",
+                "lastSeenAt",
+                "blockedAt",
+                "deletionDueAt"
+              ]
+            },
+            "description": "In the order they joined."
+          },
+          "next": {
+            "type": ["string", "null"],
+            "description": "`cursor` for the next page; null on the last one."
+          },
+          "invitations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": ["owner", "member"]
+                },
+                "invitedByUserId": {
+                  "type": ["string", "null"]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "description": "Past: it expired without being accepted."
+                }
+              },
+              "required": ["id", "email", "role", "invitedByUserId", "createdAt", "expiresAt"]
+            },
+            "description": "Not accepted, expired ones too, newest first, at most 200, on every page. Never the link."
+          },
+          "joinRequests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": ["string", "null"],
+                  "description": "The account that asked, when signed in."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending", "approved", "denied", "closed"],
+                  "description": "`pending` past `expiresAt` is an expired request."
+                },
+                "verifiedAt": {
+                  "type": ["string", "null"],
+                  "description": "When the person proved the address."
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "expiresAt": {
+                  "type": "string"
+                },
+                "decidedAt": {
+                  "type": ["string", "null"]
+                },
+                "decidedByUserId": {
+                  "type": ["string", "null"]
+                },
+                "invitationId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "The invitation an approval sent, when the address wasn't proven."
+                }
+              },
+              "required": [
+                "id",
+                "email",
+                "name",
+                "userId",
+                "status",
+                "verifiedAt",
+                "createdAt",
+                "expiresAt",
+                "decidedAt",
+                "decidedByUserId",
+                "invitationId"
+              ]
+            },
+            "description": "Newest first, at most 200, on every page; answered and expired ones are deleted after 90 days. Never the person's note."
+          }
+        },
+        "required": ["members", "next", "invitations", "joinRequests"]
+      },
+      "OperatorChannelPage": {
+        "type": "object",
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "A channel's name. A direct or a task's conversation's is made up."
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "`channel`, `dm` or `task`."
+                },
+                "visibility": {
+                  "type": "string",
+                  "enum": ["public", "private"]
+                },
+                "people": {
+                  "type": "integer",
+                  "description": "People in it."
+                },
+                "agents": {
+                  "type": "integer",
+                  "description": "Agents in it."
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "archivedAt": {
+                  "type": ["string", "null"]
+                },
+                "deletedAt": {
+                  "type": ["string", "null"],
+                  "description": "Deleted: its contents are gone, the row stays for its runs and usage."
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "kind",
+                "visibility",
+                "people",
+                "agents",
+                "createdAt",
+                "archivedAt",
+                "deletedAt"
+              ]
+            }
+          },
+          "next": {
+            "type": ["string", "null"],
+            "description": "`cursor` for the next page; null on the last one."
+          }
+        },
+        "required": ["channels", "next"]
+      },
+      "OperatorAgentPage": {
+        "type": "object",
+        "properties": {
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "orgId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "handle": {
+                  "type": "string",
+                  "description": "`deleted-<id>` once deleted."
+                },
+                "builtin": {
+                  "type": ["string", "null"],
+                  "description": "`right_hand`: the one the product ships. Null: made by people."
+                },
+                "ownerUserId": {
+                  "type": ["string", "null"]
+                },
+                "brain": {
+                  "type": "string",
+                  "description": "Who thinks for it: `model` (a provider's API), or a coding CLI on its computer (`claude_code`, `codex`…)."
+                },
+                "model": {
+                  "type": "string",
+                  "description": "The API's model: what `model` thinks with, and a CLI's fallback."
+                },
+                "brainModel": {
+                  "type": ["string", "null"],
+                  "description": "The CLI's model; null: its default."
+                },
+                "credentialId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "The workspace's provider credential the API bills to; null: the platform's, where there is one."
+                },
+                "accountId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "The AI account its CLI runs with (`GET /ai-accounts`); null: the computer's own sign-in."
+                },
+                "machineId": {
+                  "type": ["string", "null"],
+                  "format": "uuid",
+                  "description": "Its computer."
+                },
+                "approvalsLevel": {
+                  "type": "string",
+                  "description": "How much it asks before acting: `always`, `risky` or `never`."
+                },
+                "audienceMode": {
+                  "type": "string",
+                  "description": "Who can talk to it: `everyone`, `people` or `owner`."
+                },
+                "hold": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "heldAt": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": ["string", "null"]
+                    }
+                  },
+                  "required": ["heldAt", "reason"],
+                  "description": "The operator's hold on it (`PUT /orgs/{orgId}/agents/{agentId}/hold`); null when none."
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "archivedAt": {
+                  "type": ["string", "null"]
+                },
+                "deletedAt": {
+                  "type": ["string", "null"]
+                }
+              },
+              "required": [
+                "id",
+                "orgId",
+                "name",
+                "handle",
+                "builtin",
+                "ownerUserId",
+                "brain",
+                "model",
+                "brainModel",
+                "credentialId",
+                "accountId",
+                "machineId",
+                "approvalsLevel",
+                "audienceMode",
+                "hold",
+                "createdAt",
+                "archivedAt",
+                "deletedAt"
+              ]
+            }
+          },
+          "next": {
+            "type": ["string", "null"],
+            "description": "`cursor` for the next page; null on the last one."
+          }
+        },
+        "required": ["agents", "next"]
+      },
+      "OperatorAgent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string",
+            "description": "`deleted-<id>` once deleted."
+          },
+          "builtin": {
+            "type": ["string", "null"],
+            "description": "`right_hand`: the one the product ships. Null: made by people."
+          },
+          "ownerUserId": {
+            "type": ["string", "null"]
+          },
+          "brain": {
+            "type": "string",
+            "description": "Who thinks for it: `model` (a provider's API), or a coding CLI on its computer (`claude_code`, `codex`…)."
+          },
+          "model": {
+            "type": "string",
+            "description": "The API's model: what `model` thinks with, and a CLI's fallback."
+          },
+          "brainModel": {
+            "type": ["string", "null"],
+            "description": "The CLI's model; null: its default."
+          },
+          "credentialId": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "description": "The workspace's provider credential the API bills to; null: the platform's, where there is one."
+          },
+          "accountId": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "description": "The AI account its CLI runs with (`GET /ai-accounts`); null: the computer's own sign-in."
+          },
+          "machineId": {
+            "type": ["string", "null"],
+            "format": "uuid",
+            "description": "Its computer."
+          },
+          "approvalsLevel": {
+            "type": "string",
+            "description": "How much it asks before acting: `always`, `risky` or `never`."
+          },
+          "audienceMode": {
+            "type": "string",
+            "description": "Who can talk to it: `everyone`, `people` or `owner`."
+          },
+          "hold": {
+            "type": ["object", "null"],
+            "properties": {
+              "heldAt": {
+                "type": "string"
+              },
+              "reason": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["heldAt", "reason"],
+            "description": "The operator's hold on it (`PUT /orgs/{orgId}/agents/{agentId}/hold`); null when none."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "archivedAt": {
+            "type": ["string", "null"]
+          },
+          "deletedAt": {
+            "type": ["string", "null"]
+          },
+          "previousHandles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Handles it had before a rename, oldest first."
+          },
+          "fallback": {
+            "type": "boolean",
+            "description": "When its CLI can't answer, it answers through the API."
+          },
+          "provider": {
+            "type": ["string", "null"],
+            "description": "The API's provider: its credential's, else the model's own; null when neither says."
+          },
+          "credential": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "revokedAt": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["id", "provider", "revokedAt"],
+            "description": "`credentialId`'s: never the credential itself nor a hint of it."
+          },
+          "account": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "kind": {
+                "type": "string",
+                "description": "The CLI it signs in to: `claude_code`, `codex`…"
+              },
+              "provider": {
+                "type": ["string", "null"],
+                "description": "A coding plan's id; null: the CLI's own sign-in."
+              },
+              "authMethod": {
+                "type": ["string", "null"]
+              },
+              "plan": {
+                "type": ["string", "null"]
+              },
+              "status": {
+                "type": "string",
+                "description": "`active`, `signed_out`, `signing_in` or `removing`."
+              },
+              "statusUnknown": {
+                "type": "boolean",
+                "description": "Its runner's last look at `status` was inconclusive."
+              },
+              "lastSuccessAt": {
+                "type": ["string", "null"]
+              },
+              "lastFailureCause": {
+                "type": ["string", "null"]
+              },
+              "lastFailureAt": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "provider",
+              "authMethod",
+              "plan",
+              "status",
+              "statusUnknown",
+              "lastSuccessAt",
+              "lastFailureCause",
+              "lastFailureAt"
+            ],
+            "description": "`accountId`'s. No email or label: `GET /ai-accounts` has the label."
+          },
+          "machine": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["connected", "host", "managed"]
+              },
+              "online": {
+                "type": "boolean"
+              },
+              "lastSeenAt": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["id", "name", "kind", "online", "lastSeenAt"]
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "autoReply": {
+                  "type": "boolean",
+                  "description": "It may answer messages that don't mention it there. Off: only when mentioned."
+                }
+              },
+              "required": ["id", "name", "autoReply"]
+            },
+            "description": "The channels it is in, by name, at most 200. No direct or task conversations."
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "skills": {
+                "type": "integer",
+                "description": "Skills turned on for it."
+              },
+              "routines": {
+                "type": "integer",
+                "description": "Its routines not deleted, paused ones too."
+              },
+              "memories": {
+                "type": "integer",
+                "description": "Its own memories in use."
+              }
+            },
+            "required": ["skills", "routines", "memories"]
+          }
+        },
+        "required": [
+          "id",
+          "orgId",
+          "name",
+          "handle",
+          "builtin",
+          "ownerUserId",
+          "brain",
+          "model",
+          "brainModel",
+          "credentialId",
+          "accountId",
+          "machineId",
+          "approvalsLevel",
+          "audienceMode",
+          "hold",
+          "createdAt",
+          "archivedAt",
+          "deletedAt",
+          "previousHandles",
+          "fallback",
+          "provider",
+          "credential",
+          "account",
+          "machine",
+          "channels",
+          "counts"
+        ]
       }
     },
     "parameters": {}
@@ -5346,6 +6136,463 @@
           },
           "404": {
             "description": "No workspace with this id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "Find accounts by their address, or by part of an address or of a name, newest first",
+        "description": "`email` or `q` is required; with both, an account matches both.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 320,
+              "description": "The whole address; any case."
+            },
+            "required": false,
+            "description": "The whole address; any case.",
+            "name": "email",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 320,
+              "description": "Part of an address or of a name; any case, matched literally."
+            },
+            "required": false,
+            "description": "Part of an address or of a name; any case, matched literally.",
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorUserPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resolve": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "What a link, a handle, a channel, a task's number or an id names, and its ids",
+        "description": "For what a report quotes: answers what each thing is and where it lives, so the other reads can be called with ids. A reference that reads as none of the forms is a 400.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "A message's or a file's link (a path, or a full address), `@handle` of an agent or a person, `#channel`, a task's number (`12` or `#12`), an id, the first 8 characters of an id, or an account's id."
+            },
+            "required": true,
+            "description": "A message's or a file's link (a path, or a full address), `@handle` of an agent or a person, `#channel`, a task's number (`12` or `#12`), an id, the first 8 characters of an id, or an account's id.",
+            "name": "ref",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Look only in this workspace. Required for a handle, a channel, a task's number and the start of an id; a link names its own."
+            },
+            "required": false,
+            "description": "Look only in this workspace. Required for a handle, a channel, a task's number and the start of an id; a link names its own.",
+            "name": "orgId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorResolved"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orgs/{orgId}/members": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "A workspace's people: its members, its invitations not accepted and its join requests",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "orgId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorMembers"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orgs/{orgId}/channels": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "A workspace's channels and conversations with how many are in each, newest first",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "orgId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": ["channel", "dm", "task"],
+              "description": "`channel`, `dm` (a direct conversation) or `task` (a task's conversation). Absent: all of them."
+            },
+            "required": false,
+            "description": "`channel`, `dm` (a direct conversation) or `task` (a task's conversation). Absent: all of them.",
+            "name": "kind",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorChannelPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orgs/{orgId}/agents": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "A workspace's agents, archived and deleted ones too, newest first",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "orgId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorAgentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{agentId}": {
+      "get": {
+        "tags": ["Operator"],
+        "summary": "One agent: who thinks for it, its computer, its channels, and how much it has",
+        "description": "Never its instructions, nor the text of a skill, a routine or a memory.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "agentId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorAgent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or wrong token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
             "content": {
               "application/json": {
                 "schema": {

@@ -10,6 +10,7 @@ import { registerOperatorAnalytics } from "./analytics";
 import { registerOperatorClaudeAuth } from "./claude-auth";
 import { registerOperatorEvents } from "./events";
 import { registerOperatorLimits } from "./limits";
+import { registerOperatorLookups } from "./lookups";
 import { registerOperatorMachines } from "./machines";
 import { registerOperatorOrgs } from "./orgs";
 import { registerOperatorStanding } from "./standing";
@@ -75,6 +76,7 @@ export function createOperatorApp(deps: OperatorDeps, token: string, readToken?:
   registerOperatorAccess(api, deps);
   registerOperatorAnalytics(api, deps);
   registerOperatorClaudeAuth(api, deps);
+  registerOperatorLookups(api, deps);
   api.doc31("/openapi.json", {
     openapi: "3.1.0",
     info: {

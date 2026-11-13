@@ -212,6 +212,7 @@ export * from "./notifications";
 export * from "./open-requests";
 export * from "./operator";
 export * from "./operator-events";
+export * from "./operator-lookups";
 export * from "./operator-review";
 export * from "./organizations";
 export * from "./out-of-office";

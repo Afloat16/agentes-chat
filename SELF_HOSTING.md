@@ -889,6 +889,9 @@ doesn't publish it, and containers on the same Docker network reach it as `http:
 For a caller that only looks things up, set `OPERATOR_API_READ_TOKEN` too (a different value, same
 length): it is accepted for `GET` requests alone and never for `GET /review/...`, and anything else
 it asks for is refused (403). It still reads names, emails and IP addresses, so keep it as private.
+`GET /users?q=` finds an account by part of its address or name, `GET /resolve?ref=` says what a
+pasted link, an `@handle` or an id names, and `GET /orgs/{orgId}/members`, `/channels` and `/agents`
+list who and what is in a workspace, never what was written there.
 With the token set, the server also keeps 90 days of events for it to read (`GET /events`: sign-ups
 with their email, sign-ins with their IP address and browser, workspaces, invitations, agents, emails
 sent and runs finished, as metadata), and `GET /review/...` shows what one run or task did, with
