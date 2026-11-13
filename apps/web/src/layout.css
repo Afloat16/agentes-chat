@@ -1186,11 +1186,9 @@ html:not([data-pointer]) .sidebar__user:focus-visible {
   color: var(--ink2);
 }
 /* An agent at work: its pixel orbit beside its name, inside the name's line (what it is on is the orbit's label and
-   the row's title), so the row keeps its height. */
+   the row's title), so the row keeps its height. On the name's capitals' middle by the kit's own rule (`.ac-pixspin`). */
 .sidebar__item-spin {
-  display: inline-block;
   margin-left: 6px;
-  vertical-align: -2px;
 }
 .sidebar[data-rail="true"] .sidebar__item-spin {
   display: none;
@@ -14396,6 +14394,99 @@ html:not([data-pointer]) .settings-row--open:focus-visible {
   width: 28px;
   height: 28px;
   font-size: 12px;
+}
+/* The app icon (ADR 0179): its picture rounded like a home screen's, as wide as the other lines' icons in the row
+   and larger in the picker, whose lines are the role templates' (roles.css). */
+.app-icon-pic {
+  display: block;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 22.5%;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.app-icon-pic.settings-row__app-icon {
+  width: 28px;
+  height: 28px;
+}
+.app-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 -12px;
+}
+.app-icons__item {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.app-icons__item:hover {
+  background: var(--plate);
+}
+.app-icons__item[aria-checked="true"] {
+  background: linear-gradient(180deg, var(--card-face-top), var(--raised));
+  box-shadow: var(--card-key);
+}
+html:not([data-pointer]) .app-icons__item:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+.app-icons__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* The open workspace's agents (ADR 0179): under the icons, side by side, each drawn as the icon it makes, its name
+   under it; picked, pressed in like every chosen tile (`--chosen-*`): no radio here to say it. */
+.app-icons__group {
+  margin: 0;
+  padding: 16px 0 6px;
+}
+.app-icons__agents {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 -8px;
+}
+.app-icons__agent {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 4px 8px;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+}
+.app-icons__agent:hover {
+  background: var(--plate);
+}
+.app-icons__agent[aria-checked="true"] {
+  background: var(--chosen-bg);
+  box-shadow: var(--chosen-shadow);
+}
+html:not([data-pointer]) .app-icons__agent:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+.app-icons__agent .app-icon-pic {
+  width: 48px;
+  height: 48px;
+}
+.app-icons__agent-name {
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
 }
 /* On a phone the icon, the words and a switch stay on one line while the words keep their 24 characters there (the
    kit's `.ac-actrow` basis), else the switch goes under them, at the row's end: beside both, at 320, a long name would

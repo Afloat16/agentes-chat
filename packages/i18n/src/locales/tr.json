@@ -1478,6 +1478,22 @@
     "moveDown": "Aşağı taşı",
     "restoreOrder": "Varsayılan sırayı geri yükle"
   },
+  "appIcon": {
+    "title": "Uygulama simgesi",
+    "hintWeb": "Bu tarayıcının sekmelerindeki simge.",
+    "hintMac": "Uygulama açıkken Dock'taki simge. Finder ve Launchpad varsayılanı korur.",
+    "hintDesktop": "Uygulama açıkken görev çubuğundaki simge.",
+    "hintAndroid": "Bazı ana ekranların yeni simgeyi göstermesi birkaç saniye sürer.",
+    "failed": "Simge değiştirilemedi. Yeniden deneyin.",
+    "agentsOf": "{{org}} ajanları",
+    "names": {
+      "night": "Gece",
+      "moon": "Ay",
+      "sky": "Gökyüzü",
+      "peekNight": "Gece gözetleyen",
+      "peekSky": "Gökyüzünde gözetleyen"
+    }
+  },
   "install": {
     "frames": "{{system}} için kurulum",
     "step": "Adım {{n}}",
@@ -2503,6 +2519,11 @@
       "groupWorkspace": "Tüm çalışma alanı için",
       "groupAdmins": "yalnızca yöneticiler"
     },
+    "computerYours": "Çalışma alanının bilgisayarındaki sana ait yer. Yalnızca sen izleyebilir veya kontrol edebilirsin.",
+    "sharedName": "{{name}} (paylaşılan)",
+    "sharedPlace": "Kanallarda ve kendi kendine çalışan işlerde kullanılır. Bu yeri tüm çalışma alanı paylaşır. Burada özel hiçbir şey tutma.",
+    "computerNoHome": "Henüz bilgisayar yok. Bu çalışma alanının Ayarlar, Bilgisayarlar bölümünden eklenen kendi bilgisayarı olduğunda bir tane olacak.",
+    "computerOneUser": "Burada bilgisayar yok. Çalışma alanının bilgisayarı tüm ajanları tek bir kullanıcı olarak çalıştırıyor, bu yüzden her kişinin yerini ayrı tutamıyor. Yükleyicinin --system seçeneğiyle kurulan bir Linux sunucusu bunu yapabilir.",
     "powers": {
       "title": "Çalışma alanı yetkileri",
       "help": "Bunları yalnızca sağ kolun yapar.",
@@ -7347,9 +7368,26 @@
     "auto": "otomatik",
     "autoHint": "Ajanın çalışmasına göre sütununu kendiliğinden değiştirdi.",
     "now": {
-      "title": "Şu anda çalışan ajanlar",
-      "stalled_one": "{{count}} takılı",
-      "stalled_other": "{{count}} takılı"
+      "stalledCount_one": "{{count}} görev durdu",
+      "stalledCount_other": "{{count}} görev durdu",
+      "viewStalled": "Duranları gör",
+      "continue": "Devam et",
+      "continueAll": "Hepsine devam et",
+      "continueAllCount": "Hepsine devam et ({{count}})",
+      "sent_one": "İstendi. {{names}} kaldığı yerden devam ediyor.",
+      "sent_other": "İstendi. {{names}} kaldıkları yerden devam ediyor.",
+      "rowSent": "İstendi: kaldığı yerden devam ediyor.",
+      "stalledTitle": "Duran görevler",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_one": "{{count}} görev",
+      "tasks_other": "{{count}} görev",
+      "agents_one": "{{count}} ajan",
+      "agents_other": "{{count}} ajan",
+      "stalledText": "Ajanlar bitirmeden durdu. Devam et, kaldıkları yerden sürdürmelerini ister.",
+      "stoppedNow": "Az önce durdu",
+      "stoppedAgo": "{{ago}} durdu",
+      "stoppedYesterday": "Dün durdu",
+      "stoppedOn": "{{date}} tarihinde durdu"
     },
     "work": {
       "label": "{{name}} çalışması",
@@ -7360,8 +7398,6 @@
       "started": "başladı: {{when}}",
       "starting": "Başlıyor…",
       "stalled": "Takıldı: {{when}}",
-      "noRun": "Süren çalıştırma yok.",
-      "noRunStep": "Süren çalıştırma yok. Son adım: {{step}}",
       "lastStep": "Son adım: {{step}}",
       "waitingApproval": "Onay istiyor",
       "waitingInput": "Bir sorusu var",

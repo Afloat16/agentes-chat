@@ -1,7 +1,17 @@
 import { and, asc, count, type Database, desc, eq, gte, lt, or, type SQL, schema, sql } from "@agenteschat/db";
 import { decodeCursor, encodeCursor } from "./cursor";
 import { ValidationError } from "./errors";
-import { codeOf, errorText, ms, orgExists, type PageQuery, UuidCursor, uuidOf } from "./operator-paging";
+import {
+  codeOf,
+  errorText,
+  micros,
+  ms,
+  olderThan,
+  orgExists,
+  type PageQuery,
+  UuidCursor,
+  uuidOf,
+} from "./operator-paging";
 import { LANE_SLOW_FOR_MS } from "./outbox";
 
 /**
@@ -97,8 +107,7 @@ const jobsIn = (q: JobFilters, now: Date) =>
     q.to ? lt(outbox.createdAt, q.to) : undefined,
   );
 
-// The stored time whole, microseconds included, which a JS Date drops: what a page's cursor carries.
-const QUEUED_AT = sql<string>`to_char(${outbox.createdAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`;
+const QUEUED_AT = micros(outbox.createdAt);
 
 /**
  * Jobs of every workspace and of none, newest first, in keyset pages.
@@ -123,6 +132,49 @@ export async function operatorJobs(db: Database, query: OperatorJobQuery, now = 
   const last = page.at(-1);
   return {
     jobs: page.map(({ queuedAt, ...job }) => jobOf(job)),
+    next: last && rows.length > query.limit ? encodeCursor([last.queuedAt, last.id]) : null,
+  };
+}
+
+const EMAIL_JOB = "email.send";
+
+// An email adapter words a provider's refusal as "… refused the email (status name): its words". The status and the
+// name are the provider's codes; its words may quote an address.
+const REFUSED = /refused the email \((\d{3})(?: ([\w.-]+))?\)/;
+
+/**
+ * The emails queued to one address, newest first, in keyset pages: which template each sends, its state and its
+ * attempts. The address is compared here, whole and in any case, with the ones a job is to, and never read out; nor
+ * is anything else of the payload (a subject, a link, a code). A finished job keeps its addresses 30 days
+ * (`clearOldOutboxPayloads`): after that it is no longer found. Like `operatorJobs`, this reads the whole outbox.
+ */
+export async function operatorEmailJobs(db: Database, query: PageQuery & { to: string }) {
+  const after = query.cursor ? decodeCursor(query.cursor, UuidCursor) : null;
+  const addresses = sql`jsonb_array_elements_text(case when jsonb_typeof(${outbox.payload}->'to') = 'array'
+    then ${outbox.payload}->'to' else '[]'::jsonb end)`;
+  const rows = await db
+    .select({
+      ...jobColumns,
+      queuedAt: QUEUED_AT,
+      template: sql<string | null>`${outbox.payload}->'template'->>'kind'`,
+    })
+    .from(outbox)
+    .where(
+      and(
+        eq(outbox.kind, EMAIL_JOB),
+        sql`exists (select 1 from ${addresses} sent(address) where lower(sent.address) = lower(${query.to}))`,
+        olderThan(outbox.createdAt, outbox.id, after),
+      ),
+    )
+    .orderBy(desc(outbox.createdAt), desc(outbox.id))
+    .limit(query.limit + 1);
+  const page = rows.slice(0, query.limit);
+  const last = page.at(-1);
+  return {
+    jobs: page.map(({ queuedAt, template, ...job }) => {
+      const refused = REFUSED.exec(job.lastError ?? "");
+      return { ...jobOf(job), template: codeOf(template), errorCode: refused?.[2] ?? refused?.[1] ?? null };
+    }),
     next: last && rows.length > query.limit ? encodeCursor([last.queuedAt, last.id]) : null,
   };
 }

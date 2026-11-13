@@ -1437,6 +1437,22 @@
     "moveDown": "下移",
     "restoreOrder": "恢复默认顺序"
   },
+  "appIcon": {
+    "title": "应用图标",
+    "hintWeb": "此浏览器标签页上的图标。",
+    "hintMac": "应用打开时 Dock 中的图标。访达和启动台仍显示默认图标。",
+    "hintDesktop": "应用打开时任务栏中的图标。",
+    "hintAndroid": "部分主屏幕需要几秒钟才会显示新图标。",
+    "failed": "无法更换图标，请重试。",
+    "agentsOf": "{{org}} 的智能体",
+    "names": {
+      "night": "夜晚",
+      "moon": "月亮",
+      "sky": "天空",
+      "peekNight": "夜里探头",
+      "peekSky": "天空探头"
+    }
+  },
   "install": {
     "frames": "如何在 {{system}} 上安装",
     "step": "第 {{n}} 步",
@@ -2421,6 +2437,11 @@
       "groupWorkspace": "对整个工作区",
       "groupAdmins": "仅管理员"
     },
+    "computerYours": "这是你在工作区电脑上的专属空间。只有你能查看或控制。",
+    "sharedName": "{{name}}(共享)",
+    "sharedPlace": "用于频道和自动运行的工作。整个工作区共用这个空间。请不要在这里存放任何私密内容。",
+    "computerNoHome": "还没有电脑。等这个工作区在“设置”的“电脑”中添加了自己的电脑后，它就会有一台。",
+    "computerOneUser": "这里没有电脑。工作区的电脑让所有智能体以同一个用户运行，无法把每个人的空间分开。用安装程序的 --system 选项安装的 Linux 服务器可以做到。",
     "powers": {
       "title": "工作区权限",
       "help": "只有你的得力助手能做这些事。",
@@ -7175,8 +7196,22 @@
     "auto": "自动",
     "autoHint": "根据智能体的工作自动换了列。",
     "now": {
-      "title": "正在工作的智能体",
-      "stalled_other": "{{count}} 个已停滞"
+      "stalledCount_other": "{{count}} 个任务已停止",
+      "viewStalled": "查看已停止",
+      "continue": "继续",
+      "continueAll": "全部继续",
+      "continueAllCount": "全部继续（{{count}}）",
+      "sent_other": "已请求。{{names}} 会从停下的地方继续。",
+      "rowSent": "已请求：会从停下的地方继续。",
+      "stalledTitle": "已停止的任务",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_other": "{{count}} 个任务",
+      "agents_other": "{{count}} 个智能体",
+      "stalledText": "智能体在完成前停了下来。点“继续”会请它们从停下的地方接着做。",
+      "stoppedNow": "刚刚停止",
+      "stoppedAgo": "{{ago}}停止",
+      "stoppedYesterday": "昨天停止",
+      "stoppedOn": "{{date}}停止"
     },
     "work": {
       "label": "{{name}} 的工作",
@@ -7192,8 +7227,6 @@
       "started": "开始于 {{when}}",
       "starting": "正在开始…",
       "stalled": "{{when}} 停滞",
-      "noRun": "目前没有运行。",
-      "noRunStep": "目前没有运行。最后一步：{{step}}",
       "lastStep": "最后一步：{{step}}",
       "waitingApproval": "请求审批",
       "waitingInput": "有问题要问",

@@ -1520,6 +1520,22 @@
     "moveDown": "Bajar",
     "restoreOrder": "Restaurar el orden predeterminado"
   },
+  "appIcon": {
+    "title": "Icono de la app",
+    "hintWeb": "El icono en las pestañas de este navegador.",
+    "hintMac": "El icono del Dock mientras la app está abierta. Finder y Launchpad mantienen el predeterminado.",
+    "hintDesktop": "El icono de la barra de tareas mientras la app está abierta.",
+    "hintAndroid": "Algunas pantallas de inicio tardan unos segundos en mostrar el icono nuevo.",
+    "failed": "No se pudo cambiar el icono. Inténtalo de nuevo.",
+    "agentsOf": "Agentes de {{org}}",
+    "names": {
+      "night": "Noche",
+      "moon": "Luna",
+      "sky": "Cielo",
+      "peekNight": "Asomándose de noche",
+      "peekSky": "Asomándose en el cielo"
+    }
+  },
   "install": {
     "frames": "Cómo instalar en {{system}}",
     "step": "Paso {{n}}",
@@ -2591,6 +2607,11 @@
       "groupWorkspace": "Para todo el workspace",
       "groupAdmins": "solo admins"
     },
+    "computerYours": "Tu propio espacio en la computadora del workspace. Solo tú puedes verlo o controlarlo.",
+    "sharedName": "{{name}} (compartido)",
+    "sharedPlace": "Se usa en canales y en trabajos que se ejecutan solos. Todo el workspace comparte este espacio. No guardes nada privado aquí.",
+    "computerNoHome": "Aún sin computadora. Tendrá una cuando este workspace tenga una computadora propia, agregada en Configuración, Computadoras.",
+    "computerOneUser": "Aquí no hay computadora. La computadora del workspace ejecuta todos los agentes como un solo usuario, así que no puede separar el espacio de cada persona. Un servidor Linux instalado con la opción --system del instalador sí puede.",
     "powers": {
       "title": "Poderes del workspace",
       "help": "Solo tu mano derecha hace esto.",
@@ -7576,10 +7597,30 @@
     "auto": "automático",
     "autoHint": "Cambió de columna sola, por el trabajo del agente.",
     "now": {
-      "title": "Agentes trabajando ahora",
-      "stalled_one": "{{count}} detenida",
-      "stalled_many": "{{count}} detenidas",
-      "stalled_other": "{{count}} detenidas"
+      "stalledCount_one": "{{count}} tarea detenida",
+      "stalledCount_many": "{{count}} tareas detenidas",
+      "stalledCount_other": "{{count}} tareas detenidas",
+      "viewStalled": "Ver detenidas",
+      "continue": "Continuar",
+      "continueAll": "Continuar todas",
+      "continueAllCount": "Continuar todas ({{count}})",
+      "sent_one": "Pedido enviado. {{names}} sigue donde lo dejó.",
+      "sent_many": "Pedido enviado. {{names}} siguen donde lo dejaron.",
+      "sent_other": "Pedido enviado. {{names}} siguen donde lo dejaron.",
+      "rowSent": "Pedido enviado: sigue donde lo dejó.",
+      "stalledTitle": "Tareas detenidas",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_one": "{{count}} tarea",
+      "tasks_many": "{{count}} tareas",
+      "tasks_other": "{{count}} tareas",
+      "agents_one": "{{count}} agente",
+      "agents_many": "{{count}} agentes",
+      "agents_other": "{{count}} agentes",
+      "stalledText": "Los agentes se detuvieron antes de terminar. Continuar les pide que sigan donde lo dejaron.",
+      "stoppedNow": "Se detuvo ahora",
+      "stoppedAgo": "Se detuvo {{ago}}",
+      "stoppedYesterday": "Se detuvo ayer",
+      "stoppedOn": "Se detuvo el {{date}}"
     },
     "work": {
       "label": "Trabajo de {{name}}",
@@ -7595,8 +7636,6 @@
       "started": "empezó {{when}}",
       "starting": "Empezando…",
       "stalled": "Detenida {{when}}",
-      "noRun": "Nada en ejecución.",
-      "noRunStep": "No hay ninguna ejecución en curso. Último paso: {{step}}",
       "lastStep": "Último paso: {{step}}",
       "waitingApproval": "Pide aprobación",
       "waitingInput": "Tiene una pregunta",

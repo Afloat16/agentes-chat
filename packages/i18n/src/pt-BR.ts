@@ -1631,6 +1631,23 @@ export const ptBR = {
       settingUp: "Configurando agentes-chat ({{version}}) ...",
     },
   },
+  /** The icon a person picks for the app on this device (ADR 0179): Settings › Account › This device, and the phone's You. */
+  appIcon: {
+    title: "Ícone do app",
+    hintWeb: "O ícone nas abas deste navegador.",
+    hintMac: "O ícone no Dock enquanto o app está aberto. O Finder e o Launchpad mantêm o padrão.",
+    hintDesktop: "O ícone na barra de tarefas enquanto o app está aberto.",
+    hintAndroid: "Algumas telas iniciais levam alguns segundos para mostrar o ícone novo.",
+    failed: "Não deu para trocar o ícone. Tente de novo.",
+    agentsOf: "Agentes de {{org}}",
+    names: {
+      night: "Noite",
+      moon: "Lua",
+      sky: "Céu",
+      peekNight: "Espiando à noite",
+      peekSky: "Espiando no céu",
+    },
+  },
   legal: {
     updated: "Atualizado em {{date}}",
     contents: "Nesta página",
@@ -2583,6 +2600,17 @@ export const ptBR = {
       groupWorkspace: "Para todo o workspace",
       groupAdmins: "só admins",
     },
+    /** Its "Computador" row: the computer is the viewer's own seat (ADR 0175). */
+    computerYours: "Seu espaço próprio no computador do workspace. Só você pode ver ou controlar.",
+    sharedName: "{{name}} (compartilhado)",
+    sharedPlace:
+      "Usado em canais e em trabalhos que rodam sozinhos. Todo o workspace compartilha este espaço. Não guarde nada privado aqui.",
+    /** The row where it has none for anyone: the workspace has no computer of its own. */
+    computerNoHome:
+      "Ainda sem computador. Passa a ter um quando este workspace tiver um computador próprio, adicionado em Configurações, Computadores.",
+    /** The row where the workspace's computer runs every agent as one OS user. */
+    computerOneUser:
+      "Sem computador aqui. O computador do workspace roda todos os agentes como um só usuário, então não separa o espaço de cada pessoa. Um servidor Linux instalado com a opção --system do instalador separa.",
     powers: {
       title: "Poderes do workspace",
       help: "Só o seu braço direito faz isto.",
@@ -7690,9 +7718,26 @@ export const ptBR = {
     auto: "automático",
     autoHint: "Mudou de coluna sozinha, pelo trabalho do agente.",
     now: {
-      title: "Agentes trabalhando agora",
-      stalled_one: "{{count}} parada",
-      stalled_other: "{{count}} paradas",
+      stalledCount_one: "{{count}} tarefa parada",
+      stalledCount_other: "{{count}} tarefas paradas",
+      viewStalled: "Ver paradas",
+      continue: "Continuar",
+      continueAll: "Continuar todas",
+      continueAllCount: "Continuar todas ({{count}})",
+      sent_one: "Pedido enviado. {{names}} continua de onde parou.",
+      sent_other: "Pedido enviado. {{names}} continuam de onde pararam.",
+      rowSent: "Pedido enviado: continua de onde parou.",
+      stalledTitle: "Tarefas paradas",
+      stalledSub: "{{tasks}} · {{agents}}",
+      tasks_one: "{{count}} tarefa",
+      tasks_other: "{{count}} tarefas",
+      agents_one: "{{count}} agente",
+      agents_other: "{{count}} agentes",
+      stalledText: "Os agentes pararam antes de terminar. Continuar pede para retomar de onde parou.",
+      stoppedNow: "Parou agora",
+      stoppedAgo: "Parou {{ago}}",
+      stoppedYesterday: "Parou ontem",
+      stoppedOn: "Parou em {{date}}",
     },
     work: {
       label: "Trabalho do {{name}}",
@@ -7708,8 +7753,6 @@ export const ptBR = {
       started: "começou {{when}}",
       starting: "Começando…",
       stalled: "Parado {{when}}",
-      noRun: "Nenhuma execução ativa.",
-      noRunStep: "Nenhuma execução ativa. Último passo: {{step}}",
       lastStep: "Último passo: {{step}}",
       waitingApproval: "Pede aprovação",
       waitingInput: "Pergunta algo",

@@ -217,6 +217,8 @@ export const SHOWN_ONLY: Record<Condition, readonly string[]> = {
     "help.selfhost.run-on-your-computer.sections.11.blocks.1.code",
     "desktop.prefs.general.dockDesc",
     "desktop.prefs.general.menuBarTitle",
+    // The app icon's hint shows only in the Mac's desktop app (AppIconPicker.tsx): its Dock and Finder.
+    "appIcon.hintMac",
     "desktop.prefs.updates.",
     "desktop.server.reveal",
     "desktop.cover.tailnetUp",

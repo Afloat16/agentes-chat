@@ -1437,6 +1437,22 @@
     "moveDown": "Pindah ke bawah",
     "restoreOrder": "Kembalikan urutan bawaan"
   },
+  "appIcon": {
+    "title": "Ikon aplikasi",
+    "hintWeb": "Ikon di tab browser ini.",
+    "hintMac": "Ikon Dock selama aplikasi terbuka. Finder dan Launchpad tetap memakai ikon bawaan.",
+    "hintDesktop": "Ikon taskbar selama aplikasi terbuka.",
+    "hintAndroid": "Beberapa layar utama butuh beberapa detik untuk menampilkan ikon baru.",
+    "failed": "Ikon tidak bisa diganti. Coba lagi.",
+    "agentsOf": "Agen di {{org}}",
+    "names": {
+      "night": "Malam",
+      "moon": "Bulan",
+      "sky": "Langit",
+      "peekNight": "Mengintip di malam hari",
+      "peekSky": "Mengintip di langit"
+    }
+  },
   "install": {
     "frames": "Cara memasang di {{system}}",
     "step": "Langkah {{n}}",
@@ -2422,6 +2438,11 @@
       "groupWorkspace": "Untuk seluruh workspace",
       "groupAdmins": "khusus admin"
     },
+    "computerYours": "Tempat Anda sendiri di komputer workspace. Hanya Anda yang bisa melihat atau mengendalikannya.",
+    "sharedName": "{{name}} (bersama)",
+    "sharedPlace": "Dipakai di kanal dan untuk pekerjaan yang berjalan sendiri. Seluruh workspace berbagi tempat ini. Jangan simpan apa pun yang pribadi di sini.",
+    "computerNoHome": "Belum ada komputer. Komputer tersedia setelah workspace ini punya komputer sendiri, yang ditambahkan di Pengaturan, Komputer.",
+    "computerOneUser": "Tidak ada komputer di sini. Komputer workspace menjalankan semua agen sebagai satu pengguna, jadi tidak bisa memisahkan tempat tiap orang. Server Linux yang dipasang dengan opsi --system dari penginstal bisa.",
     "powers": {
       "title": "Kemampuan di workspace",
       "help": "Hanya tangan kanan Anda yang melakukan ini.",
@@ -7164,8 +7185,22 @@
     "auto": "otomatis",
     "autoHint": "Kolomnya berubah sendiri, dari pekerjaan agen.",
     "now": {
-      "title": "Agen yang sedang bekerja",
-      "stalled_other": "{{count}} macet"
+      "stalledCount_other": "{{count}} tugas macet",
+      "viewStalled": "Lihat yang macet",
+      "continue": "Lanjutkan",
+      "continueAll": "Lanjutkan semua",
+      "continueAllCount": "Lanjutkan semua ({{count}})",
+      "sent_other": "Sudah diminta. {{names}} melanjutkan dari tempat terakhir.",
+      "rowSent": "Sudah diminta: melanjutkan dari tempat terakhir.",
+      "stalledTitle": "Tugas macet",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_other": "{{count}} tugas",
+      "agents_other": "{{count}} agen",
+      "stalledText": "Para agen berhenti sebelum selesai. Lanjutkan meminta mereka melanjutkan dari tempat terakhir.",
+      "stoppedNow": "Berhenti barusan",
+      "stoppedAgo": "Berhenti {{ago}}",
+      "stoppedYesterday": "Berhenti kemarin",
+      "stoppedOn": "Berhenti pada {{date}}"
     },
     "work": {
       "label": "Pekerjaan {{name}}",
@@ -7181,8 +7216,6 @@
       "started": "dimulai {{when}}",
       "starting": "Memulai…",
       "stalled": "Macet {{when}}",
-      "noRun": "Tidak ada proses yang berjalan.",
-      "noRunStep": "Tidak ada proses yang berjalan. Langkah terakhir: {{step}}",
       "lastStep": "Langkah terakhir: {{step}}",
       "waitingApproval": "Meminta persetujuan",
       "waitingInput": "Punya pertanyaan",

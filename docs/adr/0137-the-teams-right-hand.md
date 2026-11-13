@@ -1,6 +1,6 @@
 # 0137. The team's right hand
 
-- Status: Accepted; §6 and §7 amended 2026-11-06 by ADR 0079 §7 (built: engine, server, the shared client, the web and the phone app); amended 2026-11-03 (§5, a person alone with the team; §4 and §6 written as decided); amended 2026-11-04 (§8, agents act on agentes.chat through their tools, never by signing in to it); amended 2026-11-04 (§4, it starts everything a person does in the app, as cards); amended 2026-11-04 (§1, §4 and §7: it thinks with a person's plan through Claude Code or OpenCode, locked down and checked before each turn; then through Codex and Cursor too, the owner accepting their residual risk); amended 2026-11-04 (§4: through Grok Build too, checked on its `init` like Claude Code, ADR 0142); amended 2026-11-04 (§4: through the Antigravity CLI too, as an agent with no tool of its own, checked on its `init` and every step, ADR 0143); amended 2026-11-04 (§9, "Semana da equipe": a weekly card in each admin's DM, from stored data); amended 2026-11-04 (§10: the team set up from three questions, one team card, team templates); amended 2026-11-04 (§4: the team map's drag posts its settings card, ADR 0148); amended 2026-11-05 (§11, each person's own AI); amended 2026-11-06 (§12, it reads the Drive and the wiki for the person); amended 2026-11-06 (§13, the one you talk to: it sees the team and hands work on); amended 2026-11-11 (§4: a teammate's skills on its settings card); amended 2026-11-12 (§4: every agent asks for its own settings on the same card, always a click); amended 2026-11-12 (§4, §12, §13: it has a normal agent's tools); amended 2026-11-12 (§11: a routine or widget a person set up thinks with that person's AI)
+- Status: Accepted; §6 and §7 amended 2026-11-06 by ADR 0079 §7 (built: engine, server, the shared client, the web and the phone app); amended 2026-11-03 (§5, a person alone with the team; §4 and §6 written as decided); amended 2026-11-04 (§8, agents act on agentes.chat through their tools, never by signing in to it); amended 2026-11-04 (§4, it starts everything a person does in the app, as cards); amended 2026-11-04 (§1, §4 and §7: it thinks with a person's plan through Claude Code or OpenCode, locked down and checked before each turn; then through Codex and Cursor too, the owner accepting their residual risk); amended 2026-11-04 (§4: through Grok Build too, checked on its `init` like Claude Code, ADR 0142); amended 2026-11-04 (§4: through the Antigravity CLI too, as an agent with no tool of its own, checked on its `init` and every step, ADR 0143); amended 2026-11-04 (§9, "Semana da equipe": a weekly card in each admin's DM, from stored data); amended 2026-11-04 (§10: the team set up from three questions, one team card, team templates); amended 2026-11-04 (§4: the team map's drag posts its settings card, ADR 0148); amended 2026-11-05 (§11, each person's own AI); amended 2026-11-06 (§12, it reads the Drive and the wiki for the person); amended 2026-11-06 (§13, the one you talk to: it sees the team and hands work on); amended 2026-11-11 (§4: a teammate's skills on its settings card); amended 2026-11-12 (§4: every agent asks for its own settings on the same card, always a click); amended 2026-11-12 (§4, §12, §13: it has a normal agent's tools); amended 2026-11-12 (§1, §4, §13: a computer of its own, a seat per person, ADR 0175); amended 2026-11-12 (§11: a routine or widget a person set up thinks with that person's AI)
 - Date: 2026-11-03
 - Supersedes: ADR 0093 (the team's coordinator)
 - Amends: ADR 0081 (one-click Criar and Criar e testar on the right hand's cards), ADR 0092 §5 (a teammate's settings, on the right hand's card)
@@ -455,7 +455,7 @@ threw its rows away. The owner decided it has every tool an agent can have, by d
   person behind the run may post, a private channel included, as it already answers there by name.
 - **Its workspace powers behind cards** (§4): the team, people, approvals and `workspace_action` are its alone, applied
   as whoever clicks.
-- **No computer yet.** `sandbox:run`, `browser:use` and `desktop:use` are not on its list, a row for one gives it
+- **No computer yet** (replaced the same day by the next amendment and ADR 0175)**.** `sandbox:run`, `browser:use` and `desktop:use` are not on its list, a row for one gives it
   nothing, its access tree leaves them out, `request_permission` never offers them and refuses a card that asks, and a
   call of one answers that it has no computer and to hand the work to an agent that has one. `agents.machine_id` stays
   null (`machines.ts`). A separate change gives it a computer of its own.
@@ -509,6 +509,26 @@ threw its rows away. The owner decided it has every tool an agent can have, by d
   change after it waits on a card, a send still asks a person, and its replies keep the scrub of §4.
 - Its one budget on an API key (§13) now also carries the turns that read the web, write files and do long work for
   everyone who talks to it.
+
+## Amended 2026-11-12: a computer of its own, a seat per person (§1, §4, §13)
+
+ADR 0175 gives it a computer: on the workspace's own computer, where each agent is its own OS user, each person has a
+seat (a stored id the computer takes for an agent's), with its own Linux user, home, browser profile and sign-ins.
+
+- **§1 stands in the database, not in what it can do.** `agents.machine_id` stays null (it is still what its plan's
+  settings read) and it still can't be given a computer by hand. Its tools use the workspace's own computer
+  (`toolMachineId`), as the seat of the person behind the run.
+- **Its computer's scopes are rows** it is made with (`sandbox:run`, `browser:use`, `desktop:use`), so its access tab
+  and `request_permission` treat them like any agent's. This replaces "a row for one gives it nothing", the access
+  tree leaving them out and the refusal of a card that asks.
+- **A person's own seat only in that person's own DM.** Amended 2026-11-13 (ADR 0175's amendment): everywhere else (a
+  channel, a widget, a routine that reports where others read) it works in one shared seat of the workspace, and a
+  run nobody asked for in a person's own DM (a routine that reports there included) has no seat.
+- **The locked turn on a plan is unchanged.** The CLI still gets our bridge and nothing else. The computer's tools are
+  ours, and the server sends them to the seat. The hub refuses the agent's own id for anything but that turn.
+- **Its prompt** says which of the three it has: this person's own seat, the workspace's shared one, or none yet.
+- This replaces §1's "no computer tools, no desktop, no terminal as it", §4's and §13's "no computer", and the
+  amendment above's "No computer yet" and "a skill's script needs a computer, so it runs none".
 
 ## Amendment (2026-11-12): work a person set up thinks with their AI (§11)
 

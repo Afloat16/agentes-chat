@@ -1478,6 +1478,22 @@
     "moveDown": "Omlaag",
     "restoreOrder": "Standaardvolgorde herstellen"
   },
+  "appIcon": {
+    "title": "App-icoon",
+    "hintWeb": "Het icoon op de tabbladen van deze browser.",
+    "hintMac": "Het Dock-icoon zolang de app open is. Finder en Launchpad houden het standaardicoon.",
+    "hintDesktop": "Het taakbalkicoon zolang de app open is.",
+    "hintAndroid": "Sommige startschermen doen er een paar seconden over om het nieuwe icoon te tonen.",
+    "failed": "Kon het icoon niet wijzigen. Probeer het opnieuw.",
+    "agentsOf": "Agents van {{org}}",
+    "names": {
+      "night": "Nacht",
+      "moon": "Maan",
+      "sky": "Lucht",
+      "peekNight": "Gluren in de nacht",
+      "peekSky": "Gluren in de lucht"
+    }
+  },
   "install": {
     "frames": "Zo installeer je het op {{system}}",
     "step": "Stap {{n}}",
@@ -2506,6 +2522,11 @@
       "groupWorkspace": "Voor de hele workspace",
       "groupAdmins": "alleen admins"
     },
+    "computerYours": "Je eigen plek op de computer van de workspace. Alleen jij kunt meekijken of de besturing overnemen.",
+    "sharedName": "{{name}} (gedeeld)",
+    "sharedPlace": "Wordt gebruikt in kanalen en bij werk dat vanzelf draait. De hele workspace deelt deze plek. Bewaar hier niets privés.",
+    "computerNoHome": "Nog geen computer. Die komt er zodra deze workspace een eigen computer heeft, toegevoegd in Instellingen, Computers.",
+    "computerOneUser": "Hier geen computer. De computer van de workspace draait alle agents als één gebruiker en kan de plek van elke persoon dus niet gescheiden houden. Een Linux-server die met de optie --system van het installatieprogramma is ingericht, kan dat wel.",
     "powers": {
       "title": "Bevoegdheden in de workspace",
       "help": "Alleen je rechterhand doet dit.",
@@ -7427,9 +7448,26 @@
     "auto": "automatisch",
     "autoHint": "Is vanzelf van kolom gewisseld, door het werk van de agent.",
     "now": {
-      "title": "Agents die nu bezig zijn",
-      "stalled_one": "{{count}} vastgelopen",
-      "stalled_other": "{{count}} vastgelopen"
+      "stalledCount_one": "{{count}} vastgelopen taak",
+      "stalledCount_other": "{{count}} vastgelopen taken",
+      "viewStalled": "Vastgelopen bekijken",
+      "continue": "Doorgaan",
+      "continueAll": "Alles doorzetten",
+      "continueAllCount": "Alles doorzetten ({{count}})",
+      "sent_one": "Gevraagd. {{names}} gaat verder waar het stopte.",
+      "sent_other": "Gevraagd. {{names}} gaan verder waar ze stopten.",
+      "rowSent": "Gevraagd: gaat verder waar het stopte.",
+      "stalledTitle": "Vastgelopen taken",
+      "stalledSub": "{{tasks}} · {{agents}}",
+      "tasks_one": "{{count}} taak",
+      "tasks_other": "{{count}} taken",
+      "agents_one": "{{count}} agent",
+      "agents_other": "{{count}} agents",
+      "stalledText": "De agents stopten voordat ze klaar waren. Doorgaan vraagt ze verder te gaan waar ze stopten.",
+      "stoppedNow": "Net gestopt",
+      "stoppedAgo": "{{ago}} gestopt",
+      "stoppedYesterday": "Gisteren gestopt",
+      "stoppedOn": "Gestopt op {{date}}"
     },
     "work": {
       "label": "Werk van {{name}}",
@@ -7445,8 +7483,6 @@
       "started": "begonnen {{when}}",
       "starting": "Beginnen…",
       "stalled": "Vastgelopen {{when}}",
-      "noRun": "Er loopt geen run.",
-      "noRunStep": "Er loopt geen run. Laatste stap: {{step}}",
       "lastStep": "Laatste stap: {{step}}",
       "waitingApproval": "Vraagt om goedkeuring",
       "waitingInput": "Heeft een vraag",
