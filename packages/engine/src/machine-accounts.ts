@@ -869,8 +869,9 @@ export async function refreshAiAccounts(deps: MachineAccountHubDeps, userId: str
  * bought, a new week): every account whose last reading is at its limit, or at the long-work pause line (`PLAN_PAUSE`)
  * with work waiting on it, is read again on its computer. A CLI login or a key gets the free probe every
  * `PLAN_RECHECK_MS`; a Claude setup token, which can't read its usage without a model call, a one-shot check on the
- * cheapest model every `TOKEN_RECHECK_MS` (`list.recheck`, protocol 62), refused while still full. A reading with room
- * goes on from there (`wakeOnRoom`). The ids asked about are returned.
+ * cheapest model every `TOKEN_RECHECK_MS` (`list.recheck`, protocol 62), refused while still full. A computer's own
+ * sign-ins (`executors.ownUsage`, asked as `OWN_USAGE_ID`s) get the free probe too. A reading with room goes on from
+ * there (`wakeOnRoom`). The ids asked about are returned.
  */
 export async function recheckStuckPlans(deps: Pick<MachineAccountHubDeps, "db" | "hub">, now = Date.now()) {
   const { db, hub } = deps;
@@ -893,7 +894,18 @@ export async function recheckStuckPlans(deps: Pick<MachineAccountHubDeps, "db" |
           where (w->>'usedPercent')::numeric >= ${PLAN_PAUSE}))`,
       ),
     );
-  if (rows.length === 0) return [];
+  const owned = (
+    await db
+      .select({ id: machines.id, orgId: machines.orgId, executors: machines.executors })
+      .from(machines)
+      .where(and(isNull(machines.deletedAt), sql`${machines.executors}->'ownUsage' is not null`))
+  ).flatMap((m) =>
+    ACCOUNT_KINDS.flatMap((kind) => {
+      const usage = m.executors?.ownUsage?.[kind];
+      return usage ? [{ machineId: m.id, orgId: m.orgId, kind, usage }] : [];
+    }),
+  );
+  if (rows.length === 0 && owned.length === 0) return [];
   const { agentRuns } = schema;
   const waitKey = sql<string>`${agentRuns.transcript}->'waitingForBrain'->>'waitKey'`;
   const waiting = new Set(
@@ -904,29 +916,36 @@ export async function recheckStuckPlans(deps: Pick<MachineAccountHubDeps, "db" |
         .where(
           and(
             eq(agentRuns.status, "waiting_input"),
-            inArray(agentRuns.orgId, [...new Set(rows.map((r) => r.orgId))]),
+            inArray(agentRuns.orgId, [...new Set([...rows, ...owned].map((r) => r.orgId))]),
             sql`${agentRuns.transcript}->'waitingForBrain'->>'code' in ('plan_limit', 'usage_pause')`,
           ),
         )
     ).map((r) => r.key),
   );
-  const byMachine = new Map<string, { fresh: string[]; tokens: string[] }>();
-  for (const r of rows) {
-    if (!r.usage) continue;
-    const { state, used } = planState(r.usage, now);
-    const key = usageWaitKey({ code: "plan_limit", machineId: r.machineId, kind: kindOf(r), accountId: r.id });
-    if (state !== "limited" && !(used >= PLAN_PAUSE && waiting.has(key))) continue;
-    const token = r.authMethod === "setup_token";
-    const last = Date.parse(planCheckedAt(r.usage) ?? "") || 0;
-    if (now - last < (token ? TOKEN_RECHECK_MS : PLAN_RECHECK_MS)) continue;
-    const m = byMachine.get(r.machineId) ?? { fresh: [], tokens: [] };
-    m.fresh.push(r.id);
-    if (token) m.tokens.push(r.id);
-    byMachine.set(r.machineId, m);
-  }
+  const byMachine = new Map<string, { fresh: string[]; tokens: string[]; own: AccountKind[] }>();
+  const consider = (
+    machineId: string,
+    kind: AccountKind,
+    accountId: string | undefined,
+    usage: NonNullable<(typeof rows)[number]["usage"]>,
+    token: boolean,
+  ) => {
+    const { state, used } = planState(usage, now);
+    const key = usageWaitKey({ code: "plan_limit", machineId, kind, accountId });
+    if (state !== "limited" && !(used >= PLAN_PAUSE && waiting.has(key))) return;
+    const last = Date.parse(planCheckedAt(usage) ?? "") || 0;
+    if (now - last < (token ? TOKEN_RECHECK_MS : PLAN_RECHECK_MS)) return;
+    const m = byMachine.get(machineId) ?? { fresh: [], tokens: [], own: [] };
+    m.fresh.push(accountId ?? OWN_USAGE_ID[kind]);
+    if (token && accountId) m.tokens.push(accountId);
+    if (!accountId) m.own.push(kind);
+    byMachine.set(machineId, m);
+  };
+  for (const r of rows) if (r.usage) consider(r.machineId, kindOf(r), r.id, r.usage, r.authMethod === "setup_token");
+  for (const o of owned) consider(o.machineId, o.kind, undefined, o.usage, false);
   const asked: string[] = [];
   await Promise.all(
-    [...byMachine].map(async ([machineId, { fresh, tokens }]) => {
+    [...byMachine].map(async ([machineId, { fresh, tokens, own }]) => {
       const status = await hub.status(machineId).catch(() => null);
       if (!status?.online || status.protocol < PLAN_USAGE_PROTOCOL) return;
       // An older runner can't check a token: only what it can read is asked, and only that counts as checked.
@@ -936,12 +955,20 @@ export async function recheckStuckPlans(deps: Pick<MachineAccountHubDeps, "db" |
       await hub
         .call(machineId, { op: "account", action: "list", fresh: ids, ...(recheck.length ? { recheck } : {}) })
         .catch(() => undefined);
-      await db
-        .update(machineAccounts)
-        .set({
-          usage: sql`jsonb_set(${machineAccounts.usage}, '{checkedAt}', to_jsonb(${new Date(now).toISOString()}::text))`,
-        })
-        .where(and(eq(machineAccounts.machineId, machineId), inArray(machineAccounts.id, ids)));
+      const at = new Date(now).toISOString();
+      const accountIds = ids.filter((id) => !own.some((k) => OWN_USAGE_ID[k] === id));
+      if (accountIds.length > 0)
+        await db
+          .update(machineAccounts)
+          .set({ usage: sql`jsonb_set(${machineAccounts.usage}, '{checkedAt}', to_jsonb(${at}::text))` })
+          .where(and(eq(machineAccounts.machineId, machineId), inArray(machineAccounts.id, accountIds)));
+      for (const kind of own)
+        await db
+          .update(machines)
+          .set({
+            executors: sql`jsonb_set(${machines.executors}, array['ownUsage', ${kind}::text, 'checkedAt'], to_jsonb(${at}::text))`,
+          })
+          .where(eq(machines.id, machineId));
       asked.push(...ids);
     }),
   );

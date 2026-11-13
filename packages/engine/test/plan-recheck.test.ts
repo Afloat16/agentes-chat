@@ -2,6 +2,7 @@ import { afterEach, expect, test } from "bun:test";
 import {
   MACHINE_PROTOCOL_VERSION,
   type MachineRequest,
+  OWN_USAGE_ID,
   PLAN_RECHECK_PROTOCOL,
   type PlanUsage,
   TOKEN_RECHECK_MS,
@@ -130,4 +131,25 @@ test("an offline computer is asked nothing", async () => {
   } as Pick<MachineCaller, "call" | "status">;
   expect(await recheckStuckPlans({ db: fx.db, hub: offline }, NOW)).toEqual([]);
   expect(calls).toEqual([]);
+});
+
+test("a computer's own sign-in at its limit is probed too, and stamped as checked on that computer", async () => {
+  const { fx, machineId, hub, calls } = await world();
+  const executors = (await fx.db.select().from(schema.machines).where(eq(schema.machines.id, machineId)))[0]?.executors;
+  await fx.db
+    .update(schema.machines)
+    .set({
+      executors: {
+        ...executors,
+        ownUsage: { claude_code: reading(100, ago(6 * 60_000), true), codex: reading(30, ago(60 * 60_000)) },
+      },
+    } as Partial<typeof schema.machines.$inferInsert>)
+    .where(eq(schema.machines.id, machineId));
+  expect(await recheckStuckPlans({ db: fx.db, hub }, NOW)).toEqual([OWN_USAGE_ID.claude_code]);
+  expect(calls[0]?.req).toEqual({ op: "account", action: "list", fresh: [OWN_USAGE_ID.claude_code] });
+  const own = (await fx.db.select().from(schema.machines).where(eq(schema.machines.id, machineId)))[0]?.executors
+    .ownUsage;
+  expect(planCheckedAt(own?.claude_code)).toBe(new Date(NOW).toISOString());
+  expect(own?.codex?.checkedAt).toBeUndefined();
+  expect(await recheckStuckPlans({ db: fx.db, hub }, NOW + 60_000)).toEqual([]);
 });
