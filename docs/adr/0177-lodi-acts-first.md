@@ -107,12 +107,25 @@ A sweep with no model call. It fixes what is safe and tells the one person who c
 
 The day's card for everyone, from stored data.
 
-- It posts only when something is the reader's: something waits on them, a run they asked for or of an agent they own
-  finished or is stuck, a task they made or follow was closed by an agent. Counts across the workspace never post it.
-- Rows: what waits on them (up to three, opening "Esperando você"), what is stuck and why (a cause code and one button
-  to its conversation, never run text), then the rest, five at most. Money and channel rows stay on the week's card.
-- It rings only with something waiting or stuck. The same items as the day before, and nothing else, post nothing.
-- Nothing from a channel the reader cannot read, administrators included.
+- It posts only when something is the reader's and new: something waits on them, a run they asked for or of an agent
+  they own finished or is stuck, a task they made was closed by an agent, a how-to of their agent is ready to become a
+  skill. Counts across the workspace never post it, an administrator's included: the team's view is the week's card.
+- A run is the reader's when its agent is theirs, or when they wrote the message that started it or the first message
+  of its thread. That is one statement for all their runs. Work one agent passed to another outside that thread shows
+  on its owner's card only.
+- Rows: approvals of the agents their inbox says are asking, one row that counts what else waits on them (it opens
+  "Esperando você" and stores inbox ids, never a question's words), what is stuck and why (up to three, one of six
+  causes and one button to its conversation or task, never run text), then their agents' how-tos and stalled steps of
+  a task they made. Five at most. Money, channel, routine and unanswered rows stay on the week's card.
+- Stuck is a run that failed with no good run after it in the same conversation, or one parked for four hours or more
+  on a plan, a budget or a computer. A run a person stopped or a restart cut is neither.
+- The card keeps what was still open when it went out (`seen`). The next day's card posts only for something not in
+  it, so what waits or is held is said once, and it rings only for a new thing waiting or stuck. What only finished
+  posts without ringing.
+- It covers from the last day's card to its slot, three days back at most, so a day with no card is not lost. Its job
+  is found again by the slot kept on the card, whatever the window was.
+- Nothing from a conversation the reader cannot read: an administrator reads every channel and never another
+  person's DM.
 
 ### 3. Suggestions on "Semana da equipe"
 

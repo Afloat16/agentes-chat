@@ -35,7 +35,27 @@ export type TeamWeekRow =
       onNumber: number;
       hours: number;
       agentId: string | null;
+    }
+  /** What waits on the reader besides approvals: how many, the inbox rows it counted and since when. */
+  | { id: string; kind: "waiting"; count: number; ids: string[]; agentId: string | null; since: string }
+  /**
+   * An agent's runs in one conversation that failed, or that wait on a plan, a budget or a computer (`held`), with the
+   * cause (`STUCK_CAUSES`, any other reads as `other`). `dm`: the reader's own DM with it. `issueNumber`: a task's.
+   */
+  | {
+      id: string;
+      kind: "stuck";
+      agentId: string;
+      channelId: string;
+      dm: boolean;
+      issueNumber?: number;
+      code: string;
+      count: number;
+      held: boolean;
     };
+
+/** The causes of a stuck row this build words. */
+export const STUCK_CAUSES = ["budget", "plan", "computer", "key", "ai", "other"] as const;
 
 export type TeamWeekHighlight =
   | { kind: "runs"; agentId: string; channelId: string; count: number }
@@ -68,7 +88,13 @@ const ROW_KINDS: readonly TeamWeekRow["kind"][] = [
   "unanswered",
   "routine",
   "stalled",
+  "waiting",
+  "stuck",
 ];
+
+/** What waits on the reader and what is stuck lead the card, whichever list they came in. */
+const LEADS: readonly TeamWeekRow["kind"][] = ["approvals", "waiting", "stuck"];
+const rank = (r: TeamWeekRow) => (LEADS.includes(r.kind) ? LEADS.indexOf(r.kind) : LEADS.length);
 
 const knownRows = (rows: unknown): TeamWeekRow[] =>
   (Array.isArray(rows) ? rows : []).filter((r: { kind?: unknown } | null) =>
@@ -85,7 +111,7 @@ export function teamWeekCardOf(meta: Record<string, unknown> | null | undefined)
   const { moreRows, ...card } = c;
   return {
     ...(card as TeamWeekCard),
-    rows: [...knownRows(c.rows), ...knownRows(moreRows)],
+    rows: [...knownRows(c.rows), ...knownRows(moreRows)].sort((a, b) => rank(a) - rank(b)),
     worked: Array.isArray(c.worked) ? c.worked : [],
     proposalIds: Array.isArray(c.proposalIds) ? c.proposalIds : [],
     done: c.done && typeof c.done === "object" ? c.done : {},
@@ -99,9 +125,16 @@ export type TeamWeekRowState = "open" | "done" | "gone";
 export function teamWeekRowState(
   card: TeamWeekCard,
   row: TeamWeekRow,
-  live: { proposals: Proposal[]; approvals: Approval[] | undefined },
+  live: {
+    proposals: Proposal[];
+    approvals: Approval[] | undefined;
+    /** The inbox rows that wait on the reader now (absent: not read yet). */
+    waiting?: string[];
+  },
 ): TeamWeekRowState {
   if (card.done[row.id]) return "done";
+  if (row.kind === "waiting")
+    return !live.waiting || row.ids.some((id) => live.waiting?.includes(id)) ? "open" : "done";
   if (row.kind === "approvals") {
     if (!live.approvals) return "open";
     return row.approvalIds.some((id) => live.approvals?.find((a) => a.id === id)?.status === "pending")
@@ -116,8 +149,27 @@ export function teamWeekRowState(
   return "open";
 }
 
-/** Rows "Aplicar as N" runs: open ones that apply in one click. Approvals are read and decided one by one. */
-export const appliesInBulk = (row: TeamWeekRow) => row.kind !== "approvals";
+/**
+ * Rows "Aplicar as N" runs: open ones that apply in one click. Approvals are read and decided one by one, and what
+ * waits or is stuck is opened where it is.
+ */
+export const appliesInBulk = (row: TeamWeekRow) => !LEADS.includes(row.kind);
+
+/** Where a row's button goes when it opens a screen in place of applying a fix. Null: it applies. */
+export type TeamWeekPlace =
+  | { to: "waiting" }
+  | { to: "task"; number: number }
+  | { to: "dm"; agentId: string; channelId: string }
+  | { to: "channel"; channelId: string };
+
+export function teamWeekRowPlace(row: TeamWeekRow): TeamWeekPlace | null {
+  if (row.kind === "waiting") return { to: "waiting" };
+  if (row.kind !== "stuck") return null;
+  if (row.issueNumber != null) return { to: "task", number: row.issueNumber };
+  return row.dm
+    ? { to: "dm", agentId: row.agentId, channelId: row.channelId }
+    : { to: "channel", channelId: row.channelId };
+}
 
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -208,6 +260,22 @@ export function teamWeekRowText(t: TFunction, locale: string, row: TeamWeekRow, 
         action: say("teamWeek.stalled.action"),
       };
     }
+    case "waiting":
+      return {
+        title: say("teamWeek.waiting.title", { count: row.count }),
+        line: say("teamWeek.waiting.line", { count: row.count, since: n.since(row.since) }),
+        action: say("teamWeek.waiting.action"),
+      };
+    case "stuck": {
+      const cause = (STUCK_CAUSES as readonly string[]).includes(row.code) ? row.code : "other";
+      return {
+        title: row.held
+          ? say("teamWeek.stuck.heldTitle", { name: n.agent(row.agentId) })
+          : say("teamWeek.stuck.title", { name: n.agent(row.agentId), count: row.count }),
+        line: say(`teamWeek.stuck.why.${cause}`),
+        action: say("teamWeek.stuck.action"),
+      };
+    }
   }
 }
 
@@ -230,5 +298,6 @@ export function teamWeekDoneText(t: TFunction, row: TeamWeekRow, rightHandName: 
   if (row.kind === "unanswered") return say("teamWeek.unanswered.done", agentGrammar(rightHandName));
   if (row.kind === "stalled") return say("teamWeek.stalled.done");
   if (row.kind === "howto") return say("teamWeek.howto.done");
+  if (row.kind === "waiting") return say("teamWeek.waiting.done");
   return say("teamWeek.applied");
 }

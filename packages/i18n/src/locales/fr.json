@@ -2686,6 +2686,7 @@
     "workedTasks_many": "{{name}} a fermé {{count}} tâches",
     "workedTasks_other": "{{name}} a fermé {{count}} tâches",
     "improve": "À améliorer",
+    "needsYou": "A besoin de vous",
     "approvals": {
       "title_one": "{{count}} demande de {{name}} vous attend",
       "title_many": "{{count}} demandes de {{name}} vous attendent",
@@ -2736,6 +2737,31 @@
       "message": "@{{handle}} les étapes {{steps}} n’ont pas besoin d’attendre #{{on}}. Continue-les en parallèle.",
       "messageNoAgent": "Les étapes {{steps}} n’ont pas besoin d’attendre #{{on}}. Elles peuvent avancer en parallèle.",
       "done": "Message envoyé"
+    },
+    "waiting": {
+      "title_one": "{{count}} chose vous attend",
+      "title_many": "{{count}} choses vous attendent",
+      "title_other": "{{count}} choses vous attendent",
+      "line_one": "En attente depuis {{since}}.",
+      "line_many": "La plus ancienne depuis {{since}}.",
+      "line_other": "La plus ancienne depuis {{since}}.",
+      "action": "Ouvrir",
+      "done": "Plus rien en attente"
+    },
+    "stuck": {
+      "title_one": "{{name}} : arrêt sur une erreur",
+      "title_many": "{{name}} : {{count}} arrêts sur une erreur",
+      "title_other": "{{name}} : {{count}} arrêts sur une erreur",
+      "heldTitle": "{{name}} : à l’arrêt, en attente de reprise",
+      "why": {
+        "budget": "Le budget mensuel est épuisé.",
+        "plan": "L’abonnement a atteint sa limite.",
+        "computer": "L’ordinateur n’a pas répondu.",
+        "key": "La clé ou la connexion de l’IA a été refusée.",
+        "ai": "L’IA n’a pas répondu.",
+        "other": "Un problème est survenu. La conversation montre lequel."
+      },
+      "action": "Ouvrir la conversation"
     },
     "applied": "Appliqué",
     "undo": "Annuler",

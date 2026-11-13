@@ -6461,6 +6461,9 @@
   "teamWeek.improve": {
     "value": "To improve"
   },
+  "teamWeek.needsYou": {
+    "value": "Needs you"
+  },
   "teamWeek.approvals.title": {
     "value": {
       "one": "{{count}} request from {{name}} waits for you",
@@ -6556,6 +6559,54 @@
   },
   "teamWeek.stalled.done": {
     "value": "Message sent"
+  },
+  "teamWeek.waiting.title": {
+    "value": {
+      "one": "{{count}} thing waits for you",
+      "other": "{{count}} things wait for you"
+    }
+  },
+  "teamWeek.waiting.line": {
+    "value": {
+      "one": "Waiting since {{since}}.",
+      "other": "The oldest since {{since}}."
+    }
+  },
+  "teamWeek.waiting.action": {
+    "value": "Open"
+  },
+  "teamWeek.waiting.done": {
+    "value": "Nothing left waiting"
+  },
+  "teamWeek.stuck.title": {
+    "value": {
+      "one": "{{name}} stopped on an error",
+      "other": "{{name}} stopped on an error {{count}} times"
+    }
+  },
+  "teamWeek.stuck.heldTitle": {
+    "value": "{{name}} stopped and waits to go on"
+  },
+  "teamWeek.stuck.why.budget": {
+    "value": "The monthly budget ran out."
+  },
+  "teamWeek.stuck.why.plan": {
+    "value": "The plan reached its limit."
+  },
+  "teamWeek.stuck.why.computer": {
+    "value": "The computer did not answer."
+  },
+  "teamWeek.stuck.why.key": {
+    "value": "The AI key or sign-in was refused."
+  },
+  "teamWeek.stuck.why.ai": {
+    "value": "The AI did not answer."
+  },
+  "teamWeek.stuck.why.other": {
+    "value": "Something went wrong. The conversation shows what."
+  },
+  "teamWeek.stuck.action": {
+    "value": "Open conversation"
   },
   "teamWeek.applied": {
     "value": "Applied"

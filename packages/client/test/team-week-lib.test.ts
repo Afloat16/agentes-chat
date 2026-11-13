@@ -12,6 +12,7 @@ import {
   type TeamWeekNames,
   teamWeekCardOf,
   teamWeekRowMessage,
+  teamWeekRowPlace,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
@@ -232,4 +233,94 @@ test("rows a newer server adds travel in moreRows: known kinds join the card, un
   for (const r of parsed?.rows ?? []) expect(teamWeekRowText(tOf("en"), "en", r, names).title).not.toBe("");
   // A card from before moreRows reads as it did.
   expect(teamWeekCardOf({ actionCard: card })?.rows).toEqual(card.rows);
+});
+
+test("the day's card: what waits and what is stuck lead it, in words, and open where they are", () => {
+  const day = {
+    ...card,
+    period: "day",
+    rows: [card.rows[3]],
+    moreRows: [
+      {
+        id: "stuck:ada",
+        kind: "stuck",
+        agentId: "ada",
+        channelId: "c-general",
+        dm: false,
+        code: "plan",
+        count: 1,
+        held: true,
+      },
+      { id: "waiting", kind: "waiting", count: 2, ids: ["n1", "n2"], agentId: "caio", since: "2026-11-02T12:00:00Z" },
+      {
+        id: "stuck:theo",
+        kind: "stuck",
+        agentId: "theo",
+        channelId: "d1",
+        dm: true,
+        code: "a_later_cause",
+        count: 3,
+        held: false,
+      },
+      {
+        id: "stuck:task",
+        kind: "stuck",
+        agentId: "ada",
+        channelId: "t1",
+        dm: false,
+        issueNumber: 12,
+        code: "ai",
+        count: 1,
+        held: false,
+      },
+    ],
+  };
+  const parsed = teamWeekCardOf({ actionCard: day }) as TeamWeekCard;
+  expect(parsed.rows.map((r) => r.kind)).toEqual(["waiting", "stuck", "stuck", "stuck", "unanswered"]);
+  const [waiting, held, failed, inTask] = parsed.rows;
+  const t = tOf("pt-BR");
+  const text = parsed.rows.map((r) => teamWeekRowText(t, "pt-BR", r, names));
+  expect(text[0]).toEqual({
+    title: "2 coisas esperam você",
+    line: "A mais antiga desde seg., 09:00.",
+    action: "Abrir",
+  });
+  expect(text[1]).toEqual({
+    title: "Ada parou e espera para continuar",
+    line: "O plano chegou ao limite.",
+    action: "Abrir conversa",
+  });
+  // A cause a later server names reads as the plain one.
+  expect(text[2]).toMatchObject({
+    title: "Theo parou com erro 3 vezes",
+    line: "Algo deu errado. A conversa mostra o quê.",
+  });
+  expect(teamWeekRowText(t, "pt-BR", { ...(waiting as never as object), count: 1 } as never, names)).toMatchObject({
+    title: "1 coisa espera você",
+    line: "Esperando desde seg., 09:00.",
+  });
+  // Open until the inbox says none of them waits any more. Neither is part of "Aplicar as N".
+  const live = { proposals: [], approvals: [] };
+  expect(teamWeekRowState(parsed, waiting as never, live)).toBe("open");
+  expect(teamWeekRowState(parsed, waiting as never, { ...live, waiting: ["n2", "n9"] })).toBe("open");
+  expect(teamWeekRowState(parsed, waiting as never, { ...live, waiting: ["n9"] })).toBe("done");
+  expect(teamWeekRowState(parsed, held as never, { ...live, waiting: [] })).toBe("open");
+  expect(parsed.rows.filter(appliesInBulk).map((r) => r.kind)).toEqual(["unanswered"]);
+  expect(parsed.rows.map(teamWeekRowPlace)).toEqual([
+    { to: "waiting" },
+    { to: "channel", channelId: "c-general" },
+    { to: "dm", agentId: "theo", channelId: "d1" },
+    { to: "task", number: 12 },
+    null,
+  ]);
+  expect(failed?.kind).toBe("stuck");
+  expect(inTask?.kind).toBe("stuck");
+  for (const lng of LOCALE_CODES)
+    for (const r of parsed.rows) {
+      const said = teamWeekRowText(tOf(lng), lng, r, names);
+      for (const words of [said.title, said.line, said.action])
+        expect([lng, r.id, words === "" || words.includes("teamWeek.")]).toEqual([lng, r.id, false]);
+    }
+  // A build from before `moreRows` reads `rows` alone: the kinds it words, and no other.
+  expect(day.rows.map((r) => r?.kind)).toEqual(["unanswered"]);
 });

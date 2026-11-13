@@ -2591,6 +2591,7 @@
     "workedTasks_one": "{{name}} sloot {{count}} taak",
     "workedTasks_other": "{{name}} sloot {{count}} taken",
     "improve": "Te verbeteren",
+    "needsYou": "Heeft jou nodig",
     "approvals": {
       "title_one": "{{count}} verzoek van {{name}} wacht op jou",
       "title_other": "{{count}} verzoeken van {{name}} wachten op jou",
@@ -2636,6 +2637,28 @@
       "message": "@{{handle}} de stappen {{steps}} hoeven niet op #{{on}} te wachten. Ga er parallel mee verder.",
       "messageNoAgent": "De stappen {{steps}} hoeven niet op #{{on}} te wachten. Ze kunnen parallel verder.",
       "done": "Bericht verstuurd"
+    },
+    "waiting": {
+      "title_one": "{{count}} ding wacht op jou",
+      "title_other": "{{count}} dingen wachten op jou",
+      "line_one": "Wacht sinds {{since}}.",
+      "line_other": "De oudste sinds {{since}}.",
+      "action": "Openen",
+      "done": "Er wacht niets meer"
+    },
+    "stuck": {
+      "title_one": "{{name}} stopte met een fout",
+      "title_other": "{{name}} stopte {{count}} keer met een fout",
+      "heldTitle": "{{name}} stopte en wacht om verder te gaan",
+      "why": {
+        "budget": "Het maandbudget is op.",
+        "plan": "Het abonnement heeft zijn limiet bereikt.",
+        "computer": "De computer gaf geen antwoord.",
+        "key": "De AI-sleutel of aanmelding is geweigerd.",
+        "ai": "De AI gaf geen antwoord.",
+        "other": "Er ging iets mis. Het gesprek laat zien wat."
+      },
+      "action": "Gesprek openen"
     },
     "applied": "Toegepast",
     "undo": "Ongedaan maken",

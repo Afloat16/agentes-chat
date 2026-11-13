@@ -9,6 +9,7 @@ import {
   useDecideProposal,
   useSetTeamWeekPrefs,
   useTeamWeekPrefs,
+  useWaitingOnMe,
 } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { clockAt, formatUsd, joinNames } from "@agenteschat/client/lib/format";
@@ -19,15 +20,18 @@ import {
   appliesInBulk,
   type TeamWeekCard,
   type TeamWeekNames,
+  type TeamWeekPlace,
   type TeamWeekRow,
   teamWeekDoneText,
   teamWeekRowMessage,
+  teamWeekRowPlace,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
 } from "@agenteschat/client/lib/team-week";
 import { Button, Icon, Popover } from "@agenteschat/ui";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -60,7 +64,8 @@ export function useTeamWeekNames(): TeamWeekNames {
 /**
  * Lodi's weekly card (ADR 0137 §9) in the admin's DM: four numbers, what worked, then a row per fix, each applied as
  * whoever clicks through its own card's path (the settings proposal with Undo, the approvals as the conversation
- * draws them, a routine, a message), "Aplicar as N" for the open ones and the day and hour in the footer.
+ * draws them, a routine, a message), "Aplicar as N" for the open ones and the day and hour in the footer. The day's
+ * card (ADR 0177 §2) is the same, led by what waits on its reader and what is stuck, each opened where it is.
  */
 export function TeamWeekCardView({ message, card }: { message: Message; card: TeamWeekCard }) {
   const { t, i18n } = useTranslation();
@@ -71,20 +76,39 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
   const approvals = useApprovals(org.id);
   const decide = useDecideProposal(org.id);
   const act = useActOnTeamWeek(org.id);
+  const waiting = useWaitingOnMe(org.id);
+  const navigate = useNavigate();
   const toast = useToast();
   const [applying, setApplying] = useState(false);
   const locale = i18n.language;
   const lodi = dir.agents.find(isRightHand);
   const rows = card.rows.map((row) => ({
     row,
-    state: teamWeekRowState(card, row, { proposals, approvals: approvals.data }),
+    state: teamWeekRowState(card, row, {
+      proposals,
+      approvals: approvals.data,
+      waiting: waiting.data?.items.map((i) => i.id),
+    }),
     text: teamWeekRowText(t, locale, row, names),
   }));
   const open = rows.filter((r) => r.state === "open");
   const bulk = open.filter((r) => appliesInBulk(r.row));
+  // What waits or is stuck is opened, not applied: the head counts only what the card suggests.
+  const suggested = open.filter((r) => !teamWeekRowPlace(r.row));
   const failed = (e: unknown) => toast.show(errorText(t, e), "error");
+  const params = { orgId: org.id };
+  const go = (place: TeamWeekPlace) =>
+    place.to === "waiting"
+      ? navigate({ to: "/org/$orgId/waiting", params })
+      : place.to === "task"
+        ? navigate({ to: "/org/$orgId/issues/$number", params: { ...params, number: String(place.number) } })
+        : place.to === "dm"
+          ? navigate({ to: "/org/$orgId/dm/agent/$agentId", params: { ...params, agentId: place.agentId } })
+          : navigate({ to: "/org/$orgId/c/$channelId", params: { ...params, channelId: place.channelId } });
   const apply = async (row: TeamWeekRow) => {
-    if (row.kind === "budget" || row.kind === "channel")
+    const place = teamWeekRowPlace(row);
+    if (place) await go(place);
+    else if (row.kind === "budget" || row.kind === "channel")
       await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
     else if (row.kind !== "approvals")
       await act.mutateAsync({
@@ -111,10 +135,10 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
       <div className="rq tw__card" role="group" aria-label={t(teamWeekTitleKey(card))}>
         <div className="rq__head">
           <span className="rq__kind">{t(teamWeekTitleKey(card))}</span>
-          {open.length > 0 && !dismissed && (
+          {suggested.length > 0 && !dismissed && (
             <span className="rq__state">
               <WaitMark />
-              {t("teamWeek.suggestions", { count: open.length })}
+              {t("teamWeek.suggestions", { count: suggested.length })}
             </span>
           )}
         </div>
@@ -156,7 +180,7 @@ export function TeamWeekCardView({ message, card }: { message: Message; card: Te
         ) : (
           rows.length > 0 && (
             <section className="tw__sec">
-              <h4 className="tw__sec-t">{t("teamWeek.improve")}</h4>
+              <h4 className="tw__sec-t">{t(card.period === "day" ? "teamWeek.needsYou" : "teamWeek.improve")}</h4>
               <div className="tw__rows">
                 {rows.map(({ row, state, text }) => (
                   <FixRow
@@ -257,7 +281,7 @@ function FixRow({
     <span className="tw__tile" aria-hidden="true">
       <Icon
         name={
-          row.kind === "unanswered"
+          row.kind === "unanswered" || row.kind === "waiting"
             ? "question"
             : row.kind === "stalled"
               ? "issues"

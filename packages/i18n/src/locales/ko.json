@@ -2502,6 +2502,7 @@
     "workedRuns_other": "{{name}} 님이 #{{channel}}에서 작업 {{count}}개를 했어요",
     "workedTasks_other": "{{name}} 님이 작업 {{count}}개를 끝냈어요",
     "improve": "개선할 일",
+    "needsYou": "확인이 필요해요",
     "approvals": {
       "title_other": "{{name}} 님의 요청 {{count}}개가 기다리고 있어요",
       "line": "{{since}}부터 기다리는 중이에요.",
@@ -2542,6 +2543,25 @@
       "message": "@{{handle}} 단계 {{steps}}는 #{{on}}을 기다릴 필요가 없어요. 동시에 진행해 주세요.",
       "messageNoAgent": "단계 {{steps}}는 #{{on}}을 기다릴 필요가 없어요. 동시에 진행할 수 있어요.",
       "done": "메시지를 보냈어요"
+    },
+    "waiting": {
+      "title_other": "{{count}}개가 기다리고 있어요",
+      "line_other": "{{since}}부터 기다리는 중이에요.",
+      "action": "열기",
+      "done": "기다리는 것이 없어요"
+    },
+    "stuck": {
+      "title_other": "{{name}} 님이 오류로 {{count}}번 멈췄어요",
+      "heldTitle": "{{name}} 님이 멈춰서 다시 시작하기를 기다려요",
+      "why": {
+        "budget": "월 예산을 다 썼어요.",
+        "plan": "요금제가 한도에 도달했어요.",
+        "computer": "컴퓨터가 응답하지 않았어요.",
+        "key": "AI 키 또는 로그인이 거부됐어요.",
+        "ai": "AI가 응답하지 않았어요.",
+        "other": "문제가 생겼어요. 대화에서 무엇인지 볼 수 있어요."
+      },
+      "action": "대화 열기"
     },
     "applied": "적용됨",
     "undo": "실행 취소",

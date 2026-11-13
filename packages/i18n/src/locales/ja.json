@@ -2502,6 +2502,7 @@
     "workedRuns_other": "{{name}} が #{{channel}} で {{count}} 件の仕事をしました",
     "workedTasks_other": "{{name}} がタスクを {{count}} 件完了しました",
     "improve": "改善できること",
+    "needsYou": "あなたの対応が必要",
     "approvals": {
       "title_other": "{{name}} の依頼 {{count}} 件があなたを待っています",
       "line": "{{since}} から待っています。",
@@ -2542,6 +2543,25 @@
       "message": "@{{handle}} ステップ {{steps}} は #{{on}} を待つ必要はありません。並行して進めてください。",
       "messageNoAgent": "ステップ {{steps}} は #{{on}} を待つ必要はありません。並行して進められます。",
       "done": "メッセージを送信しました"
+    },
+    "waiting": {
+      "title_other": "{{count}} 件があなたを待っています",
+      "line_other": "{{since}} から待っています。",
+      "action": "開く",
+      "done": "待っているものはありません"
+    },
+    "stuck": {
+      "title_other": "{{name}} がエラーで {{count}} 回止まりました",
+      "heldTitle": "{{name}} は止まって再開を待っています",
+      "why": {
+        "budget": "月間予算を使い切りました。",
+        "plan": "プランが上限に達しました。",
+        "computer": "コンピューターが応答しませんでした。",
+        "key": "AI のキーまたはログインが拒否されました。",
+        "ai": "AI が応答しませんでした。",
+        "other": "問題が起きました。会話で内容を確認できます。"
+      },
+      "action": "会話を開く"
     },
     "applied": "適用済み",
     "undo": "元に戻す",

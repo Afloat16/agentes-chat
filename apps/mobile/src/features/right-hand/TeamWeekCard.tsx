@@ -9,6 +9,7 @@ import {
   useChannels,
   useDecideProposal,
   useTeamWeekPrefs,
+  useWaitingOnMe,
 } from "@agenteschat/client";
 import { clockAt, formatUsd, joinNames } from "@agenteschat/client/lib/format";
 import { can } from "@agenteschat/client/lib/permissions";
@@ -22,6 +23,7 @@ import {
   teamWeekCardOf,
   teamWeekDoneText,
   teamWeekRowMessage,
+  teamWeekRowPlace,
   teamWeekRowState,
   teamWeekRowText,
   teamWeekTitleKey,
@@ -35,6 +37,7 @@ import { useOrg } from "@/providers/org";
 import { Button, LineIcon, Text, useReducedMotion } from "@/ui";
 import { router } from "@/ui/navigation";
 import { useCardTop } from "../chat/look";
+import { chatHref } from "../links/logic";
 import { useFailed } from "../routines/hooks";
 import { AgentFace } from "../shared/Face";
 import { useColors, useDirectory } from "../shared/hooks";
@@ -45,7 +48,8 @@ const NANO = 1_000_000_000;
 /**
  * Lodi's weekly card (ADR 0137 §9), as on the web: the four numbers two by two, what worked, then each fix stacked
  * with its button under its words, applied as whoever taps; "Aplicar as N", "Agora não", and the day and hour,
- * changed in Configurações › Lodi.
+ * changed in Configurações › Lodi. The day's card (ADR 0177 §2) is led by what waits on its reader and what is stuck,
+ * each opened where it is.
  */
 export function TeamWeek({ message: m }: { message: Message }) {
   const card = m.author.type === "agent" ? teamWeekCardOf(m.meta) : null;
@@ -69,6 +73,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
   const decide = useDecideProposal(orgId);
   const act = useActOnTeamWeek(orgId);
   const prefs = useTeamWeekPrefs(orgId).data;
+  const waiting = useWaitingOnMe(orgId);
   const admin = can(org, "administrator");
   // A weekly card kept by someone who no longer administers: the daily one is what they get now.
   const period = admin ? (card.period ?? "week") : "day";
@@ -85,15 +90,30 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
   };
   const rows = card.rows.map((row) => ({
     row,
-    state: teamWeekRowState(card, row, { proposals, approvals: approvals.data }),
+    state: teamWeekRowState(card, row, {
+      proposals,
+      approvals: approvals.data,
+      waiting: waiting.data?.items.map((i) => i.id),
+    }),
     text: teamWeekRowText(t, locale, row, names),
   }));
   const open = rows.filter((r) => r.state === "open");
   const bulk = open.filter((r) => appliesInBulk(r.row));
+  // What waits or is stuck is opened, not applied: the head counts only what the card suggests.
+  const suggested = open.filter((r) => !teamWeekRowPlace(r.row));
   const dismissed = !!card.dismissedAt;
   const lodi = dir.agents.find(isRightHand);
   const apply = async (row: TeamWeekRow) => {
-    if (row.kind === "budget" || row.kind === "channel")
+    const place = teamWeekRowPlace(row);
+    if (place)
+      router.push(
+        (place.to === "waiting"
+          ? "/activity"
+          : place.to === "task"
+            ? `/issues/${place.number}`
+            : chatHref(place.channelId)) as never,
+      );
+    else if (row.kind === "budget" || row.kind === "channel")
       await decide.mutateAsync({ id: row.proposalId, decision: "accept" });
     else if (row.kind === "approvals") {
       const next = row.approvalIds.find((id) => approvals.data?.find((a) => a.id === id)?.status === "pending");
@@ -132,9 +152,9 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
           <Text variant="footnote" tone="muted" style={styles.semibold}>
             {t(teamWeekTitleKey(card))}
           </Text>
-          {open.length > 0 && !dismissed ? (
+          {suggested.length > 0 && !dismissed ? (
             <Text variant="caption" style={[styles.semibold, { color: c.amber }]}>
-              {t("teamWeek.suggestions", { count: open.length })}
+              {t("teamWeek.suggestions", { count: suggested.length })}
             </Text>
           ) : null}
         </View>
@@ -175,7 +195,7 @@ function WeekCard({ message, card }: { message: Message; card: TeamWeekCard }) {
         ) : rows.length > 0 ? (
           <View style={styles.section}>
             <Text variant="caption" tone="muted" style={styles.semibold}>
-              {t("teamWeek.improve")}
+              {t(card.period === "day" ? "teamWeek.needsYou" : "teamWeek.improve")}
             </Text>
             {rows.map(({ row, state, text }, i) => (
               <Fix
@@ -285,7 +305,7 @@ function Fix({
           ) : (
             <LineIcon
               name={
-                row.kind === "unanswered"
+                row.kind === "unanswered" || row.kind === "waiting"
                   ? "help"
                   : row.kind === "stalled"
                     ? "issue"

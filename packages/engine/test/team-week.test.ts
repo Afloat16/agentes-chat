@@ -12,6 +12,7 @@ import {
   LODI_PREFS_DEFAULTS,
   lastTeamWeekSlot,
   lodiPrefsOf,
+  notify,
   notifyMessage,
   openPersonAgentDm,
   postPersonMessage,
@@ -475,69 +476,233 @@ describe("Resumo do dia", () => {
     expect(await enqueueTeamWeeks(f.db, new Date(NINE.getTime() + 2 * DAY + HOUR))).toBe(0);
   });
 
-  test("a member's card counts only work where they read and no money; a quiet day posts nothing", async () => {
+  /** `userId` asks `agentId` in a conversation and the run it starts ends as `status`. */
+  const ask = async (
+    fx: Fixture,
+    userId: string,
+    at: Date,
+    status: "done" | "failed" | "waiting_input",
+    over: { channelId?: string; agentId?: string; error?: string; transcript?: Record<string, unknown> } = {},
+  ) => {
+    const channelId = over.channelId ?? fx.general.id;
+    const m = await insertMessage(fx.db, {
+      orgId: fx.org.id,
+      channelId,
+      author: { type: "person", userId },
+      body: "@dev faz isso",
+      createdAt: at,
+    });
+    const [r] = await fx.db
+      .insert(schema.agentRuns)
+      .values({
+        orgId: fx.org.id,
+        agentId: over.agentId ?? fx.agent.id,
+        channelId,
+        threadRootId: m.id,
+        triggerMessageId: m.id,
+        trigger: "mention",
+        hop: 1,
+        status,
+        error: over.error ?? null,
+        transcript: over.transcript ?? null,
+        createdAt: at,
+        updatedAt: at,
+      })
+      .returning();
+    return r?.id ?? "";
+  };
+  const waits = (fx: Fixture, userId: string, key: string) =>
+    notify(
+      { db: fx.db, pubsub: fx.pubsub },
+      {
+        orgId: fx.org.id,
+        userIds: [userId],
+        kind: "agent_question",
+        groupKey: key,
+        waiting: true,
+        actor: { type: "agent", id: fx.agent.id },
+        source: {},
+        latest: { text: "Which plan do I use?" },
+      },
+    );
+  const post = (fx: Fixture, userId: string, slot: Date) =>
+    postTeamWeek({ db: fx.db, pubsub: fx.pubsub }, fx.org.id, { userId, slot: slot.toISOString(), period: "day" });
+  const rings = async (fx: Fixture, messageId: string) =>
+    (
+      await fx.db
+        .select()
+        .from(schema.outbox)
+        .where(
+          and(
+            eq(schema.outbox.kind, "notifications.message"),
+            sql`${schema.outbox.payload}->>'messageId' = ${messageId}`,
+          ),
+        )
+    ).length > 0;
+  /** The row kinds app builds from before `moreRows` word: any other in `rows` would break their card. */
+  const FIRST_KINDS = ["approvals", "howto", "budget", "channel", "unanswered", "routine", "stalled"];
+
+  test("what waits on the person, what they asked for that finished, and what is stuck with its cause", async () => {
     f = await setup({ rightHand: true });
     await inZone(f);
     const bia = await addMember(f.db, f.org.id, "member", "bia");
-    const slot = NINE.toISOString();
-    await setLodiPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
-    expect(await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: bia.id, slot })).toBeNull();
-
+    await ask(f, bia.id, new Date(NINE.getTime() - 5 * HOUR), "done");
+    await ask(f, bia.id, new Date(NINE.getTime() - 3 * HOUR), "failed", {
+      error: "provider_error: down@Claude: the upstream said something private",
+    });
+    // A day earlier than the card's, and other people's work in the same channel: outside it.
+    await ask(f, bia.id, new Date(NINE.getTime() - 2 * DAY), "done");
     await run(f, f.agent.id, new Date(NINE.getTime() - 2 * HOUR), "done");
-    // A day earlier than the card's: outside it.
-    await run(f, f.agent.id, new Date(NINE.getTime() - 2 * DAY), "done");
-    const hidden = await f.db
+    await run(f, f.agent.id, new Date(NINE.getTime() - 2 * HOUR), "failed", "stuck");
+    await waits(f, bia.id, "question:1");
+
+    const id = await post(f, bia.id, NINE);
+    expect(id).not.toBeNull();
+    const { m, card } = await cardOf(f, id as string);
+    expect(m.body).toBe("Seu resumo do dia está pronto");
+    expect(card).toMatchObject({ period: "day", slot: NINE.toISOString(), from: "2026-11-05", to: "2026-11-06" });
+    expect(card.stats).toEqual({ done: 1, stuck: 1, waiting: 1, spentNanoUsd: 0, budgetNanoUsd: 0 });
+    expect(card.worked).toEqual([{ kind: "runs", agentId: f.agent.id, channelId: f.general.id, count: 1 }]);
+    expect(card.moreRows).toEqual([
+      {
+        id: "waiting",
+        kind: "waiting",
+        count: 1,
+        ids: [expect.any(String)],
+        agentId: f.agent.id,
+        since: expect.any(String),
+      },
+      {
+        id: `stuck:${f.agent.id}:${f.general.id}`,
+        kind: "stuck",
+        agentId: f.agent.id,
+        channelId: f.general.id,
+        dm: false,
+        code: "ai",
+        count: 1,
+        held: false,
+      },
+    ]);
+    // A cause, never what the run or the question said.
+    expect(JSON.stringify(card)).not.toContain("private");
+    expect(JSON.stringify(card)).not.toContain("Which plan");
+    // A build from before reads `rows` alone, and finds only kinds it words.
+    expect(card.rows.every((r) => FIRST_KINDS.includes(r.kind))).toBe(true);
+    expect(await rings(f, id as string)).toBe(true);
+    // A retry of the same job posts no second card, and none of it called a model.
+    expect(await post(f, bia.id, NINE)).toBeNull();
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
+  test("a team busy with other people's asks posts nothing to the 30 who asked for none of it", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const people = [];
+    for (let i = 0; i < 30; i++) people.push(await addMember(f.db, f.org.id, "member", `p${i}`));
+    for (let i = 0; i < 12; i++) await ask(f, f.owner.id, new Date(NINE.getTime() - (i + 1) * HOUR), "done");
+    await ask(f, f.owner.id, new Date(NINE.getTime() - HOUR), "failed", { error: "stuck" });
+    for (const p of people) expect(await post(f, p.id, NINE)).toBeNull();
+    const cards = await f.db
+      .select()
+      .from(schema.messages)
+      .where(sql`${schema.messages.meta}->'actionCard'->>'kind' = 'team_week'`);
+    expect(cards).toEqual([]);
+    expect(f.provider.calls).toHaveLength(0);
+    // Turned off, nothing either, whatever happened.
+    const [bia] = people;
+    await ask(f, bia?.id ?? "", new Date(NINE.getTime() - HOUR), "done");
+    await setLodiPrefs(f.db, f.org.id, bia?.id ?? "", { dayOff: true });
+    expect(await post(f, bia?.id ?? "", NINE)).toBeNull();
+  });
+
+  test("said once: the same waiting items and held runs the next day post nothing, a new one does", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    await waits(f, bia.id, "question:1");
+    const held = await ask(f, bia.id, new Date(NINE.getTime() - 6 * HOUR), "waiting_input", {
+      transcript: { waitingForBrain: { code: "plan_limit", since: new Date(NINE.getTime() - 6 * HOUR).toISOString() } },
+    });
+    // Parked a moment ago: it may go on by itself, so it is not called stuck.
+    await ask(f, bia.id, new Date(NINE.getTime() - HOUR), "waiting_input", {
+      transcript: { waitingForBrain: { code: "budget", since: new Date(NINE.getTime() - HOUR).toISOString() } },
+    });
+    const first = (await post(f, bia.id, NINE)) as string;
+    const one = (await cardOf(f, first)).card;
+    expect(one.moreRows?.map((r) => [r.kind, r.kind === "stuck" && [r.code, r.held, r.count]])).toEqual([
+      ["waiting", false],
+      ["stuck", ["plan", true, 1]],
+    ]);
+    expect(one.seen).toContain(`run:${held}`);
+    expect(await rings(f, first)).toBe(true);
+
+    // The day after: all of it is still there, none of it new.
+    const day = (n: number) => new Date(NINE.getTime() + n * DAY);
+    await f.db
+      .delete(schema.agentRuns)
+      .where(sql`${schema.agentRuns.transcript}->'waitingForBrain'->>'code' = 'budget'`);
+    expect(await post(f, bia.id, day(1))).toBeNull();
+    // Something of theirs finished: a card, with what still waits on it, and no ring for what was already said.
+    await ask(f, bia.id, new Date(day(2).getTime() - HOUR), "done");
+    const second = (await post(f, bia.id, day(2))) as string;
+    const two = (await cardOf(f, second)).card;
+    // It goes on from the last card, so the day that posted none is inside it.
+    expect(two.from).toBe("2026-11-06");
+    expect(two.stats).toMatchObject({ done: 1, waiting: 1 });
+    expect(two.moreRows?.map((r) => r.kind)).toEqual(["waiting", "stuck"]);
+    expect(await rings(f, second)).toBe(false);
+    // Asked the same day's job again after its window moved: still one card.
+    expect(await post(f, bia.id, day(2))).toBeNull();
+    // A new thing waiting rings again.
+    await waits(f, bia.id, "question:2");
+    const third = (await post(f, bia.id, day(3))) as string;
+    expect((await cardOf(f, third)).card.moreRows?.[0]).toMatchObject({ kind: "waiting", count: 2 });
+    expect(await rings(f, third)).toBe(true);
+    expect(f.provider.calls).toHaveLength(0);
+  });
+
+  test("only where the reader reads: a private channel they are not in, and someone else's DM, stay off", async () => {
+    f = await setup({ rightHand: true });
+    await inZone(f);
+    const bia = await addMember(f.db, f.org.id, "member", "bia");
+    // Bia's own agent works in a private channel she is not in, for someone else.
+    const [mine] = await f.db
+      .insert(schema.agents)
+      .values({
+        orgId: f.org.id,
+        name: "Lia",
+        handle: "lia",
+        role: "Research",
+        instructions: "",
+        model: "claude-sonnet-5-5",
+        ownerUserId: bia.id,
+      })
+      .returning();
+    const [hidden] = await f.db
       .insert(schema.channels)
       .values({ orgId: f.org.id, name: "diretoria", kind: "channel", visibility: "private" })
       .returning();
-    await f.db.insert(schema.agentRuns).values({
-      orgId: f.org.id,
-      agentId: f.agent.id,
-      channelId: hidden[0]?.id ?? "",
-      threadRootId: crypto.randomUUID(),
-      triggerMessageId: crypto.randomUUID(),
-      trigger: "mention",
-      hop: 1,
-      status: "done",
-      createdAt: new Date(NINE.getTime() - HOUR),
+    await ask(f, f.owner.id, new Date(NINE.getTime() - HOUR), "failed", {
+      channelId: hidden?.id,
+      agentId: mine?.id,
+      error: "stuck",
     });
-    const id = await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: bia.id, slot });
-    expect(id).not.toBeNull();
-    const { m, card } = await cardOf(f, id as string);
-    expect(card.period).toBe("day");
-    expect(card.from).toBe("2026-11-05");
-    expect(card.to).toBe("2026-11-06");
-    expect(card.stats.done).toBe(1);
-    expect(card.stats.spentNanoUsd).toBe(0);
-    expect(card.stats.budgetNanoUsd).toBe(0);
-    expect(m.body).toBe("Seu resumo do dia está pronto");
-    // Once a day.
-    expect(await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, { userId: bia.id, slot })).toBeNull();
-    // Turned off: nothing.
-    await setLodiPrefs(f.db, f.org.id, bia.id, { daily: false });
-    expect(
-      await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, {
-        userId: bia.id,
-        slot: new Date(NINE.getTime() + DAY).toISOString(),
-      }),
-    ).toBeNull();
-  });
+    expect(await post(f, bia.id, NINE)).toBeNull();
 
-  test("a member's card offers no budget raise and leaves no proposal it couldn't show", async () => {
-    f = await setup({ rightHand: true });
-    await inZone(f);
-    const bia = await addMember(f.db, f.org.id, "member", "bia");
-    await setLodiPrefs(f.db, f.org.id, bia.id, { daily: true, hour: 9 });
-    await run(f, f.agent.id, new Date(NINE.getTime() - 2 * HOUR), "done");
-    await budgetStop(f, new Date(NINE.getTime() - HOUR));
-    const id = await postTeamWeek({ db: f.db, pubsub: f.pubsub }, f.org.id, {
-      userId: bia.id,
-      slot: NINE.toISOString(),
-    });
-    expect(id).not.toBeNull();
-    const { card } = await cardOf(f, id as string);
-    expect(card.rows.map((r) => r.kind)).not.toContain("budget");
+    // The owner administers and owns Dev. Dev failing in Bia's DM with it is hers to read, not theirs.
+    const dm = await openPersonAgentDm(f.db, f.org.id, bia.id, f.agent.id);
+    await ask(f, bia.id, new Date(NINE.getTime() - HOUR), "failed", { channelId: dm.id, error: "stuck" });
+    const own = (await cardOf(f, (await post(f, f.owner.id, NINE)) as string)).card;
+    // The private channel is an administrator's to read, the DM is not. No money on a day's card, and no budget row.
+    expect(own.moreRows).toEqual([
+      expect.objectContaining({ kind: "stuck", channelId: hidden?.id, agentId: mine?.id }),
+    ]);
+    expect(own.stats).toMatchObject({ stuck: 1, spentNanoUsd: 0, budgetNanoUsd: 0 });
     expect(await f.db.select().from(schema.contextProposals)).toEqual([]);
+    const hers = (await cardOf(f, (await post(f, bia.id, NINE)) as string)).card;
+    expect(hers.moreRows).toEqual([
+      expect.objectContaining({ kind: "stuck", channelId: dm.id, dm: true, code: "other", count: 1 }),
+    ]);
   });
 
   test("asked of Lodi: set_team_week moves it for the person behind the run", async () => {

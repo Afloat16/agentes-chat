@@ -116,3 +116,42 @@ test("applied rows read how they ended, and a card put away keeps only its numbe
   await settle(4);
   expect(s.calls.find((c) => c.method === "orgs.actOnTeamWeek")?.args).toEqual([ORG_ID, "m-week", { dismiss: true }]);
 });
+
+test("the day's card: what waits on the person and what is stuck with its cause, each opened where it is", async () => {
+  const s = lodiWeek(
+    card({
+      period: "day",
+      stats: { done: 2, stuck: 1, waiting: 1, spentNanoUsd: 0, budgetNanoUsd: 0 },
+      rows: [
+        { id: "waiting", kind: "waiting", count: 1, ids: ["n-1"], agentId: ADA_ID, since: "2026-11-05T12:41:00Z" },
+        {
+          id: `stuck:${ADA_ID}`,
+          kind: "stuck",
+          agentId: ADA_ID,
+          channelId: GENERAL_ID,
+          dm: false,
+          code: "plan",
+          count: 1,
+          held: true,
+        },
+      ],
+    }),
+  );
+  const { router } = await renderApp(`/org/${ORG_ID}/dm/agent/${LODI_ID}`, { api: createFakeApi(s) });
+  await settle(8);
+  const group = screen.getByRole("group", { name: "Resumo do dia" });
+  expect(group.textContent).toContain("Precisa de você");
+  expect(group.textContent).toContain("1 coisa espera você");
+  expect(group.textContent).toContain("parou e espera para continuar");
+  expect(group.textContent).toContain("O plano chegou ao limite.");
+  // Nothing here is a suggestion to apply: no count of them, no "Aplicar as N", and no money on a day's card.
+  expect(group.textContent).not.toContain("sugest");
+  expect(screen.queryByRole("button", { name: /Aplicar/ })).toBeNull();
+  expect(group.textContent).not.toContain("no mês");
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Abrir conversa" }));
+  });
+  await settle(4);
+  expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/c/${GENERAL_ID}`);
+  expect(s.calls.some((c) => c.method === "orgs.actOnTeamWeek")).toBe(false);
+});

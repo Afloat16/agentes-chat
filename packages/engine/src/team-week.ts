@@ -4,8 +4,9 @@ import { listApprovals } from "./approvals";
 import { editContextItem, howToSql } from "./context/items";
 import { LEARN_DEFAULTS } from "./context/learn";
 import { NO_CHANNEL_REASON, OVER_BUDGET_REASON, proposeSettings } from "./context/proposals";
+import { personAgentDmKey } from "./dms";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "./errors";
-import { cutText } from "./format";
+import { cutText, stringsOf } from "./format";
 import { commentIssue } from "./issues";
 import { getMessage, postPersonMessage } from "./messages";
 import { maySql } from "./permissions";
@@ -14,16 +15,19 @@ import { knownZonesSql, type LodiPrefs, lodiPrefsOf, lodiPrefsSql, readLodiPrefs
 import { lodiFor, postFromLodi, setCardOnMessage } from "./right-hand-proactive";
 import { createRoutine, type RoutineDeps } from "./routines";
 import { localDate, nextOccurrence, type ScheduleRule } from "./rrule";
+import { runErrorDetail } from "./runs";
 import { openOrg } from "./standing";
-import { taskSeenSql } from "./task-access";
+import { channelReaderSql, taskSeenSql } from "./task-access";
+import { listWaiting } from "./waiting";
 
 /**
  * "Semana da equipe" (ADR 0137 §9): once a week Lodi posts one card in each admin's DM with it, from what the server
  * already stores (runs, approvals, budgets, channels, unanswered questions, requests repeated by hand, stalled steps),
  * with no model call. Each row is a fix applied as whoever clicks, through the paths the other cards use: a settings
  * proposal (budget, a channel), the approvals list, a routine, a message to Lodi or to a task's conversation.
- * "Resumo do dia" is the same card over a day, for everyone. When each comes is the person's own choice
- * (`right-hand-prefs.ts`).
+ * "Resumo do dia" (ADR 0177 §2) is the same card for everyone, about the reader alone: what waits on them, what their
+ * agents finished and what is stuck and why, only on a day with something new of theirs. When each comes is the
+ * person's own choice (`right-hand-prefs.ts`).
  */
 
 const { agents, contextItems, contextProposals, organizationSettings, outbox } = schema;
@@ -50,6 +54,16 @@ const REPEAT_DAYS = 3;
 /** Questions left unanswered in one channel before it is worth an agent. */
 const UNANSWERED_MIN = 3;
 const MAX_ROWS = 6;
+const MAX_DAY_ROWS = 5;
+/** A run parked on its plan, its budget or its computer for this long is stuck: a shorter wait ends by itself. */
+const HELD_MS = 4 * HOUR_MS;
+/** How far back a day's card reaches for the one before it, so a day with no card is not lost. */
+const DAY_REACH_MS = 3 * DAY_MS;
+const STUCK_SHOWN = 3;
+/** The waiting items a card names, for the apps to tell when none is left. */
+const WAITING_IDS = 20;
+/** The runs one day's card reads at most: a person's own in a few days, far under it. */
+const DAY_RUNS = 500;
 const NANO = 1_000_000_000;
 
 /** "Resumo do dia" or "Semana da equipe". */
@@ -98,7 +112,7 @@ export const teamWeekJobKey = (orgId: string, userId: string, period: TeamWeekPe
 
 /**
  * The cards of one person whose slot just passed. The week's is an administrator's. The day's is anyone's, in their
- * own time zone, and is left out on the day the week's card comes: that one says the day too.
+ * own time zone, and is left out on the day the week's card comes: the next day's reaches back over it.
  */
 export function dueTeamWeeks(
   prefs: LodiPrefs,
@@ -157,6 +171,35 @@ export type TeamWeekRow =
       agentId: string | null;
     };
 
+/** Why a run stopped, as the few causes a card words: never the run's own text. */
+export type StuckCause = "budget" | "plan" | "computer" | "key" | "ai" | "other";
+
+/**
+ * Rows of kinds added after the first app builds. They travel in `moreRows`, which those builds never read: a kind
+ * they do not know would break their card.
+ */
+export type TeamWeekMoreRow =
+  /**
+   * What waits on this person besides approvals ("Esperando você"): how many, the inbox rows (the oldest first, for
+   * the apps to tell when none is left) and who asked first. No question's text: the list itself shows it.
+   */
+  | { id: string; kind: "waiting"; count: number; ids: string[]; agentId: string | null; since: string }
+  /**
+   * Runs of one agent in one conversation that failed, or that wait (`held`) on a plan, a budget or a computer: the
+   * cause and where to open it. `dm`: the reader's own DM with the agent. `issueNumber`: a task's conversation.
+   */
+  | {
+      id: string;
+      kind: "stuck";
+      agentId: string;
+      channelId: string;
+      dm: boolean;
+      issueNumber?: number;
+      code: StuckCause;
+      count: number;
+      held: boolean;
+    };
+
 export type TeamWeekHighlight =
   | { kind: "runs"; agentId: string; channelId: string; count: number }
   | { kind: "tasks"; agentId: string; count: number };
@@ -166,6 +209,8 @@ export interface TeamWeekCard {
   forUserId: string;
   /** "Resumo do dia" (`day`) or the week's (absent on cards from before it). */
   period?: "day" | "week";
+  /** The slot it was posted for (absent on cards from before it): what a retry of its job finds. */
+  slot?: string;
   /** The week's first and last day, `YYYY-MM-DD` in the workspace's time zone. */
   from: string;
   to: string;
@@ -173,6 +218,12 @@ export interface TeamWeekCard {
   stats: { done: number; stuck: number; waiting: number; spentNanoUsd: number; budgetNanoUsd: number };
   worked: TeamWeekHighlight[];
   rows: TeamWeekRow[];
+  moreRows?: TeamWeekMoreRow[];
+  /**
+   * A day's card: what on it was still open when it went out (inbox rows waiting, runs held, its other rows). The
+   * next day's card says nothing when it would only say these again.
+   */
+  seen?: string[];
   /** The settings proposals on its rows: their receipts (Undo) live on this message. */
   proposalIds: string[];
   /** Rows applied here (the routine made, the message sent), by row id. */
@@ -202,6 +253,9 @@ interface Window {
   admin?: boolean;
 }
 
+/** A card as it is built, before anyone acts on it. */
+type BuiltCard = Omit<TeamWeekCard, "done" | "dismissedAt">;
+
 /** Lowercase words without accents, mentions or punctuation: how two requests are told the same. */
 export function requestKey(body: string) {
   const words = body
@@ -217,10 +271,7 @@ export function requestKey(body: string) {
 }
 
 /** The week's card for this person, or null when there is nothing to say (or no team yet). */
-export async function buildTeamWeek(
-  db: Database,
-  w: Window,
-): Promise<Omit<TeamWeekCard, "done" | "dismissedAt"> | null> {
+export async function buildTeamWeek(db: Database, w: Window): Promise<BuiltCard | null> {
   const start = w.start.toISOString();
   const end = w.end.toISOString();
   const team = rowsOf<{ id: string; created_at: string | Date; budget: number | string | null }>(
@@ -288,16 +339,7 @@ export async function buildTeamWeek(
   const waiting = (await listApprovals(db, w.userId, w.orgId, { status: "pending", limit: 200 })).filter(
     (a) => a.canDecide,
   );
-  const byAgent = new Map<string, typeof waiting>();
-  for (const a of waiting) byAgent.set(a.agentId, [...(byAgent.get(a.agentId) ?? []), a]);
-  for (const [agentId, list] of [...byAgent].sort((a, b) => oldest(a[1]).localeCompare(oldest(b[1]))).slice(0, 2))
-    rows.push({
-      id: `approvals:${agentId}`,
-      kind: "approvals",
-      agentId,
-      approvalIds: list.slice(0, 10).map((a) => a.id),
-      since: oldest(list),
-    });
+  rows.push(...approvalRows(waiting));
 
   // Stopped at the budget: raise it by half (whole dollars), through the settings card's own proposal. A run at the
   // budget parks (its `budget_wait` note; still waiting: `waitingForBrain`, cleared on resume) rather than failing.
@@ -419,6 +461,225 @@ export async function buildTeamWeek(
 
 const oldest = (list: { createdAt: string }[]) => list.map((a) => a.createdAt).sort()[0] ?? "";
 
+/** Approvals waiting for one person, a row per agent, the longest waiting first. */
+function approvalRows(waiting: { id: string; agentId: string; createdAt: string }[]): TeamWeekRow[] {
+  const byAgent = new Map<string, typeof waiting>();
+  for (const a of waiting) byAgent.set(a.agentId, [...(byAgent.get(a.agentId) ?? []), a]);
+  return [...byAgent]
+    .sort((a, b) => oldest(a[1]).localeCompare(oldest(b[1])))
+    .slice(0, 2)
+    .map(([agentId, list]) => ({
+      id: `approvals:${agentId}`,
+      kind: "approvals" as const,
+      agentId,
+      approvalIds: list.slice(0, 10).map((a) => a.id),
+      since: oldest(list),
+    }));
+}
+
+const STUCK_COMPUTER = /^run\.(computer_|cli_|account_missing|windows_sandbox|brain_unavailable)/;
+const STUCK_KEY = /^run\.(provider_(account|no_credit|invalid_key|no_access)|missing_credential|credential_|no_ai)/;
+const STUCK_AI = /^run\.(provider_|empty_reply|model_refused|brain_interrupted)/;
+
+/**
+ * Why a run stopped: what it waits on (`wait`, its `waitingForBrain` code), else its stored error. Null for a run a
+ * person stopped or a restart cut, where nothing is wrong with the agent.
+ */
+export function stuckCause(run: { error?: string | null; wait?: string | null }): StuckCause | null {
+  if (run.wait)
+    return run.wait === "budget"
+      ? "budget"
+      : run.wait === "plan_limit" || run.wait === "usage_pause"
+        ? "plan"
+        : "computer";
+  const code = runErrorDetail(run.error)?.errorCode ?? "";
+  if (code === "run.canceled" || code === "run.interrupted") return null;
+  if (code === "run.budget_exceeded") return "budget";
+  if (STUCK_COMPUTER.test(code)) return "computer";
+  if (STUCK_KEY.test(code)) return "key";
+  return STUCK_AI.test(code) ? "ai" : "other";
+}
+
+const isMoreRow = (r: TeamWeekRow | TeamWeekMoreRow): r is TeamWeekMoreRow =>
+  r.kind === "waiting" || r.kind === "stuck";
+
+/**
+ * The day's card for this person and whether it rings, or null when nothing on it is both theirs and new (or there is
+ * no team yet). Theirs: what waits on them, runs they asked for or of an agent they own, tasks they made, their
+ * agents' how-tos. New: not on the card before (`seen`), or inside this card's window. The whole workspace's work
+ * never posts it, an administrator's included, and every run is read through a conversation the person reads.
+ *
+ * A run is the person's when they wrote the message that started it or the first message of its thread, which is one
+ * statement for all of them. Work an agent passed to another outside that thread is left to its owner's card.
+ */
+export async function buildTeamDay(
+  db: Database,
+  w: Window & { seen?: string[] },
+): Promise<{ card: BuiltCard; push: boolean } | null> {
+  const [team] = rowsOf(
+    await db.execute(sql`select 1 from agents where org_id = ${w.orgId} and builtin is null
+      and archived_at is null and deleted_at is null limit 1`),
+  );
+  if (!team) return null;
+  const start = w.start.toISOString();
+  const end = w.end.toISOString();
+  const user = sql`${w.userId}::text`;
+  const seen = new Set(w.seen ?? []);
+
+  const runs = rowsOf<{
+    id: string;
+    agent_id: string;
+    channel_id: string;
+    status: "done" | "failed" | "waiting_input";
+    error: string | null;
+    wait: string | null;
+    kind: string;
+    dm_key: string | null;
+    issue_number: number | null;
+  }>(
+    await db.execute(sql`select r.id, r.agent_id, r.channel_id, r.status, r.error,
+        r.transcript->'waitingForBrain'->>'code' as wait, c.kind, c.dm_key,
+        (select i.number from issues i where i.conversation_channel_id = c.id) as issue_number
+      from agent_runs r join channels c on c.id = r.channel_id
+      where r.org_id = ${w.orgId}
+        and r.agent_id in (select id from agents where org_id = ${w.orgId} and builtin is null)
+        and ((r.status in ('done', 'failed')
+            and r.created_at >= ${start}::timestamptz and r.created_at < ${end}::timestamptz)
+          or (r.status = 'waiting_input'
+            and coalesce(r.transcript->'waitingForBrain'->>'code', 'work_queue') <> 'work_queue'
+            and coalesce(r.transcript->'waitingForBrain'->>'since',
+              to_char(r.updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'))
+              <= ${new Date(w.end.getTime() - HELD_MS).toISOString()}))
+        and ((c.kind = 'channel' and c.visibility = 'public') or ${channelReaderSql(sql`c.id`, user)})
+        and (exists (select 1 from agents oa where oa.id = r.agent_id and oa.owner_user_id = ${w.userId})
+          or exists (select 1 from messages am where am.org_id = r.org_id
+            and am.id in (r.trigger_message_id, r.thread_root_id) and am.author_user_id = ${w.userId}))
+      order by r.created_at desc limit ${DAY_RUNS}`),
+  );
+  let finished = 0;
+  const doneIn = new Map<string, { agentId: string; channelId: string; count: number }>();
+  const stuckIn = new Map<
+    string,
+    { run: (typeof runs)[number]; failed: number; cause: StuckCause; held: string[]; heldCause: StuckCause }
+  >();
+  // Oldest first: a good run after a failed one in the same conversation means the agent is working there again.
+  for (const r of runs.reverse()) {
+    // A DM that is not the person's own with this agent has no page of its own to open: it stays off their card.
+    if (r.kind === "dm" && r.dm_key !== personAgentDmKey(w.userId, r.agent_id)) continue;
+    const key = `${r.agent_id}:${r.channel_id}`;
+    const at = stuckIn.get(key) ?? { run: r, failed: 0, cause: "other", held: [], heldCause: "other" };
+    if (r.status === "done") {
+      finished++;
+      at.failed = 0;
+      if (r.kind === "channel")
+        doneIn.set(key, {
+          agentId: r.agent_id,
+          channelId: r.channel_id,
+          count: (doneIn.get(key)?.count ?? 0) + 1,
+        });
+    } else {
+      const cause = stuckCause(r.status === "failed" ? { error: r.error } : { wait: r.wait });
+      if (!cause) continue;
+      if (r.status === "failed") {
+        at.failed++;
+        at.cause = cause;
+      } else {
+        at.held.push(r.id);
+        at.heldCause = cause;
+      }
+    }
+    stuckIn.set(key, at);
+  }
+  const stuck = [...stuckIn.values()].filter((s) => s.failed > 0 || s.held.length > 0);
+  const heldKeys = stuck.flatMap((s) => s.held.map((id) => `run:${id}`));
+  const stuckRows: TeamWeekMoreRow[] = stuck
+    .sort((a, b) => b.held.length - a.held.length || b.failed - a.failed)
+    .slice(0, STUCK_SHOWN)
+    .map((s) => ({
+      id: `stuck:${s.run.agent_id}:${s.run.channel_id}`,
+      kind: "stuck" as const,
+      agentId: s.run.agent_id,
+      channelId: s.run.channel_id,
+      dm: s.run.kind === "dm",
+      ...(s.run.issue_number != null ? { issueNumber: Number(s.run.issue_number) } : {}),
+      code: s.held.length > 0 ? s.heldCause : s.cause,
+      count: s.failed + s.held.length,
+      held: s.held.length > 0,
+    }));
+
+  const closed = rowsOf<{ agent_id: string; n: number | string }>(
+    await db.execute(sql`select assignee_id as agent_id, count(*) as n from issues
+      where org_id = ${w.orgId} and status = 'done' and assignee_type = 'agent'
+        and created_by_type = 'person' and created_by_id = ${w.userId}
+        and updated_at >= ${start}::timestamptz and updated_at < ${end}::timestamptz
+      group by assignee_id order by n desc limit 1`),
+  );
+  const worked: TeamWeekHighlight[] = [
+    ...[...doneIn.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 2)
+      .map((d) => ({ kind: "runs" as const, ...d })),
+    ...closed.map((c) => ({ kind: "tasks" as const, agentId: c.agent_id, count: Number(c.n) })),
+  ];
+
+  // What waits on them is their inbox's own list. Approvals keep their rows, for the agents that list says ask.
+  const waiting = await listWaiting({ db }, w.userId, w.orgId);
+  const asked = waiting.items.filter((i) => i.kind !== "approval");
+  const asking = new Set(
+    waiting.items.flatMap((i) => (i.kind === "approval" && i.asker?.type === "agent" ? [i.asker.id] : [])),
+  );
+  const approvals = asking.size
+    ? (await listApprovals(db, w.userId, w.orgId, { status: "pending", limit: 200 })).filter(
+        (a) => a.canDecide && asking.has(a.agentId),
+      )
+    : [];
+  const first = asked[0];
+  const waitingRow: TeamWeekMoreRow[] = first
+    ? [
+        {
+          id: "waiting",
+          kind: "waiting",
+          count: asked.length,
+          ids: asked.slice(0, WAITING_IDS).map((i) => i.id),
+          agentId: asked.find((i) => i.asker?.type === "agent")?.asker?.id ?? null,
+          since: first.since,
+        },
+      ]
+    : [];
+
+  const stalled = await stalledSteps(db, w, true);
+  const rest: TeamWeekRow[] = [...(await provenHowTos(db, w)), ...(stalled ? [stalled] : [])];
+
+  const newWaiting = waiting.items.some((i) => !seen.has(i.id));
+  const newStuck = stuck.some((s) => s.failed > 0) || heldKeys.some((k) => !seen.has(k));
+  if (finished === 0 && closed.length === 0 && !newWaiting && !newStuck && rest.every((r) => seen.has(r.id)))
+    return null;
+  const shown = [...approvalRows(approvals), ...waitingRow, ...stuckRows, ...rest].slice(0, MAX_DAY_ROWS);
+  return {
+    card: {
+      kind: TEAM_WEEK_CARD,
+      forUserId: w.userId,
+      from: localDate(w.start, w.timezone),
+      to: localDate(new Date(w.end.getTime() - 1), w.timezone),
+      timezone: w.timezone,
+      stats: {
+        done: finished,
+        stuck: stuck.reduce((n, s) => n + s.failed + s.held.length, 0),
+        waiting: waiting.count,
+        spentNanoUsd: 0,
+        budgetNanoUsd: 0,
+      },
+      worked,
+      rows: shown.filter((r): r is TeamWeekRow => !isMoreRow(r)),
+      moreRows: shown.filter(isMoreRow),
+      seen: [...waiting.items.map((i) => i.id), ...heldKeys, ...rest.map((r) => r.id)],
+      proposalIds: [],
+    },
+    // It rings for what waits on them or is stuck and was not said before. What only finished is read when they come.
+    push: newWaiting || newStuck,
+  };
+}
+
 /**
  * A fresh settings proposal by Lodi for this person; null when the line can't be made or this person can't decide it
  * (the card only offers what its reader applies). The same fix still open on an earlier week's card goes stale there:
@@ -535,9 +796,9 @@ const mode = (list: number[]) => {
 
 /**
  * A task whose steps wait for hours while another step is in progress or in review (a reviewer rejecting step 1
- * while steps 2 to 4 wait on it): the one stalled the longest.
+ * while steps 2 to 4 wait on it): the one stalled the longest. `own`: only a task this person made.
  */
-async function stalledSteps(db: Database, w: Window): Promise<TeamWeekRow | null> {
+async function stalledSteps(db: Database, w: Window, own = false): Promise<TeamWeekRow | null> {
   const [s] = rowsOf<{
     id: string;
     number: number;
@@ -558,6 +819,7 @@ async function stalledSteps(db: Database, w: Window): Promise<TeamWeekRow | null
         and ${taskSeenSql("s", sql`${w.userId}::text`)}
       where p.org_id = ${w.orgId} and p.status not in ('done', 'canceled')
         and ${taskSeenSql("p", sql`${w.userId}::text`)}
+        ${own ? sql`and p.created_by_type = 'person' and p.created_by_id = ${w.userId}` : sql``}
       group by p.id
       having count(*) filter (where s.status = 'todo') >= 2
         and count(*) filter (where s.status in ('in_progress', 'in_review') or s.blocked is not null) >= 1
@@ -742,19 +1004,40 @@ export async function postTeamWeek(
   const lodi = await lodiFor(db, orgId, userId);
   if (!lodi) return null;
   const timezone = period === "day" ? member.dayTimezone : member.timezone;
-  const start = new Date(slot.getTime() - teamWeekSpan(period));
+  const span = new Date(slot.getTime() - teamWeekSpan(period));
+  const mine = sql`meta->'actionCard'->>'kind' = ${TEAM_WEEK_CARD} and meta->'actionCard'->>'forUserId' = ${userId}
+    and author_agent_id = ${lodi.id} and coalesce(meta->'actionCard'->>'period', 'week') = ${period}`;
+  // By its slot. A card from before cards kept one is found by its first day, which was the slot's then.
   const posted = async (tx: Executor) =>
     rowsOf<{ id: string }>(
-      await tx.execute(sql`select id from messages where org_id = ${orgId} and author_agent_id = ${lodi.id}
-        and meta->'actionCard'->>'kind' = ${TEAM_WEEK_CARD} and meta->'actionCard'->>'forUserId' = ${userId}
-        and meta->'actionCard'->>'from' = ${localDate(start, timezone)}
-        and coalesce(meta->'actionCard'->>'period', 'week') = ${period} limit 1`),
+      await tx.execute(sql`select id from messages where org_id = ${orgId} and ${mine}
+        and coalesce(meta->'actionCard'->>'slot' = ${slot.toISOString()},
+          meta->'actionCard'->>'from' = ${localDate(span, timezone)}) limit 1`),
     ).length > 0;
   // A retry after the card went out builds nothing: building again would stale the proposals that card shows.
   if (await posted(db)) return null;
-  const built = await buildTeamWeek(db, { orgId, userId, rightHandId: lodi.id, start, end: slot, timezone, admin });
+  const w = { orgId, userId, rightHandId: lodi.id, start: span, end: slot, timezone, admin };
+  let built: { card: BuiltCard; push: boolean } | null;
+  if (period === "day") {
+    // The day's card goes on from the one before it, so a day that posted none is not lost, and repeats nothing of it.
+    const [last] = rowsOf<{ card: { slot?: unknown; seen?: unknown } | null; created_at: string | Date }>(
+      await db.execute(sql`select meta->'actionCard' as card, created_at from messages
+        where org_id = ${orgId} and ${mine} and channel_id = (select id from channels
+          where org_id = ${orgId} and dm_key = ${personAgentDmKey(userId, lodi.id)})
+        order by created_at desc limit 1`),
+    );
+    const before = last ? new Date(typeof last.card?.slot === "string" ? last.card.slot : last.created_at) : null;
+    const start =
+      before && before.getTime() < slot.getTime()
+        ? new Date(Math.max(before.getTime(), slot.getTime() - DAY_REACH_MS))
+        : span;
+    built = await buildTeamDay(db, { ...w, start, seen: stringsOf(last?.card?.seen) });
+  } else {
+    const week = await buildTeamWeek(db, w);
+    built = week && { card: week, push: true };
+  }
   if (!built) return null;
-  const card: TeamWeekCard = { ...built, period, done: {}, dismissedAt: null };
+  const card: TeamWeekCard = { ...built.card, period, slot: slot.toISOString(), done: {}, dismissedAt: null };
   const [settings] = await db
     .select({ mode: organizationSettings.mode })
     .from(organizationSettings)
@@ -767,7 +1050,7 @@ export async function postTeamWeek(
     // Only this person reads it: the push and the conversation list say it in their language.
     body: (locale) => pushStrings(locale)[period === "day" ? "teamDayReady" : week],
     meta: { actionCard: card },
-    push: true,
+    push: built.push,
     posted,
     lodi,
   });
@@ -795,7 +1078,7 @@ export async function actOnTeamWeek(
   const next: TeamWeekCard = { ...card, done: { ...(card.done ?? {}) } };
   if ("dismiss" in input) next.dismissedAt = new Date().toISOString();
   else {
-    const row = card.rows.find((r) => r.id === input.rowId);
+    const row = [...card.rows, ...(card.moreRows ?? [])].find((r) => r.id === input.rowId);
     if (!row) throw new NotFoundError("Row not found");
     if (next.done[row.id]) throw new ConflictError("Already done", "team_week.done");
     const text = input.text?.trim().slice(0, 2000) ?? "";
