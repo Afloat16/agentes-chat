@@ -822,16 +822,14 @@ function StalledDialog({
                     <button type="button" className="issues-stalled__title" onClick={() => onOpen(i.number)}>
                       <span className="ac-mediarow__num">#{i.number}</span> {codeAndBold(i.title)}
                     </button>
-                    <span className="issues-stalled__meta">
-                      {asked ? (
-                        t("issues.now.rowSent")
-                      ) : (
-                        <>
-                          <Icon name="pause" size={14} />
-                          {step ? `${when} · ${step}` : when}
-                        </>
-                      )}
-                    </span>
+                    {asked ? (
+                      <span className="issues-stalled__meta">{t("issues.now.rowSent")}</span>
+                    ) : (
+                      <span className="issues-stalled__meta ac-iconline">
+                        <Icon name="pause" size={14} />
+                        <span>{step ? `${when} · ${step}` : when}</span>
+                      </span>
+                    )}
                   </span>
                   {!asked && (
                     <Button

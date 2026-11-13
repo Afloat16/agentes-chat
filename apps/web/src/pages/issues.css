@@ -147,10 +147,12 @@ html:not([data-pointer]) .issues-stalled__title:focus-visible {
   font-size: 13px;
   line-height: 18px;
 }
+/* Its pause mark leads the line (.ac-iconline), a little closer than the kit's 8. */
+.issues-stalled__meta.ac-iconline {
+  gap: 4px;
+}
 .issues-stalled__meta > .ac-icon {
-  margin-right: 4px;
   color: var(--warn);
-  vertical-align: -2px;
 }
 .issues-stalled__task.is-sent .issues-stalled__meta {
   color: var(--agent);
