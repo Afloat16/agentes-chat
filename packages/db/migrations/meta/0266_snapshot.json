@@ -1,5 +1,5 @@
 {
-  "id": "20aec161-0627-4b0b-8141-6a27b3e2e4fe",
+  "id": "76ddc7a5-ff0e-41cf-bc9e-7e1264ee7d2d",
   "prevId": "0413be2c-9646-452c-b6f2-6bc5bd84f2a3",
   "version": "7",
   "dialect": "postgresql",
@@ -15423,7 +15423,7 @@
           ],
           "isUnique": false,
           "where": "\"agent_run_steps\".\"kind\" = 'tool_call'",
-          "concurrently": false,
+          "concurrently": true,
           "method": "btree",
           "with": {}
         }
@@ -18061,7 +18061,7 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "concurrently": true,
           "method": "btree",
           "with": {}
         },
@@ -18078,7 +18078,7 @@
           ],
           "isUnique": false,
           "where": "\"outbox\".\"kind\" = 'agent_run.execute'",
-          "concurrently": false,
+          "concurrently": true,
           "method": "btree",
           "with": {}
         }
