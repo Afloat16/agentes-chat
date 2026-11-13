@@ -39131,6 +39131,9 @@
   "chat.body.action_approvals": {
     "value": "Approvals waiting for you"
   },
+  "chat.body.welcome_member": {
+    "value": "You just joined {{org}}. **What do you look after here?** Tell me and I set up your first agent with you."
+  },
   "chat.body.action_open_page": {
     "value": "Open a screen"
   },

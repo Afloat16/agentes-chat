@@ -16168,6 +16168,9 @@ export const en = {
       action_install_skill: "Install a skill",
       action_update_skills: "Update skills",
       action_approvals: "Approvals waiting for you",
+      /** The right hand's greeting to someone who just joined the workspace, the first message of their DM with it. */
+      welcome_member:
+        "You just joined {{org}}. **What do you look after here?** Tell me and I set up your first agent with you.",
       action_open_page: "Open a screen",
       calendar_proposal: "Event proposal: {{title}}",
       action_workspace: "Proposed a change in the workspace",

@@ -15470,6 +15470,7 @@
       "action_install_skill": "스킬 설치",
       "action_update_skills": "스킬 업데이트",
       "action_approvals": "내 승인을 기다리는 요청",
+      "welcome_member": "방금 {{org}}에 들어오셨네요. **여기서 어떤 일을 맡고 있나요?** 알려주시면 첫 에이전트를 함께 만들어 드릴게요.",
       "action_open_page": "화면 열기",
       "calendar_proposal": "일정 제안: {{title}}",
       "action_workspace": "워크스페이스 변경을 제안했어요",

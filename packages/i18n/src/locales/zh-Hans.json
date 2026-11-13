@@ -15546,6 +15546,7 @@
       "action_install_skill": "安装技能",
       "action_update_skills": "更新技能",
       "action_approvals": "等你处理的审批",
+      "welcome_member": "你刚加入了{{org}}。**你在这里负责什么？**告诉我，我和你一起设置你的第一个智能体。",
       "action_open_page": "打开页面",
       "calendar_proposal": "日程提议：{{title}}",
       "action_workspace": "提议了一项工作区更改",
