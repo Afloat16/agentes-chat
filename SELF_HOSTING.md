@@ -905,7 +905,9 @@ for counts): which tool, whether it is the server's own or a connected app's, an
 one's state and last error, `GET /orgs/{orgId}/audit` its audit log without the entries' details,
 `GET /orgs/{orgId}/asks` what its agents asked of people and of each other (`?open=true` for what still
 waits) and `GET /orgs/{orgId}/routines` its routines with their latest firings: never a credential, what
-was asked or answered, or a routine's instructions.
+was asked or answered, or a routine's name or instructions. A connection's `label` is what its workspace
+calls it, which is a mailbox's address or a database's host when nobody named it; an audit entry's
+`targetId` is a name where the target has no id (a tool, a repository, a wiki folder).
 `GET /orgs/{orgId}/notifications?userId=` lists what one person was notified of and the pushes that
 carried it, never a notification's words; `GET /orgs/{orgId}/access?userId=&targetKind=&targetId=` says
 whether a person reaches an agent, a channel, a task, a file or a computer, and the rule that decides;

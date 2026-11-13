@@ -87,7 +87,10 @@ const noTools = () => ({ read: 0, write: 0, approval: 0, off: 0, undecided: 0 })
 /**
  * What a workspace connected for its agents, removed ones too, newest first, in keyset pages: connected apps and
  * servers, mailboxes and databases. Each with the service it is of, its label, its state and the start of its last
- * error. Never a credential, an address, a mailbox's address or a database's host. Null: no such workspace.
+ * error. Never a credential, and of where it is no more than a server's hostname (`connector`): no path, no
+ * mailbox's address, no database's host. A label is what its workspace calls it, though, and one nobody named is
+ * called by just that: the mailbox's address, the database's host or name, the server's hostname, or the service
+ * and the account's name. Null: no such workspace.
  */
 export async function operatorConnections(db: Database, orgId: string, query: PageQuery) {
   const after = query.cursor ? decodeCursor(query.cursor, UuidCursor) : null;
@@ -281,7 +284,8 @@ export async function operatorAudit(db: Database, orgId: string, query: Operator
   return {
     from,
     to,
-    // A target is named by an id, a tool's name or a repository's: anything longer in its place reads as absent.
+    // A target is told by its id, or, having none, by the name its workspace knows it by: a tool, a repository
+    // (`repository`, `git_repo`), a wiki folder's path. Anything longer than a word in its place reads as absent.
     events: page.map(({ storedAt, ...e }) => ({ ...e, targetId: wordOf(e.targetId), outcome: codeOf(e.outcome) })),
     next: last && rows.length > query.limit ? encodeCursor([last.storedAt, last.id]) : null,
   };
@@ -563,7 +567,9 @@ const CRON = /^[\w*/,?#-]+(?: [\w*/,?#-]+){4,5}$/;
  * A workspace's routines, deleted ones too, newest first, in keyset pages: whose each is, when it runs (its schedule
  * as stored, or the event that fires it), whether it is on and why it paused itself, where it delivers, and its
  * latest firings with how each ended and the run it started. Never its instructions, the words its schedule was
- * read from, nor what a firing reported. Null: no such workspace.
+ * read from, nor what a firing reported. Never its name either: one nobody named is called by its instructions'
+ * first line, a reminder always, and nothing stored tells such a name from one a person gave. Null: no such
+ * workspace.
  */
 export async function operatorRoutines(db: Database, orgId: string, query: PageQuery & { agentId?: string }) {
   const after = query.cursor ? decodeCursor(query.cursor, UuidCursor) : null;
@@ -573,7 +579,6 @@ export async function operatorRoutines(db: Database, orgId: string, query: PageQ
     .select({
       id: routines.id,
       agentId: routines.agentId,
-      name: routines.name,
       triggerType: routines.triggerType,
       cron: routines.cron,
       timezone: routines.timezone,

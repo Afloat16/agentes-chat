@@ -5758,7 +5758,7 @@
                 },
                 "label": {
                   "type": "string",
-                  "description": "As its workspace named it."
+                  "description": "What its workspace calls it: a name a person typed. One nobody named is called by the mailbox's address, the database's host or name, the server's hostname, or the service and the account's name on it."
                 },
                 "authType": {
                   "type": ["string", "null"],
@@ -5885,7 +5885,7 @@
                 },
                 "targetId": {
                   "type": ["string", "null"],
-                  "description": "Its id; a tool's or a repository's name."
+                  "description": "Its id. A target with no id of its own goes by its name, which its workspace may have written: a tool's (`tool`), a repository's (`repository`, `git_repo`), a wiki folder's path (`wiki_folder`); one of the server's own settings goes by the server's name for it (`instance_secret`). Null when what is stored is longer than one word."
                 },
                 "outcome": {
                   "type": ["string", "null"],
@@ -6057,10 +6057,6 @@
                   "type": "string",
                   "format": "uuid"
                 },
-                "name": {
-                  "type": "string",
-                  "description": "As its workspace named it."
-                },
                 "triggerType": {
                   "type": "string",
                   "description": "`schedule`, `once` (one time, at `nextRunAt`) or `event`."
@@ -6171,7 +6167,6 @@
               "required": [
                 "id",
                 "agentId",
-                "name",
                 "triggerType",
                 "cron",
                 "timezone",
@@ -10562,7 +10557,7 @@
       "get": {
         "tags": ["Operator"],
         "summary": "What a workspace connected for its agents: apps and servers, mailboxes and databases, newest first",
-        "description": "Removed ones too. Never a credential, a server's address, a mailbox's address or a database's host.",
+        "description": "Removed ones too. Never a credential. No field says where one is, past the hostname of a server connected by address (`connector`): not a server's path, a mailbox's address or a database's host. Only `label` may, for a connection nobody named.",
         "parameters": [
           {
             "schema": {
@@ -10949,7 +10944,7 @@
       "get": {
         "tags": ["Operator"],
         "summary": "A workspace's routines, deleted ones too, newest first, each with its latest firings",
-        "description": "When each runs, whether it is on, where it delivers and how its latest firings ended. Never its instructions, nor what a firing reported.",
+        "description": "When each runs, whether it is on, where it delivers and how its latest firings ended. Never its instructions, nor what a firing reported. Never its name either: one nobody named is called by its instructions' first line.",
         "parameters": [
           {
             "schema": {

@@ -37,7 +37,10 @@ const ConnectionPage = z
           description:
             "The service it is of, as its use is counted (`GET /analytics`): the server's own id for it (`github`, `gmail`, `postgres`…), or for a server connected by address that is none the server knows, its hostname (it has a dot; no id of the server's does) or `custom`.",
         }),
-        label: z.string().openapi({ description: "As its workspace named it." }),
+        label: z.string().openapi({
+          description:
+            "What its workspace calls it: a name a person typed. One nobody named is called by the mailbox's address, the database's host or name, the server's hostname, or the service and the account's name on it.",
+        }),
         authType: z.string().nullable().openapi({
           description:
             "How it signs in. A connector's `oauth`, `api_key`, `none` or `github_app`; a mailbox's `composio` or `imap`; null for a database.",
@@ -104,7 +107,10 @@ const AuditPage = z
               "What was done, as the server names it: `connector.connected`, `routine.created`, `agent.access_changed`…, and `tool.call` for a tool an agent called.",
           }),
           targetType: z.string().openapi({ description: "`agent`, `connector`, `routine`, `tool`, `person`…" }),
-          targetId: z.string().nullable().openapi({ description: "Its id; a tool's or a repository's name." }),
+          targetId: z.string().nullable().openapi({
+            description:
+              "Its id. A target with no id of its own goes by its name, which its workspace may have written: a tool's (`tool`), a repository's (`repository`, `git_repo`), a wiki folder's path (`wiki_folder`); one of the server's own settings goes by the server's name for it (`instance_secret`). Null when what is stored is longer than one word.",
+          }),
           outcome: z.string().nullable().openapi({
             description: "A tool call's: `done`, `failed`, `refused` or `pending` (it waits for a person).",
           }),
@@ -185,7 +191,6 @@ const RoutinePage = z
       z.object({
         id: z.uuid(),
         agentId: z.uuid(),
-        name: z.string().openapi({ description: "As its workspace named it." }),
         triggerType: z.string().openapi({
           description: "`schedule`, `once` (one time, at `nextRunAt`) or `event`.",
         }),
@@ -251,7 +256,7 @@ export function registerOperatorWorkspace(api: OpenAPIHono, { db }: OperatorDeps
       tags,
       summary: "What a workspace connected for its agents: apps and servers, mailboxes and databases, newest first",
       description:
-        "Removed ones too. Never a credential, a server's address, a mailbox's address or a database's host.",
+        "Removed ones too. Never a credential. No field says where one is, past the hostname of a server connected by address (`connector`): not a server's path, a mailbox's address or a database's host. Only `label` may, for a connection nobody named.",
       request: { params: OrgParams, query: z.object(paging) },
       responses: { 200: json(ConnectionPage), ...errors },
     }),
@@ -325,7 +330,7 @@ export function registerOperatorWorkspace(api: OpenAPIHono, { db }: OperatorDeps
       tags,
       summary: "A workspace's routines, deleted ones too, newest first, each with its latest firings",
       description:
-        "When each runs, whether it is on, where it delivers and how its latest firings ended. Never its instructions, nor what a firing reported.",
+        "When each runs, whether it is on, where it delivers and how its latest firings ended. Never its instructions, nor what a firing reported. Never its name either: one nobody named is called by its instructions' first line.",
       request: { params: OrgParams, query: RoutineQuery },
       responses: { 200: json(RoutinePage), ...errors },
     }),

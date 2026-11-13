@@ -184,18 +184,40 @@ beforeAll(async () => {
       username: "fake-user",
       createdAt: day(5),
     },
+    // Nobody named it: the server calls a mailbox by its address.
+    {
+      ...SEALED,
+      id: connection(7),
+      orgId: ADA,
+      provider: "imap",
+      via: "imap",
+      address: "ana@example.org",
+      label: "ana@example.org",
+      status: "active",
+      username: "fake-user",
+      createdAt: day(7),
+    },
   ]);
-  await db.insert(schema.dbConnections).values({
-    ...SEALED,
-    id: connection(6),
-    orgId: ADA,
-    label: "Production",
-    host: "db.example.com",
-    database: "canary_db",
-    username: "fake-user",
-    createdByUserId: "u-ada",
-    createdAt: day(6),
-  });
+  const database = { ...SEALED, orgId: ADA, database: "canary_db", username: "fake-user" };
+  await db.insert(schema.dbConnections).values([
+    {
+      ...database,
+      id: connection(6),
+      label: "Production",
+      host: "db.example.com",
+      createdByUserId: "u-ada",
+      createdAt: day(6),
+    },
+    // Nobody named it: the server calls a whole server by its host.
+    {
+      ...database,
+      id: connection(8),
+      label: "pg.example.org",
+      host: "pg.example.org",
+      wholeServer: true,
+      createdAt: day(8),
+    },
+  ]);
   const used = { via: "mcp" as const, orgId: ADA, agentId: DEV, tool: "get_issue" };
   await db.insert(schema.connectorUsageDays).values([
     { ...used, day: "2026-01-03", connector: "github", calls: 1 },
@@ -384,12 +406,18 @@ beforeAll(async () => {
   });
 
   // ── Routines ──
-  const routineOf = { orgId: ADA, agentId: DEV, prompt: "canary routine prompt", description: "canary schedule" };
+  // Named as the server names one nobody did: by its instructions' first line.
+  const routineOf = {
+    orgId: ADA,
+    agentId: DEV,
+    name: "canary routine prompt",
+    prompt: "canary routine prompt",
+    description: "canary schedule",
+  };
   await db.insert(schema.routines).values([
     {
       ...routineOf,
       id: routine(1),
-      name: "Morning report",
       target: { type: "channel", channelId: GENERAL },
       triggerType: "schedule",
       phrase: "canary every weekday at nine",
@@ -404,7 +432,6 @@ beforeAll(async () => {
     {
       ...routineOf,
       id: routine(2),
-      name: "On a call",
       target: { type: "conversation", channelId: GENERAL, threadId: ROOT, forUserId: "u-ada", note: "canary target" },
       triggerType: "event",
       event: "webhook.received",
@@ -416,7 +443,6 @@ beforeAll(async () => {
       ...routineOf,
       id: routine(3),
       agentId: OPS,
-      name: "Retired",
       target: { type: "dm" },
       triggerType: "schedule",
       // Words where a schedule belongs, and a reason that is no code: neither is returned.
@@ -431,7 +457,6 @@ beforeAll(async () => {
       id: routine(9),
       orgId: LIA,
       agentId: LIA_DEV,
-      name: "Lia's",
       target: { type: "dm" },
       triggerType: "schedule",
     },
@@ -490,11 +515,30 @@ async function paged<K extends string>(path: string, key: K, limit: number) {
 }
 const ids = (rows: Row[]) => rows.map((r) => r.id);
 
-test("connections: apps and servers, mailboxes and databases in one list, never how to reach or open one", async () => {
+test("connections: apps and servers, mailboxes and databases in one list, never a credential, and where one is only as the label of one nobody named", async () => {
   const { connections, next } = await ok<Page<"connections">>(await get(`/orgs/${ADA}/connections`));
   expect(next).toBeNull();
   const none = { lastErrorCode: null, lastError: null, revokedAt: null, lastUsedDay: null, tools: null };
+  const unnamed = { ...none, authType: null, status: "active", createdByUserId: null };
   expect(connections).toEqual([
+    // One nobody named is called by where it is: the label says it, and no other field does.
+    {
+      ...unnamed,
+      kind: "database",
+      id: connection(8),
+      connector: "postgres",
+      label: "pg.example.org",
+      createdAt: day(8).toISOString(),
+    },
+    {
+      ...unnamed,
+      kind: "mailbox",
+      id: connection(7),
+      connector: "imap",
+      label: "ana@example.org",
+      authType: "imap",
+      createdAt: day(7).toISOString(),
+    },
     {
       ...none,
       kind: "database",
@@ -670,6 +714,36 @@ test("audit: who did what to what in a range of dates, never an entry's details"
   expect(await refusal(await get(`/orgs/${ADA}/audit?actorType=robot`))).toEqual([400, "invalid_request"]);
   expect(await refusal(await get(`/orgs/${ADA}/audit?runId=nope`))).toEqual([400, "invalid_request"]);
   expect(await refusal(await get(`/orgs/${ADA}/audit?cursor=nope`))).toEqual([400, "invalid_cursor"]);
+});
+
+test("audit: a target with no id of its own goes by its name, and the contract says which kinds do", async () => {
+  // As the server records a tool call, a merge, a push through the Git proxy and a wiki folder restricted.
+  const named: [targetType: string, targetId: string][] = [
+    ["tool", "billing_list_invoices"],
+    ["repository", "acme/site"],
+    ["git_repo", "acme/private-site"],
+    ["wiki_folder", "clients/renewals"],
+  ];
+  await t.db.insert(schema.auditLog).values(
+    named.map(([targetType, targetId], n) => ({
+      orgId: ADA,
+      actorType: "agent" as const,
+      actorId: DEV,
+      action: "test.named",
+      targetType,
+      targetId,
+      createdAt: new Date(Date.UTC(2026, 0, 21, 0, n)),
+    })),
+  );
+  const { events } = await ok<Page<"events">>(
+    await get(`/orgs/${ADA}/audit?action=test.named&from=2026-01-21T00:00:00Z&to=2026-01-22T00:00:00Z`),
+  );
+  expect(events.map((e) => [e.targetType, e.targetId])).toEqual([...named].reverse());
+  // A caller masks by kind: every kind whose target is a name is one the contract names.
+  type Doc = { components: { schemas: Record<string, { properties: Record<string, unknown> }> } };
+  const doc = (await (await get("/openapi.json")).json()) as Doc;
+  const said = JSON.stringify(doc.components.schemas.OperatorAuditPage?.properties.events);
+  for (const [targetType] of named) expect(said).toContain(`\`${targetType}\``);
 });
 
 test("a page of the audit log continues from the stored time itself, in an order its index serves", async () => {
@@ -855,7 +929,7 @@ test("asks: approvals, questions, secrets, screens and consultations in one list
   expect(await refusal(await get(`/orgs/${ADA}/asks?cursor=nope`))).toEqual([400, "invalid_cursor"]);
 });
 
-test("routines: when each runs, where it delivers and how its latest firings ended, never its instructions", async () => {
+test("routines: when each runs, where it delivers and how its latest firings ended, never its name or instructions", async () => {
   type Routine = Row & { runs: Row[] };
   const { routines, next } = await ok<{ routines: Routine[]; next: string | null }>(await get(`/orgs/${ADA}/routines`));
   expect(next).toBeNull();
@@ -874,7 +948,6 @@ test("routines: when each runs, where it delivers and how its latest firings end
     {
       id: routine(3),
       agentId: OPS,
-      name: "Retired",
       triggerType: "schedule",
       cron: null,
       timezone: null,
@@ -892,7 +965,6 @@ test("routines: when each runs, where it delivers and how its latest firings end
     {
       id: routine(2),
       agentId: DEV,
-      name: "On a call",
       triggerType: "event",
       cron: null,
       timezone: null,
@@ -911,7 +983,6 @@ test("routines: when each runs, where it delivers and how its latest firings end
     {
       id: routine(1),
       agentId: DEV,
-      name: "Morning report",
       triggerType: "schedule",
       cron: "0 9 * * 1-5",
       timezone: "America/Sao_Paulo",

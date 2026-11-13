@@ -101,9 +101,11 @@ const KEPT: Record<string, string[]> = {
   agent_questions: ["answered_by_user_id", "requested_for_user_id"],
   secret_requests: ["requested_for_user_id"],
   browser_handoffs: ["kind", "status"],
-  // Never `details`: who did what to what, as the server's own code names both.
+  // Never `details`: who did what to what. The server's own code names both, except a target with no id of its
+  // own: that one goes by the name its workspace knows it by (a tool, a repository, a wiki folder).
   audit_log: ["actor_type", "actor_id", "action", "target_type", "target_id", "outcome", "on_behalf_of_user_id"],
-  routines: ["name", "trigger_type", "cron", "timezone", "event", "paused_reason", "target.type"],
+  // Never `name`: one nobody named is called by its instructions' first line.
+  routines: ["trigger_type", "cron", "timezone", "event", "paused_reason", "target.type"],
   routine_runs: ["trigger", "status", "code"],
   routing_decisions: ["strategy", "error"],
   // Of a payload, only which email a job sends.
@@ -139,6 +141,7 @@ const PLACES: [what: string, table: string, value: string, where?: string][] = [
   ["an approval's parameters", "approvals", "params::text"],
   ["a question's text", "agent_questions", "text"],
   ["a routine's instructions", "routines", "prompt"],
+  ["a routine's name", "routines", "name"],
   ["a credential", "provider_credentials", "secret_ciphertext"],
   ["a connection's credential", "connector_connections", "secret_ciphertext"],
   ["a session", "sessions", "token"],
@@ -585,13 +588,26 @@ beforeAll(async () => {
     })
     .returning({ id: schema.skills.id });
   await db.insert(schema.agentSkills).values({ orgId, agentId, skillId: skill?.id ?? "" });
-  // A routine's name is returned by design; its instructions, the words of its schedule and its firings' reports never.
+  // Routines made the way people make them, nobody naming one: the server calls each by its instructions' first line.
+  const unnamed = await owner(`/api/app/organizations/${orgId}/routines`, {
+    json: {
+      agentId,
+      prompt: "canary routine nobody named",
+      target: { type: "channel", channelId },
+      trigger: { type: "once", at: soon.toISOString() },
+    },
+  });
+  const reminder = await owner(`/api/app/organizations/${orgId}/reminders`, {
+    json: { channelId, agentId, at: soon.toISOString(), text: "canary reminder" },
+  });
+  expect([unnamed.status, reminder.status]).toEqual([201, 201]);
+  // Never a routine's name, its instructions, the words of its schedule nor its firings' reports.
   const [routine] = await db
     .insert(schema.routines)
     .values({
       orgId,
       agentId,
-      name: "Morning report",
+      name: "canary routine name",
       prompt: "canary routine prompt",
       target: { type: "dm", note: "canary target" },
       triggerType: "schedule",
