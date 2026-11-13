@@ -32,6 +32,7 @@ export type ActivityKind =
   | "runningCode"
   | "browsing"
   | "pcFiles"
+  | "creatingImage"
   | "exportingFile"
   | "importingFile"
   | "runningSkillScript"
@@ -300,6 +301,7 @@ const OWN_TOOLS: Record<string, ActivityKind> = {
   grep: "pcFiles",
   ls: "pcFiles",
   file_change: "pcFiles",
+  image_generation: "creatingImage",
   bash: "runningCommandAny",
   shell: "runningCommandAny",
   toolsearch: "findingTools",
