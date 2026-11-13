@@ -4745,7 +4745,7 @@ export const ptBR = {
     refusedBy: "Recusado por {{name}} · {{when}}",
     approvedByYou: "Aprovado por você · {{when}}",
     outcomeApprovedBy: "Aprovado por {{name}}",
-    /** Um pedido da própria pessoa, que ela pode decidir por aprovar pela função (ADR 0126). */
+    /** Um pedido da própria pessoa, que ela pode decidir por aprovar pelo cargo (ADR 0126). */
     requesterDecides: "Pedido por quem também aprova pelo cargo, por isso pode decidir",
     outcomeApprovedByYou: "Aprovado por você",
     outcomeRefusedBy: "Recusado por {{name}}",
@@ -6332,7 +6332,7 @@ export const ptBR = {
     acceptedByYou: "Aceita por você · {{when}}",
     refusedByYou: "Recusada por você · {{when}}",
     why: "Por quê",
-    change: "Mudança em {{target}}",
+    change: "Mudança · {{target}}",
     changeLabel: "Mudança proposta",
     editFirst: "Editar antes de aceitar",
     viewDiff: "Ver diferenças",

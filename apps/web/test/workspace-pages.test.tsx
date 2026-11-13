@@ -353,6 +353,18 @@ describe("Memória e propostas (fase 5)", () => {
     expect(screen().getByRole("article").querySelector(".ac-chip--waiting")?.textContent).toBe("Aguardando João");
     expect(screen().queryByRole("button", { name: "Aceitar mudança" })).toBeNull();
   });
+
+  test("a role proposal's change reads “Mudança · função da Ada”, never “Mudança em função de” (because of)", async () => {
+    const state = seedState();
+    const [first] = state.proposals;
+    if (!first) throw new Error("a proposal expected");
+    const target = { type: "agent_role" as const, agentId: ADA_ID };
+    state.proposals = [{ ...first, target, before: "Dev", after: "Revisora de código" }];
+    await go("proposals", state);
+    const change = screen().getByRole("region", { name: "Mudança proposta" });
+    expect(change.querySelector(".ac-eyebrow")?.textContent).toBe("Mudança · função da Ada");
+    expect(change.textContent).toContain("Função: Dev → Revisora de código");
+  });
 });
 
 describe("Membros", () => {
