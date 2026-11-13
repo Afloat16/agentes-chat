@@ -571,7 +571,7 @@ describe("one click where a tool is off (ADR 0036 §8)", () => {
   });
 
   test("Prefiro no Terminal: the same switches as one command, only for who turns them on, where there may be no app", () => {
-    const linux = { mode: "user", os: "linux" } as Pick<Machine, "mode" | "os">;
+    const linux: Pick<Machine, "mode" | "os"> = { mode: "single", os: "linux" };
     expect(oneClickTerminal(linux, { kind: "allow" }, ["desktop", "commands"])).toBe(
       "agentes-runner tools enable desktop && agentes-runner tools enable commands",
     );

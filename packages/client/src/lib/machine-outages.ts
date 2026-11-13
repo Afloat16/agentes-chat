@@ -261,6 +261,36 @@ export function waitToolOff(
   return { machineId: info.machineId, tool: info.brain === "claude_code" ? "claude" : info.brain };
 }
 
+const SWITCHES: readonly string[] = [
+  "claude",
+  "codex",
+  "cursor",
+  "opencode",
+  "grok",
+  "antigravity",
+  "commands",
+  "browser",
+  "desktop",
+  "terminal",
+];
+
+/**
+ * The switches an agent's message needs turned on on its computer, for its one-click card: its wait note's
+ * (`waitToolOff`), or a call it made refused for one (`meta.toolOff`; the desktop runs commands too). Null for any
+ * other message.
+ */
+export function messageToolOff(
+  meta: Record<string, unknown> | null | undefined,
+): { machineId: string; tools: MachineTool[] } | null {
+  const wait = waitToolOff(brainUnavailableOf(meta));
+  if (wait) return { machineId: wait.machineId, tools: [wait.tool] };
+  const off = meta?.toolOff as { machineId?: unknown; tool?: unknown } | undefined;
+  if (!off || typeof off.machineId !== "string" || typeof off.tool !== "string" || !SWITCHES.includes(off.tool))
+    return null;
+  const tool = off.tool as MachineTool;
+  return { machineId: off.machineId, tools: tool === "desktop" ? ["desktop", "commands"] : [tool] };
+}
+
 /**
  * The note waits for its computer to come back (the waiting card), not for room on one that is there (`busy`) nor
  * for a plan's limit to reset: those stay the agent's own words, never "the computer is back".

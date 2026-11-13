@@ -2,7 +2,7 @@ import type { Machine, MachineTool } from "@agenteschat/client";
 import { useAllowMachineTool, useMachines } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { firstName } from "@agenteschat/client/lib/format";
-import { waitToolOff } from "@agenteschat/client/lib/machine-outages";
+import { messageToolOff } from "@agenteschat/client/lib/machine-outages";
 import { type ToolOneClick, toolOneClick, toolWords } from "@agenteschat/client/lib/machines";
 import { Button, type ButtonProps, SettingNote } from "@agenteschat/ui";
 import type { ReactNode } from "react";
@@ -111,17 +111,18 @@ export function ToolOffNote({ machine, tool, children }: { machine: Machine; too
 }
 
 /**
- * Under an agent's note that waits for a switch on its computer (its CLI or commands off): the one click, until it is
- * on. The note says the cause; this is its way out.
+ * Under an agent's message that needs a switch on its computer (a wait for its CLI or commands, a call refused for
+ * the browser or the desktop): the one click, until it is on. The message says the cause; this is its way out.
  */
-export function WaitToolOffAction({ notice }: { notice: Parameters<typeof waitToolOff>[0] }) {
+export function WaitToolOffAction({ meta }: { meta: Record<string, unknown> | null | undefined }) {
   const { org } = useOrg();
-  const off = waitToolOff(notice);
+  const off = messageToolOff(meta);
   const machine = useMachines(org.id, Boolean(off)).data?.find((m) => m.id === off?.machineId);
-  if (!off || !machine || machine.access?.tools[off.tool] === true) return null;
+  const tools = off && machine ? off.tools.filter((tool) => machine.access?.tools[tool] !== true) : [];
+  if (!machine || tools.length === 0) return null;
   return (
     <div className="ac-acts" style={{ marginTop: "var(--space-2)" }}>
-      <MachineToolButton machine={machine} tool={off.tool} />
+      <MachineToolButtons machine={machine} tools={tools} />
     </div>
   );
 }

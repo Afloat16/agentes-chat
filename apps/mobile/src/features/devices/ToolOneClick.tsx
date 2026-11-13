@@ -2,7 +2,7 @@ import type { Machine, MachineTool, Message } from "@agenteschat/client";
 import { useAllowMachineTool, useMachines } from "@agenteschat/client";
 import { errorText } from "@agenteschat/client/lib/errors";
 import { firstName } from "@agenteschat/client/lib/format";
-import { brainUnavailableOf, waitToolOff } from "@agenteschat/client/lib/machine-outages";
+import { messageToolOff } from "@agenteschat/client/lib/machine-outages";
 import { type ToolOneClick, toolOneClick, toolWords } from "@agenteschat/client/lib/machines";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
@@ -77,19 +77,29 @@ export function ToolOneClickButton({
   );
 }
 
-/** Under an agent's note that waits for a switch on its computer (its CLI or commands off): the one click, until on. */
+/**
+ * Under an agent's message that needs a switch on its computer (a wait for its CLI or commands, a call refused for
+ * the browser or the desktop): the one click, until on. Anyone but whoever connected it asks for all in one.
+ */
 export function WaitToolOffAction({ message }: { message: Pick<Message, "meta"> }) {
-  const off = waitToolOff(brainUnavailableOf(message.meta));
+  const meId = useMeId();
+  const off = messageToolOff(message.meta);
   const machine = useMachines(useOrgId(), Boolean(off)).data?.find((m) => m.id === off?.machineId);
-  if (!off || !machine || machine.access?.tools[off.tool] === true) return null;
+  const tools = off && machine ? off.tools.filter((tool) => machine.access?.tools[tool] !== true) : [];
+  if (!machine || tools.length === 0) return null;
+  const ask = toolOneClick(machine, meId)?.kind === "ask";
   return (
     <View style={styles.wait}>
-      <MachineToolButton machine={machine} tool={off.tool} />
+      {ask ? (
+        <MachineToolButton machine={machine} tool={tools} />
+      ) : (
+        tools.map((tool) => <MachineToolButton key={tool} machine={machine} tool={tool} />)
+      )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({ wait: { flexDirection: "row", marginTop: 6 } });
+const styles = StyleSheet.create({ wait: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 } });
 
 /** The same for a computer the screen already has. */
 export function MachineToolButton({
