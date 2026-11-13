@@ -1055,6 +1055,14 @@ body ends with one line naming the agent and the person it works for, and commit
 (`Co-authored-by`) when they signed in with GitHub. Where the app isn't installed, the account connection is
 used, as before.
 
+Every commit an agent makes, through GitHub or with git on its computer, ends with its own line too:
+`Co-authored-by: <agent's name> <noreply@agentes.chat>`, next to the coding CLI's own (`Co-Authored-By: Claude …`)
+and the person's, never twice. It is on by default; to turn it off for the whole workspace, ask any agent ("stop
+adding your co-author line to commits"), and ask again to turn it back on. On a computer the runner adds it with git
+hooks of its own, handed only to the agents' processes through their environment: your own git, outside them, is
+never touched, and each repository's own hooks (husky's included) still run first. That needs a runner from this
+release on (protocol 63); with an older one, only a chat turn's instruction asks the agent to add it.
+
 There are two ways to set the app up:
 
 - **From Settings.** The server's owner opens **Settings → Connectors** and, on the card **This server's GitHub

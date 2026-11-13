@@ -610,7 +610,7 @@ export async function runWorker(o: WorkerOptions): Promise<number> {
   // Claude Code's own tools for a CLI root runs on a shared sign-in: nothing here until root opens a bridge.
   const delegatedRuns = new Map<string, McpTaskInfo>();
   const delegated = new DelegatedTools({
-    secrets: () => agentSecrets(secretsDir, { id: o.agentId, handle: "agent" }),
+    secrets: (agent) => agentSecrets(secretsDir, agent ?? { id: o.agentId, handle: "agent" }),
     onNotice: (notice) => link.toolNotice(notice),
     onDenied: (session, tool, input) => tasks.hostedDenial(session, tool, input),
     ...(cli ? { spawn: cli } : {}),

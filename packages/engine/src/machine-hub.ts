@@ -38,6 +38,7 @@ import type { ToolImage } from "@agenteschat/providers";
 import { getAgentCached } from "./agents";
 import { type MachinePhoneRow, publishDevicesChanged, syncMachinePhones } from "./devices";
 import { cutText } from "./format";
+import { agentCoAuthorLine } from "./git/signature";
 import {
   applyAccessDecided,
   storedExecutors,
@@ -919,12 +920,19 @@ export function createMachineHub(deps: MachineHubDeps) {
     }
   }
 
-  /** Fills `agent.name` (protocol 9, for the machine's activity log) when a caller left it out. */
+  /**
+   * Fills `agent.name` (protocol 9, for the machine's activity log) when a caller left it out, and on what runs the
+   * agent's programs the agent's own line its commits end with (`coAuthors`, ADR 0156), unless the workspace turned
+   * it off: every path to the computer goes through here.
+   */
   async function withAgentName<R extends MachineRequest>(orgId: string | null, request: R): Promise<R> {
     const scope = request.agent;
-    if (!scope || scope.name || !orgId) return request;
+    const runs = request.op === "exec" || request.op === "brain.turn" || request.op === "task.start";
+    if (!scope || (scope.name && !runs) || !orgId) return request;
     const agent = await getAgentCached(db, orgId, scope.id).catch(() => null);
-    return agent ? { ...request, agent: { ...scope, name: agent.name } } : request;
+    if (!agent) return request;
+    const line = runs ? await agentCoAuthorLine(db, orgId, agent).catch(() => null) : null;
+    return { ...request, agent: { ...scope, name: scope.name || agent.name, ...(line ? { coAuthors: [line] } : {}) } };
   }
 
   /** Bridge calls of work already on the machine stop with its workspace (`standing.ts`). */
