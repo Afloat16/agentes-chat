@@ -31,7 +31,7 @@ import {
   useReducedMotion,
   useToast,
 } from "@/ui";
-import { openAgentAi } from "../ai/AgentAiScreen";
+import { openAgentAi, openAgentModel } from "../ai/AgentAiScreen";
 import { openConnectAi } from "../ai/NoAiCard";
 import { Note, OpenPage, usePlanHold } from "../ai/parts";
 import { AgentFace, Face } from "../shared/Face";
@@ -190,9 +190,13 @@ export const AgentReceiptLine = memo(function AgentReceiptLine({
         <Button
           variant="secondary"
           size="sm"
-          label={t(fix === "useKey" ? "noAi.rightHand.useKey" : "usageCard.changeModel")}
+          label={t(fix === "useKey" ? "noAi.rightHand.useKey" : `usageCard.${fix}`)}
           onPress={() =>
-            fix === "useKey" ? openConnectAi({ agentId: failedAgent, intent: "api_key" }) : openAgentAi(failedAgent)
+            fix === "useKey"
+              ? openConnectAi({ agentId: failedAgent, intent: "api_key" })
+              : fix === "changeModel"
+                ? openAgentModel(failedAgent)
+                : openAgentAi(failedAgent)
           }
         />
       ) : null}

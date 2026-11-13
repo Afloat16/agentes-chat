@@ -3164,6 +3164,9 @@ export const ptBR = {
     line: "Retoma {{when}}, quando o plano renovar. Respostas rápidas continuam.",
     /** Buttons under a wait's note, to the agent's page. */
     changeModel: "Trocar modelo",
+    changeAccount: "Escolher outra conta",
+    /** An agent left without what it thought with (a plan not saved, its owner's plan gone): its "Quem pensa". */
+    chooseBrain: "Escolher quem pensa",
     raiseBudget: "Aumentar orçamento",
     lineUnknown: "Retoma assim que o plano renovar. Respostas rápidas continuam.",
     lineBudget: "Retoma {{when}}, ou antes se o orçamento aumentar. Respostas rápidas continuam.",
@@ -3790,7 +3793,11 @@ export const ptBR = {
     add: "Adicionar ao canal",
     dismiss: "Agora não",
     added: "{{name}} entrou no canal.",
-    askAdmin: "Peça a um admin para adicionar.",
+  },
+  /** "Pedir a um admin": what a person can't do here goes to whoever can, as an inbox row that does it. */
+  adminAsk: {
+    ask: "Pedir a um admin",
+    sent: "Pedido enviado a quem pode fazer isso.",
   },
   channelRefs: {
     list: "Canais",
@@ -4734,6 +4741,10 @@ export const ptBR = {
       approvalCoverEnded: "<b>{{name}}</b> encerrou quem aprova por você",
       rightHandDecided: "Pedidos aprovados por <b>{{name}}</b> por você hoje: {{count}}",
       rightHandPaused: "<b>{{name}}</b> parou de aprovar por você: você desfez 3 decisões nesta semana",
+      /** "Pedir a um admin" (`admin_ask`): who asked, and what. */
+      adminAskChannel: "<b>{{name}}</b> pede para adicionar <b>{{agent}}</b> a #{{label}}",
+      adminAskCreate: "<b>{{name}}</b> pede para poder criar agentes",
+      adminAskWebhook: "<b>{{name}}</b> pede para ligar o webhook do {{service}} para rotinas",
       invitationAccepted: "<b>{{name}}</b> aceitou seu convite e entrou na {{org}}",
       invitationAcceptedAny: "<b>{{name}}</b> aceitou seu convite",
       reaction_one: "<b>{{names}}</b> reagiu à sua mensagem",
@@ -7813,6 +7824,8 @@ export const ptBR = {
       example: "Exemplo",
       exampleCopied: "Exemplo copiado.",
       test: "Testar",
+      /** Testar on a routine turned off: turns it on, then sends the test. */
+      turnOnAndTest: "Ligar e testar",
       tested: "Teste enviado. O agente recebe um exemplo e conta o que faria com uma chamada de verdade.",
       calls: "Últimas chamadas",
       noCalls: "Nenhuma chamada ainda.",
@@ -9693,8 +9706,10 @@ export const ptBR = {
       connection_gone: "Não deu para atualizar: a conexão com o GitHub que leu ela não existe mais.",
       link_holds_several: "Não deu para atualizar: o link agora tem várias skills.",
       link_renamed: "Não deu para atualizar: o link agora tem outra skill.",
-      owner_gone: "Não deu para atualizar: quem ligou a atualização sozinha não gerencia mais skills. Ligue de novo.",
+      owner_gone: "Não deu para atualizar: quem ligou a atualização sozinha não gerencia mais skills.",
       other: "Não deu para atualizar do link.",
+      /** Beside `owner_gone`: turns updating by itself on again, with the presser's rights. */
+      relight: "Ligar de novo",
     },
     notice: {
       updated: "{{name}} foi atualizada do link",
@@ -13413,6 +13428,8 @@ export const ptBR = {
       pausePast: "Escolha um horário no futuro.",
       notOwner: "Só quem conectou este computador liga as ferramentas dele. Peça a essa pessoa.",
       askSelf: "O computador é seu: ligue com o botão.",
+      /** "Pedir a um admin" from someone who may do it themselves. */
+      adminAskSelf: "Você mesmo pode fazer isso aqui.",
       accountMethodUnsupported:
         "Este computador ainda não conecta o Claude desse jeito. Atualize o programa do agentes.chat nele, ou use uma chave de API.",
       offline: "{{name}} está fora do ar agora. Tente de novo quando ele voltar.",

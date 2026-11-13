@@ -42,7 +42,9 @@ export function useNoticeTitle(n: AppNotification) {
           ? `usage_limit_${n.latest.statusTo ?? "refused"}`
           : n.kind === "approval_cover" && (n.latest.statusTo === "declined" || n.latest.statusTo === "ended")
             ? `approval_cover_${n.latest.statusTo}`
-            : n.kind;
+            : n.kind === "admin_ask"
+              ? `admin_ask_${n.latest.reason ?? "create_agents"}`
+              : n.kind;
   const device = deviceNoticeOf(n);
   const person = useNoticePerson(n);
   const orgName = useOrg().org?.name ?? "";
@@ -75,6 +77,14 @@ export function useNoticeTitle(n: AppNotification) {
                 // `desktop_taken`: whose computer, said with its name's gender; `plan_lent`: the agent given the plan.
                 ...(n.kind === "desktop_taken" || n.kind === "plan_lent"
                   ? { agent: n.source.label ?? "", context: agentGrammar(n.source.label ?? "").context }
+                  : {}),
+                // `admin_ask`: the agent to add and where, or the service whose webhook.
+                ...(n.kind === "admin_ask"
+                  ? {
+                      agent: n.source.agentId ? dir.nameOf({ type: "agent", id: n.source.agentId }) : "",
+                      label: n.source.label ?? "",
+                      service: n.latest.title ?? "",
+                    }
                   : {}),
                 defaultValue: NAMES,
               });

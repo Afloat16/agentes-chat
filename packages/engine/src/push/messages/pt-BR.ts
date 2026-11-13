@@ -82,6 +82,12 @@ export const ptBR: PushStrings = {
   deviceAccessBody: "Toque para permitir uma vez, sempre, ou dizer não.",
   deviceToolTitle: (a, d) => `${a} pede para você ligar uma ferramenta no seu ${d}`,
   deviceToolBody: "Toque para ligar com um clique.",
+  adminAskTitle: (a, what, l) =>
+    what === "channel_agent"
+      ? `${a} pede para adicionar um agente a #${l}`
+      : what === "create_agents"
+        ? `${a} pede para poder criar agentes`
+        : `${a} pede para ligar o webhook do ${l} para rotinas`,
   deviceWaitingTitle: (p, d) => `O agente de ${p} está esperando seu ${d}`,
   deviceWaitingBody: "Começa quando ele voltar.",
   teamWeekReady: "Sua semana da equipe está pronta",

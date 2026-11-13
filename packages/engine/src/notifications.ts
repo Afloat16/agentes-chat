@@ -262,6 +262,12 @@ export const NOTIFICATION_KINDS = [
    * its name in `source.label`, the tool in `latest.reason`. The row turns it on in one click; done once it is on.
    */
   "device.tool_request",
+  /**
+   * "Pedir a um admin" (`POST …/admin-asks`, `admin-asks.ts`): to whoever may do it, the asker as actor, what in
+   * `latest.reason` (`channel_agent`, `create_agents`, `webhook` with the service in `latest.title`). `channel_agent`
+   * names `source.channelId` (its name in `label`) and `agentId`, waits, and is done once the agent is added.
+   */
+  "admin_ask",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

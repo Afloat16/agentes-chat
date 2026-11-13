@@ -37,7 +37,7 @@ test("a run that failed for want of an AI, or didn't fail, keeps no reason", () 
   expect(applyReceiptEvent({}, { ...handled, status: "done" }).m1?.failures).toBeUndefined();
 });
 
-test("a failed run's one fix: a key for a missing, revoked or wrong one, another model for one gone, else none", () => {
+test("a failed run's one fix: a key for a missing, revoked or wrong one, another model or account for one gone, else none", () => {
   const everyone = { keys: true, admin: true, owner: true };
   for (const code of ["run.missing_credential", "run.credential_revoked", "run.credential_wrong_provider"])
     expect(failedRunFix(code, everyone)).toBe("useKey");
@@ -55,6 +55,8 @@ test("a failed run's one fix: a key for a missing, revoked or wrong one, another
   expect(failedRunFix("run.missing_credential", { ...nobody, owner: true })).toBeNull();
   expect(failedRunFix("run.model_unlisted", nobody)).toBeNull();
   expect(failedRunFix("run.model_unlisted", { ...nobody, owner: true })).toBe("changeModel");
+  expect(failedRunFix("run.account_missing", everyone)).toBe("changeAccount");
+  expect(failedRunFix("run.account_missing", nobody)).toBeNull();
 });
 
 describe("a failed run as one line (runFailureLine)", () => {

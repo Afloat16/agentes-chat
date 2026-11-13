@@ -89,6 +89,7 @@ const KNOWN = {
   "machine.pause_past": "errors.machine.pausePast",
   "machine.not_owner": "errors.machine.notOwner",
   "machine.ask_self": "errors.machine.askSelf",
+  "admin_ask.self": "errors.machine.adminAskSelf",
   // A computer that can't take the request now (`MachineOfflineError`, `MachinePausedError`: `name`), or its own
   // refusal (`MachineRequestError`, as `machine.<code>`).
   "machine.offline": "errors.machine.offline",
@@ -1005,17 +1006,22 @@ const KEY_FAILURES = new Set([
 ]);
 
 /**
- * The one thing to do about a failed run, by its code, for someone who can: another key (`keys`: who manages them), or
- * another model (the agent's owner or who manages agents). Null when nothing fixes it or it's someone else's to do.
+ * The one thing to do about a failed run, by its code, for someone who can: another key (`keys`: who manages them),
+ * another model or another account (the agent's owner or who manages agents). Null when nothing fixes it or it's
+ * someone else's to do.
  */
 export function failedRunFix(
   code: string | null | undefined,
   who: { keys: boolean; admin: boolean; owner: boolean },
-): "useKey" | "changeModel" | null {
+): "useKey" | "changeModel" | "changeAccount" | null {
   if (code === "run.model_unlisted" || code === "run.provider_model_unavailable")
     return who.admin || who.owner ? "changeModel" : null;
+  if (code === "run.account_missing") return who.admin || who.owner ? "changeAccount" : null;
   return code && KEY_FAILURES.has(code) && who.keys ? "useKey" : null;
 }
+
+/** The screen of "Quem pensa" a model or account fix opens on. */
+export const FIX_BRAIN_SCREEN = { changeModel: "model", changeAccount: "switch" } as const;
 
 /**
  * A failed run's reason in the reader's words, from the server's code (`run.stuck`, `run.computer_failed`): null for

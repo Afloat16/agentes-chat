@@ -83,6 +83,12 @@ export const strings: Partial<PushStrings> = {
   deviceAccessBody: "Toca para permitir una vez, siempre, o decir que no.",
   deviceToolTitle: (a, d) => `${a} te pide activar una herramienta en tu ${d}`,
   deviceToolBody: "Toca para activarla con un clic.",
+  adminAskTitle: (a, what, l) =>
+    what === "channel_agent"
+      ? `${a} te pide añadir un agente a #${l}`
+      : what === "create_agents"
+        ? `${a} pide poder crear agentes`
+        : `${a} te pide configurar el webhook de ${l} para rutinas`,
   deviceWaitingTitle: (p, d) => `El agente de ${p} está esperando tu ${d}`,
   deviceWaitingBody: "Empieza cuando vuelva.",
   teamWeekReady: "Tu semana del equipo está lista",

@@ -28,6 +28,7 @@ import type {
   AccountLoginStart,
   AccountLoginStatus,
   ActiveRun,
+  AdminAsk,
   Agent,
   AgentAccess,
   AgentAction,
@@ -1620,6 +1621,8 @@ export interface ApiClient {
     /** What reaches my devices as a notification in this workspace (ADR 0071 §8). */
     prefs(orgId: string): Promise<NoticePrefs>;
     setPref(orgId: string, category: NoticeCategory, on: boolean): Promise<NoticePrefs>;
+    /** "Pedir a um admin": an inbox row for whoever may do it (`admin_ask`); how many it reached. */
+    askAdmins(orgId: string, ask: AdminAsk): Promise<{ sent: number }>;
   };
   calendar: {
     /** Events, routine runs, reminders, issue deadlines and proposals between `from` and `to` (ISO). */

@@ -82,6 +82,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { AdminAskActions } from "@/components/AdminAsk";
 import { ApprovalAsk, ApprovalGroupAsk } from "@/components/ApprovalAsk";
 import { useConnectAi } from "@/components/ConnectAi";
 import { DeviceNoticeActions, deviceNoticeLine } from "@/components/devices/DeviceNotice";
@@ -822,6 +823,7 @@ function Row({
             )}
             {n.kind === "usage_limit" && <UsageLimitActions n={n} />}
             <DeviceNoticeActions n={n} />
+            <AdminAskActions n={n} />
             {n.kind === "agent_unreached" && n.source.agentId && n.source.userId && (
               <UnreachedAllow agentId={n.source.agentId} userId={n.source.userId} />
             )}
@@ -1269,6 +1271,7 @@ function WaitRow({
           {/* A board's notice is decided or resolved right here (ADR 0135). */}
           <WidgetNoticeActions n={n} onOpen={() => h.onOpen(n)} open={false} />
           <DeviceNoticeActions n={n} inline />
+          <AdminAskActions n={n} inline />
           <Button size="sm" className="nt-wr__open" title={t("notifications.openTip")} onClick={() => h.onOpen(n)}>
             {t("notifications.open")}
           </Button>

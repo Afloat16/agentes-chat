@@ -4591,6 +4591,12 @@ export interface MachineAccessReduce {
   disableTool?: MachineToolName | "browser" | "desktop" | "terminal";
 }
 
+/** "Pedir a um admin" (`POST …/admin-asks`): what the asker can't do here themselves. */
+export type AdminAsk =
+  | { what: "channel_agent"; channelId: string; agentId: string }
+  | { what: "create_agents" }
+  | { what: "webhook"; provider: "github" | "sentry" };
+
 /** A switch on a computer (`RunnerTools`' keys): `POST …/access/allow` turns one on, `…/access/reduce` off. */
 export type MachineTool = MachineToolName | "browser" | "desktop" | "terminal";
 
@@ -6257,6 +6263,11 @@ export type NotificationKind =
    * `source.label`, the tool in `latest.reason`, the asker as actor; the row turns it on in one click.
    */
   | "device.tool_request"
+  /**
+   * "Pedir a um admin" (`POST …/admin-asks`): the asker as actor, what in `latest.reason` (`channel_agent` with
+   * `source.channelId` and `agentId`, waiting until added; `create_agents`; `webhook` with the service in `latest.title`).
+   */
+  | "admin_ask"
   /** Someone's agent waits for this person's device to come back. `source.phoneId` or `machineId`. */
   | "device.waiting"
   /** ADR 0040 §6: an agent needs a person in its browser (sign in, a code). `source.handoffId`. */

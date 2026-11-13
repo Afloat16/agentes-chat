@@ -64,6 +64,7 @@ import { ApiError } from "./http";
 import { keys } from "./keys";
 import { keepSending, outbox } from "./outbox";
 import type {
+  AdminAsk,
   Agent,
   AgentAction,
   AgentAudience,
@@ -4342,17 +4343,21 @@ export const useRoutineHook = (orgId: string, id: string | null) => {
   });
 };
 
-/** A new address, a new signing secret (its `secret` shown once) or none, and Testar. */
+/**
+ * A new address, a new signing secret (its `secret` shown once) or none, and Testar ("Ligar e testar" on a routine
+ * turned off, since a test needs it on).
+ */
 export function useRoutineHookAction(orgId: string, id: string) {
   const api = useApi();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (
-      action: "address" | "secret" | "unsign" | "test",
+      action: "address" | "secret" | "unsign" | "test" | "onAndTest",
     ): Promise<{ hook: RoutineHook; secret?: string; runId?: string | null }> => {
       if (action === "address") return { hook: await api.routines.newHookAddress(orgId, id) };
       if (action === "secret") return api.routines.newHookSecret(orgId, id);
       if (action === "unsign") return { hook: await api.routines.removeHookSecret(orgId, id) };
+      if (action === "onAndTest") await api.routines.setActive(orgId, id, true);
       return api.routines.testHook(orgId, id);
     },
     onSuccess: ({ hook }) => qc.setQueryData(keys.routineHook(orgId, id), hook),
@@ -5577,6 +5582,12 @@ export function useSetNoticePref(orgId: string) {
     onError: (_error, _input, context) => qc.setQueryData(keys.noticePrefs(orgId), context?.before),
     onSuccess: (prefs) => qc.setQueryData(keys.noticePrefs(orgId), prefs),
   });
+}
+
+/** "Pedir a um admin" (`admin_ask`): sent to whoever may do it. */
+export function useAskAdmins(orgId: string) {
+  const api = useApi();
+  return useMutation({ mutationFn: (ask: AdminAsk) => api.notifications.askAdmins(orgId, ask) });
 }
 
 /** Where I put the tools at the top of my sidebar in this workspace (only the ones I moved). */

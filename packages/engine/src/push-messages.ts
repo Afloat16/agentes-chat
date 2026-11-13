@@ -189,6 +189,15 @@ export function renderPush(locale: PushLocale, input: PushTextInput): { title: s
       return out(s.deviceAccessTitle(actor, input.title?.trim() ?? "", input.label?.trim() ?? ""), s.deviceAccessBody);
     case "device.tool_request":
       return out(s.deviceToolTitle(actor, input.label?.trim() ?? ""), s.deviceToolBody);
+    case "admin_ask":
+      return out(
+        s.adminAskTitle(
+          actor,
+          input.reason ?? "",
+          (input.reason === "webhook" ? input.title : input.label)?.trim() ?? "",
+        ),
+        s.openBody,
+      );
     case "device.waiting":
       return out(s.deviceWaitingTitle(input.title?.trim() || actor, input.label?.trim() ?? ""), s.deviceWaitingBody);
     case "usage_limit":

@@ -692,6 +692,8 @@ export const desktopPtBR = {
       addedBody: "Escolha na página de cada agente quem usa esta conta.",
       addedPlan: "plano {{plan}}",
       ok: "OK",
+      /** In "Conta adicionada": the workspace's agents in the main window, to choose who uses it. */
+      chooseAgents: "Escolher agentes",
       failedTitle: "A conta não foi adicionada",
       failedExpired: "O tempo para entrar acabou. Tente de novo.",
       failedLogin: "A entrada não terminou. Tente de novo.",

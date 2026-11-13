@@ -3235,6 +3235,9 @@ export const en = {
     line: "Picks up {{when}}, when the plan resets. Quick replies keep going.",
     /** Buttons under a wait's note, to the agent's page. */
     changeModel: "Change model",
+    changeAccount: "Choose another account",
+    /** An agent left without what it thought with (a plan not saved, its owner's plan gone): its "Quem pensa". */
+    chooseBrain: "Choose who thinks",
     raiseBudget: "Raise the budget",
     lineUnknown: "Picks up as soon as the plan resets. Quick replies keep going.",
     lineBudget: "Picks up {{when}}, or sooner if the budget goes up. Quick replies keep going.",
@@ -3875,7 +3878,11 @@ export const en = {
     add: "Add to channel",
     dismiss: "Not now",
     added: "{{name}} joined the channel.",
-    askAdmin: "Ask an admin to add them.",
+  },
+  /** "Pedir a um admin": what a person can't do here goes to whoever can, as an inbox row that does it. */
+  adminAsk: {
+    ask: "Ask an admin",
+    sent: "Sent to whoever can do it.",
   },
   channelRefs: {
     list: "Channels",
@@ -4828,6 +4835,10 @@ export const en = {
       approvalCoverEnded: "<b>{{name}}</b> ended who approves for you",
       rightHandDecided: "Requests <b>{{name}}</b> approved for you today: {{count}}",
       rightHandPaused: "<b>{{name}}</b> stopped approving for you: you undid 3 of its decisions this week",
+      /** "Pedir a um admin" (`admin_ask`): who asked, and what. */
+      adminAskChannel: "<b>{{name}}</b> asks you to add <b>{{agent}}</b> to #{{label}}",
+      adminAskCreate: "<b>{{name}}</b> asks to be able to create agents",
+      adminAskWebhook: "<b>{{name}}</b> asks you to set up the {{service}} webhook for routines",
       invitationAccepted: "<b>{{name}}</b> accepted your invitation and joined {{org}}",
       invitationAcceptedAny: "<b>{{name}}</b> accepted your invitation",
       reaction_one: "<b>{{names}}</b> reacted to your message",
@@ -7808,6 +7819,8 @@ export const en = {
       example: "Example",
       exampleCopied: "Example copied.",
       test: "Test",
+      /** Testar on a routine turned off: turns it on, then sends the test. */
+      turnOnAndTest: "Turn on and test",
       tested: "Test sent. The agent gets a sample and says what it would do with a real call.",
       calls: "Latest calls",
       noCalls: "No calls yet.",
@@ -9677,9 +9690,10 @@ export const en = {
       connection_gone: "Couldn't update it: the GitHub connection that read it is gone.",
       link_holds_several: "Couldn't update it: its link holds several skills now.",
       link_renamed: "Couldn't update it: its link holds another skill now.",
-      owner_gone:
-        "Couldn't update it: whoever turned on updating by itself can no longer manage skills. Turn it on again.",
+      owner_gone: "Couldn't update it: whoever turned on updating by itself can no longer manage skills.",
       other: "Couldn't update it from its link.",
+      /** Beside `owner_gone`: turns updating by itself on again, with the presser's rights. */
+      relight: "Turn on again",
     },
     notice: {
       updated: "{{name}} was updated from its link",
@@ -13382,6 +13396,8 @@ export const en = {
       pausePast: "Choose a time in the future.",
       notOwner: "Only whoever connected this computer turns its tools on. Ask them.",
       askSelf: "It's your computer: turn it on with the button.",
+      /** "Pedir a um admin" from someone who may do it themselves. */
+      adminAskSelf: "You can do this here yourself.",
       accountMethodUnsupported:
         "This computer can't connect Claude this way yet. Update the agentes.chat program on it, or use an API key.",
       offline: "{{name}} is offline right now. Try again once it's back.",

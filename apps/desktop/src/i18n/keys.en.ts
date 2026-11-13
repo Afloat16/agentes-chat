@@ -708,6 +708,8 @@ export const desktopEn = {
       addedBody: "On each agent's page, choose who uses this account.",
       addedPlan: "{{plan}} plan",
       ok: "OK",
+      /** In "Conta adicionada": the workspace's agents in the main window, to choose who uses it. */
+      chooseAgents: "Choose agents",
       failedTitle: "The account wasn't added",
       failedExpired: "Time to sign in ran out. Try again.",
       failedLogin: "The sign-in didn't finish. Try again.",
