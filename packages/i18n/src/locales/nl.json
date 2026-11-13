@@ -11031,7 +11031,13 @@
     "cause_other": "Computer vol: {{count}} taken gebruiken nu zijn geheugen ({{fill}}).",
     "spill": {
       "title": "Meer computers, kortere wachtrij",
-      "text": "Als deze computer vol is, kunnen antwoorden voor jou op een van jouw computers starten. Lange taken en de bestanden van de agenten blijven hier."
+      "text": "Als deze computer vol is, kunnen antwoorden voor jou op een van jouw computers starten. Lange taken en de bestanden van de agenten blijven hier.",
+      "plan": "je {{plan}}-abonnement"
+    },
+    "stopFill": {
+      "routine": "Routine stoppen",
+      "work": "Lange taak stoppen",
+      "agent": "{{name}} stoppen"
     },
     "youFirst": "Jij bent eerst",
     "startsIn": "start over ~{{n}} min",

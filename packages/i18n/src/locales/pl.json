@@ -11756,7 +11756,13 @@
     "cause_other": "Komputer pełny: {{count}} pracy używa teraz jego pamięci ({{fill}}).",
     "spill": {
       "title": "Więcej komputerów, krótsza kolejka",
-      "text": "Gdy ten komputer jest pełny, odpowiedzi dla ciebie mogą zacząć się na jednym z twoich. Długie prace i pliki agentów zostają tutaj."
+      "text": "Gdy ten komputer jest pełny, odpowiedzi dla ciebie mogą zacząć się na jednym z twoich. Długie prace i pliki agentów zostają tutaj.",
+      "plan": "twój plan {{plan}}"
+    },
+    "stopFill": {
+      "routine": "Zatrzymaj rutynę",
+      "work": "Zatrzymaj długą pracę",
+      "agent": "Zatrzymaj {{name}}"
     },
     "youFirst": "Jesteś pierwszy",
     "startsIn": "zacznie za ~{{n}} min",

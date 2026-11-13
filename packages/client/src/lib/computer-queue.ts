@@ -73,6 +73,21 @@ export function queueCauseText(t: TFunction, queue: Pick<ComputerQueue, "working
   return fill ? t("queue.cause", { count: queue?.working.length ?? 0, fill }) : null;
 }
 
+/**
+ * The work on the computer the viewer may stop to free it for a waiting turn (`canStop`, the line's own stop right): a
+ * routine first, then long work, then an agent's ask, never a reply someone waits on. Undefined with none.
+ */
+export const queueStoppable = (queue: Pick<ComputerQueue, "working"> | null | undefined) =>
+  (["routine", "work", "agent"] as const).flatMap(
+    (kind) => queue?.working.filter((w): w is StoppableWork => w.canStop === true && w.purpose.kind === kind) ?? [],
+  )[0];
+
+type StoppableWork = QueueWorking & { purpose: Exclude<QueuePurpose, { kind: "person" }> };
+
+/** "Parar a rotina", "Parar o trabalho longo", "Parar Ada" (an agent's ask, by the agent doing it). */
+export const queueStopText = (t: TFunction, row: Pick<StoppableWork, "purpose">, agent: string) =>
+  t(`queue.stopFill.${row.purpose.kind}`, { name: agent });
+
 /** "Computer · 9 waiting", or "Computer" while nothing waits. */
 export const queueButtonText = (t: TFunction, queue: ComputerQueue | null | undefined) =>
   queue?.waiting.length ? t("queue.button", { count: queue.waiting.length }) : t("queue.buttonIdle");

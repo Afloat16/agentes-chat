@@ -2,6 +2,7 @@ import {
   type ComputerQueue,
   type QueueWaiting,
   type QueueWorking,
+  useAiAccounts,
   useChannels,
   useDms,
   useMachineQueue,
@@ -23,6 +24,7 @@ import {
   queueWhereText,
 } from "@agenteschat/client/lib/computer-queue";
 import { errorText } from "@agenteschat/client/lib/errors";
+import { devicePlanName } from "@agenteschat/client/lib/no-ai";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
@@ -212,6 +214,7 @@ function SpillHere({ machineId }: { machineId: string }) {
   const meId = useMeId();
   const toast = useToast();
   const devices = useDevices();
+  const accounts = useAiAccounts(useOrgId()).data;
   const spill = useDeviceMutation((api, orgId, input: { id: string; own: boolean }) =>
     api.devices.updateComputer(orgId, input.id, { spill: { own: input.own } }),
   );
@@ -219,6 +222,7 @@ function SpillHere({ machineId }: { machineId: string }) {
     (d) => d.id !== machineId && d.ownerUserId === meId && d.machineKind === "connected" && !d.systemMode,
   );
   if (mine.length === 0) return null;
+  const plan = (name: string | null) => (name ? t("queue.spill.plan", { plan: name }) : undefined);
   return (
     <View style={[styles.group, styles.nextGroup, { borderTopColor: c.line }]}>
       <GroupHead title={t("queue.spill.title")} />
@@ -229,6 +233,7 @@ function SpillHere({ machineId }: { machineId: string }) {
             icon="laptop"
             label={d.name}
             below={<StatusLine status={d.status} />}
+            belowText={plan(devicePlanName(t, accounts, d.id))}
             toggle={d.spill.own}
             disabled={spill.isPending}
             onPress={() =>

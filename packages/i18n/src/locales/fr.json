@@ -11361,7 +11361,13 @@
     "cause_other": "Ordinateur plein : {{count}} travaux utilisent sa mémoire en ce moment ({{fill}}).",
     "spill": {
       "title": "Plus d'ordinateurs, moins d'attente",
-      "text": "Quand cet ordinateur est plein, les réponses pour vous peuvent démarrer sur l'un des vôtres. Les travaux longs et les fichiers des agents restent ici."
+      "text": "Quand cet ordinateur est plein, les réponses pour vous peuvent démarrer sur l'un des vôtres. Les travaux longs et les fichiers des agents restent ici.",
+      "plan": "ton forfait {{plan}}"
+    },
+    "stopFill": {
+      "routine": "Arrêter la routine",
+      "work": "Arrêter le travail long",
+      "agent": "Arrêter {{name}}"
     },
     "youFirst": "Vous passez en premier",
     "startsIn": "démarre dans ~{{n}} min",

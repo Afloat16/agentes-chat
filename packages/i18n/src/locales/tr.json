@@ -10904,7 +10904,13 @@
     "cause_other": "Bilgisayar dolu: şu an {{count}} iş belleğini kullanıyor ({{fill}}).",
     "spill": {
       "title": "Daha çok bilgisayar, daha kısa sıra",
-      "text": "Bu bilgisayar dolduğunda sana gelen yanıtlar senin bilgisayarlarından birinde başlayabilir. Uzun işler ve ajanların dosyaları burada kalır."
+      "text": "Bu bilgisayar dolduğunda sana gelen yanıtlar senin bilgisayarlarından birinde başlayabilir. Uzun işler ve ajanların dosyaları burada kalır.",
+      "plan": "{{plan}} planın"
+    },
+    "stopFill": {
+      "routine": "Rutini durdur",
+      "work": "Uzun işi durdur",
+      "agent": "{{name}} adlı ajanı durdur"
     },
     "youFirst": "Önce sen",
     "startsIn": "~{{n}} dk sonra başlar",

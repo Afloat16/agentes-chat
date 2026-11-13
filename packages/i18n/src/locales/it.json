@@ -11375,7 +11375,13 @@
     "cause_other": "Computer pieno: {{count}} lavori usano la sua memoria ora ({{fill}}).",
     "spill": {
       "title": "Più computer, meno coda",
-      "text": "Quando questo computer è pieno, le risposte per te possono iniziare su uno dei tuoi. I lavori lunghi e i file degli agenti restano qui."
+      "text": "Quando questo computer è pieno, le risposte per te possono iniziare su uno dei tuoi. I lavori lunghi e i file degli agenti restano qui.",
+      "plan": "il tuo piano {{plan}}"
+    },
+    "stopFill": {
+      "routine": "Ferma la routine",
+      "work": "Ferma il lavoro lungo",
+      "agent": "Ferma {{name}}"
     },
     "youFirst": "Tu passi per primo",
     "startsIn": "inizia tra ~{{n}} min",

@@ -10965,7 +10965,13 @@
     "cause_other": "Computer voll: {{count}} Arbeiten nutzen gerade seinen Speicher ({{fill}}).",
     "spill": {
       "title": "Mehr Computer, kürzere Warteschlange",
-      "text": "Wenn dieser Computer voll ist, können Antworten an dich auf einem deiner Computer starten. Lange Arbeiten und die Dateien der Agenten bleiben hier."
+      "text": "Wenn dieser Computer voll ist, können Antworten an dich auf einem deiner Computer starten. Lange Arbeiten und die Dateien der Agenten bleiben hier.",
+      "plan": "dein {{plan}}-Abo"
+    },
+    "stopFill": {
+      "routine": "Routine stoppen",
+      "work": "Lange Arbeit stoppen",
+      "agent": "{{name}} stoppen"
     },
     "youFirst": "Du bist zuerst dran",
     "startsIn": "startet in ~{{n}} Min.",

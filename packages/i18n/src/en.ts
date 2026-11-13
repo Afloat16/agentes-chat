@@ -11156,6 +11156,14 @@ export const en = {
     spill: {
       title: "More computers, shorter line",
       text: "When this computer is full, replies to you can start on one of yours. Long work and the agents' files stay here.",
+      /** The viewer's own sign-in there, "Claude Max". */
+      plan: "your {{plan}} plan",
+    },
+    /** The wait line's way out: stop the work on the computer the viewer may stop. `name` is the agent doing it. */
+    stopFill: {
+      routine: "Stop the routine",
+      work: "Stop the long job",
+      agent: "Stop {{name}}",
     },
     youFirst: "You go first",
     startsIn: "starts ~{{n}} min",

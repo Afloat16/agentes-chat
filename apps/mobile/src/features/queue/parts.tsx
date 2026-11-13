@@ -7,6 +7,8 @@ import {
   fanShows,
   queueCauseText,
   queueLiveText,
+  queueStoppable,
+  queueStopText,
   waitingFor,
 } from "@agenteschat/client/lib/computer-queue";
 import { useTranslation } from "react-i18next";
@@ -16,6 +18,7 @@ import { MSG_AVATAR, MSG_GAP, MSG_INSET, rowFrame } from "../chat/logic";
 import { useQuietInset, useRhythm, useRowLook } from "../chat/look";
 import { AgentFace } from "../shared/Face";
 import { useColors, useDirectory, useMeId, useNow } from "../shared/hooks";
+import { useStopper } from "../task-manager/hooks";
 import { useAgentsQueue, useOpenQueue } from "./QueueSheet";
 
 /**
@@ -38,6 +41,8 @@ export function QueueWaitRow({ channelId, wait: { agentId, runId } }: { channelI
   const text = (w && queueLiveText(t, i18n.language, queue, w.runId, name, now)) ?? t("queue.live.waiting");
   const first = w?.people && w.purpose.kind === "person" && w.purpose.userId === meId;
   const cause = w ? queueCauseText(t, queue) : null;
+  const { stopping, stop } = useStopper();
+  const freeing = w ? queueStoppable(queue) : undefined;
   const c = useColors();
   return (
     <View style={[styles.turn, rowFrame(rhythm.block, rhythm.turn)]} accessibilityLiveRegion="polite">
@@ -65,6 +70,19 @@ export function QueueWaitRow({ channelId, wait: { agentId, runId } }: { channelI
           {first ? <Chip icon="person" label={t("queue.youFirst")} /> : null}
           {machineId ? (
             <Button variant="ghost" size="sm" label={t("queue.see")} onPress={() => openQueue(machineId)} />
+          ) : null}
+          {freeing ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              label={
+                stopping.has(freeing.runId)
+                  ? t("taskManager.state.stopping")
+                  : queueStopText(t, freeing, name(freeing.agentId) ?? t("channel.unknownAgent"))
+              }
+              loading={stopping.has(freeing.runId)}
+              onPress={() => stop([freeing.runId], undefined, true)}
+            />
           ) : null}
         </View>
       </View>

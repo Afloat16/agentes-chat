@@ -1,5 +1,5 @@
 import type { Message, ComputerQueue as Queue, QueueWhere } from "@agenteschat/client";
-import { receiptView, useChannels, useDms, useMachineQueue, useMachines } from "@agenteschat/client";
+import { receiptView, useAiAccounts, useChannels, useDms, useMachineQueue, useMachines } from "@agenteschat/client";
 import {
   type ConversationWait,
   conversationWaits,
@@ -21,11 +21,14 @@ import {
   queuePurposeText,
   queueStartText,
   queueStatusText,
+  queueStoppable,
+  queueStopText,
   queueView,
   queueWhereText,
   waitingFor,
 } from "@agenteschat/client/lib/computer-queue";
-import { computerLine, statusPill } from "@agenteschat/client/lib/devices";
+import { spillDeviceText } from "@agenteschat/client/lib/devices";
+import { devicePlanName } from "@agenteschat/client/lib/no-ai";
 import { badgeCount } from "@agenteschat/client/lib/unread";
 import {
   Button,
@@ -314,6 +317,7 @@ function SpillHere({ machineId }: { machineId: string }) {
   const { org, me } = useOrg();
   const devices = useDevices(org.id);
   const update = useUpdateComputer(org.id);
+  const accounts = useAiAccounts(org.id).data;
   const mine = (devices.data?.devices ?? []).filter(
     (d) => d.id !== machineId && d.ownerUserId === me.user.id && d.machineKind === "connected" && !d.systemMode,
   );
@@ -329,7 +333,7 @@ function SpillHere({ machineId }: { machineId: string }) {
             <Icon name="computer" size={16} />
             <span className="cq-spill__name">
               <b>{d.name}</b>
-              <small>{[statusPill(t, d.status), computerLine(t, d)].join(" · ")}</small>
+              <small>{spillDeviceText(t, d, devicePlanName(t, accounts, d.id))}</small>
             </span>
             <Switch
               aria-label={`${t("devices.spillOwn")}: ${d.name}`}
@@ -410,6 +414,8 @@ function QueueWaitTurn({ wait: { agentId, runId }, channelId }: { wait: Conversa
   const first = w?.people && w.purpose.kind === "person" && w.purpose.userId === me.user.id;
   // The real cause, once the line knows the turn: what holds the computer's memory now.
   const cause = w ? queueCauseText(t, queue) : null;
+  const { stop, stopping } = useTaskStop();
+  const freeing = w ? queueStoppable(queue) : undefined;
   return (
     <MessageRow
       agent
@@ -427,8 +433,31 @@ function QueueWaitTurn({ wait: { agentId, runId }, channelId }: { wait: Conversa
       <span className="cq-turn__acts">
         {first && <Chip className="cq-first">{t("queue.youFirst")}</Chip>}
         {machineId && <SeeQueue machineId={machineId} />}
+        {freeing && (
+          <StopFill
+            label={queueStopText(t, freeing, agentName(freeing.agentId) ?? t("channel.unknownAgent"))}
+            stopping={stopping.has(freeing.runId)}
+            onStop={() => stop([freeing.runId], undefined, true)}
+          />
+        )}
       </span>
     </MessageRow>
+  );
+}
+
+/** The wait line's way out, beside "See queue": stop the work the viewer may stop on the full computer. */
+function StopFill({ label, stopping, onStop }: { label: string; stopping: boolean; onStop: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      className="cq-link cq-turn__stop"
+      disabled={stopping}
+      aria-busy={stopping || undefined}
+      onClick={onStop}
+    >
+      {stopping ? t("taskManager.state.stopping") : label}
+    </button>
   );
 }
 

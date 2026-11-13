@@ -11290,7 +11290,13 @@
     "cause_other": "Computadora llena: {{count}} trabajos usan su memoria ahora ({{fill}}).",
     "spill": {
       "title": "Más computadoras, menos cola",
-      "text": "Cuando esta computadora esté llena, las respuestas para ti pueden empezar en una tuya. El trabajo largo y los archivos de los agentes se quedan aquí."
+      "text": "Cuando esta computadora esté llena, las respuestas para ti pueden empezar en una tuya. El trabajo largo y los archivos de los agentes se quedan aquí.",
+      "plan": "tu plan {{plan}}"
+    },
+    "stopFill": {
+      "routine": "Detener la rutina",
+      "work": "Detener el trabajo largo",
+      "agent": "Detener a {{name}}"
     },
     "youFirst": "Tú vas primero",
     "startsIn": "empieza en ~{{n}} min",

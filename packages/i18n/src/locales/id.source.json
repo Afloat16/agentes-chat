@@ -26713,6 +26713,18 @@
   "queue.spill.text": {
     "value": "When this computer is full, replies to you can start on one of yours. Long work and the agents' files stay here."
   },
+  "queue.spill.plan": {
+    "value": "your {{plan}} plan"
+  },
+  "queue.stopFill.routine": {
+    "value": "Stop the routine"
+  },
+  "queue.stopFill.work": {
+    "value": "Stop the long job"
+  },
+  "queue.stopFill.agent": {
+    "value": "Stop {{name}}"
+  },
   "queue.youFirst": {
     "value": "You go first"
   },

@@ -223,6 +223,10 @@ export function computerLine(t: TFunction, d: ComputerDevice): string {
     .join(" · ");
 }
 
+/** A computer in the line's "More computers" list: "Online · macOS · 16 GB · your Claude Max plan" (`plan`: the viewer's there). */
+export const spillDeviceText = (t: TFunction, d: ComputerDevice, plan: string | null) =>
+  [statusPill(t, d.status), computerLine(t, d), plan && t("queue.spill.plan", { plan })].filter(Boolean).join(" · ");
+
 /** "Android 16" or "iOS 27.1". */
 export const phoneSystem = (t: TFunction, p: Pick<PhoneDevice, "platform" | "osVersion">) =>
   t(p.platform === "ios" ? "devices.system.ios" : "devices.system.android", { version: p.osVersion });

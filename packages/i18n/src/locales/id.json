@@ -10593,7 +10593,13 @@
     "cause_other": "Komputer penuh: {{count}} kerja memakai memorinya sekarang ({{fill}}).",
     "spill": {
       "title": "Lebih banyak komputer, antrean lebih pendek",
-      "text": "Saat komputer ini penuh, balasan untukmu bisa mulai di salah satu komputermu. Kerja panjang dan file para agen tetap di sini."
+      "text": "Saat komputer ini penuh, balasan untukmu bisa mulai di salah satu komputermu. Kerja panjang dan file para agen tetap di sini.",
+      "plan": "paket {{plan}} kamu"
+    },
+    "stopFill": {
+      "routine": "Hentikan rutinitas",
+      "work": "Hentikan kerja panjang",
+      "agent": "Hentikan {{name}}"
     },
     "youFirst": "Kamu duluan",
     "startsIn": "mulai ~{{n}} mnt lagi",

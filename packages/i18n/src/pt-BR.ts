@@ -11211,6 +11211,14 @@ export const ptBR = {
     spill: {
       title: "Mais computadores, menos fila",
       text: "Quando este computador estiver cheio, as respostas para você podem começar num computador seu. Trabalhos longos e os arquivos dos agentes continuam aqui.",
+      /** The viewer's own sign-in there, "Claude Max". */
+      plan: "seu plano {{plan}}",
+    },
+    /** The wait line's way out: stop the work on the computer the viewer may stop. `name` is the agent doing it. */
+    stopFill: {
+      routine: "Parar a rotina",
+      work: "Parar o trabalho longo",
+      agent: "Parar {{name}}",
     },
     youFirst: "Você vai primeiro",
     startsIn: "começa em ~{{n}} min",

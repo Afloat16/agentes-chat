@@ -2,6 +2,7 @@ import type { TFunction } from "i18next";
 import type {
   Agent,
   AgentBrain,
+  AiAccounts,
   AiComputer,
   AiStatus,
   BrainUnavailable,
@@ -12,7 +13,7 @@ import type {
   MachineAccountKind,
   OrgStanding,
 } from "../api/types";
-import { ownSignInReady } from "./ai-accounts";
+import { ownSignInReady, ownSignIns, planWordOf } from "./ai-accounts";
 import { answersOthers, audienceOf } from "./audience";
 import { type BillingHold, billingHoldOf } from "./billing";
 import { type SetupView, setupPending } from "./computer";
@@ -314,6 +315,17 @@ export const planMark = (choice: PlanChoice) =>
 /** A plan's short name, as its tile and its accounts say it: "Claude", "ChatGPT", "GLM Coding"… */
 export const planLabel = (t: TFunction, choice: PlanChoice) =>
   isPlanId(choice) ? CODING_PLANS[choice].label : t(`aiAccounts.connect.${kindOf(choice)}`);
+/**
+ * The viewer's plan on a computer as people say it ("Claude Max"): its own sign-in there first, else an account of
+ * theirs signed in there; null with none.
+ */
+export function devicePlanName(t: TFunction, view: AiAccounts | undefined, machineId: string): string | null {
+  const own = ownSignIns(view).find((o) => o.machineId === machineId);
+  const a = own ?? view?.accounts.find((x) => x.machineId === machineId && x.mine && x.status === "active");
+  if (!a) return null;
+  const choice = planOfAccount({ kind: a.kind, provider: "provider" in a ? a.provider : null });
+  return [planLabel(t, choice), planWordOf(a.plan)].filter(Boolean).join(" ");
+}
 /** A plan's name in its panel, as its maker sells it: "Your Claude plan", "GLM Coding Plan"… */
 export const planTitle = (t: TFunction, choice: PlanChoice) =>
   isPlanId(choice) ? CODING_PLANS[choice].name : t(`connectAi.plan.${choice}.title`);

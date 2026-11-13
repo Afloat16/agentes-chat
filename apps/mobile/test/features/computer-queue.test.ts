@@ -1,6 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import type { ComputerQueue, QueueWaiting } from "@agenteschat/client";
-import { queueCauseText, queueLiveText, queueWhereText, waitingFor } from "@agenteschat/client/lib/computer-queue";
+import {
+  queueCauseText,
+  queueLiveText,
+  queueStoppable,
+  queueStopText,
+  queueWhereText,
+  waitingFor,
+} from "@agenteschat/client/lib/computer-queue";
+import { devicePlanName } from "@agenteschat/client/lib/no-ai";
 import { machineOfAgents, queuePlace } from "../../src/features/queue/logic";
 import { translator } from "./fixtures";
 
@@ -100,5 +108,33 @@ describe("a shared computer's line on the phone", () => {
     const en = await translator("en");
     expect(queueCauseText(en, { working: [] })).toBeNull();
     expect(queueCauseText(en, null)).toBeNull();
+  });
+
+  test("the wait's way out, as the web says it: the work I may stop, a routine before an agent's ask, never a reply", async () => {
+    const pt = await translator("pt-BR");
+    expect(queueStoppable(queue)).toBeUndefined();
+    const [ask] = queue.working;
+    const reply = { ...ask, runId: "w2", purpose: { kind: "person", userId: "u2" }, canStop: true } as const;
+    const routine = { ...ask, runId: "w3", purpose: { kind: "routine" }, canStop: true } as const;
+    expect(queueStoppable({ working: [reply] })).toBeUndefined();
+    const freeing = queueStoppable({ working: [reply, { ...ask, canStop: true }, routine] });
+    expect(freeing?.runId).toBe("w3");
+    expect(freeing && queueStopText(pt, freeing, "Ada")).toBe("Parar a rotina");
+    expect(queueStopText(pt, { purpose: { kind: "agent", agentId: "kai" } }, "Ada")).toBe("Parar Ada");
+  });
+
+  test("a computer's plan in the line's spill-over list: its own sign-in, else an account of mine there", async () => {
+    const pt = await translator("pt-BR");
+    const computer = { machineId: "m2", name: "MacBook", online: true, mine: true, canAdd: true, keys: true };
+    const brains = { claude_code: true, codex: true };
+    expect(
+      devicePlanName(
+        pt,
+        { accounts: [], computers: [{ ...computer, brains, own: { claude_code: { plan: "max" } } }] },
+        "m2",
+      ),
+    ).toBe("Claude Max");
+    expect(devicePlanName(pt, { accounts: [], computers: [{ ...computer, brains }] }, "m2")).toBeNull();
+    expect(devicePlanName(pt, undefined, "m2")).toBeNull();
   });
 });
