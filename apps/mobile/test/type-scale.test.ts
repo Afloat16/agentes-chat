@@ -122,9 +122,11 @@ test("a mark beside words (an orbit, the waiting mark) centres on the capitals, 
   expect(readingMiddle(15, 20) - capsMiddle(20)).toBeCloseTo(1.2, 6);
   // A task's state under a task's screen's head (footnote 13/18) with its 16 pt mark box.
   expect(leadBox({ height: 18, middle: capsMiddle(18) }, 16)).toEqual({ paddingTop: 1, height: 18 });
-  // Every orbit led by a `LineIcon` is a mark, and a `Note`'s own mark (the work under way) too.
+  // Every orbit led by a `LineIcon` is a mark, whatever wraps it inside (a step's cross-fade), and a `Note`'s own mark
+  // (the work under way) too.
   const src = (f: string) => readFileSync(join(import.meta.dir, "../src", f), "utf8");
   expect(src("ui/LineIcon.tsx")).toContain("leadBox(mark ? { ...line, middle: capsMiddle(line.height) } : line, size)");
+  const unmarked = /<LineIcon(?![^>]*\bmark\b)[^>]*[^/]>((?:(?!<\/LineIcon>)[\s\S])*)<\/LineIcon>/g;
   for (const f of [
     "features/chat/ConsultationScreen.tsx",
     "features/chat/WorkLine.tsx",
@@ -132,9 +134,16 @@ test("a mark beside words (an orbit, the waiting mark) centres on the capitals, 
     "features/auth/AuthFlow.tsx",
     "features/issues/IssueScreen.tsx",
     "features/task-manager/parts.tsx",
+    "features/missions/MissionScreen.tsx",
+    "features/computer/Cover.tsx",
   ])
-    expect(src(f)).not.toMatch(/<LineIcon(?![^>]*\bmark\b)[^>]*>\s*<(PixelOrbit|TaskMark)/);
+    for (const [, inside] of src(f).matchAll(unmarked)) expect(inside).not.toMatch(/<(PixelOrbit|TaskMark|WaitMark)\b/);
   expect(src("features/ai/parts.tsx")).toContain('<LineIcon variant="small" size={15} mark>');
+  // An event's own mark (the waiting square, the stop square) is a pixel mark; the cover's orbit leads its words'
+  // first line, where a long name wraps them.
+  expect(src("ui/EventPill.tsx")).toMatch(/<LineIcon size=\{MARK\} variant="small" mark>\s*\{mark\}/);
+  expect(src("features/computer/Cover.tsx")).toMatch(/<LineIcon variant="subhead" size=\{16\} mark>\s*<PixelOrbit/);
+  expect(src("features/computer/Cover.tsx")).toContain('row: { flexDirection: "row", alignItems: "flex-start"');
 });
 
 describe("count badge", () => {

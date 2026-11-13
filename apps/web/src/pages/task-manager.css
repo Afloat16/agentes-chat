@@ -243,7 +243,8 @@ html:not([data-pointer]) .tm-row:has(.tm-hit:focus-visible) {
 .tm-cell--use .tm-use > :first-child {
   translate: none;
 }
-/* How an agent stands, or how a task ended, as a mark alone: only with no room for the columns (below). */
+/* How an agent stands, how a task ended or how one its face leads stands, as a mark alone: only with no room for the
+   columns (below). */
 .tm-cell--state > .tm-mark {
   display: none;
 }
@@ -426,9 +427,9 @@ html:not([data-pointer]) .tm-more:focus-visible {
 }
 
 /* No room for the columns (a phone, a small window beside the sidebar): no column names, and each row is still one
-   line: its words, its time and its stop. A task's mark says how it stands; an agent's row and one that ended show
-   theirs as a mark too. Estado and Usando agora are in the row's tip, and Ver passos in the toolbar, for the row
-   chosen: the words keep the room. */
+   line: its words, its time and its stop. A task's mark says how it stands; an agent's row, one that ended and one its
+   agent's face leads (`flat`) show theirs as a mark after the words. Estado and Usando agora are in the row's tip, and
+   Ver passos in the toolbar, for the row chosen: the words keep the room. */
 @container tm (max-width: 760px) {
   .tm-row--head {
     display: none;
@@ -436,7 +437,8 @@ html:not([data-pointer]) .tm-more:focus-visible {
   .tm-row {
     grid-template-columns: minmax(0, 1fr) auto 40px;
   }
-  .tm-row--agent {
+  .tm-row--agent,
+  .tm-row[data-look="flat"] {
     grid-template-columns: minmax(0, 1fr) auto auto 40px;
   }
   .tm-cell--act > .tm-steps {
@@ -448,7 +450,7 @@ html:not([data-pointer]) .tm-more:focus-visible {
   .tm-row[data-look="grouped"] {
     --tm-indent: 26px;
   }
-  .tm-row:not(.tm-row--agent, .tm-row--ended) > .tm-cell--state,
+  .tm-row:not(.tm-row--agent, .tm-row--ended, [data-look="flat"]) > .tm-cell--state,
   .tm-cell--use,
   .tm-cell--state > :not(.tm-mark) {
     display: none;
@@ -457,7 +459,8 @@ html:not([data-pointer]) .tm-more:focus-visible {
     display: inline-grid;
   }
   .tm-row--agent > .tm-cell--state,
-  .tm-row--ended > .tm-cell--state {
+  .tm-row--ended > .tm-cell--state,
+  .tm-row[data-look="flat"] > .tm-cell--state {
     padding-inline: var(--space-1) 0;
   }
 }

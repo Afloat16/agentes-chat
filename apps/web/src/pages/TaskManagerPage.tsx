@@ -399,10 +399,13 @@ export function TaskManagerPage({
                   <b>{c.name}</b>
                   <small>{computerText(c)}</small>
                 </Tip>
+                {/* The keys' focus and a long press open the words' tip from here: the words take no focus. */}
                 {(c.inLine > 0 || c.working > 0) && (
-                  <Button variant="link" aria-label={`${t("queue.see")}: ${c.name}`} onClick={() => setQueueOf(c.id)}>
-                    {t("queue.see")}
-                  </Button>
+                  <Tip button look="ac-msg__tip tm-tip" tip={rowTip(c.name, [computerText(c)])}>
+                    <Button variant="link" aria-label={`${t("queue.see")}: ${c.name}`} onClick={() => setQueueOf(c.id)}>
+                      {t("queue.see")}
+                    </Button>
+                  </Tip>
                 )}
               </li>
             ))}
@@ -655,7 +658,8 @@ function RowName({
  * One task, one line: what it is (the whole row picks it) and what it is about, its state, what it uses now, its time
  * (shaded as it grows, but not on a wait with a known reason: that isn't stuck) and Parar. What comes next of a wait
  * and what it does in its program are in its tip. `grouped` sits under its agent's row; `flat` (a routine's
- * background run) shows its agent's face; `agent` is the list of one agent's tasks (its card chosen).
+ * background run, work agents asked) shows its agent's face, and its state as a mark when the columns don't fit;
+ * `agent` is the list of one agent's tasks (its card chosen).
  */
 function TaskRow({
   task,
@@ -725,6 +729,8 @@ function TaskRow({
       </span>
       <span className="tm-cell tm-cell--state">
         <TaskStateChip task={task} stopping={stopping} line />
+        {/* Its face leads the row: with no room for the columns, how it stands is this mark. */}
+        {look === "flat" && <TaskMark task={task} />}
       </span>
       <span className="tm-cell tm-cell--use">
         <UsingNow task={task} line />

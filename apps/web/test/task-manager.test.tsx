@@ -309,6 +309,18 @@ function worstCase() {
       startedAt: ago(12),
       createdAt: ago(12),
     }),
+    task({
+      runId: "r-routine-ok",
+      agentId: ADA_ID,
+      status: "waiting_approval",
+      background: true,
+      routine: { id: "rt-refunds", name: "Revisão semanal das devoluções internacionais pendentes de aprovação" },
+      channelName: null,
+      requester: null,
+      now: using("send_email", "clientes do exterior com devolução pendente"),
+      startedAt: ago(26),
+      createdAt: ago(26),
+    }),
   );
   view.ended.push(
     ended({
@@ -793,7 +805,7 @@ describe("the task manager page", () => {
     await click(screen().getByRole("button", { name: /Terminadas hoje/ }));
     // Every row says its words in one button: the title, then what it is about in quiet type, nothing under them.
     const rows = [...document.querySelectorAll<HTMLElement>(".tm-row:not(.tm-row--head)")];
-    expect(rows).toHaveLength(14);
+    expect(rows).toHaveLength(15);
     for (const row of rows) {
       expect(row.querySelectorAll(".tm-hit")).toHaveLength(1);
       expect([...row.querySelectorAll("small")].every((s) => s.parentElement?.classList.contains("tm-hit"))).toBe(true);
@@ -818,6 +830,9 @@ describe("the task manager page", () => {
     expect(tipOf(rowOf("Conciliação diária das cobranças internacionais"))).toContain(
       "Navegador · loja.example/checkout/pedidos/2026/11/confirmacao-de-pagamento-pendente-de-revisao",
     );
+    // A routine's run waiting for your ok, its agent's face first: its state keeps a mark for no room (the square).
+    const routineOk = rowOf("Revisão semanal das devoluções internacionais pendentes de aprovação");
+    expect(routineOk.querySelector(".tm-cell--state > .tm-mark .rq-wait")).not.toBeNull();
     // The agent's long name on its row, how it stands in its tip.
     expect(tipOf(agentRowOf(NOVA_NAME, asked()))).toMatch(/^1 tarefa\. Trabalhando\. Claude Code · Terminal · bun/);
     const refund = rows.find((r) => r.textContent?.includes("reembolso em dobro")) as HTMLElement;
@@ -985,7 +1000,18 @@ describe("a computer's line", () => {
     expect(rows).toEqual(["MacBookCheio · 3 na fila · 1 trabalhando", "ServidorTem espaço"]);
     // Nothing on it: nothing to see.
     expect(within(list).queryByRole("button", { name: "Ver fila: Servidor" })).toBeNull();
-    await click(within(list).getByRole("button", { name: "Ver fila: MacBook" }));
+    // The words take no focus: the keys' focus on Ver fila opens them whole in the kit's tip.
+    const see = within(list).getByRole("button", { name: "Ver fila: MacBook" });
+    expect(see.getAttribute("title")).toBeNull();
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: "Tab" });
+      see.focus();
+    });
+    const tip = document.querySelector(".ac-tip.tm-tip") as HTMLElement;
+    expect([...tip.children].map((line) => line.textContent)).toEqual(["MacBook", "Cheio · 3 na fila · 1 trabalhando"]);
+    await act(async () => see.blur());
+    expect(document.querySelector(".ac-tip")).toBeNull();
+    await click(see);
     await settle(4);
     const dialog = screen().getByRole("dialog", { name: "Fila de MacBook" });
     const text = dialog.textContent ?? "";
@@ -1305,6 +1331,32 @@ describe("why a task waits", () => {
       await Bun.sleep(300);
     });
     expect(document.querySelector(".ac-tip.tm-tip")?.textContent).toContain("Pausa do plano");
+  });
+
+  test("a row its agent's face leads keeps how it stands as a mark when the columns don't fit", async () => {
+    const routine = { id: "rt-send", name: "Envio semanal" };
+    await open(
+      seedState({
+        taskManager: view([
+          waiting("r1", "Aprovar o envio do relatório", undefined, null, { status: "waiting_approval", routine }),
+          waiting("r2", "Montar o relatório da semana", undefined, null, { status: "running", routine }),
+        ]),
+      }),
+      "task-manager",
+    );
+    const asks = rowOf("Aprovar o envio do relatório");
+    const works = rowOf("Montar o relatório da semana");
+    for (const row of [asks, works]) {
+      expect(row.dataset.look).toBe("flat");
+      expect(row.querySelector(".tm-cell--name .tm-mark")).toBeNull();
+    }
+    // A wait on you and work under way read apart: the waiting square, the orbit.
+    expect(asks.querySelector(".tm-cell--state > .tm-mark .rq-wait")).not.toBeNull();
+    expect(works.querySelector(".tm-cell--state > .tm-mark .ac-pixspin")).not.toBeNull();
+    const css = readFileSync(join(import.meta.dir, "../src/pages/task-manager.css"), "utf8");
+    const narrow = css.slice(css.indexOf("@container tm (max-width: 760px)"));
+    expect(narrow).toContain('.tm-row:not(.tm-row--agent, .tm-row--ended, [data-look="flat"]) > .tm-cell--state,');
+    expect(narrow).toMatch(/\.tm-row\[data-look="flat"\] \{\s*grid-template-columns: minmax\(0, 1fr\) auto auto 40px;/);
   });
 
   test("a paused conversation says how long it has been paused, never a clock of days", async () => {
