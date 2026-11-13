@@ -10441,6 +10441,7 @@
     "noMic": "Nessun microfono trovato.",
     "failed": "Impossibile aprire il microfono. Riprova.",
     "noPlayback": "Ora non si può riprodurre. Puoi comunque inviarlo o continuare a registrare.",
+    "cantPlay": "Impossibile riprodurre l'audio.",
     "settings": {
       "title": "Messaggi vocali",
       "on": "Messaggi vocali",

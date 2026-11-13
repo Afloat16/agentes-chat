@@ -10424,6 +10424,7 @@
     "noMic": "Aucun microphone trouvé.",
     "failed": "Impossible d'ouvrir le microphone. Réessayez.",
     "noPlayback": "Lecture impossible pour le moment. Vous pouvez quand même l'envoyer ou continuer l'enregistrement.",
+    "cantPlay": "Impossible de lire l'audio.",
     "settings": {
       "title": "Messages vocaux",
       "on": "Messages vocaux",

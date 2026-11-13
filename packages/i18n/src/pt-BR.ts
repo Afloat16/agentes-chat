@@ -10338,6 +10338,7 @@ export const ptBR = {
     noMic: "Nenhum microfone encontrado.",
     failed: "Não deu para abrir o microfone. Tente de novo.",
     noPlayback: "Não deu para tocar agora. Você ainda pode enviar ou continuar gravando.",
+    cantPlay: "Não deu para tocar o áudio.",
     settings: {
       title: "Mensagens de voz",
       on: "Mensagens de voz",

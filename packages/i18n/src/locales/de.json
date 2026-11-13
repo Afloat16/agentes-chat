@@ -10047,6 +10047,7 @@
     "noMic": "Kein Mikrofon gefunden.",
     "failed": "Das Mikrofon ließ sich nicht öffnen. Versuch es noch mal.",
     "noPlayback": "Gerade nicht abspielbar. Du kannst es trotzdem senden oder weiter aufnehmen.",
+    "cantPlay": "Das Audio konnte nicht abgespielt werden.",
     "settings": {
       "title": "Sprachnachrichten",
       "on": "Sprachnachrichten",

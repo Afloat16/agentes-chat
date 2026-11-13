@@ -9991,6 +9991,7 @@
     "noMic": "Mikrofon bulunamadı.",
     "failed": "Mikrofon açılamadı. Tekrar deneyin.",
     "noPlayback": "Şu anda oynatılamıyor. Yine de gönderebilir veya kayda devam edebilirsiniz.",
+    "cantPlay": "Ses oynatılamadı.",
     "settings": {
       "title": "Sesli mesajlar",
       "on": "Sesli mesajlar",

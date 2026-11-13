@@ -10355,6 +10355,7 @@
     "noMic": "No se encontró ningún micrófono.",
     "failed": "No se pudo abrir el micrófono. Inténtalo de nuevo.",
     "noPlayback": "No se puede reproducir ahora. Igual puedes enviarlo o seguir grabando.",
+    "cantPlay": "No se pudo reproducir el audio.",
     "settings": {
       "title": "Mensajes de voz",
       "on": "Mensajes de voz",
