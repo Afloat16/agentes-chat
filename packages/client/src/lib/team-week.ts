@@ -36,7 +36,7 @@ export type TeamWeekRow =
       hours: number;
       agentId: string | null;
     }
-  /** What waits on the reader besides approvals: how many, the inbox rows it counted and since when. */
+  /** What waits on the reader besides approvals: how many, every inbox row it counted and since when. */
   | { id: string; kind: "waiting"; count: number; ids: string[]; agentId: string | null; since: string }
   /**
    * An agent's runs in one conversation that failed, or that wait on a plan, a budget or a computer (`held`), with the
@@ -77,8 +77,10 @@ export interface TeamWeekCard {
   worked: TeamWeekHighlight[];
   rows: TeamWeekRow[];
   proposalIds: string[];
-  /** Rows applied on the card, or put away alone (`skipped`), by row id. */
-  done: Record<string, { byUserId: string; at: string; routineId?: string; skipped?: true }>;
+  /** Rows applied on the card, by row id. */
+  done: Record<string, { byUserId: string; at: string; routineId?: string }>;
+  /** Rows put away alone, by row id. Apart from `done`, which builds from before it read as applied. */
+  skipped?: Record<string, { byUserId: string; at: string }>;
   dismissedAt: string | null;
 }
 
@@ -143,7 +145,8 @@ export function teamWeekRowState(
     waiting?: string[];
   },
 ): TeamWeekRowState {
-  if (card.done[row.id]) return card.done[row.id]?.skipped ? "skipped" : "done";
+  if (card.skipped?.[row.id]) return "skipped";
+  if (card.done[row.id]) return "done";
   if (row.kind === "waiting")
     return !live.waiting || row.ids.some((id) => live.waiting?.includes(id)) ? "open" : "done";
   if (row.kind === "approvals") {

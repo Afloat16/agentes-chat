@@ -216,7 +216,11 @@ test("one suggestion put away alone is not the card put away, and its proposal s
       .select()
       .from(schema.messages)
       .where(eq(schema.messages.id, m?.id ?? ""));
-    return after?.meta.actionCard as { dismissedAt: string | null; done: Record<string, { skipped?: boolean }> };
+    return after?.meta.actionCard as {
+      dismissedAt: string | null;
+      done: Record<string, unknown>;
+      skipped: Record<string, unknown>;
+    };
   };
 
   // The proposal, read by its requester: its code, and the sentence for a build that has no words for the code.
@@ -244,8 +248,11 @@ test("one suggestion put away alone is not the card put away, and its proposal s
   expect(agent?.archivedAt).toBeNull();
   const after = await saved();
   expect(after.dismissedAt).toBeNull();
-  expect(Object.keys(after.done).sort()).toEqual([`retire:${agentId}`, unanswered].sort());
-  expect(Object.values(after.done).every((d) => d.skipped === true)).toBe(true);
+  // Put away is kept apart from applied: a build from before reads any row in `done` as applied ("Asked Lodi").
+  expect(Object.keys(after.skipped).sort()).toEqual([`retire:${agentId}`, unanswered].sort());
+  expect(after.done).toEqual({});
+  // And it is not applied afterwards, from a build that still draws its button.
+  expect((await owner(row, { json: { rowId: unanswered, text: "An agent for #general, please" } })).status).toBe(409);
   // What I muted is not a setting of the screen: the prefs the apps read do not list it.
   expect(await (await owner(`${base}/team-week`)).json()).not.toHaveProperty("muted");
 });

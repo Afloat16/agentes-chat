@@ -167,7 +167,7 @@ test("suggestions: archiving is its own tap, never in the bulk one, and each can
         { id: `retire:${ADA_ID}`, kind: "retire", agentId: ADA_ID, proposalId: "p-retire" },
         { id: `model:${ADA_ID}`, kind: "model", agentId: ADA_ID, proposalId: "p-model", from: "big-1", to: "mid-1" },
       ],
-      done: { "unanswered:g": { byUserId: "u-walter", at: new Date().toISOString(), skipped: true } },
+      skipped: { "unanswered:g": { byUserId: "u-walter", at: new Date().toISOString() } },
     }),
   );
   await renderApp(`/org/${ORG_ID}/dm/agent/${LODI_ID}`, { api: createFakeApi(s) });

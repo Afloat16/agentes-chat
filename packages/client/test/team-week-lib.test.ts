@@ -369,7 +369,7 @@ test("suggestions: archive an idle agent, a smaller model for light work, each p
   // Put away by its reader: it says so, whatever its proposal reads (refused), and stays out of the open ones.
   const skipped = {
     ...parsed,
-    done: { "retire:theo": { byUserId: "u1", at: "2026-11-06T21:00:00Z", skipped: true as const } },
+    skipped: { "retire:theo": { byUserId: "u1", at: "2026-11-06T21:00:00Z" } },
   };
   const refused = { ...live, proposals: [proposal("p8", "refused")] };
   expect(teamWeekRowState(skipped, retire as never, refused)).toBe("skipped");
