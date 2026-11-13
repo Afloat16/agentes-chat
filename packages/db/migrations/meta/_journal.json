@@ -1804,8 +1804,29 @@
     {
       "idx": 259,
       "version": "7",
-      "when": 1794705460000,
-      "tag": "0259_right_hand_proactive",
+      "when": 1794715400000,
+      "tag": "0259_approval_superseded_by",
+      "breakpoints": true
+    },
+    {
+      "idx": 260,
+      "version": "7",
+      "when": 1794725400000,
+      "tag": "0260_plans_serve_everyone",
+      "breakpoints": true
+    },
+    {
+      "idx": 261,
+      "version": "7",
+      "when": 1794735400000,
+      "tag": "0261_machine_spill",
+      "breakpoints": true
+    },
+    {
+      "idx": 262,
+      "version": "7",
+      "when": 1794745400000,
+      "tag": "0262_right_hand_proactive",
       "breakpoints": true
     }
   ]

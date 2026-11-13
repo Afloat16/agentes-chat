@@ -595,6 +595,8 @@ export const approvals = pgTable(
     highRisk: boolean().notNull().default(true),
     /** Decided by someone covering this person (`approval_covers`): "Aprovado por Bruno, cobrindo Ana". */
     decidedForUserId: text(),
+    /** Canceled because the agent asked the same action again in a later turn: the newer request. */
+    supersededById: uuid(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -935,6 +937,8 @@ export const agentConsultations = pgTable(
     index().on(t.expiresAt).where(sql`${t.status} = 'open'`),
     index().on(t.targetRunId),
     index().on(t.orgId, t.askerAgentId, t.createdAt),
+    // The hand-over of a task, found by the task's conversation.
+    index().on(t.orgId, t.channelId),
   ],
 );
 

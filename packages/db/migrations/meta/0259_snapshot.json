@@ -1,5 +1,5 @@
 {
-  "id": "5c4ca05f-e75b-495e-82cd-c28875980333",
+  "id": "1a53a1e0-d3ba-4e37-a1a9-5781a57a25d0",
   "prevId": "1bbe0606-8100-4266-904b-854995512f56",
   "version": "7",
   "dialect": "postgresql",
@@ -785,20 +785,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'team'"
-        },
-        "team_watch": {
-          "name": "team_watch",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "welcome_people": {
-          "name": "welcome_people",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
         },
         "updated_at": {
           "name": "updated_at",
@@ -16481,6 +16467,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "superseded_by_id": {
+          "name": "superseded_by_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {

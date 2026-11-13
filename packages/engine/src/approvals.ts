@@ -34,10 +34,12 @@ import { type MailPreview, parseMailDetail, withoutReplyPrefix } from "./mail/pr
 import { notifyApproval, notifyNewcomers, resolveApprovalNotifications } from "./notification-producers";
 import { can, type Membership, requirePermission } from "./organizations";
 import { enqueue } from "./outbox";
+import { quietEnd, withMootRequest } from "./parked-asks";
 import { maySql, type RolePermission } from "./permissions";
 import { accountInUse } from "./standing";
 import { taskReaderSql } from "./task-access";
 import { AHEAD_GRACE_MS, type Approval, readsSqlOnly, routineCall } from "./tools/gateway";
+import { canonicalJson } from "./tools/json-schema";
 import { REQUEST_PERMISSION_TOOL } from "./tools/permission";
 import type { ApprovalOrigin } from "./tools/run-policy";
 
@@ -92,6 +94,8 @@ export interface ApprovalView {
   /** Decided by someone covering this person (ADR 0139): "Aprovado por Bruno, cobrindo Ana". */
   decidedForUserId: string | null;
   decidedAt: string | null;
+  /** Canceled because the agent asked for the same action again in a later turn: that newer request. */
+  supersededById: string | null;
   reason: string | null;
   /** Whether the person asking may approve or refuse it. */
   canDecide: boolean;
@@ -467,6 +471,7 @@ export const approvalView = (a: Approval, canDecide = false, routine = false): A
   decidedByUserId: a.decidedByUserId,
   decidedForUserId: a.decidedForUserId ?? null,
   decidedAt: a.decidedAt ? a.decidedAt.toISOString() : null,
+  supersededById: a.supersededById ?? null,
   reason: a.reason,
   canDecide: canDecide && a.status === "pending",
   ownerUserId: a.ownerUserId,
@@ -746,6 +751,95 @@ export async function cancelMailboxApprovals(tx: Executor, orgId: string, userId
     await auditDecision(tx, row, actorId);
   }
   return rows;
+}
+
+/** Params that name what an action is about (a message, a recipient, a pull request), besides any `…_id`/`…Id`. */
+const TARGET_KEYS = new Set([
+  "to",
+  "channel",
+  "owner",
+  "repo",
+  "name",
+  "number",
+  "pullNumber",
+  "pull_number",
+  "issue_number",
+  "path",
+  "branch",
+  "environment",
+]);
+const isTargetKey = (key: string) => TARGET_KEYS.has(key) || /(_id|Id)$/.test(key);
+
+/**
+ * What an action is about, as one comparable string: its target params, one level into objects (a tool that runs
+ * another by name keeps them under `arguments`). Null when it names nothing: such an action is never taken for another.
+ */
+export function approvalTarget(params: Record<string, unknown>): string | null {
+  const target: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(params ?? {})) {
+    if (isTargetKey(k)) target[k] = v;
+    else if (v && typeof v === "object" && !Array.isArray(v)) {
+      for (const [ik, iv] of Object.entries(v as Record<string, unknown>))
+        if (isTargetKey(ik)) target[`${k}.${ik}`] = iv;
+    }
+  }
+  return Object.keys(target).length > 0 ? canonicalJson(target) : null;
+}
+
+/**
+ * The agent asked for the same action again in a later run (same tool, connection, card and target), as when it
+ * reworded an email it was told to fix: its older requests still waiting on that card (`openApprovalCard` joined them:
+ * one conversation) are canceled as replaced by `newer` (`supersededById`). Their runs read that, not a refusal, and may
+ * end quietly (`mootRequests`). Two calls of one run, an action prepared ahead and an action naming no target are never
+ * replaced. In the transaction that links `newer` to its card; then `publishApproval` each row returned.
+ */
+export async function supersedeApprovals(tx: Executor, newer: Approval): Promise<Approval[]> {
+  const target = approvalTarget(newer.params);
+  if (!target || !newer.runId || !newer.messageId || newer.runAt) return [];
+  const older = await tx
+    .select()
+    .from(approvals)
+    .where(
+      and(
+        eq(approvals.orgId, newer.orgId),
+        eq(approvals.agentId, newer.agentId),
+        eq(approvals.tool, newer.tool),
+        newer.connectionId ? eq(approvals.connectionId, newer.connectionId) : isNull(approvals.connectionId),
+        eq(approvals.messageId, newer.messageId),
+        eq(approvals.status, "pending"),
+        isNull(approvals.runAt),
+        ne(approvals.id, newer.id),
+        ne(approvals.runId, newer.runId),
+        lt(approvals.createdAt, newer.createdAt),
+      ),
+    );
+  const ids = older.filter((r) => approvalTarget(r.params) === target).map((r) => r.id);
+  if (ids.length === 0) return [];
+  const rows = await tx
+    .update(approvals)
+    .set({ status: "canceled", supersededById: newer.id, decidedAt: new Date() })
+    .where(and(inArray(approvals.id, ids), eq(approvals.status, "pending")))
+    .returning();
+  for (const row of rows) {
+    if (row.runId) await markReplaced(tx, row.runId, row.id);
+    await enqueueResume(tx, row);
+    await auditDecision(tx, row, null);
+  }
+  return rows;
+}
+
+/** A replaced request's run, still waiting on it, reads that it was replaced and may end without a word. */
+async function markReplaced(tx: Executor, runId: string, approvalId: string) {
+  const [run] = await tx
+    .select({ transcript: agentRuns.transcript })
+    .from(agentRuns)
+    .where(and(eq(agentRuns.id, runId), inArray(agentRuns.status, ["waiting_approval", "waiting_input"])));
+  if (!run) return;
+  const text = `Replaced by your newer request for the same action in a later turn: this one was not done and nobody waits on it. If nothing else is left to do or say, ${quietEnd(run)}.`;
+  await tx
+    .update(agentRuns)
+    .set({ transcript: withMootRequest(approvalId, text) })
+    .where(eq(agentRuns.id, runId));
 }
 
 /** Tells the channel and every approver about an approval (card in the chat, badge on the Approvals screen). */

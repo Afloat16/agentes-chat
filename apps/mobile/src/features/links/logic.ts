@@ -254,6 +254,7 @@ export function notificationHref(
   if (n.kind === "plan_model_dropped") return isSafeId(s.agentId) ? `/agent-model/${s.agentId}` : null;
   // Someone gave an agent the person's plan: their AI accounts, where the agents on each plan are.
   if (n.kind === "plan_lent") return "/ai-accounts";
+  if (n.kind === "plan_serves") return "/usage";
   // What the right hand found (ADR 0177 §1) opens where it is fixed: the AI accounts, the agent whose budget it is,
   // the computer, the connections. A database is reconnected on the web alone, and a cause this build doesn't know
   // has no screen: neither opens anything here, so the tap goes to its web page (`notificationWebPath`).

@@ -752,6 +752,8 @@ export function createJobHandlers(deps: JobDeps): JobHandlers {
       if (Array.isArray(message.meta.steeredRunIds)) return;
       // A reply in an agent's background work thread: its reply turn started with the message.
       if (message.meta.forWork) return;
+      // For the task's agent in its task's conversation: its run started with the message, as in a DM.
+      if (message.meta.forTask) return;
       const channel = where;
       if (channel?.kind === "dm") {
         await dispatchDm(deps.db, message, { maxHops: deps.maxHops }); // idempotent safety net

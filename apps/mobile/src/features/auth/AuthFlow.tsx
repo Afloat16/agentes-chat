@@ -27,7 +27,7 @@ import { PasswordField } from "@/ui/auth/PasswordField";
 import { socialProvidersOn } from "@/ui/auth/providers-on";
 import { AuthFootLine } from "@/ui/auth/ServerLine";
 import { Shake } from "@/ui/auth/Shake";
-import { rememberSignIn, SocialButtons, useSocialProviders } from "@/ui/auth/SocialButtons";
+import { LastUsed, lastSignIn, rememberSignIn, SocialButtons, useSocialProviders } from "@/ui/auth/SocialButtons";
 import { Button } from "@/ui/Button";
 import { haptics } from "@/ui/haptics";
 import { Locked } from "@/ui/Locked";
@@ -116,6 +116,8 @@ export function AuthFlow({
   const api = useApi();
   const config = useAuthConfig();
   const [step, setStep] = useState<Step>("email");
+  // How this phone signed in last, read once: the e-mail's Continuar carries "Último usado" as a provider's button does.
+  const [lastWay] = useState(lastSignIn);
   const [email, setEmail] = useState(initialEmail ?? readValueSync(LAST_EMAIL) ?? "");
   // The e-mail takes the keyboard once the launch splash has left, not under it.
   const launched = useLaunched();
@@ -548,7 +550,16 @@ export function AuthFlow({
       ) : null}
 
       {submitLabel[step] ? (
-        <Button variant="primary" wide label={submitLabel[step]} loading={pending} disabled={!ready} onPress={submit} />
+        <LastUsed on={step === "email" && lastWay === "email"}>
+          <Button
+            variant="primary"
+            wide
+            label={submitLabel[step]}
+            loading={pending}
+            disabled={!ready}
+            onPress={submit}
+          />
+        </LastUsed>
       ) : null}
 
       {step === "email" ? (

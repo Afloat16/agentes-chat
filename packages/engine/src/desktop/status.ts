@@ -73,9 +73,9 @@ export function desktopUseUnavailableText(s: Extract<AgentDesktopUseStatus, { av
     case "outdated":
       return `The runner on ${on} is too old for using your desktop. Tell the person: its owner should update it.`;
     case "switched_off":
-      return `The desktop is turned off on ${on}. Only the person at that computer can turn it on; tell the people.`;
+      return `The desktop is turned off on ${on}. Whoever connected it can turn it on from agentes.chat; tell the people.`;
     case "commands_off":
-      return `Commands are turned off on ${on}, and using your desktop runs them. Only the person at that computer can turn them on; tell the people.`;
+      return `Commands are turned off on ${on}, and using your desktop runs them. Whoever connected it can turn them on from agentes.chat; tell the people.`;
     case "not_ready":
       return `Your desktop can't be used on ${on}${s.detail ? `: ${s.detail}` : ""}. Tell the person.`;
     default:

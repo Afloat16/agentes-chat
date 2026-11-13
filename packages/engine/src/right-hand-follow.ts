@@ -104,9 +104,8 @@ export async function queueTaskCheck(tx: Executor, orgId: string, consultationId
 }
 
 /**
- * The right hand's newest hand-over of the task whose conversation this is. `since` is when the task was created: no
- * index leads to a hand-over by its conversation, and none is older than its task, so the walk over the right hand's
- * hand-overs (indexed by time) ends there.
+ * The right hand's newest hand-over of the task whose conversation this is, found by that conversation (the index on
+ * a hand-over's workspace and conversation). `since` is when the task was created: none is older than its task.
  */
 async function handOverOf(db: Executor, orgId: string, conversationId: string, since: Date): Promise<HandOver | null> {
   const [row] = await db

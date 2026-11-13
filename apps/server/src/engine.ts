@@ -729,6 +729,8 @@ export function buildEngine(o: EngineOptions) {
       { fetch: o.speechFetch },
     ),
   });
+  // An audio file an agent opens is heard by the same engines as a voice message.
+  artifacts.speech = speech.chain;
   const voice: VoiceDeps = {
     db,
     pubsub: adapters.pubsub,

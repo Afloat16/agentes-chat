@@ -189,6 +189,7 @@ import type {
   PersonUsage,
   PhoneDevice,
   PhoneSignIn,
+  PlanServes,
   Poll,
   Proposal,
   ReactionCount,
@@ -255,6 +256,7 @@ import type {
   WorkspaceActionCard,
   WorkspaceActionCardView,
   WorkspaceLimits,
+  XcodeFixView,
 } from "./types";
 
 /** Search filters as query parameters (lists comma-separated). */
@@ -1233,6 +1235,12 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
           method: "PUT",
           json: {},
         }),
+      startXcodeFix: (orgId, machineId, kind) =>
+        request<XcodeFixView>(`${org(orgId)}/devices/computers/${enc(machineId)}/xcode-fix`, { json: { kind } }),
+      xcodeFix: (orgId, machineId) =>
+        request<XcodeFixView>(`${org(orgId)}/devices/computers/${enc(machineId)}/xcode-fix`),
+      cancelXcodeFix: (orgId, machineId) =>
+        request<XcodeFixView>(`${org(orgId)}/devices/computers/${enc(machineId)}/xcode-fix`, { method: "DELETE" }),
     },
     machines: {
       list: async (orgId) => (await request<{ machines: Machine[] }>(`${org(orgId)}/machines`)).machines,
@@ -1256,6 +1264,15 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
         );
         // The new access, bare or wrapped.
         return "access" in out ? out.access : out;
+      },
+      allowTool: async (orgId, machineId, tool) =>
+        (
+          await request<{ access: MachineAccess }>(`${org(orgId)}/machines/${enc(machineId)}/access/allow`, {
+            json: { tool },
+          })
+        ).access,
+      askTool: async (orgId, machineId, tool) => {
+        await request<unknown>(`${org(orgId)}/machines/${enc(machineId)}/access/ask`, { json: { tool } });
       },
       setPause: async (orgId, machineId, input) =>
         (
@@ -1296,6 +1313,11 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
       takeBackPlan: (orgId, accountId, agentId) =>
         request<{ agentIds: string[] }>(`${org(orgId)}/ai-accounts/${enc(accountId)}/take-back`, {
           json: agentId ? { agentId } : {},
+        }),
+      setAccountServes: (orgId, accountId, serves) =>
+        request<{ serves: PlanServes; agentIds: string[] }>(`${org(orgId)}/ai-accounts/${enc(accountId)}/serves`, {
+          method: "PUT",
+          json: { serves },
         }),
       renameAccount: (orgId, machineId, accountId, label) =>
         request<MachineAccount>(`${org(orgId)}/machines/${enc(machineId)}/accounts/${enc(accountId)}`, {
@@ -1764,6 +1786,7 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
       prefs: (orgId) => request<NoticePrefs>(`${org(orgId)}/notification-prefs`),
       setPref: (orgId, category, on) =>
         request<NoticePrefs>(`${org(orgId)}/notification-prefs`, { method: "PUT", json: { category, on } }),
+      askAdmins: (orgId, ask) => request<{ sent: number }>(`${org(orgId)}/admin-asks`, { json: ask }),
     },
     calendar: {
       range: (orgId, from, to) => request<CalendarRange>(`${org(orgId)}/calendar`, { query: { from, to } }),
