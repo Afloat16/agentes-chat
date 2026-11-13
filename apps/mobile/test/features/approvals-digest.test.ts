@@ -12,6 +12,8 @@ test("the one tap approves only what the server calls routine, and the card work
   expect(source).toContain("card.digest ? digestGroups(");
   // No risk is judged on the phone: the words that would do it never appear.
   expect(source).not.toMatch(/approvalRisk|approvalAction|highRisk/);
-  // A failure says its cause.
+  // Approved, the phone says so as the conversation's "Aprovar tudo" does. A failure says its cause.
+  expect(source).toContain("successHaptic()");
+  expect(source).toContain('t("mobile.approval.approved")');
   expect(source).toContain("errorText(t, error, i18n.language)");
 });

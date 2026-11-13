@@ -1,4 +1,4 @@
-import type { Approval, Message } from "@agenteschat/client";
+import type { Agent, Approval, Message } from "@agenteschat/client";
 import { CardVia, useApproval, useApprovals, useDecideApprovals, useMembers } from "@agenteschat/client";
 import type { ApprovalsCard } from "@agenteschat/client/lib/action-cards";
 import { digestGroups } from "@agenteschat/client/lib/approval-card";
@@ -20,13 +20,15 @@ import { RequestCard } from "./RequestCard";
  */
 export function ApprovalsCardView({ message, card }: { message: Message; card: ApprovalsCard }) {
   const { t } = useTranslation();
+  const { org } = useOrg();
+  const dir = useDirectory(org.id);
   return (
     <CardVia messageId={message.id}>
       {/* biome-ignore lint/a11y/useSemanticElements: a labelled group inside a message, not a fieldset */}
       <div className="rh-cards" role="group" aria-label={t("rightHand.approvals.title")}>
         {card.why && <p>{inlineWords(card.why)}</p>}
         {card.digest ? (
-          <Digest id={message.id} approvalIds={card.approvalIds} />
+          <Digest id={message.id} author={dir.anyAgent(message.author.id ?? "")} approvalIds={card.approvalIds} />
         ) : (
           card.approvalIds.map((id) => <CardApproval key={id} id={id} />)
         )}
@@ -36,7 +38,7 @@ export function ApprovalsCardView({ message, card }: { message: Message; card: A
 }
 
 /** A digest's approvals: the routine ones as one request with one button, then every other on its own card. */
-function Digest({ id, approvalIds }: { id: string; approvalIds: string[] }) {
+function Digest({ id, author, approvalIds }: { id: string; author: Agent | undefined; approvalIds: string[] }) {
   const { org } = useOrg();
   const list = useApprovals(org.id).data;
   // The person asked to read them one by one: the group is gone for as long as the card stays on screen.
@@ -46,7 +48,7 @@ function Digest({ id, approvalIds }: { id: string; approvalIds: string[] }) {
   const grouped = new Set(routine.map((a) => a.id));
   return (
     <>
-      {routine.length > 0 && <RoutineGroup id={id} routine={routine} onEach={() => setEach(true)} />}
+      {routine.length > 0 && <RoutineGroup id={id} author={author} routine={routine} onEach={() => setEach(true)} />}
       {approvalIds.map((approvalId) =>
         grouped.has(approvalId) ? null : <CardApproval key={approvalId} id={approvalId} />,
       )}
@@ -56,9 +58,20 @@ function Digest({ id, approvalIds }: { id: string; approvalIds: string[] }) {
 
 /**
  * The routine requests of a digest as one request: what each is, one button that approves them all as whoever clicks,
- * and the way to read them one by one. The server decides only the ones it still calls routine (`only`).
+ * and the way to read them one by one. The server decides only the ones it still calls routine (`only`). It is the
+ * card's author who asks (`author`): out of view, the conversation's bar names them.
  */
-function RoutineGroup({ id, routine, onEach }: { id: string; routine: Approval[]; onEach: () => void }) {
+function RoutineGroup({
+  id,
+  author,
+  routine,
+  onEach,
+}: {
+  id: string;
+  author: Agent | undefined;
+  routine: Approval[];
+  onEach: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const { org } = useOrg();
   const dir = useDirectory(org.id);
@@ -69,7 +82,7 @@ function RoutineGroup({ id, routine, onEach }: { id: string; routine: Approval[]
     <RequestCard
       id={`digest-${id}`}
       kind="approval"
-      agent={undefined}
+      agent={author}
       label={title}
       mine
       lead={

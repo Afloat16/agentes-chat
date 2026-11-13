@@ -12,6 +12,8 @@ import {
   publishApproval,
   REQUEST_PERMISSION_TOOL,
   RIGHT_HAND,
+  repointApprovals,
+  routineCall,
   SQL_READS,
   setLodiPrefs,
 } from "../src";
@@ -32,8 +34,57 @@ afterEach(async () => {
 
 const HOUR = 3_600_000;
 const NOW = new Date("2026-11-06T01:00:00Z");
-/** A connected app: nothing reads the row, an approval only names it. */
+/** A connected app. Only what is routine reads its row (`connect`): to every other test an approval just names it. */
 const APP = "00000000-0000-4000-8000-00000000c001";
+const TRACKER = "00000000-0000-4000-8000-00000000c002";
+const CODE = "00000000-0000-4000-8000-00000000c003";
+const GONE = "00000000-0000-4000-8000-00000000c004";
+/** Work nobody watched, at the level that asks for some things: every write to a connected app asks there. */
+const UNATTENDED = { origin: { kind: "unattended" }, approveAlways: { tool: "t", actions: [] } };
+
+/** The connected apps as the workspace stores them: a custom server with its classified tools, two from the catalog. */
+async function connect() {
+  const app = (id: string, connector: string, toolPrefix: string) => ({
+    id,
+    orgId: f.org.id,
+    connector,
+    label: toolPrefix,
+    toolPrefix,
+    serverUrl: `https://${toolPrefix}.example.com/mcp`,
+    authType: "none",
+  });
+  await f.db
+    .insert(schema.connectorConnections)
+    .values([
+      app(APP, "custom:notes", "notes"),
+      app(TRACKER, "linear", "linear"),
+      app(CODE, "github", "github"),
+      { ...app(GONE, "custom:old", "old"), revokedAt: NOW },
+    ]);
+  const tool = (name: string, over: Partial<typeof schema.customTools.$inferInsert> = {}) => ({
+    orgId: f.org.id,
+    connectionId: APP,
+    name,
+    access: "write",
+    suggestedAccess: "write",
+    ...over,
+  });
+  await f.db.insert(schema.customTools).values([
+    tool("create_page"),
+    tool("update_page"),
+    // An admin set it to ask every time, or turned it off.
+    tool("rename_page", { access: "approval" }),
+    tool("link_page", { access: "off" }),
+    // Our words or the judge would have it ask, whatever the admin chose after.
+    tool("move_page", { sensitive: true, access: "approval" }),
+    tool("copy_page", { suggestedAccess: "approval" }),
+    // Its server says it destroys.
+    tool("tag_page", { destructiveHint: true }),
+    // The server stopped listing it.
+    tool("sort_page", { removedAt: NOW }),
+    tool("create_page", { connectionId: GONE }),
+  ]);
+}
 
 const deps = () => ({ db: f.db, pubsub: f.pubsub, now: () => NOW });
 
@@ -260,18 +311,92 @@ test("it counts only what the person was told about, and never another person's 
   expect(members.flatMap((m) => m.userId ?? [])).toEqual([f.owner.id]);
 });
 
+test("by its row alone, a call that posts, pays, changes who gets in or runs its input is never routine", () => {
+  const row = (tool: string, over: Record<string, unknown> = {}) => {
+    const scope = `custom:${APP}:write`;
+    return {
+      tool,
+      scope,
+      connectionId: APP,
+      highRisk: highRisk(tool, scope),
+      approvers: null,
+      approveAlways: null,
+      origin: null,
+      ...over,
+    } as Parameters<typeof routineCall>[0];
+  };
+  const own = [
+    // A public post.
+    "x_create_tweet",
+    "acme_post_tweet",
+    "linkedin_create_post",
+    "wordpress_create_post",
+    "social_create_article_or_url_share",
+    "social_post_ig_user_media_publish",
+    "video_upload_video",
+    "boards_create_pin",
+    // Money, and who gets in.
+    "billing_create_subscription",
+    "acme_cancel_subscription",
+    "ads_update_campaign_budget",
+    "code_add_a_repository_collaborator",
+    "files_add_file_sharing_preference",
+    "team_add_member",
+    "sheets_clear_values",
+    "chat_archive_a_conversation",
+    "cloud_update_dns_record",
+    // What runs whatever its input says.
+    "crm_custom_api_call",
+    "acme_api_request",
+    "acme_make_request",
+    "acme_call_function",
+    "warehouse_query_data",
+    "acme_query_database",
+    "acme_apply_migration",
+    "supabase_apply_migration",
+    "ops_server_execute_command",
+    // Composio's executor, whatever its input names: no record vouches for those actions.
+    `acme_${COMPOSIO_EXECUTOR}`,
+    "acme_COMPOSIO_REMOTE_WORKBENCH",
+    // Sends, deletes and payments, in any case.
+    "mail_send_email",
+    "acme_sendEmail",
+    "acme_deleteRepository",
+    "chat_post_message",
+    "billing_create_payment_link",
+    "billing_pay_invoice",
+    "github_merge_pull_request",
+  ];
+  expect(own.filter((tool) => routineCall(row(tool)) || routineCall(row(tool, UNATTENDED)))).toEqual([]);
+
+  const plain = ["notes_create_page", "notes_update_page", "linear_create_issue", "calendar_update_event"];
+  expect(plain.filter((tool) => !routineCall(row(tool)) || !routineCall(row(tool, UNATTENDED)))).toEqual([]);
+
+  // At the default level a person's run asks a connected app's call only when the tool is marked to ask: never routine.
+  const kept = { tool: "create_page", actions: [] };
+  expect(routineCall(row("notes_create_page", { approveAlways: kept }))).toBe(false);
+  expect(routineCall(row("notes_create_page", { approveAlways: kept, origin: { kind: "unattended" } }))).toBe(true);
+  // SQL the guard proved read-only is, whoever asked. Never through a mailbox's scope or people named to decide.
+  const reads = { approveAlways: { tool: "execute_sql", actions: [`${SQL_READS}project_id=abc`] } };
+  expect(routineCall(row("supabase_execute_sql", reads))).toBe(true);
+  expect(routineCall(row("supabase_execute_sql"))).toBe(false);
+  expect(routineCall(row("supabase_execute_sql", { ...reads, scope: "mail:send" }))).toBe(false);
+  expect(routineCall(row("notes_create_page", { connectionId: null }))).toBe(false);
+});
+
 test("the one tap decides only what the server calls routine, as the person who taps", async () => {
   f = await setup({ rightHand: true });
+  await connect();
   const caio = await addMember(f.db, f.org.id, "member", "caio");
   const mine = { userIds: [f.owner.id], label: "owner", requestedBy: null, requesterDecides: false };
+  const tracker = { scope: "linear:issues.write", connectionId: TRACKER };
   const plain = [
+    // An agent that always asks: a plain write its connection lists.
     await ask(),
-    await ask({ tool: "notes_update_page" }),
-    // Composio's executor, by the action its input names.
-    await ask({
-      tool: `acme_${COMPOSIO_EXECUTOR}`,
-      params: { tools: [{ tool_slug: "GITHUB_CREATE_AN_ISSUE", arguments: { title: "x" } }] },
-    }),
+    // Work nobody watched, where every write to a connected app asks.
+    await ask({ tool: "notes_update_page", ...UNATTENDED }),
+    // A catalog connector's plain write.
+    await ask({ tool: "linear_create_issue", ...tracker }),
     // SQL the Postgres guard proved read-only when it asked.
     await ask({
       tool: "supabase_execute_sql",
@@ -296,15 +421,32 @@ test("the one tap decides only what the server calls routine, as the person who 
     await ask({ tool: "billing_pay_invoice" }),
     await ask({ tool: "ops_server_execute_command" }),
     await ask({ tool: "supabase_execute_sql" }),
+    // Composio's executor, a harmless action in its input or not.
     await ask({
       tool: `acme_${COMPOSIO_EXECUTOR}`,
-      params: { tools: [{ tool_slug: "GITHUB_MERGE_A_PULL_REQUEST", arguments: {} }] },
+      params: { tools: [{ tool_slug: "GITHUB_CREATE_AN_ISSUE", arguments: { title: "x" } }] },
     }),
-    // An executor call whose actions cannot be read from its input.
     await ask({ tool: `acme_${COMPOSIO_EXECUTOR}`, params: { tools: "all" } }),
     await ask({ tool: "acme_COMPOSIO_REMOTE_WORKBENCH" }),
     // One of our own tools, even a harmless one.
     await ask({ tool: "create_issue", scope: "issues:write", connectionId: null }),
+    // A person's run at the default level: the call asked because its tool is marked to ask.
+    await ask({ approveAlways: { tool: "create_page", actions: [] } }),
+    // Harmless names the connection does not vouch for: set to ask, off, sensitive, suggested to ask, destroys,
+    // no longer listed, never listed.
+    await ask({ tool: "notes_rename_page" }),
+    await ask({ tool: "notes_link_page" }),
+    await ask({ tool: "notes_move_page" }),
+    await ask({ tool: "notes_copy_page" }),
+    await ask({ tool: "notes_tag_page" }),
+    await ask({ tool: "notes_sort_page" }),
+    await ask({ tool: "notes_label_page" }),
+    // A connection that was removed, and one nobody knows.
+    await ask({ tool: "old_create_page", connectionId: GONE }),
+    await ask({ tool: "linear_create_issue", ...tracker, connectionId: crypto.randomUUID() }),
+    // The catalog marks it sensitive, and a tool we serve ourselves under a connection's credential.
+    await ask({ tool: "github_create_repository_ruleset", scope: "github:repo.admin", connectionId: CODE }),
+    await ask({ tool: "open_pull_request", scope: "github:pr.write", connectionId: CODE }),
   ];
   const ids = (rows: { id: string }[]) => rows.map((r) => r.id).sort();
 
@@ -316,9 +458,20 @@ test("the one tap decides only what the server calls routine, as the person who 
   const all = [...plain, ...risky].map((a) => a.id);
 
   // Someone who may decide none of them is told so, and nothing changes.
-  expect(
+  await expect(
     decideApprovals(deps(), caio.id, f.org.id, { ids: all, decision: "approve", only: "routine" }),
   ).rejects.toBeInstanceOf(ForbiddenError);
+  expect(await f.db.select().from(schema.approvals).where(eq(schema.approvals.status, "pending"))).toHaveLength(
+    all.length,
+  );
+
+  // An admin turns one to "ask every time" after the card drew it as routine: the tap leaves it waiting.
+  await f.db
+    .update(schema.customTools)
+    .set({ access: "approval" })
+    .where(and(eq(schema.customTools.connectionId, APP), eq(schema.customTools.name, "update_page")));
+  const turned = plain.splice(1, 1);
+  risky.push(...turned);
 
   const result = await decideApprovals(deps(), f.owner.id, f.org.id, {
     ids: all,
@@ -345,4 +498,83 @@ test("the one tap decides only what the server calls routine, as the person who 
   expect(again.approvals).toEqual([]);
   expect([...again.skipped].sort()).toEqual([...all].sort());
   expect(f.provider.calls).toHaveLength(0);
+});
+
+test("a full card lets go of what was decided, never of what still waits, and then stays as it is", async () => {
+  f = await setup({ rightHand: true });
+  const first: { id: string }[] = [];
+  for (let i = 0; i < 50; i++) first.push(await ask());
+  await digest(f.owner.id);
+  const [card] = await posts();
+  expect(cardIds(card)).toHaveLength(50);
+
+  // Five decided in the middle, five new: the card holds every one still waiting.
+  const decided = first.slice(20, 25).map((a) => a.id);
+  await f.db.update(schema.approvals).set({ status: "approved" }).where(inArray(schema.approvals.id, decided));
+  const fresh: { id: string }[] = [];
+  for (let i = 0; i < 5; i++) fresh.push(await ask());
+  await digest(f.owner.id, new Date(NOW.getTime() + HOUR));
+  const waiting = [...first.filter((a) => !decided.includes(a.id)), ...fresh].map((a) => a.id);
+  const [after, ...more] = await posts();
+  expect(more).toEqual([]);
+  expect(cardIds(after)).toEqual(waiting);
+
+  // The next job has nothing to change, so the message is not written again: a mark left on the card survives it.
+  const marked = { ...after?.meta, actionCard: { ...(after?.meta.actionCard as object), mark: "kept" } };
+  await f.db
+    .update(schema.messages)
+    .set({ meta: marked })
+    .where(eq(schema.messages.id, card?.id ?? ""));
+  await digest(f.owner.id, new Date(NOW.getTime() + 2 * HOUR));
+  expect((await posts())[0]?.meta).toEqual(marked);
+
+  // One more than a card holds: the oldest fifty still waiting stay, and none of them gives its place.
+  await ask();
+  await digest(f.owner.id, new Date(NOW.getTime() + 3 * HOUR));
+  const [last, ...none] = await posts();
+  expect(none).toEqual([]);
+  expect(last?.meta).toEqual(marked);
+});
+
+test("an admin's card counts their own agents', nobody's and a covered person's, never another owner's", async () => {
+  f = await setup({ rightHand: true });
+  const bia = await addMember(f.db, f.org.id, "admin", "bia");
+  // The owner's agent: Bia may decide these, and is not told.
+  for (let i = 0; i < 3; i++) await ask();
+  await digest(bia.id);
+  expect(await posts()).toEqual([]);
+
+  // An agent with nobody responsible: the admins are told, Bia among them.
+  const nobodys = [
+    await ask({ ownerUserId: null }),
+    await ask({ ownerUserId: null }),
+    await ask({ ownerUserId: null }),
+  ];
+  await digest(bia.id);
+  const [card, ...more] = await posts();
+  expect(more).toEqual([]);
+  expect(card?.meta).toMatchObject({ actionCard: { forUserId: bia.id } });
+  expect(cardIds(card)).toEqual(nobodys.map((a) => a.id));
+
+  // Bia now covers the owner: the owner's three reach her too, on the same card.
+  await f.db
+    .insert(schema.approvalCovers)
+    .values({ orgId: f.org.id, fromUserId: f.owner.id, toUserId: bia.id, mode: "always", risky: true });
+  await digest(bia.id, new Date(NOW.getTime() + HOUR));
+  expect(cardIds((await posts())[0])).toHaveLength(6);
+  expect(f.provider.calls).toHaveLength(0);
+});
+
+test("an agent that changes owner queues one job for the new owner, however many of its approvals wait", async () => {
+  f = await setup({ rightHand: true });
+  const bia = await addMember(f.db, f.org.id, "member", "bia");
+  for (let i = 0; i < 4; i++) await ask();
+  await repointApprovals(deps(), f.org.id, [f.agent.id], bia.id);
+  const jobs = await f.db.select().from(schema.outbox).where(eq(schema.outbox.kind, APPROVALS_DIGEST_JOB));
+  expect(jobs.map((j) => j.payload)).toEqual([{ userId: bia.id }]);
+  // And the card that job posts is hers, with the four.
+  await digest(bia.id);
+  const [card] = await posts();
+  expect(card?.meta).toMatchObject({ actionCard: { forUserId: bia.id } });
+  expect(cardIds(card)).toHaveLength(4);
 });

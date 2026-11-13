@@ -45,16 +45,13 @@ test("the routine group is what the server calls routine, still waits and is thi
   ];
   const groups = digestGroups(items, NOW);
   expect(ids(groups.routine)).toEqual(["a", "d", "h"]);
-  // Everything still waiting counts, whoever decides it: a, b, c, d, e and h.
-  expect(groups.waiting).toBe(6);
 });
 
 test("fewer than two routine ones are no group: each keeps its own card", () => {
   expect(digestGroups([ask("a"), ask("b", { routine: false }), ask("c", { routine: false })], NOW)).toEqual({
     routine: [],
-    waiting: 3,
   });
-  expect(digestGroups([], NOW)).toEqual({ routine: [], waiting: 0 });
+  expect(digestGroups([], NOW)).toEqual({ routine: [] });
 });
 
 test("a server that does not tell routine apart gives no group", () => {

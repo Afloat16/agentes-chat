@@ -8,6 +8,7 @@ import { EventPillAction, EventPillText, Text, useToast } from "@/ui";
 import { router } from "@/ui/navigation";
 import { approvalTitleText } from "../approvals/parts";
 import { AskWaiting } from "../chat/asks";
+import { successHaptic } from "../shared/parts";
 import { OfferShell } from "./OfferShell";
 
 /**
@@ -41,7 +42,14 @@ export function OfferApprovals({ card }: { card: ApprovalsCard }) {
               onPress={() =>
                 decide.mutate(
                   { ids: routine.map((a) => a.id), decision: "approve", only: "routine" },
-                  { onError: (error) => toast({ title: errorText(t, error, i18n.language), icon: "x" }) },
+                  {
+                    // The same answer as the conversation's "Aprovar tudo". The agents are several: no name under it.
+                    onSuccess: () => {
+                      successHaptic();
+                      toast({ title: t("mobile.approval.approved") });
+                    },
+                    onError: (error) => toast({ title: errorText(t, error, i18n.language), icon: "x" }),
+                  },
                 )
               }
             />

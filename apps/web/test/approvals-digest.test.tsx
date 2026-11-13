@@ -122,3 +122,33 @@ test("no group for one routine request, for none, or for someone who may not dec
   expect(within(card()).queryByRole("button", { name: /Aprovar os/ })).toBeNull();
   expect(card().textContent).toContain("Metas do trimestre");
 });
+
+test("out of view, the conversation's bar says who asks: the right hand, with what the group is", async () => {
+  // happy-dom's IntersectionObserver never answers: every request card reads as out of view once observed.
+  const native = globalThis.IntersectionObserver;
+  globalThis.IntersectionObserver = class {
+    constructor(readonly answer: IntersectionObserverCallback) {}
+    observe(target: Element) {
+      if (target.matches("[data-ask-id]"))
+        this.answer([{ isIntersecting: false, target } as IntersectionObserverEntry], this as never);
+    }
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  } as unknown as typeof IntersectionObserver;
+  try {
+    const state = seedState();
+    ask(state, "ap-a", "Metas do trimestre", true);
+    ask(state, "ap-b", "Riscos", true);
+    await go(withDigest(state, ["ap-a", "ap-b"]));
+    const bar = document.querySelector(".ac-typing") as HTMLElement;
+    expect(bar.hasAttribute("data-ask")).toBe(true);
+    expect(bar.textContent).toContain("Lodi espera sua aprovação");
+    expect(bar.textContent).toContain("2 pedidos de rotina");
+    expect(bar.textContent).not.toContain("Agente");
+  } finally {
+    globalThis.IntersectionObserver = native;
+  }
+});

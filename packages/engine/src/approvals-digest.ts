@@ -1,4 +1,5 @@
 import { and, asc, type Database, type Executor, eq, gt, rowsOf, schema, sql } from "@agenteschat/db";
+import { activeCoversTo } from "./approval-covers";
 import { adminsDecide, decidableBySql, decidingKeys, notifiedIds } from "./approvals";
 import { NotFoundError } from "./errors";
 import { stringsOf } from "./format";
@@ -8,6 +9,8 @@ import { defineLodiLane } from "./right-hand-lane";
 import { readLodiPrefs } from "./right-hand-prefs";
 import { lodiFor, postFromLodi, saidOnce, setCardOnMessage } from "./right-hand-proactive";
 import { localDate } from "./rrule";
+import { accountInUse } from "./standing";
+import { REQUEST_PERMISSION_TOOL } from "./tools/permission";
 
 /**
  * "Resumir aprovações esperando": when several approvals wait on one person, the right hand posts one card in their DM
@@ -27,7 +30,7 @@ import { localDate } from "./rrule";
 
 export const APPROVALS_DIGEST_JOB = "approvals_digest.post";
 
-const { approvals } = schema;
+const { approvals, organizationMembers, users } = schema;
 
 /** How many must wait on one person before the right hand sums them up. */
 export const DIGEST_FROM = 3;
@@ -53,8 +56,23 @@ export async function queueApprovalsDigest(db: Executor, orgId: string, userIds:
   }
 }
 
+/**
+ * An approval this person can't have been told about, left out before it is read: an agent's own request (nobody
+ * named, not access for good) whose owner is someone else still in the workspace. That owner alone is told, or who
+ * covers them. It keeps an admin's job to their own agents' approvals instead of the whole workspace's.
+ */
+const toldSomeoneElse = (userId: string) => sql`(${approvals.approvers} is null
+  and ${approvals.tool} <> ${REQUEST_PERMISSION_TOOL}
+  and ${approvals.ownerUserId} <> ${userId}
+  and exists (select 1 from ${organizationMembers} join ${users} on ${users.id} = ${organizationMembers.userId}
+    where ${organizationMembers.orgId} = ${approvals.orgId} and ${organizationMembers.userId} = ${approvals.ownerUserId}
+      and ${accountInUse}))`;
+
 /** The approvals waiting that this person was told about and may decide, oldest first. */
 async function waitingOn(db: Database, orgId: string, userId: string, now: Date): Promise<string[]> {
+  // Someone who covers another person is told about that person's too: nothing is left out for them. Read on the
+  // clock `notifiedIds` reads its covers on.
+  const covers = (await activeCoversTo(db, orgId, userId)).length > 0;
   const rows = await db
     .select()
     .from(approvals)
@@ -64,6 +82,7 @@ async function waitingOn(db: Database, orgId: string, userId: string, now: Date)
         eq(approvals.status, "pending"),
         gt(approvals.expiresAt, now),
         decidableBySql(userId),
+        covers ? undefined : sql`not ${toldSomeoneElse(userId)}`,
       ),
     )
     .orderBy(asc(approvals.createdAt))
@@ -129,8 +148,12 @@ export async function postApprovalsDigest(
   const open = (card: { ids: string[] } | null) => card?.ids.some((id) => waiting.includes(id)) === true;
   const last = await fresh(db);
   if (last && open(last)) {
-    // What was decided on it keeps its line: the card only grows, by what came since.
-    const ids = [...last.ids, ...waiting.filter((id) => !last.ids.includes(id))].slice(-MAX_ON_CARD);
+    // What was decided on it keeps its line: the card grows by what came since. Past what one card holds, the
+    // decided leave first, oldest first, never one still waiting (`waiting` is no longer than a card).
+    const all = [...last.ids, ...waiting.filter((id) => !last.ids.includes(id))];
+    const settled = all.filter((id) => !waiting.includes(id));
+    const dropped = new Set(settled.slice(0, Math.max(0, all.length - MAX_ON_CARD)));
+    const ids = all.filter((id) => !dropped.has(id));
     if (ids.join() !== last.ids.join()) await setCardOnMessage(deps, orgId, last.id, cardOf(userId, ids));
     return;
   }

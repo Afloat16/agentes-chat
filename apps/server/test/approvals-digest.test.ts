@@ -11,7 +11,7 @@ afterEach(async () => {
   await t.close();
 });
 
-/** A connected app: an approval only names it. */
+/** A connected app whose `create_page` an admin left as a plain write. */
 const APP = "00000000-0000-4000-8000-00000000c001";
 
 test("approvals API: each says whether it is routine, and `only` decides the routine ones alone", async () => {
@@ -41,7 +41,22 @@ test("approvals API: each says whether it is routine, and `only` decides the rou
       .returning();
     return row?.id ?? "";
   };
+  await t.db.insert(schema.connectorConnections).values({
+    id: APP,
+    orgId,
+    connector: "custom:notes",
+    label: "Notes",
+    toolPrefix: "notes",
+    serverUrl: "https://notes.example.com/mcp",
+    authType: "none",
+  });
+  await t.db.insert(schema.customTools).values([
+    { orgId, connectionId: APP, name: "create_page", access: "write", suggestedAccess: "write" },
+    { orgId, connectionId: APP, name: "rename_page", access: "approval", suggestedAccess: "write" },
+  ]);
   const page = await ask("notes_create_page", `custom:${APP}:write`, APP);
+  // A harmless name an admin set to ask every time: the connection's word, not the name's.
+  const asks = await ask("notes_rename_page", `custom:${APP}:write`, APP);
   const merge = await ask("merge_pull_request", "github:pr.merge", APP);
   const command = await ask("run_code", "sandbox:run", null);
 
@@ -50,23 +65,25 @@ test("approvals API: each says whether it is routine, and `only` decides the rou
   };
   expect(Object.fromEntries(list.approvals.map((a) => [a.id, a.routine]))).toEqual({
     [page]: true,
+    [asks]: false,
     [merge]: false,
     [command]: false,
   });
 
   const decide = (only: string) =>
     owner(`/api/app/organizations/${orgId}/approvals/decide`, {
-      json: { ids: [page, merge, command], decision: "approve", only },
+      json: { ids: [page, asks, merge, command], decision: "approve", only },
     });
   expect((await decide("everything")).status).toBe(400);
   const res = await decide("routine");
   expect(res.status).toBe(200);
   const body = (await res.json()) as { approvals: { id: string; status: string }[]; skipped: string[] };
   expect(body.approvals.map((a) => [a.id, a.status])).toEqual([[page, "approved"]]);
-  expect([...body.skipped].sort()).toEqual([merge, command].sort());
+  expect([...body.skipped].sort()).toEqual([asks, merge, command].sort());
   const rows = await t.db.select().from(schema.approvals);
   expect(Object.fromEntries(rows.map((r) => [r.id, r.status]))).toEqual({
     [page]: "approved",
+    [asks]: "pending",
     [merge]: "pending",
     [command]: "pending",
   });
