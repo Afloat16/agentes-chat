@@ -1,23 +1,40 @@
 import type { AgentScope } from "@agenteschat/adapters";
 import { and, type Database, desc, type Executor, eq, isNotNull, isNull, schema, sql } from "@agenteschat/db";
 import { getAgentCached, workspaceHomeId } from "./agents";
+import { UUID } from "./authority";
 import { BROWSER_SCOPE, DESKTOP_SCOPE } from "./browser/types";
 import type { MachineCaller } from "./machine-hub";
-import { personBehindCall } from "./requester";
+import { actingRoutineOfCall, personBehindCall } from "./requester";
 import { isRightHand, isRightHandId, RIGHT_HAND, readsAlone } from "./right-hand";
+import { routineRoomKey } from "./routine-brief";
 import { SANDBOX_SCOPE } from "./sandbox-scope";
 import { grantedScopeKeys, grantKey } from "./tools/scopes";
 import type { ToolContext } from "./tools/types";
 
-const { agents, organizationMembers, rightHandSeats, users } = schema;
+const { agents, channels, organizationMembers, rightHandSeats, users } = schema;
 
 /**
  * The right hand's computer (ADR 0175). One agents row answers everyone, so on the workspace's own computer each
  * person has a seat: a stored random id the computer takes for an agent's, which gives that person's right hand its
- * own OS user, home, browser profile and sign-ins there. The agent's own id never goes to a computer for anything but
- * its locked chat turn (the hub refuses it), so a request built without a seat fails instead of landing every member
- * in one home.
+ * own OS user, home, browser profile and sign-ins there. Where others read what it does (a channel, a widget, a
+ * routine that reports outside its creator's own conversation) it works in one more seat, the workspace's shared one,
+ * with an id, a user and a home of its own. The agent's own id never goes to a computer for anything but its locked
+ * chat turn (the hub refuses it), so a request built without a seat fails instead of landing every member in one home.
  */
+
+/**
+ * Whose seat the shared one is, where a seat's person is kept (`right_hand_seats.user_id`, a run's seat): no
+ * person's id is this, and no membership matches it, so nothing that looks a person's seat up can answer with it.
+ */
+export const SHARED_SEAT = "shared";
+
+/** Whose seat a person's own request reaches: their own, or with `shared` the workspace's shared one. */
+export const viewerSeat = (viewer: { userId: string; shared?: boolean }) =>
+  viewer.shared ? SHARED_SEAT : viewer.userId;
+
+/** The person a seat's owner is, for what is kept per person (a handoff's `seat_user_id`): null for the shared one. */
+export const seatUserOf = (owner: string | null | false | undefined): string | null =>
+  owner && owner !== SHARED_SEAT ? owner : null;
 
 /**
  * Loaded on first use: both modules import this one, and a static import back would
@@ -26,9 +43,9 @@ const { agents, organizationMembers, rightHandSeats, users } = schema;
 const machines = () => import("./machines");
 const sandbox = () => import("./sandbox");
 
-/** A call of the right hand outside a person's own conversation with it: no seat, so no computer. */
+/** A call with no place on the workspace's computer: no conversation behind it, or a person who is not a member. */
 export const NO_SEAT_MESSAGE =
-  "Your computer is each person's own: you use it only in a person's own conversation with you, when that person asks. Here you have none. Hand this to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it), or say it can be done in their own conversation with you, and never ask the person to try again here.";
+  "You have no computer for this: the person behind it is not a member of this workspace, or the call belongs to no conversation. Hand this to an agent that has a computer (ask_agent, tell_agent, or create_issue assigned to it), and never ask the person to try again here.";
 
 /** The workspace has no computer of its own connected: the right hand has none either. */
 export const NO_HOME_MESSAGE =
@@ -60,9 +77,17 @@ async function newSeatId(db: Executor): Promise<string> {
   throw new Error("No free id for a seat");
 }
 
+/** A seat that is still someone's: a member's, or the workspace's shared one. */
+const seatKept = sql`(${organizationMembers.userId} is not null or ${rightHandSeats.userId} = ${SHARED_SEAT})`;
+const seatMember = and(
+  eq(organizationMembers.orgId, rightHandSeats.orgId),
+  eq(organizationMembers.userId, rightHandSeats.userId),
+);
+
 /**
- * `userId`'s live seat in the workspace, made on first use; null for someone who isn't a member, and with `make`
- * off for someone who has none yet.
+ * `userId`'s live seat in the workspace, or with `SHARED_SEAT` the workspace's shared one, made on first use; null
+ * for someone who isn't a member, and with `make` off for a seat that doesn't exist yet. One live row per owner: the
+ * table's unique index keeps two first uses at once to one seat.
  */
 export async function seatOf(
   db: Executor,
@@ -74,23 +99,37 @@ export async function seatOf(
     db
       .select({ id: rightHandSeats.id })
       .from(rightHandSeats)
-      .innerJoin(
-        organizationMembers,
-        and(eq(organizationMembers.orgId, rightHandSeats.orgId), eq(organizationMembers.userId, rightHandSeats.userId)),
-      )
-      .where(and(eq(rightHandSeats.orgId, orgId), eq(rightHandSeats.userId, userId), isNull(rightHandSeats.removedAt)));
+      .leftJoin(organizationMembers, seatMember)
+      .where(
+        and(
+          eq(rightHandSeats.orgId, orgId),
+          eq(rightHandSeats.userId, userId),
+          isNull(rightHandSeats.removedAt),
+          seatKept,
+        ),
+      );
   const [had] = await live();
   if (had) return { id: had.id, made: false };
   if (!make) return null;
-  await db.execute(sql`insert into ${rightHandSeats} (id, org_id, user_id)
-    select ${await newSeatId(db)}::uuid, om.org_id, om.user_id from ${organizationMembers} om
-    where om.org_id = ${orgId}::uuid and om.user_id = ${userId}
-    on conflict do nothing`);
+  const id = await newSeatId(db);
+  await db.execute(
+    userId === SHARED_SEAT
+      ? sql`insert into ${rightHandSeats} (id, org_id, user_id) values (${id}::uuid, ${orgId}::uuid, ${SHARED_SEAT})
+          on conflict do nothing`
+      : sql`insert into ${rightHandSeats} (id, org_id, user_id)
+          select ${id}::uuid, om.org_id, om.user_id from ${organizationMembers} om
+          where om.org_id = ${orgId}::uuid and om.user_id = ${userId}
+          on conflict do nothing`,
+  );
   const [made] = await live();
-  return made ? { id: made.id, made: true } : null;
+  // Another first use made it meanwhile: this one found it, and only the one that made it tells the computers.
+  return made ? { id: made.id, made: made.id === id } : null;
 }
 
-/** The person's seat is gone with their membership: the computer hears its id is deleted, and a return starts anew. */
+/**
+ * A seat is gone: a person's with their membership, the shared one (`SHARED_SEAT`) with the workspace's computer or
+ * with every computer grant of the right hand. The computer hears its id is deleted, and the next use starts anew.
+ */
 export async function removeSeat(db: Executor, orgId: string, userId: string) {
   await db
     .update(rightHandSeats)
@@ -98,21 +137,24 @@ export async function removeSeat(db: Executor, orgId: string, userId: string) {
     .where(and(eq(rightHandSeats.orgId, orgId), eq(rightHandSeats.userId, userId), isNull(rightHandSeats.removedAt)));
 }
 
-/** The live seats of the workspace's members, with each person's name for the computer's own lists. */
+/**
+ * The live seats of the workspace: its members', with each person's name and language for the computer's own lists,
+ * and the shared one, which has neither.
+ */
 export async function liveSeats(db: Executor, orgId: string) {
   return db
     .select({ id: rightHandSeats.id, userId: rightHandSeats.userId, person: users.name, locale: users.locale })
     .from(rightHandSeats)
-    .innerJoin(
-      organizationMembers,
-      and(eq(organizationMembers.orgId, rightHandSeats.orgId), eq(organizationMembers.userId, rightHandSeats.userId)),
-    )
-    .innerJoin(users, eq(users.id, rightHandSeats.userId))
-    .where(and(eq(rightHandSeats.orgId, orgId), isNull(rightHandSeats.removedAt)))
+    .leftJoin(organizationMembers, seatMember)
+    .leftJoin(users, eq(users.id, organizationMembers.userId))
+    .where(and(eq(rightHandSeats.orgId, orgId), isNull(rightHandSeats.removedAt), seatKept))
     .orderBy(rightHandSeats.createdAt);
 }
 
-/** Seats whose person left (or whose membership is gone whatever removed it), the latest first. */
+/**
+ * Seats that are gone, the latest first: removed ones, and a person's whose membership is gone whatever removed it.
+ * The shared seat has no membership to lose: only its removal ends it.
+ */
 export async function removedSeatIds(db: Executor, orgId: string, limit: number): Promise<string[]> {
   const rows = await db
     .select({ id: rightHandSeats.id })
@@ -120,8 +162,9 @@ export async function removedSeatIds(db: Executor, orgId: string, limit: number)
     .where(
       and(
         eq(rightHandSeats.orgId, orgId),
-        sql`(${isNotNull(rightHandSeats.removedAt)} or not exists (select 1 from ${organizationMembers} om
-          where om.org_id = ${rightHandSeats.orgId} and om.user_id = ${rightHandSeats.userId}))`,
+        sql`(${isNotNull(rightHandSeats.removedAt)} or (${rightHandSeats.userId} <> ${SHARED_SEAT}
+          and not exists (select 1 from ${organizationMembers} om
+            where om.org_id = ${rightHandSeats.orgId} and om.user_id = ${rightHandSeats.userId})))`,
       ),
     )
     .orderBy(desc(sql`coalesce(${rightHandSeats.removedAt}, ${rightHandSeats.createdAt})`))
@@ -129,12 +172,21 @@ export async function removedSeatIds(db: Executor, orgId: string, limit: number)
   return rows.map((r) => r.id);
 }
 
+/** What a computer's own lists call the shared seat beside the right hand's name, where a person's seat has theirs. */
+const SHARED_SEAT_LABEL = "shared";
+
+/** A seat's name on a computer (its OS user's description): the right hand's, and whose seat it is. */
+export const seatName = (agentName: string, seat: { userId: string; person: string | null }) => {
+  const whose = seat.userId === SHARED_SEAT ? SHARED_SEAT_LABEL : seat.person;
+  return whose ? `${agentName} (${whose})` : agentName;
+};
+
 /** The seat as the computer names it: the right hand's handle, and whose it is in the OS user's description. */
-const seatScope = (seatId: string, agent: { handle: string; name: string }, person: string | null): AgentScope => ({
-  id: seatId,
-  handle: agent.handle,
-  name: person ? `${agent.name} (${person})` : agent.name,
-});
+const seatScope = (
+  seatId: string,
+  agent: { handle: string; name: string },
+  seat: { userId: string; person: string | null },
+): AgentScope => ({ id: seatId, handle: agent.handle, name: seatName(agent.name, seat) });
 
 /**
  * Every live seat as a request names it, on the workspace's own computer: what stops the right hand's work on a
@@ -152,19 +204,16 @@ export async function seatScopes(
         .where(and(eq(agents.orgId, orgId), eq(agents.builtin, RIGHT_HAND)))
     : [];
   if (!machineId || !rightHand) return null;
-  return { machineId, agents: (await liveSeats(db, orgId)).map((s) => seatScope(s.id, rightHand, s.person)) };
+  return { machineId, agents: (await liveSeats(db, orgId)).map((s) => seatScope(s.id, rightHand, s)) };
 }
 
-/** Whether a seat is still its person's: not removed, and they are still a member. */
+/** Whether a seat is still there: not removed, and a person's while they are still a member. */
 export async function seatLive(db: Executor, seatId: string): Promise<boolean> {
   const [row] = await db
     .select({ id: rightHandSeats.id })
     .from(rightHandSeats)
-    .innerJoin(
-      organizationMembers,
-      and(eq(organizationMembers.orgId, rightHandSeats.orgId), eq(organizationMembers.userId, rightHandSeats.userId)),
-    )
-    .where(and(eq(rightHandSeats.id, seatId), isNull(rightHandSeats.removedAt)));
+    .leftJoin(organizationMembers, seatMember)
+    .where(and(eq(rightHandSeats.id, seatId), isNull(rightHandSeats.removedAt), seatKept));
   return Boolean(row);
 }
 
@@ -178,10 +227,11 @@ type SeatMachine = { id: string; orgId: string; name: string; system: boolean };
 export type SeatRefusal = "no_home" | "not_home" | "not_system" | "no_seat";
 
 /**
- * `userId`'s seat on `machine` as a request's agent, or why there is none. The one place a seat is given: only on
- * the workspace's own computer, and only where each agent is its own OS user. `told`: tells the workspace's computers
- * of a seat just made, which they list like an agent (its containers, its desktop kept), before its first request.
- * `make` off (reading a screen's state): a person with no seat yet gets none made, and a null scope.
+ * `userId`'s seat (or with `SHARED_SEAT` the shared one) on `machine` as a request's agent, or why there is none. The
+ * one place a seat is given: only on the workspace's own computer, and only where each agent is its own OS user.
+ * `told`: tells the workspace's computers of a seat just made, which they list like an agent (its containers, its
+ * desktop kept), before its first request. `make` off (reading a screen's state): a seat that doesn't exist yet is
+ * not made, and its scope is null.
  */
 async function seatOn(
   db: Executor,
@@ -200,21 +250,61 @@ async function seatOn(
   const seat = await seatOf(db, agent.orgId, userId, make);
   if (!seat) return make ? { ok: false, reason: "no_seat", message: NO_SEAT_MESSAGE } : { ok: true, scope: null };
   if (seat.made) await told?.(agent.orgId);
-  const [person] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
-  return { ok: true, scope: seatScope(seat.id, agent, person?.name ?? null) };
+  const [person] =
+    userId === SHARED_SEAT ? [] : await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
+  return { ok: true, scope: seatScope(seat.id, agent, { userId, person: person?.name ?? null }) };
 }
 
-/** The person whose seat a run of the right hand uses: who asked, in their own DM with it. Nobody anywhere else. */
-export async function seatPerson(
-  ctx: Pick<ToolContext, "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId"> & { db: Executor },
-): Promise<string | null> {
-  // Never a routine's creator nor an agent's owner: a run nobody asked for may carry what a routine read outside.
-  const person = await personBehindCall(ctx).catch(() => null);
-  return person && (await readsAlone(ctx.db, ctx.channelId, person, ctx.agentId)) ? person : null;
+/** A run of the right hand as its seat is chosen from it. */
+type SeatRun = Pick<ToolContext, "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId"> & { db: Executor };
+
+/**
+ * Whose seat a run of the right hand works in: a person's user id, or `SHARED_SEAT`. The one place it is decided,
+ * from who is behind the run and where its work is read, never from what the model says.
+ *
+ * - A person's own seat only where that person alone reads: their own DM with it, when they are the person behind the
+ *   run, and a routine they made that reports there (its own run, the run its report wakes there, and the run the end
+ *   of a task it started wakes in its room).
+ * - The shared seat everywhere else: a channel and any thread in one, whoever started it, since others read there; a
+ *   widget, which others open; a routine that reports where others read; a run nobody is behind.
+ *
+ * So what one person's seat holds is never worked on where another person reads, and a run in the shared seat is
+ * never given a person's.
+ */
+export async function runSeat(ctx: SeatRun): Promise<string> {
+  // Ids the database would refuse are no run's: nobody is behind them, and a failed read fails the call instead of
+  // choosing a seat.
+  const run = {
+    ...ctx,
+    runId: UUID.test(ctx.runId ?? "") ? ctx.runId : "",
+    triggerMessageId: UUID.test(ctx.triggerMessageId ?? "") ? ctx.triggerMessageId : "",
+  };
+  const person = await personBehindCall(run);
+  if (person) return (await readsAlone(ctx.db, ctx.channelId, person, ctx.agentId)) ? person : SHARED_SEAT;
+  const brief = await actingRoutineOfCall(run);
+  const creator = brief?.creatorUserId;
+  if (!brief || !creator || brief.widget) return SHARED_SEAT;
+  const reportsTo = brief.deliverTo.channelId;
+  if (!(await readsAlone(ctx.db, reportsTo, creator, ctx.agentId))) return SHARED_SEAT;
+  // The routine's own run works in its room, which nobody reads; a run its report woke works where it reports.
+  if (ctx.channelId === reportsTo) return creator;
+  const [room] = await ctx.db
+    .select({ dmKey: channels.dmKey })
+    .from(channels)
+    .where(and(eq(channels.orgId, ctx.orgId), eq(channels.id, ctx.channelId)));
+  return room?.dmKey === routineRoomKey(ctx.agentId, brief.routineId) ? creator : SHARED_SEAT;
 }
 
-/** What a run of the right hand has of a computer: the person's `seat`, none here (`away`), or `none` at all. */
-export type SeatState = "seat" | "away" | "none";
+/** The id of the seat a run works in, when it exists (nothing is made): what a row kept for a seat is checked against. */
+export async function runSeatId(ctx: SeatRun): Promise<string | null> {
+  return (await seatOf(ctx.db, ctx.orgId, await runSeat(ctx), false))?.id ?? null;
+}
+
+/**
+ * What a run of the right hand has of a computer: a person's own `seat`, the workspace's `shared` one, or `none`
+ * at all.
+ */
+export type SeatState = "seat" | "shared" | "none";
 
 /**
  * `SeatState` of a run, for what its prompt says. It makes no seat: the first request does. `none` too while every
@@ -232,12 +322,13 @@ export async function seatState(
   const has = (scope: string) => keys.has(grantKey(null, scope));
   const commands = has(SANDBOX_SCOPE) && (await (await sandbox()).getSandboxSettings(db, run.orgId)).enabled;
   if (!commands && !has(BROWSER_SCOPE) && !has(DESKTOP_SCOPE)) return "none";
-  return (await seatPerson({ db, ...run, runId: run.id })) ? "seat" : "away";
+  return (await runSeat({ db, ...run, runId: run.id })) === SHARED_SEAT ? "shared" : "seat";
 }
 
 /**
  * Whose screen a run's tools act on: nobody's in particular for an agent (its screen is one), and for the right hand
- * the person whose seat the run uses, or `false` when it has none (no screen at all).
+ * the owner of the seat the run uses (a person, or `SHARED_SEAT`), or `false` for a call with no conversation, which
+ * has no screen at all.
  */
 export async function screenPersonOf(
   db: Executor,
@@ -245,7 +336,7 @@ export async function screenPersonOf(
 ): Promise<string | null | false> {
   if (!(await isRightHandId(db, ctx.orgId, ctx.agentId))) return null;
   if (!ctx.channelId) return false;
-  const person = await seatPerson({
+  return runSeat({
     db,
     orgId: ctx.orgId,
     agentId: ctx.agentId,
@@ -253,7 +344,6 @@ export async function screenPersonOf(
     runId: ctx.runId ?? "",
     triggerMessageId: ctx.triggerMessageId ?? "",
   });
-  return person ?? false;
 }
 
 export type ScopeContext = Pick<ToolContext, "orgId" | "agentId"> &
@@ -273,8 +363,9 @@ export async function toolMachineId(
 
 /**
  * The agent a request to `machineId` is for, built from a tool call: the agent itself, or for the right hand the seat
- * of the person behind the run. Throws what the agent reads when the right hand has no seat there: a channel, a run
- * nobody asked for, a computer that isn't the workspace's own or runs every agent as one user.
+ * its run works in (`runSeat`: a person's own, or the shared one). Throws what the agent reads when the right hand
+ * has no seat there: a call with no conversation, a computer that isn't the workspace's own or runs every agent as
+ * one user.
  */
 export async function machineScope(
   hub: Pick<MachineCaller, "status" | "agentsChanged">,
@@ -285,21 +376,21 @@ export async function machineScope(
   if (!isRightHand(agent)) {
     return { id: ctx.agentId, handle: agent?.handle ?? "agent", ...(agent?.name ? { name: agent.name } : {}) };
   }
-  const person =
+  const owner =
     agent && ctx.channelId
-      ? await seatPerson({
+      ? await runSeat({
           ...ctx,
           channelId: ctx.channelId,
           runId: ctx.runId ?? "",
           triggerMessageId: ctx.triggerMessageId ?? "",
         })
       : null;
-  if (!agent || !person) throw new (await sandbox()).SandboxUnavailableError(NO_SEAT_MESSAGE);
+  if (!agent || !owner) throw new (await sandbox()).SandboxUnavailableError(NO_SEAT_MESSAGE);
   const status = await hub.status(machineId);
   const seat = await seatOn(
     ctx.db,
     agent,
-    person,
+    owner,
     status && { id: machineId, orgId: status.orgId, name: status.name, system: status.mode === "system" },
     async (orgId) => hub.agentsChanged?.(orgId),
   );
@@ -309,12 +400,14 @@ export async function machineScope(
 }
 
 /**
- * What the server remembers of an agent's screen is kept under this: the agent, and for the right hand the
- * conversation too, since each person's seat is another screen and one person's must never be compared with another's.
+ * What the server remembers of an agent's screen is kept under this: the agent, and for the right hand whose seat the
+ * run works in too, since each seat is another screen and one must never be compared with another's.
  */
-export async function screenKey(ctx: Pick<ToolContext, "db" | "orgId" | "agentId" | "channelId">) {
+export async function screenKey(
+  ctx: Pick<ToolContext, "db" | "orgId" | "agentId" | "channelId" | "runId" | "triggerMessageId">,
+) {
   const key = `${ctx.orgId}:${ctx.agentId}`;
-  return isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId)) ? `${key}:${ctx.channelId}` : key;
+  return isRightHand(await getAgentCached(ctx.db, ctx.orgId, ctx.agentId)) ? `${key}:${await runSeat(ctx)}` : key;
 }
 
 /** A scope's id when it is a seat, for rows that keep which seat their work runs in; null for the agent's own. */
@@ -322,10 +415,11 @@ export const seatIdOf = (ctx: { agentId: string }, scope: AgentScope) => (scope.
 
 /**
  * The agent a person's own request reaches on a computer (watching, driving, a terminal, its files): the agent, or
- * for the right hand that person's own seat and nobody else's, admins included. Everything that opens something of
- * an agent on a computer for a signed-in person goes through here, so nothing can name another person's seat.
- * `reason`: why the right hand has no seat for them. `make` off (a screen's state, not opening it): a seat that
- * doesn't exist yet stays unmade, and its scope is null.
+ * for the right hand that person's own seat and no other person's, admins included; with `shared`, the workspace's
+ * shared seat, which whoever may reach an agent's computer may (the caller checks that). Everything that opens
+ * something of an agent on a computer for a signed-in person goes through here: it takes who asks and never whose
+ * seat, so nothing can name another person's. `reason`: why the right hand has no seat for them. `make` off (a
+ * screen's state, not opening it): a seat that doesn't exist yet stays unmade, and its scope is null.
  */
 export async function viewerScope(
   db: Database,
@@ -334,6 +428,7 @@ export async function viewerScope(
   viewerId: string,
   told?: (orgId: string) => Promise<void>,
   make = true,
+  shared = false,
 ): Promise<
   | { machineId: string | null; scope: AgentScope | null; seat: boolean }
   | { reason: SeatRefusal; message: string }
@@ -358,7 +453,7 @@ export async function viewerScope(
   const seat = await seatOn(
     db,
     agent,
-    viewerId,
+    shared ? SHARED_SEAT : viewerId,
     machine && {
       id: machine.id,
       orgId: machine.orgId,

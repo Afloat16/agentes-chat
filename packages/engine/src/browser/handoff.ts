@@ -52,7 +52,15 @@ import {
 import { can, getMembership } from "../organizations";
 import { enqueue } from "../outbox";
 import { isRightHand, isRightHandId } from "../right-hand";
-import { machineScope, NO_SEAT_MESSAGE, screenPersonOf, toolMachineId, viewerScope } from "../right-hand-seats";
+import {
+  machineScope,
+  NO_SEAT_MESSAGE,
+  SHARED_SEAT,
+  screenPersonOf,
+  seatUserOf,
+  toolMachineId,
+  viewerScope,
+} from "../right-hand-seats";
 import { resumeRunWithResult } from "../run-resume";
 import { bodyCode, runWhere } from "../run-tools";
 import { SandboxUnavailableError } from "../sandbox";
@@ -108,7 +116,7 @@ interface Screen {
   /** The computer it runs on while no open handoff holds one. */
   machine(agent: { machineId: string | null; browserMachineId: string | null }): string | null;
   /** Who may take control of it, besides who may watch it (throws). */
-  mayControl?(db: Database, userId: string, orgId: string, agentId: string): Promise<unknown>;
+  mayControl?(db: Database, userId: string, orgId: string, agentId: string, shared?: boolean): Promise<unknown>;
   /** The agent's request for a person: its tool, and its card (the app translates `code`). */
   ask: { tool: string; card: string; code: string };
 }
@@ -176,6 +184,11 @@ export interface BrowserHandoffView {
   status: BrowserHandoffStatus;
   requestedForUserId: string | null;
   controllerUserId: string | null;
+  /**
+   * On the right hand, the handoff is of its shared seat's screen (ADR 0175), not of a person's own seat's: the apps
+   * keep the two screens' state apart by it. Absent for every other handoff.
+   */
+  seat?: typeof SHARED_SEAT;
   note: string | null;
   /** Pending: the agent's deadline. Null once a person has control (no deadline then). */
   expiresAt: string | null;
@@ -200,6 +213,15 @@ export function handoffView(h: BrowserHandoffRow): BrowserHandoffView {
     createdAt: h.createdAt.toISOString(),
     resolvedAt: h.resolvedAt?.toISOString() ?? null,
   };
+}
+
+/**
+ * `handoffView` as the apps are sent it: a handoff of the right hand's shared seat says so (`seat`). One no person's
+ * seat owns is an agent's own screen's, or that seat's.
+ */
+export async function handoffViewFor(db: Executor, h: BrowserHandoffRow): Promise<BrowserHandoffView> {
+  const shared = h.seatUserId === null && (await isRightHandId(db, h.orgId, h.agentId));
+  return { ...handoffView(h), ...(shared ? { seat: SHARED_SEAT } : {}) };
 }
 
 /**
@@ -332,7 +354,7 @@ async function noteDesktopTaken(deps: HandoffDeps, row: BrowserHandoffRow) {
     row.screen !== "desktop" &&
     !(
       (await browserOnDesktop(deps.db, row.orgId, row.agentId, row.machineId)) &&
-      (await mayDriveComputer(deps.db, row.controllerUserId, row.orgId, row.agentId))
+      (await mayDriveComputer(deps.db, row.controllerUserId, row.orgId, row.agentId, row.seatUserId === null))
     )
   ) {
     return;
@@ -341,6 +363,7 @@ async function noteDesktopTaken(deps: HandoffDeps, row: BrowserHandoffRow) {
     orgId: row.orgId,
     agentId: row.agentId,
     actorId: row.controllerUserId,
+    shared: row.seatUserId === null,
     audit: { machineId: row.machineId, handoffId: row.id },
   });
 }
@@ -352,14 +375,22 @@ async function noteDesktopTaken(deps: HandoffDeps, row: BrowserHandoffRow) {
  */
 export async function noteComputerTaken(
   deps: HandoffDeps,
-  input: { orgId: string; agentId: string; actorId: string; audit?: Record<string, unknown> },
+  input: {
+    orgId: string;
+    agentId: string;
+    actorId: string;
+    audit?: Record<string, unknown>;
+    /** On the right hand, its shared seat was taken, not the actor's own. */
+    shared?: boolean;
+  },
 ) {
   const [agent] = await deps.db
     .select({ owner: agents.ownerUserId, name: agents.name, handle: agents.handle, builtin: agents.builtin })
     .from(agents)
     .where(and(eq(agents.id, input.agentId), eq(agents.orgId, input.orgId)));
-  // On the right hand a person takes only their own seat (ADR 0175): nobody else's to be told about.
-  if (!agent || agent.owner === input.actorId || isRightHand(agent)) return;
+  // On the right hand a person takes their own seat (ADR 0175), nobody else's to be told about, or its shared one,
+  // which is told like any agent's computer.
+  if (!agent || agent.owner === input.actorId || (isRightHand(agent) && !input.shared)) return;
   if (input.audit) {
     await recordAudit(deps.db, {
       orgId: input.orgId,
@@ -431,8 +462,9 @@ export async function requireBrowserAccess(
   agentId: string,
   handoff?: BrowserHandoffRow | null,
   screen: ScreenKind = "browser",
+  shared = false,
 ) {
-  const { access, refusal } = await screenAccess(db, userId, orgId, agentId, handoff, screen);
+  const { access, refusal } = await screenAccess(db, userId, orgId, agentId, handoff, screen, shared);
   if (refusal === "level") {
     throw new ForbiddenError(
       screen === "desktop"
@@ -446,7 +478,8 @@ export async function requireBrowserAccess(
 
 /**
  * `requireBrowserAccess` without throwing on a refusal: `level` when the person would see this screen but their
- * roles don't give them it (no `own_*` key; an admin of browsers on a desktop), `none` otherwise.
+ * roles don't give them it (no `own_*` key; an admin of browsers on a desktop), `none` otherwise. `shared`: the right
+ * hand's shared seat's screen is meant, not the person's own seat's; a handoff given says which by itself.
  */
 export async function screenAccess(
   db: Database,
@@ -455,6 +488,7 @@ export async function screenAccess(
   agentId: string,
   handoff?: BrowserHandoffRow | null,
   screen: ScreenKind = "browser",
+  shared = false,
 ) {
   const membership = await getMembership(db, userId, orgId);
   if (!membership) throw new ForbiddenError("You are not a member of this organization");
@@ -469,17 +503,20 @@ export async function screenAccess(
   const admin = can(membership, full ? "control_computers" : "control_browsers");
   // The right hand's screens are each person's own seat (ADR 0175): theirs to watch and drive with the same role keys
   // as any agent of their own, and nobody else's, an admin's included. What they reach is decided where the seat is
-  // (`viewerScope`), and a handoff of another person's seat is never theirs to read or end.
-  if (isRightHand(row)) {
-    const access = { owner: userId, machineId: await workspaceHomeId(db, orgId), admin: false, seat: true };
+  // (`viewerScope`), and a handoff of another person's seat is never theirs to read or end. Its shared seat's screen
+  // (asked for by name, or a handoff no person's seat owns) goes by the rule of any agent's below.
+  const seat = isRightHand(row);
+  const ofShared = seat && (shared || (handoff != null && handoff.seatUserId === null));
+  if (seat && !ofShared) {
+    const access = { owner: userId, machineId: await workspaceHomeId(db, orgId), admin: false, seat };
     if (handoff && handoff.seatUserId !== userId) return { access, refusal: "none" } as const;
     const keyed = admin || can(membership, full ? "own_computers" : "own_browsers");
     return { access, refusal: keyed ? null : "level" } as const;
   }
-  const agent = { owner: row.owner, machineId: row.machineId };
-  const access = { ...agent, admin, seat: false };
+  const agent = { owner: row.owner, machineId: seat ? await workspaceHomeId(db, orgId) : row.machineId };
+  const access = { ...agent, admin, seat };
   if (admin) return { access, refusal: null };
-  const theirs = await seesScreenAsTheirs(db, userId, orgId, agentId, agent, handoff, screen);
+  const theirs = await seesScreenAsTheirs(db, userId, orgId, agentId, agent, handoff, screen, ofShared);
   if (theirs && can(membership, full ? "own_computers" : "own_browsers")) return { access, refusal: null };
   return { access, refusal: theirs || (full && can(membership, "control_browsers")) ? "level" : "none" } as const;
 }
@@ -493,26 +530,31 @@ async function seesScreenAsTheirs(
   agent: { owner: string | null; machineId: string | null },
   handoff: BrowserHandoffRow | null | undefined,
   screen: ScreenKind,
+  /** The right hand's shared seat's screen: its other runs are people's own conversations, which show nothing there. */
+  shared = false,
 ) {
   if (agent.owner === userId) return true;
-  const open = handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, userId) : handoff;
+  const open =
+    handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, shared ? SHARED_SEAT : userId) : handoff;
   if (open?.requestedForUserId === userId) return true;
   const runs = open?.runId
     ? [open.runId]
-    : (
-        await db
-          .select({ id: agentRuns.id })
-          .from(agentRuns)
-          .where(
-            and(
-              eq(agentRuns.orgId, orgId),
-              eq(agentRuns.agentId, agentId),
-              inArray(agentRuns.status, ["queued", "running", "waiting_input", "waiting_approval"]),
-            ),
-          )
-          .orderBy(desc(agentRuns.createdAt))
-          .limit(5)
-      ).map((r) => r.id);
+    : shared
+      ? []
+      : (
+          await db
+            .select({ id: agentRuns.id })
+            .from(agentRuns)
+            .where(
+              and(
+                eq(agentRuns.orgId, orgId),
+                eq(agentRuns.agentId, agentId),
+                inArray(agentRuns.status, ["queued", "running", "waiting_input", "waiting_approval"]),
+              ),
+            )
+            .orderBy(desc(agentRuns.createdAt))
+            .limit(5)
+        ).map((r) => r.id);
   for (const runId of runs) {
     // A run consulted for someone outside the agent's audience has nobody behind it for its screen.
     if ((await humanBehindRun({ db }, orgId, runId)) === userId && !(await answersAgentsOnly(db, orgId, runId))) {
@@ -540,9 +582,11 @@ export async function requireBrowserControl(
   agentId: string,
   handoff?: BrowserHandoffRow | null,
   screen: ScreenKind = "browser",
+  shared = false,
 ) {
-  const open = handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, userId) : handoff;
-  const access = await requireBrowserAccess(db, userId, orgId, agentId, open, screen);
+  const open =
+    handoff === undefined ? await openHandoffOf(db, orgId, agentId, screen, shared ? SHARED_SEAT : userId) : handoff;
+  const access = await requireBrowserAccess(db, userId, orgId, agentId, open, screen, shared);
   // A seat's browser has no view of its own: its window is on the seat's desktop, driven there.
   if (access.seat && screen === "browser") {
     throw new ForbiddenError("Its browser shows on its desktop: take control of the desktop instead");
@@ -668,25 +712,27 @@ async function loadHandoff(db: Executor, orgId: string, handoffId: string) {
 }
 
 /**
- * Whose screen is meant where an agent's is asked for. Only the right hand's reads it (ADR 0175): each person's seat
- * there is another screen. A person's own request names that person, a run's tool the person whose seat it uses
- * (`screenPersonOf`: `false` when it has none). Any other agent has one screen, whoever asks.
+ * Whose screen is meant where an agent's is asked for. Only the right hand's reads it (ADR 0175): each seat there is
+ * another screen. A person's own request names that person (or `SHARED_SEAT` for the shared seat's), a run's tool the
+ * owner of the seat it works in (`screenPersonOf`: `false` when it has none). Any other agent has one screen, whoever
+ * asks.
  */
 export type ScreenPerson = string | null | false;
 
 /**
- * The handoffs of one screen: an agent's, or on the right hand one person's seat's. Null: no screen at all (the right
- * hand's with nobody named). Every read of an agent's handoffs goes through here, so a caller that names nobody sees
- * nothing of anyone's seat.
+ * The handoffs of one screen: an agent's, or on the right hand one seat's (a person's, kept under that person; the
+ * shared seat's, kept under nobody). Null: no screen at all (the right hand's with no seat named). Every read of an
+ * agent's handoffs goes through here, so a caller that names no seat sees nothing of anyone's.
  */
 async function ofScreen(db: Executor, orgId: string, agentId: string, screen: ScreenKind, person?: ScreenPerson) {
   const seats = await isRightHandId(db, orgId, agentId);
   if (seats && !person) return null;
+  const whose = seats ? seatUserOf(person) : null;
   return and(
     eq(browserHandoffs.orgId, orgId),
     eq(browserHandoffs.agentId, agentId),
     eq(browserHandoffs.screen, screen),
-    seats && person ? eq(browserHandoffs.seatUserId, person) : isNull(browserHandoffs.seatUserId),
+    whose ? eq(browserHandoffs.seatUserId, whose) : isNull(browserHandoffs.seatUserId),
   );
 }
 
@@ -716,7 +762,7 @@ export async function openHandoffOf(
 export async function getHandoff(db: Database, userId: string, orgId: string, handoffId: string) {
   const row = await loadHandoff(db, orgId, handoffId);
   await requireBrowserAccess(db, userId, orgId, row.agentId, row, row.screen);
-  return handoffView(row);
+  return handoffViewFor(db, row);
 }
 
 // ── Card, events, notifications ───────────────────────────────────────────────
@@ -725,17 +771,18 @@ export async function getHandoff(db: Database, userId: string, orgId: string, ha
  * The handoff as everyone in its conversation gets it (the card, its events): the note only on
  * "Não consegui", which the card shows. The agent reads every note (`handoffResultText`).
  */
-const cardView = (row: BrowserHandoffRow): BrowserHandoffView => ({
-  ...handoffView(row),
+const cardView = async (db: Executor, row: BrowserHandoffRow): Promise<BrowserHandoffView> => ({
+  ...(await handoffViewFor(db, row)),
   note: row.status === "failed" ? row.note : null,
 });
 
 /** Writes the handoff's state into its chat card (`meta.browserHandoff`); takeovers have no card of their own. */
 async function syncCard(db: Executor, row: BrowserHandoffRow) {
   if (row.kind !== "ask") return;
+  const view = await cardView(db, row);
   await db
     .update(messages)
-    .set({ meta: sql`jsonb_set(${messages.meta}, '{browserHandoff}', ${JSON.stringify(cardView(row))}::jsonb)` })
+    .set({ meta: sql`jsonb_set(${messages.meta}, '{browserHandoff}', ${JSON.stringify(view)}::jsonb)` })
     .where(and(eq(messages.id, row.id), eq(messages.orgId, row.orgId)));
 }
 
@@ -845,7 +892,7 @@ async function afterChange(deps: HandoffDeps, row: BrowserHandoffRow, movedFrom?
       type: "browser.handoff.updated",
       channelId: where.channelId,
       threadId: where.threadId,
-      handoff: cardView(row),
+      handoff: await cardView(deps.db, row),
     });
   }
   if (!OPEN.includes(row.status)) {
@@ -921,8 +968,10 @@ export function createBrowserHandoffToolSource(
     const instructions = String(input.instructions ?? "").trim();
     if (!instructions) return { content: "Say what the person should do.", isError: true };
     if (namesOwnApp(instructions)) return { content: ownAppRefusal(ctx.orgId), isError: true };
-    // The right hand's screen is the seat of the person behind the run (ADR 0175), whose browser shows on its desktop.
+    // The right hand's screen is the seat its run works in (ADR 0175), whose browser shows on its desktop.
     const person = await screenPersonOf(ctx.db, ctx);
+    /** The person whose own seat it is: only they are asked onto it. Null for an agent's screen and the shared seat's. */
+    const own = seatUserOf(person);
     if (person === false) return { content: NO_SEAT_MESSAGE, isError: true };
     if (person && screen === "browser") {
       return {
@@ -981,10 +1030,10 @@ export function createBrowserHandoffToolSource(
       };
     }
     // A desktop goes only to who may drive its computer (ADR 0058 §4); a browser to who asked for the work.
-    // A seat's only to its own person, while their roles let them drive it.
-    const drivers = person
-      ? (await mayDriveComputer(ctx.db, person, ctx.orgId, ctx.agentId))
-        ? [person]
+    // A person's seat only to that person, while their roles let them drive it; the shared seat like any agent's.
+    const drivers = own
+      ? (await mayDriveComputer(ctx.db, own, ctx.orgId, ctx.agentId))
+        ? [own]
         : []
       : screen === "desktop"
         ? await computerDrivers(ctx.db, ctx.orgId, ctx.agentId)
@@ -1064,7 +1113,7 @@ export function createBrowserHandoffToolSource(
             kind: "ask",
             instructions,
             requestedForUserId: recipient,
-            seatUserId: person,
+            seatUserId: own,
             expiresAt: new Date(Date.now() + minutes * 60_000),
           })
           .returning();
@@ -1079,7 +1128,7 @@ export function createBrowserHandoffToolSource(
           });
         }
         await syncCard(tx, row);
-        card.meta = { ...card.meta, browserHandoff: handoffView(row) };
+        card.meta = { ...card.meta, browserHandoff: await handoffViewFor(tx, row) };
         return { card, row };
       });
     } catch (error) {
@@ -1210,9 +1259,10 @@ async function settle(deps: HandoffDeps, row: BrowserHandoffRow, answeredBy?: st
 export async function claimHandoff(deps: HandoffDeps, actorId: string, orgId: string, handoffId: string) {
   const current = await loadHandoff(deps.db, orgId, handoffId);
   await requireBrowserControl(deps.db, actorId, orgId, current.agentId, current, current.screen);
-  await SCREENS[current.screen].mayControl?.(deps.db, actorId, orgId, current.agentId);
+  // A handoff no person's seat owns is an agent's own screen's, or the right hand's shared seat's.
+  await SCREENS[current.screen].mayControl?.(deps.db, actorId, orgId, current.agentId, current.seatUserId === null);
   if (!OPEN.includes(current.status)) throw handoffOver();
-  if (current.status === "active" && current.controllerUserId === actorId) return handoffView(current);
+  if (current.status === "active" && current.controllerUserId === actorId) return handoffViewFor(deps.db, current);
   const now = Date.now();
   const [row] = await deps.db
     .update(browserHandoffs)
@@ -1235,7 +1285,7 @@ export async function claimHandoff(deps: HandoffDeps, actorId: string, orgId: st
   noteControl(deps, row);
   await afterChange(deps, row);
   await noteDesktopTaken(deps, row);
-  return handoffView(row);
+  return handoffViewFor(deps.db, row);
 }
 
 /**
@@ -1286,7 +1336,7 @@ export async function finishHandoff(
     throw OPEN.includes(now.status) ? new ConflictError("Someone else is in control") : handoffOver();
   }
   await settle(deps, ended, actorId);
-  return handoffView(ended);
+  return handoffViewFor(deps.db, ended);
 }
 
 /** A person cancels a handoff (the agent no longer needs it, or they won't do it): the run resumes as failed. */
@@ -1311,7 +1361,7 @@ export async function cancelHandoff(deps: HandoffDeps, actorId: string, orgId: s
   });
   if (!row) throw handoffOver();
   await settle(deps, row);
-  return handoffView(row);
+  return handoffViewFor(deps.db, row);
 }
 
 /**
@@ -1359,10 +1409,12 @@ export async function startTakeover(
   agentId: string,
   runId?: string | null,
   screen: ScreenKind = "browser",
+  /** The right hand's shared seat is taken, not the actor's own: for whoever may drive an agent's computer. */
+  shared = false,
 ) {
-  await requireBrowserControl(deps.db, actorId, orgId, agentId, undefined, screen);
+  await requireBrowserControl(deps.db, actorId, orgId, agentId, undefined, screen, shared);
   await requireAgentBrowserSwitch(deps.db, orgId, agentId, screen);
-  await SCREENS[screen].mayControl?.(deps.db, actorId, orgId, agentId);
+  await SCREENS[screen].mayControl?.(deps.db, actorId, orgId, agentId, shared);
   let boundRun: string | null = null;
   if (runId) {
     const [run] = await deps.db
@@ -1372,11 +1424,12 @@ export async function startTakeover(
     if (!run || run.agentId !== agentId) throw new ValidationError("That run isn't this agent's");
     if (LIVE_RUN.includes(run.status)) boundRun = runId;
   }
-  // On the right hand the screen taken is the actor's own seat (ADR 0175), made here if this is their first use.
-  const seat = (await isRightHandId(deps.db, orgId, agentId)) ? actorId : null;
+  // On the right hand the screen taken is the actor's own seat (ADR 0175) or the shared one, made here on its first
+  // use.
+  const seat = (await isRightHandId(deps.db, orgId, agentId)) ? (shared ? SHARED_SEAT : actorId) : null;
   if (seat) {
     const told = (org: string) => publishMachineAgentsChanged(deps.pubsub, org);
-    const theirs = await viewerScope(deps.db, orgId, agentId, actorId, told);
+    const theirs = await viewerScope(deps.db, orgId, agentId, actorId, told, true, shared);
     if (!theirs || "reason" in theirs) throw new ValidationError("This agent has no computer");
   }
   const open = await openHandoffOf(deps.db, orgId, agentId, screen, seat);
@@ -1399,7 +1452,7 @@ export async function startTakeover(
           kind: "takeover",
           status: "active",
           controllerUserId: actorId,
-          seatUserId: seat,
+          seatUserId: seatUserOf(seat),
           expiresAt: new Date(now + CONTROL_GRACE_MS),
         })
         .returning();
@@ -1416,7 +1469,7 @@ export async function startTakeover(
   noteControl(deps, row);
   await afterChange(deps, row);
   await noteDesktopTaken(deps, row);
-  return handoffView(row);
+  return handoffViewFor(deps.db, row);
 }
 
 /**
@@ -1562,7 +1615,7 @@ export async function expireControl(deps: HandoffDeps, handoffId: string, userId
   if (!row) return null;
   await syncCard(deps.db, row).catch(() => {});
   await settle(deps, row);
-  return handoffView(row);
+  return handoffViewFor(deps.db, row);
 }
 
 /**
@@ -1673,13 +1726,16 @@ export async function stopAgentBrowser(
   orgId: string,
   agentId: string,
   pubsub?: PubSub,
+  /** The right hand's shared seat's browser, not the asker's own seat's. */
+  shared = false,
 ) {
-  await requireBrowserAccess(db, actorId, orgId, agentId);
+  await requireBrowserAccess(db, actorId, orgId, agentId, undefined, "browser", shared);
   if (!hub) throw new ValidationError("Connected computers are not available on this server");
   const machineId = await browserMachineOf(db, orgId, agentId, "browser");
   if (!machineId) throw new ValidationError("This agent has no computer");
-  // Whose browser it is there: the agent's, or on the right hand the asker's own seat's (ADR 0175).
-  const theirs = await viewerScope(db, orgId, agentId, actorId, undefined, false);
+  // Whose browser it is there: the agent's, or on the right hand the asker's own seat's or the shared one's (ADR
+  // 0175).
+  const theirs = await viewerScope(db, orgId, agentId, actorId, undefined, false, shared);
   if (!theirs) throw new NotFoundError("Agent not found");
   if ("reason" in theirs) throw new ValidationError("This agent has no computer");
   // A seat never opened has no browser to stop.

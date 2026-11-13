@@ -88,7 +88,7 @@ import {
 import { missionOfRun, type RunMission, runActsForMission } from "./mission-context";
 import { recordTaskFinished } from "./operator-events";
 import { isRightHandId } from "./right-hand";
-import { machineScope, seatIdOf } from "./right-hand-seats";
+import { machineScope, runSeatId, seatIdOf } from "./right-hand-seats";
 import { runnerUpdateWay } from "./runner-update";
 import { replyThreadOf } from "./runs";
 import {
@@ -1317,6 +1317,16 @@ export function createSandboxToolSource(
   const taskLine = (row: MachineTaskRow) =>
     `- ${row.id} "${row.title}" (${row.executor}): ${row.status}, ${formatDuration(taskSeconds(row))}${row.exitCode !== null ? `, exit code ${row.exitCode}` : ""}${row.lastLine ? ` — ${row.lastLine}` : ""}`;
   const taskIdProp = { type: "string", minLength: 36, maxLength: 36, description: "The task id start_task returned" };
+  /**
+   * The tasks a run may read and stop. One kept for a seat of the right hand (ADR 0175) is only the runs' that work
+   * in that seat: its lines come from that seat, and its stop goes to the computer under it.
+   */
+  const inRunSeat = async (ctx: ToolContext, rows: (MachineTaskRow | null)[]) => {
+    const found = rows.filter((row): row is MachineTaskRow => row !== null);
+    if (!found.some((row) => row.scopeId)) return found;
+    const seat = await runSeatId(ctx);
+    return found.filter((row) => !row.scopeId || row.scopeId === seat);
+  };
 
   /** Background tasks on a connected computer (ADR 0029): start, list, look at, cancel. */
   const taskTools = (
@@ -1490,7 +1500,7 @@ export function createSandboxToolSource(
       scope: SANDBOX_SCOPE,
       inputSchema: { type: "object", properties: {}, additionalProperties: false },
       async execute(_input, ctx) {
-        const rows = await listConversationTasks(ctx.db, ctx);
+        const rows = await inRunSeat(ctx, await listConversationTasks(ctx.db, ctx));
         if (rows.length === 0) return { content: "You have no background tasks in this conversation." };
         return { content: rows.map(taskLine).join("\n"), data: { tasks: rows.map(machineTaskView) } };
       },
@@ -1508,7 +1518,7 @@ export function createSandboxToolSource(
         additionalProperties: false,
       },
       async execute(input, ctx) {
-        const row = await getConversationTask(ctx.db, ctx, str(input.task_id));
+        const [row] = await inRunSeat(ctx, [await getConversationTask(ctx.db, ctx, str(input.task_id))]);
         if (!row) return { content: "No such task of yours in this conversation.", isError: true };
         const files = Array.isArray(row.files) ? row.files : [];
         const lines = [
@@ -1550,7 +1560,7 @@ export function createSandboxToolSource(
       },
       async execute(input, ctx) {
         try {
-          const row = await getConversationTask(ctx.db, ctx, str(input.task_id));
+          const [row] = await inRunSeat(ctx, [await getConversationTask(ctx.db, ctx, str(input.task_id))]);
           if (!row) return { content: "No such task of yours in this conversation.", isError: true };
           if (row.endedAt || !["queued", "running", "interrupted"].includes(row.status)) {
             return { content: `Task ${row.id} already ended (${row.status}).` };

@@ -10,7 +10,7 @@ import { exposedToolName } from "./connectors/mcp";
 import { sha256 } from "./crypto";
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors";
 import { can, requirePermission } from "./organizations";
-import { isRightHand, isRightHandId, RIGHT_HAND_GRANTS } from "./right-hand";
+import { isRightHand, isRightHandId, RIGHT_HAND_COMPUTER_GRANTS, RIGHT_HAND_GRANTS } from "./right-hand";
 import { isSensitive } from "./tools/gateway";
 import {
   type AccessState,
@@ -549,6 +549,12 @@ export async function setAgentAccess(
     throw new ForbiddenError("Only an admin can give an agent new access. Its owner can only take access away.");
   }
   await db.transaction(async (tx) => {
+    // The right hand's shared seat on the workspace's computer (ADR 0175) goes with its last computer grant: the
+    // computer stops what runs there, and a grant given again starts an empty one.
+    if (isRightHand(agent) && !RIGHT_HAND_COMPUTER_GRANTS.some((scope) => unique.has(grantKey(null, scope)))) {
+      const { removeSeat, SHARED_SEAT } = await import("./right-hand-seats");
+      await removeSeat(tx, orgId, SHARED_SEAT);
+    }
     // Mailbox grants are managed by the mail API (ADR 0038): kept as they are.
     await tx
       .delete(agentScopes)

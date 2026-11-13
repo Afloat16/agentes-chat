@@ -218,7 +218,7 @@ export function createGitToolSource(deps: GitToolDeps): ToolSource {
                 const machines = deps.sandbox.machines;
                 const git = deps.sandbox.git;
                 if (!machines || !git) return { content: "Connected computers are not available here.", isError: true };
-                // The right hand clones into the seat of the person behind the run, or not at all (ADR 0175).
+                // The right hand clones into the seat its run works in, a person's own or the shared one (ADR 0175).
                 const scope = await machineScope(machines.hub, c, machineId);
                 const r = await cloneOnMachine(
                   {

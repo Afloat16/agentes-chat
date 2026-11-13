@@ -14,6 +14,7 @@ import {
   openPersonAgentDm,
   RIGHT_HAND,
   removeMember,
+  SHARED_SEAT,
   seatOf,
   seatState,
   type ToolContext,
@@ -206,23 +207,20 @@ test("a background task runs in the asker's seat, and what follows it names that
   for (const r of requests().slice(before)) expect(r.agent?.id).not.toBe(lodi.id);
 });
 
-test("a channel mention and a routine woken from outside get no seat: refused, nothing sent", async () => {
-  const { lodi, ran, requests } = await home();
-  const before = requests().length;
+test("a channel mention works in the shared seat, and a routine in its creator's own DM in theirs", async () => {
+  const { lodi, ran } = await home();
   const channel = await lodiRun(lodi.id, f.owner.id, { channelId: f.general.id });
-  const said = await runCode(channel);
-  expect(said.isError).toBe(true);
-  expect(said.content).toContain("only in a person's own conversation with you");
-  expect(await seatState(f.db, { ...channel, id: channel.runId })).toBe("away");
+  expect((await runCode(channel)).isError).toBeFalsy();
+  expect(await seatState(f.db, { ...channel, id: channel.runId })).toBe("shared");
+  // Nothing was made for the person: the shared seat is the workspace's.
+  expect((await f.db.select().from(schema.rightHandSeats)).map((s) => s.userId)).toEqual([SHARED_SEAT]);
+  const shared = await seatId(SHARED_SEAT);
+  expect(ran.map((r) => r.agent)).toEqual([shared]);
 
   const routine = await lodiRun(lodi.id, f.owner.id, { routine: true });
-  const unattended = await runCode(routine);
-  expect(unattended.isError).toBe(true);
-  expect(unattended.content).toContain("only in a person's own conversation with you");
-
-  expect(ran).toEqual([]);
-  expect(requests().length).toBe(before);
-  expect(await f.db.select().from(schema.rightHandSeats)).toEqual([]);
+  expect((await runCode(routine)).isError).toBeFalsy();
+  expect(ran.at(-1)?.agent).toBe(await seatId(f.owner.id));
+  expect(ran.some((r) => r.agent === lodi.id)).toBe(false);
 });
 
 test("a computer that runs every agent as one user gives it no seat: refused, nothing sent", async () => {

@@ -198,7 +198,7 @@ export async function warmAgentBrowser(
 ): Promise<boolean> {
   const { orgId, agentId, threadRootId } = at;
   const agent = await getAgentCached(db, orgId, agentId);
-  // The right hand's Chrome is a person's seat's, started by that person's own request (ADR 0175): never ahead.
+  // The right hand's Chrome is a seat's (ADR 0175), started by the first request that reaches that seat: never ahead.
   if (isRightHand(agent) || !(await agentUsesScreen(db, orgId, agentId))) return false;
   const mission = !at.machineId && threadRootId ? await missionOfRun({ db, orgId, agentId, threadRootId }) : null;
   const status = await agentBrowserStatus(db, hub, orgId, agentId, at.machineId ?? mission?.machineId ?? null);
@@ -827,7 +827,7 @@ export function createBrowserToolSource(deps: BrowserToolDeps): ToolSource & { r
       status = own;
     }
     const agent = await getAgentCached(ctx.db, ctx.orgId, ctx.agentId);
-    // The right hand's browser is the seat's of the person behind the run, or none (ADR 0175).
+    // The right hand's browser is the seat's its run works in, a person's own or the shared one (ADR 0175).
     let scope: AgentScope;
     try {
       scope = await machineScope(caller, ctx, status.machineId);

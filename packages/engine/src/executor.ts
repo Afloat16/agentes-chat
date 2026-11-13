@@ -2158,8 +2158,8 @@ async function executeRunInner(
         // "What you can do" names the loaded groups: it waits for the judge.
         capabilities: Promise.resolve(judging).then(async () =>
           [
-            // The right hand has a computer only as the seat of the person behind the run (ADR 0175).
-            describeCapabilities(tools, pending, isRightHand(agent) && (await seatState(db, run)) !== "seat"),
+            // The right hand has a computer only as a seat on the workspace's own (ADR 0175).
+            describeCapabilities(tools, pending, isRightHand(agent) && (await seatState(db, run)) === "none"),
             browsers,
             repositories,
           ]

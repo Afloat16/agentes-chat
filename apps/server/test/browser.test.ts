@@ -575,6 +575,54 @@ describe("handoff routes", () => {
     ).toBe("done");
   });
 
+  test("the right hand's shared seat: opened by name, by who may open an agent's computer, apart from their own", async () => {
+    const { owner, org, api, machine } = await seeded();
+    const executors = { desktop: { available: true }, terminal: { available: true }, mode: "system" as const };
+    await t.db
+      .update(schema.machines)
+      .set({ kind: "host", executors })
+      .where(eq(schema.machines.id, machine.machineId));
+    const [lodi] = await t.db
+      .select({ id: schema.agents.id })
+      .from(schema.agents)
+      .where(and(eq(schema.agents.orgId, org.orgId), eq(schema.agents.builtin, RIGHT_HAND)));
+    if (!lodi) throw new Error("no right hand");
+    const member = await joinByInvitation(t, owner, org.orgId, "bia@example.com");
+    const theirs = (path: string, init?: Parameters<typeof member>[1]) =>
+      member(`/api/app/organizations/${org.orgId}${path}`, init);
+    const shown = async (as: typeof api) =>
+      ((await (await as("/machines")).json()) as { machines: { sharedSeatOf?: string | null }[] }).machines.map(
+        (m) => m.sharedSeatOf ?? null,
+      );
+    expect(await shown(api)).toContain(lodi.id);
+    expect(await shown(theirs)).toEqual([null]);
+
+    // A member has her own seat, never the shared one.
+    for (const path of ["desktop", "desktop/handoff", "desktop/control", "desktop/picture"]) {
+      expect((await theirs(`/agents/${lodi.id}/${path}?seat=shared`)).status).toBe(403);
+    }
+    expect((await theirs(`/agents/${lodi.id}/desktop/takeover`, { json: { seat: "shared" } })).status).toBe(403);
+    expect((await theirs(`/agents/${lodi.id}/desktop`)).status).toBe(200);
+
+    // The owner takes it: its handoff says whose screen it is, and their own seat's state knows nothing of it.
+    const taken = await api(`/agents/${lodi.id}/desktop/takeover`, { json: { seat: "shared" } });
+    expect(taken.status).toBe(200);
+    const h = (await taken.json()) as { id: string; seat?: string };
+    expect(h.seat).toBe("shared");
+    const open = async (query: string) =>
+      ((await (await api(`/agents/${lodi.id}/desktop/handoff${query}`)).json()) as { handoff: { id: string } | null })
+        .handoff;
+    expect((await open("?seat=shared"))?.id).toBe(h.id);
+    expect(await open("")).toBeNull();
+    expect((await api(`/agents/${lodi.id}/desktop/control?seat=shared`)).status).toBe(200);
+    expect((await theirs(`/browser/handoffs/${h.id}`)).status).toBe(403);
+    expect((await theirs(`/browser/handoffs/${h.id}/cancel`, { json: {} })).status).toBe(403);
+    expect(await (await api(`/browser/handoffs/${h.id}/done`, { json: {} })).json()).toMatchObject({
+      status: "done",
+      seat: "shared",
+    });
+  });
+
   test("the agent's browser settings and its open handoff are two routes, each with its own answer", async () => {
     const { org, api } = await seeded();
     const settings = (await (await api(`/agents/${org.agentId}/browser`)).json()) as Record<string, unknown>;

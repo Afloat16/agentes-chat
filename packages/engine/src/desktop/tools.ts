@@ -291,7 +291,7 @@ export function createDesktopToolSource(deps: DesktopToolDeps): ToolSource {
     if (!hub) return { ok: false, text: "Connected computers are not available on this server." };
     const caller = hub;
     const { machineId, machineName } = status;
-    // The right hand's desktop is the seat of the person behind the run, or none (ADR 0175).
+    // The right hand's desktop is the seat's its run works in, a person's own or the shared one (ADR 0175).
     let agent: AgentScope;
     try {
       agent = await machineScope(caller, ctx, machineId);

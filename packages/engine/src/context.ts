@@ -1096,7 +1096,7 @@ export async function buildRunContext(
           `You are ${agent.name} (@${agent.handle})${agent.role ? `, ${agent.role}` : ""}, ${personal ? "one of this person's AI agents" : "an AI agent of this organization"}.`,
           agent.instructions.trim() ? `# Your instructions\n${agent.instructions.trim()}` : "",
           // The right hand with nobody behind the run (another agent's message) still keeps to its tools.
-          isRightHand(agent) ? rightHandTools((await seatState(db, run)) === "none" ? "none" : "away") : "",
+          isRightHand(agent) ? rightHandTools(await seatState(db, run)) : "",
         ]
           .filter(Boolean)
           .join("\n\n"),

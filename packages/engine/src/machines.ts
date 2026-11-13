@@ -31,7 +31,7 @@ import { publishOrgEvent } from "./events";
 import { can, requireActiveMembership, requirePermission } from "./organizations";
 import { maySql } from "./permissions";
 import { isRightHand, RIGHT_HAND, rightHandPermanent } from "./right-hand";
-import { liveSeats, removedSeatIds } from "./right-hand-seats";
+import { liveSeats, removedSeatIds, removeSeat, SHARED_SEAT, seatName } from "./right-hand-seats";
 
 const { machines, agents, users, organizationMembers } = schema;
 
@@ -345,8 +345,9 @@ export async function requireComputerDriver(
   userId: string,
   orgId: string,
   agentId: string,
+  shared = false,
 ): Promise<MachineRow> {
-  const { machine, refusal } = await computerDriving(db, userId, orgId, agentId);
+  const { machine, refusal } = await computerDriving(db, userId, orgId, agentId, shared);
   if (refusal) {
     throw new ForbiddenError(
       refusal === "pairer"
@@ -361,8 +362,11 @@ export async function requireComputerDriver(
   return machine;
 }
 
-/** The agent's computer and why this person may not drive it (`driveRefusal`), null when they may. */
-export async function computerDriving(db: Database, userId: string, orgId: string, agentId: string) {
+/**
+ * The agent's computer and why this person may not drive it (`driveRefusal`), null when they may. `shared`: the right
+ * hand's shared seat (ADR 0175) is meant, not the person's own; it means nothing for any other agent.
+ */
+export async function computerDriving(db: Database, userId: string, orgId: string, agentId: string, shared = false) {
   const membership = await requireActiveMembership(db, userId, orgId);
   const [agent] = await db
     .select({
@@ -381,7 +385,7 @@ export async function computerDriving(db: Database, userId: string, orgId: strin
   const machineId = home ?? agent.machineId;
   const machine = machineId ? await getMachine(db, orgId, machineId) : null;
   if (!machine) throw new NotFoundError("This agent has no computer");
-  if (home) {
+  if (home && !shared) {
     const keyed = can(membership, "own_computers") || can(membership, "control_computers");
     return { machine, refusal: keyed ? null : ("role" as const) };
   }
@@ -393,19 +397,22 @@ export async function computerDriving(db: Database, userId: string, orgId: strin
     manages: can(membership, "manage_agents"),
     browsers: can(membership, "control_browsers"),
   };
-  return { machine, refusal: driveRefusal(machine, person, lentAccount(agent) !== null) };
+  // The shared seat is driven like any agent's computer, by the rule above. Its OS user never holds a plan's sign-in:
+  // the right hand thinks as another user (ADR 0137 §4).
+  return { machine, refusal: driveRefusal(machine, person, !home && lentAccount(agent) !== null) };
 }
 
 /** Whether this person may drive the agent's computer now (`computerDriving`); false where it has none. */
-export const mayDriveComputer = (db: Database, userId: string, orgId: string, agentId: string) =>
-  computerDriving(db, userId, orgId, agentId).then(
+export const mayDriveComputer = (db: Database, userId: string, orgId: string, agentId: string, shared = false) =>
+  computerDriving(db, userId, orgId, agentId, shared).then(
     (d) => d.refusal === null,
     () => false,
   );
 
 /**
  * Who an agent asks for help on its desktop: only people who may drive its computer. Its owner when they may,
- * else everyone who may (the person who paired it; the admins in system mode). Empty: nobody here may.
+ * else everyone who may (the person who paired it; the admins in system mode). Empty: nobody here may. For the right
+ * hand it is its shared seat's drivers (`computerDriving` with `shared`): a person's own seat asks only that person.
  */
 export async function computerDrivers(db: Database, orgId: string, agentId: string): Promise<string[]> {
   const [agent] = await db
@@ -414,12 +421,15 @@ export async function computerDrivers(db: Database, orgId: string, agentId: stri
       owner: agents.ownerUserId,
       brain: agents.brain,
       account: agents.brainAccountId,
+      builtin: agents.builtin,
     })
     .from(agents)
     .where(and(eq(agents.id, agentId), eq(agents.orgId, orgId)));
-  const machine = agent?.machineId ? await getMachine(db, orgId, agent.machineId) : null;
+  const home = isRightHand(agent) ? await workspaceHomeId(db, orgId) : null;
+  const machineId = home ?? agent?.machineId;
+  const machine = machineId ? await getMachine(db, orgId, machineId) : null;
   if (!agent || !machine) return [];
-  const signIn = lentAccount(agent) !== null;
+  const signIn = !home && lentAccount(agent) !== null;
   const named = [agent.owner, machine.pairedByUserId].filter((id): id is string => !!id);
   // Who may drive it (`control_computers`, `own_computers`, ADR 0085), read once per member, and the people named above.
   const everyone = await db
@@ -473,11 +483,17 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
   const [rightHand] =
     homeRow?.executors?.mode === "system"
       ? await db
-          .select({ id: agents.id, name: agents.name, handle: agents.handle })
+          .select({ id: agents.id, name: agents.name, handle: agents.handle, owner: agents.ownerUserId })
           .from(agents)
           .where(and(eq(agents.orgId, orgId), eq(agents.builtin, RIGHT_HAND), isNull(agents.archivedAt)))
       : [];
   if (rightHand && homeRow) using.push({ ...rightHand, machineId: homeRow.id });
+  // Its shared seat there is opened like any agent's computer, by the admins of computers and its owner
+  // (`computerDriving` with `shared`): only they are shown it.
+  const sharedSeat =
+    rightHand && homeRow && (can(membership, "control_computers") || rightHand.owner === actorId)
+      ? { machineId: homeRow.id, agentId: rightHand.id }
+      : null;
   return rows.map(({ machine: m, pairedByName }) => {
     const mine = m.pairedByUserId === actorId;
     const pause = machinePause(m, now);
@@ -521,6 +537,11 @@ async function machineViews(db: Database, actorId: string, orgId: string, only?:
       remotePause: !managed && m.protocol >= REMOTE_PAUSE_PROTOCOL,
       pairedBy: m.pairedByUserId ? { id: m.pairedByUserId, name: pairedByName ?? "" } : null,
       agents: using.filter((a) => a.machineId === m.id).map((a) => ({ id: a.id, name: a.name, handle: a.handle })),
+      /**
+       * The right hand's id where this computer holds its shared seat (ADR 0175) and this person may open it, as they
+       * may any agent's computer here; null otherwise.
+       */
+      sharedSeatOf: sharedSeat?.machineId === m.id ? sharedSeat.agentId : null,
       /** Shown to admins and the person who paired it only. */
       workspace: (admin || mine) && !managed ? m.workspace : null,
       /** Folders and tools allowed on the machine (protocol 10); admins and the pairer only, null otherwise or unknown. */
@@ -726,11 +747,14 @@ async function rightHandRow(db: Database, orgId: string) {
   return row ?? null;
 }
 
-/** A seat as the `agents` frame lists it: the right hand's look, the person's name beside its own, their language. */
+/**
+ * A seat as the `agents` frame lists it: the right hand's look, whose it is beside its name (`seatName`), the
+ * person's language (the shared seat's has none of its own).
+ */
 const seatListed = (a: RightHandRow, seat: Awaited<ReturnType<typeof liveSeats>>[number]): MachineAgent => ({
   id: seat.id,
   handle: a.handle,
-  name: `${a.name} (${seat.person})`,
+  name: seatName(a.name, seat),
   locale: agentLocale(seat.locale),
   ...(a.appearance
     ? { look: { color: a.appearance.color, eyes: a.appearance.eyes, accessory: a.appearance.accessory } }
@@ -822,6 +846,8 @@ export async function removeMachine(
 /** `removeMachine`'s writes, in the caller's transaction: the agents it leaves with no computer. */
 export async function detachMachine(tx: Executor, machine: Pick<MachineRow, "id" | "orgId" | "kind">) {
   const now = new Date();
+  // The right hand's shared seat (ADR 0175) goes with the workspace's own computer: another one starts it anew.
+  if ((await workspaceHomeId(tx, machine.orgId)) === machine.id) await removeSeat(tx, machine.orgId, SHARED_SEAT);
   const rows = await tx
     .update(agents)
     // Its accounts (ADR 0041) stay with it: the agents leave them.
