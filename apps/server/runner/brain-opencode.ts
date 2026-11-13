@@ -68,6 +68,8 @@ import { agentSecrets } from "./secrets";
 const STOP_WAIT_MS = 8000;
 /** After the turn, how long the process may take to exit by itself (its input closed) before it is killed. */
 const EXIT_GRACE_MS = 3000;
+/** How long a process told to end (SIGTERM, then SIGKILL) has to go before the turn stops waiting for it. */
+const KILL_WAIT_MS = 2000;
 /** How long each step of starting (initialize, the session, the model) may take. */
 const SETUP_TIMEOUT_MS = 120_000;
 /** A turn that hears nothing from OpenCode this long, with no tool running, stops (see the header). */
@@ -450,11 +452,12 @@ export interface OpencodeTurnOptions {
   runnerHome: string;
   env?: Record<string, string>;
   redact?: (text: string) => string;
-  /** Tests: the executable, how it starts, the system, and the silence limit. */
+  /** Tests: the executable, how it starts, the system, the silence limit, and the exit grace. */
   bin?: string;
   spawn?: Spawn;
   platform?: NodeJS.Platform;
   silenceMs?: number;
+  exitGraceMs?: number;
 }
 
 /** The session key: per account and folder (a resumed OpenCode session keeps the folder it started in). */
@@ -511,6 +514,14 @@ function within<T>(p: Promise<T>, ms: number, message: string): Promise<T> {
     }),
   ]).finally(() => clearTimeout(timer));
 }
+
+/** Whether the process has exited within `ms`. */
+const goneWithin = (exited: Promise<unknown>, ms: number) =>
+  within(
+    exited.then(() => true),
+    ms,
+    "",
+  ).catch(() => false);
 
 /** An error that carries how the process ended (it closed the connection). */
 type ExitError = Error & { exit?: { code: number | null; error?: Error } };
@@ -841,12 +852,18 @@ export async function runOpencodeTurn(input: OpencodeTurnInput, opts: OpencodeTu
     clearInterval(silence);
     clearTimeout(s.killTimer);
     opts.signal.removeEventListener("abort", onAbort);
-    // Done: its input closed, it exits by itself; anything still running after the grace is killed with its tree.
     conn.close();
-    child.stdin?.end();
-    const grace = setTimeout(() => killTree(child, "SIGTERM"), s.stopping === "breach" ? 0 : EXIT_GRACE_MS);
-    void exited.then(() => clearTimeout(grace));
     if (!ended) fail("opencode_failed", "OpenCode ended without an answer.", true);
+    // Done: its input closed, it exits by itself; still running after the grace, it is ended with its tree. The turn
+    // returns once it has gone, so nothing it started (our bridge's process among them) outlives the turn's token.
+    child.stdin?.end();
+    if (!(await goneWithin(exited, s.stopping === "breach" ? 0 : (opts.exitGraceMs ?? EXIT_GRACE_MS)))) {
+      killTree(child, "SIGTERM");
+      if (!(await goneWithin(exited, KILL_WAIT_MS))) {
+        killTree(child, "SIGKILL");
+        await goneWithin(exited, KILL_WAIT_MS);
+      }
+    }
   }
 }
 

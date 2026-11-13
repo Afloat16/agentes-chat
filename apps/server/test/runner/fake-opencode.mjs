@@ -9,7 +9,8 @@
 // our bridge and the answer, with tokens. "LIMIT": a provider's limit; "BADKEY": a refused key; "SILENT": no answer at
 // all; "SLEEP": a tool that runs until `session/cancel`; "OWNTOOL": a tool of its own that waits to be stopped; "ASK":
 // a permission request (2.x then ends the turn, 1.x goes on); "STEER": a tool running until `_session/steering` (2.x)
-// then a new step; "ENV": the shell printing $OPENCODE_API_KEY.
+// then a new step; "ENV": the shell printing $OPENCODE_API_KEY. Once its input closes it exits, "LINGER" a moment
+// later (logged), "STUCK" never by itself, nor on SIGTERM.
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -39,6 +40,7 @@ if (args[0] !== "acp") {
 const configDir = env.OPENCODE_CONFIG_DIR ?? "";
 log({
   start: true,
+  pid: process.pid,
   args,
   cwd: process.cwd(),
   dataHome: env.XDG_DATA_HOME ?? null,
@@ -67,6 +69,8 @@ const keep = (id, model) => {
 const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT ?? "{}");
 const locked = config.permission?.["*"] === "deny";
 let askId = 0;
+let lingerMs = 0;
+let stuck = false;
 const asked = new Map();
 let running = null;
 const send = (m) => process.stdout.write(`${JSON.stringify(m)}\n`);
@@ -87,6 +91,11 @@ async function prompt(id, params) {
   const sid = params.sessionId;
   const said = params.prompt.map((b) => b.text ?? "").join("");
   log({ method: "session/prompt", sessionId: sid, text: said });
+  if (said.includes("LINGER")) lingerMs = 150;
+  if (said.includes("STUCK")) {
+    stuck = true;
+    process.on("SIGTERM", () => log({ sigterm: true }));
+  }
   // OpenCode 2 names its tools; 1.x only in the first title.
   const own = v2 ? { name: "shell", title: "shell" } : { title: "bash" };
   const cancelled = new Promise((resolve) => {
@@ -295,4 +304,14 @@ process.stdin.on("data", (chunk) => {
     if (line) handle(JSON.parse(line));
   }
 });
-process.stdin.on("end", () => process.exit(0));
+process.stdin.on("end", () => {
+  if (stuck) {
+    setInterval(() => {}, 1000);
+    return;
+  }
+  if (!lingerMs) process.exit(0);
+  setTimeout(() => {
+    log({ exited: true });
+    process.exit(0);
+  }, lingerMs);
+});

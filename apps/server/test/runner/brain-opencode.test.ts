@@ -398,6 +398,9 @@ interface Logged {
   lspDownload?: string | null;
   claudeCode?: string | null;
   permissionAnswer?: unknown;
+  pid?: number;
+  exited?: boolean;
+  sigterm?: boolean;
 }
 const logOf = (file: string): Logged[] =>
   existsSync(file)
@@ -791,6 +794,44 @@ test.skipIf(!posix)(
         retryable: true,
       },
     ]);
+  },
+  20_000,
+);
+
+test.skipIf(!posix)(
+  "the turn returns once OpenCode has gone: one that takes a moment is waited for, one that won't go is killed",
+  async () => {
+    const root = tempDir("brain-opencode-");
+    dirs.push(root);
+    const { home, ws } = turnContext(root);
+    const log = path.join(root, "opencode.log");
+    process.env.FAKE_OPENCODE_LOG = log;
+    const events: CodexBrainEvent[] = [];
+    const input = { runId: RUN, sessionId: SESSION, cwd: ws, system: "", mcp: { token: "t" }, agentId: AGENT.id };
+    const opts = {
+      sessions: new CodexThreads(path.join(root, "sessions.json")),
+      emit: (e: CodexBrainEvent) => events.push(e),
+      signal: new AbortController().signal,
+      runnerHome: home,
+      spawn: fakeSpawn,
+      exitGraceMs: 400,
+    };
+    // Its input closed, it exits a moment later: by then its answer is out, and the turn returns after.
+    await runOpencodeTurn({ ...input, prompt: "LINGER" }, opts);
+    expect(events.at(-1)).toMatchObject({ type: "done", text: "All good." });
+    expect(logOf(log).some((l) => l.exited)).toBe(true);
+
+    // Nor its input closing nor SIGTERM ends it: killed, and gone when the turn returns.
+    events.length = 0;
+    await runOpencodeTurn({ ...input, runId: run(2), prompt: "STUCK" }, opts);
+    expect(events.at(-1)).toMatchObject({ type: "done", text: "All good." });
+    expect(logOf(log).some((l) => l.sigterm)).toBe(true);
+    const pid =
+      logOf(log)
+        .filter((l) => l.start)
+        .at(-1)?.pid ?? 0;
+    expect(pid).toBeGreaterThan(0);
+    expect(() => process.kill(pid, 0)).toThrow();
   },
   20_000,
 );
