@@ -899,7 +899,21 @@ list who and what is in a workspace, never what was written there.
 `GET /runs/{runId}/trace` shows one run step by step, `GET /orgs/{orgId}/timeline` puts a conversation's
 messages, routing decisions and runs in order, and `GET /messages/{messageId}/explain` says why a message
 did or did not start a run: ids, codes, times and sizes, never a message's text or what a tool was given
-or answered.
+or answered. `GET /orgs/{orgId}/tool-calls` lists the tools a workspace's agents called (`?groupBy=tool`
+for counts): which tool, whether it is the server's own or a connected app's, and how each call ended.
+`GET /orgs/{orgId}/connections` lists what a workspace connected (apps, mailboxes, databases) with each
+one's state and last error, `GET /orgs/{orgId}/audit` its audit log without the entries' details,
+`GET /orgs/{orgId}/asks` what its agents asked of people and of each other (`?open=true` for what still
+waits) and `GET /orgs/{orgId}/routines` its routines with their latest firings: never a credential, what
+was asked or answered, or a routine's name or instructions. A connection's `label` is what its workspace
+calls it, which is a mailbox's address or a database's host when nobody named it; an audit entry's
+`targetId` is a name where the target has no id (a tool, a repository, a wiki folder).
+`GET /orgs/{orgId}/notifications?userId=` lists what one person was notified of and the pushes that
+carried it, never a notification's words; `GET /orgs/{orgId}/access?userId=&targetKind=&targetId=` says
+whether a person reaches an agent, a channel, a task, a file or a computer, and the rule that decides;
+`GET /orgs/{orgId}/unanswered` lists people's messages no run answered, each with why (`?summary=true`
+for counts); and `GET /email-jobs?to=` lists the emails queued to one address with their state, never
+the address, a subject or a link.
 `GET /jobs` lists the job queue without the jobs' payloads (`?stuck=true` for the ones nobody took,
 `?summary=true` for counts by kind and status), `GET /usage` adds up the tokens and cost of model calls
 for the instance, a workspace, an agent or a run, and `GET /orgs/{orgId}/machines` and
