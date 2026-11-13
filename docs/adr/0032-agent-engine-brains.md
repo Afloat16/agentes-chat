@@ -234,3 +234,12 @@ The agent's "Quem pensa" was a form: a select of what pays, a card under it with
 - **Opened on a screen.** A link can open it past its first screen, which "back" leads to: `?sec=brain&brain=model` (or `more`, `switch`) on the agent's page. The notice that a model left its plan's list ("Escolher outro modelo") opens it on the model. A screen the person can't change opens the first one instead.
 - **Motion.** Screens slide in from the side they come from, the dialog's height glides between them, bars fill as they show, a new mark comes in where the last stood and the trail lights after a switch; with reduced motion nothing moves.
 - The phone's "Pensa com" is unchanged.
+
+## Addendum (2026-11-12): an image Codex makes is shown with the reply
+
+Codex has an image tool of its own. It keeps the image in its sign-in's folder (`generated_images/` under `CODEX_HOME`) and reports an `imageGeneration` item; in Codex's own apps the picture shows in the conversation, so the model answers "the image is above". Here nothing read that item: the picture stayed on the computer and the reply pointed at nothing.
+
+- **The runner keeps a copy.** On `imageGeneration` the app-server mapper (`codexImageEvents`, `brain-codex-app.ts`) copies the file to `generated-images/` in the agent's folder (from `savedPath`, or from the item's own bytes when that file can't be read) and sends two events: an executed `tool_call` named `image_generation`, and a new `file` event with the copy's path relative to the agent's folder. The sign-in's folder is a secret and stays unread by the server.
+- **A failure says why.** An item with a `failure` (the plan's image limit) is an executed `tool_call` with `isError` and the reset time; no `file` follows.
+- **The server shows it.** `file` is a `BrainEvent` any computer brain may send. The executor hands it to `shareFile` (`shareSavedFile`, the same path as a screenshot taken with `share`): the computer pushes the file to the Drive as the agent in the run's conversation, and its card goes on the reply (`meta.artifacts`). The turn's reply waits for those uploads. It follows the same permission as any Drive file ("Write files"); without it, or when the upload fails, the file stays in the agent's folder and a run step says why (`fileNotShown`). Background runs keep the file and show nothing.
+- **Versions.** No protocol number: an older server drops the unknown event (`parseBrainEvent`), an older runner never sends it. The right hand's `chat` turns keep image generation off (ADR 0137).
