@@ -736,6 +736,7 @@
       "steps": {
         "name": "工作区名称",
         "business": "你们做什么",
+        "you": "关于你",
         "team": "你的团队",
         "plan": "开启团队",
         "ai": "连接 AI",
@@ -754,8 +755,8 @@
         "teamMadePersonal": "你的智能体已经到了。准备好了我们就继续。",
         "plan": "有了套餐之后，只差连接一个 AI。我会告诉你在哪里连接。",
         "planThen": "套餐开通后，下一个界面就是连接你的 AI。",
-        "area": "在组建团队前，最后一个问题。",
-        "areaPersonal": "在你的智能体之前，最后一个问题。",
+        "you": "组建团队前，先简单了解一下你。",
+        "youPersonal": "在你的智能体之前，先简单了解一下你。",
         "ask": "在别处已经有团队了？我把它完整地搬过来。",
         "start": "我为你们的业务准备了一个现成的团队。也可以先从我们两个开始。",
         "askPersonal": "已经在别处使用智能体了？我把它们全部搬过来。",
@@ -773,10 +774,18 @@
         "people": "现在轮到成员了。把他们的邮箱告诉我，我来发送邀请。",
         "peopleLink": "现在轮到成员了。把链接发给他们，我会把每个申请展示给你。"
       },
+      "you": {
+        "title": "现在，说说你",
+        "lead": "你的名字和照片会显示给团队和智能体。",
+        "leadPersonal": "你的名字和照片会显示给你的智能体。",
+        "photo": "你的照片",
+        "build": "创建头像",
+        "edit": "编辑头像",
+        "upload": "上传照片",
+        "area": "你负责哪方面的工作？",
+        "areaHint": "可选。只是想了解谁在使用 agentes.chat。"
+      },
       "area": {
-        "title": "那你呢，负责哪方面的工作？",
-        "lead": "只是想了解谁在使用 agentes.chat。",
-        "skip": "跳过这一步",
         "options": {
           "dev": "开发",
           "marketing": "市场营销",
@@ -2379,6 +2388,8 @@
       "planOwner": "{{owner}}的账号",
       "planName": "{{name}} 套餐",
       "mine": "你的 AI",
+      "mineTitle": "与你对话时 {{name}} 的思考方式",
+      "mineOnly": "仅适用于你与 {{name}} 的对话。",
       "mineHelp": "你与{{name}}的对话使用你的套餐或共享给你的套餐思考，且仅限你的对话。",
       "connectMine": "连接我的套餐",
       "useWorkspace": "使用工作区的",
@@ -2396,6 +2407,8 @@
       "fallbackYours": "没有其他套餐时，使用工作区的套餐，它是你的。",
       "fallbackNone": "没有自己的套餐时，{{name}}无法回复你：工作区的套餐只回复{{owner}}。",
       "workspace": "没有自己套餐的人使用的 AI",
+      "workspaceTitle": "工作区中 {{name}} 的思考方式",
+      "workspaceOnly": "适用于没有自己套餐的人。",
       "workspaceHelp": "没有自己套餐的人通过这个 AI 与{{name}}交谈。",
       "noPlans": "请先在“AI 和用量”中连接套餐，才能在这里使用。",
       "groupMine": "仅对你",
@@ -14712,8 +14725,8 @@
       "personal": "个人",
       "teamHelp": "用频道、成员和角色一起工作。切换只会改变显示的内容。",
       "personalHelp": "更简单，适合你，以及你邀请的家人。切换只会改变显示的内容。",
-      "toTeam": "切换为团队…",
-      "toPersonal": "切换为个人…"
+      "toTeam": "切换为团队",
+      "toPersonal": "切换为个人"
     },
     "telemetry": {
       "title": "使用统计",

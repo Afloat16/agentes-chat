@@ -736,6 +736,7 @@
       "steps": {
         "name": "Nama ruang kerja",
         "business": "Apa yang kalian lakukan",
+        "you": "Tentang kamu",
         "team": "Timmu",
         "plan": "Nyalakan tim",
         "ai": "Hubungkan AI",
@@ -754,8 +755,8 @@
         "teamMadePersonal": "Agenmu sudah di sini. Kita lanjut kapan pun kamu siap.",
         "plan": "Setelah paketnya, tinggal hubungkan AI. Nanti aku tunjukkan di mana.",
         "planThen": "Setelah paketnya aktif, layar berikutnya untuk menghubungkan AI-mu.",
-        "area": "Satu pertanyaan terakhir sebelum tim.",
-        "areaPersonal": "Satu pertanyaan terakhir sebelum agen-agenmu.",
+        "you": "Sebelum tim, sedikit tentang kamu.",
+        "youPersonal": "Sebelum agen-agenmu, sedikit tentang kamu.",
         "ask": "Sudah punya tim di tempat lain? Aku bawa semuanya ke sini.",
         "start": "Aku punya tim yang siap untuk pekerjaan kalian. Atau kita mulai berdua saja.",
         "askPersonal": "Sudah memakai agen di tempat lain? Aku bawa semuanya ke sini.",
@@ -773,10 +774,18 @@
         "people": "Sekarang orang-orangnya. Kasih tahu email mereka dan aku kirim undangannya.",
         "peopleLink": "Sekarang orang-orangnya. Kirim tautannya ke mereka dan aku tunjukkan tiap permintaan."
       },
+      "you": {
+        "title": "Sekarang, tentang kamu",
+        "lead": "Nama dan fotomu terlihat oleh tim dan para agen.",
+        "leadPersonal": "Nama dan fotomu terlihat oleh agen-agenmu.",
+        "photo": "Fotomu",
+        "build": "Buat avatar",
+        "edit": "Ubah avatar",
+        "upload": "Unggah foto",
+        "area": "Kamu mengurus bidang apa?",
+        "areaHint": "Opsional. Hanya supaya kami tahu siapa yang memakai agentes.chat."
+      },
       "area": {
-        "title": "Kalau kamu, mengurus bidang apa?",
-        "lead": "Hanya supaya kami tahu siapa yang memakai agentes.chat.",
-        "skip": "Lewati langkah ini",
         "options": {
           "dev": "Pengembangan",
           "marketing": "Marketing",
@@ -2380,6 +2389,8 @@
       "planOwner": "akun {{owner}}",
       "planName": "Paket {{name}}",
       "mine": "AI kamu",
+      "mineTitle": "Siapa yang berpikir untuk {{name}} bagi Anda",
+      "mineOnly": "Hanya untuk percakapan Anda dengan {{name}}.",
       "mineHelp": "Percakapanmu dengan {{name}} berpikir dengan paketmu atau paket yang dibagikan kepadamu, dan hanya percakapanmu.",
       "connectMine": "Hubungkan paket saya",
       "useWorkspace": "Pakai milik workspace",
@@ -2397,6 +2408,8 @@
       "fallbackYours": "Tanpa paket lain, ia memakai paket workspace, yang milikmu.",
       "fallbackNone": "Tanpa paket sendiri, {{name}} tidak bisa menjawabmu: paket workspace hanya menjawab {{owner}}.",
       "workspace": "AI bagi yang tidak punya paket sendiri",
+      "workspaceTitle": "Siapa yang berpikir untuk {{name}} di workspace",
+      "workspaceOnly": "Untuk yang tidak punya paket sendiri.",
       "workspaceHelp": "Yang tidak punya paket sendiri berbicara dengan {{name}} lewat AI ini.",
       "noPlans": "Hubungkan paket di AI dan pemakaian untuk memakainya di sini.",
       "groupMine": "Hanya untukmu",
@@ -14704,8 +14717,8 @@
       "personal": "Pribadi",
       "teamHelp": "Kanal, orang, dan peran untuk bekerja bersama. Beralih hanya mengubah apa yang terlihat.",
       "personalHelp": "Lebih sederhana, untukmu dan keluargamu jika kamu mengundang mereka. Beralih hanya mengubah apa yang terlihat.",
-      "toTeam": "Beralih ke tim…",
-      "toPersonal": "Beralih ke pribadi…"
+      "toTeam": "Beralih ke tim",
+      "toPersonal": "Beralih ke pribadi"
     },
     "telemetry": {
       "title": "Statistik pemakaian",

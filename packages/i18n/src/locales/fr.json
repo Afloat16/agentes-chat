@@ -756,6 +756,7 @@
       "steps": {
         "name": "Nom de l'espace de travail",
         "business": "Ce que vous faites",
+        "you": "À propos de vous",
         "team": "Votre équipe",
         "plan": "Activer l'équipe",
         "ai": "Connecter une IA",
@@ -774,8 +775,8 @@
         "teamMadePersonal": "Vos agents sont déjà là. On continue quand vous voulez.",
         "plan": "Après l'abonnement, il ne reste qu'à connecter une IA. Je vous montre où.",
         "planThen": "Une fois l'abonnement activé, l'écran suivant sert à connecter votre IA.",
-        "area": "Une dernière question avant l'équipe.",
-        "areaPersonal": "Une dernière question avant vos agents.",
+        "you": "Avant l'équipe, un peu sur vous.",
+        "youPersonal": "Avant vos agents, un peu sur vous.",
         "ask": "Vous avez déjà une équipe ailleurs ? Je l'apporte ici en entier.",
         "start": "J'ai une équipe prête pour ce que vous faites. Ou on commence à deux.",
         "askPersonal": "Vous utilisez déjà des agents ailleurs ? Je les apporte tous ici.",
@@ -793,10 +794,18 @@
         "people": "Maintenant, les personnes. Donnez-moi leurs e-mails et j'envoie les invitations.",
         "peopleLink": "Maintenant, les personnes. Envoyez-leur le lien et je vous montre chaque demande."
       },
+      "you": {
+        "title": "Maintenant, parlons de vous",
+        "lead": "Votre nom et votre photo sont visibles par l'équipe et par les agents.",
+        "leadPersonal": "Votre nom et votre photo sont visibles par vos agents.",
+        "photo": "Votre photo",
+        "build": "Créer un avatar",
+        "edit": "Modifier l'avatar",
+        "upload": "Envoyer une photo",
+        "area": "Vous travaillez sur quoi ?",
+        "areaHint": "Facultatif. Juste pour savoir qui utilise agentes.chat."
+      },
       "area": {
-        "title": "Et vous, vous travaillez sur quoi ?",
-        "lead": "Juste pour savoir qui utilise agentes.chat.",
-        "skip": "Passer cette étape",
         "options": {
           "dev": "Développement",
           "marketing": "Marketing",
@@ -2554,6 +2563,8 @@
       "planOwner": "compte de {{owner}}",
       "planName": "Forfait {{name}}",
       "mine": "Votre IA",
+      "mineTitle": "Qui réfléchit pour {{name}}, pour vous",
+      "mineOnly": "Seulement pour votre conversation avec {{name}}.",
       "mineHelp": "Votre conversation avec {{name}} pense avec votre forfait ou un forfait partagé avec vous, et seulement la vôtre.",
       "connectMine": "Connecter mon forfait",
       "useWorkspace": "Utiliser celle du workspace",
@@ -2571,6 +2582,8 @@
       "fallbackYours": "Sans autre forfait, elle utilise celui du workspace, qui est le vôtre.",
       "fallbackNone": "Sans forfait à vous, {{name}} ne peut pas vous répondre : le forfait du workspace ne répond qu'à {{owner}}.",
       "workspace": "IA des personnes sans forfait à elles",
+      "workspaceTitle": "Qui réfléchit pour {{name}} dans le workspace",
+      "workspaceOnly": "Pour les personnes sans forfait à elles.",
       "workspaceHelp": "Les personnes sans forfait à elles parlent à {{name}} par cette IA.",
       "noPlans": "Connectez un forfait dans IA et utilisation pour l'utiliser ici.",
       "groupMine": "Rien que pour vous",
@@ -15653,8 +15666,8 @@
       "personal": "Personnel",
       "teamHelp": "Des canaux, des personnes et des rôles pour travailler ensemble. Changer ne modifie que ce qui est affiché.",
       "personalHelp": "Plus simple, pour vous et votre famille si vous l'invitez. Changer ne modifie que ce qui est affiché.",
-      "toTeam": "Passer en équipe…",
-      "toPersonal": "Passer en personnel…"
+      "toTeam": "Passer en équipe",
+      "toPersonal": "Passer en personnel"
     },
     "telemetry": {
       "title": "Statistiques d'utilisation",

@@ -13750,6 +13750,11 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
 .ai-panel--plan > .grid-options--sm .ac-option__title {
   padding-right: 22px;
 }
+/* Wide enough for a title on one line ("A conta que os seus agentes dividem"): in the narrow dialog the cards go one
+   under the other, so one never wraps onto two lines beside one that doesn't. */
+.ai-panel--plan > .grid-options--sm {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+}
 /* A MediaRow: the option's mark and its name on one line, for whom at that line's end, what it covers under them. */
 .ai-panel__head {
   /* Its hairline runs edge to edge, as the foot's does. */

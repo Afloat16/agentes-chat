@@ -746,6 +746,7 @@
       "steps": {
         "name": "Name des Workspace",
         "business": "Was ihr macht",
+        "you": "Über dich",
         "team": "Dein Team",
         "plan": "Team einschalten",
         "ai": "KI verbinden",
@@ -764,8 +765,8 @@
         "teamMadePersonal": "Deine Agenten sind schon da. Wir machen weiter, wann immer du bereit bist.",
         "plan": "Nach dem Tarif fehlt nur noch eine KI. Ich zeige dir, wo.",
         "planThen": "Sobald der Tarif läuft, verbindest du auf dem nächsten Bildschirm deine KI.",
-        "area": "Noch eine letzte Frage vor dem Team.",
-        "areaPersonal": "Noch eine letzte Frage vor deinen Agenten.",
+        "you": "Vor dem Team ein bisschen über dich.",
+        "youPersonal": "Vor deinen Agenten ein bisschen über dich.",
         "ask": "Du hast schon ein Team woanders? Ich hole es komplett hierher.",
         "start": "Ich habe ein Team, das zu dem passt, was ihr macht. Oder wir fangen zu zweit an.",
         "askPersonal": "Du nutzt schon Agenten woanders? Ich hole sie alle hierher.",
@@ -783,10 +784,18 @@
         "people": "Jetzt die Leute. Gib mir ihre E-Mail-Adressen, und ich schicke die Einladungen.",
         "peopleLink": "Jetzt die Leute. Schick ihnen den Link, und ich zeige dir jede Anfrage."
       },
+      "you": {
+        "title": "Jetzt zu dir",
+        "lead": "Dein Name und dein Foto erscheinen für das Team und die Agenten.",
+        "leadPersonal": "Dein Name und dein Foto erscheinen für deine Agenten.",
+        "photo": "Dein Foto",
+        "build": "Avatar erstellen",
+        "edit": "Avatar bearbeiten",
+        "upload": "Foto hochladen",
+        "area": "Woran arbeitest du?",
+        "areaHint": "Optional. Nur damit wir wissen, wer agentes.chat nutzt."
+      },
       "area": {
-        "title": "Und du, woran arbeitest du?",
-        "lead": "Nur damit wir wissen, wer agentes.chat nutzt.",
-        "skip": "Diesen Schritt überspringen",
         "options": {
           "dev": "Entwicklung",
           "marketing": "Marketing",
@@ -2465,6 +2474,8 @@
       "planOwner": "Konto von {{owner}}",
       "planName": "{{name}}-Abo",
       "mine": "Deine KI",
+      "mineTitle": "Wer für {{name}} denkt, wenn du schreibst",
+      "mineOnly": "Gilt nur für dein Gespräch mit {{name}}.",
       "mineHelp": "Dein Gespräch mit {{name}} denkt mit deinem Abo oder einem, das mit dir geteilt wurde, und nur deins.",
       "connectMine": "Mein Abo verbinden",
       "useWorkspace": "Die des Workspace nutzen",
@@ -2482,6 +2493,8 @@
       "fallbackYours": "Ohne anderes Abo nutzt es das des Workspace, das dir gehört.",
       "fallbackNone": "Ohne eigenes Abo kann {{name}} dir nicht antworten: Das Abo des Workspace antwortet nur {{owner}}.",
       "workspace": "KI für alle ohne eigenes Abo",
+      "workspaceTitle": "Wer im Workspace für {{name}} denkt",
+      "workspaceOnly": "Gilt für alle ohne eigenes Abo.",
       "workspaceHelp": "Wer kein eigenes Abo hat, spricht über diese KI mit {{name}}.",
       "noPlans": "Verbinde unter KI und Verbrauch ein Abo, um es hier zu nutzen.",
       "groupMine": "Nur für dich",
@@ -15169,8 +15182,8 @@
       "personal": "Persönlich",
       "teamHelp": "Kanäle, Personen und Rollen für die Zusammenarbeit. Ein Wechsel ändert nur, was zu sehen ist.",
       "personalHelp": "Einfacher, für dich und deine Familie, wenn du sie einlädst. Ein Wechsel ändert nur, was zu sehen ist.",
-      "toTeam": "Zu Team wechseln…",
-      "toPersonal": "Zu persönlich wechseln…"
+      "toTeam": "Zu Team wechseln",
+      "toPersonal": "Zu persönlich wechseln"
     },
     "telemetry": {
       "title": "Nutzungsstatistiken",
