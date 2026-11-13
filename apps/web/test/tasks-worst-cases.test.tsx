@@ -229,7 +229,7 @@ describe("Tarefas at their worst", () => {
   });
 
   test("stalled tasks are one line above the board; See stalled says when each stopped and its last step, and Continue asks its agent", async () => {
-    const { api } = await go();
+    const { api, services } = await go();
     expect(screen().queryByRole("region", { name: "Agentes trabalhando agora" })).toBeNull();
     const line = screen().getByRole("region", { name: "Tarefas paradas" });
     const text = line.textContent ?? "";
@@ -237,10 +237,18 @@ describe("Tarefas at their worst", () => {
     expect(text).toContain("Ada");
     for (const word of ["Trabalhando", "Pede aprovação", "Pergunta algo", "Nenhuma execução", "Pedir para continuar"])
       expect(text).not.toContain(word);
+    // The same tasks on every fetch (the worst cases are built anew each time, a stall's time with them): a task
+    // counts as asked while its stall is the one it was asked on.
+    const tasks = await api.issues.list(ORG_ID, {});
+    api.issues.list = async () => tasks;
+    await act(async () => {
+      await services.queryClient.invalidateQueries();
+    });
+    await settle(4);
     const asked: string[] = [];
     api.issues.askAgent = async (_orgId, id) => {
       asked.push(id);
-      return (await api.issues.list(ORG_ID, {})).find((i) => i.id === id) as Issue;
+      return tasks.find((i) => i.id === id) as Issue;
     };
     await act(async () => fireEvent.click(within(line).getByRole("button", { name: "Ver paradas" })));
     await settle(4);
@@ -253,7 +261,11 @@ describe("Tarefas at their worst", () => {
     await act(async () => fireEvent.click(within(row).getByRole("button", { name: "Continuar" })));
     await settle(4);
     expect(asked).toEqual(["w-9931"]);
-    expect(row.textContent).toContain("Pedido enviado: continua de onde parou.");
+    const sent = within(screen().getByRole("dialog", { name: "Tarefas paradas" }))
+      .getByRole("button", { name: /9931/ })
+      .closest(".issues-stalled__task") as HTMLElement;
+    expect(sent.textContent).toContain("Pedido enviado: continua de onde parou.");
+    expect(within(sent).queryByRole("button", { name: "Continuar" })).toBeNull();
   });
 
   test("the list: the same parts in one row, stacked on a phone", async () => {

@@ -717,7 +717,11 @@ function StalledLine({ issues, onOpen }: { issues: Issue[]; onOpen: (n: number) 
   const resume = useResumeStalled();
   const left = issues.filter((i) => !resume.isAsked(i));
   const groups = stalledByAgent(left.length ? left : issues, actors.name);
-  const names = namesText(t, groups.map((g) => g.name), 4);
+  const names = namesText(
+    t,
+    groups.map((g) => g.name),
+    4,
+  );
   return (
     <>
       {left.length === 0 ? (
@@ -743,7 +747,12 @@ function StalledLine({ issues, onOpen }: { issues: Issue[]; onOpen: (n: number) 
             <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
               {t("issues.now.viewStalled")}
             </Button>
-            <Button size="sm" icon="play" loading={left.length > 0 && left.every(resume.isBusy)} onClick={() => resume.send(left)}>
+            <Button
+              size="sm"
+              icon="play"
+              loading={left.length > 0 && left.every(resume.isBusy)}
+              onClick={() => resume.send(left)}
+            >
               {t("issues.now.continueAll")}
             </Button>
           </span>
@@ -843,7 +852,13 @@ function StalledDialog({
       </section>
       <DialogFooter bar>
         {left.length > 0 ? (
-          <Button size="sm" variant="primary" icon="play" loading={left.length > 0 && left.every(resume.isBusy)} onClick={() => resume.send(left)}>
+          <Button
+            size="sm"
+            variant="primary"
+            icon="play"
+            loading={left.length > 0 && left.every(resume.isBusy)}
+            onClick={() => resume.send(left)}
+          >
             {t("issues.now.continueAllCount", { count: left.length })}
           </Button>
         ) : (

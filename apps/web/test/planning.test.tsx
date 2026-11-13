@@ -61,10 +61,8 @@ describe("Issues (board and list)", () => {
     expect(column("Feito").textContent).toContain("2");
     // The route title link goes to the detail.
     expect(wa.getAttribute("href")).toBe(`/org/${ORG_ID}/issues/131`);
-    // An agent with a live run: "working now" with its step; on the card, its one state and the criteria done.
-    const now = screen().getByRole("region", { name: "Agentes trabalhando agora" });
-    expect(now.textContent).toContain("Timeout no agendamento em horários de pico");
-    expect(now.textContent).toContain("Atualizou uma tarefa · #129");
+    // An agent with a live run shows only on its card (its one state and the criteria done), never above the board.
+    expect(screen().queryByRole("region", { name: "Agentes trabalhando agora" })).toBeNull();
     const timeout = screen().getByRole("link", {
       name: "#129 Timeout no agendamento em horários de pico, Trabalhando",
     });
