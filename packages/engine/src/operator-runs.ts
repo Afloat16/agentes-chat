@@ -36,7 +36,7 @@ import {
   runErrorDetail,
   usageWaitSql,
 } from "./runs";
-import { type BillingHold, isBillingHold } from "./standing";
+import { type BillingHold, isBillingHold, workRefusal } from "./standing";
 import { monthStartUtc, orgDefaultAgentBudget } from "./usage";
 
 /**
@@ -941,7 +941,7 @@ export async function operatorExplainMessage(db: Database, messageId: string, op
       : standing?.deletionDueAt
         ? "workspace_deleting"
         : // The router goes on in one case only: a person's message while the workspace waits for its first plan.
-          standing && standing.state !== "active" && !(billingHold === "payment" && message.authorType === "person")
+          workRefusal(standing) && !(billingHold === "payment" && message.authorType === "person")
           ? "workspace_paused"
           : !job
             ? "never_queued"
