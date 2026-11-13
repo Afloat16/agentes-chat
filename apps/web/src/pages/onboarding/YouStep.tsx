@@ -81,7 +81,7 @@ export function YouStep({ me, onDone }: { me: Me; onDone: () => void }) {
               className="onb-you__face"
             />
             <div className="onb-you__side">
-              <span className="ac-field__label">{t("onboarding.flow.you.photo")}</span>
+              <span className="ac-field__label ac-captop">{t("onboarding.flow.you.photo")}</span>
               <span className="onb-you__acts">
                 <Button icon="smile" onClick={() => setBuilding(true)}>
                   {t(drawn ? "onboarding.flow.you.edit" : "onboarding.flow.you.build")}
