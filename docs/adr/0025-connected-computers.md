@@ -1,6 +1,6 @@
 # 0025. Connected computers, provider-agnostic computers, and binary files in the Drive
 
-- Status: Accepted. Superseded in part by ADR 0077 (2026-10-28): §1's lifecycle half of `SandboxProvider`, §2's server-side upload fallback and, in §6, a null `agents.machine_id` as the cloud computer (now no computer), the `cloud` target, the organization's network mode and the tools only with Daytona
+- Status: Accepted. Superseded in part by ADR 0077 (2026-10-28): §1's lifecycle half of `SandboxProvider`, §2's server-side upload fallback and, in §6, a null `agents.machine_id` as the cloud computer (now no computer), the `cloud` target, the organization's network mode and the tools only with Daytona. Amended 2026-11-12 by ADR 0032 ("spill-over" addendum): a computer's owner may let replies people wait on think there while an agent's own computer is full (`machines.spill_own`, `spill_others`).
 - Date: 2026-10-15
 
 ## Context
