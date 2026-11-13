@@ -22,7 +22,8 @@ test("the people card applies each row as the web does: the shared words and key
   expect(card).not.toContain("card.rows[0]?.userId");
   // Nothing takes a second press while a change is on its way, and nothing shows before the members list.
   expect(card).toContain("disabled={busy}");
-  expect(card).toContain("if (!people) return null;");
+  // A row never offers Aplicar before it can name the roles it gives or takes.
+  expect(card).toContain("if (!people || !known.isSuccess) return null;");
 });
 
 test("a workspace change's card says who asked, and its tap says which action this app showed", () => {

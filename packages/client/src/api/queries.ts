@@ -788,6 +788,9 @@ export function useDecideActionCard(
       ])
         void qc.invalidateQueries({ queryKey: key });
     },
+    // A refusal may have rewritten the card (what it names moved): read it again before anyone taps a second time.
+    // Who reads it from their inbox is not in its conversation, so no event brings them the new card.
+    onError: () => void qc.invalidateQueries({ queryKey: keys.actionCard(orgId, where.messageId) }),
   });
 }
 

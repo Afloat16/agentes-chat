@@ -36,16 +36,18 @@ function People({ card, id, agentId }: { card: MemberChangesCard; id: string; ag
   const { t } = useTranslation();
   const { orgId, org } = useOrg();
   const members = useMembers(orgId);
-  const roles = useRoles(orgId).data?.roles ?? [];
+  const known = useRoles(orgId);
+  const roles = known.data?.roles ?? [];
   const change = useChangeRole(orgId);
   const setRoles = useSetMemberRoles(orgId);
   const remove = useRemoveFlow();
   const failed = useFailed();
   // A card read while it had rows to apply stays that card once they are done: only one found done is the short pill.
   const shown = useRef(false);
-  // What is done, and who may apply what, is read from the members list: nothing to draw before it is here.
+  // What is done, and who may apply what, is read from the members list, and a row names the roles it gives or takes:
+  // nothing to draw, and nothing to apply, before both are here.
   const people = members.data;
-  if (!people) return null;
+  if (!people || !known.isSuccess) return null;
   const title = t("rightHand.people.title");
   const done = (r: MemberChangeRow) => memberRowDone(r, people);
   const may = (r: MemberChangeRow) => can(org, memberRowNeeds(r, people));

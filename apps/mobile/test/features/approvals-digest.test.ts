@@ -10,6 +10,8 @@ test("the one tap approves only what the server calls routine, and the card work
   expect(source).toContain("digestGroups(");
   // The group shows on a digest only, never on a card an agent posted when asked.
   expect(source).toContain("card.digest ? digestGroups(");
+  // Under each name, the agent that asked and what the call holds, as the web's card says them.
+  expect(source).toContain("[dir.anyAgent(a.agentId)?.name, approvalDetail(a, i18n.language)]");
   // No risk is judged on the phone: the words that would do it never appear.
   expect(source).not.toMatch(/approvalRisk|approvalAction|highRisk/);
   // Approved, the phone says so as the conversation's "Aprovar tudo" does. A failure says its cause.

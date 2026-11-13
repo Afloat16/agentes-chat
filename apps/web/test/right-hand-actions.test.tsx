@@ -3,7 +3,7 @@ import { setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
 
-import type { ApiClient, Message, WorkspaceActionCard } from "@agenteschat/client";
+import { type ApiClient, ApiError, type Message, type WorkspaceActionCard } from "@agenteschat/client";
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import {
   ADA_ID,
@@ -17,6 +17,7 @@ import {
   seedState,
   withRightHand,
 } from "./fake-api";
+import { notification } from "./fakes/notifications";
 import { renderApp, screen, settle } from "./render";
 
 /** The right hand's cards for the rest of the app (ADR 0137 §4): approvals, people, and any screen. */
@@ -334,6 +335,60 @@ describe("a change in the workspace that names all it does", () => {
     await goWith(member, invite());
     expect(cardGroup().textContent).toContain("Só quem pode fazer essa mudança aplica");
     expect(within(cardGroup()).queryByRole("button")).toBeNull();
+  });
+
+  test("in the inbox, a tap refused because a role was renamed shows the role as it is now before a second tap", async () => {
+    const state = seedState();
+    withRightHand(state);
+    state.notifications = [
+      notification({
+        id: "n-invite",
+        kind: "change_request",
+        waiting: true,
+        actors: [{ type: "user", id: "u-joao" }],
+        source: { action: "invite_people", messageId: "m-card", agentId: LODI_ID, label: "ana@example.com" },
+        latest: { text: "ana@example.com" },
+      }),
+    ];
+    // The server's card: the first tap is refused and rewrites it, as the engine does when a role it names moved.
+    let now: WorkspaceActionCard = { ...invite(), forUserId: "u-joao" };
+    const api: ApiClient = {
+      ...createFakeApi(state),
+      actionCards: {
+        get: async (_orgId, messageId) => {
+          state.calls.push({ method: "actionCards.get", args: [messageId] });
+          return { messageId, channelId: "dm-of-joao", threadId: null, card: now };
+        },
+        decide: async (...args) => {
+          state.calls.push({ method: "actionCards.decide", args });
+          if (now.params.words.roles === "Vendas") {
+            const renamed = invite({ roles: "Diretoria" });
+            now = {
+              ...renamed,
+              forUserId: "u-joao",
+              params: { ...renamed.params, input: { ...renamed.params.input, roleNames: ["Diretoria"] } },
+            };
+            throw new ApiError(409, "action_card.changed", "What this card names changed since it was written.");
+          }
+          now = { ...now, state: "applied", decidedByUserId: "u-walter", decidedAt: new Date().toISOString() };
+          return { card: now };
+        },
+      },
+    };
+    await renderApp(`/org/${ORG_ID}/notifications`, { api });
+    await settle(8);
+    const row = () => document.querySelector('[data-n="n-invite"]') as HTMLElement;
+    expect(row().querySelector(".rq__wt small")?.textContent).toBe("+ Vendas");
+    await click(within(row()).getByRole("button", { name: "Aplicar" }));
+    // Refused, and the card is read again from the server: it names the role it would now give.
+    expect(row().querySelector(".rq__wt small")?.textContent).toBe("+ Diretoria");
+    expect(state.calls.filter((x) => x.method.startsWith("actionCards.")).map((x) => x.method)).toEqual([
+      "actionCards.get",
+      "actionCards.decide",
+      "actionCards.get",
+    ]);
+    await click(within(row()).getByRole("button", { name: "Aplicar" }));
+    expect(row().textContent).toContain("Aplicado por você");
   });
 
   // Laid out by the geometry check at 1280, 390 and 320: twenty addresses that never break on their own.

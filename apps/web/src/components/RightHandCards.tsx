@@ -544,7 +544,8 @@ function MemberChanges({ message, card }: { message: Message; card: MemberChange
   const { org } = useOrg();
   const dir = useDirectory(org.id);
   const members = useMembers(org.id);
-  const roles = useRoles(org.id).data?.roles ?? [];
+  const known = useRoles(org.id);
+  const roles = known.data?.roles ?? [];
   const change = useChangeRole(org.id);
   const setRoles = useSetMemberRoles(org.id);
   const toast = useToast();
@@ -597,6 +598,8 @@ function MemberChanges({ message, card }: { message: Message; card: MemberChange
                     <span className="proposal-row__status">{t("rightHand.people.done")}</span>
                   ) : (
                     members.isSuccess &&
+                    // A row offers its button only once it can name the roles it gives or takes.
+                    known.isSuccess &&
                     may(r) && (
                       <Button
                         size="sm"
