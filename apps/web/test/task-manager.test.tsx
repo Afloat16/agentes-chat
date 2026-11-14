@@ -900,7 +900,8 @@ describe("returns agents set (Retornos)", () => {
 
   test("after the routines, one line a return: her words and where, when it comes, how soon; ⋯ opens or cancels", async () => {
     const view = busy();
-    const tomorrow = in_(23 * 60);
+    // More than 12 h away and on the next day at any hour the suite runs: at 00:44, 23 h ahead is still today.
+    const tomorrow = new Date(Math.max(Date.now() + 13 * 3600_000, new Date().setHours(24, 30, 0, 0))).toISOString();
     view.followUps = [
       ret({ messageId: "f-1" }),
       ret({

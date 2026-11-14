@@ -208,12 +208,14 @@ test("worst case: three returns (the cap), two agents, a long name, 80-character
   const state = seedState();
   const ada = state.agents.find((a) => a.id === ADA_ID);
   if (ada) ada.name = "Assistente de Atendimento Internacional";
-  const tomorrow = inMinutes(23 * 60);
+  // More than 12 h away and on the next day at any hour the suite runs: at 00:44, 23 h ahead is still today.
+  const tomorrow = new Date(Math.max(Date.now() + 13 * 3600_000, new Date().setHours(24, 30, 0, 0))).toISOString();
+  const after = (min: number) => new Date(Date.parse(tomorrow) + min * 60_000).toISOString();
   const about = "rever os pedidos de reembolso de outubro e responder quem pediu o valor em dobro";
   state.followUps = [
     ret({ messageId: "w-1", agentId: ADA_ID, at: tomorrow, about }),
-    ret({ messageId: "w-2", agentId: ADA_ID, at: inMinutes(23 * 60 + 10) }),
-    ret({ messageId: "w-3", at: inMinutes(23 * 60 + 20) }),
+    ret({ messageId: "w-2", agentId: ADA_ID, at: after(10) }),
+    ret({ messageId: "w-3", at: after(20) }),
   ];
   await open(state);
   // Her 80 characters show whole or not at all: here they are in the box, on the line it hides when they don't fit.
