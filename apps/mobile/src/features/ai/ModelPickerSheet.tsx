@@ -31,6 +31,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
 import { Sky } from "@/sky/Sky";
 import { GroupedList, GroupedRow, IconButton, ProviderLogo, Text, useToast } from "@/ui";
+import { AgentFace } from "../shared/Face";
 import { useColors, useDirectory, useMeId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
 import { type SheetHost, useSheetIfAny } from "../shared/SheetHost";
@@ -182,40 +183,48 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
     <View style={styles.in}>
       <View style={styles.sky}>
         <Sky color={agentLook(agent).color} surface="raised" style={StyleSheet.absoluteFill} />
-        {tile ? (
-          <View style={styles.mark}>
-            <ProviderLogo id={tile.mark} size="tile" />
-          </View>
-        ) : null}
+        {/* Whose AI this is: the agent itself on its sky. Its AI's mark is said once, beside its name below. */}
+        <AgentFace agentId={agent.id} size={56} framed={false} />
       </View>
-      <View style={styles.tiles}>
-        {tiles.map((x) => {
-          const on = x.key === tile?.key;
-          return (
-            <Pressable
-              key={x.key}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-              accessibilityLabel={x.name}
-              onPress={() => {
-                setTileKey(x.key);
-                setAccountId(undefined);
-              }}
-              style={[styles.tile, { backgroundColor: on ? c.sunken : c.raised, borderColor: on ? c.ink : c.line2 }]}
-            >
-              <ProviderLogo id={x.mark} size="sm" />
-            </Pressable>
-          );
-        })}
-      </View>
+      {/* The AIs to choose from, only when there is more than one: a lone tile repeated the mark and chose nothing. */}
+      {tiles.length > 1 ? (
+        <View style={styles.tiles}>
+          {tiles.map((x) => {
+            const on = x.key === tile?.key;
+            return (
+              <Pressable
+                key={x.key}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                accessibilityLabel={x.name}
+                onPress={() => {
+                  setTileKey(x.key);
+                  setAccountId(undefined);
+                }}
+                style={[styles.tile, { backgroundColor: on ? c.sunken : c.raised, borderColor: on ? c.ink : c.line2 }]}
+              >
+                <ProviderLogo id={x.mark} size="sm" />
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
       {tile ? (
         <View style={styles.head}>
-          <Text variant="label">{[tile.name, account?.label].filter(Boolean).join(" · ")}</Text>
-          {meter?.line ? (
-            <Text variant="footnote" tone="muted">
-              {[meter.line, meter.alert].filter(Boolean).join(" · ")}
+          <ProviderLogo id={tile.mark} size="sm" />
+          <View style={styles.headWords}>
+            {/* An account already named after its AI ("Claude (…)") says it alone, never "Claude · Claude (…)". */}
+            <Text variant="label">
+              {account?.label?.startsWith(tile.name)
+                ? account.label
+                : [tile.name, account?.label].filter(Boolean).join(" · ")}
             </Text>
-          ) : null}
+            {meter?.line ? (
+              <Text variant="footnote" tone="muted">
+                {[meter.line, meter.alert].filter(Boolean).join(" · ")}
+              </Text>
+            ) : null}
+          </View>
         </View>
       ) : null}
       {tile && tile.accounts.length > 1 ? (
@@ -292,7 +301,6 @@ const styles = StyleSheet.create({
   loading: { marginVertical: 32 },
   in: { gap: 12 },
   sky: { height: 96, borderRadius: 14, overflow: "hidden", alignItems: "center", justifyContent: "center" },
-  mark: { alignItems: "center", justifyContent: "center" },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   tile: {
     width: 44,
@@ -302,7 +310,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  head: { gap: 2 },
+  // The AI's mark on the first line of its name.
+  head: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  headWords: { flex: 1, minWidth: 0, gap: 2 },
   group: { marginTop: 4 },
   applies: { paddingHorizontal: 4 },
 });
