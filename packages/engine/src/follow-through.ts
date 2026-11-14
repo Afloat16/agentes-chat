@@ -273,16 +273,19 @@ export async function wakesLater(
  * Moves a pending follow-up line to `state`; null when it isn't pending anymore. A canceled one keeps when, for the task
  * manager's "Terminadas hoje", and who (`by`: a person's id, `agent:<id>`; none when its time found it can't come).
  */
-async function settle(tx: Executor, line: Pick<Message, "id" | "orgId">, state: FollowUpState, by?: string) {
-  const patch = JSON.stringify({
+const settle = (tx: Executor, line: Pick<Message, "id" | "orgId">, state: FollowUpState, by?: string) =>
+  patchPending(tx, line, {
     state,
     ...(state === "canceled" ? { canceledAt: new Date().toISOString() } : {}),
     ...(by ? { canceledBy: by } : {}),
   });
+
+/** Merges `patch` into a pending follow-up line's refs; null when it isn't pending anymore. */
+async function patchPending(tx: Executor, line: Pick<Message, "id" | "orgId">, patch: Record<string, string>) {
   const [row] = await tx
     .update(messages)
     .set({
-      meta: sql`jsonb_set(${messages.meta}, '{notice,refs}', coalesce(${messages.meta}->'notice'->'refs', '{}'::jsonb) || ${patch}::jsonb)`,
+      meta: sql`jsonb_set(${messages.meta}, '{notice,refs}', coalesce(${messages.meta}->'notice'->'refs', '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb)`,
     })
     .where(
       and(
@@ -443,7 +446,8 @@ export function createFollowUpToolSource(deps: { pubsub?: PubSub }): ToolSource 
  * Job `agent.follow_up`: a follow-up's time came. Its line moves to `done` and a `follow_up` notice for the run
  * that set it (`refs.wake`) goes to its conversation: while that run is still active it reads it at its next step,
  * else it starts a run of the agent there (or joins one working for the same person), which reads the note and
- * the conversation since. A canceled or deleted line, or a run that is gone, wakes nobody.
+ * the conversation since. A canceled or deleted line, or a run that is gone, wakes nobody. Held on an answer, the
+ * line gets `refs.held` once.
  */
 export async function wakeFollowUp(deps: { db: Database; pubsub?: PubSub }, orgId: string, messageId: string) {
   const woke = await deps.db.transaction(async (tx) => {
@@ -473,7 +477,9 @@ export async function wakeFollowUp(deps: { db: Database; pubsub?: PubSub }, orgI
           runAt: new Date(Date.now() + ASK_HOLD_MS),
           maxAttempts: 4,
         });
-        return null;
+        // Held (`pendingReturns`): the first time, the open bars, the chip and the lists hear it.
+        const held = refs.held ? null : await patchPending(tx, line, { held: "1" });
+        return held ? { line: held, delivered: null } : null;
       }
       here = false;
     }
@@ -567,7 +573,10 @@ export interface PendingReturn {
   /** The run that set it, and its reply once posted: where "Ver a mensagem" lands. */
   runId: string;
   replyMessageId: string | null;
-  /** Its time passed and it waits for an answer to what the agent asked there (ADR 0131 §1). */
+  /**
+   * Its wake found what the agent asked there still unanswered, and it waits for the answer (ADR 0131 §1: `refs.held`).
+   * A wake that is only late (a queue backlog, a retry) isn't held.
+   */
   held: boolean;
   canCancel: boolean;
 }
@@ -589,8 +598,6 @@ export interface CanceledReturn {
 
 /** A line is set at most a day ahead, and held at most a day past its time. */
 const RETURN_LIVES_MS = (2 * FOLLOW_UP_LIMITS.maxMinutes + 60) * 60_000;
-/** A line whose wake is this late waits on an answer (a wake just due is still on its way). */
-const HELD_AFTER_MS = 60_000;
 
 type ReturnRow = {
   id: string;
@@ -656,7 +663,7 @@ export async function pendingReturns(
         about: refs.about ?? "",
         runId: refs.runId ?? "",
         replyMessageId: r.reply_message_id,
-        held: Date.parse(at) < now - HELD_AFTER_MS,
+        held: refs.held === "1",
         canCancel: mayCancelReturn(
           { personId: refs.personId ?? null, ownerUserId: r.owner_user_id },
           viewerId,

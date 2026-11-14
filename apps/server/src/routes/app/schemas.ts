@@ -45,7 +45,7 @@ export const PendingReturn = z
       .openapi({ description: 'That run\'s reply, once posted: where "Ver a mensagem" lands.' }),
     held: z.boolean().openapi({
       description:
-        "Its time passed and it waits for an answer to what the agent asked there (work nobody asked for, ADR 0131 §1).",
+        "Its wake found what the agent asked there unanswered, and it waits for the answer (work nobody asked for, ADR 0131 §1). A wake that is only late isn't held.",
     }),
     canCancel: z
       .boolean()

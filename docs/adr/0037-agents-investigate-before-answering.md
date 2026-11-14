@@ -108,7 +108,9 @@ conversation could cancel it, with no context. So:
   the thread's chip (`laterAt`, "Retorno às 00:32", after everything else), and the task manager's "Retornos" (canceled
   ones move to "Terminadas hoje" with who canceled: `refs.canceledAt` and `canceledBy`).
 - **The read:** `pendingReturns` (`follow-through.ts`), one statement from the outbox's pending `agent.follow_up` jobs
-  (its partial index) to their lines by id: a return is listed while its wake is queued. `GET
+  (its partial index) to their lines by id: a return is listed while its wake is queued. It is held once its wake
+  finds the agent's question unanswered: the line gets `refs.held`, and its `message.created` and `agent.status` go out
+  once. A wake that is only late isn't held. `GET
   …/channels/{channelId}/follow-ups` gives a conversation's, refreshed by the line's `message.created`;
   agent-status, the thread list and the task manager read the same function. Setting, canceling and the wake also send
   `agent.status`.

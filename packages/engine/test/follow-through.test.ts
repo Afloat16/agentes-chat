@@ -807,7 +807,7 @@ describe("returns, as the apps list them (ADR 0037, amended 2026-11-13)", () => 
     expect(ended.every((r) => r.canceledAt && r.about === "ver o deploy")).toBe(true);
   });
 
-  test("a return is listed where it lands, to who reads that conversation; past its time it is held", async () => {
+  test("a return is listed where it lands, to who reads that conversation; a wake only late isn't held", async () => {
     f = await setup({ followUps: true });
     const { bia, run } = await biaAsks(f);
     const line = await setFollowUp(f, run.id, 30);
@@ -835,12 +835,12 @@ describe("returns, as the apps list them (ADR 0037, amended 2026-11-13)", () => 
     const inDm = await setFollowUp(f, dmRun.id, 40);
     expect((await pendingReturns(f.db, f.owner.id, f.org.id)).map((x) => x.messageId)).toEqual([line, inDm]);
     expect((await pendingReturns(f.db, bia.id, f.org.id)).map((x) => x.messageId)).toEqual([line]);
-    // Its time passed while its wake waits on an answer: held.
-    const past = new Date(Date.now() - 20 * 60_000).toISOString();
+    // Due 2 min ago, its wake only late (a queue backlog, a retry): it still comes, and waits on nobody's answer.
+    const past = new Date(Date.now() - 2 * 60_000).toISOString();
     await f.db.execute(
       sql`update ${schema.messages} set meta = jsonb_set(meta, '{notice,refs,at}', to_jsonb(${past}::text)) where id = ${line}::uuid`,
     );
-    expect((await pendingReturns(f.db, bia.id, f.org.id))[0]).toMatchObject({ messageId: line, held: true });
+    expect((await pendingReturns(f.db, bia.id, f.org.id))[0]).toMatchObject({ messageId: line, held: false });
   });
 
   test("the agent's line says 'later' with its time where you read, the thread's chip its time, the task manager its row", async () => {

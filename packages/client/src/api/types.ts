@@ -2587,7 +2587,7 @@ export interface PendingReturn {
   runId: string;
   /** That run's reply, once posted: where "Ver a mensagem" lands. */
   replyMessageId: string | null;
-  /** Its time passed and it waits for an answer to what the agent asked there. */
+  /** Its wake found what the agent asked there unanswered, and it waits for the answer. A late wake isn't held. */
   held: boolean;
   /** The person it is for, the agent's owner or an admin. */
   canCancel: boolean;
