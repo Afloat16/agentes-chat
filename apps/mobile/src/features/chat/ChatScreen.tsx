@@ -44,7 +44,8 @@ import {
   useThreadMission,
   useWaitingOnMe,
 } from "@agenteschat/client";
-import { activityVerb, listNames } from "@agenteschat/client/lib/activity";
+import { activityVerb, consultDetails, lineStep, listNames } from "@agenteschat/client/lib/activity";
+import { handoffAsk } from "@agenteschat/client/lib/agent-work";
 import { canTalk } from "@agenteschat/client/lib/audience";
 import { runPosition, screenAboveEnd } from "@agenteschat/client/lib/chat";
 import { CHAT_RHYTHM, firstUnreadId, opensAtLastRead, unreadThreadRootId } from "@agenteschat/client/lib/chat-look";
@@ -90,7 +91,7 @@ import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useIsFocused, useIsPreview } from "expo-router";
 import { useHeaderHeight } from "expo-router/react-navigation";
-import { type ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ComponentRef, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, type LayoutChangeEvent, Linking, Platform, ScrollView, StyleSheet, View } from "react-native";
 import {
@@ -121,6 +122,7 @@ import { useRealtime } from "@/providers/realtime";
 import {
   Button,
   Composer,
+  type ComposerProps,
   type ComposerWorking,
   Count,
   Icon,
@@ -136,13 +138,12 @@ import {
 } from "@/ui";
 import { router } from "@/ui/navigation";
 import { AgentSetupIntro, useSetupSteps } from "../agents/setup/SetupCard";
-import { DmModelButton } from "../ai/ModelPickerSheet";
 import { usePlanHold } from "../ai/parts";
 import { BrowserCard, BrowserRunCard } from "../browser/BrowserCard";
 import { OpenHandoffProvider } from "../browser/open";
 import { threadTitle } from "../chats/logic";
 import { ImageMaking } from "../files/ImageMaking";
-import { chatHref, notificationHref } from "../links/logic";
+import { chatHref, consultationHref, notificationHref } from "../links/logic";
 import { MissionCardView } from "../missions/cards";
 import { isOpenMission } from "../missions/logic";
 import { PushOfferLine } from "../push/PushOfferLine";
@@ -159,7 +160,7 @@ import { useColors, useDirectory, useMeId, useMyHandle, useOrgId, useWhen } from
 import { agentLook, previewOf } from "../shared/logic";
 import { FocusLive, PushedHeader, Tile } from "../shared/parts";
 import { SheetHostProvider, useSheet } from "../shared/SheetHost";
-import { useDmStatusLine, usePresenceWord } from "../status/hooks";
+import { useDmStatusLine, usePresenceOf, usePresenceWord } from "../status/hooks";
 import { PersonStatusCard } from "../status/StatusCard";
 import { AgentTasksButton, useDmAgentTasks } from "../task-manager/AgentTasksButton";
 import { agentTasksHref, tasksBadge } from "../task-manager/logic";
@@ -174,6 +175,7 @@ import { ChannelHello } from "./ChannelHello";
 import { ChannelMembersSheet } from "./ChannelMembers";
 import { ChannelPicker } from "./ChannelPicker";
 import { ChannelWelcome } from "./ChannelWelcome";
+import { ChatSkeleton } from "./ChatSkeleton";
 import { type OpenedMessages, OpenedMessagesContext } from "./ClippedMessage";
 import { ConversationSwitcher } from "./ConversationSwitcher";
 import { takeComposerRequest, useComposerRequest } from "./composer-request";
@@ -511,7 +513,9 @@ function Chat({
   // while it shows): the composer keeps only its send, the one ink circle.
   const busyRuns = useMemo(() => stoppableInLine(runs).filter((r) => !r.stopping), [runs]);
   const stoppable = useMemo(() => stoppableInLine(runs).filter((r) => canStop(r)), [runs, canStop]);
-  const working = useMemo<ComposerWorking | null>(() => (busyRuns.length === 0 ? null : {}), [busyRuns]);
+  // The same object while someone works: the field isn't redrawn by each step of that work.
+  const busy = busyRuns.length > 0;
+  const working = useMemo<ComposerWorking | null>(() => (busy ? {} : null), [busy]);
   const lineStop = useMemo(
     () => (stoppable.length > 0 ? { runs: stoppable, onStop: stopRun } : undefined),
     [stoppable, stopRun],
@@ -703,9 +707,28 @@ function Chat({
   const movedKey = movedOnKey(movedNow);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `movedKey` stands for the set
   const stopsMoved = useMemo(() => movedNow, [movedKey]);
+  // Work handed off from here stays on the line for as long as it is out (ADR 0095 addendum), with the other agent's
+  // state: its step, what it waits on, or what waits on me (its work for me, when that work is the hand-off's run, says
+  // so before the list does).
+  const presence = usePresenceOf();
   const lineConsults = useMemo(
-    () => consultsForLine(consults, consultBlocksNearEnd(shownMessages, consultList, undefined, "first")),
-    [consults, shownMessages, consultList],
+    () =>
+      [
+        ...consultsForLine(
+          consults.filter((x) => x.kind !== "note"),
+          consultBlocksNearEnd(shownMessages, consultList, undefined, "first"),
+        ),
+        ...consults.filter((x) => x.kind === "note"),
+      ].map((x) => ({
+        ...x,
+        ...consultDetails(
+          x,
+          consultData ?? [],
+          (id, run) => handoffAsk(presence.agent(id)?.work, run),
+          (id) => lineStep(t, presence.agent(id)?.status?.status),
+        ),
+      })),
+    [consults, shownMessages, consultList, consultData, presence, t],
   );
 
   // ── Following the end ──
@@ -1089,19 +1112,11 @@ function Chat({
   // mine. The list is aimed at the end before the sheet closes: the place it held under the sheet doesn't come back.
   const settings = useSettings(orgId).data;
   const mediaTabs = mediaTabsOf(settings, dir.agents.length, Boolean(api.gifs));
-  const voice = useVoiceComposer({
-    orgId,
-    channelId,
-    threadId,
-    agentId: dmAgentId,
-    replyTo: quote?.id ?? null,
-    authorId: meId ?? "",
-    enabled: Boolean(meId && settings?.voiceAvailable && settings.voiceMessages),
-    afterSend: () => {
-      setQuote(null);
-      toEnd();
-    },
-  });
+  const voiceOn = Boolean(meId && settings?.voiceAvailable && settings.voiceMessages);
+  const afterVoice = useCallback(() => {
+    setQuote(null);
+    toEnd();
+  }, [toEnd]);
   const sendMedia = (media: MessageMedia) => {
     send("", threadId, { ...takeQuote(), media });
     toEnd();
@@ -1432,9 +1447,6 @@ function Chat({
         ? // People and agents counted apart: "1 pessoa · 3 agentes", never "4 membros · 3 agentes".
           `${t("mobile.chat.people", { count: roster.data.length - agentsHere })} · ${t("mobile.chat.agentsHere", { count: agentsHere })}`
         : undefined;
-  // Its AI and model in the header: changed in place by an admin or its owner, read by anyone else; never the right hand's.
-  const dmModelAgent = dmAgentId && !isThread ? dir.agentById.get(dmAgentId) : undefined;
-  const dmModel = dmModelAgent && !isRightHand(dmModelAgent) ? dmModelAgent : undefined;
   // An agent's DM while it works: the pill's quiet line says what it does ("Consultando o GitHub").
   const dmDoing = useMemo(() => {
     if (!dmAgentId || isThread) return null;
@@ -1655,12 +1667,7 @@ function Chat({
         working={Boolean(dmDoing)}
         // Reading far up, only the face stays (the screen is the messages); a new reply opens it again.
         collapsed={far && unseen.messages === 0}
-        extraActions={
-          (dmAgentId ? 1 : 0) +
-          (dmModel ? 1 : 0) +
-          (queueShown ? 1 : 0) +
-          (agentTasks ? tasksBadge(agentTasks).room : 0)
-        }
+        extraActions={(dmAgentId ? 1 : 0) + (queueShown ? 1 : 0) + (agentTasks ? tasksBadge(agentTasks).room : 0)}
         onPress={dmAgentId ? () => router.push(`/agent/${dmAgentId}`) : openOptions}
         {...hold}
         label={
@@ -1720,7 +1727,7 @@ function Chat({
             }}
           />
         ) : null}
-        {dmModel ? <DmModelButton agent={dmModel} /> : null}
+        {/* Its AI and model are changed on its profile ("Pensa com"), not from the bar. */}
         {queueShown && barQueue && queueMachineId ? (
           dmComputer ? (
             <DmQueueButton
@@ -2030,6 +2037,44 @@ function Chat({
   }, [prefill]);
 
   // ── Composer and keyboard ──
+  // The field is its own piece (`ChatComposer`), handed things that stay the same from one render of the conversation
+  // to the next: an agent's work arrives here many times a second, and none of it redraws the field under the
+  // person's typing. What it calls reads the conversation as it is at that moment (`useLatest`).
+  const sendFromField = useLatest(onSend);
+  const plusFromField = useLatest(openPlus);
+  const longFromField = useLatest(longAsFile);
+  const removeFromStrip = useLatest(removePending);
+  const cancelQuote = useCallback(() => setQuote(null), []);
+  const quoteName = quote ? dir.nameOf(quote.author) : null;
+  const canAttach = pending.length < MAX_PENDING;
+  // Photos and files waiting to go (their caption is the field), then whom it answers.
+  const composerBanner = useMemo(
+    () =>
+      pending.length > 0 || quoteName !== null ? (
+        <>
+          <AttachmentStrip files={pending} onRemove={removeFromStrip} onAdd={canAttach ? plusFromField : undefined} />
+          {quoteName !== null ? <QuoteBar name={quoteName} onCancel={cancelQuote} /> : null}
+        </>
+      ) : undefined,
+    [pending, quoteName, canAttach, removeFromStrip, plusFromField, cancelQuote],
+  );
+  const everyoneOffered = offersEveryone(org, Boolean(dm));
+  const mentionCard = useCallback<NonNullable<ComposerProps["mention"]>>(
+    ({ query, sigil, pick }) =>
+      sigil === "#" ? (
+        <ChannelPicker query={query} pick={pick} />
+      ) : (
+        <MentionPicker
+          query={query}
+          pick={pick}
+          channelId={channelId}
+          members={mentionMembers}
+          everyone={everyoneOffered}
+        />
+      ),
+    [channelId, mentionMembers, everyoneOffered],
+  );
+  const onType = useCallback((text: string) => sendTyping(threadId, text), [sendTyping, threadId]);
   // The composer floats over the list's bottom and rides the keyboard (KeyboardStickyView); the list's end
   // inset is the composer's height plus the keyboard, moved on the UI thread frame by frame (also while the
   // keyboard is dragged down interactively).
@@ -2102,9 +2147,12 @@ function Chat({
   // a little opacity, not none, so the glass inside rows keeps drawing.
   const listShown = useSharedValue(0.05);
   const listFade = useAnimatedStyle(() => ({ opacity: listShown.value }));
+  // Until then the conversation's skeleton stands where the messages will (`ChatSkeleton`), and leaves as they fade in.
+  const [placed, setPlaced] = useState(false);
   const revealList = useCallback(() => {
     listShown.value = withTiming(1, { duration: 160 });
     listPlaced.current = true;
+    setPlaced(true);
     watchList();
   }, [listShown, watchList]);
   useEffect(() => {
@@ -2270,18 +2318,15 @@ function Chat({
             ) : null}
           </View>
         ) : null}
-        {/* No `textInputNativeID`: with it the composer could stay down while the keyboard was up (iOS 26; Bluesky
-            drops it too). The offset is whole points: a fractional one made the overscroll glitch. */}
+        {/* No `textInputNativeID`: with it the composer could stay down while the keyboard was up (iOS 26). Without it
+            iOS takes no offset (the keyboard starts following the finger at its own top edge); Android does. The
+            offset is whole points: a fractional one made the overscroll glitch. */}
         <KeyboardGestureArea
           style={styles.grow}
           interpolator="ios"
           offset={Math.round(Math.max(0, composerHeight - lift))}
         >
-          {loading ? (
-            <View style={[styles.center, { paddingBottom: composerHeight }]}>
-              <Text tone="faint">{t("mobile.common.loading")}</Text>
-            </View>
-          ) : (
+          {loading ? null : (
             <>
               {/* Mounted before the first message too: a list that appears while the keyboard is already up never
                   hears it open, and its first message landed under it. */}
@@ -2422,6 +2467,10 @@ function Chat({
               )}
             </>
           )}
+          {/* The messages on their way, or the list still placing itself at its end: their shape, never a blank screen. */}
+          {loading || (showList && !placed) ? (
+            <ChatSkeleton look={rowLook} top={hasPin ? 0 : headerHeight} bottom={composerHeight} />
+          ) : null}
           {!hasPin ? (
             // The conversation fades under the floating header, as it does under the box. Not under a pinned bar
             // or card: the list already starts below them, and a header-tall fade there was a dark band over the
@@ -2443,18 +2492,16 @@ function Chat({
               top={headerHeight + 8}
             />
           ) : null}
-          {/* Above the composer and its working line, riding the keyboard with them. */}
-          <KeyboardStickyView
-            offset={{ opened: lift }}
-            style={[styles.jumpAt, { bottom: composerHeight + 10 }]}
-            pointerEvents="box-none"
-          >
-            {showList && (readHold || (!atEnd && (far || unseen.messages > 0 || unseen.working.length > 0))) ? (
-              <ToLatest unseen={unseen} onPress={toEnd} />
-            ) : null}
-          </KeyboardStickyView>
           {peeking ? null : (
-            <KeyboardStickyView offset={{ opened: lift }} style={styles.composerDock}>
+            <KeyboardStickyView offset={{ opened: lift }} style={styles.composerDock} pointerEvents="box-none">
+              {/* Right above the composer and its working line, in the same dock: it rides the keyboard with them and
+                  moves with the box in the same frame when the field grows a line (placed from the box's measured
+                  height it came a render later). */}
+              {showList && (readHold || (!atEnd && (far || unseen.messages > 0 || unseen.working.length > 0))) ? (
+                <View style={styles.jumpAt} pointerEvents="box-none">
+                  <ToLatest unseen={unseen} onPress={toEnd} />
+                </View>
+              ) : null}
               <View
                 ref={composerRef}
                 onLayout={onComposerBoxLayout}
@@ -2494,6 +2541,7 @@ function Chat({
                     runs={runs}
                     consults={lineConsults}
                     typing={typing}
+                    onSeeConsult={(id) => router.push(consultationHref(id, channelId))}
                     onOpenBrowser={(agentId) => {
                       // The agent's browser card opens in the conversation (at the end), not another screen.
                       toggleBrowser(agentId, true);
@@ -2515,12 +2563,12 @@ function Chat({
                     {t("channel.perms.readOnlyComposer")}
                   </Text>
                 ) : member ? (
-                  <Composer
+                  <ChatComposer
                     placeholder={placeholder}
-                    onSend={onSend}
+                    onSend={sendFromField}
                     working={working}
                     // GIFs and stickers live in the "+", with the photos: the field only sends.
-                    onPlus={openPlus}
+                    onPlus={plusFromField}
                     media={null}
                     draftKey={threadId ? `${channelId}:${threadId}` : channelId}
                     inputNativeID={COMPOSER_INPUT_ID}
@@ -2529,36 +2577,19 @@ function Chat({
                     insertMention={insertRef}
                     prefill={prefill ?? captionBack}
                     focusAt={replyAt}
-                    // Photos and files waiting to go (their caption is the field), then whom it answers.
-                    banner={
-                      pending.length > 0 || quote ? (
-                        <>
-                          <AttachmentStrip
-                            files={pending}
-                            onRemove={removePending}
-                            onAdd={pending.length < MAX_PENDING ? openPlus : undefined}
-                          />
-                          {quote ? <QuoteBar name={dir.nameOf(quote.author)} onCancel={() => setQuote(null)} /> : null}
-                        </>
-                      ) : undefined
-                    }
+                    banner={composerBanner}
                     sendEmpty={pending.length > 0}
-                    {...(pending.length < MAX_PENDING ? { onLongAsFile: longAsFile } : {})}
-                    mention={({ query, sigil, pick }) =>
-                      sigil === "#" ? (
-                        <ChannelPicker query={query} pick={pick} />
-                      ) : (
-                        <MentionPicker
-                          query={query}
-                          pick={pick}
-                          channelId={channelId}
-                          members={mentionMembers}
-                          everyone={offersEveryone(org, Boolean(dm))}
-                        />
-                      )
-                    }
-                    onType={(text) => sendTyping(threadId, text)}
-                    voice={voice}
+                    {...(canAttach ? { onLongAsFile: longFromField } : {})}
+                    mention={mentionCard}
+                    onType={onType}
+                    orgId={orgId}
+                    channelId={channelId}
+                    threadId={threadId}
+                    agentId={dmAgentId}
+                    replyTo={quote?.id ?? null}
+                    authorId={meId ?? ""}
+                    voiceOn={voiceOn}
+                    onVoiceSent={afterVoice}
                   />
                 ) : (
                   <>
@@ -2584,6 +2615,53 @@ function Chat({
     </AskStoreProvider>
   );
 }
+
+/** The latest of a function behind one that never changes: what it is handed to isn't redrawn when the function is. */
+function useLatest<A extends unknown[], R>(fn: (...args: A) => R) {
+  const ref = useRef(fn);
+  ref.current = fn;
+  return useCallback((...args: A) => ref.current(...args), []);
+}
+
+/**
+ * The conversation's field with its voice messages. On its own so that it redraws for what it shows (the words, a
+ * take's clock and wave) and never for the conversation above it: everything it is handed keeps its identity between
+ * the conversation's renders.
+ */
+const ChatComposer = memo(function ChatComposer({
+  orgId,
+  channelId,
+  threadId,
+  agentId,
+  replyTo,
+  authorId,
+  voiceOn,
+  onVoiceSent,
+  ...composer
+}: Omit<ComposerProps, "voice"> & {
+  orgId: string;
+  channelId: string;
+  threadId: string | null;
+  /** The agent this conversation is with, if one (its face listens in the field). */
+  agentId: string | null;
+  /** The message a voice take answers. */
+  replyTo: string | null;
+  authorId: string;
+  voiceOn: boolean;
+  onVoiceSent: () => void;
+}) {
+  const voice = useVoiceComposer({
+    orgId,
+    channelId,
+    threadId,
+    agentId,
+    replyTo,
+    authorId,
+    enabled: voiceOn,
+    afterSend: onVoiceSent,
+  });
+  return <Composer {...composer} voice={voice} />;
+});
 
 /**
  * Back to the latest messages: a round button at the bottom right, right above the composer, as on the web.
@@ -2715,7 +2793,8 @@ const styles = StyleSheet.create({
   composer: { paddingHorizontal: 10, paddingTop: 6 },
   readOnly: { textAlign: "center", paddingHorizontal: 16, paddingVertical: 12 },
   composerDock: { position: "absolute", left: 0, right: 0, bottom: 0 },
-  jumpAt: { position: "absolute", right: 14 },
+  // Over the list, at the dock's top right; the list under the rest of its row still takes the touches.
+  jumpAt: { alignSelf: "flex-end", marginRight: 14, marginBottom: 10 },
   jump: { width: 40, height: 40, borderRadius: 20 },
   jumpIcon: { flex: 1, alignItems: "center", justifyContent: "center" },
   jumpCount: { position: "absolute", top: -6, right: -6, borderWidth: 2, borderRadius: 999 },
