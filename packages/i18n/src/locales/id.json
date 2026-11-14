@@ -2255,8 +2255,7 @@
       "fileName": "pesan.txt"
     },
     "long": {
-      "more": "Lihat selengkapnya",
-      "title": "Pesan dari {{name}}"
+      "more": "Lihat selengkapnya"
     },
     "retrySend": "Coba lagi",
     "thinking": "{{name}} sedang berpikir…",
@@ -3785,7 +3784,6 @@
     "issue": "Issue"
   },
   "folded": {
-    "more": "Tampilkan lebih banyak",
     "less": "Tampilkan lebih sedikit"
   },
   "secret": {
@@ -4343,8 +4341,6 @@
       "noSubject": "(tanpa subjek)",
       "toSender": "Ke pengirim pesan",
       "toList": "Ke {{to}}",
-      "more": "Baca semua",
-      "less": "Tampilkan lebih sedikit",
       "answers": "Membalas <b>“{{subject}}”</b>",
       "answersFrom": "Membalas <b>“{{subject}}”</b>, dari {{from}}",
       "forwards": "Meneruskan <b>“{{subject}}”</b>",
@@ -4907,8 +4903,6 @@
       "textDone": "Yang sudah diterbitkan",
       "values": "Yang akan dilakukan",
       "valuesDone": "Yang dilakukan",
-      "more": "Tampilkan semua",
-      "less": "Tampilkan lebih sedikit",
       "trail": "Bagaimana sampai di sini",
       "showSteps": "Lihat setiap langkah",
       "hideSteps": "Sembunyikan langkah",
@@ -8419,8 +8413,7 @@
       "releasePaused": "Misi sedang dijeda: lanjutkan agar sesi bisa berjalan.",
       "releaseClosed": "Misi sudah ditutup: sesi tidak akan berlanjut.",
       "onlyDeciders": "Hanya pengambil keputusan di misi ini yang bisa mengizinkan perintah.",
-      "pick": "Izinkan {{command}}",
-      "showAll": "Tampilkan semua"
+      "pick": "Izinkan {{command}}"
     },
     "decision": {
       "approveAll_other": "Setujui {{count}} keputusan sementara",
@@ -11155,8 +11148,6 @@
     "thousand": "rb",
     "building": "Menyusun…",
     "openBig": "Buka besar",
-    "showAll": "Tampilkan semua",
-    "showLess": "Tampilkan lebih sedikit",
     "keep": "Simpan di Drive",
     "kept": "Tersimpan di Drive",
     "inDrive": "Di Drive",
@@ -15424,10 +15415,6 @@
       "notFinished": "tidak selesai",
       "someAnswered": "{{done}} dari {{total}} menjawab",
       "labelMany": "Percakapan {{from}} dengan {{to}}"
-    },
-    "talk": {
-      "readAll": "Baca semua",
-      "more_other": "{{count}} baris lagi"
     },
     "consultPanel": {
       "label": "Percakapan antara {{from}} dan {{to}}",
