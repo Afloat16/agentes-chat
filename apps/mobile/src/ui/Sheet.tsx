@@ -45,8 +45,6 @@ const GONE_MS = 80;
 const CLOSE_DRAG = 90;
 /** How far the sheet floats from the screen's edges. */
 const INSET = 8;
-/** The content's distance from the sheet's sides; what runs edge to edge in a sheet (a sky) bleeds by it. */
-export const SHEET_PAD = 18;
 /** The sheet's top corners (and the least for its bottom ones). */
 const RADIUS = 34;
 /** The sheet's width with the phone sideways: a form as wide as the phone is hard to read. */
@@ -126,30 +124,6 @@ export function Sheet({ open, onClose, children, solid = false, onGone, header }
     [y],
   );
 
-  // The content drags the sheet down too, while it shows its own top: a tall sheet leaves little scrim to tap and a
-  // grabber a few points tall, and the hand pulls on the content. Scrolled down, a pull scrolls back up as ever.
-  const atTop = useRef(true);
-  const pull = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        // Clearly downward, from the top: anything else is the list's own (a scroll, a row's tap or swipe).
-        onMoveShouldSetPanResponderCapture: (_e, g) => atTop.current && g.dy > 8 && g.dy > Math.abs(g.dx) * 1.5,
-        onPanResponderTerminationRequest: () => false,
-        onPanResponderMove: (_e, g) => {
-          y.value = Math.max(0, g.dy);
-        },
-        onPanResponderRelease: (_e, g) => {
-          if (g.dy > CLOSE_DRAG || g.vy > 1.2) closeRef.current();
-          else y.value = withTiming(0, { duration: 220, easing: Easing.bezier(0.2, 0.8, 0.2, 1) });
-        },
-        onPanResponderTerminate: () => {
-          y.value = withTiming(0, { duration: 220 });
-        },
-      }),
-    [y],
-  );
-
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrim.value }));
 
@@ -186,24 +160,13 @@ export function Sheet({ open, onClose, children, solid = false, onGone, header }
               <View style={[styles.grabBar, { backgroundColor: colors.grabber }]} />
             </View>
             {header ? <View {...pan.panHandlers}>{header}</View> : null}
-            <View {...pull.panHandlers} style={styles.body}>
-              <ScrollView
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                // No bounce: at its top a pull down moves the sheet, not the content under the finger.
-                bounces={false}
-                scrollEventThrottle={16}
-                onScroll={(e) => {
-                  atTop.current = e.nativeEvent.contentOffset.y <= 0;
-                }}
-                contentContainerStyle={{
-                  paddingHorizontal: SHEET_PAD,
-                  paddingBottom: 24 + Math.max(0, insets.bottom - INSET),
-                }}
-              >
-                {children}
-              </ScrollView>
-            </View>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 + Math.max(0, insets.bottom - INSET) }}
+            >
+              {children}
+            </ScrollView>
           </Glass>
         </Animated.View>
       </KeyboardAvoidingView>
@@ -218,7 +181,6 @@ const styles = StyleSheet.create({
   surface: { borderRadius: RADIUS, overflow: "hidden", flexShrink: 1 },
   // The whole strip over the content drags, its top edge included (the surface's own padding didn't).
   grab: { alignItems: "center", paddingTop: 12, paddingBottom: 10 },
-  body: { flexShrink: 1 },
   // The system's own grabber (as `SheetSurface` draws it): 36 × 5, round ends; the hairline's tone was too faint on
   // the glass.
   grabBar: { width: 36, height: 5, borderRadius: 2.5 },
