@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
-import { check, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { check, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { sessions, users } from "./auth";
 
 /**
  * Devices that receive push notifications (ADR 0035, ADR 0071). Per person, not per organization: one
  * device hears every organization its person belongs to (the payload carries `orgId`). A token belongs
- * to the accounts signed in on its device (ADR 0183), one row each: registering it as someone else takes it
- * from whoever isn't signed in there any more. Tokens the push service reports as gone are deleted.
+ * to one person at a time: registering it again moves it to whoever is signed in. Tokens the push
+ * service reports as gone are deleted.
  *
  * Android phones carry their FCM registration token (ADR 0152), iPhones their Expo push token. Browsers
  * (`web`) carry their Web Push subscription: the endpoint in `token` and its keys in `webKeys`, and belong
@@ -22,7 +22,7 @@ export const pushDevices = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     /** An Android phone's FCM token, an iPhone's Expo push token (`ExponentPushToken[…]`), or a browser's endpoint. */
-    token: text().notNull(),
+    token: text().notNull().unique(),
     /** `ios | android | web`, validated in code. */
     platform: text().$type<"ios" | "android" | "web">().notNull(),
     /** A browser's subscription keys pushes are encrypted to (RFC 8291): `p256dh` and `auth`, base64url. */
@@ -38,7 +38,7 @@ export const pushDevices = pgTable(
     /** Last time the device registered it (each launch, each page load). */
     lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index().on(t.userId), index().on(t.sessionId), uniqueIndex().on(t.userId, t.token), index().on(t.token)],
+  (t) => [index().on(t.userId), index().on(t.sessionId)],
 );
 
 /**

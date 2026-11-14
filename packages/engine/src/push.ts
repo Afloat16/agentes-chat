@@ -168,22 +168,32 @@ export async function registerPushDevice(
         }
       : { token: input.token, platform: input.platform, webKeys: null, sessionId: null, locale: input.locale };
   const stays = [userId, ...(input.sharedWith ?? []).slice(0, MAX_SHARED_ACCOUNTS)];
+  const seen = {
+    platform: device.platform,
+    webKeys: device.webKeys,
+    sessionId: device.sessionId,
+    locale: device.locale,
+    lastSeenAt: now,
+  };
   await db.transaction(async (tx) => {
     // The device changed hands: whoever isn't signed in on it any more stops hearing it.
     await tx.delete(pushDevices).where(and(eq(pushDevices.token, device.token), notInArray(pushDevices.userId, stays)));
-    await tx
+    const mine = await tx
+      .update(pushDevices)
+      .set(seen)
+      .where(and(eq(pushDevices.userId, userId), eq(pushDevices.token, device.token)))
+      .returning({ id: pushDevices.id });
+    if (mine.length > 0) return;
+    const made = await tx
       .insert(pushDevices)
       .values({ userId, ...device, lastSeenAt: now })
-      .onConflictDoUpdate({
-        target: [pushDevices.userId, pushDevices.token],
-        set: {
-          platform: device.platform,
-          webKeys: device.webKeys,
-          sessionId: device.sessionId,
-          locale: device.locale,
-          lastSeenAt: now,
-        },
-      });
+      .onConflictDoNothing()
+      .returning({ id: pushDevices.id });
+    if (made.length > 0) return;
+    // A database where a token is still one person's (its own unique constraint, until the migration that makes
+    // it one row per account): the token moves to whoever registered last, as it always did.
+    await tx.delete(pushDevices).where(eq(pushDevices.token, device.token));
+    await tx.insert(pushDevices).values({ userId, ...device, lastSeenAt: now });
   });
   const devices = await db
     .select({ id: pushDevices.id })

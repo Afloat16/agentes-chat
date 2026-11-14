@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-11-13
 - Amends: 0154 (one account per server in the phone and desktop apps; another account on the same server was left for
-  later), 0035 and 0071 (a push token belonged to one person at a time)
+  later)
 - Code: server `auth.ts` (`multiSession`, `deviceAccountsOf`, `switchDeviceAccount`, `signOutDeviceAccount`),
   `routes/app/account.ts` (`/device-accounts`), `routes/app/push.ts`; engine `push.ts` (`registerPushDevice`,
   `data.user`); web `lib/accounts.ts`, `lib/workspaces.ts`, `hooks/useWorkspaceGroups.ts`, the workspace menus in
@@ -39,11 +39,15 @@ Nothing signs out when one is added or opened.
 - Signing one account out never calls Better Auth's own sign-out, which with the plugin ends every session the
   browser holds.
 - A push says whose it is (`data.user`).
-- A push token (a browser's endpoint) may be registered by several accounts, one row each
-  (`push_devices (user_id, token)` unique). Registering it as someone else still takes it from whoever isn't signed in
-  on that device any more: a phone says which other accounts it has on that server (`sharedWith`), and a browser's
-  are read from its own cookies. Naming an account in `sharedWith` only keeps a row that account itself made with
-  that token.
+- A push token (a browser's endpoint) is to belong to the accounts signed in on its device, one row each. Registering
+  it as someone else takes it from whoever isn't signed in on that device any more: a phone says which other accounts
+  it has on that server (`sharedWith`), and a browser's are read from its own cookies. Naming an account in
+  `sharedWith` only keeps a row that account itself made with that token.
+- In two steps, because a deploy migrates while the version before still serves, and that version registers a token
+  by its own unique constraint. This change registers without relying on that constraint and leaves the table as it
+  is: a token is still one person's, the last to register, so a phone registers the account in use last. A later
+  migration, once this is deployed, makes it unique per account (`push_devices (user_id, token)`); from then each
+  account of a device hears its own pushes, with no change in the apps.
 
 ### 2. The web (and the desktop app's window, which is the site)
 
@@ -88,4 +92,5 @@ Nothing signs out when one is added or opened.
   account, on purpose.
 - An account's session cookie exists once per account in the browser; all are HttpOnly and signed like the session
   cookie.
-- Migration: `push_devices.token` is no longer unique by itself.
+- Until the push migration, two accounts of one server on the same phone or browser share its notifications one at a
+  time: the account in use hears them.

@@ -99,7 +99,7 @@ export function pushRoutes(deps: AppDeps) {
       security,
       summary: "Register this phone or browser for push notifications",
       description:
-        "Upsert by token (a browser's endpoint): registering again refreshes it, and one registered by someone else moves to you, unless they are signed in on the same device too (`sharedWith` from a phone, the browser's own accounts: ADR 0183), who then keep theirs. Android phones send their FCM registration token, iPhones their Expo push token; browsers their Web Push subscription, which then belongs to this session: signing out (everywhere too) or the session running out stops it. Call on every launch or page load after sign-in.",
+        "Upsert by token (a browser's endpoint): registering again refreshes it, and one registered by someone else moves to you, unless they are signed in on the same device too (`sharedWith` from a phone, the browser's own accounts: ADR 0183), who keep theirs once the database keeps a token per account. Android phones send their FCM registration token, iPhones their Expo push token; browsers their Web Push subscription, which then belongs to this session: signing out (everywhere too) or the session running out stops it. Call on every launch or page load after sign-in.",
       request: { body: body(z.union([AndroidDevice, IosDevice, WebDevice])) },
       responses: { 204: noContent[204], 429: errorResponse("Too many registrations"), ...errors },
     }),

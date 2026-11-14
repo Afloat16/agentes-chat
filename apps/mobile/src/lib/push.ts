@@ -132,8 +132,13 @@ async function register({ ask, locale, token: given }: Registration): Promise<bo
   if (permission !== "granted") return false;
   const token = given ?? (await phoneToken());
   if (!token) return false;
-  // On every server this phone is signed in to, so pushes come from all of them (ADR 0154).
-  const results = await Promise.all(pushServers().map((server) => registerOn(server, token, locale)));
+  // On every server this phone is signed in to, so pushes come from all of them (ADR 0154), and as every account on
+  // one (ADR 0183). The account in use goes last: on a server that still keeps a token for one person, it is the one
+  // that hears it.
+  const here = placeKey();
+  const places = pushServers();
+  const results = await Promise.all(places.filter((p) => p !== here).map((p) => registerOn(p, token, locale)));
+  if (places.includes(here)) results.push(await registerOn(here, token, locale));
   if (!results.some(Boolean)) return false;
   // A token this phone registered before (the system rolled it, or an Expo token from an older Android build) is
   // forgotten on the servers, so pushes don't go to a token nothing answers.
