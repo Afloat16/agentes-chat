@@ -1200,6 +1200,16 @@ describe("automatic lines (notices) and fast replies", () => {
     expect(aboutFits(600, 0, 180)).toBe(false);
   });
 
+  test("the dock's line measures its sentence off the line, so a name never gives way to her words; 44 points to touch", async () => {
+    const src = await source("features/chat/Returns.tsx");
+    // The visible sentence shrinks its name to make room: measured there, her words would stay once shown (a canceled
+    // return's next one would read "… retorna às 00:50 · …"). An unseen copy, out of the row, says its own width.
+    expect(src).toContain("<View style={styles.said}>{pieces}</View>");
+    expect(src).toMatch(/style=\{\[styles\.said, styles\.measure\]\}[^>]*onLayout=\{\(e\) => setSaid\(/);
+    expect(src.match(/setSaid\(/g)?.length).toBe(1);
+    expect(src).toContain("hitSlop={{ top: 8, bottom: 8 }}");
+  });
+
   test("a wait's result names the agent that waited, and opens nothing written for the agent", () => {
     const line = eventLineOf(
       agentMsg("n1", { notice: { kind: "wait_result", text: "notice text" } }, { body: "  o deploy terminou  " }),

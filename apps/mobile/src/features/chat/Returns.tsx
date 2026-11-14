@@ -36,7 +36,7 @@ export function ReturnLine({ returns, onOpen }: { returns: PendingReturn[]; onOp
   const reduced = useReducedMotion();
   // "amanhã às 09:00" turns into "às 09:00" 12 h before.
   const now = useNow(60_000);
-  // What the words have, what the sentence takes, what her words would: they show only whole.
+  // What the words have, what the sentence and her words take unshrunk (measured off the line): hers show only whole.
   const [room, setRoom] = useState(0);
   const [said, setSaid] = useState(0);
   const [aboutWidth, setAboutWidth] = useState(0);
@@ -49,6 +49,19 @@ export function ReturnLine({ returns, onOpen }: { returns: PendingReturn[]; onOp
   const about = !first.held && first.about ? ` · ${first.about}` : "";
   const shows = about !== "" && aboutFits(room, said, aboutWidth);
   const more = returns.length > 1 ? t("ask.bar.more", { count: returns.length - 1 }) : "";
+  const pieces = parts.map((p, i) => (
+    <Text
+      // biome-ignore lint/suspicious/noArrayIndexKey: the pieces of one sentence, in order
+      key={i}
+      variant="caption"
+      tone="muted"
+      numberOfLines={1}
+      maxFontSizeMultiplier={CHROME_MAX_SCALE}
+      style={p.bold ? [styles.shrink, styles.ink, { color: c.ink }] : styles.keep}
+    >
+      {p.text}
+    </Text>
+  ));
   return (
     <View style={styles.dock}>
       <Animated.View
@@ -58,6 +71,8 @@ export function ReturnLine({ returns, onOpen }: { returns: PendingReturn[]; onOp
       >
         <Pressable
           onPress={onOpen}
+          // 28 points tall, 44 to touch.
+          hitSlop={{ top: 8, bottom: 8 }}
           accessibilityRole="button"
           accessibilityLabel={[`${plain}${about}`, more, t("followUps.title")].filter(Boolean).join(". ")}
           style={({ pressed }) => [styles.line, pressed && styles.pressed]}
@@ -72,28 +87,25 @@ export function ReturnLine({ returns, onOpen }: { returns: PendingReturn[]; onOp
           {first.held ? <WaitMark size={8} /> : <Icon name="clock" size={14} color={c.faint} />}
           <View style={styles.words} onLayout={(e) => setRoom(e.nativeEvent.layout.width)}>
             {/* The name gives way ("…"), never the time after it. */}
-            <View style={styles.said} onLayout={(e) => setSaid(e.nativeEvent.layout.width)}>
-              {parts.map((p, i) => (
-                <Text
-                  // biome-ignore lint/suspicious/noArrayIndexKey: the pieces of one sentence, in order
-                  key={i}
-                  variant="caption"
-                  tone="muted"
-                  numberOfLines={1}
-                  maxFontSizeMultiplier={CHROME_MAX_SCALE}
-                  style={p.bold ? [styles.shrink, styles.ink, { color: c.ink }] : styles.keep}
-                >
-                  {p.text}
-                </Text>
-              ))}
-            </View>
+            <View style={styles.said}>{pieces}</View>
             {shows ? (
               <Text variant="caption" tone="muted" numberOfLines={1} maxFontSizeMultiplier={CHROME_MAX_SCALE}>
                 <RNText style={{ color: c.faint }}> · </RNText>
                 {first.about}
               </Text>
             ) : null}
-            {/* Her words' own width, unseen: whether they fit whole beside the sentence. */}
+            {/*
+              The sentence's and her words' own widths, unseen. The row above shrinks the name to make room, so its
+              width would keep her words in once they showed, cutting the name instead.
+            */}
+            <View
+              style={[styles.said, styles.measure]}
+              importantForAccessibility="no-hide-descendants"
+              accessibilityElementsHidden
+              onLayout={(e) => setSaid(e.nativeEvent.layout.width)}
+            >
+              {pieces}
+            </View>
             {about ? (
               <Text
                 variant="caption"
