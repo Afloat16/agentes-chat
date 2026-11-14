@@ -416,7 +416,12 @@ describe("working line", () => {
     expect(tick).toContain('if (phaseNow === "hold" || phaseNow === "locked") targetRef.current.onRecording?.();');
     const screen = await source("features/chat/ChatScreen.tsx");
     // Recording never waits on what was just written (an agent asked in it waits for the take); the upload's frames do.
-    expect(screen).toContain('onRecording: () => sendTyping(threadId, undefined, "voice"),');
+    expect(screen).toContain(
+      'const onRecording = useCallback(() => sendTyping(threadId, undefined, "voice"), [sendTyping, threadId]);',
+    );
+    // Through the field's own component, which keeps what it is handed (`ChatComposer`).
+    const field = screen.slice(screen.indexOf("const ChatComposer = memo("), screen.indexOf("function ToLatest("));
+    expect(field).toContain("afterSend: onVoiceSent,\n    onRecording,\n  });");
     expect(screen).toContain("!m.meta?.voiceAccepted &&");
     expect(screen).toContain('const timer = setInterval(() => sendTyping(threadId, undefined, "voice", true), 1000);');
     const live = (await source("features/chat/live.ts")).replace(/\s+/g, " ");
@@ -594,9 +599,8 @@ describe("working line", () => {
     expect(line).toContain("const stopHere = stop?.runs ?? [];");
     expect(line).toContain('<LineStop runs={stopHere} onStop={stop.onStop} place="word" />');
     const screen = await source("features/chat/ChatScreen.tsx");
-    expect(screen).toContain(
-      "const working = useMemo<ComposerWorking | null>(() => (busyRuns.length === 0 ? null : {}), [busyRuns]);",
-    );
+    expect(screen).toContain("const busy = busyRuns.length > 0;");
+    expect(screen).toContain("const working = useMemo<ComposerWorking | null>(() => (busy ? {} : null), [busy]);");
   });
 
   test("no row of its own while it works, writing or not: the line speaks; the reply rises in whole once posted", async () => {
