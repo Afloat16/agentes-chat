@@ -129,7 +129,7 @@ export function GalleryPage() {
           <Field label="Orçamento mensal (US$)" id="g-budget" error="Use um valor maior que zero.">
             <Input defaultValue="0" />
           </Field>
-          <Field label="Papel" id="g-role">
+          <Field label="Cargo" id="g-role">
             <Select
               value={role}
               onValueChange={setRole}

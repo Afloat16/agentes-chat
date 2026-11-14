@@ -135,7 +135,7 @@ export function MemoryChangeCard({ update, agentId }: { update: MemoryUpdate; ag
   );
 }
 
-/** What a role or access proposal changes: "Papel: Dev → Revisora", or a chip per app turned on or off. */
+/** What a role or access proposal changes: "Função: Dev → Revisora", or a chip per app turned on or off. */
 export function SettingChange({ p }: { p: Proposal }) {
   const { t, i18n } = useTranslation();
   const { org } = useOrg();
