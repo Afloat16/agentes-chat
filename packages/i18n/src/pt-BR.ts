@@ -3935,6 +3935,10 @@ export const ptBR = {
     offline: "Offline",
     /** An agent out of office (ADR 0084 §12): its plan or budget ran out until a reset. */
     out: "Fora do escritório",
+    /** An agent's face (ADR 0084 addendum of 2026-11-13): free, at work, or waiting on you. Never a person's. */
+    available: "Disponível",
+    working: "Trabalhando",
+    waiting: "Esperando você",
     lower: {
       online: "online",
       away: "ausente",
@@ -4024,6 +4028,23 @@ export const ptBR = {
     },
     bySelf: "Escrito por {{name}} · some quando terminar",
     byAuto: "O que está fazendo agora",
+  },
+  /**
+   * An agent's work in a list's line and on its profile card (ADR 0084 addendum of 2026-11-13), lowercase: where it
+   * works or what it waits on. Its other words are `chat.consultPanel.helping` and `chat.consultPair.*`.
+   */
+  agentWork: {
+    working: "trabalhando",
+    you: "esperando você",
+    /** Short, when the whole line doesn't fit. */
+    waiting: "esperando",
+    queued: "na fila",
+    /** Its own work in the conversation the list belongs to (the members column). */
+    here: "aqui",
+    routine: "numa rotina",
+    /** After "Esperando você" on the profile card. */
+    yourApproval: "sua aprovação",
+    yourAnswer: "sua resposta",
   },
   mentions: {
     list: "Pessoas e agentes",
@@ -9431,6 +9452,11 @@ export const ptBR = {
     status: {
       needsYou: "Esperando você",
       working: "Trabalhando",
+      /** What its work waits on when none of it runs. */
+      approval: "Esperando aprovação",
+      input: "Esperando uma resposta",
+      computer: "Esperando o computador",
+      queued: "Na fila",
       open: "Aberta",
       closed: "Fechada",
       archived: "Arquivada",
@@ -16007,6 +16033,16 @@ export const ptBR = {
       answered: "{{to}} respondeu. {{from}} está escrevendo",
       writing: "{{from}} está escrevendo",
       clock: "Esperando há {{time}}",
+      /** One agent at work on what another handed it: its name, then its step (`chat.activity.*`: "lendo o Drive"). */
+      doing: "{{name}} {{doing}}",
+      yourApproval: "{{name}} espera sua aprovação",
+      yourAnswer: "{{name}} espera sua resposta",
+      /** The work handed off came back: whoever handed it writes now. */
+      done: "{{to}} terminou. {{from}} está escrevendo",
+      notDone: "{{to}} não terminou. {{from}} está escrevendo",
+      /** The bar's tip over work handed off. */
+      handedOff: "{{to}} trabalha no que o {{from}} passou",
+      handedOff_female: "{{to}} trabalha no que a {{from}} passou",
     },
     /** The card on top of a reply when the agent asked another agent (`meta.consulted`). */
     consultation: {
@@ -16041,6 +16077,7 @@ export const ptBR = {
       /** Its part done, the agent waits on what it handed to other agents. */
       waitingAgents: "O {{name}} passou uma parte adiante e espera o retorno",
       waitingAgents_female: "A {{name}} passou uma parte adiante e espera o retorno",
+      queued: "{{name}} está na fila",
     },
     /**
      * The slim row before a reply whose agent asked others first ("Theo ⇄ Atlas · 2 min"): the short word after the
@@ -16056,6 +16093,10 @@ export const ptBR = {
       waitingInput: "esperando uma resposta",
       waitingComputer: "esperando o computador",
       waitingProvider: "IA fora do ar",
+      /** What it waits on is yours to give: the row turns amber. */
+      waitingYourApproval: "esperando sua aprovação",
+      waitingYourAnswer: "esperando sua resposta",
+      queued: "na fila",
       /** Its part done, it waits on agents it handed some to. */
       handedOn: "esperando outros agentes",
       noAnswer: "não respondeu",
@@ -18111,7 +18152,7 @@ export const ptBR = {
     },
     state: {
       working: "Trabalhando",
-      ok: "Espera seu ok",
+      ok: "Esperando você",
       answer: "Espera resposta",
       computerBusy: "Computador cheio",
       inLine: "Na fila · {{position}}º",

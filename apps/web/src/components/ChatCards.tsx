@@ -601,6 +601,7 @@ export function QuestionCard({ question }: { question: AgentQuestion }) {
       id={question.id}
       kind="question"
       agent={agent}
+      runId={question.runId ?? null}
       label={t("question.group", { agent: name })}
       mine={mine}
       waitingFor={t("ask.waitingFor", {
@@ -682,7 +683,14 @@ export function QuestionCard({ question }: { question: AgentQuestion }) {
  * browser, to the key the computer made, so it never reaches our server, the
  * chat or the agent. Everyone else sees who was asked.
  */
-export function SecretCard({ request }: { request: SecretRequest }) {
+export function SecretCard({
+  request,
+  runId = null,
+}: {
+  request: SecretRequest;
+  /** The run that asked (its message's). */
+  runId?: string | null;
+}) {
   const { t, i18n } = useTranslation();
   const { org, me } = useOrg();
   const api = useApi();
@@ -845,6 +853,7 @@ export function SecretCard({ request }: { request: SecretRequest }) {
         id={current.id}
         kind="secret"
         agent={agent}
+        runId={runId}
         label={t("secret.group", { agent: agentName })}
         mine={mine}
         waitingFor={t("ask.waitingFor", { name: person })}
