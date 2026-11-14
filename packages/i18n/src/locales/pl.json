@@ -17192,6 +17192,7 @@
         "usingTool": "Użyto narzędzia {{tool}}",
         "thinking": "Myślenie",
         "typing": "Pisanie",
+        "recordingVoice": "Nagrywanie dźwięku",
         "writing": "Pisanie"
       }
     },
@@ -17201,6 +17202,7 @@
       "updatingRoutine": "zmiana rutyny",
       "thinking": "praca",
       "typing": "pisanie",
+      "recordingVoice": "nagrywanie dźwięku",
       "writing": "pisanie",
       "consulting": "sprawdzanie {{app}}",
       "creatingIssue": "tworzenie zadania",

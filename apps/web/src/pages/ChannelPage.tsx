@@ -82,10 +82,12 @@ import {
   barConsultTime,
   barElapsed,
   barEntries,
+  bothAtIt,
   consultDetails,
   entriesOffScreen,
   lineStep,
   runElapsed,
+  someoneTypes,
   waitsForWords,
 } from "@agenteschat/client/lib/activity";
 import type { AgentTab } from "@agenteschat/client/lib/agent-edit";
@@ -389,7 +391,7 @@ import {
 import { UsageWaitCancel, UsageWaitClosed } from "@/components/UsagePauseCard";
 import { PushAskContext, PushAskInline, usePushAsk } from "@/components/WebPush";
 import { useWikiLinkRenderer } from "@/components/WikiLinks";
-import { BarAlsoTyping, BarPhrase, BarStep, ConsultClock, WorkingStack } from "@/components/WorkingLine";
+import { BarAlsoTyping, BarPhrase, BarStep, ConsultClock, TypingMark, WorkingStack } from "@/components/WorkingLine";
 import { useChannelSearch } from "@/hooks/useChannelSearch";
 import { useComposerDraft } from "@/hooks/useComposerDraft";
 import { useDirectory } from "@/hooks/useDirectory";
@@ -2067,9 +2069,13 @@ function ChannelView({
             if (!allowed) toast.show(t("voice.limit"));
             return allowed;
           },
+          // "gravando áudio…" for the others while it records and while it uploads (then the server keeps it until the
+          // message comes); the throttle makes it one frame every 3 s, and holds the upload's while they write.
+          onRecording: () => sendTyping(undefined, "voice"),
           onTake: ({ blob, durationMs, peaks }) => {
             toBottom(true);
             setQuote(null);
+            const uploading = setInterval(() => sendTyping(undefined, "voice", true), 1000);
             void sendVoice({
               blob,
               durationMs,
@@ -2077,7 +2083,7 @@ function ChannelView({
               threadId: thread ? thread.id : null,
               replyTo: quote?.id ?? null,
               language: i18n.language.split("-")[0] ?? null,
-            });
+            }).finally(() => clearInterval(uploading));
           },
           onNotice: (notice: VoiceNotice) => {
             if (notice === "blocked") {
@@ -4077,14 +4083,8 @@ function ActivityBar({
           <>
             {skyOf && !consult?.yours && <ActivitySky color={colorOf(dir.agentById.get(skyOf))} />}
             {/* Agents at work: their faces open the pill (their rows are out of view); people only typing: the dots
-                first. */}
-            {!firstAgent && (
-              <span className="ac-typing__dots" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </span>
-            )}
+                first. Who records has a mark of their own by their words, and so has who types beside them. */}
+            {!firstAgent && someoneTypes(entries) && !bothAtIt(entries) && <TypingMark />}
             <WorkingStack entries={entries} />
             {/* The phrase turns: the old one leaves upward, the new one comes from below. Names in ink. */}
             <span className="ac-typing__text" title={consultTip}>

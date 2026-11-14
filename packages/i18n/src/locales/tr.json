@@ -16068,6 +16068,7 @@
         "usingTool": "{{tool}} aracını kullandı",
         "thinking": "Düşündü",
         "typing": "Yazdı",
+        "recordingVoice": "Ses kaydetti",
         "writing": "Yazdı"
       }
     },
@@ -16077,6 +16078,7 @@
       "updatingRoutine": "rutini değiştiriyor",
       "thinking": "çalışıyor",
       "typing": "yazıyor",
+      "recordingVoice": "ses kaydediyor",
       "writing": "yazıyor",
       "consulting": "{{app}} kontrol ediyor",
       "creatingIssue": "görev oluşturuyor",

@@ -15583,6 +15583,7 @@
         "usingTool": "ツール{{tool}}を使いました",
         "thinking": "考えました",
         "typing": "書きました",
+        "recordingVoice": "音声を録音しました",
         "writing": "書きました"
       }
     },
@@ -15592,6 +15593,7 @@
       "updatingRoutine": "ルーティンを変更中",
       "thinking": "作業中",
       "typing": "入力中",
+      "recordingVoice": "音声を録音中",
       "writing": "書いています",
       "consulting": "{{app}}を確認中",
       "creatingIssue": "タスクを作成中",

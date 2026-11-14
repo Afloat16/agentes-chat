@@ -15650,6 +15650,7 @@
         "usingTool": "使用了 {{tool}} 工具",
         "thinking": "思考了",
         "typing": "撰写了",
+        "recordingVoice": "录制了语音",
         "writing": "撰写了"
       }
     },
@@ -15659,6 +15660,7 @@
       "updatingRoutine": "修改例行工作",
       "thinking": "工作",
       "typing": "输入",
+      "recordingVoice": "录音",
       "writing": "撰写",
       "consulting": "查看 {{app}}",
       "creatingIssue": "创建任务",

@@ -39371,6 +39371,9 @@
   "chat.work.step.typing": {
     "value": "Wrote"
   },
+  "chat.work.step.recordingVoice": {
+    "value": "Recorded audio"
+  },
   "chat.work.step.writing": {
     "value": "Wrote"
   },
@@ -39388,6 +39391,9 @@
   },
   "chat.activity.typing": {
     "value": "typing"
+  },
+  "chat.activity.recordingVoice": {
+    "value": "recording audio"
   },
   "chat.activity.writing": {
     "value": "writing"

@@ -16206,6 +16206,7 @@
         "usingTool": "De tool {{tool}} gebruikt",
         "thinking": "Nagedacht",
         "typing": "Geschreven",
+        "recordingVoice": "Audio opgenomen",
         "writing": "Geschreven"
       }
     },
@@ -16215,6 +16216,7 @@
       "updatingRoutine": "een routine aan het wijzigen",
       "thinking": "aan het werk",
       "typing": "aan het typen",
+      "recordingVoice": "audio aan het opnemen",
       "writing": "aan het schrijven",
       "consulting": "{{app}} aan het raadplegen",
       "creatingIssue": "een taak aan het maken",

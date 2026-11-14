@@ -1550,6 +1550,8 @@ export type ChannelEvent =
       message?: Message;
       threadId?: string | null;
       agentRunId?: string | null;
+      /** With `message` left out: the person who wrote it (null for an agent), so their typing line ends with it. */
+      authorUserId?: string | null;
     }
   /** Someone joined or left, or an agent's way of replying changed (agents carry `autoReply`). */
   | {
@@ -1804,8 +1806,15 @@ export type ChannelEvent =
       waitKind: string;
       outcome: WaitMessageOutcome;
     }
-  /** A person is typing; drop it after `ttlMs`. */
-  | { type: "user.typing"; channelId: string; threadId: string | null; userId: string; ttlMs: number }
+  /** A person is typing, or recording a voice message (`kind: "voice"`); drop it after `ttlMs`. */
+  | {
+      type: "user.typing";
+      channelId: string;
+      threadId: string | null;
+      userId: string;
+      ttlMs: number;
+      kind?: "voice";
+    }
   /** Who saw a message and who will answer. */
   | {
       type: "message.routed";

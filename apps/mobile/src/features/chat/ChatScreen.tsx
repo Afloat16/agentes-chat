@@ -1117,6 +1117,26 @@ function Chat({
     setQuote(null);
     toEnd();
   }, [toEnd]);
+  const onRecording = useCallback(() => sendTyping(threadId, undefined, "voice"), [sendTyping, threadId]);
+  // "gravando áudio…" goes on for the others while my recording uploads here; the server keeps it from then until the
+  // message comes.
+  const uploading = useMemo(
+    () =>
+      list.some(
+        (m) =>
+          m.local === "pending" &&
+          m.author.id === meId &&
+          voiceOf(m.meta) &&
+          !m.meta?.voiceAccepted &&
+          (m.threadId ?? null) === (threadId ?? null),
+      ),
+    [list, meId, threadId],
+  );
+  useEffect(() => {
+    if (!uploading) return;
+    const timer = setInterval(() => sendTyping(threadId, undefined, "voice", true), 1000);
+    return () => clearInterval(timer);
+  }, [uploading, sendTyping, threadId]);
   const sendMedia = (media: MessageMedia) => {
     send("", threadId, { ...takeQuote(), media });
     toEnd();
@@ -2590,6 +2610,7 @@ function Chat({
                     authorId={meId ?? ""}
                     voiceOn={voiceOn}
                     onVoiceSent={afterVoice}
+                    onRecording={onRecording}
                   />
                 ) : (
                   <>
@@ -2637,6 +2658,7 @@ const ChatComposer = memo(function ChatComposer({
   authorId,
   voiceOn,
   onVoiceSent,
+  onRecording,
   ...composer
 }: Omit<ComposerProps, "voice"> & {
   orgId: string;
@@ -2649,6 +2671,8 @@ const ChatComposer = memo(function ChatComposer({
   authorId: string;
   voiceOn: boolean;
   onVoiceSent: () => void;
+  /** While a take records: the others see "gravando áudio…" (throttled by the caller). */
+  onRecording: () => void;
 }) {
   const voice = useVoiceComposer({
     orgId,
@@ -2659,6 +2683,7 @@ const ChatComposer = memo(function ChatComposer({
     authorId,
     enabled: voiceOn,
     afterSend: onVoiceSent,
+    onRecording,
   });
   return <Composer {...composer} voice={voice} />;
 });
