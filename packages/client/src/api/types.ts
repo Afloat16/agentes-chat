@@ -398,6 +398,17 @@ export interface Me {
   organizations: OrgSummary[];
 }
 
+/**
+ * An account signed in on this browser (`GET /device-accounts`, ADR 0183): the person, their workspaces and each
+ * one's unread count. `current`: the one the browser is on now.
+ */
+export interface DeviceAccount {
+  current: boolean;
+  user: { id: string; name: string; email: string; image: string | null };
+  organizations: OrgSummary[];
+  unread: { orgId: string; unread: number; waiting: number }[];
+}
+
 export interface Organization extends OrgSummary {
   context?: string;
 }

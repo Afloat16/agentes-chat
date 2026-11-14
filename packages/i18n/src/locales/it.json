@@ -514,6 +514,7 @@
       "noPassword": "Questo account accede dall'app agentes.chat.",
       "noPasswordLead": "Sul computer che fa girare questo server, apri l'app e scegli Aggiungi una password in Impostazioni › Il tuo account.",
       "backToSignIn": "Torna all'accesso",
+      "backToAccount": "Torna a {{name}}",
       "toAuthorizeApp": "Per collegare un'app ad agentes.chat."
     },
     "desktop": {
@@ -1521,22 +1522,6 @@
     "moveDown": "Sposta giù",
     "restoreOrder": "Ripristina ordine predefinito"
   },
-  "appIcon": {
-    "title": "Icona dell'app",
-    "hintWeb": "L'icona nelle schede di questo browser.",
-    "hintMac": "L'icona nel Dock mentre l'app è aperta. Finder e Launchpad mantengono quella predefinita.",
-    "hintDesktop": "L'icona nella barra delle applicazioni mentre l'app è aperta.",
-    "hintAndroid": "Alcune schermate Home impiegano qualche secondo a mostrare la nuova icona.",
-    "failed": "Impossibile cambiare l'icona. Riprova.",
-    "agentsOf": "Agenti di {{org}}",
-    "names": {
-      "night": "Notte",
-      "moon": "Luna",
-      "sky": "Cielo",
-      "peekNight": "Sbirciando di notte",
-      "peekSky": "Sbirciando nel cielo"
-    }
-  },
   "install": {
     "frames": "Come installare su {{system}}",
     "step": "Passo {{n}}",
@@ -1644,6 +1629,22 @@
       "activities": "Attività",
       "readingLists": "Lettura elenco dei pacchetti... Fatto",
       "settingUp": "Configurazione di agentes-chat ({{version}}) ..."
+    }
+  },
+  "appIcon": {
+    "title": "Icona dell'app",
+    "hintWeb": "L'icona nelle schede di questo browser.",
+    "hintMac": "L'icona nel Dock mentre l'app è aperta. Finder e Launchpad mantengono quella predefinita.",
+    "hintDesktop": "L'icona nella barra delle applicazioni mentre l'app è aperta.",
+    "hintAndroid": "Alcune schermate Home impiegano qualche secondo a mostrare la nuova icona.",
+    "failed": "Impossibile cambiare l'icona. Riprova.",
+    "agentsOf": "Agenti di {{org}}",
+    "names": {
+      "night": "Notte",
+      "moon": "Luna",
+      "sky": "Cielo",
+      "peekNight": "Sbirciando di notte",
+      "peekSky": "Sbirciando nel cielo"
     }
   },
   "legal": {
@@ -1869,6 +1870,8 @@
     "newWorkspace": "Nuovo spazio di lavoro",
     "addWorkspace": "Aggiungi spazio di lavoro",
     "addWorkspaceHint": "Entra in uno che hai già, creane uno nuovo o usa il server del tuo team",
+    "addAccount": "Aggiungi account",
+    "addAccountHint": "Accedi a un altro account senza uscire da questo",
     "yourServer": "Il tuo server",
     "serverHere": "L’agentes.chat di questo {{device}}",
     "serverStopped": "fermo",
