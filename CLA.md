@@ -9,8 +9,9 @@ the copyright in your work. It is based on the Apache Software Foundation's Indi
 License Agreement.
 
 You accept it by commenting on your pull request with the sentence the CLA bot asks for. Once you
-have accepted it, it covers every contribution you submit to Codari's agentes.chat repositories,
-now and later, until a new version of this agreement asks you to accept again.
+have accepted it, it covers every contribution you submit to Codari's agentes.chat repositories: those you submitted
+before accepting it and those you submit later, until a new version of this agreement asks you to
+accept again.
 
 ## 1. Definitions
 
@@ -20,8 +21,9 @@ is controlled by or is under common control with it. "Control" means owning more
 of the voting shares or other interests of an entity, or the power to direct its management.
 
 "Contribution" means any original work of authorship, including any changes or additions to an
-existing work, that You intentionally submit to Codari for inclusion in agentes.chat or in any
-other project Codari owns or manages (the "Work"). "Submit" means any form of electronic, verbal or
+existing work, that You intentionally submit to Codari for inclusion in agentes.chat, in any of
+the agentes.chat repositories Codari owns or manages (the "Work"), whether You Submitted it before or
+after accepting this agreement. "Submit" means any form of electronic, verbal or
 written communication sent to Codari or its representatives, including pull requests, commits,
 patches, issues and comments in its repositories, mailing lists and issue trackers, made in order
 to discuss or improve the Work. A communication that You mark in writing as "Not a Contribution" is

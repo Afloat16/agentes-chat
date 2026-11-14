@@ -8,7 +8,7 @@ Product name in code and docs: **agentes.chat**. Package scope `@agenteschat/*`.
 
 Bun + Hono + Drizzle on the server, Vite + React + TanStack on the web, Bun's native WebSocket, Better Auth (ADR 0011). PostgreSQL is the only required dependency (ADR 0005).
 
-Licensing: AGPL-3.0-only for everything public, contributions under the same license, no `ee/` directory (ADR 0002). `packages/setup` (`@agenteschat/setup`) is the one MIT package. Self-hosting is docker-compose and free (`SELF_HOSTING.md`); agentes.chat Cloud runs this same image, configured by env vars. Any external service is optional, switched on by an env var behind an interface or module (swappable adapters).
+Licensing: AGPL-3.0-only for everything public, outside contributions under the same license and the contributor license agreement (`CLA.md`, ADR 0180), no `ee/` directory (ADR 0002). `packages/setup` (`@agenteschat/setup`) is the one MIT package. Self-hosting is docker-compose and free (`SELF_HOSTING.md`); agentes.chat Cloud runs this same image, configured by env vars. Any external service is optional, switched on by an env var behind an interface or module (swappable adapters).
 
 ## Concepts
 

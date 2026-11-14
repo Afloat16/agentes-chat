@@ -1,6 +1,6 @@
 # 0180. Two licenses, and a contributor license agreement for outside contributions
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-13
 - Revises: [ADR 0002](0002-editions-and-modules.md) §5
 - Code: `CLA.md`, `.github/workflows/cla.yml`, `COMMERCIAL.md`, `CONTRIBUTING.md` ("Licensing of your contribution"),
@@ -37,17 +37,24 @@ outside contribution would stay AGPL-only.
    workflow file is always main's, and the pull request's code is never checked out. The bot comments on a first
    pull request, the contributor accepts with a comment, and the bot records it in
    `signatures/version1/cla.json` on the `cla-signatures` branch (outside main, unprotected) and locks the merged
-   pull request's conversation so the comment stays. The job's check, `CLA`, is required on main. A new version
-   of `CLA.md` gets a new signatures path, so everyone accepts it again.
-4. **Who isn't asked.** Pull requests opened by the organization's members and collaborators, and by bots
-   (Dependabot, the GitHub App that opens the agents' pull requests), skip the bot's step and pass: their work is
-   Codari's by contract. An outside contribution reaches main only through a pull request of its own, where it is
-   asked, even when a maintainer later carries it in an integration branch.
-5. **Earlier contributions stay as they are.** Nobody is asked to sign for code merged before this decision.
-   Code from outside the team merged before it is still held only under the AGPL: the commercial license doesn't
-   cover it until the team rewrites it. Until then the rule of ADR 0002 §5 holds unchanged: nothing private runs
-   in the server process, and Cloud-only behavior is public code switched on by environment variables or a
-   separate service over the network. Lifting that rule takes a new ADR, once no such code is left.
+   pull request's conversation so the comment stays. The bot links the agreement at the tag `cla-v1.0`, so the
+   text someone accepted can't change under them. A new version of `CLA.md` gets a new tag and a new signatures
+   path, so everyone accepts it again. The job's check, `CLA`, becomes required on main once every open pull
+   request has a run of it. A pull request that was open before the workflow existed gets its run from the `cla`
+   label: a comment's run belongs to main and leaves no check on the pull request.
+4. **Every pull request is checked, commit by commit.** A maintainer's integration branch can carry an outside
+   author's commits, so the check doesn't go by who opened the pull request. The team (the organization's
+   members), Dependabot and the GitHub App that opens the agents' pull requests are exempt by name, which also
+   keeps a maintainer's fix on a contributor's pull request from asking the maintainer to sign. Commits an AI
+   tool authors under its own name pass only on a pull request the team opened: on anyone else's, a person
+   has to be the author.
+5. **Earlier contributions.** Five commits by four outside authors reached main before this decision, carried
+   in maintainers' integration branches (`b7f0fd9cfe`, `23d7a6638f`, `787168476a`, `cdefe320a9`, `e8aebb2271`).
+   They are held only under the AGPL, so the commercial license doesn't cover them until their authors accept
+   the agreement, which covers what someone contributed before accepting it, or the team rewrites them. Until
+   then the rule of ADR 0002 §5 holds unchanged: nothing private runs in the server process, and Cloud-only
+   behavior is public code switched on by environment variables or a separate service over the network. Lifting
+   that rule takes a new ADR, once no such code is left.
 
 ## Consequences
 
