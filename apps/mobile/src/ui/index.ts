@@ -95,7 +95,7 @@ export { SearchField, type SearchFieldProps } from "./SearchField";
 export { Section, type SectionProps } from "./Section";
 export { SectionHeader, type SectionHeaderProps } from "./SectionHeader";
 export { Segmented, type SegmentedProps } from "./Segmented";
-export { Sheet, type SheetProps } from "./Sheet";
+export { SHEET_PAD, Sheet, type SheetProps } from "./Sheet";
 export { SheetScreen, type SheetScreenProps } from "./SheetScreen";
 export { SheetSurface } from "./SheetSurface";
 export { SkeletonList, SkeletonRow, usePulse } from "./Skeleton";

@@ -30,7 +30,7 @@ import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
 import { Sky } from "@/sky/Sky";
-import { GroupedList, GroupedRow, IconButton, ProviderLogo, Text, useToast } from "@/ui";
+import { GroupedList, GroupedRow, IconButton, ProviderLogo, SHEET_PAD, Text, useToast } from "@/ui";
 import { AgentFace } from "../shared/Face";
 import { useColors, useDirectory, useMeId } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
@@ -300,7 +300,9 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
 const styles = StyleSheet.create({
   loading: { marginVertical: 32 },
   in: { gap: 12 },
-  sky: { height: 96, borderRadius: 14, overflow: "hidden", alignItems: "center", justifyContent: "center" },
+  // From one side of the sheet to the other (past the content's inset, which cut it at both ends); the sheet's own
+  // corners clip it.
+  sky: { height: 96, marginHorizontal: -SHEET_PAD, alignItems: "center", justifyContent: "center" },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   tile: {
     width: 44,
