@@ -220,6 +220,45 @@ describe("following the bottom", () => {
       globalThis.ResizeObserver = native;
     }
   });
+
+  test("the page itself moving (Safari pushing it up for the keyboard) folds nothing: the words read stay", async () => {
+    const native = globalThis.ResizeObserver;
+    const scrollY = Object.getOwnPropertyDescriptor(window, "scrollY");
+    const observers: ResizeObserverCallback[] = [];
+    globalThis.ResizeObserver = class {
+      constructor(cb: ResizeObserverCallback) {
+        observers.push(cb);
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+    try {
+      await open();
+      const log = screen().getByRole("region", { name: "Mensagens" });
+      Object.defineProperty(log, "scrollHeight", { configurable: true, value: 2000 });
+      Object.defineProperty(log, "clientHeight", { configurable: true, value: 500 });
+      let top = 300;
+      log.getBoundingClientRect = () => ({ top, left: 0, width: 800, height: 500 }) as DOMRect;
+      const resized = () =>
+        act(async () => {
+          for (const cb of observers) cb([], {} as ResizeObserver);
+        });
+      fireEvent.wheel(log, { deltaY: -120 });
+      log.scrollTop = 900;
+      await resized();
+      expect(log.scrollTop).toBe(900);
+      // The page scrolls up by the keyboard's height and nothing resizes: the list's top moves with the page.
+      Object.defineProperty(window, "scrollY", { configurable: true, value: 300 });
+      top = 0;
+      await resized();
+      expect(log.scrollTop).toBe(900);
+    } finally {
+      globalThis.ResizeObserver = native;
+      if (scrollY) Object.defineProperty(window, "scrollY", scrollY);
+      else Object.defineProperty(window, "scrollY", { configurable: true, value: 0 });
+    }
+  });
 });
 
 describe("a message's attachments", () => {

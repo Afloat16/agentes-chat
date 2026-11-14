@@ -1584,9 +1584,11 @@ function ChannelView({
     // What stands above the list folding away (the day's greeting, a bar) moves its top edge up: read further up, the
     // words on screen stay where they are. Only up: what appears above it as the conversation opens is where the
     // opening lands it. Pinned to the end, `pin` keeps the newest message in place.
-    let top = el.getBoundingClientRect().top;
+    // In the page's own terms: the window moving (Safari pushing the page up for the keyboard) folds nothing.
+    const edge = () => el.getBoundingClientRect().top + window.scrollY;
+    let top = edge();
     const keep = () => {
-      const now = el.getBoundingClientRect().top;
+      const now = edge();
       if (now < top && !stick.current && Date.now() >= autoScrollUntil.current) el.scrollTop -= top - now;
       top = now;
     };
