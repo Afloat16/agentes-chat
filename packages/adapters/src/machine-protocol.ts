@@ -7,7 +7,7 @@ import type { MergeDone } from "./command-policy";
  */
 
 /** Bumped on breaking changes; the server refuses runners older than `MIN_RUNNER_PROTOCOL`. */
-export const MACHINE_PROTOCOL_VERSION = 62;
+export const MACHINE_PROTOCOL_VERSION = 64;
 export const MIN_RUNNER_PROTOCOL = 1;
 /** From this protocol on, requests carry `agent` and each agent works in its own folder. */
 export const AGENT_FOLDERS_PROTOCOL = 2;
@@ -475,8 +475,8 @@ export const SHARED_COMPUTER_PROTOCOL = 37;
  */
 export const SHARED_CODEX_PROTOCOL = 38;
 /**
- * From this protocol on (ADR 0132): the OpenCode brain. `brain.turn` takes `kind: "opencode"` (OpenCode's CLI,
- * `opencode run --format json`, one process per turn), `account` takes `kind: "opencode"` (only an OpenCode key sealed
+ * From this protocol on (ADR 0132): the OpenCode brain. `brain.turn` takes `kind: "opencode"` (OpenCode's CLI, one
+ * process per turn; over ACP since `OPENCODE_ACP_PROTOCOL`), `account` takes `kind: "opencode"` (only an OpenCode key sealed
  * to the machine: `begin` with `provider: "zen"`), `hello.executors.opencode` reports the CLI with the models it lists
  * (`free` on OpenCode's free tier), and `access.tools.opencode` turns it on or off. The server never sends any of these
  * to an older runner.
@@ -636,6 +636,12 @@ export const CODEX_WINDOWS_PROTOCOL = 60;
  * and `keep.ended` says one ended. The server asks no older runner.
  */
 export const KEEP_RUNNING_PROTOCOL = 61;
+/**
+ * OpenCode turns over the Agent Client Protocol (ADR 0132 §ACP): `opencode acp` instead of `opencode run`, so they run
+ * on OpenCode 1.x and 2.x alike, on Windows too, and an OpenCode 2 turn takes `brain.steer`. A Windows runner before it
+ * refuses every OpenCode turn, so the server reads it as too old for OpenCode there.
+ */
+export const OPENCODE_ACP_PROTOCOL = 64;
 /** Why a hold ended on the computer: its program or browser went away (or its lock did), or its time ran out. */
 export type HoldEnd = "exited" | "expired";
 /**
@@ -2188,6 +2194,7 @@ export interface MachineAgent {
   /**
    * Its containers service may run here (ADR 0169). Absent for a brain whose shell runs in a sandbox of the CLI's own,
    * which that service, outside it, would be a way out of, and for the team's right hand, which thinks on several.
+   * A person's seat of the right hand (an entry of its own here, ADR 0175) has it.
    */
   containers?: boolean;
 }
@@ -2335,12 +2342,19 @@ export interface FileEntry {
  * The agent a request is for (protocol 2+). The runner gives each agent its
  * own folder inside the workspace, `<handle>-<first 8 of id>`, and treats it
  * as that request's workspace; a renamed agent keeps its folder (found by id).
+ * The id isn't always an agent's row: a browser profile's, or a person's seat of the team's right hand (ADR 0175),
+ * which the runner serves like any agent.
  */
 export interface AgentScope {
   id: string;
   handle: string;
   /** Protocol 9: the agent's display name, for the machine's activity log. */
   name?: string;
+  /**
+   * Protocol 63 (ADR 0156): on the work the server starts (`exec`, `brain.turn`, `task.start`), the `Co-authored-by`
+   * lines its commits end with. The runner hands them to git in the agent's own processes alone (`co-authors.ts`).
+   */
+  coAuthors?: string[];
 }
 
 /** What the server asks. Paths are always relative to the workspace (the agent's folder when `agent` is set). */
