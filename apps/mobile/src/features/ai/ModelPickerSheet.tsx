@@ -27,7 +27,7 @@ import { planLine } from "@agenteschat/ui/plan-state";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { useOrg } from "@/providers/org";
 import { Sky } from "@/sky/Sky";
 import { GroupedList, GroupedRow, IconButton, ProviderLogo, Text, useToast } from "@/ui";
@@ -177,7 +177,9 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.in}>
+    // The sheet scrolls and keeps its content 18 from its sides: no scroll view or side padding of its own here (with
+    // both, the lists stood 34 in, a narrow column in a wide sheet).
+    <View style={styles.in}>
       <View style={styles.sky}>
         <Sky color={agentLook(agent).color} surface="raised" style={StyleSheet.absoluteFill} />
         {tile ? (
@@ -282,13 +284,13 @@ function PickerBody({ agent, view }: { agent: Agent; view: AgentBrain }) {
           }}
         />
       </GroupedList>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   loading: { marginVertical: 32 },
-  in: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
+  in: { gap: 12 },
   sky: { height: 96, borderRadius: 14, overflow: "hidden", alignItems: "center", justifyContent: "center" },
   mark: { alignItems: "center", justifyContent: "center" },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
