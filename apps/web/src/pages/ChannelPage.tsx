@@ -53,6 +53,7 @@ import {
   useCreateMission,
   useDmReads,
   useDms,
+  useFollowUps,
   useHeldPlaces,
   useJoinChannel,
   useMarkChannelRead,
@@ -92,6 +93,7 @@ import {
 } from "@agenteschat/client/lib/activity";
 import type { AgentTab } from "@agenteschat/client/lib/agent-edit";
 import { foldTalk, TALK_LINE_CHARS, talksToAgent } from "@agenteschat/client/lib/agent-talk";
+import { returnsHere } from "@agenteschat/client/lib/agent-work";
 import { looksLikeApiKey } from "@agenteschat/client/lib/api-key-text";
 import { approvalCardItems, asOfNow, cardDeadline } from "@agenteschat/client/lib/approval-card";
 import { artifactRefs } from "@agenteschat/client/lib/artifacts";
@@ -368,6 +370,7 @@ import {
   usePendingAsks,
   WaitMark,
 } from "@/components/RequestCard";
+import { ReturnLine } from "@/components/ReturnLine";
 import { SidePanel } from "@/components/SidePanel";
 import { ActivitySky, ChannelWelcome, colorOf } from "@/components/Sky";
 import { isStoppable, StopButton, useContinueRun, useStopRun, useWasContinued } from "@/components/StopRun";
@@ -1263,9 +1266,6 @@ function ChannelView({
       lines: channelList.lines,
     };
   }, [thread, channelList, threadList, older, channelMessages.data, channel.id, panel?.id]);
-  // The agents at work here: a follow-up's line that woke one stays while its turn runs (`settledNotices`).
-  const workingKey = useStreams((s) => [...new Set(scopedRuns(s).map((r) => r.agentId))].sort().join(" "));
-  const agentsAtWork = useMemo(() => new Set(workingKey ? workingKey.split(" ") : []), [workingKey]);
   const timeline = useMemo(() => {
     if (thread) {
       // The thread's conversation. One made from a range: not its root (the channel's marker) nor the
@@ -1282,7 +1282,6 @@ function ChannelView({
         list.filter((m) => !passed.has(m.id)),
         [],
         [],
-        agentsAtWork,
       );
     }
     const visible = channelList?.visible ?? [];
@@ -1291,7 +1290,6 @@ function ChannelView({
       visible.filter((m) => !passed.has(m.id)),
       [],
       [],
-      agentsAtWork,
     );
     // A marker, a closed line or a thread's line is not a message: nothing groups under it.
     const special = (m: MessageType) =>
@@ -1299,7 +1297,7 @@ function ChannelView({
       threadsView?.byId.get(m.id)?.state === "closed" ||
       Boolean(channelList?.lines.has(m.id));
     return ungroupAfter(items, special);
-  }, [thread, channelList, channelMessages.data, threadMessages.data, threadsView, agentsAtWork]);
+  }, [thread, channelList, channelMessages.data, threadMessages.data, threadsView]);
 
   // The agents' blocks (one per run, from "pensando" to its final message: `chat/run-slots.ts`), at the end. They
   // change when runs start or end, never on another of a run's events.
@@ -2695,6 +2693,7 @@ function ChannelView({
                             onSeeWaiting={seeWaiting}
                             stoppable={stopTarget?.runId}
                             consultBlocks={consultGroups.nearEnd}
+                            member={isMember}
                           />
                           {adjustThreadId ? (
                             <RangeBar adjust={adjust} />
@@ -3877,6 +3876,7 @@ function ActivityBar({
   onSeeWaiting,
   stoppable,
   consultBlocks,
+  member,
 }: {
   channelId: string;
   /** A thread view: who types there (null: who types in the conversation itself). */
@@ -3901,10 +3901,14 @@ function ActivityBar({
   stoppable?: string;
   /** Runs whose questions a block near the end shows (`ConsultGroup`): the line doesn't say them again. */
   consultBlocks: ReadonlySet<string>;
+  /** The reader is in this conversation (may answer here). */
+  member: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const { org, me } = useOrg();
   const dir = useDirectory(org.id);
+  // The returns agents set here (a thread's own, else the main timeline's): the bar holds them while nobody works.
+  const returns = returnsHere(useFollowUps(org.id, channelId).data, threadId);
   const all = useStreams((s) => runsInChannel(s, channelId).filter((r) => visible?.current(r) ?? true), sameRuns);
   const runs = all.filter((r) => r.status !== "failed");
   const typing = useLive((s) => s.typing[channelId]);
@@ -3977,6 +3981,8 @@ function ActivityBar({
   const away = ask ? undefined : waiting[0];
   const awayAgent = away?.asker?.type === "agent" ? dir.anyAgent(away.asker.id) : undefined;
   const pill = !ask && !away && active;
+  // Nobody at work and nothing waiting on the reader: the soonest return rests in the same box (ADR 0037 addendum).
+  const rest = !ask && !away && !active && returns.length > 0;
   // One agent's question or hand-off still out (ADR 0095 addendum): the consulted agent's state, its sky, its time, and
   // "Ver", which opens their talk (or, when its card waits on me, goes to the card). No stop: that is theirs.
   const consult = agents.length === 1 && firstAgent?.consult?.status === "asking" ? firstAgent.consult : undefined;
@@ -4015,6 +4021,7 @@ function ActivityBar({
         className="ac-typing"
         aria-live="polite"
         data-active={active || Boolean(ask) || Boolean(away)}
+        data-rest={rest || undefined}
         data-ask={ask || away ? true : undefined}
         data-consult={pill && consult ? (consult.yours ? "you" : consult.wait ? "wait" : "work") : undefined}
         data-browser={pill && openBrowser ? true : undefined}
@@ -4130,6 +4137,7 @@ function ActivityBar({
             {soloAway && stoppable === soloAway.runId && <StopButton run={soloAway} onStop={stop} place="bar" />}
           </>
         )}
+        {rest && <ReturnLine returns={returns} channelId={channelId} canAnswer={member} />}
       </div>
     </>
   );

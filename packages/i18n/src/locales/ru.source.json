@@ -9411,6 +9411,57 @@
   "agentWork.yourAnswer": {
     "value": "your answer"
   },
+  "agentWork.later": {
+    "value": "follow-up {{when}}"
+  },
+  "agentWork.laterShort": {
+    "value": "follow-up"
+  },
+  "followUps.when.at": {
+    "value": "at {{time}}"
+  },
+  "followUps.when.today": {
+    "value": "today at {{time}}"
+  },
+  "followUps.when.tomorrow": {
+    "value": "tomorrow at {{time}}"
+  },
+  "followUps.whenLabel.at": {
+    "value": "At {{time}}"
+  },
+  "followUps.whenLabel.today": {
+    "value": "Today at {{time}}"
+  },
+  "followUps.whenLabel.tomorrow": {
+    "value": "Tomorrow at {{time}}"
+  },
+  "followUps.bar.at": {
+    "value": "{{name}} follows up {{when}}"
+  },
+  "followUps.bar.short": {
+    "value": "{{name}} {{time}}"
+  },
+  "followUps.bar.heldYou": {
+    "value": "{{name}} follows up once you answer"
+  },
+  "followUps.bar.held": {
+    "value": "{{name}} follows up after an answer"
+  },
+  "followUps.title": {
+    "value": "Follow-ups"
+  },
+  "followUps.see": {
+    "value": "See the message"
+  },
+  "followUps.cancel": {
+    "value": "Cancel follow-up"
+  },
+  "followUps.cancelOf": {
+    "value": "Cancel {{name}}'s follow-up {{when}}"
+  },
+  "followUps.inTime": {
+    "value": "in {{time}}"
+  },
   "mentions.list": {
     "value": "People and agents"
   },
@@ -22089,6 +22140,9 @@
   "threads.status.queued": {
     "value": "In line"
   },
+  "threads.status.later": {
+    "value": "Follow-up {{when}}"
+  },
   "threads.status.open": {
     "value": "Open"
   },
@@ -33076,6 +33130,9 @@
   "errors.thread.notUndoable": {
     "value": "Only a thread made from a range can be undone."
   },
+  "errors.followUp.notYours": {
+    "value": "Only the person it's for, the agent's owner or an admin can cancel this follow-up."
+  },
   "errors.routine.tooFrequent": {
     "value": "A routine runs at most every 15 minutes. Pick a longer interval."
   },
@@ -38814,30 +38871,6 @@
   "chat.notice.waitResult": {
     "value": "What {{name}} was waiting for came in"
   },
-  "chat.notice.followUp": {
-    "value": "{{name}} will be back at {{time}} to «{{about}}»"
-  },
-  "chat.notice.followUpOn": {
-    "value": "{{name}} will be back on {{day}} at {{time}} to «{{about}}»"
-  },
-  "chat.notice.followUpDone": {
-    "value": "{{name}} came back at {{time}} to «{{about}}»"
-  },
-  "chat.notice.followUpDoneOn": {
-    "value": "{{name}} came back on {{day}} at {{time}} to «{{about}}»"
-  },
-  "chat.notice.followUpCanceled": {
-    "value": "{{name}} won't be back at {{time}} to «{{about}}»"
-  },
-  "chat.notice.followUpCanceledOn": {
-    "value": "{{name}} won't be back on {{day}} at {{time}} to «{{about}}»"
-  },
-  "chat.notice.followUpWake": {
-    "value": "{{name}} is back to «{{about}}»"
-  },
-  "chat.notice.followUpCancel": {
-    "value": "Cancel"
-  },
   "chat.notice.other": {
     "value": "Notice for {{name}}"
   },
@@ -42943,6 +42976,9 @@
   "taskManager.sections.background": {
     "value": "Routines in the background"
   },
+  "taskManager.sections.returns": {
+    "value": "Follow-ups"
+  },
   "taskManager.state.working": {
     "value": "Working"
   },
@@ -43167,6 +43203,15 @@
   },
   "taskManager.ended.failed": {
     "value": "Couldn't finish"
+  },
+  "taskManager.ended.returnCanceled": {
+    "value": "Follow-up canceled"
+  },
+  "taskManager.ended.returnCanceledYou": {
+    "value": "You canceled the follow-up"
+  },
+  "taskManager.ended.returnCanceledBy": {
+    "value": "Follow-up canceled by {{name}}"
   },
   "taskManager.ended.none": {
     "value": "Nothing ended today yet."

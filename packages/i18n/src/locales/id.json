@@ -3728,7 +3728,32 @@
     "here": "di sini",
     "routine": "dalam rutinitas",
     "yourApproval": "persetujuanmu",
-    "yourAnswer": "jawabanmu"
+    "yourAnswer": "jawabanmu",
+    "later": "tindak lanjut {{when}}",
+    "laterShort": "tindak lanjut"
+  },
+  "followUps": {
+    "when": {
+      "at": "pukul {{time}}",
+      "today": "hari ini pukul {{time}}",
+      "tomorrow": "besok pukul {{time}}"
+    },
+    "whenLabel": {
+      "at": "Pukul {{time}}",
+      "today": "Hari ini pukul {{time}}",
+      "tomorrow": "Besok pukul {{time}}"
+    },
+    "bar": {
+      "at": "{{name}} menindaklanjuti {{when}}",
+      "short": "{{name}} {{time}}",
+      "heldYou": "{{name}} menindaklanjuti setelah kamu menjawab",
+      "held": "{{name}} menindaklanjuti setelah ada jawaban"
+    },
+    "title": "Tindak lanjut",
+    "see": "Lihat pesan",
+    "cancel": "Batalkan tindak lanjut",
+    "cancelOf": "Batalkan tindak lanjut {{name}} {{when}}",
+    "inTime": "dalam {{time}}"
   },
   "mentions": {
     "list": "Orang dan agen",
@@ -8812,6 +8837,7 @@
       "input": "Menunggu jawaban",
       "computer": "Menunggu komputernya",
       "queued": "Dalam antrean",
+      "later": "Tindak lanjut {{when}}",
       "open": "Terbuka",
       "closed": "Ditutup",
       "archived": "Diarsipkan"
@@ -13175,6 +13201,9 @@
       "noContext": "Utas ini tidak berasal dari rentang percakapan.",
       "notUndoable": "Hanya utas yang dibuat dari rentang yang bisa dibatalkan."
     },
+    "followUp": {
+      "notYours": "Hanya orang yang dituju, pemilik agen, atau Admin yang bisa membatalkan tindak lanjut ini."
+    },
     "routine": {
       "tooFrequent": "Rutinitas berjalan paling sering setiap 15 menit. Pilih interval yang lebih panjang.",
       "tooMany": "Agen ini sudah punya 20 rutinitas aktif. Jeda atau hapus salah satunya dulu.",
@@ -15443,14 +15472,6 @@
       "agentNote": "Catatan dari {{from}}",
       "agentNoteAnon": "Catatan dari agen lain",
       "waitResult": "Yang ditunggu {{name}} sudah masuk",
-      "followUp": "{{name}} akan kembali pukul {{time}} untuk «{{about}}»",
-      "followUpOn": "{{name}} akan kembali pada {{day}} pukul {{time}} untuk «{{about}}»",
-      "followUpDone": "{{name}} kembali pukul {{time}} untuk «{{about}}»",
-      "followUpDoneOn": "{{name}} kembali pada {{day}} pukul {{time}} untuk «{{about}}»",
-      "followUpCanceled": "{{name}} tidak akan kembali pukul {{time}} untuk «{{about}}»",
-      "followUpCanceledOn": "{{name}} tidak akan kembali pada {{day}} pukul {{time}} untuk «{{about}}»",
-      "followUpWake": "{{name}} kembali untuk «{{about}}»",
-      "followUpCancel": "Batalkan",
       "other": "Pemberitahuan untuk {{name}}",
       "wakeSkipped": "Sebutan dari {{name}} tidak sampai ke {{agents}}",
       "wakeSkippedAnon": "Sebutan dari {{name}} tidak sampai ke agen lain",
@@ -17217,7 +17238,8 @@
     "sections": {
       "asked": "Diminta oleh orang",
       "delegated": "Diminta agen",
-      "background": "Rutinitas di latar belakang"
+      "background": "Rutinitas di latar belakang",
+      "returns": "Tindak lanjut"
     },
     "state": {
       "working": "Bekerja",
@@ -17305,6 +17327,9 @@
       "stopped": "Kamu menghentikannya",
       "stoppedBy": "Dihentikan oleh {{name}}",
       "failed": "Tidak bisa selesai",
+      "returnCanceled": "Tindak lanjut dibatalkan",
+      "returnCanceledYou": "Kamu membatalkan tindak lanjut",
+      "returnCanceledBy": "Tindak lanjut dibatalkan oleh {{name}}",
       "none": "Belum ada yang selesai hari ini."
     },
     "empty": {

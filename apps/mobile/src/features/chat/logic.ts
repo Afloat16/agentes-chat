@@ -209,17 +209,13 @@ export function standsAlone(m: Message) {
  * routine's call written as its creator is left out, like the web's `buildTimeline`. The sticker or GIF an agent
  * adds right after its own reply (ADR 0091) always groups under that reply, whatever the reply carries.
  */
-export function buildRows(
-  messages: Message[],
-  hidden: (m: Message) => boolean = () => false,
-  /** The agents at work in this conversation: an event over once they happened is left out (`settledNotices`). */
-  working: ReadonlySet<string> = new Set(),
-): ChatRow[] {
+export function buildRows(messages: Message[], hidden: (m: Message) => boolean = () => false): ChatRow[] {
   const rows: ChatRow[] = [];
   let lastDay = "";
   let prev: Message | null = null;
   const answered = answeredNotices(messages);
-  const settled = settledNotices(messages, working);
+  // A return's line (the dock holds it), a mention its message's own line explains.
+  const settled = settledNotices(messages);
   for (const m of [...messages].sort(byTime)) {
     if (
       hidden(m) ||
@@ -267,17 +263,14 @@ const NOTICE_ICON: Record<string, EventLineView["icon"]> = {
   consult_reply: "agent",
   agent_note: "chat",
   wait_result: "check",
-  follow_up: "clock",
   wake_skipped: "info",
 };
 
 export function eventLineOf(
   m: Pick<Message, "body" | "meta">,
   names: { author: string; agentByHandle: (handle: string) => string | null },
-  /** A follow-up's time for the reader ("18:30"), and the reader's locale for its day. */
-  when: { time: (iso: string) => string; locale: string } = { time: (iso) => iso, locale: "pt-BR" },
 ): EventLineView | null {
-  const view = noticeView(m, names, when);
+  const view = noticeView(m, names);
   const kind = noticeOf(m.meta)?.kind ?? "";
   return view ? { ...view, kind: "notice", icon: NOTICE_ICON[kind] ?? "bell" } : null;
 }
@@ -467,6 +460,13 @@ export function mayStopRun(
 
 /** Names in a sentence: in ink, or with the agent's face (shared with the web's `WorkingLine`). */
 export const markName = markInk;
+
+/**
+ * Whether a return's words fit whole beside its sentence on the dock's line (widths in points, as laid out): they show
+ * whole or not at all, never cut.
+ */
+export const aboutFits = (room: number, sentence: number, about: number) =>
+  room > 0 && sentence > 0 && about > 0 && sentence + about <= room + 0.5;
 
 /** A marked sentence split into plain and bold (name) pieces; a faced name carries its agent's id. */
 export const markedParts = markedPieces;

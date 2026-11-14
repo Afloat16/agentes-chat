@@ -62,6 +62,7 @@ import {
 import { type AgentUnavailableEvent, isAgentUnavailable } from "@agenteschat/client/lib/audience";
 import { newerBlockState } from "@agenteschat/client/lib/blocks";
 import { deviceWaitEventOf } from "@agenteschat/client/lib/devices";
+import { isReturnLine } from "@agenteschat/client/lib/notices";
 import { playSound } from "@agenteschat/client/lib/sounds";
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
@@ -246,6 +247,9 @@ function applyToCache(qc: QueryClient, orgId: string, channelId: string, event: 
     case "message.created": {
       if (event.message) cacheMessage(qc, orgId, event.message);
       else void qc.invalidateQueries({ queryKey: ["org", orgId, "channel", channelId] });
+      // A return set, canceled or come: the dock's line reads its list again.
+      if (event.message && isReturnLine(event.message.meta))
+        void qc.invalidateQueries({ queryKey: keys.followUps(orgId, channelId) });
       // A new top-level message may get agent replies in its thread: start that list.
       if (event.message) startThreadCache(qc, orgId, event.message);
       // A reply: its root's "2 respostas" link and the thread's header.

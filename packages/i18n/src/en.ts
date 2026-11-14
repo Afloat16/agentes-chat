@@ -4139,6 +4139,34 @@ export const en = {
     /** After "Waiting for you" on the profile card. */
     yourApproval: "your approval",
     yourAnswer: "your answer",
+    /** A return it set comes then (`followUps.when`): "follow-up at 12:32 AM". */
+    later: "follow-up {{when}}",
+    laterShort: "follow-up",
+  },
+  /** An agent comes back to a conversation by itself (its `follow_up`, ADR 0037): a follow-up. */
+  followUps: {
+    /** When it comes: the day only more than 12 h away, so the words never turn at midnight. */
+    when: { at: "at {{time}}", today: "today at {{time}}", tomorrow: "tomorrow at {{time}}" },
+    /** The same, opening a label: "At 12:32 AM". */
+    whenLabel: { at: "At {{time}}", today: "Today at {{time}}", tomorrow: "Tomorrow at {{time}}" },
+    /** The bar above the composer while a follow-up waits here. The agent's words follow after " · ", as written. */
+    bar: {
+      at: "{{name}} follows up {{when}}",
+      /** Where even the sentence doesn't fit: the name and the time. */
+      short: "{{name}} {{time}}",
+      /** Its time came while what it asked here waits on an answer: the reader may answer it. */
+      heldYou: "{{name}} follows up once you answer",
+      held: "{{name}} follows up after an answer",
+    },
+    /** The list of the follow-ups here (the bar's ⋯, the phone's sheet). */
+    title: "Follow-ups",
+    /** A row's tip: it goes to the reply that said it. */
+    see: "See the message",
+    cancel: "Cancel follow-up",
+    /** A row's ×, for screen readers (`when`: "at 12:32 AM"). */
+    cancelOf: "Cancel {{name}}'s follow-up {{when}}",
+    /** The task manager's time column: how soon (`time`: "33 min"). */
+    inTime: "in {{time}}",
   },
   mentions: {
     list: "People and agents",
@@ -9436,6 +9464,8 @@ export const en = {
       input: "Waiting for an answer",
       computer: "Waiting for its computer",
       queued: "In line",
+      /** A follow-up an agent set here (`followUps.when`). */
+      later: "Follow-up {{when}}",
       open: "Open",
       closed: "Closed",
       archived: "Archived",
@@ -13729,6 +13759,9 @@ export const en = {
       noContext: "This thread didn't come from a range of a conversation.",
       notUndoable: "Only a thread made from a range can be undone.",
     },
+    followUp: {
+      notYours: "Only the person it's for, the agent's owner or an admin can cancel this follow-up.",
+    },
     routine: {
       tooFrequent: "A routine runs at most every 15 minutes. Pick a longer interval.",
       tooMany: "This agent already has 20 active routines. Pause or delete one first.",
@@ -16154,14 +16187,6 @@ export const en = {
       agentNote: "Note from {{from}}",
       agentNoteAnon: "Note from another agent",
       waitResult: "What {{name}} was waiting for came in",
-      followUp: "{{name}} will be back at {{time}} to «{{about}}»",
-      followUpOn: "{{name}} will be back on {{day}} at {{time}} to «{{about}}»",
-      followUpDone: "{{name}} came back at {{time}} to «{{about}}»",
-      followUpDoneOn: "{{name}} came back on {{day}} at {{time}} to «{{about}}»",
-      followUpCanceled: "{{name}} won't be back at {{time}} to «{{about}}»",
-      followUpCanceledOn: "{{name}} won't be back on {{day}} at {{time}} to «{{about}}»",
-      followUpWake: "{{name}} is back to «{{about}}»",
-      followUpCancel: "Cancel",
       other: "Notice for {{name}}",
       wakeSkipped: "{{name}}'s mention didn't reach {{agents}}",
       /** The same, on an older line that didn't keep whom. */
@@ -18063,6 +18088,7 @@ export const en = {
       asked: "Asked by people",
       delegated: "Asked by agents",
       background: "Routines in the background",
+      returns: "Follow-ups",
     },
     state: {
       working: "Working",
@@ -18161,6 +18187,10 @@ export const en = {
       stopped: "You stopped it",
       stoppedBy: "{{name}} stopped it",
       failed: "Couldn't finish",
+      /** A follow-up that won't come: canceled by its time (the agent or the person left), by you, by someone. */
+      returnCanceled: "Follow-up canceled",
+      returnCanceledYou: "You canceled the follow-up",
+      returnCanceledBy: "Follow-up canceled by {{name}}",
       none: "Nothing ended today yet.",
     },
     empty: {

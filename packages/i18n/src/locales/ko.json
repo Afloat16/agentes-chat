@@ -3715,7 +3715,32 @@
     "here": "여기",
     "routine": "루틴 진행 중",
     "yourApproval": "내 승인",
-    "yourAnswer": "내 답변"
+    "yourAnswer": "내 답변",
+    "later": "후속 확인 {{when}}",
+    "laterShort": "후속 확인"
+  },
+  "followUps": {
+    "when": {
+      "at": "{{time}}",
+      "today": "오늘 {{time}}",
+      "tomorrow": "내일 {{time}}"
+    },
+    "whenLabel": {
+      "at": "{{time}}",
+      "today": "오늘 {{time}}",
+      "tomorrow": "내일 {{time}}"
+    },
+    "bar": {
+      "at": "{{name}}이(가) {{when}}에 후속 확인해요",
+      "short": "{{name}} {{time}}",
+      "heldYou": "{{name}}이(가) 내가 답하면 후속 확인해요",
+      "held": "{{name}}이(가) 답변을 받은 뒤 후속 확인해요"
+    },
+    "title": "후속 확인",
+    "see": "메시지 보기",
+    "cancel": "후속 확인 취소",
+    "cancelOf": "{{name}}의 {{when}} 후속 확인 취소",
+    "inTime": "{{time}} 후"
   },
   "mentions": {
     "list": "사람과 에이전트",
@@ -8757,6 +8782,7 @@
       "input": "답변 대기 중",
       "computer": "컴퓨터 대기 중",
       "queued": "차례 대기 중",
+      "later": "후속 확인 {{when}}",
       "open": "열림",
       "closed": "닫힘",
       "archived": "보관됨"
@@ -13115,6 +13141,9 @@
       "noContext": "이 스레드는 대화의 범위에서 만든 게 아니에요.",
       "notUndoable": "범위에서 만든 스레드만 되돌릴 수 있어요."
     },
+    "followUp": {
+      "notYours": "해당하는 사람, 에이전트 소유자 또는 관리자만 이 후속 확인을 취소할 수 있어요."
+    },
     "routine": {
       "tooFrequent": "루틴은 최대 15분마다 한 번 실행돼요. 더 긴 간격을 고르세요.",
       "tooMany": "이 에이전트에게는 이미 활성 루틴이 20개 있어요. 먼저 하나를 일시 중지하거나 삭제하세요.",
@@ -15381,14 +15410,6 @@
       "agentNote": "{{from}}의 메모",
       "agentNoteAnon": "다른 에이전트의 메모",
       "waitResult": "{{name}}이(가) 기다리던 결과가 도착했어요",
-      "followUp": "{{name}}이(가) {{time}}에 «{{about}}» 건으로 돌아올 거예요",
-      "followUpOn": "{{name}}이(가) {{day}} {{time}}에 «{{about}}» 건으로 돌아올 거예요",
-      "followUpDone": "{{name}}이(가) {{time}}에 «{{about}}» 건으로 돌아왔어요",
-      "followUpDoneOn": "{{name}}이(가) {{day}} {{time}}에 «{{about}}» 건으로 돌아왔어요",
-      "followUpCanceled": "{{name}}이(가) {{time}}에 «{{about}}» 건으로 돌아오지 않아요",
-      "followUpCanceledOn": "{{name}}이(가) {{day}} {{time}}에 «{{about}}» 건으로 돌아오지 않아요",
-      "followUpWake": "{{name}}이(가) «{{about}}» 건으로 돌아왔어요",
-      "followUpCancel": "취소",
       "other": "{{name}}에게 온 알림",
       "wakeSkipped": "{{name}}의 멘션이 {{agents}}에게 전달되지 않았어요",
       "wakeSkippedAnon": "{{name}}의 멘션이 다른 에이전트에게 닿지 않았어요",
@@ -17107,7 +17128,8 @@
     "sections": {
       "asked": "사람이 요청한 작업",
       "delegated": "에이전트가 요청한 작업",
-      "background": "백그라운드 루틴"
+      "background": "백그라운드 루틴",
+      "returns": "후속 확인"
     },
     "state": {
       "working": "작업 중",
@@ -17195,6 +17217,9 @@
       "stopped": "내가 중지함",
       "stoppedBy": "{{name}}이(가) 중지함",
       "failed": "끝내지 못함",
+      "returnCanceled": "후속 확인 취소됨",
+      "returnCanceledYou": "내가 후속 확인을 취소함",
+      "returnCanceledBy": "{{name}}이(가) 후속 확인을 취소함",
       "none": "오늘 끝난 작업이 아직 없어요."
     },
     "empty": {

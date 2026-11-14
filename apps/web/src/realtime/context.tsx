@@ -95,6 +95,7 @@ import { newerBlockState } from "@agenteschat/client/lib/blocks";
 import { deviceWaitEventOf } from "@agenteschat/client/lib/devices";
 import { knownErrorText } from "@agenteschat/client/lib/errors";
 import { formatPercent } from "@agenteschat/client/lib/format";
+import { isReturnLine } from "@agenteschat/client/lib/notices";
 import { nextMonthIso, usageWhen } from "@agenteschat/client/lib/plan-usage";
 import { playSound, soundForNotification } from "@agenteschat/client/lib/sounds";
 import { playAgentReaction } from "@agenteschat/ui";
@@ -864,7 +865,10 @@ export function useChannelRealtime(orgId: string, channelId: string, enabled: bo
       }
       if (event.type === "message.created") {
         if (event.message) cacheMessage(qc, orgId, event.message);
-        else {
+        // A return set, canceled or come: the bar's list reads again.
+        if (event.message && isReturnLine(event.message.meta))
+          void qc.invalidateQueries({ queryKey: keys.followUps(orgId, channelId) });
+        if (!event.message) {
           // Too big for its event: the open lists read it (its live block holds until it lands); a closed one, when
           // it opens again.
           void qc.invalidateQueries({ queryKey: ["org", orgId, "channel", channelId], refetchType: "none" });

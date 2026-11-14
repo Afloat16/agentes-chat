@@ -4086,7 +4086,32 @@
     "here": "tutaj",
     "routine": "w rutynie",
     "yourApproval": "twoje zatwierdzenie",
-    "yourAnswer": "twoja odpowiedź"
+    "yourAnswer": "twoja odpowiedź",
+    "later": "follow-up {{when}}",
+    "laterShort": "follow-up"
+  },
+  "followUps": {
+    "when": {
+      "at": "o {{time}}",
+      "today": "dzisiaj o {{time}}",
+      "tomorrow": "jutro o {{time}}"
+    },
+    "whenLabel": {
+      "at": "O {{time}}",
+      "today": "Dzisiaj o {{time}}",
+      "tomorrow": "Jutro o {{time}}"
+    },
+    "bar": {
+      "at": "{{name}} sprawdzi ponownie {{when}}",
+      "short": "{{name}} {{time}}",
+      "heldYou": "{{name}} sprawdzi ponownie, gdy odpowiesz",
+      "held": "{{name}} sprawdzi ponownie po odpowiedzi"
+    },
+    "title": "Follow-upy",
+    "see": "Zobacz wiadomość",
+    "cancel": "Anuluj follow-up",
+    "cancelOf": "Anuluj follow-up od: {{name}} {{when}}",
+    "inTime": "za {{time}}"
   },
   "mentions": {
     "list": "Osoby i agenci",
@@ -9737,6 +9762,7 @@
       "input": "Czeka na odpowiedź",
       "computer": "Czeka na komputer",
       "queued": "W kolejce",
+      "later": "Follow-up {{when}}",
       "open": "Otwarty",
       "closed": "Zamknięty",
       "archived": "Zarchiwizowany"
@@ -14613,6 +14639,9 @@
       "noContext": "Ten wątek nie powstał z zakresu rozmowy.",
       "notUndoable": "Cofnąć można tylko wątek utworzony z zakresu."
     },
+    "followUp": {
+      "notYours": "Ten follow-up może anulować tylko osoba, której dotyczy, właściciel agenta albo administrator."
+    },
     "routine": {
       "tooFrequent": "Rutyna uruchamia się najczęściej co 15 minut. Wybierz dłuższy odstęp.",
       "tooMany": "Ten agent ma już 20 aktywnych rutyn. Najpierw wstrzymaj lub usuń jedną.",
@@ -16992,14 +17021,6 @@
       "agentNote": "Notatka od: {{from}}",
       "agentNoteAnon": "Notatka od innego agenta",
       "waitResult": "Dotarło to, na co czeka {{name}}",
-      "followUp": "{{name}} wróci o {{time}} w sprawie «{{about}}»",
-      "followUpOn": "{{name}} wróci {{day}} o {{time}} w sprawie «{{about}}»",
-      "followUpDone": "{{name}}: powrót o {{time}} w sprawie «{{about}}»",
-      "followUpDoneOn": "{{name}}: powrót {{day}} o {{time}} w sprawie «{{about}}»",
-      "followUpCanceled": "{{name}} nie wróci o {{time}} w sprawie «{{about}}»",
-      "followUpCanceledOn": "{{name}} nie wróci {{day}} o {{time}} w sprawie «{{about}}»",
-      "followUpWake": "{{name}} wraca w sprawie «{{about}}»",
-      "followUpCancel": "Anuluj",
       "other": "Powiadomienie dla: {{name}}",
       "wakeSkipped": "Wzmianka od {{name}} nie dotarła do: {{agents}}",
       "wakeSkippedAnon": "Wzmianka {{name}} nie dotarła do innego agenta",
@@ -18852,7 +18873,8 @@
     "sections": {
       "asked": "Zlecone przez osoby",
       "delegated": "Zlecone przez agentów",
-      "background": "Rutyny w tle"
+      "background": "Rutyny w tle",
+      "returns": "Follow-upy"
     },
     "state": {
       "working": "Pracuje",
@@ -18952,6 +18974,9 @@
       "stopped": "Zatrzymane przez ciebie",
       "stoppedBy": "Zatrzymane przez: {{name}}",
       "failed": "Nie udało się skończyć",
+      "returnCanceled": "Follow-up anulowany",
+      "returnCanceledYou": "Anulowano follow-up",
+      "returnCanceledBy": "Follow-up anulowany przez: {{name}}",
       "none": "Dzisiaj nic się jeszcze nie zakończyło."
     },
     "empty": {
