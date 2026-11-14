@@ -521,6 +521,8 @@ export const en = {
       noPasswordLead:
         "On the computer that runs this server, open the app and choose Add a password in Settings\u00a0›\u00a0Your account.",
       backToSignIn: "Back to sign in",
+      /** Under the sign-in opened by "Add account": back to the account still signed in. */
+      backToAccount: "Back to {{name}}",
       toAuthorizeApp: "To connect an app to agentes.chat.",
     },
     desktop: {
@@ -1944,6 +1946,9 @@ export const en = {
     /** The desktop app's window to add one (ADR 0154): in place of New workspace on agentes.chat, after it elsewhere. */
     addWorkspace: "Add workspace",
     addWorkspaceHint: "Join one you already have, create one, or use your team's server",
+    /** Another account on this server, signed in beside the one open (ADR 0183). */
+    addAccount: "Add account",
+    addAccountHint: "Sign in to another account without leaving this one",
     /** Beside a server's name above its workspaces, when it isn't agentes.chat. */
     yourServer: "Your server",
     /** A server's line in "Your workspaces" in the desktop app: the one on this computer, and its state (ADR 0158). */

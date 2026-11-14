@@ -511,6 +511,8 @@ export const ptBR = {
       noPasswordLead:
         "No computador onde este servidor roda, abra o app e escolha Adicionar uma senha em Configurações\u00a0›\u00a0Sua conta.",
       backToSignIn: "Voltar para entrar",
+      /** Under the sign-in opened by "Add account": back to the account still signed in. */
+      backToAccount: "Voltar para {{name}}",
       toAuthorizeApp: "Para conectar um app ao agentes.chat.",
     },
     desktop: {
@@ -1859,6 +1861,9 @@ export const ptBR = {
     newWorkspace: "Novo workspace",
     addWorkspace: "Adicionar workspace",
     addWorkspaceHint: "Entrar em um que já existe, criar um novo ou usar o servidor da equipe",
+    /** Another account on this server, signed in beside the one open (ADR 0183). */
+    addAccount: "Adicionar conta",
+    addAccountHint: "Entrar com outra conta sem sair desta",
     yourServer: "Seu servidor",
     /** A server's line in "Your workspaces" in the desktop app: the one on this computer, and its state (ADR 0158). */
     serverHere: "O agentes.chat neste {{device}}",
