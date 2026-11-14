@@ -1155,6 +1155,8 @@
       "name": "Naam",
       "namePlaceholder": "Je naam",
       "email": "E-mail",
+      "emailWebLead": "Log opnieuw in op de website en wijzig het daar, zonder de code.",
+      "emailWeb": "Opnieuw inloggen op de website",
       "inWorkspace": "In deze werkruimte · {{org}}",
       "handle": "Je @",
       "timezone": "Tijdzone",

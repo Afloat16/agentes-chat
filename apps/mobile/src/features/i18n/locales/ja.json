@@ -1078,6 +1078,8 @@
       "name": "名前",
       "namePlaceholder": "あなたの名前",
       "email": "メールアドレス",
+      "emailWebLead": "サイトでもう一度ログインして、コードなしでそこで変更してください。",
+      "emailWeb": "サイトでもう一度ログイン",
       "inWorkspace": "このワークスペース内 · {{org}}",
       "handle": "あなたの@",
       "timezone": "タイムゾーン",

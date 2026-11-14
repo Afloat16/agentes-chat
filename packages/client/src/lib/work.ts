@@ -346,6 +346,16 @@ export function stepLabel(t: TFunction, s: Pick<WorkItem, "kind" | "app" | "tool
 }
 
 /**
+ * Tools only the engine reads: `pass` is how an agent stays silent (reply policy), so it is never a step a person
+ * reads ("Used the tool pass").
+ */
+const ENGINE_ONLY_TOOLS = new Set(["pass"]);
+
+/** The steps a person reads: without the engine-only ones. */
+export const shownSteps = <T extends { tool: string }>(steps: readonly T[]): T[] =>
+  steps.filter((s) => !ENGINE_ONLY_TOOLS.has(s.tool));
+
+/**
  * A step as one line: its phrase and what it worked on unless the phrase says it ("Atualizou uma tarefa · #131"). A
  * command refused, or still waiting on a person, says so ("Recusado: npm publish", "Rodando: npm publish").
  */

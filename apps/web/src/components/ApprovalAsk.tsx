@@ -58,6 +58,7 @@ export function ApprovalAsk({
   members,
   who,
   tail,
+  summary = false,
 }: {
   approval: Approval;
   agent: Agent | undefined;
@@ -66,6 +67,8 @@ export function ApprovalAsk({
   who?: ReactNode;
   /** After the fuse at the footer's end (the notifications' Remind me later and Done). */
   tail?: ReactNode;
+  /** One of a summary's cards: the line over them says what they are, so it has no header and no asking line. */
+  summary?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const { org, me } = useOrg();
@@ -110,7 +113,8 @@ export function ApprovalAsk({
       mine={approval.canDecide}
       waitingFor={waits ? t("ask.waitingFor", { name: waits }) : t("approval.waitingAdmin")}
       answer={pending ? undefined : approvalAnswer(t, i18n.language, approval, me.user.id, members)}
-      lead={why ?? approvalAskLine(t, pending && approval.canDecide)}
+      lead={why ?? (summary ? undefined : approvalAskLine(t, pending && approval.canDecide))}
+      headless={summary}
       preview={previewed ? <ApprovalPreview approval={approval} /> : undefined}
       object={{
         logo: <ConnectorMark approval={approval} />,

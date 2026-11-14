@@ -1078,6 +1078,8 @@
       "name": "Nama",
       "namePlaceholder": "Namamu",
       "email": "Email",
+      "emailWebLead": "Masuk lagi di situs web dan ganti di sana, tanpa kode.",
+      "emailWeb": "Masuk lagi di situs web",
       "inWorkspace": "Di ruang kerja ini · {{org}}",
       "handle": "@ kamu",
       "timezone": "Zona waktu",

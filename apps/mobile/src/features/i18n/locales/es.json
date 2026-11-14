@@ -1229,6 +1229,8 @@
       "name": "Nombre",
       "namePlaceholder": "Tu nombre",
       "email": "Correo",
+      "emailWebLead": "Vuelve a iniciar sesión en el sitio y cámbialo allí, sin el código.",
+      "emailWeb": "Volver a iniciar sesión en el sitio",
       "inWorkspace": "En este espacio de trabajo · {{org}}",
       "handle": "Tu @",
       "timezone": "Zona horaria",

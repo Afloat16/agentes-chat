@@ -4,6 +4,7 @@ import type { ChatPrefs } from "../lib/chat-look";
 import type { RoleId } from "../lib/new-agent";
 import type { OnboardingStepId } from "../lib/onboarding";
 import type { Permission } from "../lib/permissions";
+import type { Seat } from "../lib/seat";
 import type { AudienceChoice } from "../lib/who-sees";
 
 /** Whether a person owns the workspace (ADR 0085); what anyone may do comes from their roles (`OrgRole`). */
@@ -568,6 +569,12 @@ export interface CodeSent {
   email: string;
   resendIn: number;
 }
+
+/**
+ * Where a new address for my account stands (`account.changeEmail`): a link went to it (`sent`), it changed at once on
+ * a server that sends no email (`changed`), or a code went to my current address first (`code`, as `CodeSent`).
+ */
+export type EmailChange = { status: "sent" | "changed"; email: string } | ({ status: "code" } & CodeSent);
 
 /** A workspace's invitation link people can still ask with (admins). */
 export interface InviteLink {
@@ -1951,6 +1958,12 @@ export interface Approval {
   reason: string | null;
   /** You are the agent's owner or an admin, and it is pending. */
   canDecide: boolean;
+  /**
+   * The server calls it routine: nothing that merges, deploys, deletes, sends, publishes or runs what its input
+   * says. A card's one tap for several decides only these (`decideMany` with `only: "routine"`). Absent from a server
+   * that does not tell them apart: then none is.
+   */
+  routine?: boolean;
   /** The agent's owner (they and admins may decide). */
   ownerUserId?: string | null;
   /** When the approved action ran; null while it runs (or if it never did). */
@@ -2288,7 +2301,17 @@ export interface Proposal {
   title: string;
   why: string;
   /** How it came, said by `proposalWhy` in the person's language; `why` holds the words it is about, if any. */
-  whyCode?: "refused" | "corrected" | "seen" | "skill" | "asked" | "budget" | "no_channel" | null;
+  whyCode?:
+    | "refused"
+    | "corrected"
+    | "seen"
+    | "skill"
+    | "asked"
+    | "budget"
+    | "no_channel"
+    | "idle"
+    | "light_work"
+    | null;
   /** `type` names the source for translation; `where` is the server's English text. */
   evidence: {
     where: string;
@@ -2338,6 +2361,10 @@ export interface OrgSettings {
   agentMedia: AgentMediaLevel;
   /** People can send voice messages (ADR 0100); only with `voiceAvailable` too. On by default. */
   voiceMessages: boolean;
+  /** The right hand watches for what stops the team and tells who can fix it. Absent from an older server: on. */
+  teamWatch?: boolean;
+  /** The right hand greets each person who joins, once. Absent from an older server: on. */
+  welcomePeople?: boolean;
   /** Read only: this server has a speech engine. */
   voiceAvailable: boolean;
   /** Read only: this server can search GIFs (it has a GIF provider). */
@@ -3050,6 +3077,8 @@ export const WORKSPACE_ACTION_IDS = [
   "continue_work",
   "update_workspace",
   "set_action_check",
+  "invite_people",
+  "remove_ai_key",
 ] as const;
 
 /** What the change was made to (link it: issue → Issues, wiki_page → Wiki, routine → Rotinas…). */
@@ -4556,6 +4585,11 @@ export interface Machine {
   execAllowed: boolean;
   pairedBy: { id: string; name: string } | null;
   agents: { id: string; name: string; handle: string }[];
+  /**
+   * The built-in agent's id where this computer holds its shared place (ADR 0175) and this person may open it, as
+   * they may any agent's computer here; null or absent otherwise.
+   */
+  sharedSeatOf?: string | null;
   /** Workspace folder on the machine; null unless admin or the person who paired it. */
   workspace: string | null;
   /** This person may rename or remove it (an admin or whoever connected it); they may also reduce its access. */
@@ -6499,7 +6533,14 @@ export type NotificationKind =
    */
   | "right_hand_decided"
   /** ADR 0139 §2: three of its decisions undone in a week stopped it. Waiting until it is turned back on. */
-  | "right_hand_paused";
+  | "right_hand_paused"
+  /**
+   * ADR 0177 §1: the right hand found something that stops the team and this person can fix. One open row per cause
+   * (`latest.reason`: `sign_in`, `connector`, `mailbox`, `database`, `budget_out`, `budget_low`, `computer`),
+   * `latest.names` the first things it is about and `count` how many, `latest.text` the whole sentence in the
+   * person's language. `source.agentId`, `machineId` or `accountId` when it is about one. Done once fixed.
+   */
+  | "team_watch";
 
 /** "O Gerente aprova por você" (ADR 0139 §2): what the person let the workspace's right hand approve. */
 export interface RightHandApprovals {
@@ -6673,6 +6714,8 @@ export interface NotificationLatest {
   runs?: number;
   /** `usage_limit`: the share of the requests made with the agent named in `title`. */
   share?: number;
+  /** A reminder of what was left unread: how many things still wait on the person, this one included. */
+  still?: number;
 }
 
 /** A run a `run_failed` row lists: its agent and where it failed (`key` names both). */
@@ -7374,6 +7417,11 @@ export interface BrowserHandoff {
   requestedForUserId: string | null;
   /** Who is in control now (null: nobody yet). */
   controllerUserId: string | null;
+  /**
+   * On the workspace's built-in agent: the handoff is of its shared place on the workspace's computer, not of a
+   * person's own (ADR 0175). Absent for every other handoff.
+   */
+  seat?: Seat;
   /** What the person told the agent when it ended ("Não consegui"'s reason, or a note on "Pronto"/"Devolver"). */
   note: string | null;
   /** While nobody has opened it: when it expires. Null once someone is in control (no deadline then). */
