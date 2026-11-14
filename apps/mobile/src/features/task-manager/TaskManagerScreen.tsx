@@ -26,7 +26,7 @@ import {
 } from "@agenteschat/client/lib/task-manager";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActionSheetIOS, ActivityIndicator, Platform, Pressable, RefreshControl, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -61,8 +61,9 @@ import { AgentFace, OpensAgent } from "../shared/Face";
 import { useEmptyLook } from "../shared/FirstUse";
 import { useColors, useDirectory, useMeId, useNow, useOrgId, usePullRefresh, useWhen } from "../shared/hooks";
 import { agentLook } from "../shared/logic";
+import { SheetTitle } from "../shared/PromptForm";
 import { PushedLargeTitle } from "../shared/PushedLargeTitle";
-import { ActionList, Tile } from "../shared/parts";
+import { type ActionItem, ActionList, Tile } from "../shared/parts";
 import { SheetHostProvider, useSheet } from "../shared/SheetHost";
 import { useStopper, useTasksToday } from "./hooks";
 import {
@@ -103,7 +104,7 @@ function useRowMotion() {
  * one tap: folded until opened), each a row with its state as a mark (the orbit while it runs, amber while it waits on
  * you), its time and a chevron: stopping is done on the task's own screen, never from a button in the list. Then the
  * routines' work in the background and what ended today. Above them, the computers with work, each opening its line
- * in a sheet. Every row is one line that ends in "…": a task's own screen says it whole.
+ * in a sheet. Every row is one line that ends in "…": a task's own screen says it whole, a return's sheet its words.
  */
 export function TaskManagerScreen() {
   return (
@@ -525,72 +526,35 @@ function EndedRow({ task, divider, meId }: { task: EndedTask; divider: boolean; 
 
 /**
  * A return an agent set (ADR 0037), one line: the clock, her words and where (the agent, the conversation), when it
- * comes. A tap opens the conversation at the reply that set it; a long press offers "Abrir na conversa" and, for who
- * may, "Cancelar retorno" (the system's action sheet on iOS, the app's list on Android). Its spinner while it goes.
+ * comes. A tap or a long press opens its sheet (`ReturnSheet`): the row's words cut at the end, and a return has no
+ * screen of its own.
  */
 function ReturnRow({ item, divider, now }: { item: PendingReturn; divider: boolean; now: number }) {
   const { t, i18n } = useTranslation();
   const c = useColors();
   const dir = useDirectory();
-  const toast = useToast();
   const sheet = useSheet();
-  const cancel = useCancelFollowUp(useOrgId());
   const agent = dir.nameOf({ type: "agent", id: item.agentId });
   const line = [agent, returnPlace(t, item)].filter(Boolean).join(" · ");
   const when = item.held ? t("threads.status.input") : returnWhen(t, i18n.language, item.at, now, true);
   const soon = item.held
     ? null
     : t("followUps.inTime", { time: formatLineTime(i18n.language, Math.max(1000, Date.parse(item.at) - now)) });
-  const openIt = () => router.push(chatHref(item.channelId, item.threadId, item.replyMessageId));
-  const cancelIt = () =>
-    cancel.mutate(
-      { channelId: item.channelId, messageId: item.messageId },
-      { onError: (error) => toast({ title: errorText(t, error), icon: "x" }) },
-    );
-  const items = [
-    { key: "open", icon: "chat" as const, label: t("taskManager.actions.open"), run: openIt },
-    ...(item.canCancel
-      ? [{ key: "cancel", icon: "x" as const, label: t("followUps.cancel"), danger: true, run: cancelIt }]
-      : []),
-  ];
-  const menu = () => {
-    if (Platform.OS === "ios") {
-      const danger = items.findIndex((i) => "danger" in i);
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          title: item.about,
-          options: [...items.map((i) => i.label), t("mobile.common.cancel")],
-          cancelButtonIndex: items.length,
-          ...(danger >= 0 ? { destructiveButtonIndex: danger } : {}),
-        },
-        (i) => items[i]?.run(),
-      );
-      return;
-    }
+  const open = () =>
     sheet.open(
-      <ActionList
-        items={items.map((i) => ({
-          key: i.key,
-          icon: i.icon,
-          label: i.label,
-          ...("danger" in i ? { danger: true } : {}),
-          onPress: () => {
-            sheet.close();
-            i.run();
-          },
-        }))}
+      <ReturnSheet
+        item={item}
+        line={line}
+        when={[when, soon].filter(Boolean).join(" · ")}
+        onOpen={() => router.push(chatHref(item.channelId, item.threadId, item.replyMessageId))}
       />,
     );
-  };
   return (
     <Pressable
-      onPress={openIt}
-      onLongPress={menu}
-      disabled={cancel.isPending}
+      onPress={open}
+      onLongPress={open}
       accessibilityRole="button"
       accessibilityLabel={[item.about, line, when, soon].filter(Boolean).join(", ")}
-      accessibilityActions={[{ name: "longpress", label: items.map((i) => i.label).join(", ") }]}
-      onAccessibilityAction={menu}
       style={({ pressed }) => [styles.task, pressed && { backgroundColor: c.sunken }]}
     >
       {divider ? <View style={[styles.divider, styles.textDivider, { backgroundColor: c.line2 }]} /> : null}
@@ -598,13 +562,9 @@ function ReturnRow({ item, divider, now }: { item: PendingReturn; divider: boole
         <Icon name="clock" size={16} color={c.faint} />
       </View>
       <OneLine title={item.about} line={line} />
-      {cancel.isPending ? (
-        <ActivityIndicator size="small" color={c.muted} />
-      ) : (
-        <Text variant="caption" tone="faint" style={styles.num}>
-          {item.held ? when : returnClock(t, i18n.language, item.at, now)}
-        </Text>
-      )}
+      <Text variant="caption" tone="faint" style={styles.num}>
+        {item.held ? when : returnClock(t, i18n.language, item.at, now)}
+      </Text>
       <Icon name="right" size={15} color={c.faint} />
     </Pressable>
   );
@@ -615,14 +575,25 @@ function CanceledReturnRow({ item, divider, meId }: { item: CanceledReturn; divi
   const { t, i18n } = useTranslation();
   const c = useColors();
   const dir = useDirectory();
+  const sheet = useSheet();
   const agent = dir.nameOf({ type: "agent", id: item.agentId });
   const how = returnCanceledText(t, item, meId, agent);
   const at = returnClock(t, i18n.language, item.at, Date.parse(item.canceledAt));
   // How it ended in words, after whose it was: no screen of its own says it.
   const line = [agent, how].filter(Boolean).join(" · ");
+  const open = () =>
+    sheet.open(
+      <ReturnSheet
+        item={item}
+        line={[agent, returnPlace(t, item)].filter(Boolean).join(" · ")}
+        when={`${how} · ${at}`}
+        onOpen={() => router.push(chatHref(item.channelId, item.threadId))}
+      />,
+    );
   return (
     <Pressable
-      onPress={() => router.push(chatHref(item.channelId, item.threadId))}
+      onPress={open}
+      onLongPress={open}
       accessibilityRole="button"
       accessibilityLabel={[item.about, line, returnPlace(t, item), at].filter(Boolean).join(", ")}
       style={({ pressed }) => [styles.task, pressed && { backgroundColor: c.sunken }]}
@@ -637,6 +608,73 @@ function CanceledReturnRow({ item, divider, meId }: { item: CanceledReturn; divi
         {at}
       </Text>
     </Pressable>
+  );
+}
+
+/**
+ * A return's sheet, where its row's words are whole (note A: rows are one line): her words, whose and where, when it
+ * comes or how it ended, then "Abrir na conversa" and, for who may, "Cancelar retorno". While that goes its spinner
+ * shows and the rest waits. Done, the sheet closes.
+ */
+function ReturnSheet({
+  item,
+  line,
+  when,
+  onOpen,
+}: {
+  item: PendingReturn | CanceledReturn;
+  /** "Ada · #vendas". */
+  line: string;
+  /** "Às 00:32 · em 33 min", "Esperando uma resposta", "Retorno cancelado por Ana · 00:32". */
+  when: string;
+  onOpen: () => void;
+}) {
+  const { t } = useTranslation();
+  const c = useColors();
+  const toast = useToast();
+  const sheet = useSheet();
+  const cancel = useCancelFollowUp(useOrgId());
+  const going = cancel.isPending;
+  const items: ActionItem[] = [
+    {
+      key: "open",
+      icon: "chat",
+      label: t("taskManager.actions.open"),
+      disabled: going,
+      onPress: () => {
+        sheet.close();
+        onOpen();
+      },
+    },
+    ...("canCancel" in item && item.canCancel
+      ? [
+          {
+            key: "cancel",
+            icon: "x" as const,
+            label: t("followUps.cancel"),
+            danger: true,
+            ...(going
+              ? { trailing: <ActivityIndicator size="small" color={c.muted} /> }
+              : {
+                  onPress: () =>
+                    cancel.mutate(
+                      { channelId: item.channelId, messageId: item.messageId },
+                      {
+                        onSuccess: () => sheet.close(),
+                        onError: (error) => toast({ title: errorText(t, error), icon: "x" }),
+                      },
+                    ),
+                }),
+          },
+        ]
+      : []),
+  ];
+  return (
+    <>
+      {/* No leading face: her words take the sheet's width (her name is under them). */}
+      <SheetTitle title={item.about} subtitle={`${line}\n${when}`} />
+      <ActionList items={items} />
+    </>
   );
 }
 
